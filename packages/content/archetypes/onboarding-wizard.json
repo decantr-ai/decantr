@@ -1,0 +1,203 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "onboarding-wizard",
+  "role": "gateway",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Onboarding Wizard",
+  "description": "Gateway archetype for multi-step new-user onboarding flows. Three-step wizard pattern: account creation, profile completion (with photo upload), and interests selection. Each step occupies its own route on the centered shell with a stepper progress indicator at the top. Designed for consumer apps where post-auth profile completion is required before entering the primary app surface.",
+  "tags": [
+    "onboarding",
+    "wizard",
+    "gateway",
+    "auth",
+    "consumer",
+    "signup",
+    "profile-creation",
+    "2026"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "consumer onboarding",
+        "profile completion wizard",
+        "post-signup profile setup",
+        "interests picker flow",
+        "new user wizard"
+      ],
+      "secondary": [
+        "multi-step signup",
+        "user setup",
+        "first-run wizard"
+      ],
+      "negative": [
+        "dashboard",
+        "admin onboarding",
+        "enterprise sso"
+      ]
+    },
+    "implies": [
+      "auth",
+      "form-validation",
+      "photo-upload",
+      "step-validation"
+    ],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "account-step",
+      "description": "Step 1 of 3 — basic account creation. Email + password fields with stepper showing progress.",
+      "patterns": [
+        {
+          "pattern": "onboarding-wizard",
+          "preset": "stepper",
+          "as": "step-progress"
+        },
+        {
+          "pattern": "auth-form",
+          "preset": "register",
+          "as": "account-form"
+        },
+        {
+          "pattern": "cta-section",
+          "preset": "banner",
+          "as": "next-cta"
+        }
+      ],
+      "default_layout": [
+        "step-progress",
+        "account-form",
+        "next-cta"
+      ],
+      "shell": "centered",
+      "directives": [
+        "Show step indicator: 1 of 3, active dot in coral, upcoming dots in muted border style",
+        "Validate email format inline as user types (with 240ms debounce)",
+        "Password strength meter shows below the field — coral=weak, accent=medium, success=strong",
+        "Primary CTA label: 'Continue →' — disabled until form is valid",
+        "Secondary text below form: 'Already have an account? Log in' — link to /login"
+      ]
+    },
+    {
+      "id": "profile-step",
+      "description": "Step 2 of 3 — basic profile (age, gender, location, bio) plus photo upload.",
+      "patterns": [
+        {
+          "pattern": "onboarding-wizard",
+          "preset": "stepper",
+          "as": "step-progress"
+        },
+        {
+          "pattern": "content-uploader",
+          "preset": "single",
+          "as": "photo-upload"
+        },
+        {
+          "pattern": "form",
+          "preset": "standard",
+          "as": "profile-form"
+        },
+        {
+          "pattern": "cta-section",
+          "preset": "banner",
+          "as": "next-cta"
+        }
+      ],
+      "default_layout": [
+        "step-progress",
+        "photo-upload",
+        "profile-form",
+        "next-cta"
+      ],
+      "shell": "centered",
+      "directives": [
+        "Show step indicator: 2 of 3, dot 1 in success-state (filled coral with check), dot 2 active, dot 3 muted",
+        "Photo uploader at the top: large dashed-border drop zone with cloud icon. Tap on mobile opens native picker. Selected photo shows with a small Edit overlay button.",
+        "Form fields: Age (number input, 18+ required), Gender (3-option select with Other text input), Location (city autocomplete), Bio (textarea, 1-3 sentence guidance, 280 char limit with counter)",
+        "All fields except Bio are required. Bio shows 'optional but recommended' helper text.",
+        "Primary CTA: 'Continue →' — disabled until age + gender + location are valid AND a photo is uploaded",
+        "Secondary text: 'Skip for now' (smaller, ghost link) — only enabled if photo is uploaded; profile completion can finish in app"
+      ]
+    },
+    {
+      "id": "interests-step",
+      "description": "Step 3 of 3 — pick interests from a multi-select chip grid (8-12 categories, choose 3-5).",
+      "patterns": [
+        {
+          "pattern": "onboarding-wizard",
+          "preset": "stepper",
+          "as": "step-progress"
+        },
+        {
+          "pattern": "chip-multiselect",
+          "preset": "standard",
+          "as": "interests-picker"
+        },
+        {
+          "pattern": "cta-section",
+          "preset": "banner",
+          "as": "complete-cta"
+        }
+      ],
+      "default_layout": [
+        "step-progress",
+        "interests-picker",
+        "complete-cta"
+      ],
+      "shell": "centered",
+      "directives": [
+        "Show step indicator: 3 of 3, dots 1 and 2 in success state, dot 3 active",
+        "Heading above chip grid: 'What are you into?' (large, display font)",
+        "Sub-heading: 'Pick 3-5 interests so we can introduce you to your circle.'",
+        "Default interest chips: Music, Travel, Fitness, Food, Movies, Books, Gaming, Outdoors, Art, Tech, Wellness, Animals — 12 categories, all selectable simultaneously",
+        "Validation: minimum 3 selected, maximum 5. Below 3: helper text turns danger color. Above 5: chips lock and show 'Max 5 reached' tooltip",
+        "Primary CTA label: 'Complete Profile →' — disabled until 3-5 chips are selected",
+        "On submit: POST profile, route to /discover (the primary swipe feed)"
+      ]
+    }
+  ],
+  "page_briefs": {
+    "account-step": "Single centered card on a soft warm peach background. Card has 24px radius and a soft coral-tinted shadow. At the top of the card, a horizontal stepper: three numbered dots with a connecting line, dot 1 is active (filled coral), dots 2-3 are muted with thin borders. Below the stepper: 'Create your account' display heading. Email field (full width, rounded input with focus glow), password field with strength meter dot row beneath, and a 'Continue →' coral pill CTA at the bottom. The card is just wide enough (~420px) to feel comfortable but not stretched. Below the card, a small ghost link: 'Already have an account? Log in'. Form errors appear inline beneath the offending field in danger color.",
+    "profile-step": "Same centered-card shell as step 1, but slightly taller. Stepper at the top now shows dot 1 in success-state (filled coral with white check), dot 2 active, dot 3 muted. Heading: 'Tell us about you'. The photo uploader sits prominently at the top — a large dashed-border drop zone or, after selection, a circular preview with the swipecircle-photo-frame decorator (96×96, coral ring). Below the photo: a stack of form fields with generous vertical spacing (16px gap). Age (number input), Gender (3-button radio group + Other text input), Location (autocomplete with current-location button), Bio (rounded textarea with character counter). Continue button at bottom, with 'Skip for now' ghost link below. The whole flow feels intimate and unhurried.",
+    "interests-step": "Centered card. Stepper shows dots 1 and 2 complete (success-coral with checks), dot 3 active. Display heading: 'What are you into?' followed by a sub-heading explaining the choose-3-5 contract. The main content is a chip-multiselect grid: 12 chips (Music, Travel, Fitness, Food, Movies, Books, Gaming, Outdoors, Art, Tech, Wellness, Animals) wrap in a flex grid with 8px gap. Unselected chips have a thin border + muted text; selected chips fill with coral, show a check icon, and bounce on toggle. A counter below ('3 of 3-5') gives feedback. Once 3 are selected, the 'Complete Profile' coral pill activates with a subtle pulse to invite the next step. On submit, the card scales down briefly with a celebratory sparkle effect, then routes to /discover."
+  },
+  "features": [
+    "auth",
+    "photo-upload",
+    "step-validation",
+    "form-validation",
+    "interests-picker"
+  ],
+  "directives": [
+    "All three steps use the swipecircle theme — warm peach backgrounds, coral primaries, pill CTAs",
+    "Stepper component is consistent across all 3 pages — only the dot states change",
+    "After step 3 success, route to /discover (the primary app surface)",
+    "If user reloads mid-flow, persist progress in localStorage so they don't lose state",
+    "Each step's primary CTA is disabled until validation passes — no ghost-clicking through invalid steps"
+  ],
+  "navigation_items": [],
+  "shells": {
+    "centered": "Single centered card on a soft warm peach background. Card max-width ~420px on tablet+, full-width on mobile with 16px page padding. Stepper at top of card."
+  },
+  "dependencies": {
+    "patterns": {
+      "onboarding-wizard": ">=1.0.0",
+      "auth-form": ">=1.0.0",
+      "form": ">=1.0.0",
+      "content-uploader": ">=1.0.0",
+      "chip-multiselect": ">=1.0.0",
+      "cta-section": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": ["swipecircle"],
+    "modes": ["light"],
+    "shapes": ["pill"]
+  },
+  "personality": [
+    "Three-step gateway flow that feels gentle and unhurried. Centered card on warm peach background, coral primary CTAs, soft shadows replacing harsh borders. Stepper at the top tracks progress — dots fill with coral as steps complete. Forms validate inline with friendly error copy. Photo upload is photographed-portrait in mind — circular preview with swipecircle-photo-frame ring. Interest picker uses chip-multiselect with bouncy spring on toggle. The whole flow is intimate, warm, and rewards completion with a sparkle moment before routing into the app."
+  ]
+}

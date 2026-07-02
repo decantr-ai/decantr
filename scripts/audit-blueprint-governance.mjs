@@ -6,7 +6,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, '..');
 const contentRoot = process.env.DECANTR_CONTENT_DIR
   ? resolve(process.env.DECANTR_CONTENT_DIR)
-  : resolve(repoRoot, '..', 'decantr-content');
+  : resolve(repoRoot, 'packages', 'content');
 const blueprintRoot = join(contentRoot, 'blueprints');
 
 const PUBLIC_SIGNAL_TERMS = [

@@ -1,0 +1,120 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "contract-center",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Contract Center",
+  "description": "Auxiliary contract management surface for browsing the contract library, reviewing redlined documents with tracked changes, and comparing versions side-by-side.",
+  "tags": [
+    "legal",
+    "contracts",
+    "redlining",
+    "diffs",
+    "review"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "contract management",
+        "contract review",
+        "contract center",
+        "redlining",
+        "contract diff"
+      ],
+      "secondary": [
+        "track changes",
+        "contract library",
+        "version compare",
+        "document review"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "contracts",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "contract-list"
+        },
+        {
+          "pattern": "filter-bar",
+          "preset": "standard",
+          "as": "contract-filters"
+        }
+      ],
+      "default_layout": [
+        "filter-bar",
+        "data-table"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "contract-detail",
+      "patterns": [
+        {
+          "pattern": "redline-track-changes",
+          "preset": "standard",
+          "as": "redlined-doc"
+        },
+        {
+          "pattern": "contract-diff",
+          "preset": "split",
+          "as": "version-diff"
+        }
+      ],
+      "default_layout": [
+        "redline-track-changes",
+        "contract-diff"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "contract-compare",
+      "patterns": [
+        {
+          "pattern": "contract-diff",
+          "preset": "split",
+          "as": "contract-compare"
+        },
+        {
+          "pattern": "diff-view",
+          "preset": "split",
+          "as": "clause-diff"
+        }
+      ],
+      "default_layout": [
+        "contract-diff",
+        "diff-view"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "contracts": "Contract library list page. A filter-bar at the top offers facets for counterparty, contract type, status, effective date, and assigned attorney. Below, a full-width data-table lists contracts with columns for title, counterparty, type, status, value, renewal date, and owner, supporting sort, multi-select, and bulk export.",
+    "contract-detail": "Single contract review view. Main area renders redline-track-changes showing the document with inline insertions, deletions, and margin comments from reviewers. Below, a split contract-diff panel lets the user pivot between the current draft and any prior version with side-by-side clause comparison.",
+    "contract-compare": "Dedicated side-by-side comparison page. The contract-diff split pane anchors the top with full documents aligned clause-by-clause. Below, a diff-view split pane zooms into a selected clause, highlighting character-level additions and removals for precise redline inspection."
+  },
+  "features": [
+    "contracts",
+    "redlining",
+    "diffs"
+  ],
+  "suggested_theme": {
+    "ids": [
+      "counsel",
+      "professional",
+      "paper"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

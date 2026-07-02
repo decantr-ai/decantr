@@ -1,11 +1,12 @@
 {
   "name": "@decantr/registry",
-  "version": "3.4.0",
-  "description": "Certified vocabulary contracts, schemas, API client, and content utilities for Decantr",
+  "version": "3.8.0",
+  "description": "Legacy compatibility package for Decantr content contracts, schemas, and API client utilities",
   "keywords": [
     "decantr",
     "decantr-ai",
     "registry",
+    "content-corpus",
     "certified-vocabulary",
     "ui-patterns",
     "starter-kits",
@@ -76,6 +77,7 @@
     "preversion": "pnpm build && pnpm test"
   },
   "dependencies": {
+    "@decantr/content": "workspace:*",
     "@decantr/essence-spec": "workspace:*"
   }
 }

@@ -1,0 +1,132 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "unlock-gate",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Unlock Gate",
+  "description": "Paywall/tier gate component that blurs or hides content and prompts subscription. Shows required tier and quick subscribe flow.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Card",
+        "Badge",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Card",
+    "Badge",
+    "icon"
+  ],
+  "default_preset": "blur",
+  "presets": {
+    "blur": {
+      "description": "Blurred preview with unlock overlay",
+      "components": [
+        "Button",
+        "Card",
+        "icon"
+      ],
+      "layout": {
+        "layout": "overlay",
+        "atoms": "_relative _overflow[hidden]",
+        "slots": {
+          "preview": "Blurred content preview",
+          "overlay": "Unlock prompt overlay",
+          "tier-info": "Required tier badge",
+          "cta": "Subscribe button"
+        }
+      }
+    },
+    "solid": {
+      "description": "Solid opaque overlay that fully hides content behind a lock icon and subscribe prompt",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "center",
+        "atoms": "_aspect[16/9] _bgmuted/5 _flex _col _center _r3",
+        "slots": {
+          "message": "Unlock prompt text",
+          "tier-info": "Required tier",
+          "cta": "Subscribe button"
+        }
+      }
+    },
+    "teaser": {
+      "description": "Partial content visible with fade to gate",
+      "components": [
+        "Button",
+        "Card",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_relative",
+        "slots": {
+          "teaser-content": "Visible portion of content",
+          "fade": "Gradient fade to gate",
+          "gate": "Subscribe prompt"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "overlay",
+    "atoms": "_relative",
+    "slots": {
+      "preview": "Content preview",
+      "overlay": "Gate overlay",
+      "cta": "Unlock action"
+    }
+  },
+  "io": {
+    "produces": [
+      "unlock-click",
+      "subscribe-click"
+    ],
+    "consumes": [
+      "tier-data",
+      "preview-content"
+    ]
+  },
+  "visual_brief": "Content paywall overlay. The blur preset applies a strong CSS blur filter to the protected content behind the gate, with a centered overlay card showing a lock icon, the required tier name as a badge, a message ('Subscribe to unlock this content'), and a 'Subscribe' CTA button. The solid preset replaces blurred content with a solid surface that hides the content entirely, showing the same lock icon, tier, and CTA. The teaser preset shows the first portion of content (a paragraph or image preview) unblurred, then fades into the gate overlay with the subscribe prompt.",
+  "responsive": {
+    "mobile": "Gate overlay takes full content width. CTA button full-width. Tier badge and lock icon centered. Blur amount may reduce for performance.",
+    "tablet": "Standard overlay. CTA button at natural width. Comfortable padding.",
+    "desktop": "Overlay centered over the content area. CTA button with hover effects. Teaser shows more content before the fade."
+  },
+  "layout_hints": {
+    "gate_priority": "The user should immediately understand what is locked, why it is locked, and what unlock action is available. The gate must preserve that hierarchy before any surrounding decoration.",
+    "teaser_balance": "Preview content should entice without confusing the boundary between visible and gated material. Keep the transition into the gate unmistakable.",
+    "tier_context": "Required tier information should sit close to the CTA and the value proposition, not drift into secondary metadata territory."
+  },
+  "motion": {
+    "micro": "Lock states, CTA focus, and overlay emphasis may sharpen subtly, but the gate should not feel manipulative or overly animated.",
+    "transitions": "Unlock prompts and teaser fades should feel premium and clear, preserving trust while still communicating exclusivity."
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Unlock gate",
+    "keyboard": [
+      "The primary unlock or subscribe action should be reachable immediately after the explanatory content."
+    ],
+    "announcements": [
+      "Locked state, required tier, and available unlock action should be exposed semantically so the gate remains understandable without blur or overlay styling alone."
+    ]
+  },
+  "composition": {
+    "UnlockGate": "Overlay(d-section, relative) > [BlurredContent(d-surface, blur) + GateOverlay]",
+    "GateOverlay": "Card(d-surface, centered, elevated) > [LockIcon(d-annotation, large) + Message(heading4) + TierBadge(d-annotation) + SubscribeButton(d-interactive, variant: primary)]"
+  }
+}

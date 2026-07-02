@@ -1,0 +1,131 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "meeting-archive",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Meeting Archive",
+  "description": "Public archive of government meetings with searchable records, calendar browsing, and per-meeting timelines of votes and agenda items. Provides citizens long-term access to council and committee proceedings.",
+  "tags": [
+    "meetings",
+    "archive",
+    "government",
+    "council",
+    "public-records",
+    "civic"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "meeting archive",
+        "council meetings",
+        "public meetings",
+        "government meetings",
+        "meeting records"
+      ],
+      "secondary": [
+        "agenda archive",
+        "minutes",
+        "public proceedings"
+      ],
+      "negative": [
+        "internal meetings",
+        "calendar scheduling"
+      ]
+    },
+    "implies": [
+      "meetings",
+      "archives"
+    ],
+    "weight": 0.7,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "meetings",
+      "path": "/meetings",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "meeting-table"
+        },
+        {
+          "pattern": "calendar-view",
+          "preset": "month",
+          "as": "meeting-calendar"
+        },
+        {
+          "pattern": "filter-bar",
+          "preset": "standard",
+          "as": "meeting-filters"
+        }
+      ],
+      "default_layout": [
+        "meeting-filters",
+        "meeting-calendar",
+        "meeting-table"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "meeting-detail",
+      "path": "/meetings/:id",
+      "patterns": [
+        {
+          "pattern": "detail-header",
+          "preset": "standard",
+          "as": "meeting-header"
+        },
+        {
+          "pattern": "timeline",
+          "preset": "standard",
+          "as": "agenda-timeline"
+        },
+        {
+          "pattern": "voting-breakdown",
+          "preset": "bars",
+          "as": "meeting-votes"
+        }
+      ],
+      "default_layout": [
+        "meeting-header",
+        "agenda-timeline",
+        "meeting-votes"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "meetings": "Meeting archive page offers dual navigation: a filter bar at top with body (council, committee, board), date range, and keyword search, followed by a month-view calendar dotted with meeting markers, and beneath that a sortable data table listing meetings with columns for date, body, location, agenda item count, and links to minutes and video recordings.",
+    "meeting-detail": "Meeting detail page opens with a detail header showing meeting title, body, date, location, attendees, and links to agenda PDF and video recording. A timeline component displays each agenda item in sequence with timestamps linking into the video. A voting-breakdown bars visualization shows how each member voted on every motion with passing and failing motions clearly indicated."
+  },
+  "features": [
+    "meetings",
+    "archives"
+  ],
+  "shells": {
+    "sidebar-main": "Left sidebar with meeting body navigation and main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "data-table": ">=1.0.0",
+      "calendar-view": ">=1.0.0",
+      "filter-bar": ">=1.0.0",
+      "detail-header": ">=1.0.0",
+      "timeline": ">=1.0.0",
+      "voting-breakdown": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "civic",
+      "professional"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

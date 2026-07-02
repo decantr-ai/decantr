@@ -1,0 +1,140 @@
+{
+  "id": "map-view",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Map View",
+  "description": "An interactive geospatial map with pins, cluster bubbles, search radius overlay, info cards, and a list/map toggle for exploring location-based data.",
+  "category": "geospatial",
+  "tags": [
+    "2026",
+    "geospatial",
+    "map",
+    "pins",
+    "clusters",
+    "location",
+    "interactive"
+  ],
+  "components": [
+    "MapCanvas",
+    "Pin",
+    "ClusterBubble",
+    "InfoCard",
+    "SearchRadius",
+    "MapControls",
+    "ListToggle"
+  ],
+  "default_preset": "pins",
+  "presets": {
+    "pins": {
+      "description": "Individual location markers on the map, each clickable to reveal an info card with details — ideal for store locators and point-of-interest maps",
+      "layout": {
+        "layout": "spatial",
+        "atoms": "_relative _w100 _h100 _overflow-hidden"
+      }
+    },
+    "clusters": {
+      "description": "Grouped markers that merge into count bubbles at lower zoom levels, expanding into individual pins on zoom-in — suited for large datasets with thousands of points",
+      "layout": {
+        "layout": "spatial",
+        "atoms": "_relative _w100 _h100 _overflow-hidden"
+      }
+    },
+    "heatmap": {
+      "description": "Density-based gradient overlay showing concentration of data points, with warm colors for high density and cool colors for low — useful for analytics and coverage views",
+      "layout": {
+        "layout": "spatial",
+        "atoms": "_relative _w100 _h100 _overflow-hidden"
+      }
+    },
+    "route": {
+      "description": "A connected path drawn between ordered waypoints with directional indicators, distance labels, and turn-by-turn annotations — suited for delivery tracking and trip planning",
+      "layout": {
+        "layout": "spatial",
+        "atoms": "_relative _w100 _h100 _overflow-hidden"
+      }
+    }
+  },
+  "visual_brief": "A full-bleed interactive map occupying the entire container with no padding or border. The map tiles render a clean, modern cartographic style with muted terrain colors. Pins are 32px-tall accent-colored teardrop shapes with a white inner circle (12px) containing an icon or dot, casting a subtle drop shadow (0 2px 6px rgba(0,0,0,0.2)). On hover, a pin scales to 1.15 and emits a gentle pulsing ring (accent color at 30% opacity, expanding from 100% to 150% radius over 1.5s, infinite). Clicking a pin on desktop opens a floating info card — a 280px-wide d-surface card with border-radius-lg, positioned 8px above the pin with a small downward-pointing triangle tail connecting card to pin. The info card contains: a thumbnail image (full-width, 120px tall, border-radius-t-lg), a title (text-base font-semibold), a subtitle line (text-sm text-muted), and an action row with a primary button and a secondary icon button. On mobile, clicking a pin slides an info card up from the bottom edge as a 50%-height sheet with a drag handle at top. ClusterBubbles are circles whose diameter scales with count (40px for 2–10, 56px for 11–50, 72px for 51+), filled with accent color at 85% opacity, showing the count number in white bold text centered inside. Clusters have a subtle white 2px border. Clicking a cluster zooms the map to show all contained points. The search radius renders as a translucent circle (accent color at 10% fill, accent border at 40% opacity, 2px dashed stroke). Map controls are stacked vertically in the top-right corner: 36px pill-shaped buttons with white background, subtle shadow, and icon-only content (zoom in +, zoom out −, compass/north, locate-me crosshair). The list toggle is a segmented control (map icon | list icon) anchored to the top-left corner, 72px wide, with the active segment filled accent and inactive segment white. Switching to list view transitions the map out (slide left + fade) and a scrollable card list in (slide right + fade).",
+  "layout_hints": {
+    "container": "borderless",
+    "note": "This is a full-bleed map view. Do NOT wrap in a d-surface card. The map canvas fills its parent container entirely. Floating controls are absolutely positioned over the map.",
+    "pin_interaction": "Pins MUST have cursor: pointer. Hover state: scale(1.15) transition 150ms. Active/selected pin: stays scaled and shows the info card. Only one info card open at a time — selecting a new pin closes the previous card.",
+    "cluster_zoom": "When a cluster is clicked, the map should animate (300ms ease-in-out) to a bounding box that contains all points within that cluster.",
+    "info_card": "The info card MUST use d-surface with elevation. On desktop it floats above the pin with a CSS triangle pointer. On mobile it renders as a bottom sheet. Info card closes on outside click or Escape key."
+  },
+  "default_layout": {
+    "layout": "spatial",
+    "atoms": "_relative _w100 _h100 _overflow-hidden",
+    "slots": {
+      "map-canvas": "The primary map tile layer filling the entire container. Handles pan (click-drag or touch-drag), zoom (scroll wheel, pinch, or button controls), and rotation (optional, via compass control). Renders vector or raster tiles with a clean cartographic style — muted grays and blues for terrain, thin road lines, minimal labels. The canvas intercepts all pointer events except those on floating UI elements (controls, cards). Supports programmatic flyTo animations (500ms ease-in-out) when centering on a pin or cluster.",
+      "pin": "Repeating slot — one per location point. Each pin is absolutely positioned on the map at its lat/lng coordinate, rendered as a 32px-tall teardrop SVG shape filled with the accent color. The inner circle (12px diameter, white fill) can contain a category icon (restaurant, hotel, etc.) or a plain dot. Drop shadow: 0 2px 6px rgba(0,0,0,0.2). Hover: scale(1.15) with 150ms ease, plus a pulsing ring animation (accent at 30% opacity, expanding outward). Selected state: scale(1.15) locked, ring solid, info card visible. Pins must stay correctly positioned during pan and zoom. z-index: selected pin above all others.",
+      "cluster-bubble": "Repeating slot — one per cluster group. Rendered as a circle whose diameter scales with the number of contained points: 40px (2–10 items), 56px (11–50), 72px (51+). Background: accent color at 85% opacity. Border: 2px solid white. Text: count number in white, font-bold, text-sm (small clusters) or text-base (large clusters), centered. Hover: slight scale(1.08) with 150ms ease. Click: zoom to cluster bounds with 300ms animation. Clusters recalculate on zoom change — as zoom increases, clusters split into smaller groups or individual pins.",
+      "info-card": "A floating detail card shown when a pin is selected. Desktop: 280px-wide d-surface card with border-radius-lg and elevation (box-shadow: 0 4px 16px rgba(0,0,0,0.12)). Positioned 8px above the selected pin, horizontally centered on the pin. Has a small 8px CSS triangle pointing down toward the pin. Content layout: thumbnail image (full-width, 120px height, object-fit cover, border-radius top corners), then 12px padding containing title (text-base, font-semibold, single line truncate), subtitle (text-sm, text-muted, single line), and an action row (flex, justify-between) with a primary small button and a secondary icon button (bookmark/share). Mobile: renders as a bottom sheet sliding up from the bottom edge, 50% viewport height, with a 4px-wide 32px-long drag handle centered at top, same content layout but full-width. Close on outside click, swipe-down (mobile), or Escape.",
+      "search-radius": "A translucent circle overlay rendered on the map canvas, centered on the user's search location or current position. Fill: accent color at 10% opacity. Stroke: accent color at 40% opacity, 2px dashed. The radius scales proportionally with map zoom level, maintaining geographic accuracy. An optional label at the top of the circle shows the distance (e.g., '5 km'). The radius can be resized by dragging its edge (desktop) or via a range slider in controls (mobile).",
+      "map-controls": "A vertical stack of control buttons anchored to the top-right corner of the map, 12px from edges. Each button is 36px × 36px, white background, border-radius-full, box-shadow: 0 1px 4px rgba(0,0,0,0.1). Icons are 18px, text-muted color, hover: text-default. Stack order top-to-bottom: zoom-in (+), zoom-out (−), compass/north-up (rotates to match map bearing), locate-me (crosshair icon, pulses accent when active GPS tracking). Gap between buttons: 8px. On mobile, buttons increase to 44px for touch targets.",
+      "list-toggle": "A segmented control anchored to the top-left corner, 12px from edges. Two segments: map icon (grid/pin icon) and list icon (horizontal lines icon). Total width: 72px, height: 36px. Active segment: accent background, white icon. Inactive segment: white background, muted icon. border-radius-full, box-shadow matching map controls. Toggling to list view transitions the map out and renders a scrollable vertical list of location cards below the toggle. Toggling back transitions the list out and map in."
+    }
+  },
+  "accessibility": {
+    "role": "application",
+    "aria-label": "Interactive map view",
+    "announcements": [
+      "Map centered on {location}",
+      "Showing {count} locations",
+      "Pin selected: {name}",
+      "Cluster expanded: {count} locations",
+      "Switched to {map|list} view",
+      "Search radius set to {distance}"
+    ],
+    "keyboard": [
+      "Tab: cycle through pins and controls",
+      "Enter: select focused pin to open info card",
+      "Escape: close info card or deselect pin",
+      "Arrow keys: pan map in cardinal directions",
+      "+/-: zoom in/out",
+      "L: toggle list/map view",
+      "F: fit all pins in view"
+    ]
+  },
+  "responsive": {
+    "mobile": "Map fills viewport. Controls enlarge to 44px touch targets. Info card renders as bottom sheet instead of floating card. List toggle moves to bottom-center above the info card area. Pinch-to-zoom and drag-to-pan. Search radius adjustable via slider instead of edge-drag. Cluster tap zooms in rather than showing a popup.",
+    "tablet": "Full map with floating controls. Info card floats on landscape, bottom-sheet on portrait. Two-finger gestures for pan and zoom. Controls remain in top-right at 40px size. List view renders as a side panel (320px wide) instead of replacing the map.",
+    "desktop": "Full interactive map with hover states on pins and clusters. Info card floats above pins. Scroll-to-zoom, click-drag-to-pan. Controls in top-right. List toggle in top-left. List view renders as a side panel (360px) with the map shrinking to accommodate."
+  },
+  "motion": {
+    "micro": {
+      "pin-hover": "scale 1→1.15, 150ms ease-out",
+      "cluster-hover": "scale 1→1.08, 150ms ease-out",
+      "control-hover": "background-color fade 120ms ease"
+    },
+    "transitions": {
+      "info-card-open": "desktop: translateY(8px)→0 + opacity 0→1, 200ms ease-out. mobile: translateY(100%)→0, 300ms ease-out",
+      "info-card-close": "reverse of open, 150ms ease-in",
+      "list-toggle": "map: slideX(0)→(-100%) + fade. list: slideX(100%)→0 + fade. 300ms ease-in-out",
+      "fly-to": "map center + zoom interpolation 500ms ease-in-out",
+      "cluster-expand": "zoom to bounds 300ms ease-in-out"
+    },
+    "ambient": {
+      "pin-pulse": "ring scale 1→1.5 + opacity 0.3→0, 1.5s ease-out infinite on hover",
+      "locate-active": "accent border-color pulse 2s ease-in-out infinite when GPS tracking"
+    }
+  },
+  "interactions": [
+    "drag-nodes",
+    "pan-background",
+    "zoom-scroll",
+    "click-select",
+    "hover-tooltip",
+    "animate-on-mount"
+  ],
+  "composition": {
+    "MapView": "Viewport(d-section, full-bleed) > [MapCanvas + Pin*(d-interactive) + ClusterBubble* + InfoCard?(d-surface) + SearchRadius? + MapControls + ListToggle]",
+    "MapCanvas": "TileLayer(zoomable, pannable, vector|raster)",
+    "Pin": "Marker(d-interactive, positioned-latlng) > [TeardropSVG(accent) + InnerIcon + PulseRing?]",
+    "ClusterBubble": "Marker(d-interactive, positioned-latlng) > [Circle(accent, scaled) + CountLabel(white, bold)]",
+    "InfoCard": "Card(d-surface, elevated) > [Thumbnail + Title + Subtitle + ActionRow]",
+    "MapControls": "Stack(d-control, vertical, top-right) > [ZoomIn + ZoomOut + Compass + LocateMe]",
+    "ListToggle": "SegmentedControl(d-control, top-left) > [MapIcon + ListIcon]"
+  }
+}

@@ -1,0 +1,133 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "match-celebration",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Match Celebration",
+  "description": "Full-screen celebratory overlay that appears when two users match. A coral-to-violet radial burst, two avatars meeting in the center with a heart pop between them, an 'It's a Match!' headline, and two CTAs (Send Message / Keep Swiping). Optional auto-dismiss after 3-4s. Designed to be a magic moment — the dopamine pop that rewards the swipe loop.",
+  "category": "overlay",
+  "tags": [
+    "2026",
+    "modal",
+    "celebration",
+    "match",
+    "overlay",
+    "consumer",
+    "social"
+  ],
+  "components": [
+    "MatchOverlay",
+    "Backdrop",
+    "BurstGradient",
+    "Confetti",
+    "AvatarPair",
+    "MyAvatar",
+    "TheirAvatar",
+    "HeartPop",
+    "Headline",
+    "Subtitle",
+    "ActionPair",
+    "MessageButton",
+    "KeepSwipingButton"
+  ],
+  "default_preset": "first-match",
+  "presets": {
+    "first-match": {
+      "description": "Full-impact first-match celebration with confetti, burst gradient, avatar pair animation, and a delightful 'It's a Match!' headline. Auto-dismiss after 4s unless user interacts.",
+      "layout": {
+        "layout": "spatial",
+        "atoms": "_fixed _inset-0 _z-50 _flex _items-center _justify-center _bg-black/40"
+      }
+    },
+    "subsequent-match": {
+      "description": "Toned-down repeat-match overlay — same composition but no confetti and shorter animations. Avoids match-fatigue.",
+      "layout": {
+        "layout": "spatial",
+        "atoms": "_fixed _inset-0 _z-50 _flex _items-center _justify-center _bg-black/40"
+      }
+    },
+    "compact-toast": {
+      "description": "Subtle toast variant for ambient match notifications (e.g., when matched while not on the swipe screen). A small pill toast at the top with both avatars and 'New match!' label.",
+      "layout": {
+        "layout": "flex-row",
+        "atoms": "_fixed _top-4 _left-1/2 _-translate-x-1/2 _z-50 _flex _items-center _gap-3 _px-4 _py-2 _rounded-full _bg-surface _shadow-lg"
+      }
+    }
+  },
+  "visual_brief": "A full-screen overlay (position fixed, inset 0, z-index 50) that appears with a soft 240ms backdrop fade-in (background rgba(0,0,0,0.4)). At the visual center, the BurstGradient occupies the entire viewport — a radial-gradient(circle at 50% 50%, rgba(255,77,109,0.4) 0%, rgba(139,92,246,0.3) 40%, transparent 70%) — pulsing to life by scaling from 0.6 to 1.0 over 600ms with cubic-bezier(0.34, 1.56, 0.64, 1) spring. The burst slowly rotates 10deg over 4s in an infinite loop while visible — magic-without-distracting. Above the burst, in the first-match preset, a Confetti emitter showers small coral, violet, and peach paper-shaped pieces from the top of the viewport, falling with subtle physics over 2.4s. Centered in the viewport: AvatarPair — two circular avatars (96×96 each) framed with the swipecircle-photo-frame decorator (coral outer ring, cream inner gap, soft shadow). MyAvatar enters from the left, sliding in from translateX(-120%) to translateX(-32%) (offset to leave room for partner) over 480ms cubic-bezier(0.34, 1.56, 0.64, 1). TheirAvatar enters from the right, sliding from translateX(120%) to translateX(32%) over 480ms with the same easing — the avatars meet near each other but don't overlap. Between them, slightly above the visual center line, a HeartPop appears: a 32px Heart Lucide icon (filled, coral with a slight white inner ring) that scales from 0 to 1.2 to 1.0 over 480ms with bouncy spring + a slight rotation of -10deg to 10deg to 0deg for liveliness. Below the avatar pair, the Headline 'It's a Match!' renders in font-display, text-4xl, font-bold, color white with a 1px text-shadow. Below the headline, a Subtitle: '{name} liked you back.' (text-base, font-medium, color rgba(255,255,255,0.9)). 24px below the subtitle, the ActionPair: two side-by-side pill buttons with 12px gap. MessageButton (left, primary) — pill-shaped (swipecircle-pill decorator), coral fill, white text, label 'Send Message', a small Send Lucide icon (16px) at the leading edge. KeepSwipingButton (right, secondary) — pill-shaped with white border + transparent fill + white text, label 'Keep Swiping'. Both buttons enter with a stagger 240ms after the avatar arrival (opacity 0→1 + translateY(8px)→0). On dismiss (tap outside, hit Escape, or tap KeepSwipingButton), the overlay fades out over 240ms ease-in. If MessageButton is tapped, navigate to the chat thread. Auto-dismiss after 4000ms unless the user interacts. Reduced-motion mode: skip the rotate, slide-in becomes fade-in (no horizontal travel), confetti is disabled.",
+  "layout_hints": {
+    "container": "fixed full-viewport overlay",
+    "z_index": "50 — above bottom-tab-bar (40) but below toast notifications (60)",
+    "auto_dismiss": "4000ms default; pauses on hover or focus",
+    "reduced_motion": "Respect prefers-reduced-motion: no rotation, no confetti, fade-only entrance"
+  },
+  "default_layout": {
+    "layout": "spatial",
+    "atoms": "_fixed _inset-0 _z-50 _flex _items-center _justify-center _bg-black/40",
+    "slots": {
+      "match-overlay": "Outer container. Position fixed, inset 0, z-index 50. Background rgba(0,0,0,0.4) for backdrop dim. Flex centered. Pointer-events: auto. Carries role='alertdialog', aria-modal='true', aria-labelledby pointing to the Headline.",
+      "backdrop": "Implicit — the bg-black/40 of match-overlay serves as the backdrop. On click outside the inner content, dismisses the overlay.",
+      "burst-gradient": "Position absolute, inset 0, pointer-events: none. Background applies the swipecircle-match-burst decorator. Animates: scale(0.6)→scale(1) over 600ms cubic-bezier(0.34, 1.56, 0.64, 1), then rotate 0→10deg infinite linear over 4s.",
+      "confetti": "Conditional slot in first-match preset only. Position absolute, top 0, left 0, right 0, height 100%. Renders 24-40 confetti particles (small rectangles 6×10px in coral, violet, peach colors). Each particle has random horizontal start position, randomized fall duration 1.6-2.4s, slight horizontal drift, and rotation 0-720deg. Uses physics-based animation library or CSS keyframes. Pointer-events: none.",
+      "avatar-pair": "Center container. Flex-row, items-center, gap 8px, position relative, z-index above burst. Width auto, height 96px. Houses MyAvatar + HeartPop + TheirAvatar.",
+      "my-avatar": "96×96 circular avatar with the swipecircle-photo-frame decorator. Img fills the inner circle. Enters with slideInFromLeft animation: translateX(-120%) opacity 0 → translateX(-32%) opacity 1 over 480ms cubic-bezier(0.34, 1.56, 0.64, 1).",
+      "their-avatar": "96×96 circular avatar (same as MyAvatar). Enters with slideInFromRight: translateX(120%) opacity 0 → translateX(32%) opacity 1 over 480ms cubic-bezier(0.34, 1.56, 0.64, 1) with a 60ms delay from MyAvatar — adds slight stagger.",
+      "heart-pop": "32px filled Heart Lucide icon in coral with a 2px white inner ring. Position absolute, centered between the two avatars, z-index above avatars. Animates: scale(0) → scale(1.3) → scale(1.0) + rotate(-10deg) → rotate(10deg) → rotate(0deg) over 480ms cubic-bezier(0.34, 1.56, 0.64, 1) with a 240ms delay (after avatars start arriving).",
+      "headline": "'It's a Match!' h2 element. Font-family: var(--d-font-display). Font-size: 36px. Font-weight: 700. Color: white. Text-shadow: 0 1px 2px rgba(0,0,0,0.3). Margin-top: 32px. Text-align: center. Enters: opacity 0 + translateY(12px) → opacity 1 + translateY(0) over 320ms ease-out with 480ms delay (after avatars arrive).",
+      "subtitle": "Subtitle text under headline. Format: '{name} liked you back.' Font-size: 16px. Font-weight: 500. Color: rgba(255,255,255,0.9). Margin-top: 8px. Text-align: center. Enters with same animation as headline plus 60ms additional delay.",
+      "action-pair": "Container for the two CTAs. Flex-row, gap 12px, margin-top: 32px, justify-center. Both buttons enter with: opacity 0 + translateY(8px) → opacity 1 + translateY(0) over 320ms ease-out with 720ms delay.",
+      "message-button": "Primary CTA. Pill button (swipecircle-pill decorator), 'Send Message' label, leading 16px Send Lucide icon. On click: emit 'open-chat-thread' event with the matched user's id, then dismiss overlay.",
+      "keep-swiping-button": "Secondary CTA. Pill button with white 1.5px border, transparent fill, white text. 'Keep Swiping' label. On click: dismiss overlay (returns user to swipe deck)."
+    }
+  },
+  "accessibility": {
+    "role": "alertdialog",
+    "aria-label": "Match celebration",
+    "keyboard": [
+      "Escape: dismiss the overlay (returns to swipe screen)",
+      "Tab: cycle focus between MessageButton and KeepSwipingButton",
+      "Enter or Space: activate the focused button"
+    ],
+    "announcements": [
+      "It's a match with {name}!",
+      "{name} liked you back. Send a message or keep swiping.",
+      "Match celebration dismissed."
+    ],
+    "focus_management": "On overlay open, focus moves to MessageButton (the recommended primary action). Focus is trapped within the overlay (Tab cycles only between the two buttons). On overlay close, focus returns to the previously-focused element (typically the swipe deck card or action button)."
+  },
+  "responsive": {
+    "mobile": "Stack layout. Avatars 80×80 instead of 96. Headline text-3xl. Action pair stacks vertically (flex-col, gap-3) on viewports under 360px wide.",
+    "tablet": "Stack layout. Default sizes (96×96 avatars, text-4xl headline). All animations active.",
+    "desktop": "Stack layout. Default sizes. Confetti uses higher particle count (60). Burst gradient extends further from center."
+  },
+  "motion": {
+    "micro": {
+      "burst-pulse": "scale 0.6→1.0 + opacity 0→0.7 over 600ms cubic-bezier(0.34, 1.56, 0.64, 1)",
+      "burst-rotate": "rotate 0→10deg over 4s linear infinite",
+      "avatar-meet-left": "translateX(-120%) opacity 0 → translateX(-32%) opacity 1 over 480ms cubic-bezier(0.34, 1.56, 0.64, 1)",
+      "avatar-meet-right": "translateX(120%) opacity 0 → translateX(32%) opacity 1 over 480ms cubic-bezier(0.34, 1.56, 0.64, 1), delayed 60ms",
+      "heart-pop": "scale 0→1.3→1.0 + rotate -10→10→0deg over 480ms cubic-bezier(0.34, 1.56, 0.64, 1), delayed 240ms",
+      "headline-arrive": "opacity 0 + translateY(12px) → opacity 1 + translateY(0) over 320ms ease-out, delayed 480ms",
+      "actions-arrive": "opacity 0 + translateY(8px) → opacity 1 + translateY(0) over 320ms ease-out, delayed 720ms, stagger 60ms between buttons"
+    },
+    "transitions": {
+      "overlay-enter": "Backdrop opacity 0→0.4 over 240ms ease-out (synchronous with start of all child animations)",
+      "overlay-exit": "Backdrop opacity 0.4→0 + content opacity 1→0 over 240ms ease-in. All child animations skipped on exit.",
+      "confetti-fall": "Each particle: translateY 0 → 100vh + translateX(±40px drift) + rotate(0-720deg) over 1.6-2.4s ease-in-out. Particles emit from top in waves over the first 800ms."
+    },
+    "reduced_motion": "When prefers-reduced-motion is set: skip burst-rotate, confetti, avatar slide-in (use fade-in only), and heart rotate (use scale-only). All durations capped at 240ms."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "stagger-children",
+    "scale-hover",
+    "focus-trap",
+    "click-select"
+  ],
+  "composition": {
+    "MatchCelebration": "MatchOverlay(fixed-inset, z-50, dimmed-bg) > [BurstGradient(absolute-fill) + Confetti(absolute-fill, conditional) + ContentStack(centered, flex-col)]",
+    "ContentStack": "Flex(col, items-center, gap-8) > [AvatarPair + Headline + Subtitle + ActionPair]",
+    "AvatarPair": "Flex(row, items-center, gap-2, relative) > [MyAvatar + HeartPop(absolute-center) + TheirAvatar]",
+    "ActionPair": "Flex(row, gap-3) > [MessageButton(primary-pill) + KeepSwipingButton(secondary-pill)]"
+  }
+}

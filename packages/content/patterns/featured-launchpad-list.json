@@ -1,0 +1,114 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "featured-launchpad-list",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Featured Launchpad List",
+  "description": "Curated list or grid of featured blueprints, archetypes, or starter paths. Each item explains who it is for, what it scaffolds, and the next command or registry route a builder should use.",
+  "dependencies": {
+    "patterns": {
+      "namespace-badge": "^1.0.0"
+    },
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Card",
+        "Badge",
+        "Button",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Card",
+    "Badge",
+    "Button",
+    "icon"
+  ],
+  "contained": false,
+  "default_preset": "curated",
+  "presets": {
+    "curated": {
+      "description": "Three to six featured launchpad cards with blueprint name, target workflow, short outcome copy, tag row, and primary inspect/use action.",
+      "components": [
+        "Card",
+        "Badge",
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _md:gc2 _xl:gc3 _gap4",
+        "slots": {
+          "item-header": "Blueprint or launchpad name with namespace badge.",
+          "item-outcome": "One concise sentence describing what the builder can ship.",
+          "item-tags": "Small tags for workflow, target framework, or adoption mode.",
+          "item-command": "Optional install or scaffold command snippet.",
+          "item-action": "Inspect, launch, or copy command action."
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gc1 _md:gc2 _xl:gc3 _gap4",
+    "slots": {
+      "item-header": "Featured launchpad identity",
+      "item-outcome": "Builder outcome copy",
+      "item-tags": "Workflow and target tags",
+      "item-command": "Optional command preview",
+      "item-action": "Inspect or launch CTA"
+    }
+  },
+  "visual_brief": "A curated launchpad surface that feels selective and high-signal. Cards should read like strong product recommendations, not a generic content feed. Each item needs a clear use case, a reason to trust it, and an obvious next step. Use compact tags and command previews sparingly so the list remains scannable.",
+  "responsive": {
+    "mobile": "Single-column cards with full-width action rows and command snippets that wrap without overflow.",
+    "tablet": "Two-column card grid with equal-height cards and aligned action rows.",
+    "desktop": "Three-column grid or split featured-plus-secondary layout. Keep the primary featured item visually stronger only when the content warrants it."
+  },
+  "layout_hints": {
+    "curation": "Prefer fewer, better launchpad entries over a dense catalog wall. The pattern should communicate recommendation quality.",
+    "command_preview": "Use command snippets only when they accelerate action. They should be copyable or visually separate from prose.",
+    "metadata": "Tags should explain fit: greenfield, brownfield, hybrid, Next, Vite, registry, dashboard, or SaaS."
+  },
+  "motion": {
+    "micro": "Cards lift subtly and action rows sharpen on hover or focus.",
+    "transitions": "Featured items can reveal with a short stagger when the list first enters view."
+  },
+  "interactions": [
+    "lift-hover",
+    "click-select",
+    "animate-on-mount",
+    "stagger-children",
+    "keyboard-navigation"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Featured launchpads",
+    "keyboard": [
+      "Tab order should move through each card's primary action in reading order."
+    ],
+    "announcements": [
+      "Each launchpad should expose name, outcome, and target workflow without relying on tag color."
+    ],
+    "focus_management": "If the whole card is clickable, still expose one named primary link or button."
+  },
+  "composition": {
+    "FeaturedLaunchpadList": "Grid(responsive) > LaunchpadCard[]",
+    "LaunchpadCard": "Card > [Header(Name + NamespaceBadge) + Outcome + TagRow + CommandPreview? + ActionRow]",
+    "TagRow": "Flex(wrap) > Tag[]"
+  },
+  "io": {
+    "consumes": [
+      "featured-content"
+    ],
+    "produces": [
+      "launchpad-selection"
+    ],
+    "actions": [
+      "inspect-click",
+      "command-copy"
+    ]
+  }
+}

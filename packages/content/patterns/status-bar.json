@@ -1,0 +1,101 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "status-bar",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Status Bar",
+  "description": "Terminal-style status line with real-time indicators, mode display, and clickable sections.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {
+      "terminal": "^1.0.0"
+    },
+    "requires_core": {
+      "components": [
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "icon"
+  ],
+  "default_preset": "bottom",
+  "presets": {
+    "top": {
+      "description": "Status bar at top of screen (title bar style)",
+      "components": [
+        "icon"
+      ],
+      "layout": {
+        "layout": "flex",
+        "atoms": "_flex _aic _jcsb _px2 _mono _textsm _h[24px]",
+        "slots": {
+          "left": "App name, version, mode",
+          "center": "Current file/context",
+          "right": "Time, status indicators"
+        }
+      }
+    },
+    "bottom": {
+      "description": "Status bar at bottom of screen (vim style)",
+      "components": [
+        "icon"
+      ],
+      "layout": {
+        "layout": "flex",
+        "atoms": "_flex _aic _jcsb _px2 _mono _textsm _h[24px] _bgmuted",
+        "slots": {
+          "left": "Mode, file info",
+          "center": "Optional center content",
+          "right": "Position, encoding, status"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "flex",
+    "atoms": "_flex _aic _jcsb _px2 _mono _textsm _h[24px]",
+    "slots": {
+      "left": "Left-aligned items",
+      "center": "Center-aligned items",
+      "right": "Right-aligned items"
+    }
+  },
+  "features": [
+    "realtime-updates",
+    "color-coded-status",
+    "click-actions",
+    "tooltip-hover"
+  ],
+  "visual_brief": "Fixed horizontal bar (top or bottom of viewport) with three alignment zones: left, center, and right. Each zone contains clickable status items rendered in monospace text with optional colored icons. Typical left items: mode indicator (INSERT/NORMAL), file name. Center items: line/column numbers, selection count. Right items: language mode, encoding, line endings, notification count. Background is a solid dark or accent color. Clicking a status item triggers a quick action or popup. The bar is a single row, densely packed with small text.",
+  "responsive": {
+    "mobile": "Bar shows only essential items (mode, file name, line/col). Other items accessible via tap-to-expand. Font size slightly reduced.",
+    "tablet": "Most items visible. Right-side items may overflow to a menu.",
+    "desktop": "Full bar with all items visible in left, center, and right zones."
+  },
+  "layout_hints": {
+    "zone_priority": "Left, center, and right zones should remain stable and purposeful. Users should learn where to look for mode, context, and status without re-reading the bar every time.",
+    "density": "Keep the bar terse and information-rich. Each status item should earn its place and avoid reading like a decorative label cloud.",
+    "overflow_strategy": "On narrow widths, preserve critical mode and file context first and collapse the least essential items."
+  },
+  "motion": {
+    "micro": "Live status changes may brighten or pulse subtly, and clickable items may sharpen on hover or focus.",
+    "transitions": "Realtime updates should feel stable and instrumentation-like rather than flashy or banner-like."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "real-time-updates",
+    "status-pulse"
+  ],
+  "accessibility": {
+    "role": "status",
+    "aria-label": "Status bar",
+    "keyboard": [
+      "Status items that open menus or actions should be reachable in order without disrupting the primary workflow."
+    ],
+    "announcements": [
+      "Mode, position, encoding, and other state changes should be exposed semantically so the bar remains informative beyond visual placement."
+    ]
+  }
+}

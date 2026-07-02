@@ -1,0 +1,103 @@
+{
+  "id": "budget-sankey",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Budget Sankey",
+  "description": "Sankey flow diagram visualizing budget allocation from revenue sources through categories to individual line items with proportional flow widths.",
+  "category": "civic",
+  "tags": ["2026", "civic", "budget", "sankey", "allocation", "flow", "visualization"],
+  "components": ["SankeyCanvas", "FlowLine", "NodeBlock", "FlowLabel", "AmountTooltip"],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full left-to-right Sankey flow diagram showing sources, categories, and line items with proportional flows for complete budget visibility",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _gap-4 _p-6 _w-full _bg-surface _min-h-[500px]"
+      }
+    },
+    "simplified": {
+      "description": "Two-column simplified flow showing only top-level sources to categories, suitable for executive summary and overview dashboards",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _gap-4 _p-6 _w-full _bg-surface _min-h-[360px]"
+      }
+    },
+    "detail": {
+      "description": "Expanded flow with drill-down drawers showing sub-allocations for each line item, enabling exploration of budget details on demand",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _gap-4 _p-6 _w-full _bg-surface _min-h-[600px]"
+      }
+    }
+  },
+  "visual_brief": "A horizontal flow diagram rendered as SVG with three vertical columns of nodes arranged left-to-right. Left column shows revenue sources as vertical bar blocks (e.g. Property Tax, Sales Tax, Federal Grants, Fees) sized proportionally to their contribution amount. Middle column shows spending categories (Education, Infrastructure, Public Safety, Health Services) as similar bar blocks. Right column shows specific line items (Teacher Salaries, Road Repair, Police Equipment) in more granular blocks. Flows between columns are curved bezier paths with widths proportional to the dollar amount they represent. Each flow is colored by its source column (e.g. all flows from Property Tax share a green tint, federal grants are blue). Flows have subtle gradient transitions where they enter each node. Hovering a flow brightens it while dimming others and shows an amount tooltip near cursor (e.g. '$12.4M → Education'). Node labels sit alongside each block showing name and total amount in monospace. Animation: flows fade in sequentially from left to right on initial load.",
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _flex-col _gap-4 _p-6 _w-full _bg-surface _min-h-[500px]",
+    "slots": {
+      "sankey-canvas": "Main SVG canvas containing all nodes and flow lines. Responsive to container width. Uses viewBox for scaling.",
+      "node-block": "Vertical rectangle representing a source, category, or line item. Height proportional to total flow volume. Positioned in column layout. Hover highlights all connected flows.",
+      "flow-line": "Curved bezier path connecting source node to target node. Width proportional to flow amount. Opacity 60% default, 90% on hover, 20% on other-flow hover.",
+      "flow-label": "Amount label positioned at the midpoint of each major flow showing the dollar value. Visible only for significant flows (>5% of total).",
+      "amount-tooltip": "Floating tooltip that follows cursor showing precise flow details: source → target and exact amount.",
+      "column-header": "Column labels at the top of each vertical node group (Sources, Categories, Line Items)."
+    }
+  },
+  "responsive": {
+    "mobile": "Simplified to 2-column view (source to category only). Labels wrap below nodes. Tooltip becomes bottom sheet. Scrollable if labels overflow.",
+    "tablet": "Full 3-column layout with slightly reduced label typography. Touch tap reveals tooltip.",
+    "desktop": "Full flow layout with hover tooltips, highlighted flow interactions, and keyboard navigation through nodes."
+  },
+  "layout_hints": {
+    "flow_priority": "The user should understand how money moves before reading every label. Preserve a clear left-to-right narrative from revenue to categories to line items.",
+    "node_balance": "Node labels and totals should support the flow structure without crowding the paths. Let the widths and positions carry the primary meaning.",
+    "mobile_fallback": "Two-column mode should still feel like a real budget flow explanation, not a simplified infographic detached from the full logic."
+  },
+  "layout_hints": {
+    "flow_priority": "The user should understand how money moves before reading every label. Preserve a clear left-to-right narrative from revenue to categories to line items.",
+    "node_balance": "Node labels and totals should support the flow structure without crowding the paths. Let the widths and positions carry the primary meaning.",
+    "mobile_fallback": "Two-column mode should still feel like a real budget flow explanation, not a simplified infographic detached from the full logic."
+  },
+  "motion": {
+    "micro": {
+      "flow-hover": "opacity transition 150ms ease-out + dim siblings",
+      "node-hover": "stroke highlight + connected-flow brighten 200ms ease-out"
+    },
+    "transitions": {
+      "initial-load": "flows fade-in staggered left-to-right 800ms total with ease-out",
+      "drill-down": "node expand + child flows animate in 400ms spring"
+    },
+    "ambient": {
+      "flow-active": "subtle gradient animation along path 4s linear infinite suggesting money movement"
+    }
+  },
+  "interactions": [
+    "hover-tooltip",
+    "animate-on-mount",
+    "click-select"
+  ],
+  "composition": {
+    "BudgetSankey": "Root(d-section, stack) > [ColumnHeaders + SankeyCanvas]",
+    "SankeyCanvas": "SVG(viewBox) > [NodeBlock* + FlowLine* + FlowLabel*]",
+    "NodeBlock": "Rect(positioned, sized-by-total) + Label(alongside)",
+    "FlowLine": "Path(bezier-curve, width-by-amount, color-by-source)",
+    "AmountTooltip": "Floating(follows-cursor, d-annotation, backdrop-blur)"
+  },
+  "accessibility": {
+    "role": "figure",
+    "aria-label": "Budget allocation flow diagram",
+    "announcements": [
+      "{source} contributes {amount} to {category}",
+      "Total budget: {total}",
+      "{node} selected with {count} connections"
+    ],
+    "keyboard": [
+      "Tab: cycle through nodes",
+      "Arrow keys: navigate column and between columns",
+      "Enter: drill-down into focused node",
+      "Escape: close drill-down view"
+    ]
+  }
+}

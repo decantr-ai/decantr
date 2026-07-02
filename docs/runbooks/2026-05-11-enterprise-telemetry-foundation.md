@@ -1,6 +1,9 @@
 # Enterprise Telemetry Foundation
 
 Date: 2026-05-11
+Status: Historical / retired in Decantr 3.8
+
+Decantr 3.8 removes hosted registry analytics, PostHog dashboard workflows, Supabase telemetry rollups, billing funnels, and admin telemetry pages from the active product. This runbook remains as historical context for closing old resources.
 
 This batch hardens Decantr product telemetry without turning on the paywall. Private Registry remains Enterprise-gated and manually provisioned. Billing launch flags must stay off:
 

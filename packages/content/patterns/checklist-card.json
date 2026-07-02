@@ -1,0 +1,96 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "checklist-card",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Checklist Card",
+  "description": "Progress-oriented checklist card for onboarding, compliance, and readiness workflows.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Card",
+        "Badge",
+        "Button",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Card",
+    "Badge",
+    "Button",
+    "icon"
+  ],
+  "default_preset": "onboarding",
+  "presets": {
+    "onboarding": {
+      "description": "Checklist card with progress bar, prioritized tasks, and one clear next-step action.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4 _p4",
+        "slots": {
+          "header": "Title, completion summary, and progress indicator",
+          "checklist-item": "Single task row with state, label, and helper text",
+          "footer-action": "Primary next-step action or review button"
+        }
+      }
+    },
+    "compact": {
+      "description": "Shorter checklist summary for dashboard side panels.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap3 _p3",
+        "slots": {
+          "header": "Title and compact progress summary",
+          "checklist-item": "Minimal task row"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap4 _p4",
+    "slots": {
+      "header": "Title and progress summary",
+      "checklist-item": "Task row",
+      "footer-action": "Primary action"
+    }
+  },
+  "visual_brief": "Single contained card that makes progress obvious and next steps clear. The tone should feel practical and reassuring, with a visible completion signal, a tidy list of tasks, and a clear sense of what's blocking readiness. This is especially important for compliance and onboarding contexts where the card should reduce cognitive load rather than add to it.",
+  "responsive": {
+    "mobile": "Full-width stacked card. Task rows wrap helper text underneath cleanly and CTA remains easy to reach.",
+    "tablet": "Comfortable card width with visible progress bar and 4-6 checklist items before scrolling becomes necessary.",
+    "desktop": "Contained summary card that can sit above tables or beside operational content without overpowering the page."
+  },
+  "layout_hints": {
+    "progress_priority": "Lead with the progress summary and next blocking item, then the supporting checklist rows.",
+    "task_state": "Each row should make completion state obvious through icon, label, and text, not icon color alone.",
+    "contextual_role": "This pattern is a decision aid. Keep it compact and actionable rather than turning it into a full workflow editor."
+  },
+  "motion": {
+    "micro": "Completed items may fade into a calmer state, and progress bars may animate in gently on load.",
+    "transitions": "Checklist completion should feel affirmative but restrained, especially in enterprise and compliance contexts."
+  },
+  "interactions": [
+    "click-select",
+    "animate-on-mount",
+    "stagger-children"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Checklist progress",
+    "keyboard": [
+      "Tab through checklist actions and any expandable items in top-to-bottom order."
+    ],
+    "announcements": [
+      "Completion state and progress should be announced with task labels so users understand what remains."
+    ]
+  },
+  "composition": {
+    "ChecklistCard": "Card(d-surface, progress) > [Header(progress summary) + ChecklistItem[] + FooterAction?(d-interactive)]",
+    "ChecklistItem": "Row(d-data-row|minimal) > [StateIcon + TaskLabel + HelperText? + Action?]"
+  }
+}

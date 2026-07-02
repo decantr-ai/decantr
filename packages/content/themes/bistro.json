@@ -1,0 +1,422 @@
+{
+  "$schema": "https://decantr.ai/schemas/theme.v1.json",
+  "id": "bistro",
+  "version": "1.0.0",
+  "name": "Bistro",
+  "description": "Restaurant and hospitality theme with warm terracotta and cream palette. Handwritten accents, menu-card styling, and chalkboard headers for inviting artisanal dining interfaces.",
+  "tags": [
+    "light",
+    "restaurant",
+    "hospitality",
+    "warm",
+    "artisanal",
+    "food"
+  ],
+  "personality": "warm + artisanal + handwritten-accents + inviting",
+  "seed": {
+    "primary": "#C2410C",
+    "secondary": "#7C2D12",
+    "accent": "#EA580C",
+    "background": "#FFF7ED"
+  },
+  "palette": {
+    "background": {
+      "light": "#FFF7ED"
+    },
+    "surface": {
+      "light": "#FFFFFF"
+    },
+    "surface-raised": {
+      "light": "#FFEDD5"
+    },
+    "border": {
+      "light": "#FED7AA"
+    },
+    "text": {
+      "light": "#431407"
+    },
+    "text-muted": {
+      "light": "#9A3412"
+    },
+    "primary": {
+      "light": "#C2410C"
+    },
+    "primary-hover": {
+      "light": "#9A3412"
+    },
+    "secondary": {
+      "light": "#7C2D12"
+    },
+    "secondary-hover": {
+      "light": "#431407"
+    },
+    "accent": {
+      "light": "#EA580C"
+    },
+    "accent-hover": {
+      "light": "#C2410C"
+    }
+  },
+  "modes": [
+    "light"
+  ],
+  "shapes": [
+    "rounded"
+  ],
+  "cvd_support": [],
+  "tokens": {
+    "base": {
+      "success": "#15803D",
+      "danger": "#B91C1C",
+      "warning": "#C2410C",
+      "info": "#0369A1"
+    },
+    "domain": {
+      "order-pending": "warning",
+      "order-preparing": "info",
+      "order-ready": "success",
+      "order-served": "text-muted",
+      "order-cancelled": "danger",
+      "table-available": "success",
+      "table-seated": "warning",
+      "table-reserved": "info"
+    }
+  },
+  "typography": {
+    "scale": "modular",
+    "heading_weight": 700,
+    "body_weight": 400,
+    "display": "'Playfair Display', 'Georgia', serif",
+    "body": "'Lato', ui-sans-serif, sans-serif"
+  },
+  "decantr_compat": ">=2.0.0",
+  "source": "core",
+  "decorators": {
+    "bistro-menu": "Menu-card styling with warm cream background and artisanal dividers. Dish listing aesthetic.",
+    "bistro-chalkboard": "Chalkboard-style headers with dark slate background and chalk-white handwritten titles.",
+    "bistro-handwritten": "Handwritten accent text using Caveat or Kalam font for warmth and personality.",
+    "bistro-tile": "Ceramic tile patterns using terracotta and cream checkered or hexagonal backgrounds.",
+    "bistro-warm-card": "Warm cream cards with soft orange-tinted shadows and rounded corners.",
+    "bistro-daily": "Daily special callouts with chalkboard ribbon and handwritten accent text.",
+    "bistro-stamp": "Vintage stamp badges in terracotta with distressed border. Specialty item marks."
+  },
+  "spatial": {
+    "density_bias": 0,
+    "content_gap_shift": 0,
+    "section_padding": "4rem",
+    "card_wrapping": "warm",
+    "surface_override": null
+  },
+  "motion": {
+    "preference": "subtle",
+    "reduce_motion": true,
+    "entrance": "bistro-warm-in",
+    "micro": "smooth",
+    "timing": "cubic-bezier(0.34, 1.56, 0.64, 1)",
+    "durations": {
+      "hover": "180ms",
+      "entrance": "300ms",
+      "modal": "250ms",
+      "page": "300ms",
+      "instant": "80ms",
+      "fast": "150ms",
+      "base": "250ms",
+      "slow": "400ms",
+      "slower": "600ms",
+      "stagger": "60ms"
+    },
+    "easings": {
+      "ease": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "easeOut": "cubic-bezier(0, 0, 0.2, 1)",
+      "easeIn": "cubic-bezier(0.4, 0, 1, 1)",
+      "spring": "cubic-bezier(0.34, 1.56, 0.64, 1)"
+    }
+  },
+  "effects": {
+    "enabled": true,
+    "intensity": "medium",
+    "type_mapping": {
+      "card": [
+        "bistro-warm-card"
+      ],
+      "menu": [
+        "bistro-menu"
+      ],
+      "heading": [
+        "bistro-chalkboard"
+      ],
+      "accent": [
+        "bistro-handwritten"
+      ],
+      "badge": [
+        "bistro-stamp"
+      ]
+    },
+    "optional_effects": {
+      "tile": false,
+      "daily": true
+    },
+    "component_fallback": {
+      "Card": "card",
+      "Menu": "menu",
+      "Heading": "heading",
+      "Badge": "badge"
+    }
+  },
+  "compositions": {
+    "menu-display": {
+      "description": "Restaurant menu with chalkboard section headers and handwritten accents.",
+      "shell": "top-nav-main",
+      "effects": [
+        "bistro-menu",
+        "bistro-chalkboard",
+        "bistro-handwritten"
+      ]
+    },
+    "pos": {
+      "description": "Point-of-sale interface with warm cards, order tracking, and table management.",
+      "shell": "sidebar-main",
+      "effects": [
+        "bistro-warm-card",
+        "bistro-stamp"
+      ]
+    },
+    "marketing": {
+      "description": "Restaurant marketing page with inviting hero, daily specials, and handwritten charm.",
+      "shell": "top-nav-footer",
+      "effects": [
+        "bistro-chalkboard",
+        "bistro-handwritten",
+        "bistro-daily"
+      ]
+    },
+    "reservations": {
+      "description": "Reservation booking interface with warm card aesthetic and friendly accents.",
+      "shell": "centered",
+      "effects": [
+        "bistro-warm-card",
+        "bistro-handwritten"
+      ]
+    }
+  },
+  "radius": {
+    "philosophy": "rounded",
+    "base": 12
+  },
+  "pattern_preferences": {
+    "prefer": [
+      "menu-display",
+      "table-map",
+      "order-board",
+      "reservation-calendar",
+      "daily-special"
+    ],
+    "avoid": [],
+    "default_presets": {
+      "menu-display": "cards",
+      "order-board": "board"
+    }
+  },
+  "shell": {
+    "preferred": [
+      "top-nav-main",
+      "sidebar-main",
+      "centered"
+    ],
+    "avoid": [
+      "chat-portal"
+    ],
+    "nav_style": "warm",
+    "default_nav_state": "expanded",
+    "root": "bistro-warm-card",
+    "nav": "bistro-warm-card",
+    "header": "bistro-chalkboard",
+    "navLabel": "",
+    "brand": "bistro-handwritten",
+    "dimensions": null
+  },
+  "decorator_definitions": {
+    "bistro-menu": {
+      "description": "Menu-card styling with warm cream background and artisanal dividers. Dish listing aesthetic.",
+      "intent": "Use for menu displays and dish listings. Evokes printed bistro menus with warm, inviting presentation.",
+      "suggested_properties": {
+        "background": "#FFF7ED",
+        "border": "1px solid #FED7AA",
+        "border-radius": "8px",
+        "padding": "24px",
+        "font-family": "Georgia, 'Cormorant Garamond', serif"
+      },
+      "pairs_with": [
+        "bistro-chalkboard",
+        "bistro-handwritten",
+        "bistro-daily"
+      ],
+      "usage": [
+        "Menu displays",
+        "Dish listings",
+        "Wine lists",
+        "Prix-fixe menus"
+      ]
+    },
+    "bistro-chalkboard": {
+      "description": "Chalkboard-style headers with dark slate background and chalk-white handwritten titles.",
+      "intent": "Use for section headers and daily specials. Evokes the authentic sidewalk chalkboard of neighborhood bistros.",
+      "suggested_properties": {
+        "background": "#1C1917",
+        "color": "#FAF7F2",
+        "font-family": "'Caveat', 'Kalam', cursive",
+        "padding": "16px 24px",
+        "border-radius": "4px",
+        "font-size": "1.75rem",
+        "text-shadow": "1px 1px 0 rgba(255, 255, 255, 0.1)"
+      },
+      "pairs_with": [
+        "bistro-menu",
+        "bistro-handwritten",
+        "bistro-daily"
+      ],
+      "usage": [
+        "Menu section headers",
+        "Daily special boards",
+        "Specials signage",
+        "Announcement banners"
+      ]
+    },
+    "bistro-handwritten": {
+      "description": "Handwritten accent text using Caveat or Kalam font for warmth and personality.",
+      "intent": "Use for accent text, taglines, and personal touches. The handwritten script creates warmth and hospitality.",
+      "suggested_properties": {
+        "font-family": "'Caveat', 'Kalam', 'Homemade Apple', cursive",
+        "font-weight": "400",
+        "color": "#C2410C",
+        "font-size": "1.25rem",
+        "line-height": "1.4"
+      },
+      "pairs_with": [
+        "bistro-menu",
+        "bistro-chalkboard",
+        "bistro-warm-card"
+      ],
+      "usage": [
+        "Accent taglines",
+        "Chef notes",
+        "Personal greetings",
+        "Callout text"
+      ]
+    },
+    "bistro-tile": {
+      "description": "Ceramic tile patterns using terracotta and cream checkered or hexagonal backgrounds.",
+      "intent": "Use sparingly for backgrounds and decorative borders. Evokes Mediterranean trattoria tile work.",
+      "suggested_properties": {
+        "background-image": "repeating-conic-gradient(#C2410C 0% 25%, #FFF7ED 0% 50%)",
+        "background-size": "40px 40px",
+        "opacity": "0.15"
+      },
+      "pairs_with": [
+        "bistro-warm-card",
+        "bistro-menu"
+      ],
+      "usage": [
+        "Decorative backgrounds",
+        "Hero section patterns",
+        "Border treatments"
+      ]
+    },
+    "bistro-warm-card": {
+      "description": "Warm cream cards with soft orange-tinted shadows and rounded corners.",
+      "intent": "Use for content containers. The warm cream and soft shadow create inviting, hospitable feel.",
+      "suggested_properties": {
+        "background": "#FFFFFF",
+        "border": "1px solid #FED7AA",
+        "border-radius": "12px",
+        "padding": "20px",
+        "box-shadow": "0 4px 12px rgba(194, 65, 12, 0.08)"
+      },
+      "pairs_with": [
+        "bistro-handwritten",
+        "bistro-menu",
+        "bistro-stamp"
+      ],
+      "usage": [
+        "Dish cards",
+        "Reservation cards",
+        "Content containers",
+        "Order tickets"
+      ]
+    },
+    "bistro-daily": {
+      "description": "Daily special callouts with chalkboard ribbon and handwritten accent text.",
+      "intent": "Use for featured items and time-limited specials. Creates urgency and personal chef recommendation.",
+      "suggested_properties": {
+        "background": "#1C1917",
+        "color": "#FDE68A",
+        "font-family": "'Caveat', cursive",
+        "padding": "8px 16px",
+        "border-radius": "4px 16px 4px 16px",
+        "font-size": "1.25rem",
+        "display": "inline-block",
+        "transform": "rotate(-2deg)"
+      },
+      "pairs_with": [
+        "bistro-chalkboard",
+        "bistro-menu",
+        "bistro-handwritten"
+      ],
+      "usage": [
+        "Daily specials",
+        "Featured dishes",
+        "Limited-time offers",
+        "Chef recommendations"
+      ]
+    },
+    "bistro-stamp": {
+      "description": "Vintage stamp badges in terracotta with distressed border. Specialty item marks.",
+      "intent": "Use for specialty markers like vegetarian, spicy, seasonal. Vintage stamp aesthetic adds character.",
+      "suggested_properties": {
+        "border": "2px solid #C2410C",
+        "color": "#C2410C",
+        "padding": "4px 10px",
+        "font-family": "Georgia, serif",
+        "font-size": "11px",
+        "font-weight": "700",
+        "text-transform": "uppercase",
+        "letter-spacing": "0.1em",
+        "transform": "rotate(-3deg)",
+        "display": "inline-block",
+        "background": "#FFF7ED"
+      },
+      "pairs_with": [
+        "bistro-menu",
+        "bistro-warm-card"
+      ],
+      "usage": [
+        "Dietary markers",
+        "Spice level badges",
+        "Seasonal indicators",
+        "Specialty labels"
+      ]
+    }
+  },
+  "elevation": {
+    "1": {
+      "light": "0 1px 2px rgba(0,0,0,0.05)",
+      "dark": "0 1px 2px rgba(0,0,0,0.30)"
+    },
+    "2": {
+      "light": "0 2px 6px rgba(0,0,0,0.07)",
+      "dark": "0 2px 6px rgba(0,0,0,0.40)"
+    },
+    "3": {
+      "light": "0 6px 16px rgba(0,0,0,0.09)",
+      "dark": "0 6px 16px rgba(0,0,0,0.45)"
+    },
+    "4": {
+      "light": "0 12px 32px rgba(0,0,0,0.12)",
+      "dark": "0 12px 32px rgba(0,0,0,0.50)"
+    },
+    "5": {
+      "light": "0 24px 64px rgba(0,0,0,0.16)",
+      "dark": "0 24px 64px rgba(0,0,0,0.55)"
+    }
+  }
+}

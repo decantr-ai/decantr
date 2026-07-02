@@ -1,0 +1,79 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "recipefork-auth",
+  "role": "gateway",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipefork Auth",
+  "description": "Recipefork's shared-shell authentication entry surface. The auth card lives inside the product navbar shell rather than switching to a detached centered-only auth layout.",
+  "tags": [
+    "auth",
+    "login",
+    "recipes",
+    "gateway",
+    "2026"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "recipefork auth page",
+        "shared shell login",
+        "product nav auth"
+      ],
+      "secondary": [
+        "sign in page",
+        "login card"
+      ],
+      "negative": [
+        "mfa flow matrix",
+        "full auth wizard"
+      ]
+    },
+    "implies": [
+      "auth"
+    ],
+    "weight": 0.9,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "login",
+      "patterns": [
+        {
+          "pattern": "auth-form",
+          "preset": "login",
+          "as": "form"
+        }
+      ],
+      "default_layout": [
+        "form"
+      ],
+      "shell": "recipefork-top-nav"
+    }
+  ],
+  "page_briefs": {
+    "login": "Recipefork's auth entry page presented inside the persistent product shell. The primary experience is a login/sign-up card with OAuth and email flows, but the page should still feel like part of the main app."
+  },
+  "features": [
+    "auth",
+    "oauth"
+  ],
+  "dependencies": {
+    "patterns": {
+      "auth-form": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "recipefork"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ],
+    "shapes": [
+      "rounded"
+    ]
+  }
+}

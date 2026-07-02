@@ -1,0 +1,52 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "recipefork-recipe-mode-switch",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipefork Recipe Mode Switch",
+  "description": "Two-mode authoring switch for choosing between Simple Mode and Chef Mode before starting or editing a recipe. Designed for Recipefork's dual authoring workflow.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Tabs",
+        "Badge",
+        "Button",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Tabs",
+    "Badge",
+    "Button",
+    "icon"
+  ],
+  "default_preset": "split",
+  "presets": {
+    "split": {
+      "description": "Two equal-width tabs rendered as rich tiles with title, icon, and supporting description.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "tabs": "Two-column tab list",
+          "simple-tile": "Simple Mode summary tile",
+          "chef-tile": "Chef Mode summary tile",
+          "content": "Selected mode content below"
+        }
+      }
+    }
+  },
+  "visual_brief": "A card-contained two-mode switch where each option behaves like a tab tile rather than a plain text tab. Simple Mode uses a gentle utility sparkle icon with copy about fast creation. Chef Mode uses a chef-hat icon plus an 'Advanced' badge and copy about measurements, hierarchy, and deep editing. Active mode feels like a selected product tile.",
+  "responsive": {
+    "mobile": "Tiles stack comfortably inside a two-column tab rail with enough vertical padding to keep the mode distinction obvious.",
+    "tablet": "Equal-width mode tiles with generous description text.",
+    "desktop": "Wide card surface with supporting mode detail visible at a glance before the authoring form begins."
+  },
+  "composition": {
+    "RecipeModeSwitch": "Container(d-card, flex-col) > [Tabs(d-control) > [SimpleModeTile + ChefModeTile] + SelectedModeContent]"
+  }
+}

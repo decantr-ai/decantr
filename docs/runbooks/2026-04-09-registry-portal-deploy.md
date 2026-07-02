@@ -1,7 +1,9 @@
 # Registry Portal Deploy Runbook
 
 Date: 2026-04-09
-Status: Active
+Status: Historical / retired in Decantr 3.8
+
+Decantr 3.8 removes the public `registry.decantr.ai` portal and deletes `apps/registry` from product delivery. This runbook is retained only as historical deployment context. Do not use it for current releases.
 
 This runbook makes the `registry.decantr.ai` deploy path explicit in the same way the Fly-backed API path was made explicit for `api.decantr.ai`.
 

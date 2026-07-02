@@ -1,0 +1,63 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "budget-planner",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Budget Planner",
+  "description": "Budget planning and tracking with budget vs actual comparisons, category charts, and compact spending data tables.",
+  "tags": ["finance", "budget", "planning", "comparison", "spending", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["budget planner", "budget tracker", "budget management", "spending budget"],
+      "secondary": ["budget vs actual", "expense budget", "category budget", "monthly budget"],
+      "negative": ["ecommerce", "admin", "social"]
+    },
+    "implies": ["analytics"],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "budgets",
+      "patterns": [
+        {
+          "pattern": "chart-grid",
+          "preset": "standard",
+          "as": "budget-charts"
+        },
+        {
+          "pattern": "comparison-table",
+          "preset": "standard",
+          "as": "budget-vs-actual"
+        },
+        {
+          "pattern": "data-table",
+          "preset": "compact",
+          "as": "category-breakdown"
+        }
+      ],
+      "default_layout": ["budget-charts", "budget-vs-actual", "category-breakdown"],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "budgets": "Chart grid with monthly budget progress bar chart, spending by category donut, and income vs expense trend line. Comparison table showing each budget category with budgeted amount, actual spend, variance (green under/red over), and progress bar. Compact data table at bottom with individual transactions grouped by category for drill-down."
+  },
+  "features": ["analytics-state", "data-export"],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area"
+  },
+  "suggested_theme": {
+    "ids": ["carbon", "clean"],
+    "modes": ["dark", "auto"]
+  },
+  "dependencies": {
+    "patterns": {
+      "chart-grid": ">=1.0.0",
+      "comparison-table": ">=1.0.0",
+      "data-table": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

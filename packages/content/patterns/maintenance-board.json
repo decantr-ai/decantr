@@ -1,0 +1,127 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "maintenance-board",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Maintenance Board",
+  "description": "Kanban-style maintenance ticket board with drag-and-drop between columns: new, assigned, in-progress, pending-parts, completed, closed.",
+  "dependencies": {
+    "patterns": {
+      "maintenance-ticket": "^1.0.0"
+    },
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "icon",
+        "Badge",
+        "Select"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "icon",
+    "Badge",
+    "Select"
+  ],
+  "default_preset": "board",
+  "presets": {
+    "board": {
+      "description": "Full Kanban board with drag-and-drop columns for each maintenance ticket status",
+      "components": [
+        "Button",
+        "icon",
+        "Badge",
+        "Select"
+      ],
+      "layout": {
+        "layout": "horizontal",
+        "atoms": "_flex _gap4 _overflow[auto] _pb4",
+        "slots": {
+          "header": "Title, filters, view toggle",
+          "filters": "Property, priority, category, date range",
+          "columns": "Kanban columns with ticket cards",
+          "summary": "Open count, avg resolution time"
+        }
+      }
+    },
+    "list": {
+      "description": "Flat sortable list view of maintenance tickets with status badges and priority indicators",
+      "components": [
+        "Button",
+        "icon",
+        "Badge"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap2",
+        "slots": {
+          "header": "Title and controls",
+          "table": "Ticket table"
+        }
+      }
+    },
+    "mini": {
+      "description": "Compact dashboard widget showing column counts and most recent tickets at a glance",
+      "components": [
+        "Badge"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap3 _p4",
+        "slots": {
+          "header": "Title",
+          "counts": "Column counts",
+          "recent": "Recent tickets"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "horizontal",
+    "atoms": "_flex _gap4 _overflow[auto]",
+    "slots": {
+      "header": "Title and controls",
+      "columns": "Kanban columns"
+    }
+  },
+  "visual_brief": "Kanban board with horizontal columns for each maintenance status: New, Assigned, In Progress, Pending Parts, Completed, Closed. Each column has a header with the status name and a ticket count badge. Ticket cards within columns show a title, priority badge (urgent/high/normal/low), property name, and assignee avatar. Cards are draggable between columns. A header bar above the board contains the title, a search input, and an 'Add Ticket' button. The list preset displays tickets as a flat filtered list. Mini preset shows a compact status summary with counts per column.",
+  "responsive": {
+    "mobile": "Columns displayed one at a time with horizontal swipe or a dropdown status selector. Cards take full width. Drag-and-drop replaced by status-change action buttons.",
+    "tablet": "Three visible columns with horizontal scroll for the rest. Cards at comfortable size for touch.",
+    "desktop": "All columns visible in horizontal scroll or fixed layout. Drag-and-drop fully functional. Cards show all metadata."
+  },
+  "layout_hints": {
+    "workflow_priority": "Status columns are the primary structure. Search, filters, and summary counts support triage but should never compete with the board itself.",
+    "card_signal": "Each ticket card should make priority, property, and current owner obvious at a glance so the board remains operationally useful under load.",
+    "mobile_translation": "When drag-and-drop collapses on mobile, preserve the same workflow semantics through explicit status actions instead of faking a tiny board."
+  },
+  "motion": {
+    "micro": "Dragged cards, hovered columns, and active filters may sharpen or lift slightly to confirm manipulation.",
+    "transitions": "Column moves and status changes should feel direct and workmanlike, reinforcing board continuity rather than playful motion."
+  },
+  "interactions": [
+    "drag-reorder",
+    "click-select",
+    "animate-on-mount"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Maintenance board",
+    "keyboard": [
+      "Column navigation, ticket focus, and non-drag status changes should remain operable by keyboard."
+    ],
+    "announcements": [
+      "Ticket title, priority, property, and status should be exposed semantically so the board remains understandable without color-only column meaning."
+    ]
+  },
+  "composition": {
+    "MaintenanceBoard": "Container(d-section, flex-col) > [Header + FilterBar(d-control) + KanbanColumns]",
+    "Header": "Row(d-control, space-between) > [Title + SearchInput(d-control) + AddTicketButton(d-interactive)]",
+    "KanbanColumns": "Row(d-data, horizontal-scroll) > Column[]",
+    "Column": "Panel(d-surface, flex-col) > [ColumnHeader > [StatusName + CountBadge(d-annotation)] + TicketCard(d-surface, draggable)[]]",
+    "TicketCard": "Card(d-surface, hoverable) > [Title + PriorityBadge(d-annotation) + PropertyName(text-muted) + AssigneeAvatar?]"
+  }
+}

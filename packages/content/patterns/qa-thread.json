@@ -1,0 +1,109 @@
+{
+  "id": "qa-thread",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Q&A Thread",
+  "description": "Threaded question and answer conversation attached to documents with status tracking, assignments, document attachments, and resolution workflow.",
+  "category": "document",
+  "tags": ["2026", "document", "qa", "thread", "collaboration", "review", "annotations"],
+  "components": ["QuestionCard", "AnswerCard", "AssigneeAvatar", "StatusChip", "ResolveButton", "AttachmentChip"],
+  "default_preset": "sidebar",
+  "presets": {
+    "sidebar": {
+      "description": "Side panel view of Q&A threads anchored to document viewer, showing pending and resolved questions with inline answer composition",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _gap-4 _p-4 _w-full _bg-surface _border-l _overflow-y-auto"
+      }
+    },
+    "inline": {
+      "description": "Expandable inline threads attached directly to document highlights, collapsing to single indicators when not focused for minimal visual intrusion",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _gap-2 _w-full"
+      }
+    },
+    "full": {
+      "description": "Dedicated full-page Q&A view with filtering, sorting, and search across all threads for dedicated review sessions and audits",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _gap-6 _p-6 _w-full _max-w-4xl _mx-auto"
+      }
+    }
+  },
+  "visual_brief": "A vertical stack of question thread cards. Each question card (d-surface with 16px padding, 12px border radius) has an asker avatar (32px circle) with name and timestamp at top, followed by the question text in regular 14px type. Attachment chips appear below the question as small pills showing the document excerpt or page reference (e.g. 'Page 3: Revenue recognition...'), each with a link icon and text-ellipsis. Status chip sits top-right: pending (amber pulse), answered (blue check), resolved (green check with strike-through treatment). Answer cards nest indented 24px below the question with a left border accent, each showing answerer avatar, answer text, timestamp, and optional attachment chips. Resolve button appears on unresolved threads as a primary button at the bottom of the thread. Assignee avatars stack as small 24px overlapping circles showing who is assigned. Hover reveals inline reply composer.",
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _flex-col _gap-4 _p-4 _w-full _bg-surface _border-l _overflow-y-auto",
+    "slots": {
+      "question-card": "Top-level thread card (d-surface) containing the original question, asker metadata, status, assignees, attachments, and nested answers.",
+      "asker-info": "Header row with asker avatar (32px circle), asker name, relative timestamp (e.g. '2 hours ago'), and optional role label.",
+      "question-text": "Main question body text in regular 14px type. Supports rich text with inline code, bold, italic.",
+      "attachment-chip": "Pill-shaped chip referencing a document location or file. Shows link icon, page/section reference, and short excerpt with ellipsis. Clickable to jump to source.",
+      "status-chip": "Pill at top-right of question card indicating thread state: pending, answered, resolved. Color-coded with icon.",
+      "assignee-avatars": "Stacked overlapping avatars (24px) showing users assigned to respond to this question.",
+      "answer-card": "Nested answer card (d-annotation) indented below question with left border accent, containing answerer avatar, answer text, timestamp.",
+      "resolve-button": "Primary action button at bottom of unresolved thread allowing authorized users to mark resolved.",
+      "reply-composer": "Inline text input with submit button revealed on hover or expand."
+    }
+  },
+  "responsive": {
+    "mobile": "Sidebar becomes bottom sheet. Answer cards reduce indent to 16px. Attachment chips wrap vertically. Assignee avatars collapse to count badge.",
+    "tablet": "Sidebar at 320px width. Standard layout with all elements visible.",
+    "desktop": "Full sidebar at 380px or dedicated full-page layout. Keyboard shortcuts for navigation and reply."
+  },
+  "layout_hints": {
+    "thread_priority": "Question, answer state, and assignee ownership should be visible before attachment or reply controls complicate the thread.",
+    "nesting_role": "Nested answers should feel structurally attached to the parent question so the conversation remains legible under review pressure.",
+    "sidebar_behavior": "In side-panel mode, the thread should feel anchored to the reviewed document rather than like a detached chat pane."
+  },
+  "layout_hints": {
+    "thread_priority": "Question, answer state, and assignee ownership should be visible before attachment or reply controls complicate the thread.",
+    "nesting_role": "Nested answers should feel structurally attached to the parent question so the conversation remains legible under review pressure.",
+    "sidebar_behavior": "In side-panel mode, the thread should feel anchored to the reviewed document rather than like a detached chat pane."
+  },
+  "motion": {
+    "micro": {
+      "status-change": "chip color transition 200ms ease-out + check-icon draw",
+      "resolve-button-hover": "scale(1.02) + shadow-lift 150ms"
+    },
+    "transitions": {
+      "thread-resolve": "fade to resolved state + strikethrough animation 400ms ease-out",
+      "answer-add": "slide-down + fade 250ms spring"
+    },
+    "ambient": {
+      "pending-pulse": "status chip amber pulse 2s ease-in-out infinite on pending threads"
+    }
+  },
+  "interactions": [
+    "animate-on-mount",
+    "stagger-children",
+    "real-time-updates",
+    "hover-reveal"
+  ],
+  "composition": {
+    "QAThread": "Root(d-section, stack) > QuestionCard*(d-surface)",
+    "QuestionCard": "Card > [AskerInfo + StatusChip + QuestionText + AttachmentChip* + AssigneeAvatars + AnswerCard* + ResolveButton? + ReplyComposer?]",
+    "AnswerCard": "Nested(d-annotation, indent) > [AnswererInfo + AnswerText + AttachmentChip*]",
+    "AssigneeAvatars": "Stack(overlap) > AssigneeAvatar*(d-presence)"
+  },
+  "accessibility": {
+    "role": "feed",
+    "aria-label": "Document Q&A thread",
+    "announcements": [
+      "Question from {asker}: {preview}",
+      "Answer added by {answerer}",
+      "Thread resolved by {user}",
+      "Assigned to {assignees}"
+    ],
+    "keyboard": [
+      "Tab: cycle through threads",
+      "Enter: expand/collapse thread",
+      "R: reply to focused thread",
+      "Shift+R: mark resolved",
+      "A: assign thread",
+      "J/K: next/previous thread"
+    ]
+  }
+}

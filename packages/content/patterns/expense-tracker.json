@@ -1,0 +1,130 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "expense-tracker",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Expense Tracker",
+  "description": "Property expense management with category breakdown, receipt upload, recurring expenses, and budget tracking.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "icon",
+        "Badge",
+        "Input",
+        "Select"
+      ],
+      "charts": [
+        "PieChart"
+      ]
+    }
+  },
+  "components": [
+    "Button",
+    "icon",
+    "Badge",
+    "Input",
+    "Select"
+  ],
+  "default_preset": "list",
+  "presets": {
+    "list": {
+      "description": "Filterable expense list view with category summary bar, data table, and date range controls",
+      "components": [
+        "Button",
+        "icon",
+        "Badge",
+        "Input",
+        "Select"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "header": "Title, add expense, export",
+          "filters": "Property, category, date range, vendor",
+          "summary": "Category totals chart",
+          "table": "Expense records"
+        }
+      }
+    },
+    "create": {
+      "description": "New expense entry form with category select, amount input, description, and receipt upload",
+      "components": [
+        "Button",
+        "icon",
+        "Input",
+        "Select",
+        "Textarea"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4 _p6",
+        "slots": {
+          "form": "Expense form fields",
+          "receipt": "Receipt upload",
+          "actions": "Save/cancel"
+        }
+      }
+    },
+    "summary": {
+      "description": "Category summary widget with pie chart breakdown and per-category running totals",
+      "components": [],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4 _p4",
+        "slots": {
+          "chart": "Category pie chart",
+          "legend": "Category breakdown"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap4",
+    "slots": {
+      "header": "Title and controls",
+      "filters": "Filters",
+      "summary": "Category totals",
+      "table": "Expense records"
+    }
+  },
+  "visual_brief": "Expense management interface with a header row containing title, date range selector, and an 'Add Expense' button. A category summary bar below shows colored pills for each expense category (Maintenance, Insurance, Utilities, etc.) with running totals. The main area is a data table with columns: date, description, category badge, property, amount, receipt icon, and status. Filter controls sit above the table for category and property filtering. The create preset shows a form with category select, amount input, description, property picker, and receipt upload. Summary preset displays a pie chart of category breakdown.",
+  "responsive": {
+    "mobile": "Table becomes a card list — each expense as a stacked card. Category summary pills wrap. Add button is a FAB. Filters collapse into a filter drawer.",
+    "tablet": "Table layout maintained with horizontal scroll for extra columns. Category bar fits in one row.",
+    "desktop": "Full table with all columns visible. Category summary bar spans the top. Comfortable spacing."
+  },
+  "layout_hints": {
+    "ledger_priority": "Lead with expense totals and category scanability, then the underlying records. Users should quickly understand where money is going before they inspect individual receipts.",
+    "form_transition": "Create and edit flows should feel like a continuation of the ledger, not a different application. Preserve category and property context around the form when possible.",
+    "summary_role": "The summary chart or category pills should support the table rather than compete with it as a separate analytics dashboard."
+  },
+  "motion": {
+    "micro": "Category filters and add-expense actions may sharpen slightly on hover. Status or receipt states may brighten enough to confirm selection or upload completion.",
+    "transitions": "Date-range and category filtering should preserve confidence in the ledger by updating smoothly without reordering the whole experience unexpectedly."
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Expense tracker",
+    "keyboard": [
+      "Header actions, filters, category summaries, and expense records should remain reachable in a logical order."
+    ],
+    "announcements": [
+      "Expense amount, category, property, and receipt state should be exposed semantically so the ledger remains interpretable without color badges or table styling alone."
+    ]
+  },
+  "composition": {
+    "ExpenseTracker": "Container(d-section, flex-col, gap-4) > [Header + Filters + CategorySummary + ExpenseTable]",
+    "Header": "Row(d-control, space-between) > [Title + DateRange(d-control) + AddButton(d-interactive)]",
+    "CategorySummary": "Row(d-data) > CategoryPill(d-annotation, color-coded)[]",
+    "ExpenseTable": "Table(d-data) > ExpenseRow[]",
+    "ExpenseRow": "Row(d-data-row) > [Date + Description + CategoryBadge(d-annotation) + Property + Amount(mono-data) + ReceiptIcon? + StatusBadge(d-annotation)]"
+  }
+}

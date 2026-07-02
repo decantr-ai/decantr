@@ -1,0 +1,140 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "product-grid",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Product Grid",
+  "description": "Purchasable items/posts grid with filtering, sorting, and multiple view modes. Used for creator content libraries.",
+  "dependencies": {
+    "patterns": {
+      "product-card": "^1.0.0"
+    },
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Card",
+        "Select",
+        "Badge",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Card",
+    "Select",
+    "Badge",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Card grid with filters and sorting",
+      "components": [
+        "Button",
+        "Card",
+        "Select",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6",
+        "slots": {
+          "filters": "Category, price, type filters",
+          "sort": "Sort controls",
+          "view-toggle": "Grid/list view toggle",
+          "items": "Product cards grid",
+          "load-more": "Pagination/infinite scroll"
+        }
+      }
+    },
+    "list": {
+      "description": "Stacked horizontal list view with product rows for a single-column browsing experience",
+      "components": [
+        "Card",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap3",
+        "slots": {
+          "items": "Product list items"
+        }
+      }
+    },
+    "masonry": {
+      "description": "Pinterest-style masonry layout",
+      "components": [
+        "Card",
+        "icon"
+      ],
+      "layout": {
+        "layout": "masonry",
+        "atoms": "_columns2 _md:columns3 _gap4",
+        "slots": {
+          "items": "Variable-height product cards"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap6",
+    "slots": {
+      "filters": "Filter controls",
+      "items": "Product grid",
+      "pagination": "Load more"
+    }
+  },
+  "io": {
+    "produces": [
+      "product-click",
+      "filter-changed"
+    ],
+    "consumes": [
+      "product-data",
+      "category-data"
+    ]
+  },
+  "visual_brief": "Grid of product cards with a toolbar header containing filter dropdowns (category, price range, type), a sort selector (newest, popular, price), and view mode toggles (grid/list). Cards are arranged in a responsive CSS grid. The list preset stacks items as horizontal rows. The masonry preset uses a masonry layout for varied card heights. A 'Load More' button or infinite scroll pagination sits at the bottom. Empty state shows a 'No products found' message when filters return nothing.",
+  "responsive": {
+    "mobile": "Single-column card list. Filters collapse into a filter drawer button. Sort is a simple dropdown. Load more as a button.",
+    "tablet": "Two-column grid. Filters visible in a row. Sort inline.",
+    "desktop": "Three to four column grid. All filter and sort controls visible in the toolbar. Masonry layout effective at this width."
+  },
+  "layout_hints": {
+    "catalog_priority": "Lead with discovery controls first, then the products themselves. The toolbar should support browsing without visually overpowering the merchandise.",
+    "view_consistency": "Grid, list, and masonry variants should preserve the same product identity and pricing hierarchy so mode switching changes density, not meaning.",
+    "empty_state_role": "No-results states should feel like browsing guidance, not a dead end. Keep them in the same rhythm as the catalog rather than replacing the whole surface with a different layout."
+  },
+  "motion": {
+    "micro": "Cards, filters, and load-more affordances may sharpen or lift subtly on hover and focus.",
+    "transitions": "Sorting, filtering, and view changes should preserve catalog continuity and avoid noisy reshuffles that break scanability."
+  },
+  "interactions": [
+    "lift-hover",
+    "click-select",
+    "animate-on-mount",
+    "stagger-children"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Product catalog",
+    "keyboard": [
+      "Toolbar controls should precede products, and each product should expose one clear primary interaction target."
+    ],
+    "announcements": [
+      "Product identity, pricing, availability, and active filters should be exposed semantically so the catalog remains understandable beyond grid layout alone."
+    ]
+  },
+  "composition": {
+    "ProductGrid": "Container(d-section, flex-col, gap-6) > [Toolbar + ItemGrid + LoadMore?]",
+    "Toolbar": "Row(d-control) > [FilterDropdowns > Select(d-control)[] + SortSelect(d-control) + ViewToggle(d-interactive)]",
+    "ItemGrid": "Grid(d-data, responsive: 1/2/3/4-col) > ProductCard[]",
+    "LoadMore": "Button(d-interactive, full-width, variant: ghost)"
+  }
+}

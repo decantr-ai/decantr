@@ -1,0 +1,148 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "checkout-flow",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Checkout Flow",
+  "description": "Complete purchase/subscribe checkout process with payment form, promo codes, order summary, and success confirmation.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Card",
+        "Input",
+        "Badge",
+        "Radio",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Card",
+    "Input",
+    "Badge",
+    "Radio",
+    "icon"
+  ],
+  "default_preset": "subscribe",
+  "presets": {
+    "subscribe": {
+      "description": "Recurring tier subscription checkout with plan summary, payment form, and promo code input",
+      "components": [
+        "Button",
+        "Card",
+        "Input",
+        "Badge",
+        "Radio",
+        "icon"
+      ],
+      "layout": {
+        "layout": "split",
+        "atoms": "_grid _gc1 _lg:gc2 _gap8 _maxw[960px] _mx[auto]",
+        "slots": {
+          "summary": "Tier/order summary card",
+          "payment-form": "Card/payment method inputs",
+          "promo-code": "Discount code input",
+          "terms": "Terms acceptance checkbox",
+          "submit": "Subscribe/pay button"
+        }
+      }
+    },
+    "purchase": {
+      "description": "One-time product purchase flow with order summary and payment method selection",
+      "components": [
+        "Button",
+        "Card",
+        "Input",
+        "icon"
+      ],
+      "layout": {
+        "layout": "split",
+        "atoms": "_grid _gc1 _lg:gc2 _gap8 _maxw[960px] _mx[auto]",
+        "slots": {
+          "summary": "Product summary",
+          "payment-form": "Payment inputs",
+          "submit": "Purchase button"
+        }
+      }
+    },
+    "upgrade": {
+      "description": "Tier upgrade flow showing current-vs-new plan comparison with prorated pricing",
+      "components": [
+        "Button",
+        "Card",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "center",
+        "atoms": "_flex _col _gap6 _maxw[480px] _mx[auto]",
+        "slots": {
+          "comparison": "Current vs new tier",
+          "pricing": "Prorated price",
+          "submit": "Upgrade button"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "split",
+    "atoms": "_grid _gc1 _lg:gc2 _gap8",
+    "slots": {
+      "summary": "Order summary",
+      "payment": "Payment form",
+      "submit": "Submit button"
+    }
+  },
+  "io": {
+    "produces": [
+      "checkout-complete",
+      "payment-error"
+    ],
+    "consumes": [
+      "tier-data",
+      "product-data"
+    ]
+  },
+  "visual_brief": "Two-column layout with an order summary card on the right and a payment form on the left. The summary card shows line items with names and prices, a promo code input field, subtotal, tax, and total in bold. The payment form includes radio buttons for payment method (card, PayPal), card number/expiry/CVC inputs with card brand icon detection, billing address fields, and a prominent submit button at the bottom. Subscribe preset adds plan name and billing cycle selector. Upgrade preset shows a comparison of current vs. new plan.",
+  "responsive": {
+    "mobile": "Single column layout — order summary moves above the payment form. Submit button is full-width and sticky at the bottom. Card inputs stack vertically.",
+    "tablet": "Two-column layout maintained. Summary panel is narrower. Payment form takes majority width.",
+    "desktop": "Standard two-column layout with comfortable spacing. Summary card is sticky within its column on scroll."
+  },
+  "layout_hints": {
+    "decision_priority": "Users should understand what they are buying and what they will pay before they commit. Keep the summary and total obvious before the form asks for too much detail.",
+    "form_confidence": "Payment inputs should feel linear and reassuring. Validation, promo codes, and plan comparison belong in clear secondary zones rather than crowding the primary submit path.",
+    "mobile_sequence": "On mobile, keep the order summary, core payment form, and final CTA in one confident top-to-bottom flow rather than scattering confirmation details."
+  },
+  "motion": {
+    "micro": "Payment method selection, promo application, and summary updates may animate subtly to confirm state changes without introducing anxiety.",
+    "transitions": "Step changes or success states should feel reassuring and deliberate, never like the user is being rushed through a purchase."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "inline-edit",
+    "keyboard-navigation",
+    "click-select",
+    "focus-trap"
+  ],
+  "accessibility": {
+    "role": "form",
+    "aria-label": "Checkout flow",
+    "keyboard": [
+      "Form controls, payment method selection, promo entry, and the final submit action should follow a predictable top-to-bottom order."
+    ],
+    "announcements": [
+      "Price totals, payment errors, and selected billing method should be exposed semantically so checkout remains trustworthy without visual hierarchy alone."
+    ]
+  },
+  "composition": {
+    "CheckoutFlow": "Grid(d-section, 2-col, responsive: stack) > [PaymentForm + OrderSummary]",
+    "PaymentForm": "Form(d-surface, flex-col) > [MethodSelect > Radio(d-control)[] + CardInputs > [NumberInput + ExpiryInput + CVCInput] + BillingAddress + SubmitButton(d-interactive, variant: primary, full-width)]",
+    "OrderSummary": "Card(d-surface, sticky) > [LineItems > LineItem[] + PromoInput?(d-control) + Subtotal + Tax + Total(heading3, font-bold)]"
+  }
+}

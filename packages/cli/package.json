@@ -1,6 +1,6 @@
 {
   "name": "@decantr/cli",
-  "version": "3.7.0",
+  "version": "3.8.0",
   "description": "Decantr CLI - adopt, verify, graph, and govern frontend codebases touched by AI agents",
   "keywords": [
     "decantr",
@@ -58,6 +58,7 @@
   },
   "dependencies": {
     "@decantr/core": "workspace:*",
+    "@decantr/content": "workspace:*",
     "@decantr/essence-spec": "workspace:*",
     "@decantr/registry": "workspace:*",
     "@decantr/telemetry": "workspace:*",

@@ -1,0 +1,71 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "order-management",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Order Management",
+  "description": "Customer-facing order history and tracking. Lists past orders with status, and provides detailed order views with delivery timeline.",
+  "tags": ["ecommerce", "orders", "tracking", "history", "timeline", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["order history", "my orders", "order tracking", "order management"],
+      "secondary": ["delivery status", "order detail", "shipment tracking", "purchase history"],
+      "negative": ["admin", "fulfillment", "checkout", "catalog"]
+    },
+    "implies": ["order-tracking"],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "orders",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "order-list"
+        }
+      ],
+      "default_layout": ["order-list"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "order-detail",
+      "patterns": [
+        {
+          "pattern": "detail-header",
+          "preset": "standard",
+          "as": "order-header"
+        },
+        {
+          "pattern": "timeline",
+          "preset": "standard",
+          "as": "delivery-timeline"
+        }
+      ],
+      "default_layout": ["order-header", "delivery-timeline"],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "orders": "Data table listing past orders with order number, date, item count, total amount, status badge (processing, shipped, delivered, returned), and a view-detail link. Sortable by date and filterable by status.",
+    "order-detail": "Detail header with order number, date, status badge, and total. Below, a vertical delivery timeline showing each status change with timestamp, location, and description. Line items table and payment summary at bottom."
+  },
+  "features": ["order-tracking", "notifications"],
+  "shells": {
+    "sidebar-main": "Sidebar with account navigation and main content area"
+  },
+  "suggested_theme": {
+    "ids": ["auradecantism", "clean"],
+    "modes": ["light", "auto"]
+  },
+  "dependencies": {
+    "patterns": {
+      "data-table": ">=1.0.0",
+      "detail-header": ">=1.0.0",
+      "timeline": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

@@ -1,0 +1,147 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "doc-editor",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Document Editor",
+  "description": "Rich text block editor with real-time collaboration support. CRDT-based synchronization, floating toolbar, slash commands, and remote cursor overlay.",
+  "dependencies": {
+    "patterns": {
+      "block-toolbar": "^1.0.0",
+      "slash-command": "^1.0.0",
+      "mention-popup": "^1.0.0",
+      "remote-cursor": "^1.0.0"
+    },
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Avatar",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Avatar",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full-featured block editor with toolbar, slash commands, and collaboration features",
+      "components": [
+        "Button",
+        "Avatar",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _hfull _relative",
+        "slots": {
+          "cursors-layer": "Overlay for remote collaborator cursors",
+          "selections-layer": "Overlay for remote text selections",
+          "toolbar": "Floating formatting toolbar on selection",
+          "content": "Contenteditable block container",
+          "slash-menu": "Block type command palette",
+          "mention-popup": "@mention autocomplete dropdown"
+        }
+      }
+    },
+    "minimal": {
+      "description": "Focused writing mode with minimal UI",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _hfull _relative",
+        "slots": {
+          "content": "Contenteditable with minimal distractions",
+          "word-count": "Optional word/character count"
+        }
+      }
+    },
+    "presentation": {
+      "description": "Read-only view mode for sharing",
+      "components": [],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _hfull",
+        "slots": {
+          "content": "Rendered document (non-editable)"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _hfull _relative",
+    "slots": {
+      "cursors-layer": "Overlay for remote collaborator cursors",
+      "selections-layer": "Overlay for remote text selections",
+      "toolbar": "Floating formatting toolbar on selection",
+      "content": "Contenteditable block container",
+      "slash-menu": "Block type command palette",
+      "mention-popup": "@mention autocomplete dropdown"
+    }
+  },
+  "io": {
+    "consumes": [
+      "doc",
+      "collaborators",
+      "permissions"
+    ],
+    "produces": [
+      "content-update",
+      "selection-change",
+      "cursor-move"
+    ],
+    "actions": [
+      "format-text",
+      "insert-block",
+      "delete-block",
+      "add-comment"
+    ]
+  },
+  "visual_brief": "Contenteditable block-based document area occupying the main content region. Each block (paragraph, heading, list, image, code) is a discrete editable unit. A floating formatting toolbar appears on text selection. Typing '/' at the start of a block opens a slash command menu. Remote collaborator cursors appear as colored caret lines with name labels. Remote selections render as colored highlights. The top area may include a document title field. Minimal preset hides all chrome except the content. Presentation preset uses larger type sizes and hides editing UI.",
+  "layout_hints": {
+    "editing_focus": "The editor surface should feel like one primary work plane. Floating toolbars, slash menus, and collaborator overlays should support that plane without fragmenting it.",
+    "overlay_discipline": "Selection toolbars, cursors, and slash menus should not obscure the active text block more than necessary.",
+    "document_measure": "Keep the editable column at a comfortable reading and writing width even when the surrounding workspace is wide."
+  },
+  "responsive": {
+    "mobile": "Full-width editor with bottom-fixed formatting toolbar above the keyboard. Slash menu takes full width. Remote cursors show abbreviated names.",
+    "tablet": "Standard editor layout. Floating toolbar near selection. Comfortable block spacing.",
+    "desktop": "Full editor with generous margins. Floating toolbar tracks selection precisely. All collaboration indicators visible."
+  },
+  "motion": {
+    "micro": "Selection toolbar, slash menu, and collaborator cursor states may animate softly over 120-180ms.",
+    "transitions": "Block insertions, slash-menu reveals, and comment-entry states should feel smooth and responsive without turning the editor into a motion-heavy surface."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "inline-edit",
+    "keyboard-navigation"
+  ],
+  "accessibility": {
+    "role": "application",
+    "aria-label": "Document editor",
+    "keyboard": [
+      "Tab moves between title, editor tooling, and contextual editing controls.",
+      "Slash-menu and formatting controls should remain keyboard navigable."
+    ],
+    "announcements": [
+      "Formatting changes, collaborator presence, and structural insertions should be announced in a concise way."
+    ],
+    "focus_management": "Do not steal focus from the active editor block when collaboration indicators update. Floating controls should return focus to the editor after action completion."
+  },
+  "composition": {
+    "DocEditor": "Container(d-section, flex-col, full-height, relative) > [CursorsLayer + SelectionsLayer + ContentArea + FloatingToolbar? + SlashMenu? + MentionPopup?]",
+    "ContentArea": "Editor(d-surface, contenteditable) > Block[]",
+    "CursorsLayer": "Overlay(absolute) > RemoteCursor(colored, named)[]",
+    "FloatingToolbar": "Bar(d-control, floating, on-selection)"
+  }
+}

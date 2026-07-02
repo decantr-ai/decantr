@@ -1,0 +1,69 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "marketing-recipe",
+  "role": "public",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipe Community Marketing",
+  "description": "Public marketing landing page for the recipe community platform with hero, featured recipes, testimonials, and conversion CTAs.",
+  "tags": ["marketing", "landing", "recipes", "food", "public", "seo", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["recipe landing", "recipe marketing", "food community landing", "cooking platform homepage"],
+      "secondary": ["recipe homepage", "food platform marketing", "cooking community site"],
+      "negative": ["dashboard", "admin", "analytics"]
+    },
+    "implies": ["seo", "conversion"],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "landing",
+          "as": "landing-hero"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "content",
+          "as": "featured-recipes"
+        },
+        {
+          "pattern": "testimonials",
+          "preset": "standard",
+          "as": "community-quotes"
+        },
+        {
+          "pattern": "cta-section",
+          "preset": "standard",
+          "as": "join-cta"
+        }
+      ],
+      "default_layout": ["landing-hero", "featured-recipes", "community-quotes", "join-cta"],
+      "shell": "top-nav-footer"
+    }
+  ],
+  "page_briefs": {
+    "home": "Warm, inviting marketing landing page. Hero section with large food photography background, headline celebrating community cooking, and primary CTA to join. Featured recipes grid showing popular community recipes with gorgeous food cards. Testimonials from community members with avatars and quotes. Bottom CTA section encouraging sign-up with warm, encouraging copy."
+  },
+  "features": ["marketing", "seo"],
+  "shells": {
+    "top-nav-footer": "Fixed top navigation bar with logo and links, sticky footer with legal and social links"
+  },
+  "dependencies": {
+    "patterns": {
+      "hero": ">=1.0.0",
+      "card-grid": ">=1.0.0",
+      "testimonials": ">=1.0.0",
+      "cta-section": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": ["auradecantism"],
+    "modes": ["light"]
+  }
+}

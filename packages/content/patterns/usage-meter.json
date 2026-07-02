@@ -1,0 +1,113 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "usage-meter",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Usage Meter",
+  "description": "Quota and usage visualization with color-coded thresholds, animated progress indicators, category breakdowns, and contextual upgrade prompts when nearing limits.",
+  "category": "billing",
+  "tags": [
+    "2026",
+    "billing",
+    "usage",
+    "quota",
+    "meter",
+    "upgrade",
+    "threshold"
+  ],
+  "components": [
+    "UsageBar",
+    "UsageGauge",
+    "ThresholdMarker",
+    "UpgradePrompt",
+    "UsageBreakdown",
+    "PeriodSelector"
+  ],
+  "default_preset": "bar",
+  "presets": {
+    "bar": {
+      "description": "Horizontal bar meter showing filled portion with threshold markers, percentage label, and contextual color shifts at warning/critical thresholds",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap3 _py3 _w-full"
+      }
+    },
+    "radial": {
+      "description": "Circular gauge arc rendering usage as a swept ring with the same threshold color logic — percentage in the center, label below, suitable for dashboard cards",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _aic _jcc _gap2 _aspect-square"
+      }
+    },
+    "breakdown": {
+      "description": "Stacked horizontal bar with category segments, a color legend, and per-category values — shows how different usage types contribute to the total quota",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4 _py3 _w-full"
+      }
+    }
+  },
+  "visual_brief": "Horizontal bar meter on a light track (8px tall, rounded-full corners). The filled portion starts from the left and represents current usage as a proportion of the total quota. Color of the filled portion changes by threshold: under 70% uses the theme accent color (blue/indigo), 70-90% shifts to yellow/amber with a subtle warm glow, above 90% turns red with a slow pulsing glow animation on the bar edge (box-shadow pulse). Small triangular threshold markers sit below the bar at configurable points (e.g. 70%, 90%, 100%) as tiny upward-pointing carets with thin labels. To the right of the bar, two values display: the percentage in bold (e.g. '73%') and the absolute values below in muted text (e.g. '7,300 / 10,000 API calls'). A PeriodSelector sits above as small segmented control (This Month / Last Month / Custom). The radial preset renders a circular gauge: a 270-degree arc on a circular track with the same color thresholds, the percentage number large and centered inside the ring, and the label ('API Calls') below the number. The gauge ring is 8px thick with rounded caps. The breakdown preset shows a single stacked horizontal bar where each category is a different-colored segment (e.g. blue for API calls, purple for storage, green for bandwidth). Below the bar, a legend row lists each category with a color dot, category name, and individual usage value. When total usage exceeds 80%, an UpgradePrompt card appears below: a bordered card with a small lightning-bolt icon, a headline like 'Approaching your plan limit', a one-line description, and a primary 'Upgrade Plan' button. The prompt card has a subtle gradient left-border in the warning color.",
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap3 _py3 _w-full",
+    "slots": {
+      "period-selector": "A small segmented control or tab group at the top-left for selecting the billing period. Options: 'Current Period', 'Previous Period', 'Custom Range'. The selected option is filled with accent color; others are outlined. Custom opens a date range picker popover. Compact size, does not dominate the layout.",
+      "usage-bar": "The primary usage visualization. A horizontal bar with a light neutral track (rounded-full, 8px height). Filled portion animates from left to right on mount with an ease-out transition. Color is determined by threshold: accent (0-69%), warning/amber (70-89%), destructive/red (90-100%). At 90%+ the filled edge has a pulsing glow. ThresholdMarker components render as small triangular carets below the track at configured percentage points with tiny labels. To the right of the bar: percentage value in semibold text and absolute usage below in caption-size muted text (e.g. '7,300 / 10,000').",
+      "upgrade-prompt": "Conditional slot that appears only when usage exceeds the upgrade threshold (default 80%). Renders as a compact card with a colored left border (amber at 80%, red at 95%). Contains: a small icon (lightning bolt or warning triangle), a bold one-line headline, a short description explaining the limit, and a primary CTA button ('Upgrade Plan' or 'View Plans'). The card animates in with a slide-up + fade when the threshold is crossed. Includes a small dismiss X button."
+    }
+  },
+  "responsive": {
+    "mobile": "Bar fills full width. Percentage and absolute values move below the bar instead of to the right. Radial gauge scales down but maintains minimum 120px diameter for readability. Breakdown legend stacks vertically as a list. Upgrade prompt is full-width.",
+    "tablet": "Standard layout. Bar has comfortable width with values to the right. Radial gauge at natural size. Breakdown legend is a horizontal row.",
+    "desktop": "Full layout with generous spacing. Multiple usage meters can sit side by side in a grid. Radial gauge fits well in dashboard card layouts. Upgrade prompt aligns below the meter with max-width constraint."
+  },
+  "layout_hints": {
+    "meter_role": "Treat this as one self-contained quota instrument. Parent pricing or billing sections own the surrounding narrative and comparison layout.",
+    "threshold_readability": "The current value, threshold markers, and quota context should read in one quick scan without forcing the user to decode color alone.",
+    "prompt_discipline": "Upgrade prompts should appear as supportive escalation below the meter rather than hijacking the entire surface."
+  },
+  "motion": {
+    "micro": {
+      "bar-hover": "bar height 8px→10px + shadow-sm 150ms ease-out",
+      "threshold-marker-hover": "scale(1→1.3) + opacity label 0→1 150ms ease-out",
+      "upgrade-dismiss": "opacity 1→0 + translateY(0→-8px) 200ms ease-in"
+    },
+    "transitions": {
+      "bar-fill": "width 0→target% 800ms ease-out on mount",
+      "color-shift": "background-color 400ms ease-in-out on threshold change",
+      "gauge-sweep": "stroke-dashoffset 0→target 1000ms ease-out on mount",
+      "upgrade-prompt-enter": "translateY(12px)→0 + opacity 0→1 400ms ease-out"
+    },
+    "ambient": {
+      "critical-pulse": "box-shadow glow scale(1→1.05→1) + opacity(0.6→1→0.6) 2s ease-in-out infinite when usage >=90%"
+    }
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "composition": {
+    "UsageMeter": "Container(d-surface, flex-col, gap-3) > [PeriodSelector(d-control, segmented) + UsageBar(d-data, threshold-color) > [FilledBar(d-data, animated-width, color: threshold) + ThresholdMarker(d-annotation, caret-below)* + ValueLabel(d-data, mono)] + UpgradePrompt?(d-interactive, conditional: usage>80%)]",
+    "UsageBar": "Track(d-data, rounded-full, h-2) > [Fill(color: threshold, width: percentage) + ThresholdMarker(d-annotation, position: absolute)*]",
+    "UsageGauge": "SVG(d-data, aspect-square) > [TrackArc(d-data, 270deg, muted) + FillArc(d-data, sweep: percentage, color: threshold) + CenterLabel(d-data, percentage, large)]",
+    "UsageBreakdown": "Container(d-data, flex-col) > [StackedBar(d-data) > Segment(color: category)* + Legend(d-annotation) > LegendItem(d-annotation, dot + label + value)*]",
+    "UpgradePrompt": "Card(d-interactive, border-left: warning-color, flex-row) > [Icon(d-annotation) + Content(flex-col) > [Headline(d-data, bold) + Description(d-annotation, muted)] + CTAButton(d-interactive, variant: primary)]"
+  },
+  "accessibility": {
+    "role": "meter",
+    "aria-label": "Usage quota meter",
+    "keyboard": [
+      "Tab: move focus between period selector, usage bar, and upgrade prompt",
+      "Arrow Left/Right: change selected period in period selector",
+      "Enter: activate upgrade prompt CTA button",
+      "Escape: dismiss upgrade prompt"
+    ],
+    "announcements": [
+      "Current usage: {percentage}% — {used} of {total} {unit}",
+      "Warning: usage has exceeded {threshold}% of your quota",
+      "Critical: usage at {percentage}%, approaching plan limit",
+      "Period changed to {period_label}",
+      "Upgrade prompt: {headline}"
+    ]
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "id": "agent-timeline",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Agent Timeline",
+  "description": "A vertical timeline for agent observability that displays actions, decisions, tool calls, and reasoning steps as collapsible color-coded events with filtering, detail expansion, and summary statistics.",
+  "category": "agentic",
+  "tags": [
+    "2026",
+    "agentic",
+    "timeline",
+    "observability",
+    "tool-calls",
+    "reasoning"
+  ],
+  "components": [
+    "TimelineEvent",
+    "EventDetail",
+    "ToolCallCard",
+    "ReasoningStep",
+    "FilterChip",
+    "TimelineSummary"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full vertical timeline with summary header, filter bar, and expandable event nodes — intended as a primary observability view or dedicated panel",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4 _py4"
+      }
+    },
+    "compact": {
+      "description": "Condensed timeline for sidebar placement — events render as single-line items with icon + label only, no inline detail expansion (click opens a popover instead), no summary header",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap1 _py2"
+      }
+    },
+    "live": {
+      "description": "Streaming variant that auto-scrolls to the latest event as it arrives — new events animate in from the bottom with a fade-slide-up, a 'live' indicator pulses at the top, and the summary header updates in real time",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4 _py4 _overyauto"
+      }
+    }
+  },
+  "visual_brief": "Vertical timeline with a continuous 2px line on the left edge. Color-coded orbs mark each event type (action=cyan, decision=green, error=red, tool_call=purple, reasoning=amber). Cards extend right from the line with colored left-borders. Sticky summary header at top with aggregate stats. Filter chips below header.",
+  "layout_hints": {
+    "vertical_line": "A continuous 2px vertical line runs the FULL height of the timeline, 16px from the left edge. Color: var(--d-border). The line MUST NOT have gaps between events — it connects all events visually.",
+    "orb": "Each event has a 12px diameter colored circle (orb) centered ON the vertical line. The orb is vertically aligned with the FIRST line of text (the badge/timestamp row), not the center of the event block.",
+    "event_colors": "Each event TYPE must have a DISTINCT color. No two types share the same color. Suggested: action=cyan(accent), decision=green(success), error=red(error), warning=amber(warning), tool_call=purple, reasoning=amber/gold, info=blue(info).",
+    "spacing": "Compact event spacing: gap-3 to gap-4 between events. Dense timelines are easier to scan than spacious ones.",
+    "badge_size": "Event type badges use d-annotation with at least 0.7rem font and enough padding to be scannable at speed."
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap4 _py4",
+    "slots": {
+      "summary-header": "A sticky header card at the top of the timeline showing aggregate stats for the current agent session. Displays: total events count, breakdown by type (tool calls, reasoning steps, outputs, errors) as small labeled counts with color-coded dots, total elapsed time, and token usage (input/output tokens). Also shows the agent's name, model identifier, and current status (running/complete/error). In the 'live' preset, the elapsed time and event count update in real time. A small sparkline chart shows event frequency over time (events per second) to visualize bursts of activity.",
+      "filter-bar": "A horizontal scrollable row of FilterChip components for narrowing visible events. Default chips: 'All', 'Tool Calls', 'Reasoning', 'Outputs', 'Errors', 'Decisions'. Chips are toggleable (multiple can be active simultaneously). Active chips use a filled style with the corresponding event-type color; inactive chips use an outline style. Also includes a text search input at the right edge for filtering events by content. Filter state persists across live updates. Chip counts show how many events match each filter (e.g., 'Tool Calls (12)').",
+      "timeline-track": "The vertical spine of the timeline. Renders as a thin continuous line (2px) running vertically down the left side of the event list (24px from the left edge). The line color uses a muted neutral tone with segments that colorize to match adjacent event nodes. Between events, the line can show elapsed time labels if the gap exceeds a configurable threshold (default 5s). At the bottom of a completed timeline, the track terminates with a small square end-cap. During live streaming, the bottom is an animated pulsing dot.",
+      "event-node": "Repeating slot — one per agent action. Each event is a card positioned to the right of the timeline-track, connected by a small horizontal line from the track to the card. The card has a colored left-border indicating event type: tool-call (blue/info), reasoning (purple/accent), output (green/success), error (red/destructive), decision (amber/warning). Each card shows: (1) a type icon matching the color, (2) a one-line summary (e.g., 'Called search_web with query \"decantr patterns\"'), (3) a relative timestamp ('2.3s ago' or '+1.2s'), and (4) a chevron toggle to expand/collapse the detail section. Cards are collapsed by default. Error events auto-expand and have a stronger visual treatment (background tint, bold border). Events animate in with a subtle slide-up + fade when appended in live mode.",
+      "event-detail": "The expandable content area within each event-node. Content varies by event type: For tool-call events — shows the tool name, input parameters as a formatted JSON/key-value block, output/result as a collapsible code block, duration in milliseconds, and token cost. For reasoning events — shows the full reasoning text formatted as markdown with a 'thinking' visual treatment (slightly italic, indented, with a brain icon). For output events — shows the generated text or data, formatted with markdown rendering. For error events — shows the error message, stack trace in a scrollable code block, and a 'retry' button if the error is retryable. For decision events — shows the decision description, alternatives considered as a list, and the selected option highlighted."
+    }
+  },
+  "accessibility": {
+    "role": "feed",
+    "aria-label": "Agent activity timeline",
+    "announcements": [
+      "New event: {type} — {summary}",
+      "Error occurred: {message}",
+      "Agent completed after {duration} with {event_count} events",
+      "Filter applied: showing {type} events only",
+      "Event details expanded for {summary}"
+    ],
+    "keyboard": [
+      "Arrow Up/Down: navigate between timeline events",
+      "Enter: expand/collapse selected event detail",
+      "F: focus the filter bar search input",
+      "1-6: toggle filter chips by position",
+      "Home: jump to first event",
+      "End: jump to latest event",
+      "Escape: collapse all expanded events and clear filters"
+    ]
+  },
+  "responsive": {
+    "mobile": "Timeline track moves to a thin left-edge gutter (8px inset). Event cards span full width with reduced padding. Filter bar scrolls horizontally with momentum. Summary header stacks stats in a 2×2 grid. Event details render in a bottom sheet on tap rather than inline expansion to save vertical space.",
+    "tablet": "Standard vertical layout maintained. Filter bar remains fully visible without scrolling (wraps to second row if needed). Event cards maintain comfortable padding. Summary header displays stats in a single row."
+  },
+  "motion": {
+    "micro": {
+      "event-hover": "translateX(2px) + border-accent 150ms ease-out",
+      "orb-pulse": "scale(1→1.2→1) 2s ease-in-out infinite on active events"
+    },
+    "transitions": {
+      "event-expand": "max-height 0→auto + fade 300ms ease-out",
+      "event-collapse": "max-height auto→0 + fade 200ms ease-in",
+      "new-event": "slide-in-from-top + fade 400ms ease-out"
+    }
+  },
+  "interactions": [
+    "animate-on-mount",
+    "stagger-children",
+    "status-pulse",
+    "real-time-updates",
+    "hover-reveal",
+    "scroll-reveal"
+  ],
+  "composition": {
+    "AgentTimeline": "Container(d-section, flex-col, gap-4) > [TimelineSummary + FilterBar + EventList]",
+    "TimelineSummary": "Card(d-surface, sticky) > [AgentName + ModelId + Status(d-annotation) + EventCounts(d-data) + ElapsedTime(mono-data) + TokenUsage]",
+    "FilterBar": "Row(d-control, scrollable) > FilterChip(toggleable, color: event-type)[]",
+    "EventList": "Track(d-data, vertical-line) > EventNode[]",
+    "EventNode": "Card(d-surface, color-left-border: event-type, collapsible) > [TypeIcon + Summary + Timestamp(mono-data) + ChevronToggle + EventDetail?]",
+    "EventDetail": "Panel(d-data, expandable) > [Content(variant: event-type)]"
+  }
+}

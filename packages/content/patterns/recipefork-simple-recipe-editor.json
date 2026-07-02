@@ -1,0 +1,49 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "recipefork-simple-recipe-editor",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipefork Simple Recipe Editor",
+  "description": "Simple Mode authoring pattern for ordered ingredient and instruction lists, designed to coexist with Recipefork's Chef Mode without sacrificing the streamlined path.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Input",
+        "Textarea",
+        "Card",
+        "Label",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Input",
+    "Textarea",
+    "Card",
+    "Label",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Basic recipe editor with two ordered lists: raw ingredient lines and raw instruction lines.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "ingredients": "Ordered ingredient rows with add/remove and drag-sort affordances",
+          "instructions": "Ordered instruction rows with add/remove and drag-sort affordances"
+        }
+      }
+    }
+  },
+  "visual_brief": "Simple Mode should feel intentionally lighter than Chef Mode, but not stripped down. Ingredients and instructions are handled as clean stacked rows that stay fast to edit, reorder, and scan.",
+  "composition": {
+    "SimpleRecipeEditor": "Stack(recipefork-editor-stack) > [IngredientList + InstructionList]"
+  }
+}

@@ -1,0 +1,156 @@
+{
+  "id": "copilot-overlay",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Copilot Overlay",
+  "description": "Main content area with a collapsible AI copilot side panel. Right-side drawer overlays or pushes body content. When collapsed, a floating pill button ('Ask AI') remains visible. Used for AI-assisted workflows where copilot can reference body content.",
+  "layout": "grid",
+  "atoms": "_grid _h[100vh]",
+  "config": {
+    "regions": [
+      "header",
+      "body",
+      "copilot"
+    ],
+    "grid": {
+      "areas": [
+        [
+          "header",
+          "header"
+        ],
+        [
+          "body",
+          "copilot"
+        ]
+      ]
+    },
+    "header": {
+      "height": "56px",
+      "sticky": true
+    },
+    "body": {
+      "scroll": true
+    },
+    "copilot": {
+      "width": "360px",
+      "collapseTo": "0px",
+      "position": "right",
+      "mode": "overlay",
+      "trigger": "Cmd+K"
+    }
+  },
+  "configurable": {
+    "copilot": {
+      "modes": [
+        "overlay",
+        "push",
+        "hidden"
+      ]
+    },
+    "header": {
+      "toggleable": true
+    },
+    "sizing": {
+      "copilotWidth": {
+        "min": 280,
+        "max": 480,
+        "default": 360
+      },
+      "headerHeight": {
+        "min": 44,
+        "max": 72,
+        "default": 56
+      }
+    }
+  },
+  "internal_layout": {
+    "root": {
+      "display": "grid",
+      "height": "100vh",
+      "grid_template": "columns: 1fr auto; rows: 56px 1fr",
+      "atoms": "_grid _h[100vh]"
+    },
+    "header": {
+      "height": "56px",
+      "display": "flex",
+      "align": "center",
+      "justify": "space-between",
+      "padding": "0 1rem",
+      "border": "bottom",
+      "background": "var(--d-bg)",
+      "grid_span": "column 1/3",
+      "left_content": "Page title / breadcrumb",
+      "right_content": "Copilot toggle button (Cmd+K) + actions + user avatar"
+    },
+    "body": {
+      "flex": "1",
+      "overflow_y": "auto",
+      "padding": "1.5rem",
+      "atoms": "_flex1 _overflow[auto] _p6",
+      "note": "Main application content area. Scrollable. When copilot mode is 'push', body width shrinks to accommodate panel."
+    },
+    "copilot": {
+      "width": "360px",
+      "collapsed_width": "0px",
+      "height": "100vh",
+      "position": "fixed",
+      "position_anchor": "right",
+      "direction": "column",
+      "border": "left",
+      "background": "var(--d-surface-raised)",
+      "overflow_y": "auto",
+      "padding": "1rem",
+      "atoms": "_flex _col _borderL _bgraised _overflow[auto] _p4",
+      "header": {
+        "display": "flex",
+        "align": "center",
+        "justify": "space-between",
+        "padding": "0.75rem 1rem",
+        "border": "bottom",
+        "content": "Copilot title + close button"
+      },
+      "body": {
+        "flex": "1",
+        "overflow_y": "auto",
+        "padding": "1rem",
+        "note": "AI chat message thread. Messages stack vertically with alternating alignment."
+      },
+      "input": {
+        "position": "anchored_bottom",
+        "padding": "0.75rem 1rem",
+        "border": "top",
+        "note": "Chat input anchored to bottom of copilot panel. Always visible when panel is open."
+      },
+      "collapsed_trigger": {
+        "type": "pill",
+        "label": "Ask AI",
+        "position": "fixed",
+        "position_anchor": "bottom-right",
+        "offset": "1.5rem",
+        "note": "Floating pill button visible when copilot is collapsed. Click or Cmd+K to open."
+      },
+      "note": "Right-side AI copilot drawer. Overlay mode: floats over body. Push mode: shrinks body width. Can reference body content for context-aware assistance."
+    },
+    "responsive": {
+      "desktop": "Side panel overlay on right, body unaffected in overlay mode",
+      "mobile": "Full-screen bottom sheet with drag-to-dismiss handle"
+    }
+  },
+  "guidance": {
+    "copilot_purpose": "Contains AI chat interface for context-aware assistance",
+    "body_purpose": "Contains main application content that copilot can reference",
+    "context_passing": "Copilot can read and reference body content for contextual responses",
+    "toggle_shortcut": "Cmd+K opens/closes copilot panel from anywhere",
+    "collapsed_state": "When closed, only a floating 'Ask AI' pill button is visible at bottom-right",
+    "overlay_vs_push": "Overlay: panel floats over body content. Push: body shrinks to make room for panel",
+    "mobile_behavior": "On mobile, copilot opens as a full-screen bottom sheet instead of a side panel",
+    "shell_spacing": "Copilot-overlay owns the right-panel width, body inset rhythm, and trigger placement. Route content should not add extra wrappers just to compensate for the copilot column.",
+    "section_label_treatment": "d-label",
+    "section_density": "compact"
+  },
+  "code": {
+    "imports": "Target-specific imports vary. Translate the internal_layout contract into your framework's overlay state, keyboard shortcut handling, and docked or floating copilot panel primitives.",
+    "example": "CopilotOverlayShell(root) -> Header(primary app chrome) + Body(route content) + CopilotPanel(open as overlay or push column) + FloatingTrigger(command-palette shortcut enabled)"
+  },
+  "$schema": "https://decantr.ai/schemas/shell.v1.json"
+}

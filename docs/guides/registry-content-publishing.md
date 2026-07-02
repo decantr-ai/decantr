@@ -1,48 +1,54 @@
-# Registry And Content Publishing
+# Official Content Corpus Contributions
 
-The Decantr registry is the public catalog of certified vocabulary: starter kits, archetypes, patterns, themes, and shells that can feed project-owned Contracts. It is supporting infrastructure, not the product center.
+Decantr 3.8 uses an official content corpus, not a public registry marketplace. The active source of truth is `packages/content` in the Decantr monorepo and the preferred package surface is `@decantr/content`.
 
-## Public Surfaces
+This guide keeps its historical filename for inbound links. Hosted community publishing, registry portal submissions, and live sync-to-registry workflows are retired.
 
-- Registry portal: `https://registry.decantr.ai`
-- Registry sitemap: `https://registry.decantr.ai/sitemap.xml`
-- Registry API: `https://api.decantr.ai/v1`
-- Official content source: `https://github.com/decantr-ai/decantr-content`
+## Active Surfaces
+
+- Content package: `@decantr/content`
+- Content source: `packages/content`
+- Content API: `https://api.decantr.ai/v1`
+- CLI workflow: `decantr content ...`
+- MCP compatibility tool: `decantr_registry`
 
 ## Official Content
 
-The `decantr-content` repository is the source of truth for the `@official` namespace. It contains patterns, themes, starter-kit blueprints, archetypes, and shells. Changes are validated in CI and published by maintainers after they land on `main`.
+`packages/content` contains patterns, themes, blueprints, archetypes, shells, schemas, validation helpers, search helpers, and resolver helpers. Changes land through normal monorepo pull requests and package/API deployment.
 
-Blueprints also carry `blueprint_portfolio` metadata. This lets maintainers keep the public registry simple while preserving compatibility:
-
-- **Featured** and **Certified** are the strongest default picks for new users.
-- **All** contains supported public blueprint contracts.
-- **Labs** is opt-in for promising directions that need sharper proof.
-- Folded legacy or overlap slugs remain directly addressable by slug, but are not shown in public browsing.
+Blueprints may still carry portfolio metadata such as Featured, Certified, All, and Labs. That metadata is for official curation and recommendation quality. It does not imply a public marketplace or community publishing system.
 
 Local checks:
 
 ```bash
-npm run validate
-npm run registry:v2-certify
-npm run content:health
-npm run registry:audit
+pnpm --filter @decantr/content validate
+pnpm --filter @decantr/content content:health
+pnpm --filter @decantr/content content:intelligence
+pnpm audit:content-package
 ```
 
-## Community Publishing
+## Community Content
 
-The hosted registry can accept community content under non-official namespaces. Use the portal to publish your own registry items, and inspect public records through the registry UI or API before using them in a project.
+Community publishing to a hosted registry is no longer an active Decantr product surface. Teams that need project-specific vocabulary should codify it as local law in the consuming application:
+
+```bash
+decantr codify --from-audit --project apps/web
+decantr codify --style-bridge --project apps/web
+decantr codify --accept --project apps/web
+```
+
+Official reusable content belongs in `packages/content`. Private or customer-specific governance belongs in the customer repository.
 
 ## Content Health
 
-Use Content Health for vocabulary repositories:
+Use Content Health for the official corpus:
 
 ```bash
-npx @decantr/cli content check
-npx @decantr/cli content check --json
-npx @decantr/cli content check --prompt <finding-id>
+decantr content check
+decantr content check --json
+decantr content check --prompt <finding-id>
 ```
 
-Content Health checks schema validity, references, content quality coverage, and generated guidance quality. Project Health is different: it checks an application against its accepted Decantr contract.
+Content Health checks schema validity, references, coverage, and generated guidance quality. Project Health is different: it checks an application against its accepted Decantr contract.
 
-See also: [Registry Public API](../reference/registry-public-api.md), [Content Health](../reference/content-health.md).
+See also: [Content API](../reference/registry-public-api.md), [Content Health](../reference/content-health.md).

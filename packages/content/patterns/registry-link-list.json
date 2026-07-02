@@ -1,0 +1,118 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "registry-link-list",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Registry Link List",
+  "description": "Compact list of registry destinations, documentation references, namespaces, or related content links. Optimized for sidebars, detail pages, and post-hero navigation blocks.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Link",
+        "Badge",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Link",
+    "Badge",
+    "icon"
+  ],
+  "contained": false,
+  "default_preset": "compact",
+  "presets": {
+    "compact": {
+      "description": "Single-column link list with icon, title, short helper text, and optional count or status badge.",
+      "components": [
+        "Link",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap2",
+        "slots": {
+          "link-icon": "Small icon or type marker.",
+          "link-title": "Destination name.",
+          "link-description": "One-line helper copy.",
+          "link-badge": "Optional count, namespace, or status."
+        }
+      }
+    },
+    "two-column": {
+      "description": "Two-column link inventory for larger registry overview sections.",
+      "components": [
+        "Link",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _md:gc2 _gap3",
+        "slots": {
+          "link-item": "Full row link with icon, title, helper copy, and trailing affordance."
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap2",
+    "slots": {
+      "link-icon": "Icon or type marker",
+      "link-title": "Destination title",
+      "link-description": "Helper copy",
+      "link-badge": "Optional metadata badge"
+    }
+  },
+  "visual_brief": "A utilitarian but polished registry navigation list. It should feel like a trustworthy map of related destinations, not a decorative card grid. Rows should be easy to scan, with clear link affordances, subtle dividers or hover states, and enough helper copy to explain why the destination matters.",
+  "responsive": {
+    "mobile": "Single-column full-width rows with titles and helper copy wrapping cleanly.",
+    "tablet": "Single or two-column layout depending on available width.",
+    "desktop": "May use two columns or a sidebar list. Keep row height consistent."
+  },
+  "layout_hints": {
+    "row_density": "Keep rows compact. Avoid card-heavy treatment unless each link has substantial context.",
+    "trailing_affordance": "Use an arrow, external-link icon, or subtle badge so links are unmistakable.",
+    "metadata": "Counts and namespaces belong in a trailing badge, not mixed into the title."
+  },
+  "motion": {
+    "micro": "Rows may brighten or slide their trailing icon a few pixels on hover.",
+    "transitions": "Filter updates should preserve list position and avoid dramatic reflow."
+  },
+  "interactions": [
+    "click-select",
+    "hover-reveal",
+    "keyboard-navigation"
+  ],
+  "accessibility": {
+    "role": "navigation",
+    "aria-label": "Registry links",
+    "keyboard": [
+      "Each row should expose one clear link target with a descriptive accessible name."
+    ],
+    "announcements": [
+      "Destination title and helper copy should be included in the accessible label or nearby description."
+    ],
+    "focus_management": "Focused rows should show an obvious outline or background shift."
+  },
+  "composition": {
+    "RegistryLinkList": "NavOrList > RegistryLinkItem[]",
+    "RegistryLinkItem": "LinkRow > [Icon + TextStack(Title + Description) + Badge? + TrailingIcon]"
+  },
+  "io": {
+    "consumes": [
+      "related-links"
+    ],
+    "produces": [
+      "navigation-intent"
+    ],
+    "actions": [
+      "link-click"
+    ]
+  }
+}

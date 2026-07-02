@@ -1,0 +1,160 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "listing-browser",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Listing Browser",
+  "description": "Browse and search marketplace listings with grid, map, and detail views. Core discovery interface for two-sided marketplaces.",
+  "tags": [
+    "marketplace",
+    "listings",
+    "browse",
+    "search",
+    "discovery"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "browse listings",
+        "marketplace search",
+        "listing directory",
+        "product discovery"
+      ],
+      "secondary": [
+        "search results",
+        "map view",
+        "listing detail",
+        "filters",
+        "image gallery"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "browse",
+      "patterns": [
+        {
+          "pattern": "search-filter-bar",
+          "preset": "standard",
+          "as": "search-filters"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "product",
+          "as": "listings"
+        },
+        {
+          "pattern": "map-view",
+          "preset": "pins",
+          "as": "map"
+        }
+      ],
+      "default_layout": [
+        "search-filters",
+        "listings",
+        "map"
+      ],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "listing-detail",
+      "patterns": [
+        {
+          "pattern": "detail-header",
+          "preset": "standard",
+          "as": "header"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "capability",
+          "as": "details"
+        },
+        {
+          "pattern": "booking-calendar",
+          "preset": "week-view",
+          "as": "availability"
+        }
+      ],
+      "default_layout": [
+        "header",
+        "details",
+        "availability"
+      ],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "search",
+      "patterns": [
+        {
+          "pattern": "search-filter-bar",
+          "preset": "standard",
+          "as": "search-filters"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "product",
+          "as": "results"
+        }
+      ],
+      "default_layout": [
+        "search-filters",
+        "results"
+      ],
+      "shell": "top-nav-main"
+    }
+  ],
+  "page_briefs": {
+    "browse": "Full-width browse view with a sticky search and filter bar at the top. Below, a responsive card grid displays listing thumbnails, prices, and ratings. A toggle switches between grid and map view, where pins represent listing locations with hover previews.",
+    "listing-detail": "Immersive listing detail page with a large image gallery header, title, location, host info, and rating. Below the header, a responsive feature/amenity card grid surfaces the listing's anchor attributes (sleeps, bedrooms, amenities, accessibility tags). Scrolling reveals a date-range availability calendar showing nightly availability — NOT 15-minute time slots — plus a sticky booking widget with a 'Reserve' primary CTA, dates, guests, and total price breakdown.",
+    "search": "Focused search results page with the search filter bar pre-populated from the query. Results render as a product card grid with sort controls and pagination. Faceted filters on the left narrow by category, price range, and rating."
+  },
+  "features": [
+    "search",
+    "filters",
+    "map-view",
+    "image-gallery"
+  ],
+  "shells": {
+    "top-nav-main": "Top navigation bar with main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "search-filter-bar": "^1.0.0",
+      "card-grid": "^1.0.0",
+      "map-view": "^1.0.0",
+      "detail-header": "^1.0.0",
+      "booking-calendar": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "directives": [
+    "Listing cards on /browse and /search MUST show all five anchor fields: image area + title + location + rating (stars + count) + price (per night/day/hour as the listing implies). Cards with only title+host+price look unfinished — five fields is the marketplace floor.",
+    "Listing card image area: aim for ~16:9 aspect ratio capped at 200px tall on the grid view. The image should be a defined slot, NOT a giant block that dominates the card. Title + meta below should account for ~40% of card height so the card reads as a card, not a colored tile.",
+    "When a listing has no real image, render a SUBTLE placeholder: a low-saturation themed gradient with a small location pin or category icon centered (or in a corner). Do NOT ship raw saturated linear-gradient blocks as 'temporary images' — they read as broken.",
+    "Listing-detail availability MUST be date-range / nightly availability oriented (check-in/check-out, available nights highlighted, booked nights muted). Do NOT use workshop/session-style 15-minute time slots. If a listing IS session-bookable (a workshop, a class, a gear-rental hour) the page should declare that variant explicitly via a directive override.",
+    "Listing-detail booking widget MUST be sticky on viewport scroll within the listing-detail body. Primary CTA verb comes from blueprint voice.cta_verbs (e.g., 'Book' for two-sided-marketplace, 'Reserve' / 'Request' for other rental marketplaces). Date inputs, guest count, and computed total price stay in view as the user reads the listing.",
+    "Listing-detail comparison-table is OPTIONAL. Only render when the registry can supply 2-3 ACTUAL comparable spaces from the same category and city. Do NOT inject a comparison-table on every detail page by default — it adds visual noise and surfaces 'recommended' badges over column headers awkwardly when the layout doesn't have room.",
+    "Browse / search shells: image-gallery feature is declared on the archetype. Treat as 'image-forward' UX — at minimum honor the image-area-on-card directive above; if a real image-gallery pattern is composed, it MUST live above-the-fold, not in a sidebar.",
+    "Empty state copy on browse / search: warm and inviting, NOT 'No results.' Match blueprint voice (e.g., 'Nothing in that range yet — try widening the dates or zooming the map.').",
+    "Card treatments — apply these by default to make grids feel polished, not skeletal: each listing card MUST use `d-card` + `d-elevate[data-level=\"1\"]` baseline + `d-lift-hover` for tactile feel + theme card decorator (e.g., `clean-card`, `paper-card`, `carbon-card`) for personality. The grid container MUST use `d-stagger-children` so cards appear with a 50-80ms cascade on mount, not all-at-once. Without these, even a polished theme renders cards as flat rectangles.",
+    "Filter chip row — use `d-step-chip` with `data-shape=\"pill\"` and `data-step-state=\"active|done|pending\"` for the All/Cabins/Studios/etc. tab row, NOT bare `d-interactive`. The pill variant ships proper active-fill, hover-tint, and text-chip sizing for filter-row UX. Bare button treatments make the chip row look like generic SaaS form controls.",
+    "Category taxonomy must follow the marketplace domain. For space/rental marketplaces prefer categories like Cabins, Studios, Vehicles, Gear, Offices, Storage, Event spaces, or Workspaces. Do NOT introduce workshops, classes, sessions, or coworking unless the blueprint explicitly asks for bookable classes or desks.",
+    "Listing image area: when the listing has no real image, render a SOFT placeholder, NOT a raw saturated gradient. Specifically: a low-opacity radial gradient (~20% accent on neutral surface) with a centered Lucide icon (24px) keyed to the listing category — `Home`/`Tent` for stays, `Building2` for studios/offices, `Car` for vehicles, `Package` for gear/equipment, `MapPin` for flexible spaces. The icon must be the visual anchor; the gradient is ambient only.",
+    "Browse/search UI must not render implementation labels, keyboard shortcut hints, guard prose, or pattern names as customer-facing copy. Search memory, sorting, and quick-jump affordances should appear only when they are product requirements, not because Decantr context mentioned them.",
+    "Listing card hover state: apply `d-glow-hover` OR a small accent border-color shift on hover. Hover MUST be perceptible — without it, the card feels static and 'not-clickable'."
+  ],
+  "suggested_theme": {
+    "ids": [
+      "carbon"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  }
+}

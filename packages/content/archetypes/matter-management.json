@@ -1,0 +1,104 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "matter-management",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Matter Management",
+  "description": "Auxiliary matter management surface for tracking legal matters across lifecycle stages, inspecting matter detail with activity and billing context.",
+  "tags": [
+    "legal",
+    "matters",
+    "case-management",
+    "billing",
+    "workflow"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "matter management",
+        "legal matter",
+        "case management",
+        "matter tracking",
+        "legal workflow"
+      ],
+      "secondary": [
+        "matter list",
+        "matter detail",
+        "billable tracking",
+        "client matter"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "matters",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "matter-list"
+        },
+        {
+          "pattern": "kanban-board",
+          "preset": "standard",
+          "as": "matter-board"
+        }
+      ],
+      "default_layout": [
+        "data-table",
+        "kanban-board"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "matter-detail",
+      "patterns": [
+        {
+          "pattern": "matter-card",
+          "preset": "standard",
+          "as": "matter-summary"
+        },
+        {
+          "pattern": "activity-feed",
+          "preset": "standard",
+          "as": "matter-activity"
+        },
+        {
+          "pattern": "timeline",
+          "preset": "standard",
+          "as": "matter-timeline"
+        }
+      ],
+      "default_layout": [
+        "matter-card",
+        "activity-feed",
+        "timeline"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "matters": "Matter list page. Top region hosts a data-table listing matters with columns for matter name, client, practice area, responsible attorney, status, opened date, and billable hours. Below, a kanban-board pivots the same matters into lifecycle columns — intake, active, on-hold, closed — letting users drag matters across stages.",
+    "matter-detail": "Single matter detail page. Top region renders a matter-card summarizing client, opposing party, jurisdiction, responsible team, fee arrangement, and current status. Below left, an activity-feed captures filings, emails, calls, and notes in reverse chronological order. Below right, a timeline visualizes key milestones — filing deadlines, hearing dates, depositions — across the matter lifecycle."
+  },
+  "features": [
+    "matters",
+    "billing-tracking"
+  ],
+  "suggested_theme": {
+    "ids": [
+      "counsel",
+      "professional",
+      "paper"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

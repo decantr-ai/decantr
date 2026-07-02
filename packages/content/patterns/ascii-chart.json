@@ -1,0 +1,138 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "ascii-chart",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "ASCII Chart",
+  "description": "ASCII and braille character-based charts for terminal-style data visualization.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {
+      "terminal": "^1.0.0"
+    },
+    "requires_core": {
+      "components": [],
+      "charts": []
+    }
+  },
+  "components": ["Text", "Container"],
+  "default_preset": "line",
+  "presets": {
+    "line": {
+      "description": "ASCII line chart with labeled axes, dot-and-dash data points, and optional series legend",
+      "components": [],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _mono _fggreen",
+        "slots": {
+          "title": "Chart title",
+          "chart": "ASCII line visualization",
+          "legend": "Series legend",
+          "axes": "X/Y axis labels"
+        }
+      }
+    },
+    "bar": {
+      "description": "Horizontal ASCII bar chart using block fill characters with value labels and color legend",
+      "components": [],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _mono _fggreen",
+        "slots": {
+          "title": "Chart title",
+          "bars": "Horizontal bar entries",
+          "legend": "Color/pattern legend"
+        }
+      }
+    },
+    "sparkline": {
+      "description": "Inline sparkline using braille characters",
+      "components": [],
+      "layout": {
+        "layout": "inline",
+        "atoms": "_inline _mono _fggreen",
+        "slots": {
+          "sparkline": "Braille character visualization"
+        }
+      }
+    },
+    "braille": {
+      "description": "High-resolution braille dot matrix chart",
+      "components": [],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _mono _fggreen",
+        "slots": {
+          "title": "Chart title",
+          "chart": "Braille dot visualization",
+          "axes": "Axis labels"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _mono _fggreen",
+    "slots": {
+      "title": "Chart title",
+      "chart": "ASCII visualization",
+      "legend": "Color/symbol legend",
+      "axes": "X/Y axis labels"
+    }
+  },
+  "features": [
+    "realtime-updates",
+    "multiple-series",
+    "configurable-dimensions",
+    "time-based-axis",
+    "value-labels"
+  ],
+  "character_sets": {
+    "blocks": [
+      "█",
+      "▓",
+      "▒",
+      "░",
+      " "
+    ],
+    "braille": "U+2800 to U+28FF",
+    "lines": [
+      "_",
+      ".",
+      "-",
+      "~",
+      "^",
+      "*",
+      "|"
+    ]
+  },
+  "visual_brief": "Monospace terminal-style chart rendered entirely with ASCII and braille characters on a dark or transparent background. Green-on-dark color scheme by default. Line preset draws axes with pipe and dash characters, data points with dots and asterisks connected by line-drawing characters. Bar preset renders horizontal bars using block characters (full, three-quarter, half, quarter fills). Sparkline preset is a single inline row of braille dots. All presets include a chart title at top and axis labels along edges.",
+  "responsive": {
+    "mobile": "Chart width scales to container. Character count per row reduces. Sparkline preset preferred for inline metrics. Legend moves below chart.",
+    "tablet": "Standard chart dimensions. Side legend if space allows.",
+    "desktop": "Full-width charts with generous character grids. Legend renders beside the chart area."
+  },
+  "layout_hints": {
+    "chart_role": "This pattern is a terminal-native data summary. Keep labels, legend, and plot tightly coupled so the user reads it as one instrument rather than as styled text blocks.",
+    "character_density": "Preserve legibility of the character grid before adding extra annotations. On smaller widths, reduce series density rather than cramming more glyphs.",
+    "sparkline_use": "Sparkline mode should act as supportive inline telemetry, not as the primary analytical surface."
+  },
+  "motion": {
+    "micro": "Realtime updates may redraw or pulse subtly to indicate fresh data, but the chart should remain readable and stable.",
+    "transitions": "Data changes should feel like continuous terminal output rather than animated infographic motion."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "real-time-updates"
+  ],
+  "accessibility": {
+    "role": "img",
+    "aria-label": "ASCII chart",
+    "keyboard": [
+      "If the chart is interactive, keyboard focus should move to the chart summary or legend rather than each individual glyph."
+    ],
+    "announcements": [
+      "Expose chart title, series names, and key value summaries semantically so the visualization is not dependent on character art alone."
+    ]
+  }
+}

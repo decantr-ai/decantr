@@ -1,0 +1,101 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "org-governance-panel",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Org Governance Panel",
+  "description": "Organization governance workspace for managing approval policy, reviewing pending packages, and scanning the audit trail inside a shared dashboard shell.",
+  "dependencies": {
+    "patterns": {
+      "search-filter-bar": "^1.0.0"
+    },
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Card",
+        "Badge",
+        "Button",
+        "Select",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Card",
+    "Badge",
+    "Button",
+    "Select",
+    "icon"
+  ],
+  "default_preset": "workspace",
+  "presets": {
+    "workspace": {
+      "description": "Governance control surface with an overview header, policy controls, pending approvals list, and compact audit log.",
+      "components": [
+        "Card",
+        "Badge",
+        "Button",
+        "Select",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "workspace-header": "Primary governance intro card with organization selector, status badges, and contextual CTA rail",
+          "kpi-strip": "Optional KPI row for approvals, private packages, seats, and recent approval actions",
+          "policy-panel": "Policy control panel with toggle rows and supporting copy",
+          "approval-panel": "Pending approval queue with item summary and approve/reject actions",
+          "audit-panel": "Compact audit log panel with scope/action filters and chronological entries"
+        }
+      }
+    }
+  },
+  "visual_brief": "A calm but authoritative governance workspace. The top card should read like a control room rather than a generic form: organization identity chips, role/tier context, and a strong action rail to adjacent workspaces. Policy controls should feel deliberate and readable, with each rule presented as a decision row instead of raw checkbox clutter. Approval items should read like compact review cards with a clear split between package identity and decision actions. The audit area should feel dense but structured, with filters aligned into a tidy control band and event entries stacked in a subtle bordered log.",
+  "responsive": {
+    "mobile": "Everything stacks vertically. Header CTA rail wraps beneath context chips. Policy rows and approval cards turn into single-column cards before controls crowd. Audit filters stack.",
+    "tablet": "Header and audit controls may use split rows, but decision controls still break cleanly before feeling compressed.",
+    "desktop": "Workspace header can use a split layout with context on the left and org selector / CTA rail on the right. Policy, approvals, and audit remain visually compact without feeling dense."
+  },
+  "motion": {
+    "micro": "Policy toggles, approval actions, and audit filter controls may animate softly over 150-200ms, but the workspace should remain composed and administrative.",
+    "transitions": "Approval queues and audit log filters should update with light cross-fades or row reveals instead of abrupt reflows."
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "layout_hints": {
+    "cta_treatment": "Header actions should read like strong workspace transitions, not secondary ghost text. Use icon-led CTA rails or compact button groups with one clear primary action.",
+    "policy_rows": "Each rule should have explanatory copy on the left and the control on the right. On narrow widths, the control drops beneath the copy without losing alignment.",
+    "audit_filters": "Filters belong in a compact action band. Avoid ad hoc select sizing and preserve consistent x-axis insets across title, filters, and log entries."
+  },
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Organization governance panel",
+    "keyboard": [
+      "Tab moves through policy rows, approval actions, and audit filters in operational order."
+    ],
+    "announcements": [
+      "Policy changes, approval outcomes, and audit filter updates should be announced clearly."
+    ],
+    "focus_management": "When filters or decisions update the panel, keep focus on the initiating control or move it to the refreshed heading so the operator keeps context."
+  },
+  "composition": {
+    "OrgGovernancePanel": "Stack > [WorkspaceHeader + KpiStrip? + PolicyPanel + ApprovalPanel + AuditPanel]",
+    "WorkspaceHeader": "Card(d-surface, raised) > [IntroCopy + ContextBadges + OrgSelector + ActionRail]",
+    "PolicyPanel": "Card(d-surface) > [PanelTitle + PolicyRow[] + GovernanceHint?]",
+    "ApprovalPanel": "Card(d-surface) > [PanelTitle + PendingBadge + ApprovalCard[]]",
+    "AuditPanel": "Card(d-surface) > [PanelTitle + FilterBand + AuditEntry[]]"
+  },
+  "io": {
+    "consumes": [],
+    "produces": [],
+    "actions": [
+      "policy-toggle",
+      "approve-content",
+      "reject-content",
+      "filter-audit-log"
+    ]
+  }
+}

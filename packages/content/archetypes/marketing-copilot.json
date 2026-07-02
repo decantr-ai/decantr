@@ -1,0 +1,100 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "marketing-copilot",
+  "role": "public",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Copilot Landing",
+  "description": "Marketing landing page showcasing an AI copilot product. Features a split hero with live demo, feature breakdown, how-it-works flow, and conversion CTAs.",
+  "tags": [
+    "marketing",
+    "landing",
+    "copilot",
+    "demo",
+    "ai"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "copilot landing page",
+        "ai copilot marketing",
+        "copilot demo page",
+        "ai assistant landing",
+        "copilot product page"
+      ],
+      "secondary": [
+        "ai demo",
+        "copilot showcase",
+        "ai product marketing",
+        "interactive demo landing",
+        "copilot homepage"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 0.6,
+    "tier": "optional"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "split",
+          "as": "demo-hero"
+        },
+        {
+          "pattern": "features",
+          "preset": "standard",
+          "as": "feature-grid"
+        },
+        {
+          "pattern": "how-it-works",
+          "preset": "standard",
+          "as": "steps"
+        },
+        {
+          "pattern": "cta-section",
+          "preset": "standard",
+          "as": "conversion"
+        }
+      ],
+      "default_layout": [
+        "hero",
+        "features",
+        "how-it-works",
+        "cta-section"
+      ],
+      "shell": "top-nav-footer"
+    }
+  ],
+  "page_briefs": {
+    "home": "Copilot product landing page with a split hero section — left side shows a headline, subtext, and primary CTA button; right side embeds an interactive copilot demo where visitors can type a question and see a simulated AI response in real time. Below, a features grid highlights core capabilities: context-aware suggestions, keyboard-first interaction, multi-model support, and workspace integration, each with icons and descriptions. A how-it-works section walks through three steps — connect your workspace, configure the copilot, and start collaborating — with numbered illustrations. The page closes with a full-width CTA section encouraging sign-up with primary and secondary buttons and social proof metrics."
+  },
+  "features": [
+    "marketing",
+    "demo",
+    "seo"
+  ],
+  "shells": {
+    "top-nav-footer": "Top navigation bar with footer for public-facing marketing pages"
+  },
+  "dependencies": {
+    "patterns": {
+      "hero": "^1.0.0",
+      "features": "^1.0.0",
+      "how-it-works": "^1.0.0",
+      "cta-section": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "clean"
+    ],
+    "modes": [
+      "light"
+    ]
+  }
+}

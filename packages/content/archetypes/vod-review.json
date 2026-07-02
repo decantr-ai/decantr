@@ -1,0 +1,97 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "vod-review",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "VOD Review",
+  "description": "Auxiliary esports VOD review surface for browsing a library of match recordings and annotating frames with coaching notes and timestamps.",
+  "tags": [
+    "esports",
+    "vod",
+    "review",
+    "coaching",
+    "annotations"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "vod review",
+        "match review",
+        "coaching vod",
+        "vod library",
+        "esports review"
+      ],
+      "secondary": [
+        "video annotation",
+        "replay review",
+        "film study"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "vods",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "vod-list"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "content",
+          "as": "vod-thumbnails"
+        }
+      ],
+      "default_layout": [
+        "data-table",
+        "card-grid"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "vod-detail",
+      "patterns": [
+        {
+          "pattern": "vod-annotator",
+          "preset": "standard",
+          "as": "vod-player"
+        },
+        {
+          "pattern": "timeline",
+          "preset": "standard",
+          "as": "annotation-timeline"
+        }
+      ],
+      "default_layout": [
+        "vod-annotator",
+        "timeline"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "vods": "VOD library page. Top region renders a data-table listing recordings with columns for match title, opponent, date, map, duration, coach, and review status. Below, a content card-grid shows thumbnails with handle overlays, match scores, and play-count badges, giving visual access to the same library for quick browsing.",
+    "vod-detail": "Single VOD review page. Main region hosts a vod-annotator with the video player, draw-on-frame annotation tools, timestamped comment threads, and a clip-marking tool for building review reels. Below, a timeline surfaces all annotations as pins along the match duration, letting the coach jump straight to flagged moments."
+  },
+  "features": [
+    "vod-review",
+    "annotations"
+  ],
+  "suggested_theme": {
+    "ids": [
+      "carbon",
+      "luminarum",
+      "clean"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  }
+}

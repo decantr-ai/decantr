@@ -1,0 +1,139 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "recipefork-recipe-detail",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipefork Recipe Detail",
+  "description": "Recipefork's recipe detail surface with hero imagery, summary/actions, Chef Mode ingredient and instruction displays, optional plating presentation, dynamic cooking tips, public provenance attribution, owner-only branch analytics, and comments, all under the shared Recipefork top-nav shell.",
+  "tags": [
+    "recipes",
+    "detail",
+    "chef-mode",
+    "comments",
+    "2026"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "recipefork recipe detail",
+        "chef mode recipe page",
+        "recipe detail with comments"
+      ],
+      "secondary": [
+        "recipe hero page",
+        "fork provenance recipe",
+        "recipe comments"
+      ],
+      "negative": [
+        "catalog",
+        "admin"
+      ]
+    },
+    "implies": [
+      "sharing",
+      "comments",
+      "reactions",
+      "forking"
+    ],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "recipe-detail",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "image-overlay",
+          "as": "recipe-hero"
+        },
+        {
+          "pattern": "detail-header",
+          "preset": "standard",
+          "as": "recipe-summary"
+        },
+        {
+          "pattern": "recipefork-fork-provenance",
+          "preset": "lineage-card",
+          "as": "recipe-provenance"
+        },
+        {
+          "pattern": "recipefork-chef-ingredients-display",
+          "preset": "scaled",
+          "as": "chef-ingredients"
+        },
+        {
+          "pattern": "recipefork-chef-instructions-display",
+          "preset": "hierarchical",
+          "as": "chef-instructions"
+        },
+        {
+          "pattern": "recipefork-presentation-display",
+          "preset": "numbered-steps",
+          "as": "recipe-presentation"
+        },
+        {
+          "pattern": "recipefork-cooking-tips-display",
+          "preset": "bullet-list",
+          "as": "cooking-tips"
+        },
+        {
+          "pattern": "comment-thread",
+          "preset": "sidebar",
+          "as": "recipe-comments"
+        }
+      ],
+      "default_layout": [
+        "recipe-hero",
+        "recipe-summary",
+        "recipe-provenance",
+        "chef-ingredients",
+        "chef-instructions",
+        "recipe-presentation",
+        "cooking-tips",
+        "recipe-comments"
+      ],
+      "shell": "recipefork-top-nav"
+    }
+  ],
+  "page_briefs": {
+    "recipe-detail": "Recipefork's recipe detail page is equal parts showcase and utility: hero imagery at the top, rich summary/actions, then the actual cooking content. Chef Mode recipes should preserve scaled ingredients, hierarchical instructions, optional plating presentation, and immediate-parent/root-original attribution for all viewers. Recipe-specific cooking tips replace generic filler. Branch metrics, fork-history inspection, and descendant branch timelines are owner-facing analytics rather than public browsing defaults."
+  },
+  "features": [
+    "sharing",
+    "comments",
+    "reactions",
+    "forking",
+    "chef-mode",
+    "presentation",
+    "cooking-tips",
+    "lineage",
+    "branch-analytics"
+  ],
+  "dependencies": {
+    "patterns": {
+      "hero": ">=1.0.0",
+      "detail-header": ">=1.0.0",
+      "recipefork-fork-provenance": ">=1.0.0",
+      "recipefork-chef-ingredients-display": ">=1.0.0",
+      "recipefork-chef-instructions-display": ">=1.0.0",
+      "recipefork-presentation-display": ">=1.0.0",
+      "recipefork-cooking-tips-display": ">=1.0.0",
+      "comment-thread": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "recipefork"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ],
+    "shapes": [
+      "rounded"
+    ]
+  }
+}

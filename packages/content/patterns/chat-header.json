@@ -1,0 +1,105 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "chat-header",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Chat Header",
+  "description": "Contextual header for active conversation with editable title, status indicator, and action buttons.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Badge",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Badge",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Standard chat header with title and actions",
+      "components": [
+        "Button",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _aic _jcsb _px6 _py3 _borderB _bgbg",
+        "slots": {
+          "title": "Editable conversation subject/title",
+          "status": "Online/offline indicator or model name badge",
+          "actions": "Search, export, branch, settings buttons"
+        }
+      }
+    },
+    "compact": {
+      "description": "Minimal header for mobile or constrained layouts",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _aic _jcsb _px4 _py2 _borderB _bgbg",
+        "slots": {
+          "back": "Back navigation button",
+          "title": "Conversation title (truncated)",
+          "menu": "Overflow menu button"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "row",
+    "atoms": "_flex _aic _jcsb _px6 _py3 _borderB _bgbg",
+    "slots": {
+      "title": "Editable conversation subject",
+      "status": "Online/offline or model name",
+      "actions": "Search, export, branch, settings"
+    }
+  },
+  "visual_brief": "Horizontal bar at the top of a chat panel with the conversation title on the left (editable on click, showing a pencil icon on hover), a status indicator dot (green for online, gray for offline, or a model name badge) in the center-left area, and action icon buttons on the right (search, export, branch, settings). The bar has a bottom border separator. Compact preset reduces padding and hides less-used actions behind a more-menu.",
+  "layout_hints": {
+    "title_priority": "Keep the title as the main anchor of the header. Status and action controls should support the title rather than crowd it.",
+    "compact_actions": "On narrow widths, collapse lower-priority actions into overflow before truncating the title into meaninglessness.",
+    "editable_title": "Inline title editing should preserve the header rhythm and should not cause the whole bar to jump when entering edit mode."
+  },
+  "responsive": {
+    "mobile": "Title truncates with ellipsis. Actions collapse into a single kebab menu. Status indicator moves below title.",
+    "tablet": "Full title visible. Two primary actions visible, rest in overflow menu.",
+    "desktop": "All elements visible inline. Title is editable on click. Full action button row."
+  },
+  "motion": {
+    "micro": "Action icons, status pills, and title-edit affordances may animate subtly on hover and focus over 120-180ms.",
+    "transitions": "Overflow menu reveal and title-edit mode changes should animate softly without shifting the overall header layout."
+  },
+  "interactions": [
+    "hover-reveal",
+    "animate-on-mount"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Chat header",
+    "keyboard": [
+      "Tab moves through title editing, status, and action controls in header order.",
+      "Keyboard users should be able to enter and exit title edit mode predictably."
+    ],
+    "announcements": [
+      "Conversation title, status, and current action context should be announced before secondary controls."
+    ],
+    "focus_management": "When entering title edit mode, move focus directly into the editable field and return it to the title trigger on cancel or save."
+  },
+  "composition": {
+    "ChatHeader": "Bar(d-surface, row, space-between, border-bottom) > [Title(editable, heading4) + StatusIndicator(d-annotation, dot: online|offline) + ActionButtons(d-interactive)]",
+    "ActionButtons": "Row(gap-2) > IconButton(variant: ghost)[]"
+  }
+}

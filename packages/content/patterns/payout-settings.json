@@ -1,0 +1,130 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "payout-settings",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Payout Settings",
+  "description": "Bank/payment configuration form with payout method selection, bank details, schedule settings, and payout history.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Card",
+        "Input",
+        "Select",
+        "Badge",
+        "Radio",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Card",
+    "Input",
+    "Select",
+    "Badge",
+    "Radio",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full payout setup with all options",
+      "components": [
+        "Button",
+        "Card",
+        "Input",
+        "Select",
+        "Badge",
+        "Radio",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6",
+        "slots": {
+          "method-select": "Bank, PayPal, Stripe selection",
+          "bank-form": "Bank account details form",
+          "payout-schedule": "Weekly/monthly selection",
+          "threshold": "Minimum payout amount",
+          "history": "Past payouts table"
+        }
+      }
+    },
+    "readonly": {
+      "description": "Display current payout settings",
+      "components": [
+        "Card",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "method": "Current payout method",
+          "schedule": "Payout schedule",
+          "next-payout": "Next payout info"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap6",
+    "slots": {
+      "method": "Payout method selection",
+      "details": "Account details",
+      "schedule": "Schedule settings",
+      "history": "Payout history"
+    }
+  },
+  "io": {
+    "produces": [
+      "settings-saved"
+    ],
+    "consumes": [
+      "payout-settings",
+      "payout-history"
+    ]
+  },
+  "visual_brief": "Settings form with a payout method selector at the top (radio cards for Bank Transfer/ACH, PayPal, Stripe, with icons). Below, a details section shows the selected method's account fields (bank name, routing number, account number — masked with reveal toggle). A schedule section has radio buttons or toggles for payout frequency (weekly, bi-weekly, monthly) with a next payout date indicator. A payout history list at the bottom shows recent payouts with date, amount, status, and method. The readonly preset disables all inputs and shows data in display-only mode.",
+  "responsive": {
+    "mobile": "Method cards stack vertically. Account fields are full-width. Schedule options stack. Payout history becomes a card list.",
+    "tablet": "Method cards in a 2x2 grid. Standard form layout. History table visible.",
+    "desktop": "Method cards in a single row. Account and schedule sections side by side. Full history table."
+  },
+  "layout_hints": {
+    "payout_priority": "Lead with current payout method and schedule first so creators immediately understand how and when they get paid. History and deeper configuration are secondary.",
+    "trust_clarity": "Masked account identity, next payout timing, and payout state should stay visible and calm to reinforce confidence in the setup.",
+    "readonly_translation": "Readonly mode should preserve the same structural hierarchy as edit mode so reviewing payout settings never feels like a different component."
+  },
+  "motion": {
+    "micro": "Method selection and reveal toggles may confirm state changes subtly without making financial settings feel playful.",
+    "transitions": "Switching payout methods or schedules should feel deliberate and trustworthy, especially around sensitive banking information."
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Payout settings",
+    "keyboard": [
+      "Method selection, account fields, schedule controls, and payout history should follow a clear top-to-bottom order."
+    ],
+    "announcements": [
+      "Current payout method, schedule, and payout status should be exposed semantically so the setup remains understandable without relying on card or badge styling alone."
+    ]
+  },
+  "composition": {
+    "PayoutSettings": "Container(d-section, flex-col, gap-6) > [MethodSelect + BankForm + ScheduleSection + PayoutHistory?]",
+    "MethodSelect": "Row(d-control) > RadioCard(d-surface, icon, selectable)[]",
+    "BankForm": "Section(d-surface) > [BankName(d-control) + RoutingNumber(d-control, masked) + AccountNumber(d-control, masked) + RevealToggle(d-interactive)]",
+    "ScheduleSection": "Section(d-surface) > [FrequencyRadio(d-control) > Option[] + NextPayoutDate(d-annotation) + ThresholdInput(d-control)]",
+    "PayoutHistory": "Table(d-data) > PayoutRow(d-data-row)[]"
+  }
+}

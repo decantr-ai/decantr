@@ -1,0 +1,458 @@
+{
+  "$schema": "https://decantr.ai/schemas/theme.v1.json",
+  "id": "carbon-neon",
+  "version": "1.0.0",
+  "name": "Carbon Neon",
+  "description": "Carbon's sleek dark surfaces with vivid neon cyan accent. For mission-control, agent dashboards, and data-intensive interfaces.",
+  "tags": [
+    "dark",
+    "light",
+    "neutral",
+    "developer",
+    "minimal",
+    "professional",
+    "neon",
+    "vibrant"
+  ],
+  "personality": "clean + minimal + professional + developer-focused",
+  "seed": {
+    "primary": "#6366F1",
+    "secondary": "#A1A1AA",
+    "accent": "#00D4FF",
+    "background": "#18181B"
+  },
+  "palette": {
+    "background": {
+      "light": "#FAFAFA",
+      "dark": "#18181B"
+    },
+    "surface": {
+      "light": "#FFFFFF",
+      "dark": "#1F1F23"
+    },
+    "surface-raised": {
+      "light": "#F4F4F5",
+      "dark": "#27272A"
+    },
+    "border": {
+      "light": "#E4E4E7",
+      "dark": "#3F3F46"
+    },
+    "text": {
+      "light": "#18181B",
+      "dark": "#FAFAFA"
+    },
+    "text-muted": {
+      "light": "#71717A",
+      "dark": "#A1A1AA"
+    },
+    "primary": {
+      "light": "#4F46E5",
+      "dark": "#6366F1"
+    },
+    "primary-hover": {
+      "light": "#4338CA",
+      "dark": "#818CF8"
+    },
+    "accent-glow": {
+      "dark": "rgba(0, 212, 255, 0.3)",
+      "light": "rgba(0, 212, 255, 0.15)"
+    },
+    "secondary": {
+      "dark": "#A78BFA",
+      "light": "#7C3AED"
+    }
+  },
+  "modes": [
+    "light",
+    "dark",
+    "auto"
+  ],
+  "shapes": [
+    "rounded",
+    "sharp",
+    "pill"
+  ],
+  "cvd_support": [
+    "deuteranopia",
+    "protanopia"
+  ],
+  "tokens": {
+    "base": {
+      "success": "#22C55E",
+      "danger": "#EF4444",
+      "warning": "#F59E0B"
+    },
+    "cvd": {
+      "deuteranopia": {
+        "success": "#2196F3",
+        "danger": "#FF8F00"
+      },
+      "protanopia": {
+        "success": "#03A9F4",
+        "danger": "#FFC107"
+      }
+    }
+  },
+  "decantr_compat": ">=2.0.0",
+  "source": "core",
+  "decorators": {
+    "carbon-canvas": "Background color using theme background token. Clean, minimal foundation.",
+    "carbon-glass": "Glassmorphic panel with backdrop-filter blur(12px), semi-transparent surface background, 1px border. Use for nav bars, sidebars, floating panels.",
+    "carbon-input": "Soft border with gentle focus ring using primary blue. Border transitions on focus.",
+    "carbon-card": "Surface background, subtle border, 8px radius, hover shadow transition.",
+    "carbon-divider": "Hairline separator using border-color token.",
+    "carbon-code": "Monospace font, surface-raised background, subtle 3px left border accent in primary color.",
+    "carbon-bubble-user": "Right-aligned message bubble with primary-tinted background for user messages.",
+    "carbon-bubble-ai": "Left-aligned message bubble with surface background for AI responses.",
+    "carbon-fade-slide": "Entrance animation: opacity 0 to 1, translateY 12px to 0, 200ms ease-out.",
+    "carbon-skeleton": "Loading placeholder with subtle pulse animation for skeleton states."
+  },
+  "spatial": {
+    "density_bias": 0,
+    "content_gap_shift": 0,
+    "section_padding": "5rem",
+    "card_wrapping": "minimal",
+    "surface_override": null
+  },
+  "motion": {
+    "preference": "subtle",
+    "reduce_motion": true,
+    "entrance": "carbon-fade-slide",
+    "micro": "smooth",
+    "timing": "cubic-bezier(0.4, 0, 0.2, 1)",
+    "durations": {
+      "hover": "150ms",
+      "entrance": "200ms",
+      "modal": "250ms",
+      "page": "300ms",
+      "instant": "60ms",
+      "fast": "120ms",
+      "base": "200ms",
+      "slow": "350ms",
+      "slower": "550ms",
+      "stagger": "50ms"
+    },
+    "easings": {
+      "ease": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "easeOut": "cubic-bezier(0, 0, 0.2, 1)",
+      "easeIn": "cubic-bezier(0.4, 0, 1, 1)",
+      "spring": "cubic-bezier(0.34, 1.56, 0.64, 1)"
+    }
+  },
+  "elevation": {
+    "1": { "light": "0 1px 2px rgba(0,0,0,0.06)", "dark": "0 1px 2px rgba(0,0,0,0.4)" },
+    "2": { "light": "0 2px 4px rgba(0,0,0,0.08)", "dark": "0 2px 4px rgba(0,0,0,0.5)" },
+    "3": { "light": "0 4px 12px rgba(0,0,0,0.10)", "dark": "0 4px 16px rgba(0, 212, 255, 0.20)" },
+    "4": { "light": "0 8px 24px rgba(0,0,0,0.14)", "dark": "0 8px 28px rgba(0, 212, 255, 0.30)" },
+    "5": { "light": "0 16px 48px rgba(0,0,0,0.18)", "dark": "0 16px 48px rgba(0, 212, 255, 0.35)" }
+  },
+  "effects": {
+    "enabled": true,
+    "intensity": "subtle",
+    "type_mapping": {
+      "card": [
+        "carbon-card"
+      ],
+      "input": [
+        "carbon-input"
+      ],
+      "code_block": [
+        "carbon-code"
+      ]
+    },
+    "component_fallback": {
+      "pre": "code_block",
+      "code": "code_block",
+      "Card": "card",
+      "Input": "input"
+    }
+  },
+  "treatments": {
+    "d-surface": {
+      "background": "rgba(31, 31, 35, 0.8)",
+      "backdrop-filter": "blur(8px)",
+      "-webkit-backdrop-filter": "blur(8px)"
+    },
+    "d-interactive[data-variant=\"primary\"]:hover": {
+      "box-shadow": "0 0 20px var(--d-accent-glow, rgba(0, 212, 255, 0.3))"
+    },
+    "d-surface[data-status=\"error\"]": {
+      "border-color": "var(--d-error)",
+      "box-shadow": "0 0 12px color-mix(in srgb, var(--d-error) 20%, transparent)"
+    },
+    "d-control:focus": {
+      "border-color": "var(--d-accent)",
+      "box-shadow": "0 0 0 3px var(--d-accent-glow, rgba(0, 212, 255, 0.2))"
+    }
+  },
+  "compositions": {
+    "chat": {
+      "description": "Chat interface with conversation list sidebar and message thread. Anchored input at bottom.",
+      "shell": "chat-portal",
+      "effects": [
+        "carbon-glass"
+      ]
+    },
+    "auth": {
+      "description": "Centered auth forms with clean card styling.",
+      "shell": "centered",
+      "card_style": "carbon-card"
+    },
+    "marketing": {
+      "description": "Marketing pages with top nav and footer. Clean sections with subtle separators.",
+      "shell": "top-nav-footer"
+    }
+  },
+  "radius": {
+    "philosophy": "rounded",
+    "base": 8
+  },
+  "pattern_preferences": {
+    "prefer": [
+      "chat-thread",
+      "chat-input",
+      "conversation-list",
+      "auth-form"
+    ],
+    "avoid": [],
+    "default_presets": {}
+  },
+  "shell": {
+    "preferred": [
+      "chat-portal",
+      "sidebar-main",
+      "top-nav-main"
+    ],
+    "avoid": [],
+    "nav_style": "minimal",
+    "default_nav_state": "expanded",
+    "root": "carbon-canvas",
+    "nav": "carbon-glass",
+    "header": "",
+    "navLabel": "",
+    "brand": "",
+    "dimensions": null
+  },
+  "typography": {
+    "scale": "modular",
+    "heading_weight": 600,
+    "body_weight": 400,
+    "mono": "ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, monospace",
+    "display": "'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif",
+    "body": "'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif"
+  },
+  "decorator_definitions": {
+    "carbon-canvas": {
+      "description": "Background color using theme background token. Clean, minimal foundation.",
+      "intent": "Use as the root page background. Identical to carbon but serves as the dark canvas for neon accent pops.",
+      "suggested_properties": {
+        "background-color": "var(--d-bg, #18181B)",
+        "color": "var(--d-text, #FAFAFA)",
+        "min-height": "100vh"
+      },
+      "pairs_with": [
+        "carbon-glass",
+        "carbon-divider"
+      ],
+      "usage": [
+        "Page root containers",
+        "App shell backgrounds"
+      ]
+    },
+    "carbon-glass": {
+      "description": "Glassmorphic panel with backdrop-filter blur(12px), semi-transparent surface background, 1px border. Use for nav bars, sidebars, floating panels.",
+      "intent": "Use for navigation and floating panels. In carbon-neon, these surfaces receive subtle neon accent highlights on interactive states.",
+      "suggested_properties": {
+        "background": "rgba(31, 31, 35, 0.8)",
+        "backdrop-filter": "blur(12px)",
+        "-webkit-backdrop-filter": "blur(12px)",
+        "border": "1px solid var(--d-border, #3F3F46)",
+        "transition": "border-color 150ms ease, background 150ms ease"
+      },
+      "pairs_with": [
+        "carbon-canvas",
+        "carbon-card"
+      ],
+      "usage": [
+        "Navigation bars",
+        "Sidebar panels",
+        "Floating panels",
+        "Sticky headers"
+      ],
+      "hover_properties": {
+        "border-color": "color-mix(in srgb, var(--d-accent, #00D4FF) 30%, var(--d-border, #3F3F46))",
+        "background": "rgba(31, 31, 35, 0.88)"
+      }
+    },
+    "carbon-input": {
+      "description": "Soft border with gentle focus ring using primary blue. Border transitions on focus.",
+      "intent": "Use for form inputs. On focus, the neon cyan accent creates a vivid glow ring that differentiates this from base carbon.",
+      "suggested_properties": {
+        "border": "1px solid var(--d-border, #3F3F46)",
+        "border-radius": "var(--d-radius, 8px)",
+        "background": "var(--d-surface, #1F1F23)",
+        "transition": "border-color 150ms ease, box-shadow 150ms ease"
+      },
+      "pairs_with": [
+        "carbon-card",
+        "carbon-canvas"
+      ],
+      "usage": [
+        "Text inputs",
+        "Search fields",
+        "Text areas",
+        "Select dropdowns"
+      ],
+      "hover_properties": {
+        "border-color": "color-mix(in srgb, var(--d-accent, #00D4FF) 40%, var(--d-border, #3F3F46))"
+      },
+      "focus_properties": {
+        "border-color": "var(--d-accent, #00D4FF)",
+        "box-shadow": "0 0 0 3px var(--d-accent-glow, rgba(0, 212, 255, 0.25))",
+        "outline": "none"
+      }
+    },
+    "carbon-card": {
+      "description": "Surface background, subtle border, 8px radius, hover shadow transition.",
+      "intent": "Use for content containers. Hover state gains a subtle neon cyan shadow accent for the data-intensive, mission-control feel.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #1F1F23)",
+        "border": "1px solid var(--d-border, #3F3F46)",
+        "border-radius": "var(--d-radius, 8px)",
+        "transition": "box-shadow 150ms ease, border-color 150ms ease, transform 100ms ease"
+      },
+      "pairs_with": [
+        "carbon-canvas",
+        "carbon-divider"
+      ],
+      "usage": [
+        "Agent status cards",
+        "Data panels",
+        "Dashboard widgets",
+        "Metric containers"
+      ],
+      "hover_properties": {
+        "border-color": "var(--d-accent, #00D4FF)",
+        "box-shadow": "0 4px 20px var(--d-accent-glow, rgba(0, 212, 255, 0.2)), 0 0 0 1px var(--d-accent-glow, rgba(0, 212, 255, 0.2))"
+      },
+      "active_properties": {
+        "transform": "translateY(1px)",
+        "box-shadow": "0 2px 8px var(--d-accent-glow, rgba(0, 212, 255, 0.15))"
+      }
+    },
+    "carbon-divider": {
+      "description": "Hairline separator using border-color token.",
+      "intent": "Use to separate content sections cleanly. The neon accent appears on interactive elements, not dividers.",
+      "suggested_properties": {
+        "border-top": "1px solid var(--d-border, #3F3F46)",
+        "margin": "0"
+      },
+      "pairs_with": [
+        "carbon-card",
+        "carbon-canvas"
+      ],
+      "usage": [
+        "Section dividers",
+        "List separators",
+        "Content breaks"
+      ]
+    },
+    "carbon-code": {
+      "description": "Monospace font, surface-raised background, subtle 3px left border accent in primary color.",
+      "intent": "Use for code blocks and terminal output. The left border accent uses the neon cyan for a more vivid developer-tool feel.",
+      "suggested_properties": {
+        "font-family": "ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, monospace",
+        "background": "var(--d-surface-raised, #27272A)",
+        "border-left": "3px solid var(--d-accent, #00D4FF)",
+        "border-radius": "var(--d-radius, 6px)",
+        "padding": "16px"
+      },
+      "pairs_with": [
+        "carbon-card",
+        "carbon-canvas"
+      ],
+      "usage": [
+        "Code blocks",
+        "Terminal output",
+        "API responses",
+        "Agent logs"
+      ]
+    },
+    "carbon-bubble-user": {
+      "description": "Right-aligned message bubble with primary-tinted background for user messages.",
+      "intent": "Use for user messages in agent chat interfaces. The tint is subtler, letting neon accents on status elements take visual priority.",
+      "suggested_properties": {
+        "background": "rgba(124, 147, 176, 0.15)",
+        "border-radius": "16px 16px 4px 16px",
+        "padding": "12px 16px",
+        "margin-left": "auto",
+        "max-width": "80%"
+      },
+      "pairs_with": [
+        "carbon-bubble-ai",
+        "carbon-canvas"
+      ],
+      "usage": [
+        "User chat messages",
+        "Command inputs"
+      ]
+    },
+    "carbon-bubble-ai": {
+      "description": "Left-aligned message bubble with surface background for AI responses.",
+      "intent": "Use for AI/agent responses in chat interfaces. Neutral surface lets the content and any inline neon status indicators stand out.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #1F1F23)",
+        "border-radius": "16px 16px 16px 4px",
+        "padding": "12px 16px",
+        "margin-right": "auto",
+        "max-width": "80%"
+      },
+      "pairs_with": [
+        "carbon-bubble-user",
+        "carbon-canvas"
+      ],
+      "usage": [
+        "Agent responses",
+        "System messages",
+        "Streaming output"
+      ]
+    },
+    "carbon-fade-slide": {
+      "description": "Entrance animation: opacity 0 to 1, translateY 12px to 0, 200ms ease-out.",
+      "intent": "Use as the entrance animation for dashboard panels and data cards appearing on load.",
+      "suggested_properties": {
+        "animation": "carbon-fade-slide 200ms ease-out both",
+        "opacity": "0",
+        "transform": "translateY(12px)"
+      },
+      "pairs_with": [
+        "carbon-card",
+        "carbon-glass"
+      ],
+      "usage": [
+        "Page entrance animations",
+        "Dashboard widget reveals",
+        "Card stagger animations"
+      ]
+    },
+    "carbon-skeleton": {
+      "description": "Loading placeholder with subtle pulse animation for skeleton states.",
+      "intent": "Use while agent data or dashboard metrics load. The pulse indicates active data fetching without visual noise.",
+      "suggested_properties": {
+        "background": "var(--d-surface-raised, #27272A)",
+        "border-radius": "var(--d-radius, 6px)",
+        "animation": "pulse 1.5s ease-in-out infinite"
+      },
+      "pairs_with": [
+        "carbon-card",
+        "carbon-canvas"
+      ],
+      "usage": [
+        "Loading skeletons",
+        "Metric placeholders",
+        "Agent status placeholders"
+      ]
+    }
+  }
+}

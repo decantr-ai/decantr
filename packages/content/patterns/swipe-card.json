@@ -1,0 +1,126 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "swipe-card",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Swipe Card",
+  "description": "Photo-first profile card content rendered inside the front position of spatial-card-stack's deck preset. Full-bleed photo with bottom gradient overlay carrying name, age, distance, bio, and interest tags. Supports a stack of additional thumbnail photos for multi-photo profiles. Designed to be tactile, polaroid-feeling, and instantly readable at swipe-speed.",
+  "category": "card",
+  "tags": [
+    "2026",
+    "card",
+    "profile",
+    "swipe",
+    "photo",
+    "consumer",
+    "social"
+  ],
+  "components": [
+    "Card",
+    "PhotoStack",
+    "PrimaryPhoto",
+    "ThumbnailRow",
+    "GradientOverlay",
+    "NameAge",
+    "DistanceTag",
+    "Bio",
+    "InterestTags",
+    "MoreInfoButton"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Single primary photo with name+age+distance+bio overlay at the bottom and a row of interest pills. Optimized for the deck preset of spatial-card-stack at 320×420px.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_relative _w-full _h-full _overflow-hidden _rounded-3xl _bg-surface"
+      }
+    },
+    "multi-photo": {
+      "description": "Primary photo plus 2-3 thumbnail photos in a horizontal row at the top edge. Tapping a thumbnail swaps it into the primary slot. Useful for richer profile previews.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_relative _w-full _h-full _overflow-hidden _rounded-3xl _bg-surface"
+      }
+    },
+    "minimal": {
+      "description": "Photo + name only. Strips bio and interests for the most reductive swipe-card variant. Used for high-volume rapid-swipe scenarios.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_relative _w-full _h-full _overflow-hidden _rounded-3xl _bg-surface"
+      }
+    }
+  },
+  "visual_brief": "A single rectangular card filling its parent (the spatial-card-stack's depth-card slot at 320×420px in the deck preset). Border-radius 24px, overflow hidden, soft coral-tinted shadow (the swipecircle-card decorator). The PrimaryPhoto fills the full card surface (object-fit: cover, aspect-ratio defined by the parent). Above the photo sits a GradientOverlay — a linear-gradient from transparent at 50% to rgba(0,0,0,0.7) at 100%, occupying the bottom half of the card. The overlay ensures any text reads cleanly against any photo. Inside the bottom 40% of the card (text area), in white, sits a stack: NameAge (font-display, text-2xl, font-bold) on the first line — name + comma + age, e.g., 'Maya, 27'. On the second line: a small DistanceTag (text-xs, font-medium, with a 12px MapPin Lucide icon) — '3 km away' or 'Brooklyn, NY'. Below that: Bio (text-sm, font-normal, line-clamp 2) — a one-sentence personality blurb like 'Coffee enthusiast, weekend hiker, dog person 🐕'. Below the bio: an InterestTags row — 3-5 pill chips, very compact (padding 4px 10px, font-size 11px, font-weight 500). Each tag has a translucent white fill (rgba(255,255,255,0.18)), a thin white border (1px solid rgba(255,255,255,0.3)), and white text. Tags wrap on overflow. In the multi-photo preset, the top edge of the card has a horizontal row of 3 small thumbnail circles (32×32, white border, sitting on the photo with a slight drop shadow), tappable to swap into PrimaryPhoto. A MoreInfoButton (small chevron-up icon button at the bottom-right corner, 32×32, glassy bg) optionally expands the card into an in-deck modal preview with the full bio. The card's gestural behavior is inherited from spatial-card-stack — swipe left/right triggers pass/like, drag tilts the card up to ±15deg rotateY. During drag, a translucent overlay tints the card direction-cued: coral wash on right-drag (LIKE), gray wash on left-drag (PASS), with a centered icon (Heart for like, X for pass) that fades in opacity 0→0.8 as the drag passes the 30% threshold.",
+  "layout_hints": {
+    "container": "absolute-positioned card inside spatial-card-stack depth-card slot",
+    "photo_aspect": "Card defaults to 3/4 aspect ratio. PrimaryPhoto fills 100%×100% with object-fit: cover.",
+    "text_overlay": "Text area is the bottom 40% of the card surface, with a gradient overlay ensuring readability.",
+    "interactivity": "Swipe gestures handled by parent spatial-card-stack's gesture-zone slot — swipe-card itself is content only.",
+    "drag_feedback": "Direction-cued color wash + icon overlay as user drags past threshold (managed by parent gesture handler)"
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_relative _w-full _h-full _overflow-hidden _rounded-3xl _bg-surface",
+    "slots": {
+      "card": "Outer container. Position: relative. Width and height fill the parent (the spatial-card-stack depth-card slot — typically 320×420px). Border-radius 24px. Overflow hidden. Background var(--d-surface) as fallback. Applies the swipecircle-card decorator (or theme equivalent) for the lift shadow.",
+      "photo-stack": "Layered photo composition. Uses CSS grid 1×1 so all photo elements occupy the same cell. The PrimaryPhoto fills the cell; thumbnails (multi-photo preset) overlay at the top edge.",
+      "primary-photo": "Img element filling the card. width 100%, height 100%, object-fit: cover, object-position: center. Default placeholder when src is missing: a soft peach-to-coral gradient with a centered User Lucide icon at 64px stroke-1.",
+      "thumbnail-row": "Conditional slot — visible only in multi-photo preset. Horizontal flex row of 3 small circular thumbnail photos (32×32, border-radius 9999px, white 2px border). Positioned absolute, top: 12px, left: 50%, translateX(-50%). Each thumbnail: cursor pointer, on tap swaps into PrimaryPhoto with a 240ms crossfade.",
+      "gradient-overlay": "Position absolute, inset: 0 (or bottom-half only). Background linear-gradient(180deg, transparent 0%, transparent 50%, rgba(0,0,0,0.7) 100%). Pointer-events none — does not block clicks on the card. Z-index above PrimaryPhoto, below text content.",
+      "name-age": "Span containing name + age, formatted as 'Name, Age' (e.g., 'Maya, 27'). Font-family: var(--d-font-display). Font-size: 24px. Font-weight: 700. Color: white. Text-shadow: 0 1px 2px rgba(0,0,0,0.3) for extra readability.",
+      "distance-tag": "Inline span with a 12px MapPin Lucide icon followed by location text. Font-size: 12px. Font-weight: 500. Color: rgba(255,255,255,0.92). Display: inline-flex, items-center, gap 4px.",
+      "bio": "Paragraph. Font-size: 14px. Font-weight: 400. Color: rgba(255,255,255,0.94). Line-height: 1.4. Max 2 lines via line-clamp: 2.",
+      "interest-tags": "Flex-row, flex-wrap, gap 6px. Each tag (3-5 total): inline pill, padding 4px 10px, border-radius 9999px, background rgba(255,255,255,0.18), border 1px solid rgba(255,255,255,0.3), color white, font-size 11px, font-weight 500.",
+      "more-info-button": "Optional 32×32 circular button at bottom-right corner (position absolute, bottom: 16px, right: 16px). Glassy background rgba(0,0,0,0.4) with backdrop-blur. Centered ChevronUp icon (16px, white). On tap: opens an in-deck modal preview with full bio (handled by parent application logic)."
+    }
+  },
+  "accessibility": {
+    "role": "article",
+    "aria-label": "{name}'s profile card",
+    "keyboard": [
+      "Tab: focus the card (when active in deck stack)",
+      "Enter or Space: open expanded profile preview modal",
+      "Arrow Right (when card focused): trigger swipe right (like)",
+      "Arrow Left (when card focused): trigger swipe left (pass)",
+      "Arrow Up (when card focused): trigger super-like (if enabled)"
+    ],
+    "announcements": [
+      "Showing profile for {name}, age {age}, {distance}.",
+      "Liked {name}.",
+      "Passed on {name}.",
+      "Super-liked {name}."
+    ],
+    "focus_management": "When the card becomes the active (front) card in the deck stack, focus moves to it automatically. The card has tabindex=0; cards behind have tabindex=-1. Screen reader users can navigate cards via Tab and act via Enter."
+  },
+  "responsive": {
+    "mobile": "Card width 90vw (max 320px). Aspect ratio 3/4. Photo, gradient, and text all scale proportionally. Multi-photo thumbnails reduce to 28×28 on narrow screens. Stack layout.",
+    "tablet": "Card width fixed at 320px. All elements at default sizes. Stack layout.",
+    "desktop": "Card width 320px. Hover state on the card adds a subtle parallax tilt (rotateY ±2deg following mouse position) — handled by parent spatial-card-stack ambient motion. Stack layout."
+  },
+  "motion": {
+    "micro": {
+      "thumbnail-tap": "Tapped thumbnail crossfades into PrimaryPhoto over 240ms ease-out. The previous primary becomes the new top thumbnail.",
+      "more-info-tap": "Button scales to 0.92 for 80ms, springs back over 200ms cubic-bezier(0.34, 1.56, 0.64, 1)"
+    },
+    "transitions": {
+      "drag-feedback": "While being dragged past 15% threshold: a colored wash overlay fades in over the photo (coral for right-drag, gray for left-drag). At 30% threshold, the wash reaches max opacity 0.4 and a Heart or X icon at 64px appears centered with opacity 0.8.",
+      "card-arrival": "When this card becomes the front card in the deck, content stagger: name+age fade in first (0ms), distance (60ms), bio (120ms), interest tags (180ms+). Each over 240ms ease-out. Total: ~420ms stagger entrance."
+    }
+  },
+  "interactions": [
+    "click-select",
+    "scale-hover",
+    "keyboard-navigation",
+    "stagger-children",
+    "animate-on-mount"
+  ],
+  "composition": {
+    "SwipeCard": "Card(rounded-3xl, overflow-hidden, swipecircle-card) > [PhotoStack + GradientOverlay + TextStack(absolute-bottom) + MoreInfoButton(absolute-corner)]",
+    "PhotoStack": "Grid(1×1) > [PrimaryPhoto(filling) + ThumbnailRow(absolute-top, conditional)]",
+    "TextStack": "Div(absolute, bottom-0, left-0, right-0, padding-5, flex-col, gap-2) > [NameAge + DistanceTag + Bio + InterestTags]",
+    "InterestTags": "Div(flex-wrap, gap-1.5) > Tag*",
+    "Tag": "Span(pill, padding-1-2.5, glassy-white, white-text)",
+    "MoreInfoButton": "Button(absolute, 32px-circle, glassy, chevron-up-icon)"
+  }
+}

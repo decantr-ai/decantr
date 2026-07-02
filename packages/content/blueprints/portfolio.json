@@ -1,0 +1,164 @@
+{
+  "$schema": "https://decantr.ai/schemas/blueprint.v1.json",
+  "id": "portfolio",
+  "version": "2.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Portfolio",
+  "description": "Bold, expressive portfolio with project showcase, about/skills pages, and a personal blog. Multi-archetype composition with full-bleed project views, bio and contact pages, and comfortable reading typography.",
+  "blueprint_portfolio": {
+    "visibility": "public",
+    "maturity": "supported-contract",
+    "rationale": "Supported registry blueprint that remains useful in All without being promoted as a flagship default.",
+    "artifact": {
+      "status": "candidate",
+      "showcase": "portfolio",
+      "notes": "Showcase-backed candidate; certification requires artifact evidence beyond registry availability."
+    }
+  },
+  "tags": [
+    "portfolio",
+    "creative",
+    "showcase",
+    "projects",
+    "blog",
+    "2026"
+  ],
+  "compose": [
+    "portfolio-showcase",
+    "portfolio-about",
+    "portfolio-blog"
+  ],
+  "theme": {
+    "id": "auradecantism",
+    "mode": "dark",
+    "shape": "rounded"
+  },
+  "personality": "Bold, expressive portfolio that lets the work shine. Large hero with confident typography and strong CTA. Project showcases use generous whitespace and large imagery. Dark backgrounds make visual work pop. Case studies flow like stories with full-bleed images and concise text blocks. The about page is personal but professional — one strong photo, concise bio, skill badges. Blog posts use comfortable reading typography. Lucide icons. Every pixel showcases craft.",
+  "voice": {
+    "tone": "Confident and personal. Shows, doesn't tell.",
+    "cta_verbs": [
+      "View",
+      "Explore",
+      "Read",
+      "Connect",
+      "Download",
+      "Browse"
+    ],
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Buy now"
+    ],
+    "empty_states": "Minimal and intentional. A portfolio with no projects yet should feel like a canvas waiting to be filled, with a prompt to add the first piece.",
+    "errors": "Brief and low-key. Contact form errors should guide without breaking the creative flow.",
+    "loading": "Fade-in content blocks with subtle opacity transitions. No spinners — the portfolio should feel curated, not loading."
+  },
+  "features": [
+    "analytics",
+    "contact-form",
+    "gallery",
+    "markdown",
+    "keyboard-shortcuts"
+  ],
+  "routes": {
+    "/": {
+      "shell": "full-bleed",
+      "archetype": "portfolio-showcase",
+      "page": "projects"
+    },
+    "/projects": {
+      "shell": "full-bleed",
+      "archetype": "portfolio-showcase",
+      "page": "projects"
+    },
+    "/projects/:id": {
+      "shell": "full-bleed",
+      "archetype": "portfolio-showcase",
+      "page": "project-detail"
+    },
+    "/about": {
+      "shell": "top-nav-main",
+      "archetype": "portfolio-about",
+      "page": "about"
+    },
+    "/skills": {
+      "shell": "top-nav-main",
+      "archetype": "portfolio-about",
+      "page": "skills"
+    },
+    "/contact": {
+      "shell": "top-nav-main",
+      "archetype": "portfolio-about",
+      "page": "contact-page"
+    },
+    "/blog": {
+      "shell": "top-nav-main",
+      "archetype": "portfolio-blog",
+      "page": "blog"
+    },
+    "/blog/:id": {
+      "shell": "top-nav-main",
+      "archetype": "portfolio-blog",
+      "page": "blog-post"
+    }
+  },
+  "overrides": {},
+  "dependencies": {
+    "archetypes": {
+      "portfolio-showcase": ">=1.0.0",
+      "portfolio-about": ">=1.0.0",
+      "portfolio-blog": ">=1.0.0"
+    }
+  },
+  "navigation": {
+    "command_palette": true,
+    "hotkeys": [
+      {
+        "key": "g p",
+        "route": "/projects",
+        "label": "Go to Projects"
+      },
+      {
+        "key": "g a",
+        "route": "/about",
+        "label": "Go to About"
+      },
+      {
+        "key": "g s",
+        "route": "/skills",
+        "label": "Go to Skills"
+      },
+      {
+        "key": "g c",
+        "route": "/contact",
+        "label": "Go to Contact"
+      },
+      {
+        "key": "g b",
+        "route": "/blog",
+        "label": "Go to Blog"
+      }
+    ]
+  },
+  "seo_hints": {
+    "schema_org": [
+      "WebSite",
+      "Person",
+      "ProfilePage",
+      "Blog"
+    ],
+    "meta_priorities": [
+      "description",
+      "og:title",
+      "og:image"
+    ]
+  },
+  "suggested_themes": [
+    "auradecantism",
+    "luminarum",
+    "earth",
+    "neo-tokyo",
+    "editorial"
+  ]
+}

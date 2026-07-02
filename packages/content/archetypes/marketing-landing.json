@@ -1,0 +1,65 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "marketing-landing",
+  "role": "public",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Marketing Landing Page",
+  "description": "Product marketing landing page with hero, problem/solution visualization, feature showcase, social proof, and conversion-focused CTAs. Single-page scroll layout for SaaS, developer tools, and tech products.",
+  "tags": [
+    "marketing",
+    "landing-page",
+    "product",
+    "saas",
+    "conversion",
+    "single-page"
+  ],
+  "suggested_theme": {
+    "ids": [
+      "luminarum"
+    ],
+    "modes": [
+      "dark"
+    ],
+    "shapes": [
+      "pill"
+    ]
+  },
+  "personality": [
+    "bold",
+    "technical",
+    "premium",
+    "vibrant"
+  ],
+  "pages": [
+    {
+      "id": "home",
+      "shell": "full-bleed",
+      "default_layout": [
+        "hero-split",
+        "before-after",
+        "pipeline-cards",
+        "tool-list",
+        "quick-start",
+        "tech-pills",
+        "cta-banner"
+      ],
+      "description": "Full-length scrolling landing page with all marketing sections"
+    }
+  ],
+  "page_briefs": {
+    "home": "Full-length scrolling landing page. Split hero with headline and product screenshot. Before-after comparison section. Pipeline cards showing workflow steps. Tool list with descriptions. Quick-start code block. Tech pills showing integrations. Final CTA banner."
+  },
+  "features": [],
+  "dependencies": {
+    "patterns": {
+      "hero-split": ">=1.0.0",
+      "before-after": ">=1.0.0",
+      "pipeline-cards": ">=1.0.0",
+      "tool-list": ">=1.0.0",
+      "quick-start": ">=1.0.0",
+      "cta-banner": ">=1.0.0",
+      "tech-pills": ">=1.0.0"
+    }
+  }
+}

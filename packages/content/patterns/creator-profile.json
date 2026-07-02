@@ -1,0 +1,127 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "creator-profile",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Creator Profile",
+  "description": "Public creator page layout with hero, tiers, content feed, and about section. Tab-based navigation.",
+  "dependencies": {
+    "patterns": {
+      "storefront-hero": "^1.0.0",
+      "tier-card": "^1.0.0",
+      "content-feed": "^1.0.0"
+    },
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Card",
+        "Tabs",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Card",
+    "Tabs",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full creator profile page with hero banner, tabbed navigation for posts, memberships, and about",
+      "components": [
+        "Button",
+        "Card",
+        "Tabs",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col",
+        "slots": {
+          "hero": "Storefront hero pattern",
+          "tabs": "Posts, About, Tiers navigation",
+          "content": "Tab content area",
+          "tiers-sidebar": "Optional tier cards sidebar"
+        }
+      }
+    },
+    "embed": {
+      "description": "Compact embeddable widget with avatar, subscriber count, and subscribe CTA for external sites",
+      "components": [
+        "Button",
+        "Card",
+        "icon"
+      ],
+      "layout": {
+        "layout": "card",
+        "atoms": "studio-card _p4 _flex _gap4",
+        "slots": {
+          "avatar": "Small avatar",
+          "info": "Name, subscribers",
+          "cta": "Subscribe button"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col",
+    "slots": {
+      "hero": "Profile hero",
+      "tabs": "Navigation tabs",
+      "content": "Tab content"
+    }
+  },
+  "io": {
+    "produces": [
+      "subscribe-click",
+      "tab-changed"
+    ],
+    "consumes": [
+      "creator-data",
+      "tier-data",
+      "post-data"
+    ]
+  },
+  "visual_brief": "Full-width creator page starting with a storefront hero section (cover image, avatar, creator name, bio, follower count, subscribe CTA). Below the hero, a horizontal tab bar with tabs for Posts, Memberships, About, and Community. The tab content area fills the remaining space — Posts tab shows a content feed, Memberships tab shows tier cards, About tab shows a rich text bio with social links. Embed preset removes the hero and shows a compact card version suitable for embedding on external sites.",
+  "responsive": {
+    "mobile": "Hero cover image reduces in height. Tabs become horizontally scrollable. Content feed is single-column full-width.",
+    "tablet": "Standard hero proportions. Tabs fit in a single row. Content area has comfortable margins.",
+    "desktop": "Full-width hero with generous cover image. Content area centered with max-width constraint. All tabs visible."
+  },
+  "layout_hints": {
+    "hero_priority": "Lead with creator identity, subscribe intent, and social proof in the hero. The rest of the page should feel like a structured deepening of that first impression.",
+    "tab_rhythm": "Tabs should act as the structural switch between content modes, not as decorative navigation. Keep the active tab visually obvious and the tab content frame stable.",
+    "embed_scope": "Embed mode should behave like a focused conversion unit. Strip away broad profile storytelling and preserve only the identity, subscriber signal, and clear CTA."
+  },
+  "motion": {
+    "micro": "Subscribe CTA and tab hover states may sharpen slightly, while hero metrics or follower counts may reveal with a restrained fade or count-up.",
+    "transitions": "Tab changes should preserve orientation with soft fades or slides rather than jarring full-surface swaps."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "stagger-children",
+    "hover-reveal"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Creator profile",
+    "keyboard": [
+      "Tab through hero actions, then tablist, then the currently active panel content.",
+      "Tabs should support standard arrow-key navigation and clearly expose the active panel relationship."
+    ],
+    "announcements": [
+      "Creator name, subscriber context, and active tab state should be available semantically and not rely on visual prominence alone."
+    ]
+  },
+  "composition": {
+    "CreatorProfile": "Container(d-section, flex-col) > [Hero + TabBar(d-control) + TabContent]",
+    "Hero": "Section(full-width) > [CoverImage + Avatar(large) + CreatorName(heading2) + Bio(text-muted) + Stats + SubscribeCTA(d-interactive)]",
+    "TabBar": "Row(d-control) > Tab(d-interactive)[]",
+    "TabContent": "Panel(d-surface) > [PostsFeed? + TierCards? + AboutSection?]"
+  }
+}

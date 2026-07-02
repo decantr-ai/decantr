@@ -1,0 +1,138 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "ecommerce-admin",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "eCommerce Admin",
+  "description": "Admin panel for e-commerce store operations with product management, order processing, customer relationships, and sales analytics.",
+  "tags": [
+    "ecommerce",
+    "admin",
+    "dashboard",
+    "products",
+    "orders",
+    "customers",
+    "inventory"
+  ],
+  "role": "primary",
+  "classification": {
+    "triggers": {
+      "primary": [
+        "ecommerce-admin",
+        "store-admin",
+        "shop-admin",
+        "store-management"
+      ],
+      "secondary": [
+        "product-management",
+        "order-management",
+        "inventory",
+        "fulfillment",
+        "catalog-admin"
+      ],
+      "negative": [
+        "storefront",
+        "customer-facing",
+        "checkout"
+      ]
+    },
+    "implies": [
+      "admin",
+      "data-management"
+    ],
+    "weight": 1,
+    "tier": "core"
+  },
+  "pages": [
+    {
+      "id": "overview",
+      "default_layout": [
+        "kpi-grid",
+        "chart-grid",
+        "activity-feed"
+      ],
+      "shell": "sidebar-main",
+      "notes": "Store overview: KPI cards for revenue, orders, conversion; chart grid for sales trends; activity feed for recent orders and inventory alerts"
+    },
+    {
+      "id": "products",
+      "default_layout": [
+        "search-filter-bar",
+        "data-table"
+      ],
+      "shell": "sidebar-main",
+      "notes": "Product catalog management: search and filter by category, status, stock; data table with inline editing and bulk actions"
+    },
+    {
+      "id": "orders",
+      "default_layout": [
+        "filter-bar",
+        "data-table"
+      ],
+      "shell": "sidebar-main",
+      "notes": "Order management: filter by status, date, payment; data table with order details, fulfillment status, and action buttons"
+    },
+    {
+      "id": "customers",
+      "default_layout": [
+        "search-filter-bar",
+        "data-table"
+      ],
+      "shell": "sidebar-main",
+      "notes": "Customer list: search by name/email, filter by segment and lifetime value; data table with customer details and order history link"
+    },
+    {
+      "id": "settings",
+      "default_layout": [
+        "account-settings",
+        {
+          "pattern": "form-sections",
+          "preset": "structured",
+          "as": "store-settings"
+        }
+      ],
+      "shell": "sidebar-main",
+      "notes": "Store settings: account settings for admin profile, form sections for shipping, tax, payment gateways, and notification preferences"
+    }
+  ],
+  "page_briefs": {
+    "overview": "KPI cards showing today's revenue, total orders, conversion rate, and average order value. Chart grid with sales trend line, top products bar chart, and order status donut. Activity feed with recent orders, low-stock alerts, and return requests.",
+    "products": "Search and filter bar with category dropdown, stock status chips, price range, and text search. Data table with product image thumbnail, name, SKU, price, stock count, status badge, and actions column with edit/archive buttons. Bulk select for batch operations.",
+    "orders": "Filter bar with date range, order status chips (pending, processing, shipped, delivered, cancelled), and payment status. Data table with order number, customer name, items count, total, status badge, payment badge, and fulfillment actions.",
+    "customers": "Search and filter bar with text search, customer segment chips, and LTV range filter. Data table with customer name, email, total orders, lifetime value, last order date, and link to full profile.",
+    "settings": "Account settings with store profile, team members, and billing. Structured form sections for shipping zones and rates, tax rules, payment gateway configuration, email notification templates, and inventory thresholds."
+  },
+  "features": [
+    "auth",
+    "search",
+    "analytics-state",
+    "bulk-actions",
+    "notifications"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation grouped by domain (Products, Orders, Customers, Analytics) with main content area"
+  },
+  "suggested_theme": {
+    "ids": [
+      "clean",
+      "auradecantism"
+    ],
+    "modes": [
+      "light",
+      "auto"
+    ]
+  },
+  "dependencies": {
+    "patterns": {
+      "kpi-grid": "^1.0.0",
+      "chart-grid": "^1.0.0",
+      "activity-feed": "^1.0.0",
+      "search-filter-bar": "^1.0.0",
+      "filter-bar": "^1.0.0",
+      "data-table": "^1.0.0",
+      "account-settings": "^1.0.0",
+      "form-sections": "^1.0.0"
+    },
+    "styles": {}
+  }
+}

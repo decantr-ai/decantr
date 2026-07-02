@@ -1,0 +1,58 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "stem-browser",
+  "version": "1.1.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Stem Browser",
+  "description": "Producer stem and sample browser with waveform previews, BPM/key facets, tags, usage status, drag-ready assets, and version metadata.",
+  "category": "music",
+  "tags": ["2026", "music", "stems", "samples", "browser", "library", "waveform"],
+  "components": ["StemSearch", "FacetRail", "StemPreviewRow", "WaveformMini", "UsageBadge", "VersionBadge", "DragHandle"],
+  "default_preset": "library",
+  "presets": {
+    "library": {
+      "description": "Full stem library browser with facets and dense waveform rows",
+      "layout": { "layout": "stack", "atoms": "_flex _flex-col _gap-3 _w-full" }
+    },
+    "compact": {
+      "description": "Compact crate list for sidebars and session inspectors",
+      "layout": { "layout": "stack", "atoms": "_flex _flex-col _gap-2 _w-full" }
+    }
+  },
+  "visual_brief": "A dense production asset browser attached to the DAW, not a generic data table or sparse card list. Top search combines BPM, key, type, mood, owner, and usage filters. Rows show stem name, waveform mini-preview, duration, BPM/key, tags, owner, status, version count, last bounce, and drag/add affordance. Desktop implementations should pair the browser with a compact queue, selected-track inspector, or session sidecar so wide viewports feel intentionally composed. Active or used stems have clear badges. Use compact alignment, scroll-area behavior, and stable row height so producers can scan like a sample crate.",
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _flex-col _gap-3 _w-full",
+    "slots": {
+      "filters": "Search input and facets for type, BPM, key, mood, collaborator, and usage state.",
+      "stem-row": "Dense row with waveform mini-preview, metadata, tags, and action buttons.",
+      "drop-affordance": "Clear drag or add-to-session target state for each asset."
+    }
+  },
+  "composition": {
+    "StemBrowser": "Root(stack) > [StemSearch + FacetRail + StemPreviewRow*]",
+    "StemPreviewRow": "Grid > [DragHandle + WaveformMini + Metadata + UsageBadge + Actions]"
+  },
+  "motion": {
+    "micro": {
+      "preview-hover": "waveform mini animates playhead sweep while hovered",
+      "drag-start": "row lifts with cyan outline"
+    }
+  },
+  "interactions": ["hover-tooltip", "drag-reorder", "click-select", "keyboard-navigation"],
+  "responsive": {
+      "mobile": "Facets collapse into horizontal chips, rows stack metadata below the waveform, and drag affordance becomes an add button. Keep waveform mini-previews wide enough to remain useful.",
+    "desktop": "Use dense rows with facets visible, waveform mini-previews aligned for scanning, and a supporting queue or inspector sidecar on wide routes."
+  },
+  "accessibility": {
+    "role": "listbox",
+    "aria-label": "Stem browser",
+    "keyboard": ["ArrowUp/ArrowDown: move through stems", "Enter: preview stem", "A: add selected stem to session"],
+    "announcements": ["Previewing {stem}", "Added {stem} to session"]
+  },
+  "layout_hints": {
+    "scan_density": "Rows should support fast scanning across BPM, key, usage, and waveform shape.",
+    "audio_identity": "Every row needs an audio-specific visual signal, preferably a mini waveform.",
+    "desktop_fill": "Avoid isolated rows floating in a large empty desktop viewport; use a sidecar or selected-item panel."
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/public-content-summary.v1.json",
+  "title": "Decantr Public Content Summary",
+  "type": "object",
+  "required": [
+    "id",
+    "slug",
+    "namespace",
+    "type"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "namespace": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "published_at": {
+      "type": "string"
+    },
+    "owner_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "owner_username": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "thumbnail_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "blueprint_portfolio": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "visibility",
+            "maturity",
+            "rationale",
+            "artifact"
+          ],
+          "properties": {
+            "visibility": {
+              "enum": [
+                "featured",
+                "public",
+                "labs",
+                "hidden"
+              ]
+            },
+            "maturity": {
+              "enum": [
+                "certified-flagship",
+                "supported-contract",
+                "experimental",
+                "fold-candidate",
+                "legacy-hidden"
+              ]
+            },
+            "rationale": {
+              "type": "string"
+            },
+            "recommended_alternative": {
+              "type": "string"
+            },
+            "artifact": {
+              "type": "object",
+              "required": [
+                "status"
+              ],
+              "properties": {
+                "status": {
+                  "enum": [
+                    "none",
+                    "planned",
+                    "candidate",
+                    "certified"
+                  ]
+                },
+                "showcase": {
+                  "type": "string"
+                },
+                "notes": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "intelligence": {
+      "anyOf": [
+        {
+          "$ref": "https://decantr.ai/schemas/content-intelligence.v1.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false
+}

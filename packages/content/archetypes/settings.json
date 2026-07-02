@@ -1,0 +1,67 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "settings",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Settings",
+  "description": "Application settings and preferences page",
+  "tags": [
+    "settings",
+    "preferences",
+    "configuration"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "settings",
+        "preferences",
+        "configuration"
+      ],
+      "secondary": [
+        "profile",
+        "account settings",
+        "app config"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 0.8,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "settings",
+      "default_layout": [
+        {
+          "pattern": "form-sections",
+          "preset": "settings"
+        }
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "settings": "Single-page settings form with grouped sections separated by dividers. Toggle switches, dropdowns, and text inputs organized by category. Save button at the bottom."
+  },
+  "features": [],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "form-sections": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "auradecantism",
+      "clean"
+    ],
+    "modes": [
+      "dark",
+      "auto"
+    ]
+  }
+}

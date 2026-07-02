@@ -1,0 +1,202 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "card-grid",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Card Grid",
+  "description": "Responsive grid of cards with preset-specific content layouts",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Card",
+        "Button",
+        "Badge",
+        "Image",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "contained": false,
+  "components": [
+    "Card",
+    "CardHeader",
+    "CardBody",
+    "CardFooter",
+    "Image",
+    "Button",
+    "Badge"
+  ],
+  "default_preset": "product",
+  "presets": {
+    "product": {
+      "description": "Product cards with image, title, price, rating, add-to-cart button. Grid: 1/2/3/4 cols at sm/md/lg/xl.",
+      "components": [
+        "Card",
+        "CardHeader",
+        "CardBody",
+        "CardFooter",
+        "Image",
+        "Button",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _sm:gc2 _lg:gc3 _xl:gc4 _gap4",
+        "slots": {
+          "card-image": "Product image with aspect-ratio container",
+          "card-title": "Product name with _textsm _fontmedium",
+          "card-price": "Price with _heading4 styling",
+          "card-rating": "Star rating row with icon stars and count Badge",
+          "card-action": "Add-to-cart Button in CardFooter"
+        }
+      }
+    },
+    "content": {
+      "description": "Content/blog cards with thumbnail, title, excerpt, author, date. Grid: 1/2/3 cols.",
+      "components": [
+        "Card",
+        "CardHeader",
+        "CardBody",
+        "Image",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _md:gc2 _lg:gc3 _gap6",
+        "slots": {
+          "card-thumbnail": "Blog post thumbnail image",
+          "card-category": "Category Badge above title",
+          "card-title": "Article title with _heading4 styling",
+          "card-excerpt": "Short excerpt with _bodysm _fgmuted",
+          "card-meta": "Author avatar, name, and date row"
+        }
+      }
+    },
+    "collection": {
+      "description": "Collection/category cards with background image, overlay title, item count. Grid: 2/3 cols.",
+      "components": [
+        "Card",
+        "Image",
+        "Badge"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc2 _lg:gc3 _gap4",
+        "slots": {
+          "card-background": "Full-bleed background image with gradient overlay",
+          "card-overlay-title": "Collection name overlaid at bottom with _heading3",
+          "card-count": "Item count Badge overlaid on image"
+        }
+      }
+    },
+    "icon": {
+      "description": "Small icon cards with icon, title, short description. Grid: 2/3/4 cols. Compact.",
+      "components": [
+        "Card",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc2 _md:gc3 _lg:gc4 _gap3",
+        "slots": {
+          "card-icon": "Icon in a rounded muted background circle",
+          "card-title": "Feature title with _textsm _fontmedium",
+          "card-description": "Short description with _textxs _fgmuted"
+        }
+      }
+    },
+    "capability": {
+      "description": "Capability cards with icon, title, framing paragraph, and 2-4 supporting capability rows or badges. Grid: 1/2/3 cols with wider cards and calmer vertical rhythm.",
+      "components": [
+        "Card",
+        "CardHeader",
+        "CardBody",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _md:gc2 _xl:gc3 _gap5",
+        "slots": {
+          "card-icon": "Category icon in a rounded accent-tinted circle or chip.",
+          "card-title": "Capability category title with heading-scale emphasis and room for two lines when needed.",
+          "card-description": "Short framing paragraph explaining the category or practice area.",
+          "card-supporting-list": "Calm vertical list of 2-4 supporting capability rows, each with a label and optional proficiency badge. Use divider-separated rows or a subtle list grouping, not nested mini-cards."
+        }
+      }
+    }
+  },
+  "visual_brief": "Responsive grid of uniformly-sized cards with consistent gap spacing. Each card is a contained surface with subtle border or shadow, rounded corners (r3), and internal padding. Product preset: top image with fixed aspect ratio, title below in medium-weight text, price in bold heading style, star-rating row with filled/empty star icons, and a full-width add-to-cart button in the card footer. Content preset: thumbnail image, colored category badge, article title, two-line excerpt in muted small text, and an author row with avatar, name, and date. Capability preset: medium-width cards with a category icon, a strong title, one short framing paragraph, and a calm supporting list for two to four related capabilities or badges. The supporting list should feel integrated into the same card surface through spacing, dividers, or a subtle grouping rhythm rather than through a second bordered panel or a stack of mini-cards. Cards maintain equal height within each row via grid stretch when the preset is intended for comparable content density.",
+  "layout_hints": {
+    "card_surface": "Each item should feel like one coherent card surface. Do not wrap grid items in an extra shell-level d-surface if the pattern already provides the card treatment.",
+    "description_clamp": "Allow enough room for meaningful summary copy. In most content grids, descriptions should get at least two to three lines before truncation.",
+    "footer_rhythm": "Meta rows and CTA rows should align consistently across cards. Footers should not jump vertically between items in the same grid.",
+    "hover_behavior": "Use CSS-driven hover lift or media scaling rather than inline event handlers that mutate style values in component code.",
+    "icon_preset_scope": "The icon preset is intentionally compact. Use it for icon + title + short description only, not for longer body copy plus nested capability rows.",
+    "capability_preset_scope": "When a route needs richer category cards with supporting rows or badges, use the capability preset and keep the grid to one, two, or three columns rather than forcing a compact four-up layout.",
+    "nested_surface_avoidance": "Capability cards should read as one card surface. Avoid creating a card within a card or wrapping each supporting row in its own mini-panel unless a route explicitly asks for nested grouping."
+  },
+  "responsive": {
+    "mobile": "Single column (1 card per row). Cards go full-width with larger touch targets. Image aspect ratio maintained. Gap reduces to gap3.",
+    "tablet": "Two columns for most presets. Collection preset stays at 2 columns. Gap at gap4. Cards maintain equal height per row. Capability preset remains at two columns to preserve room for supporting rows.",
+    "desktop": "Three to four columns depending on preset. Product goes up to 4 columns at xl breakpoint. Content stays at 3. Icon preset reaches 4 columns. Capability preset tops out at 3 columns so cards can hold a short paragraph plus supporting items without feeling squeezed."
+  },
+  "motion": {
+    "micro": "Cards lift on hover with translateY(-2px) and increased shadow over 200ms ease. Image within card scales to 1.03 on hover with overflow hidden. Badge pulses subtly on new items.",
+    "transitions": "Cards entering viewport fade up from 15px below with staggered 100ms delay per card, 300ms duration. Load-more appends new cards with the same stagger animation."
+  },
+  "interactions": [
+    "lift-hover",
+    "stagger-children",
+    "animate-on-mount",
+    "click-select",
+    "scroll-reveal"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Card grid",
+    "keyboard": [
+      "Tab should move through cards and nested actions in reading order.",
+      "If the entire card is clickable, expose one clear interactive target instead of conflicting nested links."
+    ],
+    "announcements": [
+      "Card titles and supporting metadata should be available to assistive technology without relying on hover-only UI."
+    ],
+    "focus_management": "Focused cards should get a clear outline or surface treatment equivalent to hover, and keyboard users should be able to distinguish nested CTAs from the card container."
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gc1 _sm:gc2 _lg:gc3 _xl:gc4 _gap4",
+    "slots": {
+      "card-image": "Product image with aspect-ratio container",
+      "card-title": "Product name with _textsm _fontmedium",
+      "card-price": "Price with _heading4 styling",
+      "card-rating": "Star rating row with icon stars and count Badge",
+      "card-action": "Add-to-cart Button in CardFooter"
+    }
+  },
+  "io": {
+    "consumes": [
+      "search",
+      "filters",
+      "data"
+    ],
+    "produces": [
+      "selection"
+    ],
+    "actions": [
+      "load-more"
+    ]
+  },
+  "composition": {
+    "CardGrid": "Grid(d-section, responsive: 1/2/3/4-col) > ProductCard[]",
+    "ProductCard": "Card(d-surface, hoverable, lift-on-hover) > [Image(aspect-ratio) + Title(font-medium) + Price(heading4) + RatingRow > [StarIcon[] + CountBadge(d-annotation)] + CTAButton(d-interactive, full-width)]",
+    "ContentCard": "Card(d-surface) > [Thumbnail + CategoryBadge(d-annotation) + Title(heading4) + Excerpt(text-muted) + MetaRow > [AuthorAvatar + AuthorName + Date]]",
+    "CapabilityCard": "Card(d-surface, calmer-width) > [IconChip + Title(heading-scale) + Description(text-muted) + SupportingList(divider-separated or subtly grouped) > CapabilityRow*(label + optional proficiency badge)]"
+  }
+}

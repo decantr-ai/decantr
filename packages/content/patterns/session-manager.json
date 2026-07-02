@@ -1,0 +1,89 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "session-manager",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Session Manager",
+  "description": "Active sessions panel showing current device, other sessions with device info, location, last active, and revoke controls.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Badge",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Badge",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full session list with current device highlighted",
+      "components": [
+        "Button",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6",
+        "slots": {
+          "current-session": "This device session card with 'Current' badge",
+          "sessions-list": "Other active sessions list",
+          "revoke-all": "Logout from all devices button"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap6",
+    "slots": {
+      "current-session": "This device with 'Current' badge",
+      "sessions-list": "Other sessions with device, browser, location, last active",
+      "revoke-all": "Sign out everywhere button"
+    }
+  },
+  "visual_brief": "Settings panel showing active login sessions. The current session is highlighted at the top with a 'Current Session' badge, showing device name (e.g., 'MacBook Pro — Chrome'), location, and last active time. Below, a list of other sessions, each showing device icon (desktop/mobile/tablet), browser name, location (city, country), last active timestamp, and a 'Revoke' button on the right. A 'Sign Out All Other Sessions' destructive button sits at the bottom of the list. Sessions with suspicious activity show a warning icon.",
+  "layout_hints": {
+    "current_session_priority": "The current session should be visually distinct and always feel anchored above the revocable session list.",
+    "destructive_spacing": "Revoke actions and the sign-out-everywhere action need clear separation from passive session metadata so they do not read like inline labels.",
+    "suspicious_state": "Suspicious-session states should be obvious through icon, text, and treatment rather than relying on color alone."
+  },
+  "responsive": {
+    "mobile": "Sessions stack as full-width cards. Device info and location on separate lines. Revoke button full-width per session. Sign Out All button at the bottom.",
+    "tablet": "Standard list layout. Device info and location inline. Revoke buttons on the right.",
+    "desktop": "Full list with all information inline per row. Comfortable spacing between sessions."
+  },
+  "motion": {
+    "micro": "Hover and focus states on revoke controls may brighten subtly, but session rows should otherwise remain stable and administrative.",
+    "transitions": "Revoked-session removal and warning-state changes should animate softly over 150-220ms without collapsing the entire list abruptly."
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Session manager",
+    "keyboard": [
+      "Tab moves through current-session controls, row-level revoke actions, and sign-out-everywhere actions in order."
+    ],
+    "announcements": [
+      "Current session, suspicious activity, and revoke outcomes should be announced clearly."
+    ],
+    "focus_management": "After revoking a session, preserve focus on the next logical row action or the bulk sign-out control."
+  },
+  "composition": {
+    "SessionManager": "Container(d-section, flex-col, gap-4) > [CurrentSession + OtherSessions + RevokeAllButton?]",
+    "CurrentSession": "Card(d-surface, accent-border) > [DeviceIcon + DeviceInfo > [Name(font-medium) + Location + LastActive(text-muted)] + CurrentBadge(d-annotation)]",
+    "OtherSessions": "List(flex-col) > SessionRow[]",
+    "SessionRow": "Row(d-data-row) > [DeviceIcon + DeviceInfo > [Name + Location + LastActive(text-muted)] + RevokeButton(d-interactive, variant: destructive)]"
+  }
+}

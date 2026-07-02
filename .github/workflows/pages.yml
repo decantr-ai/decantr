@@ -31,7 +31,6 @@ jobs:
       - name: Configure public analytics
         env:
           DECANTR_ANALYTICS_DISABLED: ${{ vars.DECANTR_ANALYTICS_DISABLED || 'false' }}
-          DECANTR_TELEMETRY_ENDPOINT: ${{ vars.DECANTR_TELEMETRY_ENDPOINT || 'https://api.decantr.ai/v1/telemetry/events' }}
           X_EVENT_MARKETING_COMMAND_CLICKED_ID: ${{ vars.X_EVENT_MARKETING_COMMAND_CLICKED_ID }}
           X_EVENT_MARKETING_CTA_CLICKED_ID: ${{ vars.X_EVENT_MARKETING_CTA_CLICKED_ID }}
           X_EVENT_MARKETING_OUTBOUND_CLICKED_ID: ${{ vars.X_EVENT_MARKETING_OUTBOUND_CLICKED_ID }}
@@ -51,8 +50,6 @@ jobs:
           const config = {
             disabled: process.env.DECANTR_ANALYTICS_DISABLED === 'true',
             environment: 'production',
-            telemetryEndpoint:
-              process.env.DECANTR_TELEMETRY_ENDPOINT || 'https://api.decantr.ai/v1/telemetry/events',
             xEvents: Object.fromEntries(Object.entries(xEvents).filter(([, value]) => value)),
             xPixelId: process.env.X_PIXEL_ID || '',
           };

@@ -1,0 +1,110 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "nav-header",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Navigation Header",
+  "description": "Top navigation bar with logo, links, and actions.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Link",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Link",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Horizontal nav with logo left, links center, actions right",
+      "components": [
+        "Button",
+        "Link",
+        "icon"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _aic _jcsb _px6 _py3 _bb[1px_solid_var(--d-border)]",
+        "slots": {
+          "logo": "Brand logo or wordmark, left-aligned",
+          "links": "Horizontal navigation links with _flex _gap4",
+          "actions": "Action buttons (login, signup) right-aligned with _flex _gap2"
+        }
+      }
+    },
+    "minimal": {
+      "description": "Logo left, single CTA right, no navigation links",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _aic _jcsb _px6 _py3",
+        "slots": {
+          "logo": "Brand logo or wordmark",
+          "cta": "Single primary action Button"
+        }
+      }
+    }
+  },
+  "visual_brief": "Horizontal navigation bar pinned to the top of the viewport. The bar spans full width with a subtle bottom border separating it from page content. Logo or wordmark sits on the far left with comfortable left padding. Navigation links are arranged horizontally in the center (or left-of-center) with even spacing and medium-weight text that highlights on hover with an underline or color shift. Action buttons (login, sign up) cluster on the far right — the primary action uses a filled button, secondary uses ghost. The bar has a fixed height (~60px) with vertically centered content. On scroll, the header may gain a subtle backdrop blur and elevated shadow.",
+  "layout_hints": {
+    "brand_first": "Brand, primary links, and actions should read in a clear priority order. Do not let decorative elements or overflow menus obscure the primary navigation rhythm.",
+    "mobile_collapse": "On smaller screens, collapse secondary links before compromising the clarity of the brand and primary CTA.",
+    "header_compactness": "Keep header controls compact so the nav stays elegant instead of looking like a dense toolbar."
+  },
+  "responsive": {
+    "mobile": "Navigation links collapse into a hamburger menu icon (three horizontal lines) on the right. Tapping the hamburger opens a full-height slide-in panel from the right or a dropdown overlay with vertically stacked links and action buttons. Logo remains visible. Close button (X icon) in the panel header.",
+    "tablet": "Navigation links may remain visible if few (3-4 items), otherwise collapse to hamburger. Action buttons stay visible next to hamburger. Padding reduces to px4.",
+    "desktop": "Full horizontal layout with all links visible. Logo left, links center, actions right. Hover states on links. Dropdown menus open on hover or click for nested navigation."
+  },
+  "motion": {
+    "micro": "Link hover underline slides in from left with 200ms ease. Dropdown chevron rotates 180deg on open. Active link indicator transitions position with 250ms ease.",
+    "transitions": "Mobile menu slides in from right with 300ms ease-out transform. Backdrop fades in over 200ms. Dropdown menus fade in and translate down 4px over 200ms. Sticky header shadow transitions in over 150ms on scroll."
+  },
+  "interactions": [
+    "hover-reveal",
+    "keyboard-navigation"
+  ],
+  "accessibility": {
+    "role": "navigation",
+    "aria-label": "Main navigation",
+    "keyboard": [
+      "Tab navigates between navigation links and action buttons",
+      "Enter activates the focused link or button",
+      "Escape closes the mobile menu or open dropdown",
+      "Arrow Left/Right navigates between top-level links",
+      "Arrow Down opens a dropdown menu on focused link"
+    ],
+    "announcements": [
+      "Navigation menu expanded",
+      "Navigation menu collapsed",
+      "Submenu {name} opened"
+    ],
+    "focus_management": "Mobile menu button uses aria-expanded to reflect open/closed state. On menu open, focus moves to first link. On Escape, focus returns to the hamburger button."
+  },
+  "default_layout": {
+    "layout": "row",
+    "atoms": "_flex _aic _jcsb _px6 _py3 _bb[1px_solid_var(--d-border)]",
+    "slots": {
+      "logo": "Brand logo or name",
+      "links": "Navigation links",
+      "actions": "Action buttons (login, signup)"
+    }
+  },
+  "composition": {
+    "NavHeader": "Bar(d-section, row, space-between, border-bottom, full-width) > [Logo + NavLinks + ActionButtons]",
+    "NavLinks": "Row(d-interactive, gap-4) > Link(hover: underline)[]",
+    "ActionButtons": "Row(d-interactive, gap-2) > [LoginButton(variant: ghost) + SignUpButton(variant: primary)]"
+  }
+}

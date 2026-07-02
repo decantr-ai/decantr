@@ -1,0 +1,384 @@
+{
+  "$schema": "https://decantr.ai/schemas/blueprint.v1.json",
+  "id": "property-management-portal",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Property Management Portal",
+  "description": "Complete property management platform for real estate investors and property owners. Includes portfolio dashboard, property/unit management, tenant management, financial tracking (P&L, rent roll, expenses), maintenance ticketing, and a self-service tenant portal.",
+  "blueprint_portfolio": {
+    "visibility": "featured",
+    "maturity": "supported-contract",
+    "rationale": "High-signal product composition that expands the registry beyond demos and remains valuable as a default discovery option.",
+    "artifact": {
+      "status": "candidate",
+      "showcase": "property-management-portal",
+      "notes": "Showcase-backed candidate; promote to certified after evidence bundle and browser verification are attached."
+    }
+  },
+  "tags": [
+    "property-management",
+    "real-estate",
+    "landlord",
+    "rental",
+    "saas",
+    "professional"
+  ],
+  "compose": [
+    "owner-dashboard",
+    "property-manager",
+    "tenant-manager",
+    "pm-financials",
+    "maintenance-center",
+    "tenant-portal",
+    "tenant-payments",
+    "marketing-realestate",
+    "auth-full",
+    "settings-full",
+    "about-hybrid",
+    "contact",
+    "legal"
+  ],
+  "theme": {
+    "mode": "light",
+    "shape": "rounded",
+    "id": "estate"
+  },
+  "personality": "Professional, trust-building property management portal with a warm light theme. Clean card-based layouts for properties and units with status badges (occupied, vacant, maintenance). Financial views use conservative chart styles — bar charts for rent roll, line charts for P&L trends. Tenant directory emphasizes contact info and lease status. Maintenance board uses a kanban layout with priority coloring. The tenant portal feels welcoming and self-service. Think Buildium meets a modern banking app — serious about money, friendly about people.",
+  "voice": {
+    "tone": "Professional and reassuring. Speaks to property owners with authority and to tenants with warmth and clarity.",
+    "cta_verbs": [
+      "Add property",
+      "View details",
+      "Submit request",
+      "Pay rent",
+      "Export",
+      "Schedule"
+    ],
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Buy",
+      "Deploy"
+    ],
+    "empty_states": "Helpful and onboarding-oriented. An empty property list should guide through adding the first property with clear steps. Tenant portal empty states should reassure that everything is in order.",
+    "errors": "Professional and specific. Payment processing errors include next steps. Maintenance submission failures offer alternative contact methods.",
+    "loading": "Property card skeletons with address line placeholders. Financial tables show column headers while data loads. Tenant portal uses gentle fade-in transitions."
+  },
+  "overrides": {
+    "pages": {},
+    "pages_remove": [],
+    "features_add": [
+      "theme-toggle"
+    ],
+    "features_remove": []
+  },
+  "dependencies": {
+    "archetypes": {
+      "owner-dashboard": "^1.0.0",
+      "property-manager": "^1.0.0",
+      "tenant-manager": "^1.0.0",
+      "pm-financials": "^1.0.0",
+      "maintenance-center": "^1.0.0",
+      "tenant-portal": "^1.0.0",
+      "tenant-payments": "^1.0.0",
+      "marketing-realestate": "^1.0.0",
+      "auth-full": "^1.0.0",
+      "settings-full": "^1.0.0",
+      "about-hybrid": "^1.0.0",
+      "contact": "^1.0.0",
+      "legal": "^1.0.0"
+    }
+  },
+  "features": [
+    "dashboard",
+    "analytics",
+    "notifications",
+    "crud",
+    "file-upload",
+    "search",
+    "filters",
+    "communication",
+    "export",
+    "charts",
+    "date-range",
+    "kanban",
+    "drag-drop",
+    "self-service",
+    "payments",
+    "autopay",
+    "receipts",
+    "marketing",
+    "seo",
+    "responsive",
+    "auth",
+    "mfa",
+    "oauth",
+    "email-verification",
+    "password-reset",
+    "profile-edit",
+    "password-change",
+    "mfa-management",
+    "session-management",
+    "theme-toggle",
+    "account-deletion",
+    "team-grid",
+    "values-display",
+    "form-validation",
+    "spam-protection",
+    "file-attachment",
+    "toc-navigation",
+    "print-friendly",
+    "smooth-scroll"
+  ],
+  "routes": {
+    "/": {
+      "shell": "top-nav-footer",
+      "archetype": "marketing-realestate",
+      "page": "home"
+    },
+    "/about": {
+      "shell": "top-nav-footer",
+      "archetype": "about-hybrid",
+      "page": "about"
+    },
+    "/contact": {
+      "shell": "top-nav-footer",
+      "archetype": "contact",
+      "page": "contact"
+    },
+    "/pricing": {
+      "shell": "top-nav-footer",
+      "archetype": "marketing-realestate",
+      "page": "home"
+    },
+    "/privacy": {
+      "shell": "top-nav-footer",
+      "archetype": "legal",
+      "page": "privacy"
+    },
+    "/terms": {
+      "shell": "top-nav-footer",
+      "archetype": "legal",
+      "page": "terms"
+    },
+    "/cookies": {
+      "shell": "top-nav-footer",
+      "archetype": "legal",
+      "page": "cookies"
+    },
+    "/login": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "login"
+    },
+    "/register": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "register"
+    },
+    "/forgot-password": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "forgot-password"
+    },
+    "/reset-password": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "reset-password"
+    },
+    "/verify-email": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "verify-email"
+    },
+    "/mfa-setup": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "mfa-setup"
+    },
+    "/mfa-verify": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "mfa-verify"
+    },
+    "/phone-verify": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "phone-verify"
+    },
+    "/dashboard": {
+      "shell": "sidebar-main",
+      "archetype": "owner-dashboard",
+      "page": "dashboard"
+    },
+    "/properties": {
+      "shell": "sidebar-main",
+      "archetype": "property-manager",
+      "page": "list"
+    },
+    "/properties/new": {
+      "shell": "sidebar-main",
+      "archetype": "property-manager",
+      "page": "create"
+    },
+    "/properties/:id": {
+      "shell": "sidebar-main",
+      "archetype": "property-manager",
+      "page": "detail"
+    },
+    "/properties/:id/units": {
+      "shell": "sidebar-main",
+      "archetype": "property-manager",
+      "page": "units"
+    },
+    "/properties/:id/units/:unitId": {
+      "shell": "sidebar-main",
+      "archetype": "property-manager",
+      "page": "unit-detail"
+    },
+    "/tenants": {
+      "shell": "sidebar-main",
+      "archetype": "tenant-manager",
+      "page": "list"
+    },
+    "/tenants/new": {
+      "shell": "sidebar-main",
+      "archetype": "tenant-manager",
+      "page": "create"
+    },
+    "/tenants/:id": {
+      "shell": "sidebar-main",
+      "archetype": "tenant-manager",
+      "page": "detail"
+    },
+    "/financials": {
+      "shell": "sidebar-main",
+      "archetype": "pm-financials",
+      "page": "overview"
+    },
+    "/financials/rent-roll": {
+      "shell": "sidebar-main",
+      "archetype": "pm-financials",
+      "page": "rent-roll"
+    },
+    "/financials/expenses": {
+      "shell": "sidebar-main",
+      "archetype": "pm-financials",
+      "page": "expenses"
+    },
+    "/financials/payments": {
+      "shell": "sidebar-main",
+      "archetype": "pm-financials",
+      "page": "payments"
+    },
+    "/maintenance": {
+      "shell": "sidebar-main",
+      "archetype": "maintenance-center",
+      "page": "board"
+    },
+    "/maintenance/new": {
+      "shell": "sidebar-main",
+      "archetype": "maintenance-center",
+      "page": "create"
+    },
+    "/maintenance/:id": {
+      "shell": "sidebar-main",
+      "archetype": "maintenance-center",
+      "page": "ticket"
+    },
+    "/documents": {
+      "shell": "sidebar-main",
+      "archetype": "property-manager",
+      "page": "documents"
+    },
+    "/tenant-portal": {
+      "shell": "top-nav-main",
+      "archetype": "tenant-portal",
+      "page": "home"
+    },
+    "/tenant-portal/payments": {
+      "shell": "top-nav-main",
+      "archetype": "tenant-payments",
+      "page": "overview"
+    },
+    "/tenant-portal/payments/setup": {
+      "shell": "top-nav-main",
+      "archetype": "tenant-payments",
+      "page": "setup"
+    },
+    "/tenant-portal/maintenance": {
+      "shell": "top-nav-main",
+      "archetype": "tenant-portal",
+      "page": "maintenance"
+    },
+    "/tenant-portal/documents": {
+      "shell": "top-nav-main",
+      "archetype": "tenant-portal",
+      "page": "documents"
+    },
+    "/settings/profile": {
+      "shell": "sidebar-main",
+      "archetype": "settings-full",
+      "page": "profile"
+    },
+    "/settings/security": {
+      "shell": "sidebar-main",
+      "archetype": "settings-full",
+      "page": "security"
+    },
+    "/settings/preferences": {
+      "shell": "sidebar-main",
+      "archetype": "settings-full",
+      "page": "preferences"
+    },
+    "/settings/account": {
+      "shell": "sidebar-main",
+      "archetype": "settings-full",
+      "page": "danger"
+    }
+  },
+  "seo_hints": {
+    "schema_org": [
+      "Organization",
+      "WebApplication",
+      "RealEstateAgent"
+    ],
+    "meta_priorities": [
+      "description",
+      "og:image",
+      "twitter:card"
+    ]
+  },
+  "navigation": {
+    "command_palette": true,
+    "hotkeys": [
+      {
+        "key": "g h",
+        "route": "/",
+        "label": "Go to Home"
+      },
+      {
+        "key": "g d",
+        "route": "/dashboard",
+        "label": "Go to Dashboard"
+      },
+      {
+        "key": "g p",
+        "route": "/properties",
+        "label": "Go to Properties"
+      },
+      {
+        "key": "g f",
+        "route": "/financials",
+        "label": "Go to Financials"
+      }
+    ]
+  },
+  "suggested_themes": [
+    "estate",
+    "clean",
+    "launchpad",
+    "government"
+  ]
+}

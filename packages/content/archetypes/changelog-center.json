@@ -1,0 +1,96 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "changelog-center",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Changelog Center",
+  "description": "Versioned changelog with chronological release feed and individual release note pages. Tracks product evolution with migration guides and version diffs.",
+  "tags": [
+    "changelog",
+    "releases",
+    "versioning",
+    "updates",
+    "knowledge-base"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "changelog",
+        "release notes",
+        "version history",
+        "what's new",
+        "product updates"
+      ],
+      "secondary": [
+        "migration guide",
+        "breaking changes",
+        "release feed",
+        "update log",
+        "patch notes"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 0.7,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "changelog",
+      "patterns": [
+        {
+          "pattern": "activity-feed",
+          "preset": "detailed",
+          "as": "release-feed"
+        }
+      ],
+      "default_layout": [
+        "activity-feed"
+      ],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "changelog-entry",
+      "patterns": [
+        {
+          "pattern": "legal-prose",
+          "preset": "standard",
+          "as": "release-content"
+        }
+      ],
+      "default_layout": [
+        "legal-prose"
+      ],
+      "shell": "top-nav-main"
+    }
+  ],
+  "page_briefs": {
+    "changelog": "Chronological release feed displayed as a detailed activity timeline. Each entry shows the version number, release date, category badges (feature, fix, breaking), and a summary. Entries are grouped by major version with collapsible sections. A sticky version filter at the top allows jumping to specific releases or filtering by change type.",
+    "changelog-entry": "Single release note page rendered in long-form prose. Displays the version number prominently, release date, and contributor credits. Content sections include new features, bug fixes, breaking changes with migration steps, and deprecation notices. Code snippets show before/after examples for breaking changes."
+  },
+  "features": [
+    "changelog",
+    "versions",
+    "migration-guides"
+  ],
+  "shells": {
+    "top-nav-main": "Top navigation bar with centered main content area for chronological reading"
+  },
+  "dependencies": {
+    "patterns": {
+      "activity-feed": "^1.0.0",
+      "legal-prose": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "clean"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

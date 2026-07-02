@@ -1,0 +1,85 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "mention-popup",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Mention Popup",
+  "description": "@mention autocomplete for collaborators. Triggered by @ character with type-ahead filtering and keyboard navigation.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Avatar",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Avatar",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "List with avatars, names, and online status",
+      "components": [
+        "Avatar",
+        "icon"
+      ],
+      "layout": {
+        "layout": "dropdown",
+        "atoms": "_absolute _bg[var(--surface)] _shadow _r2 _border _w[280px] _max-h[300px] _overflow[auto] _z[100]",
+        "slots": {
+          "search": "Type-ahead filter (inline in editor)",
+          "recent": "Recently mentioned users section",
+          "results": "Filtered collaborator list"
+        }
+      }
+    },
+    "compact": {
+      "description": "Names only without status indicators",
+      "components": [
+        "Avatar"
+      ],
+      "layout": {
+        "layout": "dropdown",
+        "atoms": "_absolute _bg[var(--surface)] _shadow _r1 _border _w[200px] _z[100]",
+        "slots": {
+          "results": "Simple user list"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "dropdown",
+    "atoms": "_absolute _bg[var(--surface)] _shadow _r2 _border _w[280px] _z[100]",
+    "slots": {
+      "search": "Type-ahead filter input",
+      "recent": "Recently mentioned users for quick access",
+      "results": "Filtered list of matching collaborators"
+    }
+  },
+  "io": {
+    "consumes": [
+      "collaborators",
+      "query",
+      "position",
+      "recentMentions"
+    ],
+    "produces": [
+      "select"
+    ],
+    "actions": [
+      "select-user",
+      "close"
+    ]
+  },
+  "visual_brief": "Small floating dropdown that appears at the cursor position when '@' is typed. Contains a type-ahead search input (auto-focused, filtering as the user types), an optional 'Recent' section showing recently mentioned users, and a filtered results list. Each user row shows a small avatar, display name, and username or email in muted text. The currently highlighted item has a subtle background tint. The popup has a border, shadow, and rounded corners. Compact preset uses smaller avatars and tighter row spacing.",
+  "responsive": {
+    "mobile": "Popup renders as a bottom sheet anchored to the keyboard. Full-width list items with larger touch targets. Avatars at 32px.",
+    "tablet": "Floating popup near cursor. Standard row sizing.",
+    "desktop": "Compact floating popup near cursor. Keyboard navigation with up/down arrows. Small avatars at 24px."
+  }
+}

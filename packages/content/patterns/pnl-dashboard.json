@@ -1,0 +1,116 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "pnl-dashboard",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "P&L Dashboard",
+  "description": "Profit & loss analytics dashboard with gross income, expenses, NOI, cash flow, breakdowns by category, property comparison, and projections.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "icon",
+        "Badge",
+        "Select"
+      ],
+      "charts": [
+        "AreaChart",
+        "BarChart",
+        "PieChart"
+      ]
+    }
+  },
+  "components": [
+    "Button",
+    "icon",
+    "Badge",
+    "Select"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full profit-and-loss dashboard with income and expense breakdowns, property comparison, and projections",
+      "components": [
+        "Button",
+        "icon",
+        "Badge",
+        "Select"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6",
+        "slots": {
+          "header": "Date range, property filter, export",
+          "summary-cards": "Gross income, expenses, NOI, cash flow",
+          "income-breakdown": "Rental income, other income by category",
+          "expense-breakdown": "Expenses by category",
+          "chart": "Income vs expenses trend",
+          "property-comparison": "P&L by property table",
+          "projections": "Forecasted cash flow"
+        }
+      }
+    },
+    "summary": {
+      "description": "Compact P&L summary for dashboard",
+      "components": [],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap3 _p4",
+        "slots": {
+          "metrics": "Key financial metrics"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap6",
+    "slots": {
+      "header": "Title and filters",
+      "summary": "Key metrics",
+      "breakdowns": "Income and expense breakdowns",
+      "comparison": "Property comparison"
+    }
+  },
+  "visual_brief": "Financial dashboard with a header containing title, property/portfolio selector, and date range filter. A summary metrics row shows gross income, total expenses, NOI (net operating income), and cash flow as large value cards with trend indicators. Below, two side-by-side breakdown panels: income categories (rent, fees, other) and expense categories (maintenance, insurance, utilities, management) displayed as horizontal bar charts or itemized lists with amounts. A property comparison table shows these metrics per property. A projections section shows a line chart of projected vs. actual income/expenses.",
+  "responsive": {
+    "mobile": "Summary metrics in a 2x2 grid. Breakdown panels stack vertically. Property comparison becomes a scrollable card list. Projections chart takes full width with simplified labels.",
+    "tablet": "Metrics in a single row. Breakdowns side by side. Comparison table with horizontal scroll.",
+    "desktop": "Full dashboard grid with all sections visible. Charts and tables at comfortable sizes."
+  },
+  "layout_hints": {
+    "financial_story": "The pattern should read from summary health to income/expense explanation to property comparison. Preserve a clear story of profitability rather than a loose collection of finance widgets.",
+    "breakdown_role": "Income and expense panels should feel like explanatory companions to NOI and cash flow, not independent dashboards fighting for attention.",
+    "comparison_discipline": "Property-level comparisons belong after portfolio context is established so users can move from aggregate health into individual asset performance."
+  },
+  "motion": {
+    "micro": "Metric cards and chart controls may respond crisply on hover and focus, with restrained value or chart reveal behavior.",
+    "transitions": "Date-range or filter changes should preserve a sense of continuity in the financial story rather than making values feel unstable."
+  },
+  "interactions": [
+    "drag-reorder",
+    "click-select",
+    "animate-on-mount",
+    "real-time-updates",
+    "hover-tooltip"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Profit and loss dashboard",
+    "keyboard": [
+      "Filters, summary cards, breakdown charts, and comparison surfaces should remain keyboard reachable in reading order."
+    ],
+    "announcements": [
+      "Portfolio-level revenue, expenses, NOI, and comparison context should be exposed semantically so the dashboard remains interpretable beyond chart visuals."
+    ]
+  },
+  "composition": {
+    "PnlDashboard": "Container(d-section, flex-col, gap-6) > [Header + SummaryCards + Breakdowns + PropertyComparison + Projections?]",
+    "Header": "Row(d-control) > [Title + PropertyFilter(d-control) + DateRange(d-control) + ExportButton(d-interactive)]",
+    "SummaryCards": "Grid(d-data, responsive: 2/4-col) > MetricCard(d-surface)[]",
+    "Breakdowns": "Row(d-data, 2-col) > [IncomeBreakdown(d-surface) + ExpenseBreakdown(d-surface)]",
+    "PropertyComparison": "Table(d-data) > PropertyRow(d-data-row)[]"
+  }
+}

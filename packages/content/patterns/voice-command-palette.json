@@ -1,0 +1,127 @@
+{
+  "id": "voice-command-palette",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Voice Command Palette",
+  "description": "Voice-activated command interface with real-time waveform visualization, live transcription, contextual suggestion chips, and processing feedback — a voice-first alternative to traditional command palettes.",
+  "category": "voice",
+  "tags": [
+    "2027",
+    "frontier",
+    "voice",
+    "command",
+    "palette",
+    "natural-language",
+    "AI",
+    "hands-free"
+  ],
+  "components": [
+    "CommandOverlay",
+    "VoiceInput",
+    "CommandSuggestion",
+    "ProcessingIndicator",
+    "ResultPreview",
+    "HotkeyHint"
+  ],
+  "default_preset": "overlay",
+  "presets": {
+    "overlay": {
+      "description": "Full-screen centered overlay with backdrop blur — large waveform at top, live transcript below, suggestion chips at the bottom, suitable for primary voice command invocation",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_fixed _inset-0 _flex _items-center _justify-center _bg-black/50 _backdrop-blur-sm _z-50"
+      }
+    },
+    "inline": {
+      "description": "Embedded voice command input within a page section — compact waveform, transcript, and suggestions rendered inline without overlay or backdrop, for persistent voice interfaces",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _gap-3 _p-4 _rounded-xl _border _bg-surface"
+      }
+    },
+    "floating": {
+      "description": "Small 48px circle near the mic button that expands into a pill shape showing transcript and suggestions — minimal footprint, ideal for always-available voice access in toolbars",
+      "layout": {
+        "layout": "flex",
+        "atoms": "_fixed _bottom-4 _right-4 _z-50"
+      }
+    }
+  },
+  "visual_brief": "In overlay mode: a centered modal panel (max-width 560px, rounded-2xl, bg-surface, shadow-2xl) appears over a full-screen backdrop (bg-black/50%, backdrop-blur-sm). The panel is vertically stacked. At the top (p-6): a large waveform visualization (the same bar-style as voice-waveform pattern, but wider — 48 bars spanning the full panel width) showing the user's live speech input. The bars are accent-colored during active speech and collapse to muted during silence. Below the waveform (px-6): a live transcript area (min-height 48px, max-height 120px) displaying the real-time speech-to-text result in text-lg font-medium. Text appears word-by-word with a blinking cursor at the end. A muted placeholder ('Say a command...') shows when no speech has been captured. Below the transcript (px-6, pb-4): a horizontally scrollable row of suggestion chips. Each chip is a pill (rounded-full, px-3 py-1.5, border, text-sm) showing a parsed command interpretation ('Navigate to /settings', 'Open file: main.ts', 'Run build'). The most likely suggestion has a filled background (bg-accent, text-accent-foreground). Others have outline style. Chips update in real-time as the transcript changes — they fade in/out with 150ms transitions. At the bottom of the panel: a thin separator line, then a footer row (px-6, py-3) showing a HotkeyHint on the left ('Esc to cancel') and a small microphone status icon on the right. When the system is processing a recognized command: the waveform area is replaced by a ProcessingIndicator — a horizontal pulsing bar (4px tall, bg-accent, animated width oscillation from 20% to 80% and back). A brief success state flashes the panel border green (200ms) before the overlay dismisses. In floating mode: resting state is a 48px circle (bg-accent, shadow-lg) with a microphone icon (24px, white). On activation (click or hotkey), the circle smoothly expands (300ms spring) into a pill shape (width: 320px, height: auto, rounded-2xl, bg-surface, shadow-2xl). The pill shows a compact waveform (24px tall), a single-line transcript, and up to 3 suggestion chips below. Tapping outside or pressing Escape collapses it back to the circle.",
+  "layout_hints": {
+    "container": "fixed overlay or inline block depending on preset",
+    "note": "The overlay preset should trap focus when open and return focus to the trigger element on close. The floating preset should not trap focus but should be keyboard-accessible.",
+    "dismissal": "Overlay dismisses on: Escape key, click outside the panel, or successful command execution. Floating collapses on: Escape, tap outside, or 5s of silence after last speech.",
+    "command_parsing": "Suggestion chips should be driven by an intent-parsing layer that matches partial transcripts against available commands. Show up to 5 suggestions in overlay mode, 3 in floating mode.",
+    "success_feedback": "On successful command execution: flash panel border green (var(--d-success)) for 200ms, then dismiss with a scale-down + fade-out animation (200ms ease-in)."
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_fixed _inset-0 _flex _items-center _justify-center _bg-black/50 _backdrop-blur-sm _z-50",
+    "slots": {
+      "command-overlay": "The full-screen backdrop layer. Uses position: fixed, inset: 0. Background is black at 50% opacity with backdrop-filter: blur(4px). Clicking this backdrop area (outside the panel) dismisses the voice command palette. The overlay should fade in (opacity 0→1 over 150ms) on open and fade out on close. Z-index: 50 to sit above all page content. The overlay traps focus — Tab cycles only through interactive elements within the panel.",
+      "voice-input": "The primary interaction zone at the top of the modal panel. Contains two sub-regions: (1) WaveformPreview — a 48-bar amplitude visualization spanning the full panel width (approximately 480px), bars 4px wide with 3px gap, 48px tall, centered. Bars animate identically to the voice-waveform bar preset but scaled to panel width. (2) Transcript — a text area below the waveform (margin-top: 16px) showing the live speech-to-text output. Text renders in text-lg, font-medium. Words appear incrementally with 80ms fade-in per word. A blinking cursor (2px wide, accent color, 1s blink) follows the last word. When no speech has been captured, a muted placeholder reads 'Say a command...' in text-muted, italic. The transcript area has min-height: 48px and max-height: 120px with overflow-y: auto for long utterances.",
+      "command-suggestion": "A horizontally scrollable row of suggestion chips below the transcript. Each chip is a pill-shaped button: rounded-full, px-3, py-1.5, text-sm, font-medium. The highest-confidence suggestion uses filled style (bg-accent, text-accent-foreground). Remaining suggestions use outline style (border, text-foreground). Each chip has a subtle left icon indicating command type (navigation: arrow icon, action: play icon, query: search icon). Chips enter with a staggered fade-in (50ms delay per chip, 150ms duration). When the transcript changes, chips that are no longer relevant fade out (100ms) and new ones fade in. Clicking a chip immediately executes that command. The row is horizontally scrollable with scroll-snap-type: x mandatory and hidden scrollbar. Maximum 5 chips visible in overlay mode.",
+      "processing-indicator": "Shown when a command has been recognized and is being executed. Replaces the waveform area. A horizontal bar (4px tall, full width, rounded-full) with an animated fill: the filled portion oscillates between 20% and 80% width, sliding left to right and back, using accent color (bg-accent). Animation: 1.5s ease-in-out infinite. Below the bar, centered text in text-sm text-muted reads 'Processing: {command_summary}...'. The indicator enters with a crossfade from the waveform (200ms).",
+      "result-preview": "Shown briefly after successful command execution before the overlay dismisses. A compact preview of the command result: for navigation commands, shows the destination page title; for action commands, shows a checkmark + 'Done' message; for queries, shows a brief answer snippet. Renders in a muted card style (bg-muted/10%, rounded-lg, p-3, text-sm). Visible for 800ms before the overlay auto-dismisses.",
+      "hotkey-hint": "A small footer row at the bottom of the panel (px-6, py-3, border-t). Left side: keyboard shortcut hints in text-xs, text-muted, font-mono ('Esc to cancel · Enter to confirm'). Right side: a small microphone status indicator (12px circle — green when listening, red when error, gray when idle). The footer is visually understated to avoid competing with the main interaction area."
+    }
+  },
+  "accessibility": {
+    "role": "dialog",
+    "aria-label": "Voice command palette",
+    "aria-modal": "true",
+    "announcements": [
+      "Voice command palette opened — listening for commands",
+      "Heard: {transcript}",
+      "Suggestion: {command_description}",
+      "Processing command: {command}",
+      "Command executed: {result}",
+      "Voice command palette closed"
+    ],
+    "keyboard": [
+      "Cmd+Shift+V / Ctrl+Shift+V: open voice command palette",
+      "Escape: close/cancel",
+      "Enter: confirm top suggestion",
+      "Arrow Left/Right: navigate between suggestion chips",
+      "Tab: cycle through suggestions and controls",
+      "1-5: quick-select suggestion by number"
+    ]
+  },
+  "responsive": {
+    "mobile": "Overlay panel expands to full-width (inset-x: 16px) with rounded-xl. Waveform reduces to 24 bars. Suggestion chips stack vertically instead of horizontal scroll. Floating preset circle increases to 56px for touch. Processing indicator uses full-width.",
+    "tablet": "Overlay panel at max-width: 560px centered. Full 48-bar waveform. Horizontal chip scroll with touch. Floating preset unchanged."
+  },
+  "motion": {
+    "micro": {
+      "chip-hover": "scale(1.03) + shadow-elevation 150ms ease-out",
+      "chip-press": "scale(0.97) 100ms ease-in",
+      "hotkey-hint-hover": "opacity 0.5→1 150ms"
+    },
+    "transitions": {
+      "overlay-open": "backdrop opacity 0→1 150ms ease-out, panel scale(0.95)→scale(1) + opacity 0→1 200ms spring",
+      "overlay-close": "panel scale(1)→scale(0.95) + opacity 1→0 150ms ease-in, backdrop opacity 1→0 150ms",
+      "floating-expand": "circle width 48px→320px, height 48px→auto, border-radius 24px→16px over 300ms spring",
+      "floating-collapse": "reverse of expand, 250ms ease-in",
+      "success-flash": "border-color → var(--d-success) 0ms, then back to default over 200ms ease-out"
+    },
+    "ambient": {
+      "waveform-listening": "continuous bar oscillation at 60fps synced to audio input",
+      "cursor-blink": "opacity steps(2) 1s infinite",
+      "processing-sweep": "width oscillation 20%→80%→20% 1.5s ease-in-out infinite"
+    }
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "composition": {
+    "VoiceCommandPalette": "Dialog(d-surface, fixed|inline, z-50) > [VoiceInput + CommandSuggestions + ProcessingIndicator? + ResultPreview? + HotkeyHint]",
+    "VoiceInput": "Section(flex-col, gap-3, p-6) > [WaveformPreview(48-bar, animated) + Transcript(text-lg, live-updating)]",
+    "CommandSuggestions": "ScrollRow(flex, gap-2, overflow-x-auto, px-6) > CommandSuggestion*(d-interactive, pill, staggered-enter)",
+    "CommandSuggestion": "Button(rounded-full, px-3, py-1.5, text-sm) > [TypeIcon + Label]",
+    "ProcessingIndicator": "Div(flex-col, items-center, gap-2) > [AnimatedBar(4px, accent, oscillating-width) + StatusText(text-sm, text-muted)]",
+    "ResultPreview": "Card(bg-muted/10%, rounded-lg, p-3, text-sm) > ResultContent",
+    "HotkeyHint": "Footer(flex, justify-between, px-6, py-3, border-t) > [ShortcutText(text-xs, mono) + MicStatus(12px, dot)]"
+  }
+}

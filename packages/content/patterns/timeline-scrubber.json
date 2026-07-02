@@ -1,0 +1,107 @@
+{
+  "id": "timeline-scrubber",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Timeline Scrubber",
+  "description": "Horizontal multi-track timeline with draggable scrubber handle, scene markers, keyframe dots, and zoom controls for video/audio editing workflows.",
+  "category": "media",
+  "tags": ["2026", "media", "timeline", "video", "audio", "scrubber", "editor"],
+  "components": ["TimelineCanvas", "TrackRow", "Scrubber", "KeyframeDot", "SceneMarker", "ZoomControls"],
+  "default_preset": "video",
+  "presets": {
+    "video": {
+      "description": "Multi-track video timeline with frame thumbnails, stacked audio tracks, scene markers, and full keyframe support for editing workflows",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_relative _w100 _flex _flex-col _bg-surface _border-t"
+      }
+    },
+    "audio": {
+      "description": "Audio-focused timeline rendering waveform envelopes across multiple stems with beat grid alignment and region editing",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_relative _w100 _flex _flex-col _bg-surface"
+      }
+    },
+    "simple": {
+      "description": "Single track timeline with scrubber and basic zoom, suitable for preview players and lightweight review tools",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_relative _w100 _flex _flex-col _bg-surface-muted"
+      }
+    }
+  },
+  "visual_brief": "A horizontal multi-track timeline stacked vertically with a fixed-position time ruler at top showing hours:minutes:seconds:frames tick marks. Video tracks render sequential frame thumbnails (approximately 80x45px each) at regular intervals matching zoom level. Audio tracks show symmetrical amplitude waveform envelopes in accent color against a muted background. A prominent vertical scrubber line (2px wide, primary color) spans all tracks with a triangular playhead handle at top that the user drags left-right to seek. Scene markers appear as colored flags above the ruler at scene-change timestamps, each with a 12px colored pennant shape. Keyframes render as 8px rotated-square diamond shapes on their associated track rows, connected by thin lines showing interpolation. Zoom controls sit in a small pill at bottom-right with +/-/fit buttons. Current time displays in monospace font at top-left (e.g. 00:02:14:07). Beat/frame grid lines run vertically through all tracks at zoom-appropriate density.",
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_relative _w100 _flex _flex-col _bg-surface _border-t",
+    "slots": {
+      "time-ruler": "Horizontal ruler at the top showing time markers with major ticks (seconds) and minor ticks (frames). Label format depends on zoom level: frames, seconds, or minutes. Monospace font for time labels. Scrolls horizontally in sync with track content.",
+      "track-stack": "Vertical stack of track rows. Each row is 64px tall for video tracks (to accommodate thumbnails) or 48px tall for audio tracks. Rows have a track header on the left (120px fixed) showing track name, mute/solo, and lock toggles, with the waveform/thumbnail area filling remaining width.",
+      "scrubber": "Vertical playhead line spanning all tracks, draggable via triangular handle at top. Must use pointer-events to capture drag; updates time via onChange. Shows current-time tooltip near the handle while dragging.",
+      "scene-markers": "Colored flag markers positioned absolutely above the ruler at scene-change timestamps. Hover shows scene name tooltip. Clicking jumps the scrubber to the marker position.",
+      "keyframes": "Diamond-shaped dots on individual track rows at automation keyframe timestamps. Selectable, draggable, connected by interpolation lines that reflect curve type (linear, bezier, hold).",
+      "zoom-controls": "Small pill-shaped toolbar anchored bottom-right with zoom-in, zoom-out, and fit-to-content buttons. Icon-only with tooltips."
+    }
+  },
+  "responsive": {
+    "mobile": "Track headers collapse to 48px wide icon-only. Zoom controls hidden, replaced by pinch gesture. Thumbnails downscaled to 40x22px. Scene markers render as colored dots without labels.",
+    "tablet": "Standard layout with slightly reduced track heights (52px video, 40px audio). Touch-drag for scrubber and two-finger pinch for zoom.",
+    "desktop": "Full layout with all controls visible and keyboard shortcuts enabled for playback and zoom navigation."
+  },
+  "layout_hints": {
+    "playhead_priority": "The scrubber and time ruler should be the dominant orientation anchors. Tracks, keyframes, and markers all support that shared temporal frame.",
+    "track_hierarchy": "Video, audio, and annotation tracks should remain clearly separated so the user always understands what layer they are editing or reviewing.",
+    "zoom_discipline": "As zoom changes, maintain the relationship between ruler, markers, and media blocks instead of letting one layer drift out of sync with the others."
+  },
+  "layout_hints": {
+    "playhead_priority": "The scrubber and time ruler should be the dominant orientation anchors. Tracks, keyframes, and markers all support that shared temporal frame.",
+    "track_hierarchy": "Video, audio, and annotation tracks should remain clearly separated so the user always understands what layer they are editing or reviewing.",
+    "zoom_discipline": "As zoom changes, maintain the relationship between ruler, markers, and media blocks instead of letting one layer drift out of sync with the others."
+  },
+  "motion": {
+    "micro": {
+      "scrubber-drag": "scrubber x-position follows pointer at 60fps with no easing",
+      "keyframe-hover": "scale(1.4) 120ms ease-out with glow ring"
+    },
+    "transitions": {
+      "zoom-change": "track-width transition 250ms ease-in-out with thumbnail re-rendering",
+      "marker-add": "scale(0) to scale(1) with bounce 200ms spring"
+    },
+    "ambient": {
+      "playhead-playing": "scrubber advances continuously at playback rate with subtle glow pulse"
+    }
+  },
+  "interactions": [
+    "animate-on-mount",
+    "stagger-children",
+    "real-time-updates",
+    "scroll-reveal"
+  ],
+  "composition": {
+    "TimelineScrubber": "Root(d-section, stack) > [TimeRuler + TrackStack + ZoomControls]",
+    "TrackStack": "Container > TrackRow*(d-surface) > [TrackHeader + TrackContent > (FrameThumbnails | Waveform) + KeyframeDot* + SceneMarker*]",
+    "Scrubber": "Overlay(absolute, full-height) > [ScrubberHandle(triangle) + ScrubberLine(vertical) + TimeTooltip?]",
+    "ZoomControls": "Pill(d-control, bottom-right) > [ZoomIn + ZoomOut + FitButton]"
+  },
+  "accessibility": {
+    "role": "application",
+    "aria-label": "Media timeline editor",
+    "announcements": [
+      "Playhead at {timestamp}",
+      "Scene marker {name} added at {timestamp}",
+      "Zoomed to {level}"
+    ],
+    "keyboard": [
+      "Space: play/pause",
+      "Left/Right: step one frame",
+      "Shift+Left/Right: jump 10 frames",
+      "Home: jump to start",
+      "End: jump to end",
+      "+/-: zoom in/out",
+      "M: add scene marker at playhead",
+      "K: add keyframe at playhead"
+    ]
+  }
+}

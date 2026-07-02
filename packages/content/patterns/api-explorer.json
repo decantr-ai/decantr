@@ -1,0 +1,131 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "api-explorer",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "API Explorer",
+  "description": "Interactive API documentation with a browsable endpoint list, parameter tables, a try-it-out request builder with editable JSON bodies, live response viewer, and multi-language code snippet generation.",
+  "category": "developer",
+  "tags": [
+    "2026",
+    "developer",
+    "api",
+    "documentation",
+    "rest",
+    "request-builder",
+    "explorer"
+  ],
+  "components": [
+    "EndpointList",
+    "EndpointDetail",
+    "RequestBuilder",
+    "ResponseViewer",
+    "AuthConfig",
+    "ParameterTable",
+    "CodeSnippet"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Two-panel layout with a left sidebar listing all endpoints and a right detail area showing the selected endpoint's documentation, request builder, and response viewer",
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _row _hfull _wfull _overflow-hidden"
+      }
+    },
+    "grouped": {
+      "description": "Endpoints organized by API resource with collapsible groups in the sidebar — each group shows the resource name and endpoint count, expanding to reveal individual endpoints within that resource",
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _row _hfull _wfull _overflow-hidden"
+      }
+    },
+    "minimal": {
+      "description": "Compact single-column reference layout without the sidebar — endpoints render as collapsible accordion sections in a scrollable list, each expanding to show method, path, parameters, and a condensed request/response example",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _wfull _overflow-y-auto _p4"
+      }
+    }
+  },
+  "visual_brief": "Two-panel layout with a left sidebar (280px wide) listing API endpoints and a right detail area filling the remaining width. The sidebar has a search input at the top and below it a scrollable list of endpoints grouped by resource (e.g., 'Users', 'Products', 'Orders'). Each resource group has a heading with the resource name and a count badge. Under each group, individual endpoints display as rows showing an HTTP method badge (GET as a green rounded pill, POST as a blue pill, PUT as an orange pill, DELETE as a red pill, PATCH as a purple pill) followed by the URL path in monospace text (e.g., '/users/{id}'). The currently selected endpoint row has an active background highlight. The right detail area shows the selected endpoint's documentation: a title with the HTTP method badge and full path, a description paragraph, a ParameterTable with columns for name, type (as a code-styled badge), required (red asterisk or green optional badge), and description. Below the parameter table is the RequestBuilder section: an editable JSON body area with syntax highlighting (for POST/PUT/PATCH methods), an auth configuration dropdown (None, Bearer Token, API Key, Basic Auth) with a token/key input field, and header key-value rows. A prominent 'Send' button with a play icon triggers the request. The ResponseViewer below shows: a status code badge (2xx green, 4xx amber, 5xx red) with the status text, a collapsible headers section showing response headers as key-value pairs, and the response body in a syntax-highlighted JSON viewer with line numbers. At the bottom, CodeSnippet tabs allow switching between curl, JavaScript (fetch), and Python (requests) with a copy-to-clipboard button on each tab. The minimal preset renders everything as a single scrollable page with accordion sections per endpoint.",
+  "layout_hints": {
+    "panel_balance": "Keep the endpoint index, request builder, and response viewer in a clear operational hierarchy. Do not let the request builder overpower the endpoint documentation itself.",
+    "response_focus": "The response viewer should feel like a trustworthy debugging surface, not a generic textarea dump. Keep status, headers, and body in a stable order.",
+    "mobile_fallback": "When the sidebar collapses on small screens, preserve the mental model of endpoint selection before request construction."
+  },
+  "default_layout": {
+    "layout": "row",
+    "atoms": "_flex _row _hfull _wfull _overflow-hidden",
+    "slots": {
+      "endpoint-list": "Left sidebar panel (280px fixed width) with a top search input for filtering endpoints by path or method, followed by a scrollable list of endpoint items. In grouped preset, items are nested under collapsible resource group headings. Each endpoint item shows an HTTP method badge (colored pill: GET=green, POST=blue, PUT=orange, DELETE=red, PATCH=purple) and the path in monospace. The active endpoint has a highlighted background. The sidebar has a subtle right border.",
+      "endpoint-detail": "Right content area filling the remaining width, scrollable vertically. Contains all documentation and interactive sections for the selected endpoint stacked vertically with comfortable spacing.",
+      "description-section": "Top of the detail area. Shows the endpoint title as a large heading with the HTTP method badge and full URL path. Below it, a description paragraph explaining what the endpoint does, followed by any notes or warnings as callout boxes.",
+      "parameter-table": "A data table listing all parameters (path, query, header, body). Columns: parameter name (monospace), location badge (path/query/header/body as small pills), type (code-styled, e.g., 'string', 'integer', 'object'), required indicator (red 'required' badge or gray 'optional'), default value if any, and a description. Rows alternate with subtle background striping. Nested object parameters indent with a tree-line guide.",
+      "request-builder": "Interactive section for constructing and sending requests. Contains: a URL bar showing the full resolved URL with editable path parameters highlighted in a distinct color, an AuthConfig dropdown and credential input, optional header rows (key-value pairs with add/remove), a JSON body editor with syntax highlighting and line numbers (visible for POST/PUT/PATCH), and a prominent 'Send' button (primary color, play icon) at the right. A loading spinner replaces the button while the request is in flight.",
+      "response-viewer": "Section showing the API response after sending a request. Header row: status code as a large colored badge (200 green, 201 green, 400 amber, 401 amber, 404 amber, 500 red) with status text. A toggle to show/hide response headers as a key-value list. The response body displayed in a syntax-highlighted JSON code block with line numbers, word-wrap toggle, and a copy button. If the response is an error, the viewer has a subtle red background tint.",
+      "code-snippet": "Tabbed section at the bottom showing auto-generated code examples for the current request configuration. Tabs: curl, JavaScript (using fetch API), Python (using requests library). Each tab shows a syntax-highlighted code block matching the current request parameters, headers, auth, and body. A copy-to-clipboard button in the top-right of each tab. Code updates live as the request builder configuration changes."
+    }
+  },
+  "responsive": {
+    "mobile": "Single-column layout. Endpoint list renders as a top dropdown selector instead of a sidebar. Detail sections stack vertically with full width. JSON editor uses a compact height. Code snippets show one language at a time with a selector dropdown. Send button is sticky at the bottom of the viewport.",
+    "tablet": "Sidebar collapses to an icon-only mode (showing just method badges) that expands on tap. Detail area takes most of the width. Parameter table horizontally scrolls if needed. Response viewer and code snippets at full width.",
+    "desktop": "Full two-panel layout with 280px sidebar and spacious detail area. Parameter table displays all columns without truncation. JSON editor has generous height. Code snippet tabs are all visible. Hover effects on endpoint list items."
+  },
+  "motion": {
+    "micro": {
+      "endpoint-hover": "background-tint 100ms ease-out on sidebar items",
+      "method-badge": "subtle scale pulse on hover 150ms ease-out",
+      "send-button-hover": "background-lighten + scale(1.02) 150ms ease-out",
+      "copy-flash": "background flash green 300ms ease-out on successful clipboard copy"
+    },
+    "transitions": {
+      "endpoint-switch": "detail area crossfade 200ms ease-out when selecting a different endpoint",
+      "response-appear": "fade + slide-up 300ms ease-out when response arrives",
+      "group-expand": "max-height 0→auto + fade 250ms ease-out for resource group toggle",
+      "sidebar-collapse": "width 280px→60px 300ms ease-in-out on tablet sidebar toggle"
+    },
+    "ambient": {
+      "request-loading": "send button spinner rotation continuous while request is in flight"
+    }
+  },
+  "interactions": [
+    "animate-on-mount",
+    "click-select",
+    "inline-edit",
+    "hover-reveal",
+    "keyboard-navigation"
+  ],
+  "composition": {
+    "APIExplorer": "Container(d-section, flex-row) > [EndpointList(d-surface) > EndpointItem*(d-interactive)] + EndpointDetail(d-surface) > [DescriptionSection + ParameterTable(d-data) + RequestBuilder(d-interactive) + ResponseViewer(d-data) + CodeSnippet(d-data)]",
+    "EndpointList": "Sidebar(d-surface, fixed-width, scrollable) > [SearchInput(d-control) + ResourceGroup* > EndpointItem*]",
+    "EndpointItem": "Row(d-interactive) > [MethodBadge(d-annotation, color: method) + PathLabel(mono)]",
+    "RequestBuilder": "Section(d-interactive) > [URLBar + AuthConfig(d-control) + HeaderRows? + BodyEditor?(d-data, syntax-highlighted) + SendButton(d-interactive)]",
+    "ResponseViewer": "Section(d-data) > [StatusBadge(d-annotation, color: statusCode) + HeadersToggle? + ResponseBody(d-data, syntax-highlighted, line-numbers)]",
+    "CodeSnippet": "Tabs(d-data) > [CurlTab + JavaScriptTab + PythonTab] > CodeBlock(syntax-highlighted, copyable)"
+  },
+  "accessibility": {
+    "role": "application",
+    "aria-label": "Interactive API documentation explorer with request builder",
+    "keyboard": [
+      "Arrow Up/Down: navigate endpoint list in sidebar",
+      "Enter: select focused endpoint and show its detail",
+      "Tab: move between interactive elements (search, parameters, body editor, send button)",
+      "Ctrl+Enter: send the current request",
+      "Ctrl+C: copy the current code snippet to clipboard",
+      "1-3: switch between code snippet tabs (curl, JS, Python)",
+      "Escape: close expanded response headers or resource groups",
+      "S: focus the endpoint search input",
+      "F: toggle fullscreen on the body editor or response viewer"
+    ],
+    "announcements": [
+      "Endpoint selected: {method} {path}",
+      "Request sent to {method} {path}",
+      "Response received: {statusCode} {statusText}, {bodySize} bytes",
+      "Code snippet copied to clipboard: {language}",
+      "Parameter {name} is required, type {type}",
+      "Auth configured: {authType}",
+      "Showing {count} endpoints matching '{query}'"
+    ]
+  }
+}

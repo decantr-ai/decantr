@@ -1,0 +1,54 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "recipefork-chef-instructions-display",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipefork Chef Instructions Display",
+  "description": "Chef Mode instruction presentation surface with collapsible parent groups, sub-step badges, optional imagery, timing metadata, and required ingredient chips.",
+  "dependencies": {
+    "patterns": {
+      "recipefork-chef-ingredients-display": "^1.0.0"
+    },
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Badge",
+        "Button",
+        "Card",
+        "Label",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Badge",
+    "Button",
+    "Card",
+    "Label",
+    "icon"
+  ],
+  "default_preset": "hierarchical",
+  "presets": {
+    "hierarchical": {
+      "description": "Display grouped Chef Mode instruction sets with optional simple stand-alone steps mixed into the flow.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6",
+        "slots": {
+          "header": "Section label and Chef Mode badge",
+          "group": "Collapsible instruction group",
+          "group-image": "Parent image surface",
+          "substep": "Nested numbered sub-step row",
+          "timing": "Prep/cook detail row",
+          "ingredient-chips": "Required ingredient chips",
+          "simple-step": "Standalone advanced step layout"
+        }
+      }
+    }
+  },
+  "visual_brief": "A layered instruction display that preserves the hierarchy of Chef Mode recipes. Parent instruction groups act like collapsible teaching sections, with nested numbered sub-steps, optional hero imagery, timing chips, and ingredient references inline beneath the relevant sub-step.",
+  "composition": {
+    "ChefInstructionsDisplay": "Card(recipefork-card) > [Header + InstructionGroupDisplay* + SimpleStepDisplay*]"
+  }
+}

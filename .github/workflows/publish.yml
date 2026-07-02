@@ -51,14 +51,8 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    env:
-      DECANTR_CONTENT_DIR: ${{ github.workspace }}/decantr-content
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
-        with:
-          repository: decantr-ai/decantr-content
-          path: decantr-content
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
@@ -75,8 +69,8 @@ jobs:
       - run: pnpm test
       - run: pnpm audit:package-surface
       - run: pnpm audit:release-readiness
+      - run: pnpm audit:content-package
       - run: pnpm audit:public-api -- --core-only --fail-on-error
-      - run: pnpm audit:registry-portal -- --fail-on-error
       - name: Generate release plan summary
         env:
           RELEASE_WAVE: ${{ github.event.inputs.release_wave || 'all' }}
@@ -151,7 +145,6 @@ jobs:
           ONLY_PACKAGES: ${{ github.event.inputs.only_packages || '' }}
           INCLUDE_EXPERIMENTAL: ${{ github.event.inputs.include_experimental || 'false' }}
           RELEASE_VERIFICATION_WEBHOOK_URL: ${{ secrets.RELEASE_VERIFICATION_WEBHOOK_URL }}
-          TELEMETRY_HEALTH_WEBHOOK_URL: ${{ secrets.TELEMETRY_HEALTH_WEBHOOK_URL }}
         run: |
           ARGS=""
           if [ "$RELEASE_WAVE" != "all" ]; then
@@ -166,7 +159,7 @@ jobs:
           if [ "$INCLUDE_EXPERIMENTAL" = "true" ]; then
             ARGS="$ARGS --include-experimental"
           fi
-          if [ -n "$RELEASE_VERIFICATION_WEBHOOK_URL$TELEMETRY_HEALTH_WEBHOOK_URL" ]; then
+          if [ -n "$RELEASE_VERIFICATION_WEBHOOK_URL" ]; then
             ARGS="$ARGS --send-webhook"
           fi
           node scripts/verify-published-packages.mjs $ARGS --retries=6 --retry-delay=10000

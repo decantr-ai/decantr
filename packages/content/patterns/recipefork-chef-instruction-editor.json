@@ -1,0 +1,59 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "recipefork-chef-instruction-editor",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipefork Chef Instruction Editor",
+  "description": "Hierarchical Chef Mode instruction editor with grouped instruction sets, stand-alone advanced steps, step images, per-step timing, and ingredient-step linkage. Stand-alone advanced steps retain the same deep controls as grouped sub-steps.",
+  "dependencies": {
+    "patterns": {
+      "recipefork-chef-ingredients-editor": "^1.0.0"
+    },
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Input",
+        "Card",
+        "Badge",
+        "Label",
+        "Textarea",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Input",
+    "Card",
+    "Badge",
+    "Label",
+    "Textarea",
+    "icon"
+  ],
+  "default_preset": "hierarchical",
+  "presets": {
+    "hierarchical": {
+      "description": "Advanced instruction editor that supports parent instruction groups with nested sub-steps as well as stand-alone advanced steps in the same workflow. Stand-alone steps still expose image, timing, and ingredient-link controls.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "header": "Section heading with add-simple and add-group actions",
+          "instruction-group": "Parent instruction card",
+          "simple-step": "Standalone advanced step row",
+          "group-image": "Optional parent image surface",
+          "step-image": "Optional sub-step image surface",
+          "timing": "Prep and cook minute controls",
+          "ingredient-links": "Selectable ingredient badges for required ingredient mapping",
+          "substeps": "Nested step stack with add-sub-step action"
+        }
+      }
+    }
+  },
+  "visual_brief": "A hierarchical instruction builder where parent instruction sets expand into nested sub-step cards. Each group can carry a title, optional description, optional image, and one or more timed sub-steps. Stand-alone advanced steps are also supported when a parent grouping would be too heavy, but they should still surface image upload, prep/cook timing, and ingredient-link controls instead of collapsing into a plain textarea. Ingredient badges beneath each sub-step create explicit links between structured ingredients and step execution.",
+  "composition": {
+    "ChefInstructionEditor": "Card(recipefork-card) > [Header + InstructionGroup* + SimpleStep*]"
+  }
+}

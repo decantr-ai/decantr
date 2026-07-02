@@ -1,0 +1,138 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "data-table",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Data Table",
+  "description": "Sortable, filterable, paginated data table with row selection",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Table",
+        "Checkbox",
+        "Button",
+        "Input",
+        "Badge",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Table",
+    "Checkbox",
+    "Button",
+    "Input",
+    "Badge",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full-featured table with column headers, sortable columns, row selection checkboxes, pagination footer",
+      "components": [
+        "Table",
+        "Checkbox",
+        "Button",
+        "Input",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "column",
+        "atoms": "_flex _col _gap4 _w[100%] _overflow[auto]",
+        "slots": {
+          "toolbar": "Top row with optional search Input and action Buttons",
+          "table-header": "Column headers with sort controls",
+          "table-body": "Data rows with optional row selection Checkbox",
+          "pagination": "Footer with page info and prev/next Buttons"
+        }
+      }
+    },
+    "compact": {
+      "description": "Denser rows, no selection, simpler pagination (prev/next only)",
+      "components": [
+        "Table",
+        "Button",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "column",
+        "atoms": "_flex _col _gap2 _w[100%] _overflow[auto]",
+        "slots": {
+          "table-header": "Column headers without sort controls",
+          "table-body": "Dense data rows without selection",
+          "pagination": "Simple prev/next footer"
+        }
+      }
+    }
+  },
+  "visual_brief": "Full-width data table with a sticky header row. Header cells use uppercase, small, muted text with sort-direction arrows on sortable columns. Data rows have consistent vertical padding (py3) for scan-ability, with subtle zebra-stripe background on hover. Row-selection checkboxes align in the first column. Active selections highlight the row with a faint primary-color tint. A toolbar above the table holds a search input on the left and action buttons (export, delete) on the right. Pagination controls at the bottom show current range, total count, and prev/next buttons with disabled states at boundaries.",
+  "responsive": {
+    "mobile": "Table transforms into a stacked card list. Each row becomes a vertical card with label-value pairs. Toolbar search goes full-width. Pagination simplifies to prev/next only. Horizontal scroll is avoided entirely.",
+    "tablet": "Table displays with horizontal scroll if columns exceed viewport. Sticky first column for row identifiers. Toolbar remains single row.",
+    "desktop": "Full table layout with all columns visible. Sticky header on scroll. Toolbar with search, filters, and bulk action buttons. Full pagination with page numbers."
+  },
+  "motion": {
+    "micro": "Row hover highlights with 150ms background-color transition. Sort arrow rotates 180deg on direction change with 200ms ease. Checkbox scales briefly on check (scale 1.1 for 100ms).",
+    "transitions": "Rows entering from filter/search fade in with 200ms opacity transition. Bulk-selected rows highlight with a slide-in left-border accent over 150ms."
+  },
+  "interactions": [
+    "keyboard-navigation",
+    "click-select",
+    "hover-reveal",
+    "animate-on-mount",
+    "stagger-children"
+  ],
+  "accessibility": {
+    "role": "Table uses semantic <table>, <thead>, <tbody>, <th>, <td> elements. Sort buttons are <button> inside <th> with aria-sort attribute.",
+    "keyboard": [
+      "Arrow keys navigate cells.",
+      "Space toggles row selection.",
+      "Enter activates row action.",
+      "Tab moves between toolbar, table, and pagination."
+    ],
+    "screen_reader": "aria-label on table describes content. aria-sort on sortable headers. Live region announces sort changes and selection count. Pagination uses nav with aria-label."
+  },
+  "layout_hints": {
+    "toolbar_balance": "Search, filters, and bulk actions should feel like one operational control band, not several detached widgets.",
+    "row_density": "Keep row spacing scannable and consistent. Dense data tables should still preserve a clear visual rhythm and avoid accidental crowding.",
+    "mobile_fallback": "The card-list fallback should keep label-value semantics clear instead of becoming a generic stack of text."
+  },
+  "default_layout": {
+    "layout": "column",
+    "atoms": "_flex _col _gap4 _w[100%] _overflow[auto]",
+    "slots": {
+      "toolbar": "Top row with optional search Input and action Buttons",
+      "table-header": "Column headers with sort controls",
+      "table-body": "Data rows with optional row selection Checkbox",
+      "pagination": "Footer with page info and prev/next Buttons"
+    }
+  },
+  "io": {
+    "consumes": [
+      "search",
+      "filters",
+      "data"
+    ],
+    "produces": [
+      "selection",
+      "sort"
+    ],
+    "actions": [
+      "export",
+      "delete",
+      "edit"
+    ]
+  },
+  "composition": {
+    "DataTable": "Container(d-data, full-width) > [Toolbar + Table + Pagination]",
+    "Toolbar": "Row(d-control) > [SearchInput(d-control) + ActionButtons(d-interactive)]",
+    "Table": "Table(d-data) > [TableHeader > HeaderCell(sortable?, sort-indicator?)[] + TableBody > DataRow(d-data-row, hoverable, striped?)[]]",
+    "DataRow": "Row > [Checkbox?(d-control) + DataCell(d-data-cell)[]]",
+    "Pagination": "Row(d-control) > [PageInfo(text-muted) + PageButtons(d-interactive, variant: ghost)[]]"
+  }
+}

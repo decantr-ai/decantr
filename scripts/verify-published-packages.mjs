@@ -240,7 +240,7 @@ function runCliSmokeChecks(version, distTag) {
     const output = runNpx(packageSpec, ['content-health', '--help']);
     assert(output.includes('decantr content-health'), 'missing content-health help title');
     assert(
-      !output.includes('Run this command from a decantr-content style repository'),
+      !output.includes('Run this command from a content corpus repository'),
       'content-health help executed repository detection',
     );
     return 'help rendered without repository detection';

@@ -1,0 +1,127 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "research-workspace",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Research Workspace",
+  "description": "Primary legal research workspace for searching case law, inspecting case detail with citation graphs, and drafting research memos side-by-side with supporting briefs.",
+  "tags": [
+    "legal",
+    "research",
+    "case-law",
+    "citations",
+    "memos"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "legal research",
+        "case law search",
+        "research workspace",
+        "research memo",
+        "citation research"
+      ],
+      "secondary": [
+        "legal memo",
+        "case brief",
+        "shepardize",
+        "westlaw alternative",
+        "lexis alternative"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "search",
+      "patterns": [
+        {
+          "pattern": "search-filter-bar",
+          "preset": "standard",
+          "as": "case-search"
+        },
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "result-list"
+        },
+        {
+          "pattern": "citation-graph",
+          "preset": "network",
+          "as": "citation-map"
+        }
+      ],
+      "default_layout": [
+        "search-filter-bar",
+        "data-table",
+        "citation-graph"
+      ],
+      "shell": "sidebar-aside"
+    },
+    {
+      "id": "case-detail",
+      "patterns": [
+        {
+          "pattern": "case-brief-card",
+          "preset": "research",
+          "as": "case-brief"
+        },
+        {
+          "pattern": "citation-graph",
+          "preset": "hierarchical",
+          "as": "citation-tree"
+        }
+      ],
+      "default_layout": [
+        "case-brief-card",
+        "citation-graph"
+      ],
+      "shell": "sidebar-aside"
+    },
+    {
+      "id": "research-memo",
+      "patterns": [
+        {
+          "pattern": "doc-editor",
+          "preset": "standard",
+          "as": "memo-editor"
+        },
+        {
+          "pattern": "case-brief-card",
+          "preset": "minimal",
+          "as": "supporting-brief"
+        }
+      ],
+      "default_layout": [
+        "doc-editor",
+        "case-brief-card"
+      ],
+      "shell": "sidebar-aside"
+    }
+  ],
+  "page_briefs": {
+    "search": "Case law search page. Top region hosts a search-filter-bar with jurisdiction, date range, court level, and practice area facets. Main region renders a data-table of case results with columns for case name, citation, court, year, and relevance score. The right aside panel shows a citation-graph network visualization of how results cite one another, helping researchers identify seminal cases and citation clusters.",
+    "case-detail": "Single case detail view. Main region shows a case-brief-card in research preset with full metadata, holding, reasoning, and pull quotes. The right aside renders a hierarchical citation-graph tracing authority upward to cited precedents and downward to subsequent cases that cite this decision, with signals indicating positive or negative treatment.",
+    "research-memo": "Split research memo drafting view. Main region hosts a doc-editor for composing the memo with structured sections for question presented, brief answer, facts, discussion, and conclusion. The right aside stacks minimal case-brief-cards for each cited authority so the writer can reference holdings without leaving the page."
+  },
+  "features": [
+    "case-law",
+    "citations",
+    "research"
+  ],
+  "suggested_theme": {
+    "ids": [
+      "counsel",
+      "paper",
+      "professional"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

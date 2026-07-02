@@ -1,0 +1,61 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "server-station",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Server Station",
+  "description": "Server-facing shift workspace. Tracks active tables, shift performance, sales, and tips across the current shift.",
+  "tags": ["restaurant", "server", "shift", "tips", "waitstaff", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["server shift", "server station", "waitstaff", "shift tracking", "tips"],
+      "secondary": ["my tables", "my sales", "tip out", "shift report"],
+      "negative": ["kitchen", "inventory", "marketing"]
+    },
+    "implies": ["shifts"],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "shift",
+      "patterns": [
+        { "pattern": "kpi-grid", "preset": "dashboard", "as": "shift-kpis" },
+        { "pattern": "activity-feed", "preset": "standard", "as": "shift-activity" }
+      ],
+      "default_layout": ["shift-kpis", "shift-activity"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "tips",
+      "patterns": [
+        { "pattern": "data-table", "preset": "standard", "as": "tip-history" },
+        { "pattern": "chart-grid", "preset": "standard", "as": "tip-charts" }
+      ],
+      "default_layout": ["tip-charts", "tip-history"],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "shift": "Dashboard KPI grid showing current shift metrics: active tables, covers served, sales total, tip percentage, and average ticket. Activity feed below streams recent events (table seated, check closed, comp applied) tied to the server.",
+    "tips": "Chart grid visualizing tip trends by day, shift, and cover count. Below, a data table listing each closed check with party size, sales amount, tip amount, tip percentage, and payment method. Running totals at the footer."
+  },
+  "features": ["shifts", "tips"],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area for server operations"
+  },
+  "suggested_theme": {
+    "ids": ["clean", "auradecantism"],
+    "modes": ["light", "auto"]
+  },
+  "dependencies": {
+    "patterns": {
+      "kpi-grid": ">=1.0.0",
+      "activity-feed": ">=1.0.0",
+      "data-table": ">=1.0.0",
+      "chart-grid": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

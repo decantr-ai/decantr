@@ -1,0 +1,102 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "prose-section",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Prose Section",
+  "description": "Long-form editorial or company-story section with comfortable reading width, optional supporting media, and a stable narrative rhythm for marketing and about pages.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Image",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Image",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Single-column editorial section with overline, heading, body copy, and optional supporting media or quote.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6 _wfull _maxw[56rem] _mx[auto]",
+        "slots": {
+          "eyebrow": "Optional overline label using d-label[data-anchor]",
+          "heading": "Section heading with heading2 or heading3 scale",
+          "body": "Long-form prose blocks with comfortable line length and muted supporting text",
+          "supporting-media": "Optional image, pull quote, or stat block below the prose"
+        }
+      }
+    },
+    "story": {
+      "description": "Narrative company-story section with wider body copy, optional image pairing, and a sequential scroll rhythm that feels deliberate instead of dense.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_grid _gc1 _lg:gc[1.15fr_0.85fr] _gap8 _wfull _maxw[72rem] _mx[auto] _items[start]",
+        "slots": {
+          "heading-column": "Eyebrow, heading, and lead paragraph anchoring the story",
+          "body-column": "Narrative prose blocks, milestone list, or supporting quote stack",
+          "media-column": "Optional founder portrait, product still, or ambient visual proof aligned to the story"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap6 _wfull _maxw[56rem] _mx[auto]",
+    "slots": {
+      "eyebrow": "Optional section label",
+      "heading": "Narrative section heading",
+      "body": "Long-form prose content",
+      "supporting-media": "Optional media or quote"
+    }
+  },
+  "visual_brief": "Editorial prose block that feels authored and breathable rather than like a utility text dump. Heading and lead copy establish narrative intent first, followed by long-form paragraphs with generous line-height and restrained width. The story preset can pair the prose with a portrait, ambient image, or milestone rail, but the text remains the primary visual element.",
+  "layout_hints": {
+    "measure": "Keep prose at a comfortable reading measure: roughly 60-75 characters per line for body copy. Do not let long-form copy run edge-to-edge across the viewport.",
+    "surface_usage": "This pattern should not automatically wrap itself in a d-surface card. Treat it as editorial content living within the shell rhythm unless a route explicitly needs contained prose.",
+    "vertical_rhythm": "Use a calm vertical rhythm between heading, lead, and body blocks. Paragraph groups should feel authored, not densely stacked utility text.",
+    "supporting_media": "If supporting media is present, it should reinforce the story without overpowering the text column. Favor one strong visual rather than a collage."
+  },
+  "responsive": {
+    "mobile": "Collapse to a single editorial column with tighter section spacing. Supporting media moves above or below the text rather than beside it. Preserve reading measure with comfortable horizontal padding.",
+    "tablet": "Single-column by default with optional media below the prose. Story preset may begin introducing a two-region composition when space allows, but text should remain the focus.",
+    "desktop": "Standard preset stays single-column with a max-width reading measure. Story preset can split into text and supporting-media columns with generous gap spacing."
+  },
+  "motion": {
+    "micro": "Minimal reveal motion only: supporting media and quote accents may fade in softly, but prose should remain calm and stable.",
+    "transitions": "Section-level entrance may use a subtle fade-up or staggered reveal of prose blocks over 200-300ms, never a dramatic slide or parallax.",
+    "ambient": "Avoid ornamental ambient motion inside the prose section itself; let surrounding page treatments carry atmosphere."
+  },
+  "interactions": [
+    "click-select",
+    "animate-on-mount",
+    "keyboard-navigation",
+    "hover-reveal"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Editorial prose section",
+    "keyboard": [
+      "Tab moves between links, CTA buttons, and interactive supporting content in reading order."
+    ],
+    "announcements": [
+      "Screen readers should encounter the heading before body copy and optional supporting media in source order."
+    ],
+    "focus_management": "Keep prose in semantic heading and paragraph structure. Interactive supporting elements should follow the narrative flow rather than interrupt it."
+  },
+  "composition": {
+    "ProseSection": "Container(d-section, editorial rhythm) > [Eyebrow? + Heading + Lead? + Body + SupportingMedia?]",
+    "StorySection": "Grid(editorial split) > [HeadingColumn + BodyColumn + MediaColumn?]",
+    "Body": "Stack(typography-first) > Paragraph[]"
+  }
+}

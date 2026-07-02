@@ -1,0 +1,125 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "stats-bar",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Stats Bar",
+  "description": "Horizontal bar of key statistics or metrics. Compact summary row.",
+  "tags": [
+    "metrics",
+    "stats",
+    "summary",
+    "kpi",
+    "dashboard"
+  ],
+  "classification": {
+    "triggers": [
+      "stats summary",
+      "metrics bar",
+      "key numbers",
+      "totals"
+    ],
+    "tier": "recommended"
+  },
+  "components": ["Text", "icon", "Container"],
+  "default_preset": "default",
+  "presets": {
+    "default": {
+      "description": "Equal-width stat items in a row",
+      "layout": {
+        "layout": "row",
+        "atoms": "_grid _gap4 _sm:gc2 _lg:gc4",
+        "slots": {
+          "items": "Equal-width stat cells with label, value, optional unit, and optional trend"
+        },
+        "distribution": "equal"
+      }
+    },
+    "compact": {
+      "description": "Minimal padding, inline separators",
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _aic _gap3 _wrap",
+        "slots": {
+          "items": "Inline stat cells with divider separators and reduced padding"
+        },
+        "distribution": "auto",
+        "separator": "divider"
+      }
+    },
+    "highlighted": {
+      "description": "First stat emphasized, rest secondary",
+      "layout": {
+        "layout": "row",
+        "atoms": "_grid _gap4 _sm:gc2 _lg:gc4",
+        "slots": {
+          "items": "Stat cells with the first metric visually emphasized and remaining metrics secondary"
+        },
+        "distribution": "featured-first"
+      }
+    }
+  },
+  "slots": {
+    "items": {
+      "type": "array",
+      "item": {
+        "label": {
+          "type": "text",
+          "required": true
+        },
+        "value": {
+          "type": "number",
+          "required": true
+        },
+        "unit": {
+          "type": "text",
+          "required": false
+        },
+        "trend": {
+          "type": "delta",
+          "required": false
+        }
+      }
+    }
+  },
+  "layout": {
+    "container": "div",
+    "direction": "horizontal",
+    "alignment": "center"
+  },
+  "visual_brief": "Compact horizontal row of key statistics separated by subtle vertical dividers. Each stat shows a label in muted uppercase small text above a large bold value. The compact preset reduces vertical padding and font sizes. The highlighted preset adds a colored accent underline or background to the most important metric. Stats are evenly distributed across the bar width. Optional trend arrows (up/down) appear beside values with green/red coloring.",
+  "default_layout": {
+    "layout": "row",
+    "atoms": "_grid _gap4 _sm:gc2 _lg:gc4",
+    "slots": {
+      "items": "Equal-width stat cells with label, value, optional unit, and optional trend"
+    }
+  },
+  "responsive": {
+    "mobile": "Stats wrap to a 2x2 grid or become horizontally scrollable. Values remain large. Labels may abbreviate.",
+    "tablet": "Single horizontal row with all stats visible. Comfortable spacing.",
+    "desktop": "Full horizontal bar with generous spacing between stats. All labels fully spelled out."
+  },
+  "layout_hints": {
+    "summary_priority": "The value is the first read, then the label, then any trend. Keep that hierarchy stable across compact and highlighted variants.",
+    "bar_role": "This pattern is a concise summary surface. It should feel like one horizontal instrumentation band, not a row of unrelated mini-cards.",
+    "highlighted_variant": "When one metric is emphasized, it should still remain visually tied to the rest of the stats bar rather than breaking the row into separate modules."
+  },
+  "motion": {
+    "micro": "Trend arrows or highlighted metrics may sharpen subtly on hover or focus.",
+    "transitions": "Value or trend updates should remain crisp and low-noise so the stats bar continues to feel stable."
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Statistics bar",
+    "keyboard": [
+      "If stats are interactive, focus should move through them in the same left-to-right order as the visual bar."
+    ],
+    "announcements": [
+      "Each stat's label, value, and trend should be exposed together so the summary remains understandable without divider lines or color cues."
+    ]
+  }
+}

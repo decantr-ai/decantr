@@ -1,0 +1,112 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "supply-chain",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Supply Chain",
+  "description": "Supplier directory and per-supplier emissions profile with tier tracking and geographic mapping for supply chain climate programs.",
+  "tags": [
+    "supply-chain",
+    "suppliers",
+    "scope-3",
+    "climate",
+    "procurement"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "supply chain",
+        "supplier tracking",
+        "tier suppliers",
+        "scope 3 suppliers"
+      ],
+      "secondary": [
+        "supplier emissions",
+        "procurement climate"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "suppliers",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "table"
+        },
+        {
+          "pattern": "supply-chain-map",
+          "preset": "world",
+          "as": "map"
+        }
+      ],
+      "default_layout": [
+        "supply-chain-map",
+        "data-table"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "supplier-detail",
+      "patterns": [
+        {
+          "pattern": "detail-header",
+          "preset": "standard",
+          "as": "header"
+        },
+        {
+          "pattern": "chart-grid",
+          "preset": "dashboard",
+          "as": "charts"
+        },
+        {
+          "pattern": "kpi-grid",
+          "preset": "compact",
+          "as": "kpis"
+        }
+      ],
+      "default_layout": [
+        "detail-header",
+        "kpi-grid",
+        "chart-grid"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "suppliers": "Supplier inventory workspace. A world-scale supply chain map up top plots suppliers as geolocated nodes with tier color-coding and flow arcs showing material movement. Below, a data table lists every supplier with tier, category, reported emissions, disclosure status, and risk score for drill-in.",
+    "supplier-detail": "Single-supplier profile. Detail header pins name, logo, tier, category, and primary actions. A compact KPI grid surfaces reported tCO2e, disclosure completeness, engagement status, and spend. Below, a chart grid shows emissions trend, category breakdown, and benchmark comparison against peer suppliers."
+  },
+  "features": [
+    "supply-chain",
+    "tier-tracking"
+  ],
+  "shells": {
+    "sidebar-main": "Left navigation sidebar with primary content column"
+  },
+  "dependencies": {
+    "patterns": {
+      "data-table": "^1.0.0",
+      "supply-chain-map": "^1.0.0",
+      "detail-header": "^1.0.0",
+      "chart-grid": "^1.0.0",
+      "kpi-grid": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

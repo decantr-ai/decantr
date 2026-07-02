@@ -313,7 +313,7 @@ describe('V4 tool tests', () => {
       expect(globalThis.fetch).not.toHaveBeenCalled();
     });
 
-    it('falls back to the hosted verifier for project audit when local packs are missing', async () => {
+    it('keeps project audit local when local packs are missing', async () => {
       await writeFile(join(testDir, 'decantr.essence.json'), JSON.stringify(makeV4Essence()));
       await mkdir(join(testDir, 'dist', 'assets'), { recursive: true });
       await mkdir(join(testDir, 'src', 'pages'), { recursive: true });
@@ -327,64 +327,7 @@ describe('V4 tool tests', () => {
         'export function Home() { return <button style={{ color: "#ff00ff" }}>Hi</button>; }\n',
       );
 
-      vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
-        Promise.resolve(
-          new Response(
-            JSON.stringify({
-              $schema: 'https://decantr.ai/schemas/project-audit-report.v1.json',
-              projectRoot: '[hosted-audit]',
-              valid: true,
-              essence: makeV4Essence(),
-              reviewPack: null,
-              packManifest: null,
-              runtimeAudit: {
-                distPresent: true,
-                indexPresent: true,
-                checked: true,
-                passed: true,
-                rootDocumentOk: true,
-                titleOk: true,
-                langOk: true,
-                viewportOk: true,
-                charsetOk: true,
-                cspSignalOk: true,
-                inlineScriptCount: 0,
-                externalScriptsWithoutIntegrityCount: 0,
-                jsEvalSignalCount: 0,
-                jsHtmlInjectionSignalCount: 0,
-                assetCount: 1,
-                assetsPassed: 1,
-                routeHintsChecked: ['/'],
-                routeHintsMatched: 1,
-                routeDocumentsChecked: 1,
-                routeDocumentsPassed: 1,
-                totalAssetBytes: 1200,
-                jsAssetBytes: 1200,
-                cssAssetBytes: 0,
-                largestAssetPath: '/assets/app.js',
-                largestAssetBytes: 1200,
-                failures: [],
-              },
-              findings: [],
-              summary: {
-                errorCount: 0,
-                warnCount: 0,
-                infoCount: 0,
-                essenceVersion: '4.0.0',
-                reviewPackPresent: true,
-                packManifestPresent: true,
-                runtimeAuditChecked: true,
-                runtimePassed: true,
-                pageCount: 2,
-              },
-            }),
-            {
-              status: 200,
-              headers: { 'Content-Type': 'application/json' },
-            },
-          ),
-        ),
-      );
+      const fetchSpy = vi.spyOn(globalThis, 'fetch');
 
       process.chdir(testDir);
       const result = (await callTool('decantr_audit_project', {
@@ -393,17 +336,18 @@ describe('V4 tool tests', () => {
       })) as {
         $schema: string;
         summary: { runtimeAuditChecked: boolean; reviewPackPresent: boolean };
+        findings: Array<{ id: string }>;
       };
 
       expect(result.$schema).toBe('https://decantr.ai/schemas/project-audit-report.v1.json');
       expect(result.summary.runtimeAuditChecked).toBe(true);
-      expect(result.summary.reviewPackPresent).toBe(true);
-      expect(globalThis.fetch).toHaveBeenCalledWith(
+      expect(result.summary.reviewPackPresent).toBe(false);
+      expect(result.findings.some((finding) => finding.id === 'review-pack-file-missing')).toBe(
+        true,
+      );
+      expect(fetchSpy).not.toHaveBeenCalledWith(
         expect.stringContaining('/v1/audit/project'),
-        expect.objectContaining({
-          method: 'POST',
-          body: expect.stringContaining('src/pages/Home.tsx'),
-        }),
+        expect.anything(),
       );
     });
 
@@ -459,37 +403,12 @@ describe('V4 tool tests', () => {
       expect(result.findings.some((finding) => finding.id === 'theme-consistency-weak')).toBe(true);
     });
 
-    it('falls back to the hosted verifier when local review packs are missing', async () => {
+    it('keeps file critique local when hosted upload is requested', async () => {
       await writeFile(join(testDir, 'decantr.essence.json'), JSON.stringify(makeV4Essence()));
       const filePath = join(testDir, 'Overview.tsx');
       await writeFile(filePath, '<button style={{ color: "#ff00ff" }}>Click me</button>\n');
 
-      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-        new Response(
-          JSON.stringify({
-            $schema: 'https://decantr.ai/schemas/file-critique-report.v1.json',
-            file: filePath,
-            overall: 2.5,
-            scores: [],
-            findings: [
-              {
-                id: 'anti-pattern-inline-styles',
-                category: 'Anti-Patterns',
-                severity: 'warn',
-                message: 'Inline style literals were detected in the reviewed file.',
-                evidence: [filePath],
-                file: filePath,
-              },
-            ],
-            focusAreas: ['theme-consistency'],
-            reviewPack: null,
-          }),
-          {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-          },
-        ),
-      );
+      vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('hosted upload should not run'));
 
       process.chdir(testDir);
       const result = (await callTool('decantr_critique', {
@@ -501,16 +420,13 @@ describe('V4 tool tests', () => {
       };
 
       expect(result.$schema).toBe('https://decantr.ai/schemas/file-critique-report.v1.json');
-      expect(result.findings.some((finding) => finding.id === 'anti-pattern-inline-styles')).toBe(
+      expect(result.findings.some((finding) => finding.id === 'treatment-usage-missing')).toBe(
         true,
       );
-      expect(globalThis.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/v1/critique/file'),
-        expect.objectContaining({ method: 'POST' }),
-      );
+      expect(globalThis.fetch).not.toHaveBeenCalled();
     });
 
-    it('keeps file critique local unless hosted upload is explicitly allowed', async () => {
+    it('keeps file critique local by default', async () => {
       await writeFile(join(testDir, 'decantr.essence.json'), JSON.stringify(makeV4Essence()));
       const filePath = join(testDir, 'Overview.tsx');
       await writeFile(filePath, '<button style={{ color: "#ff00ff" }}>Click me</button>\n');

@@ -41,16 +41,16 @@ jobs:
         run: pnpm run build:packages
 
       - name: Generate Decantr health JSON
-        working-directory: apps/registry
-        run: node ../../packages/cli/dist/bin.js health --json --output decantr-health.json
+        working-directory: docs
+        run: node ../packages/cli/dist/bin.js health --json --output decantr-health.json
 
       - name: Audit Decantr health
-        working-directory: apps/registry
-        run: node ../../packages/cli/dist/bin.js health --ci --fail-on error --markdown --output decantr-health.md
+        working-directory: docs
+        run: node ../packages/cli/dist/bin.js health --ci --fail-on error --markdown --output decantr-health.md
 
       - name: Publish health summary
         if: always()
-        working-directory: apps/registry
+        working-directory: docs
         shell: bash
         run: |
           if [ -f decantr-health.md ]; then
@@ -63,6 +63,6 @@ jobs:
         with:
           name: decantr-project-health
           path: |
-            apps/registry/decantr-health.json
-            apps/registry/decantr-health.md
+            docs/decantr-health.json
+            docs/decantr-health.md
           if-no-files-found: ignore

@@ -1,0 +1,126 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "founder-comic-strip",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Founder Comic Strip",
+  "description": "Campaign story section rendered as bold comic/manual panels for maker origin, product problem, prototype breakthrough, and launch ask.",
+  "category": "campaign",
+  "tags": [
+    "campaign",
+    "story",
+    "founder",
+    "comic",
+    "launch",
+    "trust"
+  ],
+  "components": [
+    "Media",
+    "Badge",
+    "Button",
+    "icon"
+  ],
+  "contained": false,
+  "default_preset": "story-panels",
+  "presets": {
+    "story-panels": {
+      "description": "Four to six comic-style story panels with captions, maker photos or illustrations, and a clear campaign ask.",
+      "components": [
+        "Media",
+        "Badge",
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap5 _wfull _maxw[76rem] _mx[auto]",
+        "slots": {
+          "story-panel": "Repeating panel with image/diagram, label, title, and short caption.",
+          "maker-note": "Plain-spoken founder note or quote.",
+          "campaign-ask": "What support enables next, with CTA."
+        }
+      }
+    },
+    "manual-origin": {
+      "description": "Instruction-manual origin story with numbered product development steps and maker credibility notes.",
+      "components": [
+        "Media",
+        "Badge",
+        "Button"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap5 _wfull _maxw[58rem] _mx[auto]",
+        "slots": {
+          "origin-step": "Numbered development milestone.",
+          "maker-proof": "Credentials, prototype count, customer quotes, or build progress.",
+          "campaign-ask": "Support request."
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gap5 _wfull _maxw[76rem] _mx[auto]",
+    "slots": {
+      "story-panel": "Comic-style story panel",
+      "maker-note": "Founder or team note",
+      "campaign-ask": "Support request and CTA"
+    }
+  },
+  "visual_brief": "A founder story told through bold panels rather than a wall of prose. Each panel should have a clear scene: problem, prototype, user signal, and what backing unlocks. Use photos, product sketches, UI screenshots, or simple diagrams where possible. The style should be playful but honest; campaign trust matters.",
+  "responsive": {
+    "mobile": "Single-column comic strip. Keep captions short and readable.",
+    "tablet": "Two-column panel grid with maker note spanning full width.",
+    "desktop": "Editorial comic strip or staggered grid. Avoid nested panel groups."
+  },
+  "layout_hints": {
+    "story_arc": "Problem -> prototype -> proof -> launch ask.",
+    "honesty": "Do not overclaim. Include current product state and what funding/support enables.",
+    "media": "Prefer actual maker/product evidence over decorative illustration."
+  },
+  "motion": {
+    "micro": {
+      "panel-hover": "panel shadow shifts hard by 2px; no soft elevation",
+      "caption-reveal": "caption line appears with short snap-in"
+    },
+    "transitions": {
+      "story-stagger": "Panels enter one by one as the reader scrolls."
+    }
+  },
+  "interactions": [
+    "animate-on-mount",
+    "stagger-children",
+    "hover-reveal",
+    "click-select"
+  ],
+  "composition": {
+    "FounderComicStrip": "Section > [Header + StoryPanel[] + MakerNote + CampaignAsk]",
+    "StoryPanel": "Panel(arcade-pixel-border) > [Media + PanelLabel + Title + Caption]",
+    "CampaignAsk": "ManualPanel > [AskCopy + PrimaryAction]"
+  },
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Founder story",
+    "keyboard": [
+      "Interactive story panels should expose detail buttons when expandable.",
+      "Panel order must match visual reading order."
+    ],
+    "announcements": [
+      "Story panel expanded: {title}."
+    ]
+  },
+  "io": {
+    "consumes": [
+      "founder-story",
+      "prototype-evidence"
+    ],
+    "produces": [
+      "trust-signal"
+    ],
+    "actions": [
+      "story-detail-open",
+      "campaign-ask-click"
+    ]
+  }
+}

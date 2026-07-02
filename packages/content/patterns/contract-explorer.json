@@ -1,0 +1,119 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "contract-explorer",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Contract Explorer",
+  "description": "Interactive inspector for Decantr contract artifacts such as essence files, execution packs, Project Health reports, schema snippets, and remediation prompts.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Tabs",
+        "Tree",
+        "CodeBlock",
+        "Badge",
+        "Button",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Tabs",
+    "Tree",
+    "CodeBlock",
+    "Badge",
+    "Button",
+    "icon"
+  ],
+  "contained": false,
+  "default_preset": "inspector",
+  "presets": {
+    "inspector": {
+      "description": "Split-pane contract inspector with artifact tabs, tree or section navigation, selected JSON/markdown preview, and copy/open actions.",
+      "components": [
+        "Tabs",
+        "Tree",
+        "CodeBlock",
+        "Badge",
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _xl:gc[18rem_1fr] _gap4 _minh[28rem]",
+        "slots": {
+          "artifact-tabs": "Tabs for Essence, Packs, Health, Schema, or Prompt.",
+          "artifact-tree": "Optional tree of sections, pages, findings, or schema nodes.",
+          "preview": "Code or markdown preview of the selected artifact.",
+          "action-bar": "Copy, open, download, or prompt actions."
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gc1 _xl:gc[18rem_1fr] _gap4",
+    "slots": {
+      "artifact-tabs": "Artifact type tabs",
+      "artifact-tree": "Selectable artifact outline",
+      "preview": "JSON or markdown preview",
+      "action-bar": "Copy or open actions"
+    }
+  },
+  "visual_brief": "A small but powerful developer inspector that makes Decantr contracts feel inspectable and trustworthy. The left side should help users navigate contract structure; the right side should render selected JSON, markdown, health findings, or prompts with clear copy/open actions. It should feel like a local studio or internal developer tool, not a decorative code block.",
+  "responsive": {
+    "mobile": "Tabs appear first, tree collapses into a select or disclosure, preview scrolls horizontally inside its own region.",
+    "tablet": "Tabs plus stacked tree and preview.",
+    "desktop": "Split-pane inspector with fixed navigation width and flexible preview region."
+  },
+  "layout_hints": {
+    "preview_containment": "Code/markdown preview must scroll inside its own region and never force page overflow.",
+    "artifact_scope": "Keep selected artifact context visible through a title, breadcrumb, or badge.",
+    "actions": "Copy and prompt actions should be icon+label or icon-only with tooltips and aria labels."
+  },
+  "motion": {
+    "micro": "Selection changes can cross-fade preview content. Copy actions should show a brief confirmation.",
+    "transitions": "Avoid animated code reflow; preserve reading position when possible."
+  },
+  "interactions": [
+    "click-select",
+    "keyboard-navigation",
+    "hover-tooltip",
+    "inline-edit"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Contract explorer",
+    "keyboard": [
+      "Tabs and tree items should follow standard keyboard behavior.",
+      "Preview region should be focusable when it scrolls."
+    ],
+    "announcements": [
+      "Selection changes should announce the selected artifact title."
+    ],
+    "focus_management": "Copy/open buttons should remain reachable after the preview title and before long code content."
+  },
+  "composition": {
+    "ContractExplorer": "InspectorShell > [ArtifactTabs + OutlinePane + PreviewPane + ActionBar]",
+    "OutlinePane": "TreeOrList > ArtifactNode[]",
+    "PreviewPane": "Panel > [SelectedTitle + Badges + CodeBlockOrMarkdown]",
+    "ActionBar": "Flex > [CopyButton + OpenButton? + PromptButton?]"
+  },
+  "io": {
+    "consumes": [
+      "contract-artifacts"
+    ],
+    "produces": [
+      "selected-artifact",
+      "copied-snippet"
+    ],
+    "actions": [
+      "artifact-select",
+      "copy-snippet",
+      "prompt-open"
+    ]
+  }
+}

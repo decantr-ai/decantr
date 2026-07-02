@@ -1,0 +1,123 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "audit-trail",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Audit Trail",
+  "description": "Chronological audit log displaying actor, action, entity, and timestamp with diff inspection, advanced filtering, search, and CSV export for compliance workflows.",
+  "category": "compliance",
+  "tags": [
+    "2026",
+    "compliance",
+    "audit",
+    "log",
+    "trail",
+    "security",
+    "export"
+  ],
+  "components": [
+    "AuditLog",
+    "AuditEntry",
+    "ActorAvatar",
+    "ActionBadge",
+    "EntityLink",
+    "DiffToggle",
+    "FilterBar",
+    "ExportButton"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full vertical timeline audit log with actor avatars, action badges, entity links, expandable diffs, and a filter bar with export controls",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4 _py4 _w-full"
+      }
+    },
+    "compact": {
+      "description": "One-line-per-entry dense list view — actor name, action verb, entity, and timestamp on a single row with no avatars or expandable detail, optimized for high-volume scanning",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap1 _py2 _w-full _text-sm"
+      }
+    },
+    "grouped": {
+      "description": "Entries grouped by entity with collapsible sections — each entity shows its audit history as a nested timeline, useful for tracing the full lifecycle of a single record",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6 _py4 _w-full"
+      }
+    }
+  },
+  "visual_brief": "Vertical timeline with a thin 2px line running down the left side (24px from left edge). Each audit entry is positioned to the right of the line, connected by a small horizontal connector. The entry row contains: a small circular ActorAvatar (32px, with initials or photo) overlapping the vertical line, then to its right the actor's name in semibold text, then an ActionBadge pill (Created = blue fill, Updated = yellow/amber fill, Deleted = red fill, Accessed = gray fill, each with a matching icon: plus, pencil, trash, eye), then the entity type in muted text followed by the entity name as a clickable link in accent color, and finally a relative timestamp on the far right in muted monospace text (e.g. '2 hours ago'). Below the main row, a small 'Show changes' toggle link appears for entries that have diffs. Clicking it expands a two-column diff view: left column shows 'Before' state with red-tinted deleted lines, right column shows 'After' state with green-tinted added lines, field names as row labels on the far left. The FilterBar sits above the log as a horizontal row with: actor dropdown (with avatar chips), action type multi-select (checkboxes for each action type), entity type dropdown, date range picker, and a search text input. An ExportButton sits at the right end of the filter bar — clicking it generates a CSV download with a brief loading spinner. The grouped preset wraps entries under collapsible entity headers: the header shows entity type icon, entity name, and entry count badge; expanding shows a mini-timeline of all actions on that entity. Compact preset renders each entry as a single line: 'John Smith created Invoice #1234 — 2h ago' with action verb colored to match its badge color.",
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap4 _py4 _w-full",
+    "slots": {
+      "filter-bar": "Horizontal row of filter controls above the audit log. Contains: actor filter (searchable dropdown with avatar chips for selected actors), action type filter (multi-select pills: Created, Updated, Deleted, Accessed, all toggleable), entity type filter (dropdown listing all entity types), date range picker (preset options: today, last 7 days, last 30 days, custom range), and a text search input for free-text search across all entry fields. Active filters display as removable chip tags below the row. The ExportButton sits right-aligned — a secondary button with a download icon that triggers CSV generation with a spinner state.",
+      "audit-log": "The main vertical timeline container. Renders a thin continuous vertical line (2px, muted border color) from the first entry to the last. Each AuditEntry is positioned as a card-like row to the right of the line. Entries are sorted by timestamp descending (newest first). Supports infinite scroll with a 'Load more' button at the bottom, or virtual scrolling for large datasets. Entry count badge shows total matching entries at the top.",
+      "audit-entry": "Repeating slot for each log entry. Layout is a horizontal row: ActorAvatar (32px circle with initials/photo, centered on the timeline line), actor name (semibold), ActionBadge (colored pill with icon and verb), entity type (muted label), EntityLink (accent-colored clickable name), and timestamp (muted monospace, right-aligned). Below the row, a DiffToggle link ('Show changes' / 'Hide changes') appears if the entry includes before/after data. The expanded diff section shows a side-by-side comparison table: field name column, 'before' value column with red-tinted removed content, 'after' value column with green-tinted added content. Only changed fields are displayed. For 'Created' entries the diff shows only the 'after' values. For 'Deleted' entries only the 'before' values."
+    }
+  },
+  "responsive": {
+    "mobile": "Timeline line moves to 8px from left edge. Actor avatars are 24px. Entries stack vertically: actor + action on first line, entity on second, timestamp on third. Diff view switches from side-by-side to stacked (before above, after below). Filter bar collapses to a filter icon button that opens a bottom sheet. Export button moves into the filter sheet.",
+    "tablet": "Standard timeline layout with all elements on one row per entry. Filter bar fully visible. Diff view remains side-by-side. Comfortable spacing.",
+    "desktop": "Full-width timeline with generous entry spacing. Filter bar shows all controls in a single row. Diff view has wide columns for comfortable comparison. Virtual scrolling handles large datasets smoothly."
+  },
+  "motion": {
+    "micro": {
+      "entry-hover": "background-color surface-hover + translateX(2px) 120ms ease-out",
+      "badge-hover": "scale(1.05) 100ms ease-out",
+      "avatar-hover": "ring-2 accent 150ms ease-out"
+    },
+    "transitions": {
+      "diff-expand": "max-height 0→auto + opacity 0→1 300ms ease-out",
+      "diff-collapse": "max-height auto→0 + opacity 1→0 200ms ease-in",
+      "filter-chip-add": "scale(0.8)→1 + opacity 0→1 200ms ease-out",
+      "filter-chip-remove": "scale(1)→0.8 + opacity 1→0 150ms ease-in",
+      "export-loading": "opacity pulse 0.5→1→0.5 1s ease-in-out infinite"
+    },
+    "ambient": {
+      "new-entry-highlight": "background-color accent/5 → transparent 2s ease-out on new entry arrival"
+    }
+  },
+  "interactions": [
+    "animate-on-mount",
+    "hover-reveal",
+    "click-select",
+    "scroll-reveal"
+  ],
+  "composition": {
+    "AuditTrail": "Container(d-section, flex-col) > [FilterBar(d-control) + ExportButton(d-interactive, icon: download)] + AuditLog(d-data, timeline-vertical)",
+    "AuditLog": "Timeline(d-data, vertical-line) > AuditEntry(d-interactive, expandable)[]",
+    "AuditEntry": "Row(d-interactive, hover-highlight) > [ActorAvatar(d-annotation, circle, on-line) + ActorName(d-data, semibold) + ActionBadge(d-annotation, pill, color: action-type) + EntityLink(d-interactive, accent-link) + Timestamp(d-annotation, mono, muted, right) + DiffToggle?(d-interactive, expandable)]",
+    "DiffToggle": "Panel(d-data, expandable) > DiffTable(d-data, two-column) > DiffRow(field-label + before-value + after-value)[]",
+    "FilterBar": "Row(d-control, flex-wrap) > [ActorFilter(d-control, searchable-dropdown) + ActionTypeFilter(d-control, multi-select-pills) + EntityTypeFilter(d-control, dropdown) + DateRangePicker(d-control) + SearchInput(d-control, text)]"
+  },
+  "layout_hints": {
+    "timeline_priority": "Actor, action, target, and time should be readable in one scan before diffs or export tooling enter the picture.",
+    "diff_attachment": "Expanded diffs should feel attached to the specific log entry they explain, not like a detached secondary document.",
+    "filter_role": "Filters and export controls should support forensic inspection without drowning out the chronological audit log itself."
+  },
+  "accessibility": {
+    "role": "log",
+    "aria-label": "Audit trail log with filtering and export",
+    "keyboard": [
+      "Arrow Up/Down: navigate between audit entries",
+      "Enter: expand/collapse diff view for focused entry",
+      "Tab: move between filter controls and log entries",
+      "E: trigger CSV export",
+      "F: focus the search input in the filter bar",
+      "Escape: collapse expanded diff or close filter dropdowns",
+      "Home: jump to the most recent entry",
+      "End: jump to the oldest loaded entry"
+    ],
+    "announcements": [
+      "{actor} {action} {entity_type} {entity_name} at {timestamp}",
+      "Diff expanded: {changed_field_count} fields changed",
+      "Filter applied: {filter_description}, {result_count} entries shown",
+      "Export started, downloading CSV with {count} entries",
+      "Loaded {count} more entries"
+    ]
+  }
+}

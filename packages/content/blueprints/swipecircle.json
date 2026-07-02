@@ -1,0 +1,253 @@
+{
+  "$schema": "https://decantr.ai/schemas/blueprint.v1.json",
+  "id": "swipecircle",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "SwipeCircle",
+  "description": "Mobile-first swipe-based social rating community with card-stack discovery, matching, chat, and profiles. The first Decantr blueprint built around a card-stack swipe loop on a mobile-tab-bar shell. Hinge meets BeReal meets a Dribbble shot — premium consumer dating-app vibe.",
+  "blueprint_portfolio": {
+    "visibility": "public",
+    "maturity": "supported-contract",
+    "rationale": "Supported registry blueprint that remains useful in All without being promoted as a flagship default.",
+    "artifact": {
+      "status": "candidate",
+      "showcase": "swipecircle",
+      "notes": "Showcase-backed candidate; certification requires artifact evidence beyond registry availability."
+    }
+  },
+  "tags": [
+    "mobile",
+    "social",
+    "consumer",
+    "dating",
+    "swipe",
+    "card-stack",
+    "tab-bar",
+    "matchmaking",
+    "2026"
+  ],
+  "compose": [
+    "marketing-swipecircle",
+    "auth-full",
+    "onboarding-wizard",
+    "swipe-feed"
+  ],
+  "theme": {
+    "id": "swipecircle",
+    "mode": "light",
+    "shape": "pill"
+  },
+  "personality": "Mobile-first social discovery with playful coral-pink energy and warm peach undertones. Photo-centric swipe deck dominates the screen — cards feel tactile, almost like polaroids you'd shuffle through. Pill-shaped buttons everywhere with bouncy spring physics. Soft drop shadows replace harsh borders. Bottom tabs provide always-visible navigation. Match moments feel celebratory with a coral-to-violet burst; chats feel intimate with rounded bubbles and warm timestamps. Empty states encourage rather than scold. Designed to feel native on iPhone but elegantly scaled on desktop with a 480px-wide centered column. Hinge meets BeReal meets a Dribbble shot — never desperate, always inviting. Every interaction rewards: the spring of a card, the burst of a like, the warmth of a new match.",
+  "voice": {
+    "tone": "Playful, warm, encouraging — never desperate, never pushy",
+    "cta_verbs": [
+      "Swipe",
+      "Like",
+      "Pass",
+      "Match",
+      "Send",
+      "View",
+      "Connect",
+      "Vibe"
+    ],
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Buy now",
+      "Convert",
+      "Engage"
+    ],
+    "empty_states": "Encouraging — 'You've seen everyone nearby! Check back later.' / 'Keep swiping — your circle is forming.' Never use the word error or failure in empty states.",
+    "errors": "Friendly — 'That didn't work, try again?' / 'Looks like that's taken — try another?' Avoid blame language.",
+    "loading": "Brief — 'Finding your circle…' / 'Bringing you new faces…' Never use spinning percentage indicators.",
+    "metrics_format": "Lowercase units — '124 swipes', '18 matches', '4.2★ rating'. No commas in small numbers; no leading zeros."
+  },
+  "features": [
+    "swipe-deck",
+    "matches",
+    "match-celebration",
+    "chat",
+    "profile",
+    "interest-picker",
+    "photo-upload",
+    "filter-bar",
+    "auth",
+    "oauth",
+    "demo-mode",
+    "marketing",
+    "seo",
+    "tab-navigation",
+    "empty-states",
+    "keyboard-shortcuts"
+  ],
+  "directives": [
+    "Public marketing route `/` must be visually polished on desktop and mobile: hero headline fully visible, CTA in normal document flow, photo/card mockup present, no fixed footer, no overlapping banner, and no full-page peach slab without real visual content.",
+    "Use warm off-white surfaces as the base and reserve coral/violet for CTAs, active states, match moments, and small accents. Avoid one-note pink/peach screens where every panel, hero, card, and background belongs to the same hue family.",
+    "Keyboard shortcuts are behavior, not marketing copy. Do not display shortcut hints on the public marketing page. On app routes, implement shortcuts as hidden keyboard listeners or compact command affordances only where useful.",
+    "Do not render Decantr implementation notes, pattern names, guard prose, or scaffold labels as visible UI."
+  ],
+  "routes": {
+    "/": {
+      "shell": "top-nav-footer",
+      "archetype": "marketing-swipecircle",
+      "page": "home"
+    },
+    "/login": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "login"
+    },
+    "/signup": {
+      "shell": "centered",
+      "archetype": "onboarding-wizard",
+      "page": "account-step"
+    },
+    "/onboarding/profile": {
+      "shell": "centered",
+      "archetype": "onboarding-wizard",
+      "page": "profile-step"
+    },
+    "/onboarding/interests": {
+      "shell": "centered",
+      "archetype": "onboarding-wizard",
+      "page": "interests-step"
+    },
+    "/discover": {
+      "shell": "mobile-tab-bar",
+      "archetype": "swipe-feed",
+      "page": "discover"
+    },
+    "/matches": {
+      "shell": "mobile-tab-bar",
+      "archetype": "swipe-feed",
+      "page": "matches"
+    },
+    "/chat": {
+      "shell": "mobile-tab-bar",
+      "archetype": "swipe-feed",
+      "page": "chat-list"
+    },
+    "/chat/:userId": {
+      "shell": "mobile-tab-bar",
+      "archetype": "swipe-feed",
+      "page": "chat-thread"
+    },
+    "/me": {
+      "shell": "mobile-tab-bar",
+      "archetype": "swipe-feed",
+      "page": "profile-own"
+    },
+    "/u/:userId": {
+      "shell": "mobile-tab-bar",
+      "archetype": "swipe-feed",
+      "page": "profile-other"
+    },
+    "/settings": {
+      "shell": "mobile-tab-bar",
+      "archetype": "swipe-feed",
+      "page": "settings"
+    }
+  },
+  "overrides": {
+    "features_add": [
+      "theme-toggle"
+    ],
+    "features_remove": [],
+    "pages": {},
+    "pages_remove": []
+  },
+  "dependencies": {
+    "archetypes": {
+      "marketing-swipecircle": ">=1.0.0",
+      "auth-full": ">=1.0.0",
+      "onboarding-wizard": ">=1.0.0",
+      "swipe-feed": ">=1.0.0"
+    }
+  },
+  "navigation": {
+    "command_palette": false,
+    "hotkeys": [
+      {
+        "key": "ArrowLeft",
+        "action": "swipe-pass",
+        "label": "Pass on current card"
+      },
+      {
+        "key": "ArrowRight",
+        "action": "swipe-like",
+        "label": "Like current card"
+      },
+      {
+        "key": "ArrowUp",
+        "action": "super-like",
+        "label": "Super-like current card"
+      },
+      {
+        "key": "g d",
+        "route": "/discover",
+        "label": "Go to Discover"
+      },
+      {
+        "key": "g m",
+        "route": "/matches",
+        "label": "Go to Matches"
+      },
+      {
+        "key": "g c",
+        "route": "/chat",
+        "label": "Go to Chat"
+      },
+      {
+        "key": "g p",
+        "route": "/me",
+        "label": "Go to Profile"
+      }
+    ],
+    "hotkey_semantics": {
+      "chord_window_ms": 900,
+      "input_guard": true,
+      "modifier_suppression": true,
+      "match_case": false
+    }
+  },
+  "seo_hints": {
+    "schema_org": [
+      "Organization",
+      "WebApplication",
+      "MobileApplication"
+    ],
+    "meta_priorities": [
+      "description",
+      "og:image",
+      "twitter:card",
+      "og:title"
+    ]
+  },
+  "suggested_themes": [
+    "swipecircle",
+    "neo-tokyo",
+    "dopamine",
+    "auradecantism"
+  ],
+  "design_constraints": {
+    "mode": "light",
+    "effects": {
+      "max_width_app": "480px",
+      "photo_aspect": "3/4",
+      "tab_bar_height": "64px",
+      "header_height": "52px",
+      "swipe_threshold": "30%",
+      "card_size": "320x420"
+    }
+  },
+  "responsive_strategy": {
+    "default": "mobile-first",
+    "breakpoints": {
+      "mobile": "<480px (full-width portrait)",
+      "tablet": ">=480px (centered 480px column)",
+      "desktop": ">=1024px (centered 480px column with optional decorative side gradients)"
+    },
+    "notes": "App is mobile-portrait optimized. Desktop renders the same 480px-wide column centered with side gutters — no separate desktop layout. The swipe deck, tab bar, and card sizing remain identical across breakpoints."
+  }
+}

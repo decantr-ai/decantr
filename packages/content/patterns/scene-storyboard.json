@@ -1,0 +1,104 @@
+{
+  "id": "scene-storyboard",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Scene Storyboard",
+  "description": "Visual storyboard grid displaying video scenes as reorderable cards with thumbnails, duration badges, and notes for pre-production and AI video planning.",
+  "category": "media",
+  "tags": ["2026", "media", "storyboard", "video", "scenes", "pre-production"],
+  "components": ["SceneCard", "SceneThumbnail", "DurationBadge", "SceneNotes", "DragHandle"],
+  "default_preset": "grid",
+  "presets": {
+    "grid": {
+      "description": "Responsive card grid of scene thumbnails with metadata badges and drag-to-reorder, suitable for overview and planning views",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _grid-cols-4 _gap-4 _p-4 _w100"
+      }
+    },
+    "strip": {
+      "description": "Horizontal scrollable film-strip layout showing scenes connected by thin sequence lines, ideal for linear narrative review",
+      "layout": {
+        "layout": "flex",
+        "atoms": "_flex _flex-row _gap-3 _overflow-x-auto _p-4 _w100"
+      }
+    },
+    "detail": {
+      "description": "Two-column layout with storyboard grid on left and selected-scene script and notes panel on right for detailed review",
+      "layout": {
+        "layout": "split",
+        "atoms": "_grid _grid-cols-[1fr_320px] _gap-4 _p-4 _w100"
+      }
+    }
+  },
+  "visual_brief": "A grid of 16:9 aspect ratio scene cards (approximately 280x158px image area) rendered as rounded-corner cards with subtle shadow. Each card has a thumbnail preview image filling the top 70%, with a scene number badge (e.g. 'Scene 04') overlaid top-left in a small dark pill. Duration badge sits bottom-right on the thumbnail (e.g. '0:12') in a dark translucent pill with monospace numbers. A drag handle (6-dot grip icon) appears top-right on card hover, fading in at 150ms. Scene notes display below the thumbnail as 2-line truncated body text in muted color. Selected scene card has a 2px accent-color border with a subtle glow. In strip preset, cards sit in a horizontal scrolling row connected by thin 1px horizontal lines between them, suggesting narrative flow. Detail preset shows the grid at 60% width with a parchment-style script sidebar showing the selected scene's dialogue and action lines in serif typography.",
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _grid-cols-4 _gap-4 _p-4 _w100",
+    "slots": {
+      "scene-card": "Repeating card (d-surface, data-interactive) sized to maintain 16:9 thumbnail aspect with text area below. Minimum 240px wide, maximum 320px. Has border-radius 12px and subtle shadow that lifts on hover.",
+      "scene-thumbnail": "Image area at top of card rendering the scene preview. Fills 100% card width, 16:9 aspect ratio. Lazy-loaded with skeleton shimmer fallback. Supports image or video poster frame.",
+      "scene-number-overlay": "Small pill badge positioned absolutely at top-left of thumbnail with 8px inset. Dark translucent background, white text, font-size 11px, font-weight 600.",
+      "duration-badge": "Pill badge at bottom-right of thumbnail with 8px inset. Dark translucent backdrop-blur background. Monospace font for timecode display.",
+      "drag-handle": "6-dot grip icon at top-right of card, opacity 0 by default, opacity 1 on hover. Cursor grab/grabbing. Initiates drag-and-drop reorder.",
+      "scene-notes": "Text area below thumbnail with 12px padding. Shows scene description in 2-line clamp with ellipsis. Font-size 13px, text-muted color."
+    }
+  },
+  "responsive": {
+    "mobile": "Single column grid with full-width cards. Strip preset uses snap-scroll for one-card-at-a-time horizontal navigation. Detail preset stacks script below grid.",
+    "tablet": "2-column grid. Detail sidebar collapses to bottom sheet on scene selection.",
+    "desktop": "4-column grid (3-column for detail preset). Full hover interactions and drag reordering enabled."
+  },
+  "layout_hints": {
+    "sequence_priority": "Scene order and narrative flow should remain obvious before note detail. The board should feel like a planning surface for sequence, not just a collection of thumbnails.",
+    "detail_attachment": "When a scene is selected, its notes or script should feel attached to that card and not like a separate disconnected editor.",
+    "strip_mode": "The strip preset should reinforce left-to-right narrative progression rather than behaving like a generic horizontal gallery."
+  },
+  "layout_hints": {
+    "sequence_priority": "Scene order and narrative flow should remain obvious before note detail. The board should feel like a planning surface for sequence, not just a collection of thumbnails.",
+    "detail_attachment": "When a scene is selected, its notes or script should feel attached to that card and not like a separate disconnected editor.",
+    "strip_mode": "The strip preset should reinforce left-to-right narrative progression rather than behaving like a generic horizontal gallery."
+  },
+  "motion": {
+    "micro": {
+      "card-hover": "translateY(-2px) + shadow-lift 180ms ease-out",
+      "drag-handle-reveal": "opacity 0 to 1 150ms ease-out on hover"
+    },
+    "transitions": {
+      "card-reorder": "FLIP animation 300ms ease-in-out for grid repositioning",
+      "selection-change": "border-color + glow 200ms ease-out"
+    },
+    "ambient": {
+      "thumbnail-load": "skeleton shimmer 1.5s linear infinite until loaded"
+    }
+  },
+  "interactions": [
+    "drag-reorder",
+    "click-select",
+    "animate-on-mount"
+  ],
+  "composition": {
+    "SceneStoryboard": "Root(d-section, grid) > SceneCard*(d-interactive)",
+    "SceneCard": "Card(d-surface) > [SceneThumbnail + SceneNumberOverlay + DurationBadge + DragHandle + SceneNotes]",
+    "StripVariant": "Root(flex-row, scroll-x) > SceneCard*(connected-by-line)",
+    "DetailVariant": "Split > [SceneGrid + ScriptSidebar(d-surface)]"
+  },
+  "accessibility": {
+    "role": "list",
+    "aria-label": "Scene storyboard",
+    "announcements": [
+      "Scene {number} selected",
+      "Scene {number} moved to position {new}",
+      "Scene {number} added"
+    ],
+    "keyboard": [
+      "Tab: cycle through scene cards",
+      "Enter: open scene detail",
+      "Space: select/deselect scene",
+      "Arrow keys: navigate grid",
+      "Ctrl+Arrow: move scene in sequence",
+      "Delete: remove selected scene"
+    ]
+  }
+}

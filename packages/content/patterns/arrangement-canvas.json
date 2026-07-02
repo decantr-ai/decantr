@@ -1,0 +1,72 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "arrangement-canvas",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Arrangement Canvas",
+  "description": "Multi-track audio arrangement canvas with stem rows, waveform regions, automation lanes, beat grid, markers, collaborator cursors, and a moving playhead.",
+  "category": "music",
+  "tags": ["2026", "music", "daw", "arrangement", "waveform", "automation", "timeline"],
+  "components": ["TimeRuler", "StemTrackRow", "WaveformRegion", "AutomationLane", "BeatGrid", "MarkerFlag", "Playhead", "CollaboratorCursor"],
+  "default_preset": "session",
+  "presets": {
+    "session": {
+      "description": "Full arrangement editor for active production sessions with timeline ruler, stem rows, regions, automation lanes, and collaborator cursors",
+      "layout": { "layout": "stack", "atoms": "_relative _w-full _bg-surface _border _overflow-hidden" }
+    },
+    "preview": {
+      "description": "Read-only public preview of the arrangement canvas, suitable for marketing and showcase first viewports",
+      "layout": { "layout": "stack", "atoms": "_relative _w-full _bg-surface _border" }
+    }
+  },
+  "visual_brief": "A serious commercial DAW arrangement view. A sticky time ruler spans the top with bar numbers, beat subdivisions, and section markers. Each track row has a compact fixed left header with stem color, name, mute/solo/arm controls, gain readout, and selected state. Timeline regions are clipped waveform blocks aligned to the beat grid, with subtle depth and no decorative glow overload. Automation lanes use fine amber/cyan curves with node points under selected rows. Marker flags identify Intro, Verse, Hook, Drop, and Bridge. The playhead is precise and spans every track. Collaborator cursors appear as named flags with thin vertical guides. The canvas must feel like the main product, not a placeholder chart.",
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_relative _w-full _bg-surface _border _overflow-hidden",
+    "slots": {
+      "time-ruler": "Top ruler with bar numbers, beat ticks, loop range, and marker flags.",
+      "track-stack": "Stack of stem rows. Each row preserves a fixed header plus horizontally scrollable timeline region.",
+      "waveform-region": "Colored clip blocks with waveform bars, trim handles, fade handles, and clip names.",
+      "automation-lane": "Attached lane showing parameter curve and draggable node points.",
+      "collaboration-layer": "Playhead and named collaborator cursors share the same time coordinate system."
+    }
+  },
+  "composition": {
+    "ArrangementCanvas": "Root(application) > [TimeRuler + TrackStack + CollaborationLayer]",
+    "TrackStack": "Stack > StemTrackRow*",
+    "StemTrackRow": "Grid(track-header timeline) > [StemHeader + TimelineArea]",
+    "TimelineArea": "Relative > [BeatGrid + WaveformRegion* + AutomationLane? + Playhead + CollaboratorCursor*]"
+  },
+  "motion": {
+    "micro": {
+      "region-select": "selected region gains border glow and subtle lift in 120ms",
+      "automation-node-drag": "curve updates at pointer speed"
+    },
+    "ambient": {
+      "playhead": "playhead advances smoothly during playback",
+      "collaborator-cursors": "remote cursors ease to new positions within 160ms"
+    }
+  },
+  "interactions": ["click-select", "drag-nodes", "hover-tooltip", "real-time-updates", "keyboard-navigation", "pan-background", "zoom-scroll"],
+  "responsive": {
+    "mobile": {
+      "layout": "alternate-pattern",
+      "alternate_pattern_id": "arrangement-canvas",
+      "horizontal_scroll": true,
+      "hide_components": ["automation-lane-expanded", "secondary-markers"],
+        "notes": "Use horizontal timeline scroll with stable track row heights and fixed headers where possible. Keep transport and selected stem inspector available. Do not compress waveform regions until labels become unreadable."
+      },
+    "desktop": "Render full time ruler, fixed stem headers, visible automation lanes, markers, and collaborator cursors."
+  },
+  "accessibility": {
+    "role": "application",
+    "aria-label": "Audio arrangement canvas",
+    "keyboard": ["Space: play or pause", "Left/Right: nudge playhead", "M/S/R: mute, solo, or arm focused stem", "Delete: remove selected region", "A: toggle automation lane"],
+    "announcements": ["Selected region {name}", "Playhead at bar {bar}", "Automation node moved to {value}"]
+  },
+  "layout_hints": {
+    "temporal_alignment": "Every visual layer must align to one shared time grid.",
+    "mobile_survival": "Do not collapse the DAW into unreadable columns; allow intentional horizontal scroll and panel switching.",
+    "producer_signal": "The canvas should immediately read as an audio production tool, not a generic kanban or table."
+  }
+}

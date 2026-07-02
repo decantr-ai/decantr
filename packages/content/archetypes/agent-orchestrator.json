@@ -1,0 +1,178 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "agent-orchestrator",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Agent Orchestrator",
+  "description": "Multi-agent management dashboard for monitoring, configuring, and orchestrating autonomous agent swarms with real-time status and marketplace discovery.",
+  "tags": [
+    "agents",
+    "orchestration",
+    "dashboard",
+    "ai",
+    "monitoring",
+    "real-time",
+    "2026"
+  ],
+  "role": "primary",
+  "classification": {
+    "triggers": {
+      "primary": [
+        "agent",
+        "orchestrator",
+        "swarm",
+        "multi-agent",
+        "agent-management"
+      ],
+      "secondary": [
+        "autonomous",
+        "agentic",
+        "pipeline",
+        "workflow-agent",
+        "crew",
+        "fleet"
+      ],
+      "negative": [
+        "chatbot",
+        "single-agent"
+      ]
+    },
+    "implies": [
+      "monitoring",
+      "real-time"
+    ],
+    "weight": 1,
+    "tier": "core"
+  },
+  "pages": [
+    {
+      "id": "agent-overview",
+      "default_layout": [
+        {
+          "pattern": "agent-swarm-canvas",
+          "as": "swarm-topology"
+        },
+        {
+          "pattern": "agent-timeline",
+          "as": "activity-feed"
+        }
+      ],
+      "shell": "sidebar-main",
+      "notes": "Primary dashboard: swarm canvas shows agent topology with live status; timeline shows recent agent actions and handoffs"
+    },
+    {
+      "id": "agent-detail",
+      "default_layout": [
+        {
+          "pattern": "agent-timeline",
+          "as": "agent-history"
+        },
+        {
+          "pattern": "neural-feedback-loop",
+          "as": "feedback-inspector"
+        }
+      ],
+      "shell": "sidebar-main",
+      "notes": "Single agent deep-dive: timeline shows execution trace; neural-feedback-loop visualizes decision cycles and confidence"
+    },
+    {
+      "id": "agent-config",
+      "default_layout": [
+        "nav-header",
+        {
+          "pattern": "form-sections",
+          "preset": "structured",
+          "as": "agent-parameters"
+        }
+      ],
+      "shell": "sidebar-main",
+      "notes": "Agent configuration: settings-nav for config sections; form-sections for parameters, prompts, tool assignments"
+    },
+    {
+      "id": "agent-marketplace",
+      "default_layout": [
+        {
+          "pattern": "hero",
+          "preset": "section-primary",
+          "as": "marketplace-hero"
+        },
+        {
+          "pattern": "generative-card-grid",
+          "as": "agent-catalog"
+        }
+      ],
+      "shell": "sidebar-main",
+      "notes": "Discover and install agent templates; generative-card-grid renders agent cards with capability tags and ratings"
+    }
+  ],
+  "page_briefs": {
+    "agent-overview": "Dense monitoring dashboard. Swarm topology canvas dominates the center showing agent nodes with live status indicators and connection lines. Activity feed timeline in a right sidebar or below, scrolling with timestamped agent actions.",
+    "agent-detail": "Deep-dive view with agent name and status ring in header. Timeline shows execution trace with expandable entries. Neural feedback loop visualization below with circular confidence diagrams and decision cycle charts.",
+    "agent-config": "Form-heavy page with grouped settings sections. Toggle switches for boolean config, text inputs for endpoints, dropdown for model selection. Settings nav on the left for jumping between parameter groups.",
+    "agent-marketplace": "Discovery page with hero banner at top and search bar. Below, a generative card grid of agent templates showing capability tags, ratings, and install buttons on each card."
+  },
+  "features": [
+    "agents",
+    "monitoring",
+    "orchestration",
+    "real-time",
+    "websockets"
+  ],
+  "directives": [
+    "Header is 52px sticky. Use `d-interactive[data-size=sm]` for all header action buttons (~32px tall, not 40px+).",
+    "Hotkey chords (e.g., `g a`) bind keyboard only — never render them as visible nav labels.",
+    "Auth bypass for dev: `localStorage.decantr_authenticated = 'true'` gates protected routes. Accept any credentials on the login page and redirect to `/agents`.",
+    "Swarm canvas nodes hide minimap + zoom controls below `_mdmax:` (< 768px) and collapse to a vertical status list per the pattern's structured responsive field.",
+    "Swarm canvas drag-vs-click threshold: only engage drag once pointermove distance from pointerdown exceeds 4px. Below the threshold, treat as a click (selects the node). Apply `cursor: grab` on node default, `cursor: grabbing` only after drag engages. Without this threshold, every click registers as a drag and selection becomes impossible.",
+    "Pan-background applies to canvas BACKGROUND only — not nodes. Nodes get pointerdown/pointermove for drag. Canvas background gets its own pointerdown/pointermove that translates the viewport transform. Wire the two via `e.stopPropagation()` from the node handler so the canvas pan doesn't fire when dragging a node."
+  ],
+  "navigation_items": [
+    {
+      "label": "Agents",
+      "route": "/agents",
+      "icon": "bot",
+      "hotkey": "g a",
+      "active_match": "^/agents(?:/|$)"
+    },
+    {
+      "label": "Marketplace",
+      "route": "/marketplace",
+      "icon": "shopping-bag",
+      "hotkey": "g m"
+    },
+    {
+      "label": "Config",
+      "route": "/agents/config",
+      "icon": "settings",
+      "active_match": "^/agents/config"
+    }
+  ],
+  "shells": {
+    "sidebar-main": "Collapsible sidebar with agent navigation tree and main content area"
+  },
+  "suggested_theme": {
+    "ids": [
+      "neon-dark",
+      "carbon"
+    ],
+    "modes": [
+      "dark"
+    ]
+  },
+  "dependencies": {
+    "patterns": {
+      "agent-swarm-canvas": ">=1.0.0",
+      "agent-timeline": ">=1.0.0",
+      "neural-feedback-loop": ">=1.0.0",
+      "generative-card-grid": ">=1.0.0",
+      "form-sections": ">=1.0.0",
+      "hero": ">=1.0.0",
+      "nav-header": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "certification": {
+    "tier": "demo",
+    "rationale": "Contains dev auth-bypass guidance and must not ship in enterprise artifact sets until rewritten with production-safe auth guidance."
+  }
+}

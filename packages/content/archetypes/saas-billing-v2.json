@@ -1,0 +1,77 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "saas-billing-v2",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "SaaS Billing",
+  "description": "Billing management with plan selection, usage meters, invoice history, and payment management for SaaS products.",
+  "tags": ["saas", "billing", "pricing", "invoices", "payments", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["saas billing", "subscription billing", "plan management", "billing portal", "invoices"],
+      "secondary": ["pricing plans", "payment history", "upgrade plan", "usage billing"],
+      "negative": ["marketing", "analytics", "team"]
+    },
+    "implies": [],
+    "weight": 0.8,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "billing",
+      "patterns": [
+        {
+          "pattern": "pricing",
+          "preset": "standard",
+          "as": "plan-selector"
+        },
+        {
+          "pattern": "usage-meter",
+          "preset": "bar",
+          "as": "usage-bar"
+        }
+      ],
+      "default_layout": ["plan-selector", "usage-bar"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "invoices",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "invoice-table"
+        },
+        {
+          "pattern": "payment-history",
+          "preset": "standard",
+          "as": "payments"
+        }
+      ],
+      "default_layout": ["invoice-table", "payments"],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "billing": "Current plan card with usage meter bar showing consumption against limits. Below, pricing tier cards for plan comparison with upgrade/downgrade CTAs. Usage meter shows API calls, storage, and seats consumed.",
+    "invoices": "Data table of past invoices with columns for date, amount, status, and download link. Payment history section below shows recent charges with method and receipt links. Filterable by date range and status."
+  },
+  "features": ["billing", "invoices", "usage-tracking"],
+  "shells": {
+    "sidebar-main": "Collapsible sidebar navigation with main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "pricing": ">=1.0.0",
+      "usage-meter": ">=1.0.0",
+      "data-table": ">=1.0.0",
+      "payment-history": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": ["auradecantism"],
+    "modes": ["dark", "light"]
+  }
+}

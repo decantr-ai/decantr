@@ -1,0 +1,127 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "alert-rule-builder",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Alert Rule Builder",
+  "description": "Visual condition builder for creating alert rules, filters, or automation triggers using nested AND/OR logic groups with metric selectors, operators, threshold sliders, and live rule testing.",
+  "category": "configuration",
+  "tags": [
+    "2026",
+    "configuration",
+    "alerts",
+    "rules",
+    "conditions",
+    "builder",
+    "monitoring"
+  ],
+  "components": [
+    "RuleGroup",
+    "ConditionRow",
+    "MetricSelector",
+    "OperatorSelector",
+    "ValueInput",
+    "ThresholdSlider",
+    "AddConditionButton",
+    "TestButton"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Condition groups with AND/OR logic toggles between rows — supports one level of nesting with groups rendered as bordered cards containing their conditions",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4 _p4 _wfull"
+      }
+    },
+    "simple": {
+      "description": "Single flat list of conditions joined by a single logic operator — no nesting or groups, ideal for basic threshold alerts with just one or two conditions",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap3 _p4 _wfull"
+      }
+    },
+    "advanced": {
+      "description": "Deeply nested AND/OR tree with unlimited group depth — groups can contain sub-groups creating a visual tree structure with indentation and connecting lines for complex rule logic",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4 _p4 _wfull _overflow-y-auto"
+      }
+    }
+  },
+  "visual_brief": "Card-based rule builder with indented groups representing AND/OR logic. The top level is a bordered card (the root group) containing condition rows stacked vertically. Each condition row is a horizontal strip with four inline elements: a metric dropdown selector showing the metric name (e.g., 'CPU Usage', 'Error Rate', 'Latency p99'), an operator dropdown (>, <, =, !=, contains, between), a value input field (numeric or text depending on metric type), and a small circular remove button with an X icon at the right edge. Between each condition row sits a small pill-shaped logic toggle button showing 'AND' or 'OR' in uppercase — clicking toggles between the two. The pill color is blue for AND and orange for OR. Nested groups appear as indented bordered cards within the parent group, with a colored left border matching their logic operator color. An 'Add condition' button with a plus icon sits at the bottom of each group, alongside an 'Add group' button for nesting. The ThresholdSlider variant replaces the plain value input with a slider overlaid on a mini sparkline chart of recent metric data, with a draggable horizontal line showing the threshold position. A prominent 'Test Rule' button at the bottom evaluates the complete rule against recent data and shows a pass (green checkmark) or fail (red X) result with a count of matching data points. The entire builder has a subtle background tint distinguishing it from surrounding content.",
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap4 _p4 _wfull",
+    "slots": {
+      "rule-header": "Top bar showing the rule name as an editable text field, a severity selector (info/warning/critical) as colored radio pills, and a notification channel selector dropdown. The severity pills are blue for info, amber for warning, and red for critical.",
+      "rule-group": "Repeating slot — the primary structural unit. A bordered card with rounded corners and a colored left border (blue for AND group, orange for OR group). Contains a small group-level logic label in the top-left corner ('ALL of' for AND, 'ANY of' for OR). Inside: a vertical stack of ConditionRow slots separated by logic toggle pills, followed by action buttons at the bottom.",
+      "condition-row": "Repeating slot within a rule-group. A horizontal row containing: MetricSelector (dropdown, 180px width, shows metric name with a small type icon), OperatorSelector (dropdown, 100px width, shows operator symbol), ValueInput (text/number input, 120px width) or ThresholdSlider (240px width slider on mini-chart), and a remove button (circular, 24px, muted until hovered). The row has a subtle hover background. Drag handle on the left edge for reordering.",
+      "logic-toggle": "Small pill button (60px wide, 24px tall) centered between condition rows. Shows 'AND' or 'OR' text. Clicking toggles the logic operator for the containing group. Background color matches the operator: blue for AND, orange for OR. Smooth color transition on toggle.",
+      "threshold-slider": "An enhanced value input variant. Shows a mini sparkline chart (240px wide, 48px tall) of recent metric data with a horizontal draggable threshold line. The area above or below the line (depending on operator direction) tints in the severity color. A numeric readout appears above the drag handle. Moving the handle updates the value input in real time.",
+      "test-section": "Bottom area containing the Test button and result display. The 'Test Rule' button is prominent with a play icon. When clicked, it shows a loading spinner, then displays results: a pass/fail badge, the number of data points that matched out of total evaluated, and a small timeline showing when matches occurred in the recent window."
+    }
+  },
+  "responsive": {
+    "mobile": "Condition rows stack vertically — metric selector, operator, and value input each take full width on separate lines. Logic toggles remain between conditions. Nested groups indent with a thinner left border. Threshold slider stretches to full width. Test button is sticky at the bottom of the viewport.",
+    "tablet": "Condition rows display horizontally with slightly compressed widths. Groups maintain full indentation. Test section is visible without scrolling on most rules.",
+    "desktop": "Full horizontal condition rows with generous spacing. Threshold sliders show wider mini-charts. Drag-to-reorder is smooth with drop zone indicators. Multiple levels of nesting display cleanly with indentation guides."
+  },
+  "motion": {
+    "micro": {
+      "row-hover": "background-tint 100ms ease-out",
+      "toggle-flip": "background-color + text transition 200ms ease-out on logic toggle",
+      "remove-hover": "scale(1→1.1) + color shift to red 150ms ease-out"
+    },
+    "transitions": {
+      "row-add": "height 0→auto + fade + slide-down 250ms ease-out",
+      "row-remove": "height auto→0 + fade-out 200ms ease-in",
+      "group-nest": "indent slide-right + border-appear 300ms ease-out",
+      "test-result": "fade + scale(0.95→1) 300ms ease-out"
+    },
+    "ambient": {
+      "threshold-glow": "subtle pulse on threshold line when value is near current metric reading"
+    }
+  },
+  "interactions": [
+    "drag-reorder",
+    "click-select",
+    "inline-edit",
+    "keyboard-navigation",
+    "animate-on-mount",
+    "status-pulse"
+  ],
+  "layout_hints": {
+    "rule_priority": "The user should be able to read rule logic top to bottom before thinking about nested complexity. Group hierarchy and AND/OR relationships must remain unmistakable.",
+    "edit_focus": "Row-level controls should support editing without overpowering the logic structure. Add/remove actions belong at the edge of the builder, not in the center of attention.",
+    "test_feedback": "Rule testing should feel attached to the current rule state, not like a separate diagnostics panel detached from the builder."
+  },
+  "composition": {
+    "RuleBuilder": "Container(d-section, flex-col, gap-4) > [RuleHeader(d-control) + RuleGroup*(d-surface) + TestSection(d-control)]",
+    "RuleHeader": "Row(d-control) > [RuleNameInput + SeverityPills(d-interactive) + ChannelSelector]",
+    "RuleGroup": "Card(d-surface, bordered, indent: depth, color-left-border: logic) > [GroupLabel(d-annotation) + ConditionRow*(d-interactive) + LogicToggle*(d-interactive) + ActionButtons > [AddConditionButton + AddGroupButton]]",
+    "ConditionRow": "Row(d-interactive) > [DragHandle + MetricSelector(d-control) + OperatorSelector(d-control) + ValueInput(d-control) | ThresholdSlider(d-interactive) + RemoveButton]",
+    "TestSection": "Row(d-control) > [TestButton(d-interactive) + TestResult?(d-annotation)]"
+  },
+  "accessibility": {
+    "role": "form",
+    "aria-label": "Alert rule condition builder",
+    "keyboard": [
+      "Tab: move between condition row inputs and controls",
+      "Enter: confirm dropdown selection or trigger test",
+      "Arrow Up/Down: navigate dropdown options in metric and operator selectors",
+      "Delete/Backspace: remove focused condition row (with confirmation)",
+      "Ctrl+G: add a new nested group",
+      "Ctrl+Enter: run rule test",
+      "Escape: close open dropdowns or cancel pending removal"
+    ],
+    "announcements": [
+      "Condition added: {metric} {operator} {value}",
+      "Condition removed from group",
+      "Logic toggled to {AND|OR} for group",
+      "Nested group added with {logic} operator",
+      "Rule test result: {pass|fail}, {matchCount} of {total} data points matched",
+      "Severity set to {level}"
+    ]
+  }
+}

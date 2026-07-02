@@ -1,0 +1,112 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "trace-viewer",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Trace Viewer",
+  "description": "Agent execution trace viewer for inspecting request waterfalls, step timelines, and replaying agent interactions with full observability.",
+  "tags": [
+    "traces",
+    "observability",
+    "debugging",
+    "ai",
+    "replay",
+    "monitoring",
+    "2026"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "trace viewer",
+        "execution trace",
+        "agent trace",
+        "trace inspector",
+        "trace explorer"
+      ],
+      "secondary": [
+        "request waterfall",
+        "span viewer",
+        "observability",
+        "trace replay",
+        "step timeline"
+      ],
+      "negative": [
+        "log viewer",
+        "chatbot",
+        "metrics"
+      ]
+    },
+    "implies": [
+      "observability",
+      "debugging"
+    ],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "traces",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "trace-list"
+        }
+      ],
+      "default_layout": [
+        "trace-list"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "trace-detail",
+      "patterns": [
+        {
+          "pattern": "trace-waterfall",
+          "preset": "standard",
+          "as": "waterfall"
+        },
+        {
+          "pattern": "agent-timeline",
+          "preset": "live",
+          "as": "step-timeline"
+        }
+      ],
+      "default_layout": [
+        "waterfall",
+        "step-timeline"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "traces": "Data table of execution traces with columns for trace ID (monospace), agent name, duration bar, step count, status icon (success/error/timeout), and timestamp. Filter bar with status toggles, date range picker, and agent name search. Rows clickable to drill into detail.",
+    "trace-detail": "Full trace waterfall visualization at top showing nested spans as horizontal bars on a time axis, color-coded by type (LLM call, tool invocation, internal step). Below, an agent timeline with chronological step cards showing input/output pairs, token counts, and latency per step. Replay controls at top-right for stepping through the execution."
+  },
+  "features": [
+    "traces",
+    "observability",
+    "replay"
+  ],
+  "shells": {
+    "sidebar-main": "Collapsible sidebar with trace filters and main content area"
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon",
+      "neon-dark"
+    ],
+    "modes": [
+      "dark"
+    ]
+  },
+  "dependencies": {
+    "patterns": {
+      "data-table": ">=1.0.0",
+      "trace-waterfall": ">=1.0.0",
+      "agent-timeline": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

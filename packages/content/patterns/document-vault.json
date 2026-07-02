@@ -1,0 +1,129 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "document-vault",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Document Vault",
+  "description": "Document storage and organization with folder navigation, preview, version history, expiration tracking, and sharing.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "icon",
+        "Badge",
+        "Input"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "icon",
+    "Badge",
+    "Input"
+  ],
+  "default_preset": "list",
+  "presets": {
+    "list": {
+      "description": "Three-panel file list view with folder tree sidebar, document rows, and preview pane",
+      "components": [
+        "Button",
+        "icon",
+        "Badge",
+        "Input"
+      ],
+      "layout": {
+        "layout": "split",
+        "atoms": "_flex _gap6",
+        "slots": {
+          "header": "Title, upload button, view toggle",
+          "navigation": "Folder tree sidebar",
+          "search": "Document search",
+          "items": "Document list/grid",
+          "preview": "Document preview pane"
+        }
+      }
+    },
+    "grid": {
+      "description": "Thumbnail grid view displaying document cards with file type icons and preview images",
+      "components": [
+        "Button",
+        "icon",
+        "Badge"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _cols4 _gap4",
+        "slots": {
+          "items": "Document thumbnail cards"
+        }
+      }
+    },
+    "tenant": {
+      "description": "Tenant document view (limited)",
+      "components": [
+        "Button",
+        "icon",
+        "Badge"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "header": "Title",
+          "documents": "Tenant's accessible documents"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "split",
+    "atoms": "_flex _gap6",
+    "slots": {
+      "navigation": "Folder sidebar",
+      "content": "Document list/grid",
+      "preview": "Preview pane"
+    }
+  },
+  "visual_brief": "Three-panel layout: a folder tree sidebar on the left for navigation, a document list or grid in the center, and an optional preview pane on the right. Each document item shows a file-type icon, document name, upload date, file size, and status badges (active, expired, shared). Folder sidebar shows a nested tree of folders with expand/collapse controls. The grid preset displays documents as card tiles with thumbnail previews. Tenant preset filters by tenant and adds a tenant selector header. Version history is accessible via a timeline popover on each document.",
+  "responsive": {
+    "mobile": "Single-panel view — folder navigation becomes a top dropdown or drawer. Document list takes full width as cards. Preview opens as a full-screen overlay.",
+    "tablet": "Two-panel layout — sidebar and document list. Preview opens as a slide-over.",
+    "desktop": "Full three-panel layout with resizable sidebar. Preview pane docked on the right."
+  },
+  "layout_hints": {
+    "three_panel_role": "The pattern owns folder navigation, document list, and preview rhythm as one integrated workspace. Parent pages should not add competing sidebars around it.",
+    "document_priority": "Lead with document identity, status, and recency. Deep metadata or version history should stay in the preview or secondary disclosure layer.",
+    "tenant_variant": "Tenant-facing variants should feel more focused and lighter-weight than operator-facing vault views, with fewer controls and clearer download affordances."
+  },
+  "motion": {
+    "micro": "Preview panes may fade or slide in gently, and hovered document rows may elevate or sharpen slightly for clarity.",
+    "transitions": "Folder navigation and preview changes should preserve orientation within the vault rather than reflowing the whole surface abruptly."
+  },
+  "interactions": [
+    "click-select",
+    "animate-on-mount",
+    "keyboard-navigation",
+    "hover-reveal"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Document vault",
+    "keyboard": [
+      "Tab through folder navigation, search, document rows, and preview actions in a predictable left-to-right order.",
+      "Expandable folders and version history disclosures should use standard button semantics."
+    ],
+    "announcements": [
+      "Document name, status, date, and access state should be exposed semantically so the vault remains navigable without visual preview."
+    ]
+  },
+  "composition": {
+    "DocumentVault": "Container(d-section, split-3-panel) > [FolderSidebar + DocumentList + PreviewPane?]",
+    "FolderSidebar": "Panel(d-surface, flex-col) > [TreeNode(expandable)[] + NewFolderButton?(d-interactive)]",
+    "DocumentList": "Panel(d-data) > [Header > [Title + UploadButton(d-interactive) + ViewToggle] + SearchInput(d-control) + DocumentRow(d-data-row)[]]",
+    "DocumentRow": "Row(hoverable) > [FileIcon + Name + Date(text-muted) + Size(mono-data) + StatusBadge(d-annotation) + DownloadButton(d-interactive)]",
+    "PreviewPane": "Panel(d-surface) > [PreviewContent + VersionTimeline?]"
+  }
+}

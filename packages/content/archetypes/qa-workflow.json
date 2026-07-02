@@ -1,0 +1,116 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "qa-workflow",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Q&A Workflow",
+  "description": "Structured Q&A workflow for due diligence with threaded questions, role assignments, and response tracking. Manages bidder and investor inquiries through assignment and resolution cycles.",
+  "tags": [
+    "qa",
+    "questions",
+    "due-diligence",
+    "assignments",
+    "workflow",
+    "threads"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "q&a workflow",
+        "due diligence qa",
+        "deal room questions",
+        "bidder questions",
+        "investor questions"
+      ],
+      "secondary": [
+        "question assignments",
+        "qa tracking",
+        "inquiry management"
+      ],
+      "negative": [
+        "social",
+        "marketing"
+      ]
+    },
+    "implies": [
+      "qa",
+      "assignments"
+    ],
+    "weight": 0.8,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "questions",
+      "path": "/qa",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "question-table"
+        },
+        {
+          "pattern": "qa-thread",
+          "preset": "full",
+          "as": "thread-preview"
+        }
+      ],
+      "default_layout": [
+        "question-table",
+        "thread-preview"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "question-detail",
+      "path": "/qa/:id",
+      "patterns": [
+        {
+          "pattern": "qa-thread",
+          "preset": "full",
+          "as": "question-thread"
+        },
+        {
+          "pattern": "detail-header",
+          "preset": "standard",
+          "as": "question-meta"
+        }
+      ],
+      "default_layout": [
+        "question-meta",
+        "question-thread"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "questions": "All Q&A dashboard with a sortable and filterable data table listing every question with columns for title, asker, assignee, category, status (open/answered/clarification), priority, and age. Selecting a row opens a thread preview pane showing the full question, prior replies, and attached documents without leaving the list view.",
+    "question-detail": "Dedicated question thread page with a detail header containing question title, submitter, assigned responder, status pill, due date, and category tags. Below, the full Q&A thread renders the original question, all replies, internal clarifications, attached documents, and an anchored reply composer for the assigned responder."
+  },
+  "features": [
+    "qa",
+    "assignments"
+  ],
+  "shells": {
+    "sidebar-main": "Left sidebar with question categories and main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "data-table": ">=1.0.0",
+      "qa-thread": ">=1.0.0",
+      "detail-header": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon",
+      "professional"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

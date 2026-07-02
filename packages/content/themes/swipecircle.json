@@ -1,0 +1,533 @@
+{
+  "$schema": "https://decantr.ai/schemas/theme.v1.json",
+  "id": "swipecircle",
+  "version": "1.0.0",
+  "name": "SwipeCircle",
+  "description": "Warm coral-rose consumer social theme with violet match accents, off-white editorial surfaces, and photo-first card moments. Pill-shaped CTAs, soft drop shadows replacing harsh borders, and bottom-gradient photo overlays create a premium consumer dating-app feel without turning every surface peach. Bouncy spring micro-interactions reward every tap.",
+  "tags": [
+    "light",
+    "warm",
+    "vibrant",
+    "consumer",
+    "social",
+    "photo-first",
+    "rounded",
+    "bouncy",
+    "2026"
+  ],
+  "personality": "warm + playful + photo-centric + bouncy + intimate + rewarding + balanced white space",
+  "seed": {
+    "primary": "#FF4D6D",
+    "secondary": "#8B5CF6",
+    "accent": "#FFB199",
+    "background": "#FFFBFA"
+  },
+  "palette": {
+    "background": {
+      "light": "#FFFBFA",
+      "dark": "#1F0E14"
+    },
+    "surface": {
+      "light": "#FFFFFF",
+      "dark": "#2A1620"
+    },
+    "surface-raised": {
+      "light": "#FFF0EA",
+      "dark": "#3A1F2C"
+    },
+    "border": {
+      "light": "#FAD9CE",
+      "dark": "#4D2937"
+    },
+    "text": {
+      "light": "#1A0F12",
+      "dark": "#FFF3EE"
+    },
+    "text-muted": {
+      "light": "#7A5560",
+      "dark": "#C9A8B3"
+    },
+    "primary": {
+      "light": "#FF4D6D",
+      "dark": "#FF7A8A"
+    },
+    "primary-hover": {
+      "light": "#E63B5C",
+      "dark": "#FF93A2"
+    },
+    "secondary": {
+      "light": "#8B5CF6",
+      "dark": "#A78BFA"
+    },
+    "secondary-hover": {
+      "light": "#7C3AED",
+      "dark": "#B8A0FB"
+    },
+    "accent": {
+      "light": "#FFB199",
+      "dark": "#FFC4B0"
+    },
+    "accent-hover": {
+      "light": "#FF9777",
+      "dark": "#FFD3C2"
+    },
+    "match": {
+      "light": "#8B5CF6",
+      "dark": "#A78BFA"
+    },
+    "like": {
+      "light": "#FF4D6D",
+      "dark": "#FF7A8A"
+    },
+    "pass": {
+      "light": "#94A3B8",
+      "dark": "#64748B"
+    },
+    "super-like": {
+      "light": "#FACC15",
+      "dark": "#FDE047"
+    }
+  },
+  "modes": [
+    "light",
+    "dark",
+    "auto"
+  ],
+  "shapes": [
+    "pill",
+    "rounded"
+  ],
+  "cvd_support": [],
+  "tokens": {
+    "base": {
+      "success": "#10B981",
+      "danger": "#EF4444",
+      "warning": "#F59E0B",
+      "info": "#0EA5E9"
+    }
+  },
+  "typography": {
+    "scale": "modular",
+    "heading_weight": 700,
+    "body_weight": 400,
+    "display": "'Cabinet Grotesk', 'Plus Jakarta Sans', 'Inter', ui-sans-serif, sans-serif",
+    "body": "'Inter', ui-sans-serif, system-ui, sans-serif",
+    "mono": "'JetBrains Mono', ui-monospace, monospace"
+  },
+  "decantr_compat": ">=2.0.0",
+  "source": "core",
+  "decorators": {
+    "swipecircle-card": "Photo-first card with full-bleed image, bottom gradient overlay (transparent to dark), 24px border-radius, soft coral-tinted lift shadow. Used for swipe deck and content cards.",
+    "swipecircle-pill": "Pill-shaped CTA with coral fill, white text, scale-on-hover (1.04) and press-down (0.96). Bouncy spring transition. Tactile and inviting.",
+    "swipecircle-tab-active": "Active bottom-tab state with violet underline dot beneath the icon, icon scale 1.1, color shift from muted to primary. Spring transition on tap.",
+    "swipecircle-match-burst": "Radial coral-to-violet burst gradient used in match celebration overlay. Animated scale-in from 0 with spring bounce, slow rotate (10deg over 4s).",
+    "swipecircle-photo-frame": "Circular avatar with double-ring border (3px coral outer, 2px cream inner gap), soft shadow. Used for profile and match avatars.",
+    "swipecircle-chip-selected": "Interest chip in selected state with coral fill, white text, embedded check icon, slight scale bounce on toggle. Companion: unselected uses border-only.",
+    "swipecircle-action-button": "Circular icon button (56-64px) for swipe actions. Floating drop shadow, hover lift, tap-bounce. Heart=coral, X=muted-gray, Star=violet.",
+    "swipecircle-floating-bar": "Glassy floating bar with backdrop-blur and soft border-top. Used for the action bar above the bottom-tab navigator. No harsh edges.",
+    "swipecircle-bubble": "Rounded chat bubble with soft drop shadow. Mine: coral-fill+white-text, right-aligned tail. Theirs: cream-fill+dark-text, left-aligned tail.",
+    "swipecircle-grid-tile": "Circular avatar tile inside a soft-shadow square card. Hover lift+ring-glow. New-match dot in violet at top-right."
+  },
+  "spatial": {
+    "density_bias": 0,
+    "content_gap_shift": 1,
+    "section_padding": "1.5rem",
+    "card_wrapping": "rounded-photo",
+    "surface_override": null
+  },
+  "motion": {
+    "preference": "expressive",
+    "reduce_motion": true,
+    "entrance": "swipecircle-spring-in",
+    "micro": "spring-bounce",
+    "timing": "cubic-bezier(0.34, 1.56, 0.64, 1)",
+    "durations": {
+      "hover": "180ms",
+      "entrance": "420ms",
+      "modal": "320ms",
+      "page": "360ms",
+      "instant": "80ms",
+      "fast": "160ms",
+      "base": "240ms",
+      "slow": "360ms",
+      "slower": "560ms",
+      "stagger": "60ms"
+    },
+    "easings": {
+      "ease": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "easeOut": "cubic-bezier(0.16, 1, 0.3, 1)",
+      "easeIn": "cubic-bezier(0.7, 0, 0.84, 0)",
+      "spring": "cubic-bezier(0.34, 1.56, 0.64, 1)"
+    }
+  },
+  "effects": {
+    "enabled": true,
+    "intensity": "medium",
+    "type_mapping": {
+      "card": ["swipecircle-card"],
+      "button": ["swipecircle-pill"],
+      "avatar": ["swipecircle-photo-frame"],
+      "chip": ["swipecircle-chip-selected"],
+      "bubble": ["swipecircle-bubble"],
+      "tab": ["swipecircle-tab-active"]
+    },
+    "optional_effects": {
+      "glow": false,
+      "gradient_border": false,
+      "clip_path": false,
+      "scale_hover": true,
+      "soft_shadow": true,
+      "photo_overlay": true
+    },
+    "component_fallback": {
+      "Card": "card",
+      "Button": "button",
+      "Avatar": "avatar",
+      "Chip": "chip",
+      "Tab": "tab"
+    }
+  },
+  "compositions": {
+    "swipe-feed": {
+      "description": "Photo-first swipe deck centered in the viewport with floating action bar above bottom tabs. Coral and violet accents punctuate the warm peach surface.",
+      "shell": "mobile-tab-bar",
+      "effects": ["swipecircle-card", "swipecircle-action-button", "swipecircle-floating-bar"]
+    },
+    "matches": {
+      "description": "Grid of circular avatar tiles with new-match dots, presence rail at top. Soft tile lift on hover with coral glow.",
+      "shell": "mobile-tab-bar",
+      "effects": ["swipecircle-grid-tile", "swipecircle-photo-frame"]
+    },
+    "chat": {
+      "description": "Intimate one-to-one chat with rounded bubbles and warm timestamps. Coral mine, cream theirs.",
+      "shell": "mobile-tab-bar",
+      "effects": ["swipecircle-bubble", "swipecircle-pill"]
+    },
+    "profile": {
+      "description": "Mobile profile with full-bleed cover photo, overlapping circular avatar, stats bar, interest pills, and pill-shaped action buttons.",
+      "shell": "mobile-tab-bar",
+      "effects": ["swipecircle-photo-frame", "swipecircle-pill", "swipecircle-chip-selected"]
+    },
+    "auth": {
+      "description": "Single centered card on warm peach background. Coral primary CTA, violet hover state. Bouncy entrance.",
+      "shell": "centered",
+      "card_style": "swipecircle-card"
+    },
+    "marketing": {
+      "description": "Splash with photo-first hero, swipe-card/photo mockups, pill CTAs, warm off-white scroll surface, and coral/violet accents. Friendly, not corporate. Avoid ambient blobs/orbs or a single solid peach hero slab.",
+      "shell": "top-nav-footer",
+      "effects": ["swipecircle-pill", "swipecircle-card"]
+    }
+  },
+  "radius": {
+    "philosophy": "pill",
+    "base": 16,
+    "card": 24,
+    "button": 9999,
+    "input": 14,
+    "chip": 9999
+  },
+  "pattern_preferences": {
+    "prefer": [
+      "spatial-card-stack",
+      "hero-split",
+      "card-grid",
+      "conversation-list",
+      "chat-thread",
+      "storefront-hero",
+      "presence-avatars",
+      "filter-bar"
+    ],
+    "avoid": [
+      "data-table",
+      "dense-terminal",
+      "kpi-grid"
+    ],
+    "default_presets": {
+      "spatial-card-stack": "deck",
+      "hero-split": "centered",
+      "filter-bar": "compact",
+      "conversation-list": "standard"
+    }
+  },
+  "shell": {
+    "preferred": [
+      "mobile-tab-bar",
+      "top-nav-footer",
+      "centered"
+    ],
+    "avoid": [
+      "terminal-split",
+      "sidebar-aside",
+      "three-column-browser"
+    ],
+    "nav_style": "warm-soft",
+    "default_nav_state": "compact",
+    "root": "swipecircle-surface",
+    "nav": "swipecircle-floating-bar",
+    "header": "",
+    "navLabel": "",
+    "brand": "",
+    "dimensions": {
+      "max_width_app": "480px",
+      "tab_bar_height": "64px",
+      "header_height": "52px"
+    }
+  },
+  "decorator_definitions": {
+    "swipecircle-card": {
+      "description": "Photo-first card with full-bleed image, bottom gradient overlay, 24px border-radius, soft coral-tinted lift shadow. The signature surface for the swipe deck.",
+      "intent": "Use for swipe-deck cards and any content card that leads with imagery. The bottom gradient ensures text overlay remains readable against any photo. The coral-tinted shadow signals warmth without harshness — replaces neutral grey shadows that read as enterprise.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #FFFFFF)",
+        "border": "none",
+        "border-radius": "24px",
+        "overflow": "hidden",
+        "box-shadow": "0 4px 16px rgba(255, 77, 109, 0.08), 0 12px 32px rgba(255, 77, 109, 0.06)",
+        "position": "relative",
+        "transition": "transform 240ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 240ms ease-out"
+      },
+      "pairs_with": [
+        "swipecircle-pill",
+        "swipecircle-photo-frame"
+      ],
+      "usage": [
+        "Swipe deck cards",
+        "Profile preview cards",
+        "Match cards",
+        "Story-style content cards"
+      ]
+    },
+    "swipecircle-pill": {
+      "description": "Pill-shaped CTA with coral fill, white text, scale-on-hover. Tactile spring transitions. The signature button shape.",
+      "intent": "Use for ALL primary CTAs. The pill shape signals approachability over enterprise sharpness. The spring scale on press provides satisfying haptic-like feedback.",
+      "suggested_properties": {
+        "display": "inline-flex",
+        "align-items": "center",
+        "justify-content": "center",
+        "gap": "0.5rem",
+        "background": "var(--d-primary, #FF4D6D)",
+        "color": "#FFFFFF",
+        "border": "none",
+        "border-radius": "9999px",
+        "padding": "14px 28px",
+        "font-weight": "600",
+        "font-size": "15px",
+        "letter-spacing": "0.01em",
+        "line-height": "1",
+        "text-decoration": "none",
+        "transform": "scale(1)",
+        "transition": "transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1), background 180ms ease-out"
+      },
+      "pairs_with": [
+        "swipecircle-card",
+        "swipecircle-photo-frame",
+        "swipecircle-action-button"
+      ],
+      "usage": [
+        "Primary CTAs",
+        "Sign Up / Log In buttons",
+        "Send Message / Edit Profile",
+        "Step navigation in onboarding"
+      ]
+    },
+    "swipecircle-tab-active": {
+      "description": "Active bottom-tab state with violet underline dot, scaled icon, and color-shifted label. Spring transition on tap.",
+      "intent": "Use ONLY on the active tab in the bottom-tab-bar. The violet dot is the primary visual signal of selected state — bright enough to read at a glance, subtle enough not to scream. The icon scale provides a secondary cue.",
+      "suggested_properties": {
+        "color": "var(--d-primary, #FF4D6D)",
+        "transform": "translateY(-2px)",
+        "transition": "transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1), color 200ms ease-out",
+        "position": "relative"
+      },
+      "pairs_with": [
+        "swipecircle-floating-bar"
+      ],
+      "usage": [
+        "Active bottom-tab item",
+        "Active step indicator in stepper",
+        "Selected filter chip"
+      ]
+    },
+    "swipecircle-match-burst": {
+      "description": "Radial coral-to-violet burst gradient. Animated scale-in from 0 with spring bounce. The celebratory visual moment when two users match.",
+      "intent": "Use exclusively in the match-celebration overlay. The burst signals reward and joy. The slow rotate adds magic without distracting from the central avatars meeting.",
+      "suggested_properties": {
+        "background": "radial-gradient(circle at 50% 50%, rgba(255, 77, 109, 0.4) 0%, rgba(139, 92, 246, 0.3) 40%, transparent 70%)",
+        "position": "fixed",
+        "inset": "0",
+        "transform-origin": "center",
+        "animation": "swipecircle-burst-in 600ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards, swipecircle-burst-rotate 4s linear infinite"
+      },
+      "pairs_with": [
+        "swipecircle-photo-frame",
+        "swipecircle-pill"
+      ],
+      "usage": [
+        "First-match celebration overlay",
+        "Major milestone achievements",
+        "First message sent celebration"
+      ]
+    },
+    "swipecircle-photo-frame": {
+      "description": "Circular avatar with double-ring border. Coral outer ring, cream inner gap, soft shadow. Photo-first identity surface.",
+      "intent": "Use for ALL avatar imagery (profile, matches, chat). The double-ring frame elevates the photo into a proper portrait — signals care for identity. Cream inner gap provides clean separation from any background.",
+      "suggested_properties": {
+        "border-radius": "9999px",
+        "padding": "3px",
+        "background": "linear-gradient(135deg, var(--d-primary, #FF4D6D), var(--d-accent, #FFB199))",
+        "box-shadow": "0 2px 8px rgba(255, 77, 109, 0.12)",
+        "display": "inline-block"
+      },
+      "pairs_with": [
+        "swipecircle-card",
+        "swipecircle-grid-tile"
+      ],
+      "usage": [
+        "Profile avatar",
+        "Match grid avatars",
+        "Chat header avatar",
+        "Card photo thumbnails"
+      ]
+    },
+    "swipecircle-chip-selected": {
+      "description": "Selected interest chip with coral fill, white text, embedded check icon, scale bounce on toggle. Companion: unselected chip uses border-only.",
+      "intent": "Use in chip-multiselect (interest picker) for the selected state. The fill provides immediate clarity of selection. The check icon doubles down on accessibility for color-blind users.",
+      "suggested_properties": {
+        "background": "var(--d-primary, #FF4D6D)",
+        "color": "#FFFFFF",
+        "border": "1px solid var(--d-primary, #FF4D6D)",
+        "border-radius": "9999px",
+        "padding": "8px 14px 8px 32px",
+        "font-size": "14px",
+        "font-weight": "500",
+        "position": "relative",
+        "transform": "scale(1)",
+        "transition": "transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1), background 180ms ease-out"
+      },
+      "pairs_with": [
+        "swipecircle-pill"
+      ],
+      "usage": [
+        "Selected interest chips in onboarding",
+        "Selected filter chips",
+        "Selected category tags"
+      ]
+    },
+    "swipecircle-action-button": {
+      "description": "Circular icon button (56-64px) for swipe actions (X, heart, star). Floating drop shadow, hover lift, tap-bounce. Heart=coral, X=muted-gray, Star=violet.",
+      "intent": "Use exclusively for the swipe-action-bar buttons. The size is intentionally generous (56-64px) for thumb-friendly mobile tapping. The color coding matches semantic meaning — heart for like (coral=love), X for pass (muted=neutral-no), star for super-like (violet=premium).",
+      "suggested_properties": {
+        "width": "60px",
+        "height": "60px",
+        "border-radius": "9999px",
+        "background": "var(--d-surface, #FFFFFF)",
+        "border": "none",
+        "box-shadow": "0 4px 12px rgba(255, 77, 109, 0.15), 0 8px 24px rgba(0, 0, 0, 0.06)",
+        "display": "inline-flex",
+        "align-items": "center",
+        "justify-content": "center",
+        "cursor": "pointer",
+        "transition": "transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 180ms ease-out"
+      },
+      "pairs_with": [
+        "swipecircle-floating-bar",
+        "swipecircle-card"
+      ],
+      "usage": [
+        "Swipe action bar (X, Heart, Star)",
+        "Floating action buttons",
+        "Quick-action overlays on cards"
+      ]
+    },
+    "swipecircle-floating-bar": {
+      "description": "Glassy floating bar with backdrop-blur and soft border-top. The container for the bottom-tab navigator and action bar overlays.",
+      "intent": "Use for the bottom-tab-bar shell region. The backdrop-blur lets content behind subtly bleed through, signaling that content continues underneath rather than being chopped. Soft border-top is the only visual separator — no harsh hairline.",
+      "suggested_properties": {
+        "background": "rgba(255, 245, 242, 0.85)",
+        "backdrop-filter": "blur(16px)",
+        "-webkit-backdrop-filter": "blur(16px)",
+        "border-top": "1px solid rgba(250, 217, 206, 0.6)",
+        "padding": "8px 12px calc(8px + env(safe-area-inset-bottom))",
+        "position": "sticky",
+        "bottom": "0",
+        "z-index": "40"
+      },
+      "pairs_with": [
+        "swipecircle-tab-active",
+        "swipecircle-action-button"
+      ],
+      "usage": [
+        "Bottom-tab-bar container",
+        "Floating action bar above tabs",
+        "Sticky action footer in mobile flows"
+      ]
+    },
+    "swipecircle-bubble": {
+      "description": "Rounded chat bubble with soft drop shadow. Mine: coral-fill+white-text, right-aligned tail. Theirs: cream-fill+dark-text, left-aligned tail.",
+      "intent": "Use for chat-message rendering. The fill colors instantly communicate ownership — coral for self, cream for partner. The directional tail (small triangle peeking from the bubble corner) reinforces conversational direction.",
+      "suggested_properties": {
+        "border-radius": "20px",
+        "padding": "10px 14px",
+        "max-width": "75%",
+        "box-shadow": "0 1px 3px rgba(0, 0, 0, 0.06)",
+        "font-size": "15px",
+        "line-height": "1.4"
+      },
+      "pairs_with": [
+        "swipecircle-photo-frame"
+      ],
+      "usage": [
+        "Chat message bubbles",
+        "Inline notification toasts",
+        "Mention popups"
+      ]
+    },
+    "swipecircle-grid-tile": {
+      "description": "Circular avatar tile inside a soft-shadow square card. Hover lift+ring-glow. New-match dot in violet at top-right.",
+      "intent": "Use for the matches-grid tiles. The square card with circular avatar inside creates a tidy grid rhythm while preserving the photo-portrait feel. The new-match violet dot is the primary signal of unseen matches.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #FFFFFF)",
+        "border-radius": "20px",
+        "padding": "16px",
+        "display": "flex",
+        "flex-direction": "column",
+        "align-items": "center",
+        "gap": "8px",
+        "box-shadow": "0 2px 8px rgba(255, 77, 109, 0.08)",
+        "transition": "transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 200ms ease-out",
+        "cursor": "pointer"
+      },
+      "pairs_with": [
+        "swipecircle-photo-frame"
+      ],
+      "usage": [
+        "Matches grid tiles",
+        "Friends list items",
+        "Discoverable people grid"
+      ]
+    }
+  },
+  "elevation": {
+    "1": {
+      "light": "0 1px 2px rgba(255, 77, 109, 0.04)",
+      "dark": "0 1px 2px rgba(0, 0, 0, 0.4)"
+    },
+    "2": {
+      "light": "0 2px 6px rgba(255, 77, 109, 0.06)",
+      "dark": "0 2px 8px rgba(0, 0, 0, 0.5)"
+    },
+    "3": {
+      "light": "0 4px 16px rgba(255, 77, 109, 0.08)",
+      "dark": "0 4px 16px rgba(0, 0, 0, 0.55)"
+    },
+    "4": {
+      "light": "0 12px 32px rgba(255, 77, 109, 0.12)",
+      "dark": "0 8px 28px rgba(0, 0, 0, 0.6)"
+    },
+    "5": {
+      "light": "0 24px 64px rgba(255, 77, 109, 0.16)",
+      "dark": "0 16px 48px rgba(0, 0, 0, 0.65)"
+    }
+  }
+}

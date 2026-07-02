@@ -1,0 +1,116 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "webhook-debugger",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Webhook Debugger",
+  "description": "Webhook delivery log with payload inspection, header viewing, status timeline, and retry controls for diagnosing integration failures.",
+  "category": "developer",
+  "tags": [
+    "2026",
+    "developer",
+    "webhook",
+    "debugging",
+    "api",
+    "integration",
+    "logs"
+  ],
+  "components": [
+    "DeliveryLog",
+    "DeliveryRow",
+    "PayloadViewer",
+    "HeadersTable",
+    "RetryButton",
+    "StatusTimeline",
+    "EndpointFilter"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full delivery log with expandable detail panel showing payload, headers, and status timeline per delivery",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4 _py4 _w-full"
+      }
+    },
+    "compact": {
+      "description": "Dense table-only view with status badges and inline retry buttons — no expandable detail, optimized for high-volume scanning",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap1 _py2 _w-full _mono"
+      }
+    },
+    "live": {
+      "description": "Streaming log that auto-scrolls to the latest delivery as webhooks arrive in real time with slide-in animation and a pulsing live indicator",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap3 _py4 _overflow-y-auto _w-full"
+      }
+    }
+  },
+  "visual_brief": "Table listing webhook deliveries with columns: timestamp (muted monospace), endpoint URL (truncated with tooltip on hover), event type as a small pill label (e.g. 'invoice.paid', 'customer.created'), status badge (delivered = green filled pill with checkmark, failed = red filled pill with X icon, pending = yellow outlined pill with spinner), response time in milliseconds (green if <500ms, yellow if 500-2000ms, red if >2000ms), and a retry icon button on the far right. Each row is separated by a 1px border. Hovering a row highlights it with a subtle surface tint. Clicking a row expands an inline detail panel below it: the panel has three tabbed sections. First tab 'Request' shows request headers as a two-column key-value table and request body as syntax-highlighted JSON with line numbers in a monospace code block. Second tab 'Response' shows response status code as a large colored badge (2xx green, 4xx yellow, 5xx red), response headers table, and response body (syntax-highlighted). Third tab 'Timeline' shows a horizontal status timeline: sent timestamp with arrow, received timestamp with arrow, processed timestamp, each connected by a thin line with duration labels above. Failed deliveries have a red-tinted background row (rgba red at 0.05). The EndpointFilter sits above the table as a dropdown or multi-select chip row. Live preset adds a green pulsing dot labeled 'Live' in the top-right corner, and new rows slide in from the top with a fade-slide animation and briefly flash with an accent highlight before settling.",
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap4 _py4 _w-full",
+    "slots": {
+      "filter-bar": "A row above the table containing the EndpointFilter dropdown (multi-select for filtering by endpoint URL), an event type filter dropdown, a status filter (all/delivered/failed/pending toggle chips), and a date range picker. Active filters show as removable chips below the filter row.",
+      "delivery-table": "The main data table with a sticky header row showing column labels: Timestamp, Endpoint, Event, Status, Response Time, Actions. Each DeliveryRow renders one webhook delivery as a table row. Rows are sorted by timestamp descending (newest first). The table supports infinite scroll or pagination at the bottom. Alternating row backgrounds at very subtle opacity for scannability.",
+      "delivery-detail": "An expandable panel that appears inline below a clicked DeliveryRow. Contains three tabs: Request (headers table + JSON body viewer), Response (status badge + headers + body), and Timeline (horizontal step indicator showing sent/received/processed with timestamps and durations). The panel has a slightly inset background and a colored left border matching the delivery status. A 'Retry' button sits in the top-right corner of the detail panel. Close button (X) in the top-right dismisses the detail."
+    }
+  },
+  "responsive": {
+    "mobile": "Table switches to card layout — each delivery renders as a stacked card showing status badge, event type, endpoint (truncated), and timestamp. Tap opens detail as a bottom sheet. Filter bar collapses to a single filter icon button that opens a drawer.",
+    "tablet": "Table layout maintained with horizontal scroll if needed. Detail panel opens inline below the row. Filter bar fully visible.",
+    "desktop": "Full table with all columns visible without scroll. Detail panel opens inline with comfortable width. Filter bar displays all controls in a single row."
+  },
+  "motion": {
+    "micro": {
+      "row-hover": "background-color surface-hover 120ms ease-out",
+      "retry-press": "scale(0.95) 100ms ease-in + rotate(360deg) 600ms ease-out on trigger",
+      "status-badge-pulse": "opacity 0.7→1 200ms ease-out on status change"
+    },
+    "transitions": {
+      "detail-expand": "max-height 0→auto + opacity 0→1 300ms ease-out",
+      "detail-collapse": "max-height auto→0 + opacity 1→0 200ms ease-in",
+      "new-delivery-slide": "translateY(-20px)→0 + opacity 0→1 400ms ease-out"
+    },
+    "ambient": {
+      "live-indicator-pulse": "scale(1→1.4→1) + opacity(1→0.5→1) 2s ease-in-out infinite",
+      "pending-spinner": "rotate(0→360deg) 1s linear infinite"
+    }
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "composition": {
+    "WebhookDebugger": "Container(d-section, flex-col) > [EndpointFilter(d-control) + DeliveryLog(d-data)]",
+    "DeliveryLog": "Table(d-data, sortable, scrollable) > DeliveryRow(d-row, expandable)[]",
+    "DeliveryRow": "Row(d-interactive, hover-highlight, status-tint: failed→red) > [Timestamp(mono-data) + Endpoint(truncate) + EventType(d-annotation, pill) + StatusBadge(d-annotation, color: status) + ResponseTime(mono-data, color: threshold) + RetryButton(d-interactive, icon-only)]",
+    "DeliveryDetail": "Panel(d-surface, inset, border-left: status-color, tabbed) > [RequestTab > [HeadersTable(d-data) + PayloadViewer(d-data, syntax-highlight: json)] + ResponseTab > [StatusCode(d-annotation, large) + HeadersTable + PayloadViewer] + TimelineTab > StatusTimeline(d-data, horizontal-steps)]",
+    "StatusTimeline": "Row(d-data) > TimelineStep(d-annotation, connected-by-line)[]"
+  },
+  "layout_hints": {
+    "delivery_priority": "Delivery state and endpoint identity should be visible before expanded payload detail. The row list is the primary operational surface; request/response panes are secondary inspection layers.",
+    "detail_paneling": "Expanded request, response, and timeline views should remain clearly tied to the active delivery row so debugging context is never lost.",
+    "live_mode": "When new deliveries stream in, preserve row stability and status visibility rather than letting the list jump around unpredictably."
+  },
+  "accessibility": {
+    "role": "table",
+    "aria-label": "Webhook delivery log with payload inspection",
+    "keyboard": [
+      "Arrow Up/Down: navigate between delivery rows",
+      "Enter: expand/collapse delivery detail for the focused row",
+      "Tab: move between detail tabs (Request, Response, Timeline)",
+      "R: retry the focused delivery",
+      "F: focus the filter bar",
+      "Escape: close expanded detail panel"
+    ],
+    "announcements": [
+      "Delivery {event_type} to {endpoint}: {status}",
+      "Detail panel expanded for delivery at {timestamp}",
+      "Retry triggered for delivery {id}",
+      "Filter applied: showing {filter_description}",
+      "New delivery received: {event_type} — {status}"
+    ]
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "mixer-console",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Mixer Console",
+  "description": "Horizontal DAW mixer console with channel strips, insert slots, send knobs, pan controls, mute/solo/arm states, stereo meters, faders, and a master channel.",
+  "category": "music",
+  "tags": ["2026", "music", "daw", "mixer", "console", "faders", "metering"],
+  "components": ["ChannelStrip", "InsertSlot", "SendKnob", "PanKnob", "MuteSoloArm", "StereoMeter", "ChannelFader", "MasterChannel"],
+  "default_preset": "console",
+  "presets": {
+    "console": {
+      "description": "Full mixer console with channel strips and a highlighted master bus",
+      "layout": { "layout": "flex", "atoms": "_flex _gap-2 _w-full _bg-surface _overflow-x-auto _p-3" }
+    },
+    "compact": {
+      "description": "Condensed mixer with scrollable strips for small panels and mobile viewports",
+      "layout": { "layout": "flex", "atoms": "_flex _gap-2 _w-full _overflow-x-auto _p-2" }
+    }
+  },
+  "visual_brief": "A compact premium hardware-style mixer with vertical channel strips and shadcn-grade component discipline. Each strip includes color-coded stem label, insert slots, send/pan knobs, M/S/R controls, tall fader, stereo meter with peak hold, and numeric dB readout. Strip widths are stable, labels do not wrap awkwardly, and fader geometry remains consistent across breakpoints. The master channel is wider, anchored at the end, and visually distinct without becoming a neon billboard. Meter bars should feel alive using restrained cyan/amber/red status values.",
+  "default_layout": {
+    "layout": "flex",
+    "atoms": "_flex _gap-2 _w-full _bg-surface _overflow-x-auto _p-3",
+    "slots": {
+      "channel-strip": "Repeating fixed-width vertical strip; never shrink below readable fader/meter dimensions.",
+      "insert-stack": "Small stack of plugin slots such as EQ, Comp, Saturator, Reverb.",
+      "knob-bank": "Send and pan controls with visible value ticks.",
+      "fader-meter": "Tall fader flanked by stereo meter bars and peak dots.",
+      "master-channel": "Distinct end cap channel summarizing master bus level and limiter state."
+    }
+  },
+  "composition": {
+    "MixerConsole": "Root(horizontal-scroll) > [ChannelStrip* + MasterChannel]",
+    "ChannelStrip": "Column(studio-channel) > [StemLabel + InsertStack + KnobBank + MuteSoloArm + FaderMeter + DbReadout]",
+    "FaderMeter": "Relative > [StereoMeterLeft + ChannelFader + StereoMeterRight]"
+  },
+  "motion": {
+    "micro": {
+      "fader-drag": "fader cap tracks pointer at 60fps",
+      "knob-drag": "knob angle tracks pointer with value tooltip"
+    },
+    "ambient": {
+      "metering": "meter levels update with seeded live-simulation values",
+      "peak-hold": "peak indicator holds briefly before decay"
+    }
+  },
+  "interactions": ["live-simulation", "real-time-updates", "hover-tooltip", "keyboard-navigation", "drag-nodes"],
+  "responsive": {
+    "mobile": {
+      "layout": "flex-row",
+      "horizontal_scroll": true,
+      "hide_components": ["secondary-insert-slot", "send-b"],
+        "notes": "Keep strips fixed width and scroll horizontally; do not squash faders into unreadable bars. Hide secondary inserts before shrinking core fader/meter anatomy."
+      },
+    "desktop": "Show full strips, insert slots, sends, pan, faders, meters, and master bus."
+  },
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Mixer console",
+    "keyboard": ["Tab: move through channels", "ArrowUp/ArrowDown: adjust focused fader", "M: mute focused channel", "S: solo focused channel", "0: reset fader"],
+    "announcements": ["{channel} level set to {db} dB", "{channel} {muted|soloed|armed}", "Master peaking at {level}"]
+  },
+  "layout_hints": {
+    "fixed_width": "Channel strips must keep stable dimensions and horizontal scrolling when space is tight.",
+    "readability": "Meters, faders, and stem labels must remain readable at every viewport."
+  }
+}

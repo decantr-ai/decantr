@@ -27,8 +27,8 @@ jobs:
       - run: pnpm build:packages
       - run: pnpm audit:package-surface
       - run: pnpm audit:release-readiness
+      - run: pnpm audit:content-package
       - run: pnpm audit:public-api -- --core-only --fail-on-error
-      - run: pnpm audit:registry-portal -- --fail-on-error
 
       - name: Audit npm authentication state
         continue-on-error: true

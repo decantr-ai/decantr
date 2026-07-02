@@ -1,0 +1,117 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "bottom-tab-bar",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Bottom Tab Bar",
+  "description": "Mobile-first fixed-bottom tab navigator with 4-5 icon+label items. The primary navigation affordance for mobile consumer apps. Active tab signaled via color shift, icon scale, and an underline dot. Sticky on desktop within the centered column. Pairs with the mobile-tab-bar shell.",
+  "category": "navigation",
+  "tags": [
+    "2026",
+    "mobile",
+    "navigation",
+    "tab-bar",
+    "bottom-nav",
+    "consumer"
+  ],
+  "components": [
+    "TabBar",
+    "TabItem",
+    "TabIcon",
+    "TabLabel",
+    "ActiveIndicator",
+    "BadgeDot"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Four-item bottom tab bar with icon above label. Active item has color-shift, icon scale, and underline dot. Sticky bottom on mobile, sticky bottom of centered column on desktop.",
+      "layout": {
+        "layout": "flex-row",
+        "atoms": "_sticky _bottom-0 _z-40 _flex _items-center _justify-around _w-full _h-16 _bg-background/85 _backdrop-blur _border-t _border-border"
+      }
+    },
+    "five-item": {
+      "description": "Five-item variant for apps with an additional primary tab (e.g., separate Discover, Search, and Profile tabs). Slightly tighter spacing per item.",
+      "layout": {
+        "layout": "flex-row",
+        "atoms": "_sticky _bottom-0 _z-40 _flex _items-center _justify-around _w-full _h-16 _bg-background/85 _backdrop-blur _border-t _border-border"
+      }
+    },
+    "compact-no-labels": {
+      "description": "Icon-only variant with no labels — used when the icons are universally known (e.g., the four signature SwipeCircle icons). Slightly shorter at 56px height.",
+      "layout": {
+        "layout": "flex-row",
+        "atoms": "_sticky _bottom-0 _z-40 _flex _items-center _justify-around _w-full _h-14 _bg-background/85 _backdrop-blur _border-t _border-border"
+      }
+    }
+  },
+  "visual_brief": "A bar pinned to the bottom of the viewport (or the bottom of a centered 480px column on desktop). The bar is 64px tall plus safe-area-inset-bottom on iOS. It hosts 4 evenly-distributed tap targets (5 in the five-item variant), each at minimum 56×56px for thumb-friendliness. The bar uses a translucent backdrop-blur background (85% opacity of the page background, blur 16px) so content scrolling behind subtly tints through. A 1px soft border-top in the muted border color is the only visual separator from the body — no harsh hairline. Each TabItem is a vertical flex stack: a 24×24px Lucide icon (stroke-width 2) on top with 4px gap to a 11px uppercase-ish label below (font-weight 500, tracking-tight, color: var(--d-text-muted) for inactive). The active TabItem shifts color from muted to primary (coral), the icon scales up 1.1× with a spring transition (180ms cubic-bezier(0.34, 1.56, 0.64, 1)), and a 4px circular dot in violet (the secondary/match color) appears 2px below the icon centered horizontally — a subtle but unmistakable signal of selected state. On tap, the entire item briefly scales down to 0.96 for tactile feedback, then snaps back via spring. Optional BadgeDot: a 6px circle in the violet match color positioned at top-right of the icon (translateX 8px translateY -4px) signals unread items in that tab (e.g., new matches, unread chats). The bar is z-index 40 and sits above body content but below modals/celebrations (z-50+).",
+  "layout_hints": {
+    "container": "sticky-bottom flex-row",
+    "tab_target": "Each tab is min 56×56px tap area; vertical flex with 4px gap between icon and label",
+    "active_signal": "Color shift muted→primary AND icon scale 1.1× AND violet dot 4px below icon — three redundant signals for accessibility",
+    "translucency": "backdrop-blur(16px) with 85% bg-opacity. Required: page bg color set as CSS var so the rgba()-with-var pattern works",
+    "safe_area": "Padding bottom uses calc(8px + env(safe-area-inset-bottom)) — accommodates iOS home indicator without forcing the inset on every page"
+  },
+  "default_layout": {
+    "layout": "flex-row",
+    "atoms": "_sticky _bottom-0 _z-40 _flex _items-center _justify-around _w-full _h-16 _bg-background/85 _backdrop-blur _border-t _border-border",
+    "slots": {
+      "tab-bar": "Outer container. Sticky bottom (mobile and desktop). Flex-row, items-center, justify-around. Height 64px + env(safe-area-inset-bottom). Padding 8px 12px calc(8px + env(safe-area-inset-bottom)). Background: var(--d-bg) at 85% opacity with backdrop-filter blur(16px). Border-top: 1px solid var(--d-border). Z-index 40. Width 100% inside the parent shell column.",
+      "tab-item": "Repeating slot — one per tab (4 in standard, 5 in five-item, 4 in compact-no-labels). Vertical flex column, items-center, gap 4px, padding 4px 8px. Min size 56×56. Cursor: pointer. Tap target satisfies WCAG 2.5.5 (44×44 minimum, exceeded). Each item carries data-active true|false and aria-current page when active. Click navigates via the route bound to that tab. On press: scale 0.96 with 80ms transition, then spring back to 1.0 with 180ms cubic-bezier(0.34, 1.56, 0.64, 1).",
+      "tab-icon": "24×24 icon (Lucide preferred — Heart, Users, MessageCircle, User, Search, Compass for SwipeCircle). Stroke-width 2. Color: var(--d-text-muted) when inactive, var(--d-primary) when active. Active state adds transform: scale(1.1) and translateY(-2px) lift, transitioned with 200ms cubic-bezier(0.34, 1.56, 0.64, 1).",
+      "tab-label": "Single-line label below icon, font-size 11px, font-weight 500 inactive / 600 active, letter-spacing 0.01em, white-space nowrap, color matches icon. In compact-no-labels preset, this slot is omitted entirely.",
+      "active-indicator": "4×4px circular dot in var(--d-secondary) (violet match accent), positioned absolute below the icon (transform: translateY(2px)). Visible only on the active tab. Animates in via opacity 0→1 (160ms) and scale 0→1 (160ms cubic-bezier(0.34, 1.56, 0.64, 1)) when the tab becomes active.",
+      "badge-dot": "Optional 6×6px circle in var(--d-secondary), positioned absolute at top-right of the icon (translateX 8px, translateY -4px). Indicates unread/new items in this tab. May contain a tiny number for counts >0 — but typically just a dot. Pulse animation on appearance: scale 0→1.2→1 over 320ms."
+    }
+  },
+  "accessibility": {
+    "role": "tablist",
+    "aria-label": "Primary navigation",
+    "keyboard": [
+      "Arrow Right: focus next tab",
+      "Arrow Left: focus previous tab",
+      "Home: focus first tab",
+      "End: focus last tab",
+      "Enter or Space: activate focused tab",
+      "Tab: move focus into the active tab's content body"
+    ],
+    "announcements": [
+      "Tab activated: {tab_label} — showing {page_name}",
+      "Unread items in {tab_label}"
+    ],
+    "focus_management": "Roving tabindex — only the active tab is in the tab order (tabindex=0); inactive tabs are tabindex=-1 and become reachable via arrow keys. On tab activation via click/Enter, focus moves to the new active tab and the page navigates."
+  },
+  "responsive": {
+    "mobile": "Full viewport width. Sticky bottom with safe-area-inset-bottom padding. Tap targets 56×56 minimum. Flex-row layout.",
+    "tablet": "Same as mobile — the mobile-tab-bar shell caps at 480px regardless of viewport. Flex-row layout.",
+    "desktop": "Stays sticky at the bottom of the centered 480px column. Same icon and label sizing — desktop visitors see a mobile-app-like floating column. Flex-row layout."
+  },
+  "motion": {
+    "micro": {
+      "tab-press": "scale(0.96) for 80ms then spring back to scale(1) over 180ms cubic-bezier(0.34, 1.56, 0.64, 1)",
+      "icon-active": "translateY(-2px) + scale(1.1) over 200ms spring on tab activation",
+      "indicator-appear": "opacity 0→1 + scale 0→1 over 160ms spring when tab becomes active",
+      "label-active": "color transition muted→primary over 200ms ease-out"
+    },
+    "transitions": {
+      "tab-switch": "When tab changes, the previous active tab's icon scales back to 1.0 and color fades to muted (200ms), and the new active tab's icon scales up and the violet dot appears (200ms) — overlapping for a smooth crossfade",
+      "badge-pulse": "On new badge appearance: scale 0→1.2→1 over 320ms, then optional gentle pulse (scale 1→1.06→1 over 1.6s ease-in-out infinite) to keep attention until viewed"
+    }
+  },
+  "interactions": [
+    "click-select",
+    "scale-hover",
+    "keyboard-navigation",
+    "animate-on-mount"
+  ],
+  "composition": {
+    "BottomTabBar": "TabBar(d-floating-bar, sticky-bottom, flex-row) > [TabItem×4 | TabItem×5]",
+    "TabItem": "Button(flex-col, items-center, gap-1) > [TabIcon(24px) + TabLabel(11px) + ActiveIndicator(4px-dot, conditional) + BadgeDot(6px-circle, conditional)]",
+    "TabIcon": "Icon(lucide, 24px, stroke-2) — Heart | Users | MessageCircle | User | Search | Compass",
+    "TabLabel": "Span(text-xs, font-medium, whitespace-nowrap)",
+    "ActiveIndicator": "Span(absolute, 4px-circle, bg-secondary, below-icon)",
+    "BadgeDot": "Span(absolute, 6px-circle, bg-secondary, top-right-of-icon)"
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/section-pack.v1.json",
+  "title": "Decantr Section Execution Pack",
+  "type": "object",
+  "required": ["$schema", "packVersion", "packType", "objective", "target", "preset", "scope", "requiredSetup", "allowedVocabulary", "examples", "antiPatterns", "successChecks", "tokenBudget", "data", "renderedMarkdown"],
+  "properties": {
+    "$schema": {
+      "const": "https://decantr.ai/schemas/section-pack.v1.json"
+    },
+    "packVersion": {
+      "const": "1.0.0"
+    },
+    "packType": {
+      "const": "section"
+    },
+    "objective": {
+      "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/nonEmptyString"
+    },
+    "target": {
+      "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/executionPackTarget"
+    },
+    "preset": {
+      "type": ["string", "null"]
+    },
+    "scope": {
+      "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/executionPackScope"
+    },
+    "requiredSetup": {
+      "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/stringArray"
+    },
+    "allowedVocabulary": {
+      "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/stringArray"
+    },
+    "examples": {
+      "type": "array",
+      "items": {
+        "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/executionPackExample"
+      }
+    },
+    "antiPatterns": {
+      "type": "array",
+      "items": {
+        "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/executionPackAntiPattern"
+      }
+    },
+    "successChecks": {
+      "type": "array",
+      "items": {
+        "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/executionPackSuccessCheck"
+      }
+    },
+    "tokenBudget": {
+      "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/executionPackTokenBudget"
+    },
+    "data": {
+      "type": "object",
+      "required": ["sectionId", "role", "shell", "description", "features", "theme", "routes"],
+      "properties": {
+        "sectionId": {
+          "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/nonEmptyString"
+        },
+        "role": {
+          "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/nonEmptyString"
+        },
+        "shell": {
+          "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/nonEmptyString"
+        },
+        "description": {
+          "type": "string"
+        },
+        "features": {
+          "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/stringArray"
+        },
+        "theme": {
+          "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/themeRef"
+        },
+        "routes": {
+          "type": "array",
+          "items": {
+            "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/routeSummary"
+          }
+        },
+        "navigationItems": {
+          "type": "array",
+          "description": "Items rendered in the shell's primary navigation for this section.",
+          "items": {
+            "type": "object",
+            "required": ["label", "route"],
+            "additionalProperties": false,
+            "properties": {
+              "label": { "type": "string", "minLength": 1 },
+              "route": { "type": "string", "minLength": 1 },
+              "icon": { "type": "string", "minLength": 1 },
+              "hotkey": { "type": "string", "minLength": 1 },
+              "active_match": { "type": "string", "minLength": 1 },
+              "badge": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "directives": {
+          "type": "array",
+          "description": "Execution-level directives emitted into section-pack rendering.",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "themeDecorators": {
+          "type": "array",
+          "description": "Required theme decorator contract — class + intent + slot hint, surfaced as a hard table in the rendered pack so cold-LLM scaffolds apply them rather than treating the decorator list as advisory.",
+          "items": {
+            "type": "object",
+            "required": ["class", "intent", "applyTo"],
+            "additionalProperties": false,
+            "properties": {
+              "class": { "type": "string", "minLength": 1 },
+              "intent": { "type": "string" },
+              "applyTo": { "type": "string" }
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "renderedMarkdown": {
+      "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/nonEmptyString"
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,69 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "marketing-ecommerce",
+  "role": "public",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "E-Commerce Marketing Landing",
+  "description": "Public marketing landing page for an e-commerce storefront with hero, feature highlights, social proof, and conversion CTAs.",
+  "tags": ["marketing", "landing", "ecommerce", "public", "seo", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["ecommerce landing", "store landing page", "shop homepage", "storefront marketing"],
+      "secondary": ["product launch", "store launch", "shop marketing", "retail landing"],
+      "negative": ["admin", "dashboard", "checkout"]
+    },
+    "implies": ["seo", "conversion"],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "landing",
+          "as": "landing-hero"
+        },
+        {
+          "pattern": "features",
+          "preset": "standard",
+          "as": "feature-highlights"
+        },
+        {
+          "pattern": "testimonials",
+          "preset": "standard",
+          "as": "social-proof"
+        },
+        {
+          "pattern": "cta-section",
+          "preset": "standard",
+          "as": "bottom-cta"
+        }
+      ],
+      "default_layout": ["landing-hero", "feature-highlights", "social-proof", "bottom-cta"],
+      "shell": "top-nav-footer"
+    }
+  ],
+  "page_briefs": {
+    "home": "Full-length marketing landing page. Hero section with bold headline, lifestyle product imagery, and Shop Now CTA. Features section with icon cards highlighting free shipping, easy returns, secure payments, and curated collections. Testimonials carousel with customer photos, quotes, and star ratings. Bottom CTA section with dark background and sign-up or browse prompt."
+  },
+  "features": ["marketing", "seo"],
+  "shells": {
+    "top-nav-footer": "Fixed top navigation with logo, nav links, and cart icon. Footer with legal links, social icons, and newsletter signup"
+  },
+  "suggested_theme": {
+    "ids": ["auradecantism", "clean"],
+    "modes": ["light"]
+  },
+  "dependencies": {
+    "patterns": {
+      "hero": ">=1.0.0",
+      "features": ">=1.0.0",
+      "testimonials": ">=1.0.0",
+      "cta-section": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

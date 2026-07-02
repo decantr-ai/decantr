@@ -1,0 +1,154 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "tenant-switcher-dashboard",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Tenant Switcher Dashboard",
+  "description": "Org-scoped dashboard with tenant switching, KPI overview, team management, and organization settings for multi-tenant SaaS platforms.",
+  "tags": [
+    "multi-tenant",
+    "dashboard",
+    "organization",
+    "team",
+    "saas"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "tenant dashboard",
+        "org dashboard",
+        "multi-tenant",
+        "org switcher",
+        "workspace dashboard"
+      ],
+      "secondary": [
+        "team management",
+        "organization settings",
+        "tenant switching",
+        "workspace overview",
+        "org members"
+      ],
+      "negative": [
+        "single-user",
+        "personal-only"
+      ]
+    },
+    "implies": [
+      "auth-flow-enterprise",
+      "usage-billing"
+    ],
+    "weight": 1,
+    "tier": "core"
+  },
+  "pages": [
+    {
+      "id": "overview",
+      "patterns": [
+        {
+          "pattern": "kpi-grid",
+          "preset": "dashboard",
+          "as": "kpis"
+        },
+        {
+          "pattern": "activity-feed",
+          "preset": "compact",
+          "as": "activity"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "icon",
+          "as": "quick-actions"
+        }
+      ],
+      "default_layout": [
+        "kpis",
+        "activity",
+        "quick-actions"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "members",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "members-table"
+        },
+        {
+          "pattern": "team-member-row",
+          "preset": "standard",
+          "as": "member-row"
+        },
+        {
+          "pattern": "permission-matrix",
+          "preset": "standard",
+          "as": "permissions"
+        }
+      ],
+      "default_layout": [
+        "members-table",
+        "permissions"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "org-settings",
+      "patterns": [
+        {
+          "pattern": "form-sections",
+          "preset": "standard",
+          "as": "org-form"
+        },
+        {
+          "pattern": "account-settings",
+          "preset": "standard",
+          "as": "account"
+        }
+      ],
+      "default_layout": [
+        "org-form",
+        "account"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "overview": "Org-scoped dashboard with a tenant switcher dropdown in the top bar. KPI grid showing active users, API calls, storage usage, and monthly spend. Compact activity feed listing recent org events with timestamps. Quick-action card grid with icon tiles for common tasks like inviting members, creating API keys, and viewing billing.",
+    "members": "Team member management page. Data table listing all org members with name, email, role, and last-active columns. Each row uses the team-member-row pattern with inline role editing. Permission matrix below for configuring role-based access across platform features.",
+    "org-settings": "Organization configuration page with sectioned forms. Top section for org name, logo upload, and billing email. Account settings section below for default timezone, notification preferences, and danger zone with org deletion."
+  },
+  "features": [
+    "multi-tenant",
+    "org-switcher",
+    "team-management",
+    "roles"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with org switcher and main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "kpi-grid": "^1.0.0",
+      "activity-feed": "^1.0.0",
+      "card-grid": "^1.0.0",
+      "data-table": "^1.0.0",
+      "team-member-row": "^1.0.0",
+      "permission-matrix": "^1.0.0",
+      "form-sections": "^1.0.0",
+      "account-settings": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon",
+      "clean"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  }
+}

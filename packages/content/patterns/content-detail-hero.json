@@ -1,0 +1,129 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "content-detail-hero",
+  "version": "1.2.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Content Detail Hero",
+  "description": "Action-first header section for content detail pages showing name, human-readable source identity, concise trust state, quick-start guidance, and type-aware next-step actions before the raw contract payload.",
+  "dependencies": {
+    "patterns": {
+      "namespace-badge": "^1.0.0"
+    },
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Badge",
+        "Button",
+        "Chip",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "contained": false,
+  "components": [
+    "Badge",
+    "Button",
+    "Chip",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full-width detail hero with narrative content, a quick-start rail, and compact trust summaries.",
+      "components": [
+        "Badge",
+        "Button",
+        "Chip",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4 _py8 _px6 _borderb _bordermuted/20",
+        "slots": {
+          "breadcrumb": "Breadcrumb navigation: Registry > Type > Namespace > Slug",
+          "badges": "Minimal badge row for type and one primary trust signal",
+          "title": "Content name with _heading2 styling and a mono-data version label",
+          "description": "Concise description explaining what the item does and why it matters",
+          "meta-row": "Human-readable source line, publish date, and tightly scoped supporting metadata",
+          "quick-start-panel": "Action-first quick-start surface with a primary command, a secondary inspect action, and a short 'what to do next' note",
+          "trust-strip": "Compact row of trust summary cards for registry intelligence and showcase verification",
+          "action-group": "Type-aware CTA buttons such as Start from blueprint, Copy reference, Inspect JSON, or Open showcase"
+        }
+      }
+    },
+    "compact": {
+      "description": "Compact hero for inline or constrained views with one primary next-step action.",
+      "components": [
+        "Badge",
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap3 _py4 _px4",
+        "slots": {
+          "badges": "Type badge and one trust signal, inline",
+          "title": "Content name with _heading3",
+          "description": "Short description with _bodysm _fgmuted",
+          "actions": "Primary command and one supporting action, compact"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap4 _py8 _px6 _borderb _bordermuted/20",
+    "slots": {
+      "breadcrumb": "Breadcrumb navigation",
+      "badges": "Minimal type badge plus one trust signal",
+      "title": "Content name heading with version",
+      "description": "Content description",
+      "meta-row": "Friendly source line, date, and concise supporting metadata",
+      "quick-start-panel": "Action-first quick-start guidance with primary and secondary commands",
+      "trust-strip": "Registry intelligence and showcase verification summaries",
+      "action-group": "Primary and supporting actions"
+    }
+  },
+  "visual_brief": "Full-width detail hero that feels like a product launch panel rather than a raw data dump. A breadcrumb trail sits at the top. The first visible row uses only a few high-signal badges: type and the strongest trust state. The title is large and paired with a lightweight mono-data version readout. The source line should read like a friendly publisher identity, such as @official/decantr or @community/alice, rather than exposing raw internal ids. Trust information is summarized in compact supporting cards instead of a long wall of chips.",
+  "responsive": {
+    "mobile": "Breadcrumb collapses to a short back path. Quick-start becomes a full-width stack below the description. Trust summaries become cards stacked beneath the hero copy. Action buttons go full-width and the metadata row trims to the most useful items.",
+    "tablet": "Hero content and quick-start panel can sit in a 2-row composition, with trust summaries in a two-column strip. Breadcrumb remains visible and action buttons stay grouped.",
+    "desktop": "Hero reads as a split composition: descriptive content on the left, quick-start panel on the right, with trust summaries flowing underneath. The page should feel editorial, roomy, and high-confidence."
+  },
+  "layout_hints": {
+    "hero_layout": "Use a split hero rhythm with narrative on the left and a quick-start rail on the right whenever space allows. Keep the quick-start rail visually distinct using a bordered or treated panel, but avoid drowning the top of the page in chips or letting metadata outcompete the next-step actions.",
+    "background": "Subtle gradient matching content type color at 5-8% opacity, fading to var(--d-bg). Add a restrained accent glow behind the primary action rail rather than across the whole page.",
+    "actions": "Actions are type-aware: blueprints foreground scaffold/start actions, patterns/themes/shells foreground inspect/reference actions. Primary action should read like the next thing a human should do, not just 'copy'.",
+    "source_line": "Source identity should prioritize the human-facing publisher while preserving the registry scope, for example @official/decantr or @org:acme/alice.",
+    "trust_panels": "Trust summaries should be compact, card-like, and human-readable. Prefer one sentence plus 2-4 supporting facts over long comma-separated evidence dumps."
+  },
+  "motion": {
+    "micro": "Primary actions and trust-summary cards may use subtle hover elevation and accent transitions, but the hero should remain calm and editorial.",
+    "transitions": "Hero content and quick-start rail can fade up together over 220-320ms. Trust cards may stagger lightly beneath the hero rather than popping in abruptly."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "stagger-children",
+    "glow-hover"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Content detail hero",
+    "keyboard": [
+      "Tab moves from breadcrumb to primary actions to supporting trust cards in a predictable order."
+    ],
+    "announcements": [
+      "Title, source identity, and primary action context should be available before supporting trust summaries."
+    ],
+    "focus_management": "Keep the primary next-step action early in the focus order without skipping the page title and source identity."
+  },
+  "composition": {
+    "ContentDetailHero": "Section(d-section, flex-col, gap-4, border-bottom) > [Breadcrumb + BadgeRow + HeroSplit > [NarrativeColumn > [Title(heading2) + Description(text-muted) + MetaRow] + QuickStartPanel] + TrustStrip + ActionGroup]",
+    "BadgeRow": "Row(gap-2) > [TypeChip(d-annotation, color-coded) + TrustChip]",
+    "MetaRow": "Row(d-data, gap-3) > [SourceLine(mono-data) + PublishDate(text-muted) + SupportingMeta]",
+    "QuickStartPanel": "Panel(d-surface, compact) > [Eyebrow + PrimaryCommand + SecondaryAction + UsageGuidance]",
+    "TrustStrip": "Grid(2-col desktop / 1-col mobile) > [RegistryIntelligenceSummary + ShowcaseVerificationSummary]",
+    "ActionGroup": "Row(d-interactive, gap-2) > [PrimaryAction(variant: primary) + SecondaryAction(variant: ghost) + ShowcaseAction(variant: ghost)]"
+  }
+}

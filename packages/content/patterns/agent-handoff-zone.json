@@ -1,0 +1,97 @@
+{
+  "id": "agent-handoff-zone",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Agent Handoff Zone",
+  "description": "A transition portal for agent-to-agent context transfer that visualizes the source agent, target agent, transferred context summary, animated handoff progress, and an approval workflow for human-in-the-loop oversight.",
+  "category": "agentic",
+  "tags": [
+    "2026",
+    "agentic",
+    "handoff",
+    "context-transfer",
+    "approval",
+    "orchestration"
+  ],
+  "components": [
+    "AgentCard",
+    "ContextSummary",
+    "HandoffProgress",
+    "Timeline",
+    "ApproveButton",
+    "RejectButton"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full handoff view with source and target agent cards flanking a central transfer visualization, context preview below, and approval actions at the bottom — intended as a focused modal or dedicated page section",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6 _p6 _rounded-lg _border _bg-surface"
+      }
+    },
+    "compact": {
+      "description": "Single-row summary for notification bars or feed items — shows agent avatars with an arrow between them, one-line context summary, and inline approve/reject icon buttons",
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _aic _gap4 _px4 _py3 _rounded _border _bg-surface"
+      }
+    },
+    "inline-chat": {
+      "description": "Embedded within a chat message stream — styled as a special system message card showing the handoff with minimal chrome, context as a collapsible section, and small action buttons",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap3 _p4 _rounded _border-dashed _bg-surface-subtle"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap6 _p6 _rounded-lg _border _bg-surface",
+    "slots": {
+      "source-agent": "Left-positioned agent card showing the handing-off agent. Displays agent name, role/type label (e.g., 'Research Agent'), avatar or icon, and current status badge (completing/handing-off). Card has a subtle left-border accent in the agent's assigned color. Shows a brief summary of what this agent accomplished before initiating the handoff (e.g., '3 sources analyzed, 2 key findings'). Card dims slightly with reduced opacity once the handoff completes to visually signal it is no longer active.",
+      "target-agent": "Right-positioned agent card showing the receiving agent. Same structure as source-agent but with a right-border accent. Status badge shows 'receiving' during transfer, then 'active' once handoff completes. If the target agent hasn't started yet, card renders in a waiting/skeleton state with a subtle pulse animation. Agent capabilities are listed as small tags below the name (e.g., 'code-gen', 'testing').",
+      "context-preview": "A collapsible panel between/below the agent cards showing the exact context being transferred. Renders as a structured summary with sections: 'Conversation History' (message count + token estimate), 'Key Decisions' (bulleted list of decisions made by source agent), 'Active Constraints' (tags for any rules or guardrails being passed), and 'Artifacts' (list of files, code snippets, or data objects being transferred with size indicators). Each section is independently collapsible. A small 'View Raw' toggle shows the full serialized context JSON in a scrollable code block. Total transfer size is displayed as a badge (e.g., '12.4 KB context').",
+      "handoff-animation": "A visual connector between the source-agent and target-agent cards. In the standard layout, renders as a horizontal animated beam or particle stream flowing left-to-right. Uses a three-phase animation: (1) 'packaging' — dots gather at the source card edge, (2) 'transferring' — dots stream across to target in a flowing arc, (3) 'received' — dots absorb into the target card with a brief glow. During the approval-pending state, the animation pauses mid-stream with a pulsing hold indicator. Color follows the theme's primary/accent. The animation area also displays a percentage progress indicator and estimated time remaining.",
+      "status-timeline": "A horizontal timeline strip below the main handoff visualization showing key events in chronological order: 'Handoff initiated', 'Context packaged', 'Awaiting approval' (if approval required), 'Transfer in progress', 'Handoff complete'. Each event is a small dot connected by a line, with the current step highlighted and future steps dimmed. Timestamps appear on hover. If the handoff fails or is rejected, the timeline shows the failure point with an error color and a brief reason.",
+      "approval-actions": "A row of action buttons that appears when the handoff requires human-in-the-loop approval. Contains: ApproveButton (primary, shows 'Approve Handoff' with a checkmark icon), RejectButton (destructive/outline, shows 'Reject' with an X icon), and an optional 'Modify Context' text button that opens the context-preview in edit mode for humans to redact or add context before approving. When no approval is needed (auto-handoff), this slot renders a subtle 'Auto-approved' label with a timestamp. After action is taken, buttons are replaced with a status label showing the decision and who made it."
+    }
+  },
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Agent handoff from {source} to {target}",
+    "announcements": [
+      "Handoff initiated from {source} agent to {target} agent",
+      "Awaiting your approval to transfer context",
+      "Handoff approved, transfer in progress",
+      "Handoff complete, {target} agent is now active",
+      "Handoff rejected by {user}"
+    ],
+    "keyboard": [
+      "Tab: navigate between source card, context preview, target card, and action buttons",
+      "Enter: expand/collapse context preview sections",
+      "A: approve handoff (when approval actions are focused)",
+      "R: reject handoff (when approval actions are focused)",
+      "Escape: close handoff detail view"
+    ]
+  },
+  "responsive": {
+    "mobile": "Agent cards stack vertically (source on top, target below) with the handoff animation rendered as a vertical downward flow between them. Context preview defaults to collapsed. Approval buttons render full-width stacked. Timeline becomes a vertical strip on the left edge.",
+    "tablet": "Standard horizontal layout maintained. Context preview starts collapsed to save space. Approval buttons remain inline. Touch targets for approve/reject increased to 48px minimum height."
+  },
+  "visual_brief": "Horizontal two-card layout with source agent on the left and target agent on the right, connected by an animated transfer beam. Each agent card shows avatar, name, role label, and status badge with a colored left/right border accent. A collapsible context-preview panel sits below the cards displaying transferred data sections. A horizontal status timeline runs underneath with dot-connected steps. Approval action buttons (Approve, Reject) anchor at the bottom. Compact preset collapses to a single row with inline avatars and an arrow between them.",
+  "interactions": [
+    "drag-nodes",
+    "animate-on-mount",
+    "status-pulse"
+  ],
+  "composition": {
+    "AgentHandoffZone": "Container(d-section, flex-col, gap-6) > [AgentRow + ContextPreview + StatusTimeline + ApprovalActions?]",
+    "AgentRow": "Row(d-surface, gap-6) > [AgentCard(source, accent-left) + HandoffAnimation(animated) + AgentCard(target, accent-right)]",
+    "AgentCard": "Card(d-surface) > [Avatar + Name(heading4) + RoleLabel(d-annotation) + StatusBadge(d-annotation, data-status)]",
+    "ContextPreview": "Panel(d-surface, collapsible) > [Section(collapsible)[] + ViewRawToggle?(d-interactive)]",
+    "StatusTimeline": "Track(d-data) > TimelineStep(dot-connected)[]",
+    "ApprovalActions": "Row(d-interactive) > [ApproveButton(variant: primary) + RejectButton(variant: destructive) + ModifyButton?(variant: ghost)]"
+  }
+}

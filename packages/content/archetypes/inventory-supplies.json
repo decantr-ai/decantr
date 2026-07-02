@@ -1,0 +1,72 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "inventory-supplies",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Inventory & Supplies",
+  "description": "Restaurant inventory and purchasing workspace. Tracks ingredients, par levels, usage, and purchase orders across suppliers.",
+  "tags": ["restaurant", "inventory", "supplies", "purchasing", "ingredients", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["inventory", "supplies", "ingredients", "purchase orders", "par levels"],
+      "secondary": ["stock", "suppliers", "food cost", "waste tracking"],
+      "negative": ["menu", "floor", "marketing"]
+    },
+    "implies": ["inventory"],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "inventory",
+      "patterns": [
+        { "pattern": "data-table", "preset": "standard", "as": "ingredient-list" },
+        { "pattern": "usage-meter", "preset": "bar", "as": "par-levels" }
+      ],
+      "default_layout": ["par-levels", "ingredient-list"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "ingredient-detail",
+      "patterns": [
+        { "pattern": "detail-header", "preset": "standard", "as": "ingredient-header" },
+        { "pattern": "chart-grid", "preset": "standard", "as": "usage-charts" }
+      ],
+      "default_layout": ["ingredient-header", "usage-charts"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "orders",
+      "patterns": [
+        { "pattern": "data-table", "preset": "standard", "as": "po-list" },
+        { "pattern": "kanban-board", "preset": "standard", "as": "po-board" }
+      ],
+      "default_layout": ["po-board", "po-list"],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "inventory": "Data table listing all ingredients with on-hand quantity, unit of measure, par level, reorder point, last count date, and supplier. Usage-meter bars visually indicate which items are below par, at par, or overstocked.",
+    "ingredient-detail": "Detail header with ingredient name, category, current stock, supplier, unit cost, and supplier contact. Chart grid below shows 30-day usage trend, cost history, waste percentage, and forecast for next week.",
+    "orders": "Kanban board with columns for draft, submitted, confirmed, shipped, and received purchase orders. Below, sortable data table listing all POs with supplier, total, expected delivery, and line-item count."
+  },
+  "features": ["inventory", "purchasing"],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area for inventory operations"
+  },
+  "suggested_theme": {
+    "ids": ["clean", "auradecantism"],
+    "modes": ["light", "auto"]
+  },
+  "dependencies": {
+    "patterns": {
+      "data-table": ">=1.0.0",
+      "usage-meter": ">=1.0.0",
+      "detail-header": ">=1.0.0",
+      "chart-grid": ">=1.0.0",
+      "kanban-board": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

@@ -1,0 +1,246 @@
+{
+  "$schema": "https://decantr.ai/schemas/blueprint.v1.json",
+  "id": "saas-dashboard",
+  "version": "2.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "SaaS Dashboard",
+  "description": "Data-driven SaaS dashboard with KPI overview, team management, deep analytics, billing, and a public marketing landing page. Multi-archetype composition with full auth and settings.",
+  "blueprint_portfolio": {
+    "visibility": "public",
+    "maturity": "supported-contract",
+    "rationale": "Supported registry blueprint that remains useful in All without being promoted as a flagship default.",
+    "artifact": {
+      "status": "candidate",
+      "showcase": "saas-dashboard",
+      "notes": "Showcase-backed candidate; certification requires artifact evidence beyond registry availability."
+    }
+  },
+  "tags": [
+    "saas",
+    "dashboard",
+    "analytics",
+    "team",
+    "billing",
+    "marketing",
+    "2026"
+  ],
+  "compose": [
+    "saas-overview",
+    "team-workspace",
+    "saas-analytics",
+    "saas-billing-v2",
+    "marketing-saas-v2",
+    "auth-full",
+    "settings-full"
+  ],
+  "theme": {
+    "id": "auradecantism",
+    "mode": "dark",
+    "shape": "rounded"
+  },
+  "personality": "Clean, data-driven SaaS dashboard. Neutral tones with a single accent color for CTAs and active states. Card-based layout with consistent spacing. Charts use smooth gradients. KPIs are prominent with trend indicators. Team management is clear with role badges. Usage meters show consumption at a glance. Notification center keeps users informed. Audit trail for compliance. Lucide icons. Everything scannable in 3 seconds.",
+  "voice": {
+    "tone": "Clear and professional. Data-forward.",
+    "cta_verbs": [
+      "Analyze",
+      "Configure",
+      "Invite",
+      "Upgrade",
+      "Export",
+      "Monitor"
+    ],
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Dear user"
+    ],
+    "empty_states": "Friendly and action-oriented. Explain what will appear here and provide a single clear next step.",
+    "errors": "Direct and helpful. State what went wrong and suggest a fix. No blame language.",
+    "loading": "Show skeleton placeholders matching the content shape. No spinner text — let the layout speak."
+  },
+  "features": [
+    "analytics",
+    "charts",
+    "kpi",
+    "team-management",
+    "billing",
+    "auth",
+    "mfa",
+    "oauth",
+    "marketing",
+    "seo",
+    "keyboard-shortcuts",
+    "export"
+  ],
+  "routes": {
+    "/": {
+      "shell": "top-nav-footer",
+      "archetype": "marketing-saas-v2",
+      "page": "home"
+    },
+    "/dashboard": {
+      "shell": "sidebar-main",
+      "archetype": "saas-overview",
+      "page": "dashboard"
+    },
+    "/dashboard/actions": {
+      "shell": "sidebar-main",
+      "archetype": "saas-overview",
+      "page": "quick-actions"
+    },
+    "/team": {
+      "shell": "sidebar-main",
+      "archetype": "team-workspace",
+      "page": "team"
+    },
+    "/team/permissions": {
+      "shell": "sidebar-main",
+      "archetype": "team-workspace",
+      "page": "permissions"
+    },
+    "/analytics": {
+      "shell": "sidebar-main",
+      "archetype": "saas-analytics",
+      "page": "analytics"
+    },
+    "/billing": {
+      "shell": "sidebar-main",
+      "archetype": "saas-billing-v2",
+      "page": "billing"
+    },
+    "/billing/invoices": {
+      "shell": "sidebar-main",
+      "archetype": "saas-billing-v2",
+      "page": "invoices"
+    },
+    "/login": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "login"
+    },
+    "/register": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "register"
+    },
+    "/forgot-password": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "forgot-password"
+    },
+    "/reset-password": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "reset-password"
+    },
+    "/verify-email": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "verify-email"
+    },
+    "/mfa-setup": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "mfa-setup"
+    },
+    "/mfa-verify": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "mfa-verify"
+    },
+    "/phone-verify": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "phone-verify"
+    },
+    "/settings/profile": {
+      "shell": "sidebar-aside",
+      "archetype": "settings-full",
+      "page": "profile"
+    },
+    "/settings/security": {
+      "shell": "sidebar-aside",
+      "archetype": "settings-full",
+      "page": "security"
+    },
+    "/settings/preferences": {
+      "shell": "sidebar-aside",
+      "archetype": "settings-full",
+      "page": "preferences"
+    },
+    "/settings/danger": {
+      "shell": "sidebar-aside",
+      "archetype": "settings-full",
+      "page": "danger"
+    }
+  },
+  "overrides": {
+    "features_add": [
+      "theme-toggle",
+      "command-palette"
+    ],
+    "features_remove": [],
+    "pages": {},
+    "pages_remove": []
+  },
+  "dependencies": {
+    "archetypes": {
+      "saas-overview": ">=1.0.0",
+      "team-workspace": ">=1.0.0",
+      "saas-analytics": ">=1.0.0",
+      "saas-billing-v2": ">=1.0.0",
+      "marketing-saas-v2": ">=1.0.0",
+      "auth-full": ">=1.0.0",
+      "settings-full": ">=1.0.0"
+    }
+  },
+  "navigation": {
+    "command_palette": true,
+    "hotkeys": [
+      {
+        "key": "g d",
+        "route": "/dashboard",
+        "label": "Go to Dashboard"
+      },
+      {
+        "key": "g t",
+        "route": "/team",
+        "label": "Go to Team"
+      },
+      {
+        "key": "g a",
+        "route": "/analytics",
+        "label": "Go to Analytics"
+      },
+      {
+        "key": "g b",
+        "route": "/billing",
+        "label": "Go to Billing"
+      },
+      {
+        "key": "g s",
+        "route": "/settings/profile",
+        "label": "Go to Settings"
+      }
+    ]
+  },
+  "seo_hints": {
+    "schema_org": [
+      "Organization",
+      "WebApplication",
+      "SoftwareApplication"
+    ],
+    "meta_priorities": [
+      "description",
+      "og:image",
+      "twitter:card"
+    ]
+  },
+  "suggested_themes": [
+    "auradecantism",
+    "launchpad",
+    "carbon",
+    "clean"
+  ]
+}

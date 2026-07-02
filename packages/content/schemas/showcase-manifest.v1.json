@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/showcase-manifest.v1.json",
+  "title": "Decantr Showcase Manifest Response",
+  "type": "object",
+  "required": [
+    "total",
+    "shortlisted",
+    "apps"
+  ],
+  "properties": {
+    "total": {
+      "type": "number",
+      "minimum": 0
+    },
+    "shortlisted": {
+      "type": "number",
+      "minimum": 0
+    },
+    "apps": {
+      "type": "array",
+      "items": {
+        "$ref": "https://decantr.ai/schemas/showcase-manifest-entry.v1.json"
+      }
+    }
+  },
+  "additionalProperties": false
+}

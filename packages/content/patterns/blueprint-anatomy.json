@@ -1,0 +1,112 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "blueprint-anatomy",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Blueprint Anatomy",
+  "description": "Explanatory breakdown of a Decantr blueprint contract. Shows sections, routes, features, patterns, guard rules, and generated context as a coherent system rather than a flat JSON file.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Card",
+        "Badge",
+        "CodeBlock",
+        "Accordion",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Card",
+    "Badge",
+    "CodeBlock",
+    "Accordion",
+    "icon"
+  ],
+  "contained": false,
+  "default_preset": "explainer",
+  "presets": {
+    "explainer": {
+      "description": "Two-region anatomy layout: narrative component list on the left and a compact contract or context preview on the right.",
+      "components": [
+        "Card",
+        "Badge",
+        "CodeBlock",
+        "Accordion",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _lg:gc[0.9fr_1.1fr] _gap6",
+        "slots": {
+          "anatomy-list": "Stack of contract parts with icon, title, and one-sentence purpose.",
+          "contract-preview": "Code or structured preview focused on the selected part.",
+          "part-badges": "Small badges for route, section, feature, guard, pack, or pattern.",
+          "explanation": "Short prose that connects the part to generated AI context."
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gc1 _lg:gc[0.9fr_1.1fr] _gap6",
+    "slots": {
+      "anatomy-list": "Blueprint parts",
+      "contract-preview": "JSON or context preview",
+      "part-badges": "Part category badges",
+      "explanation": "Why this part matters"
+    }
+  },
+  "visual_brief": "A contract explanation surface that makes Decantr feel like an intelligent system. It should turn blueprint JSON into a readable mental model: routes, sections, patterns, guard rules, and generated context. The UI should be polished and educational but still operational, with code previews kept tight and legible.",
+  "responsive": {
+    "mobile": "Single-column anatomy list followed by previews. Accordions are acceptable to prevent long scroll walls.",
+    "tablet": "Single-column or two-column if the preview remains readable.",
+    "desktop": "Two-region layout with sticky or persistent preview when helpful."
+  },
+  "layout_hints": {
+    "mental_model": "Explain relationships, not just fields. The user should understand how a blueprint feeds context, health, and implementation.",
+    "preview_size": "Code previews should be cropped or focused. Avoid dumping an entire essence file into this pattern.",
+    "part_order": "Recommended order: purpose, sections, routes, patterns, features, guard rules, generated packs."
+  },
+  "motion": {
+    "micro": "Selecting an anatomy part can update the preview with a subtle cross-fade.",
+    "transitions": "Avoid complex animation in code regions; legibility wins."
+  },
+  "interactions": [
+    "click-select",
+    "keyboard-navigation",
+    "hover-tooltip"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Blueprint anatomy",
+    "keyboard": [
+      "Selectable anatomy parts should be reachable in logical order and update the preview without losing focus."
+    ],
+    "announcements": [
+      "Preview changes should expose the selected anatomy part name."
+    ],
+    "focus_management": "If using tabs or accordions, preserve standard keyboard behavior."
+  },
+  "composition": {
+    "BlueprintAnatomy": "Grid > [AnatomyList + ContractPreview]",
+    "AnatomyList": "Stack > AnatomyPart[]",
+    "AnatomyPart": "ButtonOrDisclosure > [Icon + Title + Purpose + Badges]",
+    "ContractPreview": "CodeBlockOrStructuredPanel(selectedPart)"
+  },
+  "io": {
+    "consumes": [
+      "blueprint-contract"
+    ],
+    "produces": [
+      "selected-contract-part"
+    ],
+    "actions": [
+      "part-select",
+      "copy-snippet"
+    ]
+  }
+}

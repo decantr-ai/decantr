@@ -36,8 +36,7 @@ function resolveContentDir() {
   }
 
   const candidates = [
-    resolve(MONOREPO_ROOT, 'decantr-content'),
-    resolve(MONOREPO_ROOT, '..', 'decantr-content'),
+    resolve(MONOREPO_ROOT, 'packages', 'content'),
   ];
   return candidates.find((candidate) => existsSync(candidate)) ?? null;
 }
@@ -57,7 +56,7 @@ try {
   if (contentDir) {
     console.log(`Using local content source: ${contentDir}`);
   } else {
-    console.log('No local decantr-content source detected; prep will use hosted registry resolution.');
+    console.log('No local content source detected; prep will use content API resolution.');
   }
 
   rmSync(target, { recursive: true, force: true });

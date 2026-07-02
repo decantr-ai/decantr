@@ -1,0 +1,93 @@
+{
+  "$schema": "https://decantr.ai/schemas/blueprint.v1.json",
+  "id": "ai-video-studio",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "AI Video Studio",
+  "description": "Professional AI video production studio with multi-track timeline, character consistency library, prompt director, render queue, and full auth with marketing landing.",
+  "blueprint_portfolio": {
+    "visibility": "featured",
+    "maturity": "certified-flagship",
+    "rationale": "Flagship blueprint with a maintained showcase capsule, thumbnail asset, and smoke-green shortlist verification suitable for first-run discovery.",
+    "artifact": {
+      "status": "certified",
+      "showcase": "ai-video-studio",
+      "notes": "Certified Artifact Contract V0: showcase capsule plus shortlist verification report are available in the Decantr monorepo."
+    }
+  },
+  "tags": ["ai", "video", "studio", "generation", "film", "2026"],
+  "compose": [
+    "video-editor",
+    "project-library",
+    "character-library",
+    "prompt-director",
+    "render-monitor",
+    "marketing-video-studio",
+    "auth-full",
+    "settings-full"
+  ],
+  "theme": {
+    "mode": "dark",
+    "shape": "rounded",
+    "id": "cinema"
+  },
+  "personality": "Professional AI video production studio. Dark charcoal timelines with warm amber accents on active elements. Film-grain textures and title-card typography. Multi-track timeline dominates the workspace with scrubber, scene thumbnails, and keyframe dots. Character consistency sheets hang in sidebar panels. Render queue shows live generation progress. Think Runway meets Final Cut Pro. Lucide icons. Cinematic.",
+  "voice": {
+    "tone": "Cinematic and precise. Speaks to video creators and AI directors.",
+    "cta_verbs": ["Direct", "Render", "Compose", "Generate", "Export", "Review"],
+    "avoid": ["Process", "Make", "Do"],
+    "empty_states": "Your storyboard is empty. Drop your first scene prompt to begin.",
+    "errors": "Render failed — scene {id} timeout at {ms}ms. Retry with lower quality?",
+    "loading": "Rendering scene {n} of {total}... {percent}% complete"
+  },
+  "features": ["video", "timeline", "characters", "prompts", "renders", "auth", "mfa", "oauth", "marketing", "seo"],
+  "routes": {
+    "/": { "page": "home", "shell": "top-nav-footer", "archetype": "marketing-video-studio" },
+    "/login": { "page": "login", "shell": "centered", "archetype": "auth-full" },
+    "/register": { "page": "register", "shell": "centered", "archetype": "auth-full" },
+    "/forgot-password": { "page": "forgot-password", "shell": "centered", "archetype": "auth-full" },
+    "/reset-password": { "page": "reset-password", "shell": "centered", "archetype": "auth-full" },
+    "/verify-email": { "page": "verify-email", "shell": "centered", "archetype": "auth-full" },
+    "/mfa-setup": { "page": "mfa-setup", "shell": "centered", "archetype": "auth-full" },
+    "/mfa-verify": { "page": "mfa-verify", "shell": "centered", "archetype": "auth-full" },
+    "/phone-verify": { "page": "phone-verify", "shell": "centered", "archetype": "auth-full" },
+    "/editor": { "page": "editor", "shell": "sidebar-aside", "archetype": "video-editor" },
+    "/editor/:id": { "page": "project-detail", "shell": "sidebar-aside", "archetype": "video-editor" },
+    "/editor/export": { "page": "export", "shell": "sidebar-aside", "archetype": "video-editor" },
+    "/projects": { "page": "projects", "shell": "sidebar-main", "archetype": "project-library" },
+    "/projects/templates": { "page": "templates", "shell": "sidebar-main", "archetype": "project-library" },
+    "/characters": { "page": "characters", "shell": "sidebar-main", "archetype": "character-library" },
+    "/characters/:id": { "page": "character-detail", "shell": "sidebar-main", "archetype": "character-library" },
+    "/prompts": { "page": "prompts", "shell": "sidebar-main", "archetype": "prompt-director" },
+    "/prompts/:id": { "page": "prompt-detail", "shell": "sidebar-main", "archetype": "prompt-director" },
+    "/renders": { "page": "renders", "shell": "sidebar-main", "archetype": "render-monitor" },
+    "/renders/:id": { "page": "render-detail", "shell": "sidebar-main", "archetype": "render-monitor" },
+    "/settings/profile": { "page": "profile", "shell": "sidebar-aside", "archetype": "settings-full" },
+    "/settings/security": { "page": "security", "shell": "sidebar-aside", "archetype": "settings-full" },
+    "/settings/preferences": { "page": "preferences", "shell": "sidebar-aside", "archetype": "settings-full" },
+    "/settings/danger": { "page": "danger", "shell": "sidebar-aside", "archetype": "settings-full" }
+  },
+  "overrides": { "features_add": [], "features_remove": [], "pages": {}, "pages_remove": [] },
+  "seo_hints": { "schema_org": ["Organization", "WebApplication"], "meta_priorities": ["description", "og:image", "twitter:card"] },
+  "navigation": {
+    "command_palette": true,
+    "hotkeys": [
+      { "key": "g e", "route": "/editor", "label": "Go to Editor" },
+      { "key": "g p", "route": "/projects", "label": "Go to Projects" },
+      { "key": "g r", "route": "/renders", "label": "Go to Renders" }
+    ]
+  },
+  "dependencies": {
+    "archetypes": {
+      "video-editor": ">=1.0.0",
+      "project-library": ">=1.0.0",
+      "character-library": ">=1.0.0",
+      "prompt-director": ">=1.0.0",
+      "render-monitor": ">=1.0.0",
+      "marketing-video-studio": ">=1.0.0",
+      "auth-full": ">=1.0.0",
+      "settings-full": ">=1.0.0"
+    }
+  },
+  "suggested_themes": ["cinema", "carbon-neon", "carbon", "studio-dark"]
+}

@@ -1,0 +1,112 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "metrics-overview-dashboard",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Metrics Overview Dashboard",
+  "description": "Top-level observability dashboard with KPI summaries, real-time charts, and service health maps. Primary entry point for platform-wide metrics monitoring.",
+  "tags": [
+    "observability",
+    "metrics",
+    "dashboard",
+    "monitoring",
+    "slo"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "metrics dashboard",
+        "observability overview",
+        "service health",
+        "kpi dashboard",
+        "monitoring dashboard"
+      ],
+      "secondary": [
+        "slo tracking",
+        "real-time metrics",
+        "service map",
+        "infrastructure monitoring",
+        "uptime"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "overview",
+      "patterns": [
+        {
+          "pattern": "kpi-grid",
+          "preset": "dashboard",
+          "as": "kpis"
+        },
+        {
+          "pattern": "chart-grid",
+          "preset": "standard",
+          "as": "charts"
+        },
+        {
+          "pattern": "service-map",
+          "preset": "grid",
+          "as": "service-health"
+        }
+      ],
+      "default_layout": [
+        "kpi-grid",
+        "chart-grid",
+        "service-map"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "service-detail",
+      "patterns": [
+        {
+          "pattern": "kpi-grid",
+          "preset": "compact",
+          "as": "service-kpis"
+        },
+        {
+          "pattern": "chart-grid",
+          "preset": "standard",
+          "as": "service-charts"
+        },
+        {
+          "pattern": "usage-meter",
+          "preset": "radial",
+          "as": "resource-usage"
+        }
+      ],
+      "default_layout": [
+        "kpi-grid",
+        "chart-grid",
+        "usage-meter"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "overview": "Full-width dashboard behind a persistent sidebar. Top row of large KPI cards shows request rate, error rate, p99 latency, and uptime. Below, a responsive chart grid renders time-series panels for throughput, latency percentiles, and error budget burn. Bottom section displays a service health grid with color-coded tiles indicating each service's current status.",
+    "service-detail": "Drill-down view for a single service. Compact KPI strip across the top shows service-specific request count, error percentage, and SLO compliance. Chart grid below visualizes latency distribution, throughput over time, and saturation signals. A radial usage meter on the right summarizes CPU, memory, and network utilization at a glance."
+  },
+  "features": [
+    "metrics",
+    "charts",
+    "slo-tracking",
+    "real-time"
+  ],
+  "suggested_theme": {
+    "ids": [
+      "fintech",
+      "carbon",
+      "neon-dark"
+    ],
+    "modes": [
+      "dark"
+    ]
+  }
+}

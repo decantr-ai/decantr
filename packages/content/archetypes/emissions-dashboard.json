@@ -1,0 +1,136 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "emissions-dashboard",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Emissions Dashboard",
+  "description": "Climate emissions tracking dashboard with scope 1/2/3 breakdown, Sankey flows, and reduction target progress rings.",
+  "tags": [
+    "climate",
+    "emissions",
+    "sustainability",
+    "esg",
+    "dashboard"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "emissions dashboard",
+        "carbon dashboard",
+        "climate tracking",
+        "scope 1 2 3"
+      ],
+      "secondary": [
+        "ghg",
+        "esg",
+        "carbon accounting",
+        "sustainability dashboard"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "overview",
+      "patterns": [
+        {
+          "pattern": "kpi-grid",
+          "preset": "dashboard",
+          "as": "kpis"
+        },
+        {
+          "pattern": "emissions-sankey",
+          "preset": "scope-view",
+          "as": "sankey"
+        },
+        {
+          "pattern": "target-progress-ring",
+          "preset": "dashboard",
+          "as": "target"
+        }
+      ],
+      "default_layout": [
+        "kpi-grid",
+        "emissions-sankey",
+        "target-progress-ring"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "scope-detail",
+      "patterns": [
+        {
+          "pattern": "scope-breakdown",
+          "preset": "bars",
+          "as": "breakdown"
+        },
+        {
+          "pattern": "chart-grid",
+          "preset": "dashboard",
+          "as": "charts"
+        }
+      ],
+      "default_layout": [
+        "scope-breakdown",
+        "chart-grid"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "targets",
+      "patterns": [
+        {
+          "pattern": "target-progress-ring",
+          "preset": "standard",
+          "as": "targets"
+        },
+        {
+          "pattern": "chart-grid",
+          "preset": "dashboard",
+          "as": "charts"
+        }
+      ],
+      "default_layout": [
+        "target-progress-ring",
+        "chart-grid"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "overview": "Primary climate dashboard. Top row is a KPI grid with total CO2e, year-over-year delta, scope breakdown, and intensity metrics. Center hosts a scope-view emissions Sankey showing flow from activities through scopes to total output. Right column features the reduction target progress ring tracking pace against the net-zero goal.",
+    "scope-detail": "Detail page for a specific emissions scope (1, 2, or 3). Horizontal bar breakdown shows category-level contributions with percentages and absolute tCO2e. Below, a chart grid displays trend lines, category share over time, and variance against plan.",
+    "targets": "Reduction targets workspace. A row of progress rings shows each target with current vs goal, pace indicator, and time remaining. A chart grid beneath plots trajectory curves, baseline comparisons, and scenario forecasts for each target."
+  },
+  "features": [
+    "emissions-tracking",
+    "scope-123",
+    "targets"
+  ],
+  "shells": {
+    "sidebar-main": "Left navigation sidebar with primary content column"
+  },
+  "dependencies": {
+    "patterns": {
+      "kpi-grid": "^1.0.0",
+      "emissions-sankey": "^1.0.0",
+      "target-progress-ring": "^1.0.0",
+      "scope-breakdown": "^1.0.0",
+      "chart-grid": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

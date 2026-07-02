@@ -1,0 +1,85 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "portfolio-about",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Portfolio About",
+  "description": "Bio, skills, and contact pages for a personal portfolio. Professional yet personal presentation with an editorial identity summary, capability cards, and a split contact surface.",
+  "tags": ["portfolio", "about", "bio", "skills", "contact", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["portfolio about", "portfolio bio", "portfolio contact", "portfolio skills"],
+      "secondary": ["about me", "skill badges", "personal bio", "contact page", "resume"],
+      "negative": ["dashboard", "analytics", "admin"]
+    },
+    "implies": [],
+    "weight": 0.8,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "about",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "brand",
+          "as": "about-hero"
+        },
+        {
+          "pattern": "identity-summary",
+          "preset": "editorial",
+          "as": "identity-summary"
+        }
+      ],
+      "default_layout": ["about-hero", "identity-summary"],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "skills",
+      "patterns": [
+        {
+          "pattern": "card-grid",
+          "preset": "capability",
+          "as": "skill-capabilities"
+        }
+      ],
+      "default_layout": ["skill-capabilities"],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "contact-page",
+      "patterns": [
+        {
+          "pattern": "contact-form",
+          "preset": "split",
+          "as": "contact-split"
+        }
+      ],
+      "default_layout": ["contact-split"],
+      "shell": "top-nav-main"
+    }
+  ],
+  "page_briefs": {
+    "about": "Brand hero followed by an editorial identity summary. The identity panel should use a compact portrait or monogram, strong name/title hierarchy, one short biography, and aligned metadata facts such as location and email. The overall feel should be calm, premium, and intentionally authored rather than dashboard-like.",
+    "skills": "Capability card grid displaying skill areas in one to three medium-width columns. Each card has a category icon, a strong title, a short framing paragraph, and a compact supporting list of two to four focused capabilities or proficiency badges. The page should feel editorial and airy, not like a dense dashboard widget wall.",
+    "contact-page": "Split contact surface with the primary form in the dominant column and a narrower companion panel for contact details, response expectations, and social links. The details panel stays top-aligned and compact rather than stretching to the full height of the form. Contact channels should use aligned icon chips plus label/value rows, and the social links should read as explicit actions rather than loose text."
+  },
+  "features": ["contact-form", "social-links"],
+  "shells": {
+    "top-nav-main": "Fixed top navigation bar with main content area below"
+  },
+  "dependencies": {
+    "patterns": {
+      "hero": ">=1.0.0",
+      "identity-summary": ">=1.0.0",
+      "card-grid": ">=1.0.0",
+      "contact-form": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": ["auradecantism"],
+    "modes": ["dark"]
+  }
+}

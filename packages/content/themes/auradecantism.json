@@ -1,0 +1,601 @@
+{
+  "$schema": "https://decantr.ai/schemas/theme.v1.json",
+  "id": "auradecantism",
+  "version": "1.0.0",
+  "name": "Auradecantism",
+  "description": "Luminous glass aesthetic with purple/cyan/pink palette. Bouncy pill shapes, glass morphism effects, and vibrant gradients.",
+  "tags": [
+    "dark",
+    "glass",
+    "vibrant",
+    "modern",
+    "premium",
+    "animated"
+  ],
+  "personality": "luminous + bouncy + glass + vibrant gradients + pill shapes",
+  "seed": {
+    "primary": "#A855F7",
+    "secondary": "#0EA5E9",
+    "accent": "#EC4899",
+    "background": "#0F0A1A"
+  },
+  "palette": {
+    "background": {
+      "dark": "#0F0A1A",
+      "light": "#FFFFFF"
+    },
+    "surface": {
+      "dark": "#181328",
+      "light": "#FAFAFA"
+    },
+    "surface-raised": {
+      "dark": "#211A35",
+      "light": "#F4F4F5"
+    },
+    "border": {
+      "dark": "#3A3154",
+      "light": "#E4E4E7"
+    },
+    "text": {
+      "dark": "#F5F0FF",
+      "light": "#18181B"
+    },
+    "text-muted": {
+      "dark": "#B9B1D0",
+      "light": "#71717A"
+    },
+    "primary": {
+      "dark": "#A855F7",
+      "light": "#A855F7"
+    },
+    "primary-hover": {
+      "dark": "#C084FC",
+      "light": "#9333EA"
+    },
+    "secondary": {
+      "dark": "#0EA5E9",
+      "light": "#0284C7"
+    },
+    "secondary-hover": {
+      "dark": "#38BDF8",
+      "light": "#0369A1"
+    },
+    "accent": {
+      "dark": "#EC4899",
+      "light": "#EC4899"
+    },
+    "accent-hover": {
+      "dark": "#F472B6",
+      "light": "#DB2777"
+    },
+    "purple": "#A855F7",
+    "cyan": "#0EA5E9",
+    "pink": "#EC4899",
+    "magenta": "#D946EF",
+    "indigo": "#6366F1",
+    "violet": "#8B5CF6"
+  },
+  "modes": [
+    "dark",
+    "light"
+  ],
+  "shapes": [
+    "pill",
+    "rounded"
+  ],
+  "decantr_compat": ">=2.0.0",
+  "source": "core",
+  "decorators": {
+    "d-mesh": "Radial mesh gradient background with pink, cyan, and purple overlays. Apply to page-level containers.",
+    "d-glass": "Frosted glass panel — backdrop-blur, semi-transparent bg, subtle border highlight. Apply to cards and panels.",
+    "d-glass-strong": "Stronger glass effect with more opacity and thicker blur. For elevated overlays and modals.",
+    "d-gradient-text": "Gradient text using primary brand colors (pink → cyan). Apply to headings and hero text.",
+    "d-gradient-text-alt": "Alternate gradient text (purple → pink → cyan). For secondary headings and accents.",
+    "aura-glow": "Soft glow shadow using primary color. Apply to featured cards or active elements.",
+    "aura-glow-strong": "Intense glow for hero KPIs and primary CTAs. 20px spread.",
+    "aura-ring": "Animated ring highlight on focus/active state. Pill-shaped glow border.",
+    "aura-orb": "Floating decorative gradient orb. Position absolutely as background decoration.",
+    "aura-shimmer": "Subtle shimmer animation across surface. Use sparingly for loading or premium feel.",
+    "d-glow-primary": "Box-shadow glow using primary color. Apply to stats, featured cards.",
+    "d-glow-accent": "Box-shadow glow using accent color. For secondary highlights.",
+    "d-stat-glow": "Text-shadow glow for large numbers and metrics.",
+    "d-gradient-hint-primary": "Subtle gradient background toward primary color.",
+    "d-gradient-hint-accent": "Subtle gradient background toward accent color.",
+    "d-terminal-chrome": "macOS-style terminal window with traffic light dots and gradient background.",
+    "d-icon-glow": "Glowing icon container with gradient background."
+  },
+  "spatial": {
+    "density_bias": 0,
+    "content_gap_shift": 0,
+    "section_padding": null,
+    "card_wrapping": "minimal",
+    "surface_override": null
+  },
+  "motion": {
+    "preference": "subtle",
+    "reduce_motion": true,
+    "entrance": "d-stagger",
+    "micro": "bouncy",
+    "durations": {
+      "instant": "80ms",
+      "fast": "150ms",
+      "base": "250ms",
+      "slow": "400ms",
+      "slower": "600ms",
+      "stagger": "60ms"
+    },
+    "easings": {
+      "ease": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "easeOut": "cubic-bezier(0, 0, 0.2, 1)",
+      "easeIn": "cubic-bezier(0.4, 0, 1, 1)",
+      "spring": "cubic-bezier(0.34, 1.56, 0.64, 1)"
+    }
+  },
+  "effects": {
+    "enabled": true,
+    "intensity": "medium",
+    "type_mapping": {
+      "code_preview": [
+        "d-terminal-chrome"
+      ],
+      "stat_display": [
+        "d-glow-primary",
+        "d-stat-glow"
+      ],
+      "feature_card": [
+        "d-glass",
+        "d-gradient-hint-primary"
+      ],
+      "icon_container": [
+        "d-icon-glow"
+      ]
+    },
+    "component_fallback": {
+      "pre": "code_preview",
+      "code": "code_preview",
+      "Statistic": "stat_display",
+      "Card": "feature_card"
+    },
+    "intensity_values": {
+      "subtle": {
+        "--d-glow-radius": "15px",
+        "--d-glow-intensity": "0.15",
+        "--d-gradient-hint-opacity": "0.04"
+      },
+      "medium": {
+        "--d-glow-radius": "30px",
+        "--d-glow-intensity": "0.3",
+        "--d-gradient-hint-opacity": "0.08"
+      },
+      "strong": {
+        "--d-glow-radius": "50px",
+        "--d-glow-intensity": "0.5",
+        "--d-gradient-hint-opacity": "0.12"
+      }
+    }
+  },
+  "compositions": {
+    "panel": {
+      "description": "Glass panel with subtle border and backdrop blur.",
+      "example": "const { div, span } = tags;\ndiv({ class: css('d-glass _r4 _p0') },\n  div({ class: css('_flex _aic _jcsb _px4 _py3 _borderB') },\n    span({ class: css('_textsm _bold _fgmutedfg') }, 'PANEL TITLE')\n  ),\n  div({ class: css('_p4') },\n    // content here\n  )\n)"
+    },
+    "card": {
+      "wraps": "Card",
+      "description": "Card with glass surface and glow on hover.",
+      "example": "const { div } = tags;\ndiv({ class: css('d-glass _r4') },\n  Card({},\n    Card.Header({},\n      span({ class: css('_heading5') }, 'Feature')\n    ),\n    Card.Body({},\n      p({ class: css('_fgmuted') }, 'Description text here')\n    )\n  )\n)"
+    },
+    "kpi": {
+      "wraps": "Statistic",
+      "description": "KPI metric with glass background and gradient value text.",
+      "example": "const { div, span } = tags;\ndiv({ class: css('d-glass _r4 _p4') },\n  Statistic({\n    label: 'Total Revenue',\n    value: 2450000,\n    prefix: '$',\n    trend: 'up',\n    trendValue: '+18.2%',\n    class: css('_bg[transparent]')\n  }),\n  span({ class: css('d-gradient-text _textxs _bold') }, 'ALL TIME HIGH')\n)"
+    },
+    "table": {
+      "wraps": "DataTable",
+      "description": "DataTable with glass wrapper and subtle border.",
+      "example": "const { div, span } = tags;\ndiv({ class: css('d-glass _r4 _overflow[hidden]') },\n  div({ class: css('_flex _aic _jcsb _px4 _py3 _borderB') },\n    span({ class: css('_heading5') }, 'Transactions'),\n    span({ class: css('_textsm _fgmuted') }, '248 records')\n  ),\n  DataTable({ columns, data, sortable: true, paginate: true })\n)"
+    },
+    "form": {
+      "description": "Form in a glass card with gradient submit button.",
+      "example": "const { div, h2 } = tags;\ndiv({ class: css('d-glass _r4 _p6 _flex _col _gap4') },\n  h2({ class: css('d-gradient-text _heading4') }, 'Sign In'),\n  Input({ label: 'Email', type: 'email' }),\n  Input({ label: 'Password', type: 'password' }),\n  Button({ variant: 'primary', class: css('_wfull') }, 'Continue')\n)"
+    },
+    "sidebar": {
+      "description": "Glass sidebar with gradient brand and nav items.",
+      "example": "const { div, aside, nav, span } = tags;\naside({ class: css('d-glass _flex _col _h[100vh] _w[240px] _borderR _p3') },\n  span({ class: css('d-gradient-text _heading5 _mb6 _px3') }, 'Brand'),\n  nav({ class: css('_flex _col _gap1') },\n    // nav items with icon + label, _p2 _px3 _r4 _trans\n  )\n)"
+    },
+    "layout": {
+      "description": "Full page layout with mesh background, glass sidebar, and content area.",
+      "example": "const { div, main, header, span } = tags;\ndiv({ class: css('d-mesh _grid _h[100vh]'), style: 'grid-template-columns:240px 1fr' },\n  // glass sidebar\n  // ...,\n  div({ class: css('_flex _col _overflow[hidden]') },\n    header({ class: css('_flex _aic _jcsb _px6 _py3 _borderB d-glass') },\n      span({ class: css('_heading4') }, 'Dashboard')\n    ),\n    main({ class: css('_flex _col _gap4 _p6 _overflow[auto]') },\n      // page content\n    )\n  )\n)"
+    },
+    "alert": {
+      "wraps": "Alert",
+      "description": "Alert with glass background.",
+      "example": "const { div } = tags;\ndiv({ class: css('d-glass _r4') },\n  Alert({ variant: 'info' },\n    'Your subscription renews in 3 days.'\n  )\n)"
+    },
+    "modal": {
+      "wraps": "Modal",
+      "description": "Modal with strong glass backdrop and gradient title.",
+      "example": "const { div, h2 } = tags;\nModal({\n  visible: showModal,\n  onClose: () => setShowModal(false),\n  class: css('d-glass-strong _r4')\n},\n  h2({ class: css('d-gradient-text _heading4 _mb4') }, 'Confirm'),\n  div({ class: css('_flex _col _gap4 _p4') },\n    // modal content\n  )\n)"
+    },
+    "chart": {
+      "wraps": "Chart",
+      "description": "Chart in glass panel with gradient title.",
+      "example": "const { div, span } = tags;\ndiv({ class: css('d-glass _r4 _overflow[hidden]') },\n  div({ class: css('_flex _aic _jcsb _px4 _py3 _borderB') },\n    span({ class: css('d-gradient-text _bold') }, 'Revenue Trend'),\n    span({ class: css('_textxs _fgmuted') }, 'Last 30 days')\n  ),\n  Chart({ type: 'area', data: revenueData, x: 'date', y: 'amount', height: 300 })\n)"
+    }
+  },
+  "radius": {
+    "philosophy": "rounded",
+    "base": 8
+  },
+  "pattern_preferences": {
+    "prefer": [
+      "kpi-grid",
+      "chart-grid",
+      "activity-feed"
+    ],
+    "avoid": [],
+    "default_presets": {}
+  },
+  "shell": {
+    "preferred": [
+      "sidebar-main"
+    ],
+    "avoid": [],
+    "nav_style": "filled",
+    "default_nav_state": "expanded",
+    "root": "d-mesh",
+    "nav": "d-glass",
+    "header": "",
+    "navLabel": "",
+    "brand": "d-gradient-text",
+    "dimensions": null
+  },
+  "typography": {
+    "scale": "modular",
+    "heading_weight": 600,
+    "body_weight": 400,
+    "display": "'Inter', ui-sans-serif, system-ui, sans-serif",
+    "body": "'Inter', ui-sans-serif, system-ui, sans-serif"
+  },
+  "decorator_definitions": {
+    "d-mesh": {
+      "description": "Radial mesh gradient background with pink, cyan, and purple overlays. Apply to page-level containers.",
+      "intent": "Use as the foundational page background to establish the luminous, immersive atmosphere. Sets the visual tone for the entire layout.",
+      "suggested_properties": {
+        "background": "radial-gradient(ellipse at 20% 50%, rgba(236,72,153,0.15), transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(14,165,233,0.15), transparent 50%), radial-gradient(ellipse at 50% 80%, rgba(168,85,247,0.12), transparent 50%), #0F0A1A",
+        "min-height": "100vh",
+        "position": "relative"
+      },
+      "pairs_with": [
+        "d-glass",
+        "aura-orb"
+      ],
+      "usage": [
+        "Page root containers",
+        "App shell backgrounds",
+        "Full-page layouts"
+      ]
+    },
+    "d-glass": {
+      "description": "Frosted glass panel — backdrop-blur, semi-transparent bg, subtle border highlight. Apply to cards and panels.",
+      "intent": "Use for elevated content containers that need visual separation from the mesh background while maintaining transparency and depth.",
+      "suggested_properties": {
+        "background": "rgba(255, 255, 255, 0.05)",
+        "backdrop-filter": "blur(12px)",
+        "-webkit-backdrop-filter": "blur(12px)",
+        "border": "1px solid rgba(255, 255, 255, 0.1)",
+        "border-radius": "var(--d-radius, 8px)"
+      },
+      "pairs_with": [
+        "d-mesh",
+        "aura-glow",
+        "d-gradient-hint-primary"
+      ],
+      "usage": [
+        "Cards",
+        "Sidebar panels",
+        "Navigation bars",
+        "Content sections"
+      ]
+    },
+    "d-glass-strong": {
+      "description": "Stronger glass effect with more opacity and thicker blur. For elevated overlays and modals.",
+      "intent": "Use for overlays and modals that need to stand out prominently above glass panels. Higher opacity ensures readability for critical content.",
+      "suggested_properties": {
+        "background": "rgba(255, 255, 255, 0.08)",
+        "backdrop-filter": "blur(24px)",
+        "-webkit-backdrop-filter": "blur(24px)",
+        "border": "1px solid rgba(255, 255, 255, 0.15)",
+        "border-radius": "var(--d-radius, 12px)"
+      },
+      "pairs_with": [
+        "d-gradient-text",
+        "aura-glow-strong"
+      ],
+      "usage": [
+        "Modal overlays",
+        "Dropdown menus",
+        "Popovers",
+        "Alert dialogs"
+      ]
+    },
+    "d-gradient-text": {
+      "description": "Gradient text using primary brand colors (pink → cyan). Apply to headings and hero text.",
+      "intent": "Use for primary headings and hero text that need maximum visual impact. Creates the signature brand gradient effect.",
+      "suggested_properties": {
+        "background": "linear-gradient(135deg, #EC4899, #0EA5E9)",
+        "-webkit-background-clip": "text",
+        "background-clip": "text",
+        "color": "transparent",
+        "-webkit-text-fill-color": "transparent"
+      },
+      "pairs_with": [
+        "d-glass",
+        "d-gradient-text-alt"
+      ],
+      "usage": [
+        "Hero headings",
+        "Page titles",
+        "Brand text",
+        "Call-to-action labels"
+      ]
+    },
+    "d-gradient-text-alt": {
+      "description": "Alternate gradient text (purple → pink → cyan). For secondary headings and accents.",
+      "intent": "Use for secondary headings or accent text when the primary gradient is already in use. Provides variety while maintaining brand cohesion.",
+      "suggested_properties": {
+        "background": "linear-gradient(135deg, #A855F7, #EC4899, #0EA5E9)",
+        "-webkit-background-clip": "text",
+        "background-clip": "text",
+        "color": "transparent",
+        "-webkit-text-fill-color": "transparent"
+      },
+      "pairs_with": [
+        "d-gradient-text",
+        "d-glass"
+      ],
+      "usage": [
+        "Section headings",
+        "Feature labels",
+        "Accent text",
+        "Subtitle text"
+      ]
+    },
+    "aura-glow": {
+      "description": "Soft glow shadow using primary color. Apply to featured cards or active elements.",
+      "intent": "Use to draw attention to featured or interactive elements. The glow creates a sense of importance without being overwhelming.",
+      "suggested_properties": {
+        "box-shadow": "0 0 15px rgba(168, 85, 247, 0.3)",
+        "transition": "box-shadow 200ms ease"
+      },
+      "pairs_with": [
+        "d-glass",
+        "d-glow-primary"
+      ],
+      "usage": [
+        "Featured cards",
+        "Active navigation items",
+        "Selected elements",
+        "Highlighted containers"
+      ]
+    },
+    "aura-glow-strong": {
+      "description": "Intense glow for hero KPIs and primary CTAs. 20px spread.",
+      "intent": "Use for the most important interactive elements like primary CTAs and hero KPI displays. Maximum visual prominence.",
+      "suggested_properties": {
+        "box-shadow": "0 0 20px rgba(168, 85, 247, 0.5), 0 0 40px rgba(168, 85, 247, 0.2)",
+        "transition": "box-shadow 200ms ease"
+      },
+      "pairs_with": [
+        "d-glass-strong",
+        "d-gradient-text"
+      ],
+      "usage": [
+        "Primary CTA buttons",
+        "Hero KPI values",
+        "Modal actions"
+      ]
+    },
+    "aura-ring": {
+      "description": "Animated ring highlight on focus/active state. Pill-shaped glow border.",
+      "intent": "Use for focus and active state indicators on interactive elements. Provides accessible focus indication with the theme's signature glow.",
+      "suggested_properties": {
+        "outline": "2px solid rgba(168, 85, 247, 0.6)",
+        "outline-offset": "2px",
+        "border-radius": "9999px",
+        "box-shadow": "0 0 12px rgba(168, 85, 247, 0.3)"
+      },
+      "pairs_with": [
+        "d-glass",
+        "aura-glow"
+      ],
+      "usage": [
+        "Focus rings",
+        "Active state indicators",
+        "Toggle buttons",
+        "Tab highlights"
+      ]
+    },
+    "aura-orb": {
+      "description": "Floating decorative gradient orb. Position absolutely as background decoration.",
+      "intent": "Use as a background decorative element to add depth and visual interest to sections. Position behind content with pointer-events disabled.",
+      "suggested_properties": {
+        "position": "absolute",
+        "width": "300px",
+        "height": "300px",
+        "border-radius": "50%",
+        "background": "radial-gradient(circle, rgba(168, 85, 247, 0.2), transparent 70%)",
+        "pointer-events": "none"
+      },
+      "pairs_with": [
+        "d-mesh",
+        "aura-shimmer"
+      ],
+      "usage": [
+        "Hero section backgrounds",
+        "Feature section accents",
+        "Decorative elements"
+      ]
+    },
+    "aura-shimmer": {
+      "description": "Subtle shimmer animation across surface. Use sparingly for loading or premium feel.",
+      "intent": "Use sparingly for loading states or to add a premium, living quality to surfaces. Avoid overuse to prevent visual fatigue.",
+      "suggested_properties": {
+        "background": "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent)",
+        "background-size": "200% 100%",
+        "animation": "shimmer 2s infinite linear"
+      },
+      "pairs_with": [
+        "d-glass",
+        "aura-orb"
+      ],
+      "usage": [
+        "Loading skeletons",
+        "Premium badges",
+        "Feature highlights"
+      ]
+    },
+    "d-glow-primary": {
+      "description": "Box-shadow glow using primary color. Apply to stats, featured cards.",
+      "intent": "Use to add a primary-colored glow to containers holding key metrics or featured content. Draws the eye to important data.",
+      "suggested_properties": {
+        "box-shadow": "0 0 var(--d-glow-radius, 30px) rgba(168, 85, 247, var(--d-glow-intensity, 0.3))"
+      },
+      "pairs_with": [
+        "d-glass",
+        "d-stat-glow",
+        "d-gradient-hint-primary"
+      ],
+      "usage": [
+        "Stat cards",
+        "Featured cards",
+        "KPI containers"
+      ]
+    },
+    "d-glow-accent": {
+      "description": "Box-shadow glow using accent color. For secondary highlights.",
+      "intent": "Use for secondary elements that need subtle emphasis alongside primary-glowing elements. Provides color variety in glow effects.",
+      "suggested_properties": {
+        "box-shadow": "0 0 var(--d-glow-radius, 30px) rgba(236, 72, 153, var(--d-glow-intensity, 0.3))"
+      },
+      "pairs_with": [
+        "d-glass",
+        "d-glow-primary"
+      ],
+      "usage": [
+        "Secondary stat cards",
+        "Accent highlights",
+        "Supporting metrics"
+      ]
+    },
+    "d-stat-glow": {
+      "description": "Text-shadow glow for large numbers and metrics.",
+      "intent": "Use on large numeric displays and KPI values to create a luminous, high-tech readout effect.",
+      "suggested_properties": {
+        "text-shadow": "0 0 10px rgba(168, 85, 247, 0.5), 0 0 20px rgba(168, 85, 247, 0.2)",
+        "color": "#FFFFFF"
+      },
+      "pairs_with": [
+        "d-glow-primary",
+        "d-glass"
+      ],
+      "usage": [
+        "KPI values",
+        "Dashboard metrics",
+        "Large number displays"
+      ]
+    },
+    "d-gradient-hint-primary": {
+      "description": "Subtle gradient background toward primary color.",
+      "intent": "Use to add a barely perceptible primary color tint to container backgrounds. Creates visual hierarchy without being overt.",
+      "suggested_properties": {
+        "background": "linear-gradient(135deg, rgba(168, 85, 247, var(--d-gradient-hint-opacity, 0.08)), transparent)"
+      },
+      "pairs_with": [
+        "d-glass",
+        "d-gradient-hint-accent"
+      ],
+      "usage": [
+        "Feature cards",
+        "Content sections",
+        "Highlighted rows"
+      ]
+    },
+    "d-gradient-hint-accent": {
+      "description": "Subtle gradient background toward accent color.",
+      "intent": "Use alongside primary hints for visual variety. Apply to secondary content areas to differentiate them from primary sections.",
+      "suggested_properties": {
+        "background": "linear-gradient(135deg, rgba(236, 72, 153, var(--d-gradient-hint-opacity, 0.08)), transparent)"
+      },
+      "pairs_with": [
+        "d-glass",
+        "d-gradient-hint-primary"
+      ],
+      "usage": [
+        "Secondary feature cards",
+        "Alternate content sections",
+        "Supporting panels"
+      ]
+    },
+    "d-terminal-chrome": {
+      "description": "macOS-style terminal window with traffic light dots and gradient background.",
+      "intent": "Use for code preview blocks and terminal-style content displays. Creates a familiar developer aesthetic for code snippets.",
+      "suggested_properties": {
+        "background": "linear-gradient(180deg, #1E1E2E, #0F0A1A)",
+        "border-radius": "12px",
+        "border": "1px solid rgba(255, 255, 255, 0.1)",
+        "padding-top": "40px"
+      },
+      "pairs_with": [
+        "d-glass",
+        "d-glow-primary"
+      ],
+      "usage": [
+        "Code blocks",
+        "Terminal previews",
+        "CLI output displays"
+      ]
+    },
+    "d-icon-glow": {
+      "description": "Glowing icon container with gradient background.",
+      "intent": "Use to wrap feature icons or status icons that need to stand out with a luminous, branded appearance.",
+      "suggested_properties": {
+        "background": "linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(14, 165, 233, 0.2))",
+        "border-radius": "12px",
+        "padding": "12px",
+        "box-shadow": "0 0 12px rgba(168, 85, 247, 0.2)"
+      },
+      "pairs_with": [
+        "d-glass",
+        "d-gradient-text"
+      ],
+      "usage": [
+        "Feature icons",
+        "Status indicators",
+        "Navigation icons",
+        "Category icons"
+      ]
+    }
+  },
+  "elevation": {
+    "1": {
+      "light": "0 1px 2px rgba(0,0,0,0.05)",
+      "dark": "0 1px 2px rgba(0,0,0,0.30)"
+    },
+    "2": {
+      "light": "0 2px 6px rgba(0,0,0,0.07)",
+      "dark": "0 2px 6px rgba(0,0,0,0.40)"
+    },
+    "3": {
+      "light": "0 6px 16px rgba(0,0,0,0.09)",
+      "dark": "0 6px 16px rgba(0,0,0,0.45)"
+    },
+    "4": {
+      "light": "0 12px 32px rgba(0,0,0,0.12)",
+      "dark": "0 12px 32px rgba(0,0,0,0.50)"
+    },
+    "5": {
+      "light": "0 24px 64px rgba(0,0,0,0.16)",
+      "dark": "0 24px 64px rgba(0,0,0,0.55)"
+    }
+  }
+}

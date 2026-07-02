@@ -1,0 +1,102 @@
+{
+  "id": "waveform-track",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Waveform Track",
+  "description": "Audio waveform track displaying regions, automation lanes, gain control, and beat grid for DAW-style audio editing interfaces.",
+  "category": "music",
+  "tags": ["2026", "music", "audio", "waveform", "daw", "track", "editor"],
+  "components": ["WaveformCanvas", "RegionBlock", "AutomationLane", "GainSlider", "TrackHeader", "MuteSolo"],
+  "default_preset": "track",
+  "presets": {
+    "track": {
+      "description": "Single horizontal track row with header controls and waveform area, suitable for track lists in multi-track editors and timeline views",
+      "layout": {
+        "layout": "flex",
+        "atoms": "_flex _flex-row _items-stretch _w-full _bg-surface _border-b"
+      }
+    },
+    "stem": {
+      "description": "Multi-stem stacked variant showing multiple related audio stems within a single track group with shared transport for stem editing workflows",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _gap-1 _w-full _bg-surface _border-b"
+      }
+    },
+    "minimal": {
+      "description": "Compact waveform without automation lanes, ideal for preview tracks, inspection panels, and read-only playback interfaces",
+      "layout": {
+        "layout": "flex",
+        "atoms": "_flex _flex-row _items-stretch _w-full _bg-surface-muted _h-16"
+      }
+    }
+  },
+  "visual_brief": "A horizontal track row approximately 96px tall (track preset). Track header on the left (160px fixed width) contains: track name in semibold 13px, mute/solo/arm circular buttons (24px each) in a row, and a horizontal gain slider with dB value display. Track header has subtle border-right separating it from the waveform. Waveform canvas fills remaining horizontal space rendering symmetrical amplitude envelope: mirrored above and below horizontal centerline in accent color (e.g. blue for audio, green for synth), against a muted background. Regions appear as colored semi-transparent rectangles overlaid on the waveform with 2px colored borders and clip names in 11px text at top-left. Beat grid lines run vertically through the waveform at BPM-synced intervals (1px, subtle muted color, brighter on bar lines). Automation lanes (optional, 32px tall each) stack below the main waveform showing parameter curves (volume, pan) as line graphs with draggable node points. Hovering on the waveform shows a vertical playhead indicator and timecode tooltip.",
+  "default_layout": {
+    "layout": "flex",
+    "atoms": "_flex _flex-row _items-stretch _w-full _bg-surface _border-b",
+    "slots": {
+      "track-header": "Fixed-width (160px) column on left containing track name, mute/solo/arm buttons, and gain slider with dB readout. Subtle border separates from waveform.",
+      "track-name": "Editable label at top of header in semibold 13px type. Click-to-rename.",
+      "mute-solo-arm": "Row of 3 circular toggle buttons (24px each): M (mute), S (solo), R (record arm). Active states color-coded.",
+      "gain-slider": "Horizontal slider with dB value display. Range -inf to +6dB. Shows current value in monospace text.",
+      "waveform-canvas": "Main horizontal area rendering symmetrical amplitude waveform. Fills remaining width. Supports zoom via timeline controls.",
+      "region-block": "Colored rectangle overlay representing an audio clip/region. Has clip name, trim handles at edges, fade-in/fade-out curves at corners.",
+      "automation-lane": "Optional 32px tall lane below waveform showing parameter automation as line graph with draggable nodes.",
+      "beat-grid": "Vertical grid lines at BPM-synced intervals. Bar lines brighter than beat lines."
+    }
+  },
+  "responsive": {
+    "mobile": "Track header collapses to 64px with icon-only controls. Gain slider becomes popover. Automation lanes hidden; toggle to view. Waveform height reduces to 56px.",
+    "tablet": "Standard layout with condensed track name. Full mute/solo/arm visible.",
+    "desktop": "Full 96px track with all automation lanes expanded and hover interactions."
+  },
+  "motion": {
+    "micro": {
+      "mute-solo-toggle": "button color transition 150ms + ripple on click",
+      "gain-drag": "slider follows pointer at 60fps with real-time dB update"
+    },
+    "transitions": {
+      "region-add": "region scale-in + fade 200ms spring",
+      "automation-node-drag": "curve reshape 16ms per frame during drag"
+    },
+    "ambient": {
+      "active-playback": "vertical playhead line moves continuously across waveform at playback rate",
+      "armed-recording-pulse": "arm button red pulse 1s ease-in-out infinite when recording"
+    }
+  },
+  "interactions": [
+    "animate-on-mount",
+    "inline-edit",
+    "keyboard-navigation"
+  ],
+  "composition": {
+    "WaveformTrack": "Root(d-surface, flex-row) > [TrackHeader + WaveformArea]",
+    "TrackHeader": "Column(d-control) > [TrackName + MuteSoloArm + GainSlider]",
+    "WaveformArea": "Container > [WaveformCanvas + RegionBlock* + BeatGrid + AutomationLane*]",
+    "RegionBlock": "Overlay(absolute, d-interactive) > [ClipName + TrimHandles + FadeCurves]"
+  },
+  "layout_hints": {
+    "timeline_priority": "Track controls should stay subordinate to the waveform timeline so clip timing, regions, and automation remain the primary editing signal.",
+    "header_density": "Mute, solo, arm, and gain controls should feel compact and studio-like without stealing horizontal space from the editable waveform canvas.",
+    "automation_attachment": "Automation lanes should feel structurally attached to the parent track and preserve timing alignment with the waveform above."
+  },
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Audio track",
+    "announcements": [
+      "Track {name} gain set to {value} dB",
+      "Track {name} {muted|soloed|armed}",
+      "Region {name} added at {timestamp}"
+    ],
+    "keyboard": [
+      "M: toggle mute on focused track",
+      "S: toggle solo on focused track",
+      "R: toggle record-arm on focused track",
+      "Up/Down: adjust gain 1dB",
+      "Shift+Up/Down: adjust gain 0.1dB",
+      "Delete: remove focused region"
+    ]
+  }
+}

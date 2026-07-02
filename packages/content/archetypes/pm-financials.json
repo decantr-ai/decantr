@@ -1,0 +1,126 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "pm-financials",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Property Management Financials",
+  "description": "Property management financial analytics including P&L overview, rent roll, expense tracking, and payment history for real estate portfolios.",
+  "tags": [
+    "property-management",
+    "financials",
+    "analytics",
+    "real-estate",
+    "rent-roll"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "property financials",
+        "rent roll",
+        "property expense tracking",
+        "property p&l"
+      ],
+      "secondary": [
+        "property cash flow",
+        "rental income",
+        "noi tracking"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "core"
+  },
+  "pages": [
+    {
+      "id": "overview",
+      "patterns": [
+        {
+          "pattern": "pnl-dashboard",
+          "preset": "standard",
+          "as": "pnl"
+        }
+      ],
+      "default_layout": [
+        "pnl-dashboard"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "rent-roll",
+      "patterns": [
+        {
+          "pattern": "rent-roll",
+          "preset": "standard",
+          "as": "rent-roll"
+        }
+      ],
+      "default_layout": [
+        "rent-roll"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "expenses",
+      "patterns": [
+        {
+          "pattern": "expense-tracker",
+          "preset": "list",
+          "as": "expenses"
+        }
+      ],
+      "default_layout": [
+        "expenses"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "payments",
+      "patterns": [
+        {
+          "pattern": "payment-history",
+          "preset": "portfolio",
+          "as": "payments"
+        }
+      ],
+      "default_layout": [
+        "payments"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "overview": "P&L dashboard with revenue and expense summary cards at top, income vs expense bar chart, and NOI trend line chart. Date range selector in the header for period filtering.",
+    "rent-roll": "Full rent roll table with columns for unit, tenant name, monthly rent, payment status, last payment date, and balance. Summary row at the bottom with totals.",
+    "expenses": "Expense list view with filter bar for category and date range. Table rows showing expense date, category badge, vendor, property, amount, and receipt attachment indicator.",
+    "payments": "Payment history table showing date, tenant, property, amount, method badge, and status. Filterable by property and date range. Summary cards at top showing collected vs outstanding totals."
+  },
+  "features": [
+    "analytics",
+    "export",
+    "charts",
+    "date-range"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation for financial management"
+  },
+  "dependencies": {
+    "patterns": {
+      "pnl-dashboard": "^1.0.0",
+      "rent-roll": "^1.0.0",
+      "expense-tracker": "^1.0.0",
+      "payment-history": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "estate"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "session-rooms",
+  "role": "auxiliary",
+  "version": "2.1.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Session Rooms",
+  "description": "Live producer rooms for co-production with shared transport, voice presence, cue markers, take queue, room chat, and synchronized session state.",
+  "visual_brief": "Live studio room surface, not a generic meeting UI or sparse room-card grid. The room should foreground synchronized session state: shared transport, current cue, take queue, room latency, voice activity, participant roles, and the track being edited. Room browser cards need explicit BPM/key/latency chips with real gaps or separators; never concatenate metadata like BPM, key, and milliseconds. Desktop should show room previews plus a monitor sidecar, and room detail should be a live-room console with stage, take queue, shared transport, chat notes, and voice sync. Participant visuals are compact and utility-driven. Chat is present but subordinate to the shared session.",
+  "responsive": {
+    "mobile": "Stage first, then horizontal participant strip. Chat, cue markers, and take queue are tabs. Shared transport remains reachable.",
+    "tablet": "Stage and shared transport stay primary; participant and chat rails may stack.",
+    "desktop": "Stage, participant presence, shared transport, cue queue, room monitor, and chat preview can be visible without feeling like a video-call clone."
+  },
+  "accessibility": {
+    "landmarks": ["main", "complementary"],
+    "keyboard": ["Space toggles shared playback", "V mutes voice", "C focuses chat", "Q adds a cue marker"],
+    "notes": "Announce active speaker, room latency changes, and new cue markers."
+  },
+  "tags": ["live-sessions", "voice", "rooms", "music", "co-production", "collaboration"],
+  "classification": {
+    "triggers": {
+      "primary": ["session rooms", "live rooms", "co-producing", "live collab", "studio room"],
+      "secondary": ["voice chat", "video session", "jam rooms", "shared transport"],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "directives": [
+    "Live rooms should feel like synchronized co-production, not generic video conferencing.",
+    "Shared transport, latency, cue markers, and take queue must be visible.",
+    "Room metadata must use separated chips or aligned columns so BPM, key, and latency never visually run together."
+  ],
+  "pages": [
+    {
+      "id": "rooms",
+      "patterns": [
+        { "pattern": "live-room-stage", "preset": "compact", "as": "room-preview" },
+        { "pattern": "card-grid", "preset": "content", "as": "rooms" },
+        { "pattern": "activity-feed", "preset": "compact", "as": "feed" }
+      ],
+      "default_layout": ["live-room-stage", "card-grid", "activity-feed"],
+      "directives": [
+        "Desktop room browser should combine live room cards with a monitor sidecar for latency, armed takes, next cue, and master-bus status.",
+        "Every room card should show host, status, participants, BPM, key, and latency with explicit spacing."
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "room-detail",
+      "patterns": [
+        { "pattern": "live-room-stage", "preset": "room", "as": "stage" },
+        { "pattern": "daw-transport-bar", "preset": "studio", "as": "shared-transport" },
+        { "pattern": "chat-thread", "preset": "standard", "as": "chat" }
+      ],
+      "default_layout": [
+        "live-room-stage",
+        "daw-transport-bar",
+        "chat-thread"
+      ],
+      "directives": [
+        "The stage should prioritize shared session state, participants, cue markers, and take queue; chat is secondary.",
+        "Desktop room detail should feel like a live-room console, not a tall empty hero panel."
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "rooms": "Browse active and scheduled production rooms. Each room preview shows host, participants, separated BPM/key/latency chips, shared track, status, and join action. Desktop includes a monitor sidecar plus lower cue traffic, patchbay health, and operator roster panels so the page feels like a studio control surface rather than a short card gallery.",
+    "room-detail": "Active live room stage. Shared transport and session state anchor the room, participant tiles show voice/edit status, cue markers and take queue guide recording, and chat supports coordination without overpowering the music workflow. Desktop should show stage, transport, take queue, notes, and voice sync in one composed console."
+  },
+  "features": ["live-sessions", "voice-chat", "shared-transport", "take-queue", "cue-markers"],
+  "shells": {
+    "sidebar-main": "Left navigation sidebar with primary content column"
+  },
+  "dependencies": {
+    "patterns": {
+      "live-room-stage": "^1.1.0",
+      "card-grid": "^1.0.0",
+      "activity-feed": "^1.0.0",
+      "daw-transport-bar": "^1.0.0",
+      "chat-thread": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": ["studio-dark", "carbon-neon"],
+    "modes": ["dark"]
+  }
+}

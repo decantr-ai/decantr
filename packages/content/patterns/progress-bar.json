@@ -1,0 +1,124 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "progress-bar",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Progress Bar",
+  "description": "ASCII progress indicators with bar, spinner, and dot animations for terminal-style feedback.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {
+      "terminal": "^1.0.0"
+    },
+    "requires_core": {
+      "components": [],
+      "charts": []
+    }
+  },
+  "components": ["Text", "Container"],
+  "default_preset": "bar",
+  "presets": {
+    "bar": {
+      "description": "ASCII bar progress [████░░░░░░] 42%",
+      "components": [],
+      "layout": {
+        "layout": "flex",
+        "atoms": "_flex _aic _gap2 _mono _fggreen",
+        "slots": {
+          "label": "Progress label",
+          "bar": "ASCII progress visualization",
+          "percentage": "Numeric percentage"
+        }
+      }
+    },
+    "spinner": {
+      "description": "Animated braille spinner ⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏",
+      "components": [],
+      "layout": {
+        "layout": "flex",
+        "atoms": "_flex _aic _gap2 _mono _fggreen",
+        "slots": {
+          "spinner": "Animated spinner character",
+          "label": "Status text"
+        }
+      }
+    },
+    "dots": {
+      "description": "Animated trailing dots progression indicator for indeterminate loading status feedback",
+      "components": [],
+      "layout": {
+        "layout": "flex",
+        "atoms": "_flex _aic _mono _fggreen",
+        "slots": {
+          "label": "Status text",
+          "dots": "Animated dots"
+        }
+      }
+    },
+    "blocks": {
+      "description": "Block character progression ▏▎▍▌▋▊▉█",
+      "components": [],
+      "layout": {
+        "layout": "flex",
+        "atoms": "_flex _aic _gap2 _mono _fggreen",
+        "slots": {
+          "label": "Progress label",
+          "bar": "Block character visualization"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "flex",
+    "atoms": "_flex _aic _gap2 _mono _fggreen",
+    "slots": {
+      "label": "Progress label",
+      "bar": "Progress visualization",
+      "percentage": "Numeric value"
+    }
+  },
+  "features": [
+    "indeterminate-mode",
+    "success-error-states",
+    "stacked-progress",
+    "rate-display",
+    "eta-calculation"
+  ],
+  "character_sets": {
+    "bar": {
+      "filled": "█",
+      "empty": "░",
+      "partial": "▓",
+      "bracket_left": "[",
+      "bracket_right": "]"
+    },
+    "spinner": [
+      "⠋",
+      "⠙",
+      "⠹",
+      "⠸",
+      "⠼",
+      "⠴",
+      "⠦",
+      "⠧",
+      "⠇",
+      "⠏"
+    ],
+    "blocks": [
+      "▏",
+      "▎",
+      "▍",
+      "▌",
+      "▋",
+      "▊",
+      "▉",
+      "█"
+    ]
+  },
+  "visual_brief": "Terminal-style progress indicators rendered in monospace type. The bar preset shows a label, a horizontal bar made of block characters (filled blocks for progress, empty/light blocks for remaining), and a percentage value. The spinner preset shows a cycling ASCII spinner character (|, /, -, \\) with a label. The dots preset shows animated trailing dots (...) with a label. The blocks preset uses Unicode block elements for a higher-resolution bar with eighth-block gradations at the fill edge. All variants use green or primary color on a dark/terminal background.",
+  "responsive": {
+    "mobile": "Bar width scales to container. Label may truncate. Percentage stays visible.",
+    "tablet": "Standard bar width. Full label visible.",
+    "desktop": "Full-width bar with generous spacing. All text and labels comfortably visible."
+  }
+}

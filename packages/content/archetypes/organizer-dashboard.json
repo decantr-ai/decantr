@@ -1,0 +1,146 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "organizer-dashboard",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Organizer Dashboard",
+  "description": "Event organizer management hub with event editing, attendee management, revenue analytics, and performance dashboards.",
+  "tags": [
+    "events",
+    "organizer",
+    "dashboard",
+    "analytics",
+    "management"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "organizer dashboard",
+        "event management",
+        "event admin",
+        "organizer portal"
+      ],
+      "secondary": [
+        "attendee list",
+        "event analytics",
+        "ticket revenue",
+        "event editor"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "org-overview",
+      "patterns": [
+        {
+          "pattern": "kpi-grid",
+          "preset": "dashboard",
+          "as": "metrics"
+        },
+        {
+          "pattern": "data-table",
+          "preset": "compact",
+          "as": "upcoming-events"
+        }
+      ],
+      "default_layout": [
+        "metrics",
+        "upcoming-events"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "org-event-edit",
+      "patterns": [
+        {
+          "pattern": "form-sections",
+          "preset": "standard",
+          "as": "event-form"
+        }
+      ],
+      "default_layout": [
+        "event-form"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "org-attendees",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "attendee-table"
+        }
+      ],
+      "default_layout": [
+        "attendee-table"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "org-analytics",
+      "patterns": [
+        {
+          "pattern": "chart-grid",
+          "preset": "standard",
+          "as": "charts"
+        },
+        {
+          "pattern": "kpi-grid",
+          "preset": "compact",
+          "as": "summary-kpis"
+        },
+        {
+          "pattern": "earnings-dashboard",
+          "preset": "summary",
+          "as": "earnings"
+        }
+      ],
+      "default_layout": [
+        "summary-kpis",
+        "charts",
+        "earnings"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "org-overview": "Organizer home dashboard with a KPI grid showing total tickets sold, revenue, upcoming events count, and average attendance rate. Below, a compact data table lists upcoming events with date, venue, ticket status, and quick-action links to edit or view attendees.",
+    "org-event-edit": "Multi-section event editor form. Sections include event basics (title, description, category, tags), date and time with timezone, venue and location with map picker, ticket tier configuration, cover image and media uploads, and publish settings. Save draft and publish buttons anchor at the bottom.",
+    "org-attendees": "Full data table of event attendees with columns for name, email, ticket tier, purchase date, check-in status, and payment amount. Bulk actions support export to CSV and batch email. Search and filter controls narrow by tier or check-in status.",
+    "org-analytics": "Revenue analytics dashboard with compact KPI cards for gross revenue, net revenue, refund rate, and tickets sold. A chart grid shows ticket sales over time, revenue by tier, and attendance trends. An earnings dashboard summary shows payout history and pending balance."
+  },
+  "features": [
+    "event-management",
+    "attendees",
+    "analytics",
+    "revenue"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "kpi-grid": "^1.0.0",
+      "data-table": "^1.0.0",
+      "form-sections": "^1.0.0",
+      "chart-grid": "^1.0.0",
+      "earnings-dashboard": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  }
+}

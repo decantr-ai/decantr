@@ -1,0 +1,45 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "recipefork-presentation-display",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipefork Presentation Display",
+  "description": "Recipe detail presentation block for Recipefork showing numbered plating steps, optional step imagery, and whether the plating guide was AI-generated or author-guided.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Card",
+        "Badge",
+        "Label",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Card",
+    "Badge",
+    "Label",
+    "icon"
+  ],
+  "default_preset": "numbered-steps",
+  "presets": {
+    "numbered-steps": {
+      "description": "Presentation card inserted after recipe instructions, with clear numbering, optional imagery, and an AI/manual provenance badge.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap5",
+        "slots": {
+          "presentation-header": "Section title and AI/manual badge",
+          "presentation-step": "Single plating step row with numbered marker and optional image"
+        }
+      }
+    }
+  },
+  "visual_brief": "This should feel like a refined serving guide rather than another cooking block. It belongs after the cooking instructions and before the story, acting as the bridge between technique and presentation.",
+  "composition": {
+    "RecipeforkPresentationDisplay": "Card(recipefork-presentation-display) > [PresentationHeader + PresentationStep*]"
+  }
+}

@@ -1,0 +1,137 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "reward-tier-selector",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Reward Tier Selector",
+  "description": "Campaign reward picker for founder packs, preorder bundles, beta access tiers, and collector editions rendered as physical cartridges or boxed launch packs rather than generic pricing cards.",
+  "category": "campaign",
+  "tags": [
+    "campaign",
+    "rewards",
+    "pricing",
+    "pledge",
+    "preorder",
+    "conversion"
+  ],
+  "components": [
+    "Button",
+    "Badge",
+    "RadioGroup",
+    "Progress",
+    "icon"
+  ],
+  "contained": false,
+  "default_preset": "cartridge-row",
+  "presets": {
+    "cartridge-row": {
+      "description": "Horizontal reward cartridges with price, contents, inventory meter, delivery window, and select action.",
+      "components": [
+        "Button",
+        "Badge",
+        "RadioGroup",
+        "Progress",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap5 _wfull _maxw[76rem] _mx[auto]",
+        "slots": {
+          "tier-cartridge": "Repeating reward object shaped like a product cartridge or boxed set, not a generic card.",
+          "tier-title": "Founder Pack, Early Access, Collector Kit, Studio Bundle, or similar.",
+          "price": "Large price or pledge amount with billing/preorder note.",
+          "contents": "Short inventory list of included items or access rights.",
+          "availability": "Limited quantity, sold out, shipping window, or beta wave state.",
+          "select-action": "Choose reward, reserve, or join waitlist button."
+        }
+      }
+    },
+    "comparison-console": {
+      "description": "Wide comparison console with tiers as columns, feature rows as manual-style line items, and a sticky action row.",
+      "components": [
+        "Button",
+        "Badge",
+        "RadioGroup",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap4 _wfull _maxw[78rem] _mx[auto]",
+        "slots": {
+          "tier-header-row": "Tier names, prices, and featured labels.",
+          "feature-row": "Manual-like included feature row with icon/check state.",
+          "action-row": "Sticky or repeated select actions."
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gap5 _wfull _maxw[76rem] _mx[auto]",
+    "slots": {
+      "tier-cartridge": "Repeating boxed reward tier",
+      "tier-title": "Reward name",
+      "price": "Pledge amount or access price",
+      "contents": "Included benefits and product contents",
+      "availability": "Inventory, delivery, or access state",
+      "select-action": "Choose reward action"
+    }
+  },
+  "visual_brief": "A reward section that looks like choosing product cartridges or boxed founder kits. Each tier should have a strong silhouette, hard borders, a top notch or label strip, visible price, inventory/status strip, and delivery timing. Avoid soft SaaS pricing cards, pill badges, three-column gray boxes, and generic feature checklists. The selected tier should feel mechanically active, like it snapped into a console slot or got pressed down into the deck.",
+  "responsive": {
+    "mobile": "Use a vertical selector with one tier per full-width cartridge. Keep price and select action visible without horizontal scrolling.",
+    "tablet": "Two-column grid of tier cartridges.",
+    "desktop": "Three to four tiers in a row or a wide comparison console. Featured tier can be slightly taller but must not become a nested card."
+  },
+  "layout_hints": {
+    "tier_language": "Use campaign words: reward, founder pack, beta key, collector kit, early-bird, preorder bundle.",
+    "availability": "Show scarcity honestly with inventory or delivery labels, not vague urgency.",
+    "selection_state": "Selected tier should use border/fill/press state, not only color."
+  },
+  "motion": {
+    "micro": {
+      "select": "cartridge shifts down 3px and shows active border over 120ms",
+      "inventory": "meter fills once when tier enters viewport"
+    },
+    "transitions": {
+      "tier-stagger": "Tiers snap in from left to right with short stagger."
+    }
+  },
+  "interactions": [
+    "click-select",
+    "keyboard-navigation",
+    "animate-on-mount"
+  ],
+  "composition": {
+    "RewardTierSelector": "Section > [Header + TierCartridge[] + FinePrint]",
+    "TierCartridge": "SelectablePanel > [TierLabel + Price + Contents + Availability + SelectAction]",
+    "Availability": "InventoryMeter? + DeliveryWindow + StatusBadge"
+  },
+  "accessibility": {
+    "role": "radiogroup",
+    "aria-label": "Choose a reward tier",
+    "keyboard": [
+      "Arrow keys move between reward tiers.",
+      "Enter or Space selects the focused tier.",
+      "Tab moves into the selected tier action."
+    ],
+    "announcements": [
+      "Selected {tier} reward.",
+      "{remaining} spots remaining for {tier}."
+    ],
+    "focus_management": "Selected and focused states must be visually distinct for keyboard users."
+  },
+  "io": {
+    "consumes": [
+      "reward-tiers",
+      "inventory-state"
+    ],
+    "produces": [
+      "selected-reward-tier"
+    ],
+    "actions": [
+      "tier-select",
+      "pledge-start"
+    ]
+  }
+}

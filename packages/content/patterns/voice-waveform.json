@@ -1,0 +1,120 @@
+{
+  "id": "voice-waveform",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Voice Waveform",
+  "description": "Live audio visualization showing speech amplitude as an animated waveform — supports bar, sine wave, circular, and minimal display modes for real-time voice feedback.",
+  "category": "voice",
+  "tags": [
+    "2027",
+    "frontier",
+    "voice",
+    "audio",
+    "waveform",
+    "visualization",
+    "real-time",
+    "animation"
+  ],
+  "components": [
+    "WaveformCanvas",
+    "AmplitudeBar",
+    "FrequencyDisplay",
+    "VoiceIndicator",
+    "MuteToggle"
+  ],
+  "default_preset": "bar",
+  "presets": {
+    "bar": {
+      "description": "Vertical bars (32 bars, width 3px, gap 2px) that oscillate with speech amplitude — center bars taller for mid-range voice frequencies, edges shorter",
+      "layout": {
+        "layout": "flex",
+        "atoms": "_flex _items-center _justify-center _gap-0.5 _h-12 _overflow-hidden"
+      }
+    },
+    "wave": {
+      "description": "Smooth sine wave rendered via SVG path that undulates with speech cadence — amplitude controls wave height, frequency controls wave density",
+      "layout": {
+        "layout": "flex",
+        "atoms": "_flex _items-center _justify-center _h-12 _overflow-hidden"
+      }
+    },
+    "circular": {
+      "description": "Waveform wrapped around a 128px diameter circle with amplitude extending radially outward — creates a pulsing orb effect during active speech",
+      "layout": {
+        "layout": "flex",
+        "atoms": "_flex _items-center _justify-center _w-32 _h-32"
+      }
+    },
+    "minimal": {
+      "description": "Single horizontal line that thickens and thins with volume — extremely compact, suitable for inline placement next to speaker names or mic icons",
+      "layout": {
+        "layout": "flex",
+        "atoms": "_flex _items-center _h-4 _w-16"
+      }
+    }
+  },
+  "visual_brief": "A horizontal strip showing real-time audio amplitude. In bar mode: 32 vertical bars, each 3px wide with 2px gap, aligned at their vertical center. Heights map to frequency bands — the center 10–12 bars are taller (representing mid-range voice frequencies at 300–3000 Hz), while edge bars are shorter (low and high frequency). During active speech, bars animate at 60fps with heights oscillating between 4px (quiet) and 100% container height (loud). Active bars use the accent color with a subtle glow (box-shadow: 0 0 6px var(--d-accent)). During silence, bars collapse to 2–4px heights in a muted/neutral color at 20% opacity, barely visible. The wave preset renders a single SVG path element using a cubic bezier approximation of a sine wave. The path's vertical displacement corresponds to amplitude (±24px from center at max volume), and the wave's horizontal frequency increases slightly with louder speech. Stroke width is 2px, accent color, with a subtle drop-shadow. The circular preset draws 64 radial lines emanating from a center point, each line's length proportional to its frequency band's amplitude. Lines extend outward from a 64px radius circle. Active speech creates a dynamic starburst/sea-urchin effect. A faint circle outline (1px, muted) marks the base radius. The minimal preset is a single horizontal line (2px default stroke) that smoothly animates stroke-width between 1px (silence) and 6px (loud speech), using accent color when active and muted color when silent.",
+  "layout_hints": {
+    "container": "inline or block",
+    "note": "The waveform should be placed near voice/audio controls. It works well inside a toolbar, header bar, or alongside a speaker avatar. For the circular preset, ensure the parent container allows the 128px square footprint.",
+    "data_binding": "Bind to a Web Audio API AnalyserNode. The component expects a Float32Array of frequency data (32 or 64 bins depending on preset) updated at 60fps via requestAnimationFrame.",
+    "color_states": "Active speech: var(--d-accent). Silence: var(--d-muted) at 20% opacity. Muted: var(--d-muted) at 10% opacity with a strikethrough icon overlay."
+  },
+  "default_layout": {
+    "layout": "flex",
+    "atoms": "_flex _items-center _justify-center _gap-0.5 _h-12 _overflow-hidden _rounded-md",
+    "slots": {
+      "waveform-canvas": "The primary SVG or Canvas element that renders the waveform visualization. In bar mode, this is a flex container holding 32 AmplitudeBar elements centered vertically. Each bar is a rounded rectangle (border-radius: 1.5px) with its height driven by the corresponding frequency bin value. The canvas handles the animation loop — on each frame, it reads frequency data from the audio analyser and updates bar heights with a slight easing (lerp factor 0.3) to smooth out jitter. Background is transparent. The canvas must be GPU-accelerated (will-change: transform) to maintain 60fps.",
+      "amplitude-bar": "Repeating slot — one per frequency bin (32 in bar preset, 64 in circular). Each bar is a thin vertical rectangle, width 3px, with dynamic height. Bars use CSS custom properties (--bar-height) updated via JavaScript for animation. Color transitions between muted (silence) and accent (speech) over 150ms. Bars have border-radius: 1.5px for softened edges. In the circular preset, bars become radial lines rotated around the center point at equal angular intervals (360°/64 = 5.625° apart).",
+      "frequency-display": "Optional diagnostic slot showing the dominant frequency in Hz as small monospace text (text-xs, text-muted). Positioned below the waveform canvas. Useful for debugging or advanced UIs. Hidden by default in all presets — toggled via a data attribute.",
+      "voice-indicator": "A small (8px) colored dot positioned to the left of the waveform canvas. Green when speech is detected (VAD active), muted/gray when silent, red when in error state (no microphone access). Includes a subtle pulse animation (scale 1→1.3→1 over 1.5s) when speech is active. Serves as a quick glanceable status indicator independent of the waveform animation.",
+      "mute-toggle": "An icon button (24×24px) positioned to the right of the waveform canvas. Shows a microphone icon when unmuted, a microphone-off icon with a diagonal strikethrough when muted. Clicking toggles the audio input. When muted, the entire waveform dims to 20% opacity and bars freeze at minimum height. The button has hover (background: var(--d-muted)/10%) and focus-visible (outline ring) states."
+    }
+  },
+  "accessibility": {
+    "role": "img",
+    "aria-label": "Voice waveform visualization",
+    "announcements": [
+      "Microphone {muted|unmuted}",
+      "Speech detected",
+      "Speech ended — silence",
+      "Audio input error: {reason}"
+    ],
+    "keyboard": [
+      "M: toggle mute",
+      "Space: toggle mute (when mute button focused)",
+      "Escape: stop audio capture"
+    ]
+  },
+  "responsive": {
+    "mobile": "Bar count reduces from 32 to 16 for performance. Circular preset scales down to 96px diameter. Minimal preset remains unchanged. MuteToggle increases to 44×44px for touch targets.",
+    "tablet": "Full bar count maintained. Circular preset at full 128px. Touch-friendly mute toggle at 36×36px."
+  },
+  "motion": {
+    "micro": {
+      "bar-oscillation": "height transition per frame, lerp factor 0.3, GPU-accelerated via transform: scaleY()",
+      "mute-toggle-hover": "background-color 150ms ease-out"
+    },
+    "transitions": {
+      "mute-state": "opacity 0.2→1 or 1→0.2 over 200ms ease-in-out for entire waveform",
+      "preset-switch": "crossfade 300ms — old preset fades out, new preset fades in"
+    },
+    "ambient": {
+      "voice-indicator-pulse": "scale(1) → scale(1.3) → scale(1) 1.5s ease-in-out infinite when speech active",
+      "silence-idle": "bars drift to random 2–4px heights with slow (2s) easing to avoid perfectly static appearance"
+    }
+  },
+  "interactions": [
+    "animate-on-mount",
+    "inline-edit",
+    "keyboard-navigation"
+  ],
+  "composition": {
+    "VoiceWaveform": "Section(d-section, inline-flex, items-center, gap-2) > [VoiceIndicator + WaveformCanvas(svg|canvas, animated) + MuteToggle?]",
+    "WaveformCanvas": "SVG(viewBox, preserveAspectRatio) > AmplitudeBar*(rect|line, animated-height) + FrequencyDisplay?",
+    "AmplitudeBar": "Rect(width: 3px, rx: 1.5, dynamic-height, fill: accent|muted)",
+    "VoiceIndicator": "Dot(8px, border-radius-full, bg: status-color, pulse-animation)",
+    "MuteToggle": "Button(d-interactive, icon-only, 24px) > MicIcon|MicOffIcon"
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "storefront-browse",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Storefront Browse",
+  "description": "Product browsing experience with search, filtering, product detail pages, and shopping cart. Core storefront interface for e-commerce applications.",
+  "tags": ["ecommerce", "storefront", "browse", "products", "cart", "shopping", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["storefront", "product browse", "shop", "product catalog", "shopping"],
+      "secondary": ["product detail", "cart", "product search", "product grid", "add to cart"],
+      "negative": ["admin", "checkout", "order history", "fulfillment"]
+    },
+    "implies": ["search", "filtering"],
+    "weight": 1,
+    "tier": "core"
+  },
+  "pages": [
+    {
+      "id": "browse",
+      "patterns": [
+        {
+          "pattern": "search-filter-bar",
+          "preset": "standard",
+          "as": "product-filters"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "product",
+          "as": "product-grid"
+        }
+      ],
+      "default_layout": ["product-filters", "product-grid"],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "product-detail",
+      "patterns": [
+        {
+          "pattern": "detail-header",
+          "preset": "standard",
+          "as": "product-hero"
+        },
+        {
+          "pattern": "comparison-table",
+          "preset": "highlight",
+          "as": "product-specs"
+        }
+      ],
+      "default_layout": ["product-hero", "product-specs"],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "cart",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "cart-items"
+        },
+        {
+          "pattern": "pricing",
+          "preset": "standard",
+          "as": "order-summary"
+        }
+      ],
+      "default_layout": ["cart-items", "order-summary"],
+      "shell": "top-nav-main"
+    }
+  ],
+  "page_briefs": {
+    "browse": "Search and filter bar at top with category chips, price range slider, sort dropdown, and text search. Below, a responsive product card grid with product image (hover zoom), name, price, rating stars, and quick-add button on each card. Pagination or infinite scroll at bottom.",
+    "product-detail": "Large product image gallery with thumbnail strip on the left. Right side has product name, price, description, variant selectors (size, color), quantity stepper, and prominent Add to Cart button. Below, a comparison table highlighting key specs against similar products.",
+    "cart": "Data table showing cart items with product thumbnail, name, variant info, quantity stepper, line total, and remove button per row. Below, an order summary card with subtotal, estimated shipping, tax, and total with a prominent Checkout button."
+  },
+  "features": ["search", "filtering", "cart", "wishlist", "product-comparison"],
+  "shells": {
+    "top-nav-main": "Top navigation bar with logo, search, cart icon with badge, and account menu"
+  },
+  "suggested_theme": {
+    "ids": ["auradecantism", "clean"],
+    "modes": ["light", "auto"]
+  },
+  "dependencies": {
+    "patterns": {
+      "search-filter-bar": ">=1.0.0",
+      "card-grid": ">=1.0.0",
+      "detail-header": ">=1.0.0",
+      "comparison-table": ">=1.0.0",
+      "data-table": ">=1.0.0",
+      "pricing": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

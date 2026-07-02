@@ -1,0 +1,136 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "notification-center",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Notification Center",
+  "description": "Bell menu dropdown with notification list, category filtering, mark-all-read, and a preferences link for managing notification delivery.",
+  "category": "system",
+  "tags": [
+    "2026",
+    "notifications",
+    "bell",
+    "alerts",
+    "system",
+    "popover",
+    "toast",
+    "inbox"
+  ],
+  "components": [
+    "BellButton",
+    "NotificationList",
+    "NotificationItem",
+    "CategoryTabs",
+    "EmptyState",
+    "PreferencesLink",
+    "UnreadBadge"
+  ],
+  "default_preset": "dropdown",
+  "presets": {
+    "dropdown": {
+      "description": "Popover dropdown anchored to the bell icon — a 380px-wide floating panel with category tabs, notification list, and quick actions for desktop navigation bars",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _w-380 _max-h-480 _bg-surface _rounded-xl _shadow-xl _border _overflow-hidden"
+      }
+    },
+    "page": {
+      "description": "Full-page notification center with sidebar category navigation and expanded notification cards — for dedicated notification management screens",
+      "layout": {
+        "layout": "split",
+        "atoms": "_flex _row _h-full _bg-surface _gap-6 _p-6"
+      }
+    },
+    "toast-stack": {
+      "description": "Corner-anchored toast notification stack — ephemeral notifications that auto-dismiss, stacking vertically in the bottom-right or top-right corner of the viewport",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_fixed _bottom-4 _right-4 _flex _col-reverse _gap-2 _z-50 _w-380 _pointer-events-none"
+      }
+    }
+  },
+  "visual_brief": "The BellButton is a 40px icon button with a bell outline icon (20px). When unread notifications exist, a small filled circle badge (18px diameter) sits at the top-right corner of the bell, overlapping by 4px. The badge has a solid accent color background (var(--d-accent)) with white bold text (text-xs, font-bold) showing the unread count — numbers up to 99 display literally, above that shows '99+'. The badge has a subtle 2px white border (matching the background behind the bell) creating a cut-out effect. When clicked, the dropdown popover appears anchored below the bell with a small upward-pointing caret/triangle (8px) aligned to the bell icon. The popover is 380px wide with max-height 480px, background var(--d-bg-surface), border-radius 12px, a prominent shadow (0 8px 32px rgba(0,0,0,0.16), 0 2px 8px rgba(0,0,0,0.08)), and a 1px border (var(--d-border-subtle)). The popover header has 'Notifications' title (text-base font-semibold) on the left and a 'Mark all read' text button (text-xs, text-accent, hover: underline) on the right, with 16px horizontal padding and 12px vertical padding. Below the header, CategoryTabs render as a horizontal tab bar: four tabs (All, Mentions, Updates, System) in text-sm, evenly spaced. The active tab has accent-colored text with a 2px bottom border in accent color. Inactive tabs are text-muted with hover: text-foreground. Below the tabs, the NotificationList scrolls vertically. Each NotificationItem is a horizontal row (padding: 12px 16px) with: a left-edge unread indicator (a 6px filled accent-colored circle, vertically centered, visible only for unread items — read items have no dot, creating a clear visual distinction), a source icon (24px, inside a 32px circle with muted background, representing the notification type: chat bubble for mentions, arrow-up for updates, gear for system, bell for general), a content column (flex: 1, margin-left 12px) with the notification title (text-sm font-medium, single line, truncated) and description (text-xs text-muted, max 2 lines with line-clamp-2), a right column with the relative timestamp (text-xs text-muted, e.g., '2m ago', '1h', 'Yesterday'), and on hover a dismiss X button (16px, text-muted, opacity 0→1 on row hover) that appears at the top-right of the right column. Unread items have a very subtle background tint (var(--d-accent) at 3% opacity). Clicking an item marks it as read (dot disappears with a fade) and navigates to the relevant content. The EmptyState shows when no notifications exist in the current category: a centered column with a large check-circle icon (48px, text-muted) and 'All caught up' heading (text-sm font-medium text-muted), with optional 'No new notifications' subtext (text-xs text-muted). At the bottom of the popover, a thin border-top separator and a full-width link row 'Notification preferences' (text-xs text-muted, centered, padding 10px, hover: text-foreground) leads to the settings page. In the toast-stack preset, each toast is a 380px-wide card (d-surface, border-radius 10px, shadow-lg, border) that slides in from the right, shows for 5 seconds, then slides out. Toasts stack vertically with the newest at the bottom. Each toast has: a left color strip (4px, accent for info, green for success, red for error, amber for warning), the source icon (20px), title (text-sm font-medium), message (text-xs text-muted, 1 line), timestamp, and a close X button.",
+  "layout_hints": {
+    "container": "popover-anchored",
+    "note": "The dropdown preset renders as a popover floating below the bell button, not as a page-level element. Use position: absolute or a portal to ensure correct z-index and positioning. The popover must dismiss on outside click or Escape.",
+    "bell_badge": "The unread count badge is CRITICAL for user attention. It must be clearly visible: filled accent background, white text, slight overlap on the bell icon. Use a 2px border matching the page background to create the 'cut-out' effect. Badge should animate with a subtle scale bounce when the count changes.",
+    "unread_dot": "The 6px unread indicator dot is the primary signal for unread state. It must be consistently positioned (left edge of each item) and use the accent color. When an item is marked as read, the dot should fade out (200ms) rather than disappear instantly.",
+    "notification_density": "Items should be compact but scannable. 12px vertical padding per item. The two-line description with line-clamp-2 prevents overly long notifications from dominating the list. Timestamps should use relative format ('2m', '1h', 'Yesterday') not absolute dates."
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_relative",
+    "slots": {
+      "bell-button": "A 40px square icon button positioned in the app's navigation header. Renders a bell outline icon (20px). Hover state: background tint (var(--d-bg-muted)). Active/open state: background tint persists to indicate the dropdown is open. The UnreadBadge is positioned absolutely at top: -4px, right: -4px — an 18px diameter circle (min-width 18px for wider numbers) with background var(--d-accent), color white, text-xs font-bold, centered text, border: 2px solid var(--d-bg-surface) for the cut-out effect. Badge is hidden (display: none or scale-to-zero) when count is 0. When the count increases, the badge does a scale bounce animation (0→1.2→1.0, 300ms spring). When the count reaches 0, it shrinks away (1.0→0, 200ms ease-in).",
+      "notification-dropdown": "A 380px-wide floating popover panel anchored below the bell button. Background: var(--d-bg-surface). Border: 1px solid var(--d-border-subtle). Border-radius: 12px. Box-shadow: 0 8px 32px rgba(0,0,0,0.16), 0 2px 8px rgba(0,0,0,0.08). Max-height: 480px with internal scrolling on the notification list. A small upward-pointing caret (8px CSS triangle using border trick, background matching the popover surface, border-top and border-left matching the popover border) aligns with the bell button above. The popover has three vertical sections: header, tabs+list (scrollable), and footer. It appears with a scale+fade animation from the anchor point and dismisses on outside click, Escape key, or bell re-click.",
+      "dropdown-header": "Top section of the popover. Height 44px, padding 12px 16px, flex row, items center, justify between, border-bottom 1px solid var(--d-border-subtle). Left: 'Notifications' text (text-base font-semibold text-foreground). Right: 'Mark all read' button (text-xs text-accent font-medium, cursor pointer, hover: underline, opacity 0.7→1.0 on hover). The mark-all-read button is disabled (opacity 0.4, cursor default) when there are no unread notifications. On click, all unread dots fade out simultaneously with a satisfying 200ms cascade.",
+      "category-tabs": "A horizontal tab bar below the header. Height 36px, padding 0 16px, flex row, gap 0. Four tabs: All, Mentions, Updates, System. Each tab is a text-sm button with padding 8px 12px, flex: 1, text-center. Active tab: text-accent font-medium with a 2px bottom border in var(--d-accent), transitioning via a sliding underline animation (200ms ease-out). Inactive tabs: text-muted, hover: text-foreground. The tab bar has a border-bottom 1px solid var(--d-border-subtle). Tab counts can optionally show as small superscript numbers (text-xs, text-muted) beside each tab label.",
+      "notification-list": "Scrollable container (flex: 1, overflow-y: auto, max-height: ~340px within the popover) containing NotificationItem entries stacked vertically. Has a thin top hairline within each item for visual separation. Scrollbar is styled thin (4px width, rounded, semi-transparent). When scrolled, a subtle top shadow (box-shadow: inset 0 8px 8px -8px rgba(0,0,0,0.05)) indicates more content above.",
+      "notification-item": "Repeating slot — one per notification. A horizontal flex row, padding 12px 16px, gap 12px, items start. Hover: background var(--d-bg-muted). Unread items have background color-mix(in srgb, var(--d-accent) 3%, transparent). Left column: the unread dot (6px filled circle, var(--d-accent), margin-top 6px to align with title text, transition: opacity 200ms for read/unread toggle; invisible but occupying space when read to maintain alignment). Source icon column: a 32px circle with background var(--d-bg-muted), centered 20px icon representing notification type (chat-bubble-left for mentions in blue, arrow-path for updates in green, cog for system in gray, bell for general in accent). Content column (flex: 1, min-width 0 for truncation): title (text-sm font-medium text-foreground, white-space nowrap, overflow hidden, text-ellipsis), description (text-xs text-muted, line-clamp-2, margin-top 2px). Right column (flex-shrink 0, text-right): timestamp (text-xs text-muted, white-space nowrap, e.g., '2m ago', '1h', 'Yesterday'), dismiss X button (16px icon, text-muted, opacity 0, position absolute top-right of item, transition: opacity 150ms, hover: text-foreground; becomes opacity 1 when the parent item is hovered). The entire item is clickable, navigating to the source content.",
+      "empty-state": "Shown when the current category has zero notifications. A centered vertical flex column within the list area: a large check-circle outline icon (48px, text-muted at 50% opacity), 'All caught up' heading (text-sm font-medium text-muted, margin-top 12px), and 'No new notifications' subtext (text-xs text-muted, margin-top 4px). The empty state also shows a subtle illustration or decorative element if the design system supports it. This state should feel celebratory and clean, not broken or empty.",
+      "preferences-footer": "Anchored at the bottom of the popover. A full-width row with border-top 1px solid var(--d-border-subtle), padding 10px 16px, text-center. Contains a 'Notification preferences' link in text-xs text-muted with a small settings/gear icon (12px) to the left. Hover: text-foreground. Clicking navigates to the notification settings page. In page preset, this becomes a sidebar link or prominent section header."
+    }
+  },
+  "accessibility": {
+    "role": "dialog",
+    "aria-label": "Notification center",
+    "announcements": [
+      "Notification center opened, {count} unread notifications",
+      "New notification: {title}",
+      "Notification marked as read",
+      "All notifications marked as read",
+      "Notification dismissed"
+    ],
+    "keyboard": [
+      "Enter/Space on bell: toggle notification dropdown",
+      "Escape: close notification dropdown",
+      "Tab: move between header actions, tabs, and notification items",
+      "Arrow Up/Down: navigate between notification items",
+      "Enter on item: navigate to notification source",
+      "Delete on item: dismiss notification",
+      "Ctrl/Cmd+Shift+N: mark all as read"
+    ]
+  },
+  "responsive": {
+    "mobile": "Dropdown becomes a full-screen slide-up sheet (bottom sheet) with a drag handle at the top. Bell button remains in the navigation bar with the badge. Category tabs become horizontally scrollable. Notification items get larger tap targets (padding 16px). Dismiss X button is always visible (not hover-dependent). Swipe-left on an item reveals dismiss and mute actions. 'Mark all read' is in a top-right action menu. Toast notifications appear at the top of the screen instead of bottom-right, spanning full width with 8px horizontal margin.",
+    "tablet": "Dropdown renders at full 380px width anchored to the bell. Notification items maintain compact sizing. Category tabs show with counts. Toast stack appears in the top-right corner. Page preset uses a two-column layout: categories on the left (200px) and notification list on the right.",
+    "desktop": "Full dropdown experience with hover states, keyboard navigation, and dismiss-on-hover X buttons. Toast stack in bottom-right corner. Page preset shows full three-column layout (categories, list, detail preview). Notifications can be grouped by date (Today, Yesterday, This Week, Older) with sticky date headers."
+  },
+  "motion": {
+    "micro": {
+      "bell-ring": "Bell icon wiggles (rotate -15deg→15deg→-10deg→10deg→0) over 500ms when a new notification arrives, ease-out",
+      "badge-bounce": "Count badge scales 1.0→1.3→1.0 over 300ms spring when count changes",
+      "item-hover": "Background color transition 100ms ease-out",
+      "dismiss-reveal": "X button fades in (opacity 0→1) 150ms ease-out on item hover"
+    },
+    "transitions": {
+      "dropdown-open": "Popover scales from 0.95 to 1.0 + fade in, 200ms ease-out, transform-origin at the bell button anchor point",
+      "dropdown-close": "Popover scales to 0.95 + fade out, 150ms ease-in",
+      "read-dot-fade": "Unread dot fades from opacity 1→0 over 200ms ease-out when marked as read",
+      "mark-all-read": "All unread dots cascade-fade from top to bottom with 30ms stagger between items",
+      "toast-enter": "Toast slides in from right (translateX(100%)→0) + fade, 300ms spring(1, 90, 12)",
+      "toast-exit": "Toast slides out to right (0→translateX(100%)) + fade, 200ms ease-in"
+    },
+    "ambient": {
+      "new-notification-pulse": "Newly arrived notification item background pulses accent-tint once (0%→5%→0% opacity) over 1s ease-out to draw attention",
+      "toast-progress": "Toast auto-dismiss progress: a thin 2px accent bar at the bottom shrinks from 100%→0% width over 5s linear, showing time remaining before auto-dismiss"
+    }
+  },
+  "interactions": [
+    "animate-on-mount",
+    "real-time-updates",
+    "stagger-children",
+    "hover-reveal",
+    "click-select"
+  ],
+  "composition": {
+    "NotificationCenter": "Anchor(d-interactive) > [BellButton + UnreadBadge?] + Dropdown?(d-surface, floating)",
+    "Dropdown": "Popover(d-surface, anchored, shadow-xl) > [Header + CategoryTabs + NotificationList + PreferencesFooter]",
+    "Header": "Bar(flex-row, justify-between) > [Title + MarkAllReadButton]",
+    "CategoryTabs": "Tabs(d-control, flex-row) > Tab[](All|Mentions|Updates|System)",
+    "NotificationList": "List(scrollable, flex-col) > NotificationItem* | EmptyState",
+    "NotificationItem": "Item(d-interactive, flex-row) > [UnreadDot? + SourceIcon + Content(Title + Description) + Timestamp + DismissButton?]",
+    "EmptyState": "State(centered, flex-col) > [CheckCircleIcon + Heading + Subtext]",
+    "ToastStack": "Stack(fixed, corner-anchored, z-top) > Toast*(d-surface, auto-dismiss) > [ColorStrip + Icon + Content + CloseButton]"
+  }
+}

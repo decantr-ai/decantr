@@ -1,0 +1,58 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "recipefork-recipe-metadata-form",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipefork Recipe Metadata Form",
+  "description": "Shared Recipefork authoring scaffold for hero image, title, description, servings, difficulty, timing, tags, and draft-versus-publish controls across Simple Mode and Chef Mode.",
+  "dependencies": {
+    "patterns": {
+      "recipefork-recipe-story-editor": "^1.0.0"
+    },
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Input",
+        "Textarea",
+        "Select",
+        "Badge",
+        "Card",
+        "Label",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Input",
+    "Textarea",
+    "Select",
+    "Badge",
+    "Card",
+    "Label",
+    "icon"
+  ],
+  "default_preset": "authoring",
+  "presets": {
+    "authoring": {
+      "description": "Top section of the create and edit experience with hero upload, recipe title block, core metadata, tags, and draft/publish actions.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "hero-upload": "Large image picker with current preview and replacement affordance",
+          "identity": "Title and description fields",
+          "core-metadata": "Servings, difficulty, prep time, and cook time controls",
+          "tags": "Tag chips and tag input row",
+          "actions": "Save draft, publish, and update buttons"
+        }
+      }
+    }
+  },
+  "visual_brief": "A clean product authoring header built from stacked cards rather than a giant wizard. The hero image sits first, followed by clear metadata rows and compact action controls that make draft-versus-publish state obvious without overpowering the editor.",
+  "composition": {
+    "RecipeMetadataForm": "Stack(recipefork-editor-stack) > [HeroUpload + Identity + CoreMetadata + Tags + Actions]"
+  }
+}

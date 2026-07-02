@@ -1,0 +1,137 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "backer-progress-console",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Backer Progress Console",
+  "description": "Campaign momentum console with funding or waitlist progress, backer count, countdown, inventory state, and next unlock cue.",
+  "category": "campaign",
+  "tags": [
+    "campaign",
+    "progress",
+    "backers",
+    "funding",
+    "waitlist",
+    "conversion"
+  ],
+  "components": [
+    "Progress",
+    "KPI",
+    "Badge",
+    "Countdown",
+    "Button"
+  ],
+  "contained": false,
+  "default_preset": "funding-console",
+  "presets": {
+    "funding-console": {
+      "description": "Wide console for crowdfunding or preorder campaigns with raised amount, goal progress, backer count, and days remaining.",
+      "components": [
+        "Progress",
+        "KPI",
+        "Badge",
+        "Countdown",
+        "Button"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap5 _wfull _maxw[72rem] _mx[auto] _p6",
+        "slots": {
+          "primary-counter": "Raised amount or reservations count in LED treatment.",
+          "goal-progress": "Thick segmented progress track with percentage and target label.",
+          "metric-strip": "Backers, days left, average pledge, or early-bird inventory.",
+          "next-unlock": "Short copy for the next stretch goal or waitlist milestone.",
+          "action": "Inline pledge/reserve button when used outside hero."
+        }
+      }
+    },
+    "waitlist-console": {
+      "description": "Waitlist variant that replaces money raised with signups, referral count, beta slots, and next access wave.",
+      "components": [
+        "Progress",
+        "KPI",
+        "Badge",
+        "Button"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap5 _wfull _maxw[64rem] _mx[auto] _p6",
+        "slots": {
+          "signup-counter": "Total waitlist signups or reserved spots.",
+          "wave-progress": "Progress toward next access wave.",
+          "referral-state": "Current referral multiplier or unlock state.",
+          "access-note": "Next beta wave timing and availability.",
+          "action": "Join or invite action."
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gap5 _wfull _maxw[72rem] _mx[auto] _p6",
+    "slots": {
+      "primary-counter": "LED-style campaign total",
+      "goal-progress": "Segmented progress track with target label",
+      "metric-strip": "Backers, days left, inventory, or referral metrics",
+      "next-unlock": "Next milestone cue",
+      "action": "Optional conversion button"
+    }
+  },
+  "visual_brief": "A single substantial arcade-console module, not a set of separate KPI cards. Use one strong bezel or control-panel surface with counters embedded into it. Counter modules need real breathing room: padded interiors, clear grid gaps, visible inset between the console border and metrics, and no labels or numbers touching the module walls. The progress track should be thick, tactile, segmented, and readable from a distance. The module should communicate momentum first, then urgency, then the next action.",
+  "responsive": {
+    "mobile": "Stack primary counter, progress, metric rows, and action. Do not shrink numbers below comfortable reading size.",
+    "tablet": "Primary counter spans full width, with metrics in a two-by-two grid below.",
+    "desktop": "Counter and progress share the top row; metric strip and next unlock sit below as a dashboard-like control panel. Four-up metric rows require clear gutters and enough vertical height for label, value, and note."
+  },
+  "layout_hints": {
+    "single_console": "Treat the module as one instrument panel rather than individual cards.",
+    "labeling": "Every number needs a visible text label and goal context.",
+    "conversion_role": "The console should increase confidence and urgency before asking for action.",
+    "breathing_room": "Recommended scoreboard spacing: generous outer padding, at least 1rem gaps between metric modules, and metric module padding around 1rem+ on all sides."
+  },
+  "motion": {
+    "micro": {
+      "progress-fill": "segment fill grows left to right over 500ms",
+      "counter-flip": "LED digits count up or flip once when data changes"
+    },
+    "transitions": {
+      "mount": "Console frame appears instantly; counters animate after labels render."
+    }
+  },
+  "interactions": [
+    "animate-on-mount",
+    "real-time-updates",
+    "status-pulse",
+    "click-select"
+  ],
+  "composition": {
+    "BackerProgressConsole": "Console(arcade-bezel) > [PrimaryCounter + GoalProgress + MetricStrip + NextUnlock + Action?]",
+    "MetricStrip": "Grid > CampaignMetric[]",
+    "CampaignMetric": "Label + Value + OptionalDelta"
+  },
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Campaign progress",
+    "keyboard": [
+      "Action button must be reachable after the progress summary.",
+      "Progress should expose aria-valuenow, aria-valuemin, and aria-valuemax when rendered as a progressbar."
+    ],
+    "announcements": [
+      "Campaign progress updated to {percent} percent.",
+      "{days} days remaining."
+    ]
+  },
+  "io": {
+    "consumes": [
+      "campaign-progress",
+      "campaign-metrics"
+    ],
+    "produces": [
+      "urgency-signal"
+    ],
+    "actions": [
+      "pledge-click",
+      "share-click"
+    ]
+  }
+}

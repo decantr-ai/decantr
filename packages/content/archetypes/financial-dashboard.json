@@ -1,0 +1,127 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "financial-dashboard",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Financial Dashboard",
+  "description": "Financially-focused dashboard with portfolio overview, P&L tracking, transaction tables, reporting charts, and account settings.",
+  "tags": [
+    "finance",
+    "dashboard",
+    "banking",
+    "portfolio",
+    "pnl",
+    "transactions",
+    "reports"
+  ],
+  "role": "primary",
+  "classification": {
+    "triggers": {
+      "primary": [
+        "financial-dashboard",
+        "finance",
+        "banking-dashboard",
+        "portfolio-dashboard",
+        "wealth-management"
+      ],
+      "secondary": [
+        "pnl",
+        "profit-loss",
+        "transactions",
+        "lending",
+        "compliance"
+      ],
+      "negative": [
+        "ecommerce",
+        "gaming",
+        "social"
+      ]
+    },
+    "implies": [
+      "analytics",
+      "reporting"
+    ],
+    "weight": 1,
+    "tier": "core"
+  },
+  "pages": [
+    {
+      "id": "overview",
+      "default_layout": [
+        "kpi-grid",
+        "chart-grid",
+        "pnl-dashboard"
+      ],
+      "shell": "sidebar-main",
+      "notes": "Portfolio overview: KPI cards for key financial metrics, chart grid for performance trends, P&L dashboard summary"
+    },
+    {
+      "id": "transactions",
+      "default_layout": [
+        "filter-bar",
+        "data-table"
+      ],
+      "shell": "sidebar-main",
+      "notes": "Transaction ledger: filter bar for date range, account, and type; data table with sortable transaction rows"
+    },
+    {
+      "id": "reports",
+      "default_layout": [
+        "chart-grid",
+        "data-table"
+      ],
+      "shell": "sidebar-main",
+      "notes": "Financial reports: chart grid with income/expense breakdowns, balance sheet charts; data table for detailed report rows"
+    },
+    {
+      "id": "settings",
+      "default_layout": [
+        "account-settings",
+        {
+          "pattern": "form-sections",
+          "preset": "structured",
+          "as": "financial-preferences"
+        }
+      ],
+      "shell": "sidebar-main",
+      "notes": "Account and preferences: account settings with profile and security, form sections for currency, fiscal year, and notification preferences"
+    }
+  ],
+  "page_briefs": {
+    "overview": "KPI cards showing total assets, net worth, monthly cash flow, and portfolio return. Chart grid with portfolio allocation donut, performance line chart over time, and income vs. expense bar chart. P&L dashboard at the bottom with a compact profit/loss summary table and sparklines.",
+    "transactions": "Filter bar with date range picker, account selector, transaction type chips, and amount range. Full-width data table with date, description, category, amount (color-coded green/red), balance, and status columns. Monospace numerals for alignment.",
+    "reports": "Chart grid showing income breakdown by category, expense trends over months, and net worth growth. Data table below with report rows for each period showing revenue, expenses, net income, and margin percentage.",
+    "settings": "Account settings with profile, security, and connected accounts tabs. Structured form sections below for default currency, fiscal year start, number formatting, notification thresholds, and data export preferences."
+  },
+  "features": [
+    "auth",
+    "analytics-state",
+    "data-export",
+    "notifications"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with account switcher and main content area"
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon",
+      "clean"
+    ],
+    "modes": [
+      "dark",
+      "auto"
+    ]
+  },
+  "dependencies": {
+    "patterns": {
+      "kpi-grid": "^1.0.0",
+      "chart-grid": "^1.0.0",
+      "pnl-dashboard": "^1.0.0",
+      "filter-bar": "^1.0.0",
+      "data-table": "^1.0.0",
+      "account-settings": "^1.0.0",
+      "form-sections": "^1.0.0"
+    },
+    "styles": {}
+  }
+}

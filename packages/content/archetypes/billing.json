@@ -1,0 +1,74 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "billing",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Billing",
+  "description": "Billing, payment, and subscription management",
+  "tags": [
+    "billing",
+    "payment",
+    "pricing",
+    "subscription",
+    "invoices"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "billing",
+        "payment",
+        "pricing",
+        "subscription"
+      ],
+      "secondary": [
+        "invoices",
+        "plans",
+        "charges",
+        "stripe"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 0.8,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "billing",
+      "default_layout": [
+        "kpi-grid",
+        "pricing",
+        "payment-history"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "billing": "KPI cards at top showing total spend, current plan, and next payment date. Below, a pricing table with plan columns and feature rows. Order history table at the bottom with date, amount, and status columns."
+  },
+  "features": [
+    "billing"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "kpi-grid": "^1.0.0",
+      "pricing": "^1.0.0",
+      "payment-history": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "auradecantism",
+      "clean"
+    ],
+    "modes": [
+      "dark",
+      "auto"
+    ]
+  }
+}

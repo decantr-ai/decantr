@@ -1,0 +1,53 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "marketing-restaurant",
+  "role": "public",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Restaurant Marketing",
+  "description": "Public-facing marketing landing page for the restaurant operations platform. Hero, features, testimonials, and conversion CTA.",
+  "tags": ["restaurant", "marketing", "landing", "public", "hospitality", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["restaurant marketing", "restaurant landing", "hospitality platform landing"],
+      "secondary": ["pricing", "sign up", "home page"],
+      "negative": ["admin", "dashboard", "kitchen"]
+    },
+    "implies": ["marketing"],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "patterns": [
+        { "pattern": "hero", "preset": "image-overlay", "as": "landing-hero" },
+        { "pattern": "features", "preset": "standard", "as": "platform-features" },
+        { "pattern": "testimonials", "preset": "standard", "as": "social-proof" },
+        { "pattern": "cta-section", "preset": "standard", "as": "signup-cta" }
+      ],
+      "default_layout": ["landing-hero", "platform-features", "social-proof", "signup-cta"],
+      "shell": "top-nav-footer"
+    }
+  ],
+  "page_briefs": {
+    "home": "Image-overlay hero showing a busy restaurant floor at service, with headline, sub-headline, and primary CTA buttons. Features section highlights floor management, KDS, inventory, and loyalty. Testimonials from operators. Final CTA section drives demo requests and free trial signups."
+  },
+  "features": ["marketing"],
+  "shells": {
+    "top-nav-footer": "Top navigation and footer wrapping marketing content"
+  },
+  "suggested_theme": {
+    "ids": ["auradecantism", "clean"],
+    "modes": ["light", "auto"]
+  },
+  "dependencies": {
+    "patterns": {
+      "hero": ">=1.0.0",
+      "features": ">=1.0.0",
+      "testimonials": ">=1.0.0",
+      "cta-section": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

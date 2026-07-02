@@ -1,0 +1,437 @@
+{
+  "$schema": "https://decantr.ai/schemas/theme.v1.json",
+  "id": "studio-dark",
+  "version": "1.0.0",
+  "name": "Studio Dark",
+  "description": "Music production theme with deep purple foundations, cyan waveforms, and magenta highlights. Electric and creative aesthetic for DAW interfaces, mixing consoles, and audio production tools.",
+  "tags": [
+    "dark",
+    "music",
+    "production",
+    "audio",
+    "creative",
+    "electric"
+  ],
+  "personality": "electric + creative + wave-driven + energetic",
+  "seed": {
+    "primary": "#22D3EE",
+    "secondary": "#D946EF",
+    "accent": "#D946EF",
+    "background": "#1E1B4B"
+  },
+  "palette": {
+    "background": {
+      "dark": "#1E1B4B"
+    },
+    "surface": {
+      "dark": "#2A2565"
+    },
+    "surface-raised": {
+      "dark": "#332E80"
+    },
+    "border": {
+      "dark": "#4338CA"
+    },
+    "text": {
+      "dark": "#E0E7FF"
+    },
+    "text-muted": {
+      "dark": "#A5B4FC"
+    },
+    "primary": {
+      "dark": "#22D3EE"
+    },
+    "primary-hover": {
+      "dark": "#06B6D4"
+    },
+    "secondary": {
+      "dark": "#D946EF"
+    },
+    "secondary-hover": {
+      "dark": "#C026D3"
+    },
+    "accent": {
+      "dark": "#D946EF"
+    },
+    "accent-hover": {
+      "dark": "#E879F9"
+    }
+  },
+  "modes": [
+    "dark"
+  ],
+  "shapes": [
+    "rounded",
+    "sharp"
+  ],
+  "cvd_support": [],
+  "tokens": {
+    "base": {
+      "success": "#22D3EE",
+      "danger": "#F43F5E",
+      "warning": "#FBBF24",
+      "info": "#D946EF"
+    },
+    "domain": {
+      "track-playing": "info",
+      "track-recording": "danger",
+      "track-muted": "text-muted",
+      "track-soloed": "warning",
+      "track-armed": "danger",
+      "track-bounced": "success"
+    }
+  },
+  "typography": {
+    "scale": "modular",
+    "heading_weight": 700,
+    "body_weight": 400,
+    "display": "'Inter', ui-sans-serif, system-ui, sans-serif",
+    "body": "'Inter', ui-sans-serif, system-ui, sans-serif"
+  },
+  "decantr_compat": ">=2.0.0",
+  "source": "core",
+  "decorators": {
+    "studio-wave": "Cyan waveform displays with glowing stroke and animated playhead. Audio visualization aesthetic.",
+    "studio-channel": "Vertical channel strips with fader, meter, and knob stack. Mixing console layout.",
+    "studio-meter": "VU meter styling with gradient fill from cyan through yellow to magenta at peak.",
+    "studio-knob": "Circular control knobs with cyan indicator and rotational value display.",
+    "studio-glow-cyan": "Cyan glow effects on active elements using box-shadow and text-shadow.",
+    "studio-glow-magenta": "Magenta glow on peaks, alerts, and secondary highlights.",
+    "studio-rack": "Equipment rack styling with 1U slot dividers and industrial metal aesthetic.",
+    "studio-beat": "Beat grid lines with subdivision markers for timeline and arrangement views."
+  },
+  "spatial": {
+    "density_bias": 1,
+    "content_gap_shift": -1,
+    "section_padding": "2rem",
+    "card_wrapping": "none",
+    "surface_override": null
+  },
+  "motion": {
+    "preference": "expressive",
+    "reduce_motion": true,
+    "entrance": "studio-pulse",
+    "micro": "smooth",
+    "timing": "cubic-bezier(0.4, 0, 0.2, 1)",
+    "durations": {
+      "hover": "100ms",
+      "entrance": "250ms",
+      "modal": "200ms",
+      "page": "300ms",
+      "instant": "80ms",
+      "fast": "150ms",
+      "base": "250ms",
+      "slow": "400ms",
+      "slower": "600ms",
+      "stagger": "60ms"
+    },
+    "easings": {
+      "ease": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "easeOut": "cubic-bezier(0, 0, 0.2, 1)",
+      "easeIn": "cubic-bezier(0.4, 0, 1, 1)",
+      "spring": "cubic-bezier(0.34, 1.56, 0.64, 1)"
+    }
+  },
+  "effects": {
+    "enabled": true,
+    "intensity": "strong",
+    "type_mapping": {
+      "waveform": [
+        "studio-wave",
+        "studio-glow-cyan"
+      ],
+      "channel": [
+        "studio-channel"
+      ],
+      "meter": [
+        "studio-meter"
+      ],
+      "knob": [
+        "studio-knob"
+      ],
+      "timeline": [
+        "studio-beat"
+      ]
+    },
+    "optional_effects": {
+      "glow-cyan": true,
+      "glow-magenta": true,
+      "rack": true
+    },
+    "component_fallback": {
+      "Waveform": "waveform",
+      "Channel": "channel",
+      "Meter": "meter",
+      "Knob": "knob",
+      "Timeline": "timeline"
+    }
+  },
+  "compositions": {
+    "daw": {
+      "description": "Digital audio workstation with track arrangement, mixer view, and transport controls.",
+      "shell": "sidebar-main",
+      "effects": [
+        "studio-wave",
+        "studio-channel",
+        "studio-beat",
+        "studio-glow-cyan"
+      ]
+    },
+    "mixer": {
+      "description": "Mixing console with channel strips, busses, and master section.",
+      "shell": "full-bleed",
+      "effects": [
+        "studio-channel",
+        "studio-meter",
+        "studio-knob"
+      ]
+    },
+    "marketing": {
+      "description": "Music production marketing with waveform visuals and electric color palette.",
+      "shell": "top-nav-footer",
+      "effects": [
+        "studio-wave",
+        "studio-glow-magenta"
+      ]
+    },
+    "library": {
+      "description": "Sample library browser with waveform previews and tag filtering.",
+      "shell": "sidebar-main",
+      "effects": [
+        "studio-wave",
+        "studio-glow-cyan"
+      ]
+    }
+  },
+  "radius": {
+    "philosophy": "rounded",
+    "base": 6
+  },
+  "pattern_preferences": {
+    "prefer": [
+      "timeline-arrangement",
+      "channel-strip",
+      "waveform-player",
+      "beat-grid",
+      "sample-browser"
+    ],
+    "avoid": [
+      "chat-portal"
+    ],
+    "default_presets": {
+      "sample-browser": "grid",
+      "timeline-arrangement": "track"
+    }
+  },
+  "shell": {
+    "preferred": [
+      "sidebar-main",
+      "full-bleed"
+    ],
+    "avoid": [
+      "chat-portal",
+      "centered"
+    ],
+    "nav_style": "creative",
+    "default_nav_state": "expanded",
+    "root": "studio-rack",
+    "nav": "studio-channel",
+    "header": "studio-glow-cyan",
+    "navLabel": "",
+    "brand": "studio-glow-magenta",
+    "dimensions": null
+  },
+  "decorator_definitions": {
+    "studio-wave": {
+      "description": "Cyan waveform displays with glowing stroke and animated playhead. Audio visualization aesthetic.",
+      "intent": "Use for all audio visualization including waveforms, spectrum analyzers, and sample previews.",
+      "suggested_properties": {
+        "stroke": "#22D3EE",
+        "stroke-width": "1.5",
+        "fill": "none",
+        "filter": "drop-shadow(0 0 4px rgba(34, 211, 238, 0.6))",
+        "background": "#1E1B4B"
+      },
+      "pairs_with": [
+        "studio-glow-cyan",
+        "studio-beat",
+        "studio-channel"
+      ],
+      "usage": [
+        "Audio waveforms",
+        "Spectrum analyzers",
+        "Sample previews",
+        "Automation curves"
+      ]
+    },
+    "studio-channel": {
+      "description": "Vertical channel strips with fader, meter, and knob stack. Mixing console layout.",
+      "intent": "Use for mixer channel strips with vertical fader and stacked controls. Reproduces console aesthetic.",
+      "suggested_properties": {
+        "display": "flex",
+        "flex-direction": "column",
+        "width": "80px",
+        "background": "#2A2565",
+        "border": "1px solid #4338CA",
+        "border-radius": "6px",
+        "padding": "8px",
+        "gap": "8px"
+      },
+      "pairs_with": [
+        "studio-meter",
+        "studio-knob",
+        "studio-glow-cyan"
+      ],
+      "usage": [
+        "Mixer channels",
+        "Bus strips",
+        "Master section",
+        "Aux sends"
+      ]
+    },
+    "studio-meter": {
+      "description": "VU meter styling with gradient fill from cyan through yellow to magenta at peak.",
+      "intent": "Use for level meters, peak indicators, and VU displays. Standard audio metering color progression.",
+      "suggested_properties": {
+        "background": "linear-gradient(to top, #22D3EE 0%, #22D3EE 60%, #FBBF24 80%, #D946EF 100%)",
+        "width": "6px",
+        "border-radius": "2px",
+        "box-shadow": "0 0 8px rgba(34, 211, 238, 0.4)"
+      },
+      "pairs_with": [
+        "studio-channel",
+        "studio-glow-cyan",
+        "studio-glow-magenta"
+      ],
+      "usage": [
+        "Level meters",
+        "VU displays",
+        "Peak indicators",
+        "Gain reduction meters"
+      ]
+    },
+    "studio-knob": {
+      "description": "Circular control knobs with cyan indicator and rotational value display.",
+      "intent": "Use for rotary controls like gain, pan, filter, and send knobs. Classic hardware-style rotary knobs.",
+      "suggested_properties": {
+        "width": "40px",
+        "height": "40px",
+        "border-radius": "50%",
+        "background": "radial-gradient(circle at 30% 30%, #4338CA, #2A2565)",
+        "border": "2px solid #22D3EE",
+        "box-shadow": "0 0 12px rgba(34, 211, 238, 0.3), inset 0 2px 4px rgba(0,0,0,0.4)",
+        "position": "relative"
+      },
+      "pairs_with": [
+        "studio-channel",
+        "studio-glow-cyan"
+      ],
+      "usage": [
+        "Gain controls",
+        "Pan knobs",
+        "Filter knobs",
+        "Effect parameters"
+      ]
+    },
+    "studio-glow-cyan": {
+      "description": "Cyan glow effects on active elements using box-shadow and text-shadow.",
+      "intent": "Use for active/selected elements and primary highlights. Creates electric, energetic feel.",
+      "suggested_properties": {
+        "box-shadow": "0 0 12px rgba(34, 211, 238, 0.5), 0 0 24px rgba(34, 211, 238, 0.3)",
+        "text-shadow": "0 0 8px rgba(34, 211, 238, 0.6)"
+      },
+      "pairs_with": [
+        "studio-wave",
+        "studio-channel",
+        "studio-knob"
+      ],
+      "usage": [
+        "Active elements",
+        "Selected tracks",
+        "Focus indicators",
+        "Primary highlights"
+      ]
+    },
+    "studio-glow-magenta": {
+      "description": "Magenta glow on peaks, alerts, and secondary highlights.",
+      "intent": "Use for peak warnings, recording indicators, and secondary accent highlights. Hot signal aesthetic.",
+      "suggested_properties": {
+        "box-shadow": "0 0 12px rgba(217, 70, 239, 0.5), 0 0 24px rgba(217, 70, 239, 0.3)",
+        "text-shadow": "0 0 8px rgba(217, 70, 239, 0.6)"
+      },
+      "pairs_with": [
+        "studio-meter",
+        "studio-wave",
+        "studio-glow-cyan"
+      ],
+      "usage": [
+        "Peak warnings",
+        "Recording indicators",
+        "Alert states",
+        "Secondary highlights"
+      ]
+    },
+    "studio-rack": {
+      "description": "Equipment rack styling with 1U slot dividers and industrial metal aesthetic.",
+      "intent": "Use for equipment rack layouts and plugin host windows. Reproduces 19-inch rack unit aesthetic.",
+      "suggested_properties": {
+        "background": "linear-gradient(180deg, #2A2565 0%, #1E1B4B 100%)",
+        "border": "1px solid #4338CA",
+        "border-radius": "4px",
+        "padding": "12px",
+        "box-shadow": "inset 0 1px 0 rgba(255,255,255,0.1), 0 4px 8px rgba(0,0,0,0.4)"
+      },
+      "pairs_with": [
+        "studio-knob",
+        "studio-meter",
+        "studio-glow-cyan"
+      ],
+      "usage": [
+        "Plugin containers",
+        "Effect racks",
+        "Instrument hosts",
+        "Rack layouts"
+      ]
+    },
+    "studio-beat": {
+      "description": "Beat grid lines with subdivision markers for timeline and arrangement views.",
+      "intent": "Use for timeline grids, beat markers, and arrangement views. Essential for rhythm-based editing.",
+      "suggested_properties": {
+        "background-image": "repeating-linear-gradient(90deg, rgba(34, 211, 238, 0.2) 0, rgba(34, 211, 238, 0.2) 1px, transparent 1px, transparent 40px), repeating-linear-gradient(90deg, rgba(34, 211, 238, 0.08) 0, rgba(34, 211, 238, 0.08) 1px, transparent 1px, transparent 10px)",
+        "background-color": "#1E1B4B"
+      },
+      "pairs_with": [
+        "studio-wave",
+        "studio-glow-cyan"
+      ],
+      "usage": [
+        "Timeline grids",
+        "Arrangement views",
+        "Beat markers",
+        "Pattern editors"
+      ]
+    }
+  },
+  "elevation": {
+    "1": {
+      "light": "0 1px 2px rgba(0,0,0,0.06)",
+      "dark": "0 1px 2px rgba(0,0,0,0.45)"
+    },
+    "2": {
+      "light": "0 2px 4px rgba(0,0,0,0.08)",
+      "dark": "0 2px 4px rgba(0,0,0,0.55)"
+    },
+    "3": {
+      "light": "0 4px 12px rgba(0,0,0,0.10)",
+      "dark": "0 4px 12px rgba(0,0,0,0.60)"
+    },
+    "4": {
+      "light": "0 8px 24px rgba(0,0,0,0.14)",
+      "dark": "0 8px 24px rgba(0,0,0,0.65)"
+    },
+    "5": {
+      "light": "0 16px 48px rgba(0,0,0,0.18)",
+      "dark": "0 16px 48px rgba(0,0,0,0.70)"
+    }
+  }
+}

@@ -1,0 +1,164 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "metrics-monitor",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Metrics Monitor",
+  "description": "System metrics dashboard with ASCII charts, gauges, and real-time updates. Terminal-style monitoring interface.",
+  "tags": [
+    "terminal",
+    "metrics",
+    "monitoring",
+    "charts",
+    "dashboard"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "metrics dashboard",
+        "system monitor",
+        "performance metrics",
+        "resource monitor"
+      ],
+      "secondary": [
+        "cpu usage",
+        "memory monitor",
+        "htop",
+        "top command"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 0.9,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "metrics",
+      "patterns": [
+        {
+          "pattern": "status-bar",
+          "preset": "top",
+          "as": "status"
+        },
+        {
+          "pattern": "split-pane",
+          "preset": "quad",
+          "as": "quad-split"
+        },
+        {
+          "pattern": "metric-gauge",
+          "preset": "grid",
+          "as": "metrics-grid"
+        },
+        {
+          "pattern": "ascii-chart",
+          "preset": "line",
+          "as": "line-chart"
+        },
+        {
+          "pattern": "ascii-chart",
+          "preset": "bar",
+          "as": "bar-chart"
+        },
+        {
+          "pattern": "retro-table",
+          "preset": "compact",
+          "as": "process-table"
+        },
+        {
+          "pattern": "hotkey-bar",
+          "preset": "standard",
+          "as": "hotkeys"
+        },
+        {
+          "pattern": "sparkline-cell",
+          "preset": "standard",
+          "as": "metric-sparklines"
+        },
+        {
+          "pattern": "usage-meter",
+          "preset": "bar",
+          "as": "resource-usage"
+        }
+      ],
+      "default_layout": [
+        "status-bar",
+        "split-pane",
+        "resource-usage",
+        "hotkeys"
+      ],
+      "shell": "terminal-split"
+    },
+    {
+      "id": "detail",
+      "patterns": [
+        {
+          "pattern": "status-bar",
+          "preset": "top",
+          "as": "status"
+        },
+        {
+          "pattern": "ascii-chart",
+          "preset": "braille",
+          "as": "detailed-chart"
+        },
+        {
+          "pattern": "metric-gauge",
+          "preset": "block",
+          "as": "metric-detail"
+        },
+        {
+          "pattern": "hotkey-bar",
+          "preset": "standard",
+          "as": "hotkeys"
+        }
+      ],
+      "default_layout": [
+        "status-bar",
+        "detailed-chart",
+        "metric-detail",
+        "hotkeys"
+      ],
+      "shell": "terminal-split"
+    }
+  ],
+  "page_briefs": {
+    "metrics": "Terminal-style quad-split dashboard. Status bar at top with hostname and uptime. Four quadrants showing: metrics gauge grid with CPU/memory/disk bars, ASCII line chart for throughput, ASCII bar chart for latency distribution, and compact process table. Hotkey bar at bottom.",
+    "detail": "Single-metric deep dive. Status bar at top. Large braille-style ASCII chart showing detailed time series. Below, a block-style gauge showing current value with threshold markers. Hotkey bar at bottom."
+  },
+  "features": [
+    "realtime-metrics",
+    "ascii-charts",
+    "sparklines",
+    "threshold-alerts",
+    "historical-data"
+  ],
+  "shells": {
+    "terminal-split": "Terminal layout with quad-split for metrics"
+  },
+  "dependencies": {
+    "patterns": {
+      "status-bar": "^1.0.0",
+      "split-pane": "^1.0.0",
+      "metric-gauge": "^1.0.0",
+      "ascii-chart": "^1.0.0",
+      "retro-table": "^1.0.0",
+      "hotkey-bar": "^1.0.0",
+      "sparkline-cell": "^1.0.0",
+      "usage-meter": "^1.0.0"
+    },
+    "styles": {
+      "terminal": "^1.0.0"
+    }
+  },
+  "suggested_theme": {
+    "ids": [
+      "terminal"
+    ],
+    "modes": [
+      "dark"
+    ]
+  }
+}

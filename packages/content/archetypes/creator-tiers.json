@@ -1,0 +1,76 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "creator-tiers",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Creator Tiers",
+  "description": "Subscription tier management for creators. Create, edit, and organize membership tiers.",
+  "tags": [
+    "creator",
+    "tiers",
+    "membership",
+    "subscriptions",
+    "pricing"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "tier management",
+        "membership tiers",
+        "subscription levels"
+      ],
+      "secondary": [
+        "pricing tiers",
+        "membership setup"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "tiers",
+      "patterns": [
+        {
+          "pattern": "tier-builder",
+          "preset": "standard",
+          "as": "tier-manager"
+        }
+      ],
+      "default_layout": [
+        "tier-builder"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "tiers": "Tier builder interface with draggable tier cards arranged vertically. Each card shows tier name, price, subscriber count, and a benefits checklist. Add-tier button at the bottom. Cards are expandable to reveal inline editing of benefits and pricing."
+  },
+  "features": [
+    "tier-creation",
+    "benefit-management",
+    "pricing-config",
+    "tier-reorder"
+  ],
+  "shells": {
+    "sidebar-main": "Creator dashboard with sidebar navigation"
+  },
+  "dependencies": {
+    "patterns": {
+      "tier-builder": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "studio"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

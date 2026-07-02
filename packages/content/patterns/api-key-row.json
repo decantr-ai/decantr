@@ -1,0 +1,119 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "api-key-row",
+  "version": "1.1.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "API Key Row",
+  "description": "API key management surface with responsive key rows/cards, masked key metadata, create-key workflow, copy/revoke actions, and a save-once creation banner.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Badge",
+        "Button",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "contained": false,
+  "components": [
+    "Badge",
+    "Button",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full API key row with name, masked key, scope badges, dates, and copy/revoke actions.",
+      "components": [
+        "Badge",
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _aic _gap4 _px4 _py4 _borderb _bordermuted/10",
+        "slots": {
+          "key-icon": "Key icon indicator on the left",
+          "key-info": "Key name (_textsm _fontmedium) and masked key value (_textxs _mono _fgmuted) stacked vertically",
+          "scopes": "Horizontal row of scope Badge elements (read, write, org:read, org:write)",
+          "dates": "Created and last-used timestamps",
+          "actions": "Copy key Button and Revoke Button (destructive variant)"
+        }
+      }
+    },
+    "card": {
+      "description": "Card-style API key display for mobile-friendly layouts. Stacked vertically.",
+      "components": [
+        "Badge",
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap3 _p4 _border _bordermuted/20 _r3",
+        "slots": {
+          "header": "Key name and masked value",
+          "scopes": "Scope badges row",
+          "meta": "Created and last-used dates",
+          "actions": "Copy and revoke buttons, full width"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "row",
+    "atoms": "_flex _aic _gap4 _px4 _py4 _borderb _bordermuted/10",
+    "slots": {
+      "key-icon": "Key icon",
+      "key-info": "Name and masked key",
+      "scopes": "Scope badges",
+      "dates": "Created and last-used",
+      "actions": "Copy and revoke buttons"
+    }
+  },
+  "visual_brief": "Single horizontal row with a key icon on the far left, followed by the key name in medium-weight text and a masked key value (e.g. 'sk-****...3f2a') in monospace below it. Scope badges (read, write) appear as small colored pills in the middle. Created and last-used dates render in muted small text. Copy and revoke action buttons sit on the far right, with revoke styled as a destructive variant. Rows are separated by bottom borders. The card preset stacks everything vertically inside a bordered card for mobile use.",
+  "responsive": {
+    "mobile": "Prefer the card preset — stacked vertical layout with wrapped scope badges and actions that sit beneath the key metadata instead of forcing a rigid table.",
+    "tablet": "Standard row or card-list layout is acceptable, but metadata should wrap before the key row overflows.",
+    "desktop": "Full row layout with clear separation between key info, scopes, dates, and actions."
+  },
+  "motion": {
+    "micro": "Copy and revoke controls may brighten or lift subtly on hover and focus, but the row itself should remain operational and stable.",
+    "transitions": "Reveal, creation-banner, and revoked-state changes should animate softly over 150-220ms without shifting the table rhythm."
+  },
+  "interactions": [
+    "inline-edit",
+    "click-select",
+    "hover-reveal"
+  ],
+  "layout_hints": {
+    "row_layout": "Key icon (16px, muted) + key name + masked value + scope badges + date metadata + actions. On narrow widths, collapse into stacked cards before the metadata starts crowding.",
+    "reveal": "Click masked value to reveal for 5 seconds, then re-mask. Copy button copies full key.",
+    "create_form": "Inline form at top: text input for key name + scope controls + Create button (primary). Appears on 'New API Key' click.",
+    "creation_banner": "After key creation, surface a prominent one-time reveal banner with copy action and dismissal control. This banner should feel like a temporary alert card, not just a paragraph."
+  },
+  "accessibility": {
+    "role": "row",
+    "aria-label": "API key entry",
+    "keyboard": [
+      "Tab moves through reveal, copy, revoke, and scope controls in row order.",
+      "Keyboard users should be able to reveal and copy keys without relying on hover-only UI."
+    ],
+    "announcements": [
+      "One-time key creation and reveal states should be announced clearly.",
+      "Revocation outcomes should be announced explicitly."
+    ],
+    "focus_management": "Keep focus on the row or invoked action after copy or reveal events so the user does not lose context."
+  },
+  "composition": {
+    "ApiKeyWorkspace": "Stack > [WorkspaceHeader + CreatePanel? + CreationBanner? + ApiKeyRow[]]",
+    "ApiKeyRow": "Row(d-data-row, hoverable) > [KeyIcon + KeyInfo + ScopeBadges + DateInfo + Actions]",
+    "KeyInfo": "Stack(flex-col) > [KeyName(font-medium) + MaskedKey(mono-data, text-muted)]",
+    "ScopeBadges": "Row(gap-2) > Badge(d-annotation)[]",
+    "Actions": "Row(d-interactive) > [CopyButton(variant: ghost) + RevokeButton(variant: destructive)]",
+    "CreationBanner": "AlertCard(d-surface, success-tint) > [BannerTitle + FullKey(mono-data) + CopyAction + DismissAction]"
+  }
+}

@@ -1,0 +1,137 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "property-grid",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Property Grid",
+  "description": "Dashboard grid of all properties with filtering, search, view toggles, and portfolio summary.",
+  "dependencies": {
+    "patterns": {
+      "property-card": "^1.0.0"
+    },
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "icon",
+        "Input",
+        "Select",
+        "Tabs"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "icon",
+    "Input",
+    "Select",
+    "Tabs"
+  ],
+  "default_preset": "cards",
+  "presets": {
+    "cards": {
+      "description": "Card grid layout with property cards",
+      "components": [
+        "Button",
+        "icon",
+        "Input",
+        "Select"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6",
+        "slots": {
+          "header": "Title, add property button, view toggle",
+          "summary": "Portfolio summary metrics",
+          "filters": "Property type, status, location filters",
+          "search": "Property search input",
+          "grid": "Property cards grid",
+          "pagination": "Page controls"
+        }
+      }
+    },
+    "table": {
+      "description": "Table layout with sortable columns",
+      "components": [
+        "Button",
+        "icon",
+        "Input"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "header": "Title and controls",
+          "filters": "Filter controls",
+          "table": "Property table with columns",
+          "pagination": "Table pagination"
+        }
+      }
+    },
+    "map": {
+      "description": "Interactive map view with property location pins and a scrollable sidebar property list",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "split",
+        "atoms": "_flex _h[calc(100vh-200px)]",
+        "slots": {
+          "sidebar": "Property list sidebar",
+          "map": "Interactive map with pins"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap6",
+    "slots": {
+      "header": "Page header with controls",
+      "summary": "Portfolio metrics",
+      "filters": "Search and filters",
+      "items": "Property cards or rows",
+      "pagination": "Page controls"
+    }
+  },
+  "visual_brief": "Dashboard page for all properties. Header row with 'Properties' title, a search input, and an 'Add Property' button. A portfolio summary bar shows total properties, total units, average occupancy, and total monthly revenue. Filter controls below offer search by name, filter by status, and view toggle (cards/table/map). The main area displays property cards in a responsive grid, a data table, or a map view with pins. Pagination controls at the bottom handle large portfolios.",
+  "responsive": {
+    "mobile": "Single-column property cards. Summary metrics in a 2x2 grid. Filters collapse into a filter button. Map view takes full screen.",
+    "tablet": "Two-column card grid. Summary in a row. Filters visible. Table view has horizontal scroll.",
+    "desktop": "Three-column card grid or full-width table. All summary, filters, and pagination visible."
+  },
+  "layout_hints": {
+    "portfolio_priority": "Lead with portfolio-wide scanability first: summary metrics, active filters, then the properties themselves. The user should understand the state of the portfolio before diving into any one asset.",
+    "view_modes": "Cards, table, and map should preserve the same property hierarchy and filter context rather than feeling like unrelated screens.",
+    "toolbar_rhythm": "Search, filters, and add-property actions belong in one operational header band. Parent pages should not wrap this pattern in another competing control bar."
+  },
+  "motion": {
+    "micro": "View toggles and property cards may sharpen or lift subtly on hover. Filter chips or selectors should respond crisply without stealing attention from the portfolio items.",
+    "transitions": "Changing between card, table, and map modes should preserve orientation and current filter state rather than redrawing the whole surface abruptly."
+  },
+  "interactions": [
+    "lift-hover",
+    "click-select",
+    "animate-on-mount",
+    "stagger-children"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Property portfolio",
+    "keyboard": [
+      "Header controls, filters, and property items should follow a predictable top-to-bottom, left-to-right order."
+    ],
+    "announcements": [
+      "Portfolio summaries, active filters, and individual property identity should be exposed semantically so the collection remains understandable beyond its visual layout."
+    ]
+  },
+  "composition": {
+    "PropertyGrid": "Container(d-section, flex-col, gap-6) > [Header + PortfolioSummary + Filters + PropertyItems + Pagination]",
+    "Header": "Row(d-control, space-between) > [Title + AddPropertyButton(d-interactive) + ViewToggle(d-interactive)]",
+    "PortfolioSummary": "Row(d-data) > [TotalProperties + TotalUnits + AvgOccupancy(mono-data) + TotalRevenue(mono-data)]",
+    "Filters": "Row(d-control) > [SearchInput(d-control) + StatusFilter(d-control) + TypeFilter(d-control)]",
+    "PropertyItems": "Grid(d-data, responsive: 1/2/3-col) > PropertyCard[]"
+  }
+}

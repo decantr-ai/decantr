@@ -1,0 +1,131 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "team-operations",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Team Operations",
+  "description": "Primary esports team operations surface with team overview dashboard, player roster, and individual player profiles tracking form and activity.",
+  "tags": [
+    "esports",
+    "team",
+    "roster",
+    "players",
+    "operations"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "esports team",
+        "team operations",
+        "player roster",
+        "team dashboard",
+        "esports management"
+      ],
+      "secondary": [
+        "player profile",
+        "roster management",
+        "team hq",
+        "gaming team"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "overview",
+      "patterns": [
+        {
+          "pattern": "kpi-grid",
+          "preset": "dashboard",
+          "as": "team-kpis"
+        },
+        {
+          "pattern": "scoreboard-live",
+          "preset": "detail",
+          "as": "live-match"
+        },
+        {
+          "pattern": "activity-feed",
+          "preset": "standard",
+          "as": "team-activity"
+        }
+      ],
+      "default_layout": [
+        "kpi-grid",
+        "scoreboard-live",
+        "activity-feed"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "roster",
+      "patterns": [
+        {
+          "pattern": "player-form-tracker",
+          "preset": "team",
+          "as": "roster-form"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "content",
+          "as": "player-cards"
+        }
+      ],
+      "default_layout": [
+        "player-form-tracker",
+        "card-grid"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "player-detail",
+      "patterns": [
+        {
+          "pattern": "player-form-tracker",
+          "preset": "individual",
+          "as": "player-form"
+        },
+        {
+          "pattern": "chart-grid",
+          "preset": "standard",
+          "as": "player-stats"
+        },
+        {
+          "pattern": "activity-feed",
+          "preset": "standard",
+          "as": "player-activity"
+        }
+      ],
+      "default_layout": [
+        "player-form-tracker",
+        "chart-grid",
+        "activity-feed"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "overview": "Team command center. Top kpi-grid surfaces win rate, map win rate, average match score, rank delta, and scrims this week. Below, a detail scoreboard-live tracks the team's current or most recent match with round-by-round scoring, player kills, and objectives. Right rail renders an activity-feed of roster changes, scrim results, VOD uploads, and sponsor updates.",
+    "roster": "Player roster page. Top region renders a team player-form-tracker plotting each player's recent performance trend side-by-side so coaches can spot form dips across the squad. Below, a content card-grid shows player cards with photo, handle, role, nationality, and KDA snapshot — clickable through to player detail.",
+    "player-detail": "Single player profile page. Top region shows an individual player-form-tracker charting match-by-match performance over the last season. Middle region renders a chart-grid with KDA, damage per round, objective participation, and hero pool distribution. Bottom region lists an activity-feed of match appearances, VOD reviews, scrim participation, and coaching notes."
+  },
+  "features": [
+    "team-management",
+    "rosters"
+  ],
+  "suggested_theme": {
+    "ids": [
+      "carbon",
+      "luminarum",
+      "clean"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  }
+}

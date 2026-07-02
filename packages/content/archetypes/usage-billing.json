@@ -1,0 +1,146 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "usage-billing",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Usage & Billing",
+  "description": "Usage metering dashboard, plan management, payment configuration, and invoice history for consumption-based SaaS billing.",
+  "tags": [
+    "billing",
+    "usage",
+    "metering",
+    "invoices",
+    "subscription"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "usage billing",
+        "usage metering",
+        "consumption billing",
+        "usage dashboard",
+        "plan management"
+      ],
+      "secondary": [
+        "invoices",
+        "payment method",
+        "billing history",
+        "usage breakdown",
+        "overage"
+      ],
+      "negative": [
+        "free-only",
+        "no-billing"
+      ]
+    },
+    "implies": [
+      "tenant-switcher-dashboard"
+    ],
+    "weight": 0.8,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "usage",
+      "patterns": [
+        {
+          "pattern": "usage-meter",
+          "preset": "breakdown",
+          "as": "meters"
+        },
+        {
+          "pattern": "chart-grid",
+          "preset": "standard",
+          "as": "charts"
+        },
+        {
+          "pattern": "data-table",
+          "preset": "compact",
+          "as": "usage-details"
+        }
+      ],
+      "default_layout": [
+        "meters",
+        "charts",
+        "usage-details"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "billing",
+      "patterns": [
+        {
+          "pattern": "pricing",
+          "preset": "standard",
+          "as": "plan-selector"
+        },
+        {
+          "pattern": "form-sections",
+          "preset": "standard",
+          "as": "payment-form"
+        },
+        {
+          "pattern": "payment-history",
+          "preset": "standard",
+          "as": "recent-payments"
+        }
+      ],
+      "default_layout": [
+        "plan-selector",
+        "payment-form",
+        "recent-payments"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "invoices",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "invoices-table"
+        }
+      ],
+      "default_layout": [
+        "invoices-table"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "usage": "Usage metering dashboard with breakdown meters showing API calls, storage, bandwidth, and compute against plan limits. Chart grid below visualizes usage trends over time with line and bar charts. Compact data table at the bottom lists per-resource usage details with date, quantity, and cost columns.",
+    "billing": "Billing management page. Current plan card at top with upgrade/downgrade options via pricing tier selector. Payment form section for updating card details and billing address. Recent payment history table showing date, amount, status, and receipt download links. Next invoice preview card.",
+    "invoices": "Full invoice history in a standard data table with columns for invoice number, date, amount, status, and PDF download. Filter bar at top for date range and status filtering. Pagination for large invoice histories."
+  },
+  "features": [
+    "billing",
+    "usage-metering",
+    "invoices",
+    "plans"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "usage-meter": "^1.0.0",
+      "chart-grid": "^1.0.0",
+      "data-table": "^1.0.0",
+      "pricing": "^1.0.0",
+      "form-sections": "^1.0.0",
+      "payment-history": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon",
+      "clean"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  }
+}

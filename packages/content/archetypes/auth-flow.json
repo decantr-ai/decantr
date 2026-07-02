@@ -1,0 +1,101 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "auth-flow",
+  "role": "gateway",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Authentication Flow",
+  "description": "Login, registration, and password recovery with OAuth support",
+  "tags": [
+    "auth",
+    "login",
+    "register",
+    "oauth",
+    "session"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "login",
+        "register",
+        "sign up",
+        "authentication",
+        "oauth",
+        "sign in"
+      ],
+      "secondary": [
+        "password reset",
+        "account creation",
+        "session",
+        "credentials",
+        "forgot password"
+      ],
+      "negative": [
+        "public-only",
+        "no-auth",
+        "static-site"
+      ]
+    },
+    "implies": [
+      "settings"
+    ],
+    "weight": 1,
+    "tier": "core"
+  },
+  "pages": [
+    {
+      "id": "login",
+      "default_layout": [
+        "auth-form"
+      ],
+      "shell": "centered"
+    },
+    {
+      "id": "register",
+      "default_layout": [
+        {
+          "pattern": "auth-form",
+          "preset": "register"
+        }
+      ],
+      "shell": "centered"
+    },
+    {
+      "id": "forgot-password",
+      "default_layout": [
+        {
+          "pattern": "auth-form",
+          "preset": "reset"
+        }
+      ],
+      "shell": "centered"
+    }
+  ],
+  "page_briefs": {
+    "login": "Centered card on a clean background. Card contains email and password fields, a primary sign-in button, OAuth provider buttons, and a forgot-password link below.",
+    "register": "Centered card matching login style. Fields for name, email, password with strength indicator. Terms checkbox and a primary register button. Link to sign-in at bottom.",
+    "forgot-password": "Minimal centered card with email input field and a submit button. Short instructional text above the form explaining the reset process."
+  },
+  "features": [
+    "auth"
+  ],
+  "shells": {
+    "centered": "Centered card on background for auth flows"
+  },
+  "dependencies": {
+    "patterns": {
+      "auth-form": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "auradecantism",
+      "clean"
+    ],
+    "modes": [
+      "dark",
+      "auto"
+    ]
+  }
+}

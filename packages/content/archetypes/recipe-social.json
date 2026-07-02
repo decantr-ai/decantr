@@ -1,0 +1,95 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "recipe-social",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipe Social",
+  "description": "Social features for the recipe community: activity feed, emoji reactions, recipe collections, and creator profiles with follow functionality.",
+  "tags": ["social", "community", "feed", "collections", "profiles", "reactions", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["recipe social", "food community", "recipe feed", "cooking community", "recipe social features"],
+      "secondary": ["follow cooks", "recipe collections", "food feed", "cooking profiles", "emoji reactions"],
+      "negative": ["dashboard", "admin", "analytics"]
+    },
+    "implies": [],
+    "weight": 0.8,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "feed",
+      "patterns": [
+        {
+          "pattern": "card-grid",
+          "preset": "content",
+          "as": "feed-grid"
+        },
+        {
+          "pattern": "activity-feed",
+          "preset": "standard",
+          "as": "social-feed"
+        },
+        {
+          "pattern": "emoji-reaction-bar",
+          "preset": "inline",
+          "as": "reactions"
+        }
+      ],
+      "default_layout": ["feed-grid", "social-feed", "reactions"],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "collections",
+      "patterns": [
+        {
+          "pattern": "card-grid",
+          "preset": "collection",
+          "as": "collection-grid"
+        }
+      ],
+      "default_layout": ["collection-grid"],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "profile",
+      "patterns": [
+        {
+          "pattern": "creator-profile",
+          "preset": "standard",
+          "as": "chef-profile"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "content",
+          "as": "profile-recipes"
+        }
+      ],
+      "default_layout": ["chef-profile", "profile-recipes"],
+      "shell": "top-nav-main"
+    }
+  ],
+  "page_briefs": {
+    "feed": "Social feed showing recipes from followed creators. Content card grid with food photos, titles, and creator avatars. Activity feed sidebar shows recent community activity (new recipes, saves, follows). Inline emoji reaction bars on each card for quick engagement.",
+    "collections": "Grid of recipe collections (cookbooks). Each collection card shows a cover mosaic of recipe photos, collection name, recipe count, and creator. Users can browse, create, and share collections.",
+    "profile": "Creator profile page with avatar, bio, follower/following counts, and follow button. Below, a content card grid of the creator's published recipes. Stats bar showing total recipes, saves received, and followers."
+  },
+  "features": ["follow", "reactions", "collections", "sharing"],
+  "shells": {
+    "top-nav-main": "Fixed top navigation bar with main content area below"
+  },
+  "dependencies": {
+    "patterns": {
+      "card-grid": ">=1.0.0",
+      "activity-feed": ">=1.0.0",
+      "emoji-reaction-bar": ">=1.0.0",
+      "creator-profile": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": ["auradecantism"],
+    "modes": ["light", "dark"]
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "id": "target-progress-ring",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Target Progress Ring",
+  "description": "A circular progress visualization showing current achievement against a reduction target with nested ring segments, center value, and status color coding.",
+  "category": "climate",
+  "tags": [
+    "2026",
+    "climate",
+    "target",
+    "progress",
+    "ring",
+    "kpi",
+    "sustainability"
+  ],
+  "components": [
+    "RingCanvas",
+    "RingSegment",
+    "TargetLabel",
+    "CurrentValue",
+    "YearLabel"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Large centered progress ring as primary dashboard display with prominent center value, target label, and status-colored segments",
+      "layout": {
+        "layout": "centered",
+        "atoms": "_flex _items-center _justify-center _w100 _h-full _p-8"
+      }
+    },
+    "compact": {
+      "description": "Smaller ring sized for sidebar cards or KPI tiles with abbreviated label and tightly stacked value presentation",
+      "layout": {
+        "layout": "centered",
+        "atoms": "_flex _items-center _justify-center _w100 _p-4"
+      }
+    },
+    "dashboard": {
+      "description": "Grid arrangement of three or four progress rings side by side for monitoring multiple targets simultaneously across dashboards",
+      "layout": {
+        "layout": "grid-4",
+        "atoms": "_grid _grid-cols-4 _gap-4 _w100 _p-6"
+      }
+    }
+  },
+  "visual_brief": "A bold circular progress ring rendered as concentric SVG arcs. The outer ring (stroke width 12px) represents the total target percentage span colored in muted neutral. The inner ring (stroke width 16px, same radius or slightly smaller) shows current progress filling clockwise from 12 o'clock position. The inner arc is colored according to status: vibrant green (#16A34A) when on-track (>=90% of pacing), amber (#F59E0B) when at-risk (70-90%), red (#DC2626) when off-track (<70%). Center displays current achievement as a very large monospace number (e.g. '34%') with target value below it in smaller muted text (e.g. 'of 50% by 2030'). Year label sits just below the ring. A thin tick mark indicates the pacing-expected position on the ring. In dashboard preset, rings display in a grid with each showing a different KPI label above (Scope 1, Scope 2, Water, Waste).",
+  "layout_hints": {
+    "container": "d-surface",
+    "note": "Ring must be rendered as SVG for crisp scaling. Default ring size 240px, compact 120px, dashboard 160px each.",
+    "color_logic": "Status colors are computed from pacing delta (actual vs. expected by date). Do not hard-code green."
+  },
+  "default_layout": {
+    "layout": "centered",
+    "atoms": "_flex _flex-col _items-center _justify-center _w100 _p-8",
+    "slots": {
+      "ring-canvas": "SVG viewport containing the concentric ring segments. Uses transform-origin center for rotation. Maintains 1:1 aspect ratio.",
+      "ring-segment": "Repeating SVG arc element. Background segment renders full 360deg muted, progress segment renders partial arc with status color.",
+      "target-label": "Text below center value stating the target value and deadline year (e.g. 'of 50% by 2030'). Uses muted text-sm.",
+      "current-value": "Prominent monospace number at center of ring showing current achievement as a percentage. Font size scales with ring size.",
+      "year-label": "Label below or beside the ring indicating the target year or reporting period."
+    }
+  },
+  "accessibility": {
+    "role": "meter",
+    "aria-label": "Target progress indicator",
+    "announcements": [
+      "Current progress {value} of target {target} by {year}, status {status}"
+    ],
+    "keyboard": [
+      "Tab: focus the ring",
+      "Enter: show detail tooltip with pacing analysis"
+    ]
+  },
+  "responsive": {
+    "mobile": "Ring diameter reduces to 180px. Dashboard preset collapses to single column.",
+    "tablet": "Dashboard preset shifts to 2x2 grid. Standard preset maintains full size."
+  },
+  "motion": {
+    "micro": {
+      "ring-hover": "outer-ring stroke-width +2px 200ms ease-out"
+    },
+    "transitions": {
+      "value-update": "arc stroke-dasharray interpolate 800ms ease-in-out",
+      "color-change": "stroke color transition 400ms ease"
+    },
+    "ambient": {
+      "on-track-glow": "subtle drop-shadow pulse 3s ease-in-out infinite when status is on-track"
+    }
+  },
+  "interactions": [
+    "animate-on-mount",
+    "real-time-updates",
+    "status-pulse"
+  ],
+  "composition": {
+    "TargetProgressRing": "Surface(d-surface) > [RingCanvas > [RingSegment(background) + RingSegment(progress) + PacingTick] + CenterStack > [CurrentValue(mono-xl) + TargetLabel] + YearLabel]",
+    "RingCanvas": "SVG(viewBox-square, aspect-1) > ArcLayer",
+    "RingSegment": "Path(arc, stroke-linecap-round, stroke-width-sized)"
+  }
+}

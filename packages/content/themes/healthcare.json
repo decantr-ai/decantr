@@ -1,0 +1,480 @@
+{
+  "$schema": "https://decantr.ai/schemas/theme.v1.json",
+  "id": "healthcare",
+  "version": "1.0.0",
+  "name": "Healthcare",
+  "description": "Clean, accessible, trust-signaling medical theme. Calming blues and teals on warm white backgrounds. WCAG AAA compliant with full CVD support. Designed for patient portals, clinical dashboards, and health monitoring interfaces.",
+  "tags": [
+    "light",
+    "dark",
+    "accessible",
+    "medical",
+    "healthcare",
+    "clean",
+    "trustworthy",
+    "wcag-aaa"
+  ],
+  "personality": "calming + trustworthy + accessible + clinical",
+  "seed": {
+    "primary": "#0EA5E9",
+    "secondary": "#14B8A6",
+    "accent": "#8B5CF6",
+    "background": "#FAFAF8"
+  },
+  "palette": {
+    "background": {
+      "light": "#FAFAF8",
+      "dark": "#0F1419"
+    },
+    "surface": {
+      "light": "#FFFFFF",
+      "dark": "#1A2028"
+    },
+    "surface-raised": {
+      "light": "#F5F7FA",
+      "dark": "#232B35"
+    },
+    "border": {
+      "light": "#E2E8F0",
+      "dark": "#334155"
+    },
+    "text": {
+      "light": "#0F172A",
+      "dark": "#F1F5F9"
+    },
+    "text-muted": {
+      "light": "#64748B",
+      "dark": "#94A3B8"
+    },
+    "primary": {
+      "light": "#0284C7",
+      "dark": "#38BDF8"
+    },
+    "primary-hover": {
+      "light": "#0369A1",
+      "dark": "#7DD3FC"
+    },
+    "secondary": {
+      "light": "#0D9488",
+      "dark": "#2DD4BF"
+    },
+    "secondary-hover": {
+      "light": "#0F766E",
+      "dark": "#5EEAD4"
+    },
+    "accent": {
+      "light": "#7C3AED",
+      "dark": "#A78BFA"
+    },
+    "accent-hover": {
+      "light": "#6D28D9",
+      "dark": "#C4B5FD"
+    }
+  },
+  "modes": [
+    "light",
+    "dark",
+    "auto"
+  ],
+  "shapes": [
+    "rounded"
+  ],
+  "cvd_support": [
+    "deuteranopia",
+    "protanopia",
+    "tritanopia"
+  ],
+  "tokens": {
+    "base": {
+      "success": "#16A34A",
+      "danger": "#DC2626",
+      "warning": "#D97706",
+      "info": "#0284C7"
+    },
+    "cvd": {
+      "deuteranopia": {
+        "success": "#2563EB",
+        "danger": "#EA580C"
+      },
+      "protanopia": {
+        "success": "#0EA5E9",
+        "danger": "#F59E0B"
+      },
+      "tritanopia": {
+        "success": "#16A34A",
+        "danger": "#E11D48"
+      }
+    },
+    "domain": {
+      "vitals-normal": "success",
+      "vitals-elevated": "warning",
+      "vitals-critical": "danger",
+      "appointment-confirmed": "success",
+      "appointment-pending": "warning",
+      "appointment-cancelled": "danger"
+    }
+  },
+  "typography": {
+    "scale": "modular",
+    "heading_weight": 600,
+    "body_weight": 400,
+    "display": "'Inter', ui-sans-serif, system-ui, sans-serif",
+    "body": "'Inter', ui-sans-serif, system-ui, sans-serif"
+  },
+  "decantr_compat": ">=2.0.0",
+  "source": "core",
+  "decorators": {
+    "health-card": "White card with subtle shadow and large 12px radius. Clean, spacious padding for medical content readability.",
+    "health-metric": "Large prominent number with color-coded status dot indicator. Used for vitals, lab results, and patient stats.",
+    "health-badge": "Rounded pill badge with tinted semantic background. Always includes text label for accessibility.",
+    "health-alert": "Left-border severity stripe (4px) with tinted background. Color indicates severity: info, warning, critical.",
+    "health-surface": "Warm white background with minimal 1px border. Creates gentle separation without harsh contrast.",
+    "health-status": "Color-coded status with always-visible text label. Never relies on color alone per WCAG guidelines.",
+    "health-input": "Large input with generous 14px padding. Clear focus ring for accessibility. Designed for clinical data entry.",
+    "health-nav": "Clean spacious navigation with generous spacing. Clear active states and focus indicators."
+  },
+  "spatial": {
+    "density_bias": -1,
+    "content_gap_shift": 1,
+    "section_padding": "3rem",
+    "card_wrapping": "subtle",
+    "surface_override": null
+  },
+  "motion": {
+    "preference": "subtle",
+    "reduce_motion": true,
+    "entrance": "health-fade-in",
+    "micro": "smooth",
+    "timing": "cubic-bezier(0.4, 0, 0.2, 1)",
+    "durations": {
+      "hover": "150ms",
+      "entrance": "200ms",
+      "modal": "250ms",
+      "page": "300ms",
+      "instant": "80ms",
+      "fast": "150ms",
+      "base": "250ms",
+      "slow": "400ms",
+      "slower": "600ms",
+      "stagger": "60ms"
+    },
+    "easings": {
+      "ease": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "easeOut": "cubic-bezier(0, 0, 0.2, 1)",
+      "easeIn": "cubic-bezier(0.4, 0, 1, 1)",
+      "spring": "cubic-bezier(0.34, 1.56, 0.64, 1)"
+    }
+  },
+  "effects": {
+    "enabled": true,
+    "intensity": "subtle",
+    "type_mapping": {
+      "card": [
+        "health-card"
+      ],
+      "metric": [
+        "health-metric"
+      ],
+      "input": [
+        "health-input"
+      ],
+      "badge": [
+        "health-badge"
+      ],
+      "alert": [
+        "health-alert"
+      ]
+    },
+    "optional_effects": {
+      "glow": false,
+      "grain": false,
+      "gradient": false
+    },
+    "component_fallback": {
+      "Card": "card",
+      "MetricCard": "metric",
+      "Input": "input",
+      "Badge": "badge",
+      "Alert": "alert"
+    }
+  },
+  "compositions": {
+    "dashboard": {
+      "description": "Patient dashboard with sidebar navigation. Vitals overview, appointments, medication schedule, and health metrics.",
+      "shell": "sidebar-main",
+      "effects": [
+        "health-card",
+        "health-metric"
+      ]
+    },
+    "patient-portal": {
+      "description": "Patient-facing portal with top navigation. Simplified interface for appointments, records, and messaging.",
+      "shell": "top-nav-main",
+      "card_style": "health-card"
+    },
+    "auth": {
+      "description": "Centered authentication forms with clean card styling. HIPAA-compliant login with MFA support.",
+      "shell": "centered",
+      "card_style": "health-card"
+    },
+    "marketing": {
+      "description": "Healthcare marketing pages with trust signals. Professional hero sections and feature grids.",
+      "shell": "top-nav-footer"
+    },
+    "clinical": {
+      "description": "Clinical data entry and review. Dense but readable layouts with large inputs and clear labels.",
+      "shell": "sidebar-main",
+      "effects": [
+        "health-input",
+        "health-metric",
+        "health-alert"
+      ]
+    }
+  },
+  "radius": {
+    "philosophy": "rounded",
+    "base": 12
+  },
+  "pattern_preferences": {
+    "prefer": [
+      "patient-card",
+      "vitals-grid",
+      "appointment-list",
+      "medication-schedule",
+      "health-timeline",
+      "clinical-form"
+    ],
+    "avoid": [
+      "dense-terminal",
+      "dark-dashboard"
+    ],
+    "default_presets": {
+      "vitals-grid": "cards",
+      "appointment-list": "list",
+      "medication-schedule": "timeline"
+    }
+  },
+  "shell": {
+    "preferred": [
+      "sidebar-main",
+      "top-nav-main",
+      "top-nav-footer"
+    ],
+    "avoid": [
+      "terminal-split",
+      "chat-portal"
+    ],
+    "nav_style": "clean",
+    "default_nav_state": "expanded",
+    "root": "health-surface",
+    "nav": "health-nav",
+    "header": "",
+    "navLabel": "",
+    "brand": "",
+    "dimensions": null
+  },
+  "decorator_definitions": {
+    "health-card": {
+      "description": "White card with subtle shadow and large 12px radius. Clean, spacious padding for medical content readability.",
+      "intent": "Use for all content containers in healthcare interfaces. The white background and soft shadow create a clean, clinical feel that builds patient trust.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #FFFFFF)",
+        "border": "1px solid var(--d-border, #E2E8F0)",
+        "border-radius": "12px",
+        "padding": "24px",
+        "box-shadow": "0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04)"
+      },
+      "pairs_with": [
+        "health-surface",
+        "health-metric",
+        "health-badge"
+      ],
+      "usage": [
+        "Patient information cards",
+        "Vitals display containers",
+        "Appointment cards",
+        "Dashboard panels"
+      ]
+    },
+    "health-metric": {
+      "description": "Large prominent number with color-coded status dot indicator. Used for vitals, lab results, and patient stats.",
+      "intent": "Use for displaying vital signs, lab values, and key health metrics. The large number ensures readability at a glance; the status dot gives immediate visual triage.",
+      "suggested_properties": {
+        "font-size": "2rem",
+        "font-weight": "600",
+        "font-variant-numeric": "tabular-nums",
+        "line-height": "1.2",
+        "display": "flex",
+        "align-items": "center",
+        "gap": "8px"
+      },
+      "pairs_with": [
+        "health-card",
+        "health-status",
+        "health-badge"
+      ],
+      "usage": [
+        "Blood pressure readings",
+        "Heart rate displays",
+        "Temperature values",
+        "Lab result numbers",
+        "Patient stat summaries"
+      ]
+    },
+    "health-badge": {
+      "description": "Rounded pill badge with tinted semantic background. Always includes text label for accessibility.",
+      "intent": "Use for status indicators throughout healthcare interfaces. The pill shape is friendly and non-threatening; tinted backgrounds maintain readability while conveying status.",
+      "suggested_properties": {
+        "border-radius": "9999px",
+        "padding": "4px 12px",
+        "font-size": "13px",
+        "font-weight": "500",
+        "display": "inline-flex",
+        "align-items": "center",
+        "gap": "6px"
+      },
+      "pairs_with": [
+        "health-card",
+        "health-status",
+        "health-metric"
+      ],
+      "usage": [
+        "Appointment status badges",
+        "Vitals status indicators",
+        "Medication adherence labels",
+        "Alert severity badges"
+      ]
+    },
+    "health-alert": {
+      "description": "Left-border severity stripe (4px) with tinted background. Color indicates severity: info (blue), warning (amber), critical (red).",
+      "intent": "Use for clinical alerts, notifications, and important messages. The left border stripe provides quick severity recognition without overwhelming the interface.",
+      "suggested_properties": {
+        "border-left": "4px solid var(--alert-color, #0284C7)",
+        "background": "var(--alert-bg, rgba(2, 132, 199, 0.06))",
+        "border-radius": "0 12px 12px 0",
+        "padding": "16px 20px",
+        "display": "flex",
+        "align-items": "flex-start",
+        "gap": "12px"
+      },
+      "pairs_with": [
+        "health-card",
+        "health-badge",
+        "health-status"
+      ],
+      "usage": [
+        "Clinical alerts",
+        "Medication warnings",
+        "Appointment reminders",
+        "System notifications",
+        "Critical value alerts"
+      ]
+    },
+    "health-surface": {
+      "description": "Warm white background with minimal 1px border. Creates gentle separation without harsh contrast.",
+      "intent": "Use as the root background and for section containers. The warm white creates a calming, clinical environment that reduces anxiety.",
+      "suggested_properties": {
+        "background-color": "var(--d-bg, #FAFAF8)",
+        "color": "var(--d-text, #0F172A)",
+        "min-height": "100vh"
+      },
+      "pairs_with": [
+        "health-card",
+        "health-nav"
+      ],
+      "usage": [
+        "Page root backgrounds",
+        "Section containers",
+        "App shell backgrounds"
+      ]
+    },
+    "health-status": {
+      "description": "Color-coded status with always-visible text label. Never relies on color alone per WCAG guidelines.",
+      "intent": "Use for any status indicator that must be accessible to all users including those with color vision deficiencies. Always pair color with a text label or icon.",
+      "suggested_properties": {
+        "display": "inline-flex",
+        "align-items": "center",
+        "gap": "6px",
+        "font-size": "14px",
+        "font-weight": "500"
+      },
+      "pairs_with": [
+        "health-badge",
+        "health-metric",
+        "health-card"
+      ],
+      "usage": [
+        "Vitals status (normal/elevated/critical)",
+        "Appointment status (confirmed/pending/cancelled)",
+        "Patient status indicators",
+        "Medication adherence status"
+      ]
+    },
+    "health-input": {
+      "description": "Large input with generous 14px padding. Clear focus ring for accessibility. Designed for clinical data entry.",
+      "intent": "Use for all form inputs in healthcare interfaces. The generous sizing reduces input errors in clinical settings; the prominent focus ring aids keyboard navigation.",
+      "suggested_properties": {
+        "border": "1px solid var(--d-border, #E2E8F0)",
+        "border-radius": "12px",
+        "padding": "14px 16px",
+        "font-size": "16px",
+        "background": "var(--d-surface, #FFFFFF)",
+        "transition": "border-color 150ms ease, box-shadow 150ms ease",
+        "outline-offset": "2px"
+      },
+      "pairs_with": [
+        "health-card",
+        "health-surface"
+      ],
+      "usage": [
+        "Patient data entry forms",
+        "Search fields",
+        "Clinical note inputs",
+        "Appointment booking forms"
+      ]
+    },
+    "health-nav": {
+      "description": "Clean spacious navigation with generous spacing. Clear active states and focus indicators.",
+      "intent": "Use for primary navigation in healthcare apps. Spacious layout reduces mis-taps; clear active states help orientation in complex clinical workflows.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #FFFFFF)",
+        "border-right": "1px solid var(--d-border, #E2E8F0)",
+        "padding": "20px 16px",
+        "display": "flex",
+        "flex-direction": "column",
+        "gap": "4px"
+      },
+      "pairs_with": [
+        "health-surface",
+        "health-card"
+      ],
+      "usage": [
+        "Sidebar navigation",
+        "Main navigation panels",
+        "Clinical workflow navigation"
+      ]
+    }
+  },
+  "elevation": {
+    "1": {
+      "light": "0 1px 2px rgba(0,0,0,0.05)",
+      "dark": "0 1px 2px rgba(0,0,0,0.30)"
+    },
+    "2": {
+      "light": "0 2px 6px rgba(0,0,0,0.07)",
+      "dark": "0 2px 6px rgba(0,0,0,0.40)"
+    },
+    "3": {
+      "light": "0 6px 16px rgba(0,0,0,0.09)",
+      "dark": "0 6px 16px rgba(0,0,0,0.45)"
+    },
+    "4": {
+      "light": "0 12px 32px rgba(0,0,0,0.12)",
+      "dark": "0 12px 32px rgba(0,0,0,0.50)"
+    },
+    "5": {
+      "light": "0 24px 64px rgba(0,0,0,0.16)",
+      "dark": "0 24px 64px rgba(0,0,0,0.55)"
+    }
+  }
+}

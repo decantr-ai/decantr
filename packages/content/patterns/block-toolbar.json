@@ -1,0 +1,129 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "block-toolbar",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Block Toolbar",
+  "description": "Floating formatting toolbar that appears on text selection. Provides quick access to text formatting, links, and comments.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Input",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Input",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Common formatting options with link and comment",
+      "components": [
+        "Button",
+        "Input",
+        "icon"
+      ],
+      "layout": {
+        "layout": "floating",
+        "atoms": "_absolute _flex _aic _gap0.5 _p1 _bg[var(--surface)] _shadow _r2 _border _z[100]",
+        "slots": {
+          "format-buttons": "Bold, italic, underline, strikethrough",
+          "link-button": "Insert/edit link",
+          "comment-button": "Add inline comment",
+          "more-menu": "Additional options dropdown"
+        }
+      }
+    },
+    "extended": {
+      "description": "All formatting options including text color",
+      "components": [
+        "Button",
+        "Input",
+        "icon"
+      ],
+      "layout": {
+        "layout": "floating",
+        "atoms": "_absolute _flex _aic _gap0.5 _p1 _bg[var(--surface)] _shadow _r2 _border _z[100]",
+        "slots": {
+          "format-buttons": "Full formatting options",
+          "color-picker": "Text and highlight color",
+          "alignment": "Text alignment options",
+          "link-button": "Insert/edit link",
+          "comment-button": "Add inline comment"
+        }
+      }
+    },
+    "minimal": {
+      "description": "Stripped-down toolbar with only bold, italic, and link formatting for simple text editing",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "floating",
+        "atoms": "_absolute _flex _aic _gap0.5 _p1 _bg[var(--surface)] _shadow _r2 _border _z[100]",
+        "slots": {
+          "format-buttons": "Bold, italic only",
+          "link-button": "Link button"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "floating",
+    "atoms": "_absolute _flex _aic _gap0.5 _p1 _bg[var(--surface)] _shadow _r2 _border _z[100]",
+    "slots": {
+      "format-buttons": "Bold, italic, underline, strikethrough, code",
+      "link-button": "Insert/edit link with URL input",
+      "highlight-button": "Text highlight color picker",
+      "comment-button": "Add inline comment to selection",
+      "more-menu": "Additional formatting options dropdown"
+    }
+  },
+  "io": {
+    "consumes": [
+      "position",
+      "activeFormats"
+    ],
+    "produces": [
+      "format",
+      "link",
+      "comment"
+    ],
+    "actions": [
+      "format-bold",
+      "format-italic",
+      "format-underline",
+      "format-strike",
+      "format-code",
+      "insert-link",
+      "add-comment",
+      "highlight"
+    ]
+  },
+  "visual_brief": "Floating horizontal toolbar that appears above or near selected text. Rendered as a compact pill-shaped bar with a subtle shadow and surface background. Contains a row of small icon buttons: bold (B), italic (I), underline (U), strikethrough (S), code, link, highlight color picker, and comment. Buttons show active state with a filled background when the corresponding format is applied. The toolbar positions itself dynamically near the text selection with a small arrow pointing toward the selected content. Extended preset adds heading level, alignment, and list type buttons.",
+  "responsive": {
+    "mobile": "Toolbar renders full-width at the bottom of the screen as a fixed bar above the keyboard. Touch-friendly 44px button targets. Overflow actions collapse into a more menu.",
+    "tablet": "Floating toolbar near selection. Slightly larger touch targets than desktop.",
+    "desktop": "Floating toolbar tracks text selection precisely. Compact button sizing with hover tooltips for labels."
+  },
+  "interactions": [
+    "hover-reveal",
+    "click-select",
+    "keyboard-navigation"
+  ],
+  "composition": {
+    "BlockToolbar": "Bar(d-control, floating, shadow, pill) > [FormatButtons + LinkButton + HighlightButton? + CommentButton? + MoreMenu?]",
+    "FormatButtons": "Group(d-interactive, gap-0.5) > IconButton(active?: filled-bg)[]",
+    "LinkButton": "IconButton(d-interactive) > LinkIcon",
+    "MoreMenu": "IconButton(d-interactive) > DropdownIcon"
+  }
+}

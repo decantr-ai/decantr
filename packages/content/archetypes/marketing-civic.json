@@ -1,0 +1,116 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "marketing-civic",
+  "role": "public",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Marketing Civic",
+  "description": "Public marketing surface for civic engagement platforms with landing and about pages. Positions the platform to municipal buyers and citizen communities.",
+  "tags": [
+    "marketing",
+    "landing",
+    "civic",
+    "public",
+    "about"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "civic marketing",
+        "civic landing",
+        "government marketing site",
+        "municipal landing"
+      ],
+      "secondary": [
+        "marketing page",
+        "homepage",
+        "about page"
+      ],
+      "negative": []
+    },
+    "implies": [
+      "marketing"
+    ],
+    "weight": 0.6,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "path": "/",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "landing",
+          "as": "civic-hero"
+        },
+        {
+          "pattern": "features",
+          "preset": "standard",
+          "as": "feature-grid"
+        },
+        {
+          "pattern": "testimonials",
+          "preset": "standard",
+          "as": "community-quotes"
+        },
+        {
+          "pattern": "cta-section",
+          "preset": "standard",
+          "as": "join-cta"
+        }
+      ],
+      "default_layout": [
+        "civic-hero",
+        "feature-grid",
+        "community-quotes",
+        "join-cta"
+      ],
+      "shell": "top-nav-footer"
+    },
+    {
+      "id": "about",
+      "path": "/about",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "brand",
+          "as": "about-hero"
+        }
+      ],
+      "default_layout": [
+        "about-hero"
+      ],
+      "shell": "top-nav-footer"
+    }
+  ],
+  "page_briefs": {
+    "home": "Landing-variant hero opens with an inclusive headline about community voice and transparent local government, supporting subhead, primary CTA to browse petitions, and secondary CTA to request a service. A features grid highlights petitions, budget transparency, meeting archives, and service requests. A testimonials band shows citizen and official quotes. The closing CTA section invites visitors to join the platform for their municipality.",
+    "about": "About page leads with a brand-variant hero containing the platform mission statement, founding story, civic-tech values, and team photo. Supporting content describes partner municipalities, press mentions, and contact pathways for officials and journalists."
+  },
+  "features": [
+    "marketing"
+  ],
+  "shells": {
+    "top-nav-footer": "Top navigation with marketing links and footer with civic info"
+  },
+  "dependencies": {
+    "patterns": {
+      "hero": ">=1.0.0",
+      "features": ">=1.0.0",
+      "testimonials": ">=1.0.0",
+      "cta-section": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "civic",
+      "professional"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

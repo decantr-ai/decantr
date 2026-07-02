@@ -1,0 +1,142 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "eval-suite",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Eval Suite",
+  "description": "Model evaluation test suite for running, reviewing, and comparing evaluation results with per-test breakdowns and regression detection.",
+  "tags": [
+    "evaluation",
+    "testing",
+    "ai",
+    "comparison",
+    "regression",
+    "benchmarks",
+    "2026"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "eval suite",
+        "model evaluation",
+        "ai testing",
+        "benchmark suite",
+        "eval framework"
+      ],
+      "secondary": [
+        "regression testing",
+        "model comparison",
+        "quality testing",
+        "eval results",
+        "test harness"
+      ],
+      "negative": [
+        "chatbot",
+        "agent builder",
+        "unit test"
+      ]
+    },
+    "implies": [
+      "evaluation",
+      "comparison"
+    ],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "evals",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "eval-list"
+        }
+      ],
+      "default_layout": [
+        "eval-list"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "eval-detail",
+      "patterns": [
+        {
+          "pattern": "eval-dashboard",
+          "preset": "detail",
+          "as": "eval-results"
+        }
+      ],
+      "default_layout": [
+        "eval-results"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "eval-compare",
+      "patterns": [
+        {
+          "pattern": "eval-dashboard",
+          "preset": "comparison",
+          "as": "model-comparison"
+        }
+      ],
+      "default_layout": [
+        "model-comparison"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "eval-create",
+      "patterns": [
+        {
+          "pattern": "form-sections",
+          "preset": "structured",
+          "as": "eval-config"
+        },
+        {
+          "pattern": "data-table",
+          "preset": "compact",
+          "as": "test-case-table"
+        }
+      ],
+      "default_layout": [
+        "eval-config",
+        "test-case-table"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "evals": "Data table of eval suites with columns for suite name, model target, test count, pass rate progress bar, last run timestamp, and status badge (passed/failed/running). Filter chips for status and model. 'New Suite' button in top-right.",
+    "eval-detail": "Dashboard with summary stats row at top (total tests, pass rate, avg latency, regression count). Below, a scrollable per-test breakdown table with expandable rows showing input, expected output, actual output, and score. Failed tests highlighted in red.",
+    "eval-compare": "Side-by-side model comparison dashboard. Header shows model names with overall scores. Grouped bar charts compare per-category accuracy. Below, a delta table highlights tests where models diverge, sorted by score difference.",
+    "eval-create": "Two-section form. Top section has form fields for suite name, description, model selector, and evaluation criteria toggles. Bottom section is a compact data table for adding test cases with columns for input, expected output, weight, and tags. Add-row button at table footer."
+  },
+  "features": [
+    "evaluation",
+    "comparison",
+    "regression-detection"
+  ],
+  "shells": {
+    "sidebar-main": "Collapsible sidebar with eval suite tree and main content area"
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  },
+  "dependencies": {
+    "patterns": {
+      "data-table": ">=1.0.0",
+      "eval-dashboard": ">=1.0.0",
+      "form-sections": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

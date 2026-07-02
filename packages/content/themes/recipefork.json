@@ -1,0 +1,278 @@
+{
+  "$schema": "https://decantr.ai/schemas/theme.v1.json",
+  "id": "recipefork",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipefork",
+  "description": "Neutral shadcn-inspired recipe product theme with clean slate tokens, restrained surfaces, and photography-first presentation. Designed for Vercel-hosted Next.js recipe products that need both simple and advanced authoring flows.",
+  "tags": [
+    "recipes",
+    "editorial",
+    "neutral",
+    "shadcn",
+    "light",
+    "dark",
+    "2026"
+  ],
+  "personality": "clean + photography-first + utility-minded + neutral-slate + production-ready",
+  "seed": {
+    "primary": "#111827",
+    "secondary": "#F3F4F6",
+    "accent": "#E5E7EB",
+    "background": "#FFFFFF"
+  },
+  "palette": {
+    "background": {
+      "light": "#FFFFFF",
+      "dark": "#09090B"
+    },
+    "surface": {
+      "light": "#FFFFFF",
+      "dark": "#111827"
+    },
+    "surface-raised": {
+      "light": "#F8FAFC",
+      "dark": "#18181B"
+    },
+    "border": {
+      "light": "#E5E7EB",
+      "dark": "#27272A"
+    },
+    "text": {
+      "light": "#111827",
+      "dark": "#F9FAFB"
+    },
+    "text-muted": {
+      "light": "#6B7280",
+      "dark": "#A1A1AA"
+    },
+    "primary": {
+      "light": "#111827",
+      "dark": "#F9FAFB"
+    },
+    "primary-hover": {
+      "light": "#1F2937",
+      "dark": "#E4E4E7"
+    },
+    "accent": {
+      "light": "#F3F4F6",
+      "dark": "#27272A"
+    }
+  },
+  "modes": [
+    "light",
+    "dark",
+    "auto"
+  ],
+  "shapes": [
+    "rounded"
+  ],
+  "typography": {
+    "scale": "modular",
+    "heading_weight": 700,
+    "body_weight": 400
+  },
+  "radius": {
+    "philosophy": "rounded",
+    "base": 8
+  },
+  "spatial": {
+    "density_bias": 0,
+    "content_gap_shift": 0,
+    "section_padding": "4rem",
+    "card_wrapping": "minimal",
+    "surface_override": null
+  },
+  "motion": {
+    "preference": "subtle",
+    "reduce_motion": true,
+    "entrance": "recipefork-fade",
+    "micro": "smooth",
+    "timing": "ease-out",
+    "durations": {
+      "hover": "150ms",
+      "entrance": "220ms",
+      "modal": "220ms",
+      "page": "260ms"
+    }
+  },
+  "effects": {
+    "enabled": true,
+    "intensity": "minimal",
+    "type_mapping": {
+      "card": [
+        "recipefork-card"
+      ],
+      "input": [
+        "recipefork-input"
+      ],
+      "hero": [
+        "recipefork-photo"
+      ],
+      "editor": [
+        "recipefork-editor"
+      ]
+    },
+    "component_fallback": {
+      "Card": "card",
+      "Input": "input",
+      "Hero": "hero"
+    }
+  },
+  "shell": {
+    "preferred": [
+      "recipefork-top-nav",
+      "top-nav-main",
+      "top-nav-footer"
+    ],
+    "avoid": [
+      "chat-portal",
+      "terminal-split"
+    ],
+    "nav_style": "minimal",
+    "default_nav_state": "expanded",
+    "root": "recipefork-surface",
+    "nav": "recipefork-nav",
+    "header": "recipefork-nav"
+  },
+  "pattern_preferences": {
+    "prefer": [
+      "chat-thread",
+      "chat-input",
+      "content-uploader",
+      "recipefork-kitchen-chat",
+      "recipefork-photo-generator",
+      "recipefork-recipe-card",
+      "detail-header",
+      "card-grid"
+    ],
+    "avoid": [
+      "generative-card-grid",
+      "terminal-emulator"
+    ],
+    "default_presets": {
+      "content-uploader": "single",
+      "recipefork-kitchen-chat": "standard",
+      "recipefork-photo-generator": "split",
+      "recipefork-recipe-card": "feed",
+      "detail-header": "standard",
+      "card-grid": "content"
+    }
+  },
+  "decorators": {
+    "recipefork-surface": "Clean recipe product canvas with soft slate text, white surfaces, and quiet dark mode support.",
+    "recipefork-nav": "Blurred utility navigation with compact controls and a restrained border.",
+    "recipefork-card": "Subtle bordered card with light hover lift and no heavy shadow.",
+    "recipefork-input": "shadcn-style input control with clear focus ring and muted placeholder styling.",
+    "recipefork-photo": "Large image presentation surface with soft overlay gradient for food photography.",
+    "recipefork-editor": "Quiet rich-text editor treatment with dashed border and soft accent background."
+  },
+  "decorator_definitions": {
+    "recipefork-surface": {
+      "description": "Clean recipe product canvas with soft slate text, white surfaces, and quiet dark mode support.",
+      "intent": "Use on app roots and wide content surfaces where food photography and forms should carry the visual weight rather than decorative theme effects.",
+      "suggested_properties": {
+        "background-color": "var(--d-bg, #FFFFFF)",
+        "color": "var(--d-fg, #111827)",
+        "min-height": "100vh"
+      },
+      "pairs_with": [
+        "recipefork-nav",
+        "recipefork-card"
+      ],
+      "usage": [
+        "Page roots",
+        "Shell body regions"
+      ]
+    },
+    "recipefork-nav": {
+      "description": "Blurred utility navigation with compact controls and a restrained border.",
+      "intent": "Use for sticky product nav bars where route links, theme toggle, profile entry, and create actions share a single 64px row.",
+      "suggested_properties": {
+        "backdrop-filter": "blur(12px)",
+        "background": "color-mix(in srgb, var(--d-bg) 92%, transparent)",
+        "border-bottom": "1px solid var(--d-border)"
+      },
+      "pairs_with": [
+        "recipefork-surface",
+        "recipefork-card"
+      ],
+      "usage": [
+        "Top navigation",
+        "Sticky headers"
+      ]
+    },
+    "recipefork-card": {
+      "description": "Subtle bordered card with light hover lift and no heavy shadow.",
+      "intent": "Use for cookbook cards, feed cards, stat blocks, and editor sections that should feel product-grade but not ornamental.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #FFFFFF)",
+        "border": "1px solid var(--d-border, #E5E7EB)",
+        "border-radius": "8px",
+        "transition": "box-shadow 150ms ease, transform 150ms ease"
+      },
+      "pairs_with": [
+        "recipefork-input",
+        "recipefork-photo"
+      ],
+      "usage": [
+        "Cards",
+        "Form sections",
+        "Sidebar blocks"
+      ]
+    },
+    "recipefork-input": {
+      "description": "shadcn-style input control with clear focus ring and muted placeholder styling.",
+      "intent": "Use on all recipe authoring and auth controls to keep the product visually consistent across simple and Chef Mode surfaces.",
+      "suggested_properties": {
+        "border": "1px solid var(--d-border, #E5E7EB)",
+        "border-radius": "8px",
+        "background": "var(--d-surface, #FFFFFF)",
+        "box-shadow": "0 0 0 0 transparent"
+      },
+      "pairs_with": [
+        "recipefork-card",
+        "recipefork-editor"
+      ],
+      "usage": [
+        "Inputs",
+        "Selects",
+        "Textareas"
+      ]
+    },
+    "recipefork-photo": {
+      "description": "Large image presentation surface with soft overlay gradient for food photography.",
+      "intent": "Use for hero images, cookbook covers, and generated recipe previews where the photo is the visual anchor.",
+      "suggested_properties": {
+        "border-radius": "12px",
+        "overflow": "hidden",
+        "background": "linear-gradient(to top, rgba(0,0,0,0.25), transparent)"
+      },
+      "pairs_with": [
+        "recipefork-card"
+      ],
+      "usage": [
+        "Recipe hero surfaces",
+        "Cookbook cover imagery",
+        "Photo-to-recipe previews"
+      ]
+    },
+    "recipefork-editor": {
+      "description": "Quiet rich-text editor treatment with dashed border and soft accent background.",
+      "intent": "Use for optional story editors and long-form recipe notes without overwhelming the surrounding authoring form.",
+      "suggested_properties": {
+        "border": "1px dashed var(--d-border, #E5E7EB)",
+        "border-radius": "12px",
+        "background": "color-mix(in srgb, var(--d-accent) 14%, transparent)"
+      },
+      "pairs_with": [
+        "recipefork-input",
+        "recipefork-card"
+      ],
+      "usage": [
+        "Story editors",
+        "Expandable narrative blocks"
+      ]
+    }
+  }
+}

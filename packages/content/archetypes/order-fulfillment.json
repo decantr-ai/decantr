@@ -1,0 +1,83 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "order-fulfillment",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Order Fulfillment",
+  "description": "Admin order processing and shipping management with data tables, Kanban pipeline boards, order detail views, and fulfillment action forms.",
+  "tags": ["orders", "fulfillment", "shipping", "admin", "kanban", "ecommerce", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["order fulfillment", "order processing", "shipping management", "order pipeline"],
+      "secondary": ["ship order", "fulfill order", "order status", "packing slip"],
+      "negative": ["storefront", "checkout", "customer-facing", "browse"]
+    },
+    "implies": ["order-tracking"],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "orders",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "order-table"
+        },
+        {
+          "pattern": "kanban-board",
+          "preset": "standard",
+          "as": "fulfillment-board"
+        }
+      ],
+      "default_layout": ["order-table", "fulfillment-board"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "order-detail",
+      "patterns": [
+        {
+          "pattern": "detail-header",
+          "preset": "standard",
+          "as": "order-header"
+        },
+        {
+          "pattern": "timeline",
+          "preset": "standard",
+          "as": "order-timeline"
+        },
+        {
+          "pattern": "form-sections",
+          "preset": "structured",
+          "as": "fulfillment-form"
+        }
+      ],
+      "default_layout": ["order-header", "order-timeline", "fulfillment-form"],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "orders": "Data table with order number, customer name, items count, total, status badge (pending, processing, shipped, delivered, cancelled), payment badge, and action buttons. Below, a Kanban board with columns for each fulfillment stage allowing drag-and-drop order progression. Toggle between table and Kanban views.",
+    "order-detail": "Detail header with order number, customer info, date, status badge, and total. Timeline showing order progression from placed through packed, shipped, and delivered with timestamps. Fulfillment form sections for shipping label generation, tracking number entry, and carrier selection."
+  },
+  "features": ["order-tracking", "bulk-actions", "notifications"],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area"
+  },
+  "suggested_theme": {
+    "ids": ["auradecantism", "carbon"],
+    "modes": ["dark", "light"]
+  },
+  "dependencies": {
+    "patterns": {
+      "data-table": ">=1.0.0",
+      "kanban-board": ">=1.0.0",
+      "detail-header": ">=1.0.0",
+      "timeline": ">=1.0.0",
+      "form-sections": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

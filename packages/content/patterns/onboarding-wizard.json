@@ -1,0 +1,130 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "onboarding-wizard",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Onboarding Wizard",
+  "description": "Multi-step guided flow with progress indicator, step validation, and completion celebration for user onboarding and setup experiences.",
+  "category": "onboarding",
+  "tags": [
+    "2026",
+    "onboarding",
+    "wizard",
+    "stepper",
+    "multi-step",
+    "setup",
+    "flow",
+    "progress"
+  ],
+  "components": [
+    "StepIndicator",
+    "StepContent",
+    "NavigationButtons",
+    "ProgressBar",
+    "CompletionScreen",
+    "SkipButton"
+  ],
+  "default_preset": "stepper",
+  "presets": {
+    "stepper": {
+      "description": "Numbered horizontal step indicator at the top with sequential content panels below — the classic wizard pattern for linear multi-step flows with validation between steps",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _items-center _min-h-full _bg-surface _p-8"
+      }
+    },
+    "carousel": {
+      "description": "Slide-based onboarding with horizontal transitions between steps — content slides left/right with dot indicators and swipe support, ideal for visual introductions",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _items-center _justify-center _h-full _bg-surface _overflow-hidden"
+      }
+    },
+    "checklist": {
+      "description": "Non-linear task checklist where users can complete setup steps in any order — each task expands inline when clicked, with an overall progress tracker at the top",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _max-w-2xl _mx-auto _p-8 _bg-surface _gap-4"
+      }
+    }
+  },
+  "visual_brief": "A clean, focused onboarding experience centered on the page with generous whitespace. The StepIndicator sits at the top of the content area as a horizontal row of numbered circles (32px diameter each) connected by horizontal lines (2px height, spanning the gap between circles). The current/active step circle is filled with the accent color (var(--d-accent)) with white text showing the step number — it is slightly larger (36px) and has a subtle shadow (0 0 0 4px color-mix(in srgb, var(--d-accent) 15%, transparent)) creating a ring highlight. Completed steps show a white checkmark icon on an accent-filled circle with full opacity. Upcoming/future steps are outlined circles (2px border var(--d-border-muted)) with muted text for the number. The connecting lines between steps use the accent color for completed segments and var(--d-border-muted) for upcoming segments, with the current-step segment showing a gradient transition from accent to muted. Directly below the step indicator is the ProgressBar: a thin horizontal bar (4px height, border-radius: 2px, full width of the step indicator) showing the overall completion percentage with a smooth fill using the accent color on a muted track background. The StepContent area below is the largest section: a max-width 640px centered container with generous padding (40px top, 32px sides). Each step renders a title (text-xl font-semibold, margin-bottom 8px), an optional description (text-sm text-muted, margin-bottom 24px), and the step's form fields or content. Transitions between steps use a horizontal slide animation: forward steps slide in from the right, backward steps slide in from the left, with a 300ms ease-out duration. The NavigationButtons are right-aligned at the bottom of the content area with a top margin of 32px. The 'Back' button is a ghost/outline style (text-sm, no fill, muted border, visible from step 2 onward). The 'Continue' button is a primary filled button (accent background, white text, min-width 120px, text-sm font-medium). Between the Back and Continue buttons sits optional space, and a SkipButton as a subtle text link ('Skip this step', text-xs text-muted, hover: underline) appears only on optional steps. On the final step, 'Continue' changes to 'Complete' or 'Get Started'. The CompletionScreen replaces the step content after the last step: a centered column with a large animated check circle (72px, accent-filled, white checkmark that draws itself with a stroke animation), a 'You are all set!' heading (text-2xl font-bold, margin-top 24px), a congratulatory subtext (text-base text-muted, max-width 400px, text-center), and a primary 'Get Started' button below. A subtle confetti animation plays in the background — small colored particles (accent, green, amber, purple) that burst from the center and float downward with gentle rotation, lasting 2.5 seconds then fading. In the checklist preset, each task is a card (d-surface, border, border-radius 8px, padding 16px) with a checkbox, task name, and description. Completed tasks show a green checkmark and muted/struck-through title. The task expands inline to show its content when clicked.",
+  "layout_hints": {
+    "container": "centered-column",
+    "note": "The wizard should be centered on the page with a max-width of 720px for the overall container and 640px for step content. Generous vertical spacing creates a calm, focused feel. Do NOT cram the wizard into a small card — it should feel spacious.",
+    "step_indicator": "The horizontal step indicator must be visually clear at a glance. Completed (checkmark), active (filled, highlighted), and upcoming (outlined, muted) states must be distinctly different. The connecting lines are essential — they visually link the steps into a journey narrative. Place the step indicator within a max-width container (e.g., 480px for 4-5 steps) centered above the content.",
+    "content_area": "Step content should be max-width 640px centered. Form fields within each step should use the full width. Keep each step focused — one primary action or information group per step. Avoid scrolling within a step if possible.",
+    "navigation_alignment": "Navigation buttons align to the right edge of the content area. The 'Back' button sits to the LEFT of 'Continue' with a 12px gap. The SkipButton, if present, sits to the FAR LEFT of the button row (justify-between with the nav buttons). This creates a clear visual hierarchy: skip (optional, left), back (secondary, right-of-center), continue (primary, far right).",
+    "completion_celebration": "The confetti animation should be delightful but not overwhelming. Use 30-50 particles, small sizes (4-8px), and fade them out after 2.5 seconds. The check circle animation should be the star — the checkmark stroke draws itself over 600ms with a satisfying easing curve."
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _items-center _min-h-full _bg-surface _p-8",
+    "slots": {
+      "step-indicator": "Horizontal row of step markers centered at the top of the wizard. Max-width 480px for 4-5 steps (scales proportionally). Each step marker is a flex column: the circle (32px diameter) on top, and optionally a step label (text-xs text-muted, max-width 80px, text-center, margin-top 6px) below. Circles are connected by horizontal lines (2px height) that span from the right edge of one circle to the left edge of the next, vertically centered with the circles. Circle states — Completed: background var(--d-accent), white checkmark SVG icon (16px), full opacity. Active: background var(--d-accent), white step number (text-sm font-bold), box-shadow: 0 0 0 4px color-mix(in srgb, var(--d-accent) 15%, transparent), slightly larger (36px diameter) with a smooth size transition. Upcoming: background transparent, border 2px solid var(--d-border-muted), step number in text-muted (text-sm). Line states — Between completed steps: background var(--d-accent). Between active and next: a gradient from var(--d-accent) to var(--d-border-muted). Between upcoming steps: background var(--d-border-muted). The active circle and its connecting lines transition smoothly (300ms ease-out) when stepping forward or backward.",
+      "progress-bar": "A thin horizontal bar positioned directly below the step indicator with 12px top margin. Width matches the step indicator container (480px or proportional). Height: 4px. Border-radius: 2px. Track: background var(--d-bg-muted). Fill: background var(--d-accent), width transitions smoothly (400ms ease-out) as the user progresses. The fill width represents overall completion as a percentage (e.g., step 2 of 4 = 50%). On completion, the bar fills to 100% with a brief accent pulse animation.",
+      "step-content": "The main content area below the progress bar. Max-width 640px, width 100%, centered (margin 0 auto), padding-top 40px. Each step renders: a title (text-xl font-semibold text-foreground, text-center or text-left depending on content type), an optional description (text-sm text-muted, margin-top 8px, margin-bottom 24px, max-width 480px, text-center for intro text or text-left for form instructions), and the step body (form fields, selections, informational content). Transitions between steps: the outgoing step slides out (translateX to -100% for forward, +100% for backward) while the incoming step slides in from the opposite side, both over 300ms ease-out. The content area has a min-height (e.g., 300px) to prevent layout shift between steps of different heights.",
+      "navigation-buttons": "A horizontal flex row at the bottom of the step content area. Width matches the step content (max-width 640px). Margin-top 32px. Justify-content: space-between for when SkipButton is present, or flex-end when only Back/Continue show. Left side: SkipButton (text-xs text-muted, ghost style, 'Skip this step' with a right-pointing chevron icon, only visible on optional steps, hover: text-foreground, hover: underline). Right side: a flex row with gap 12px containing the Back button (ghost variant, text-sm, left arrow icon + 'Back' text, visible from step 2 onward, disabled on step 1) and the Continue button (primary variant, text-sm font-medium, 'Continue' text + right arrow icon, min-width 120px, accent background, white text). On the final step, Continue reads 'Complete Setup' or 'Get Started' and may have a sparkle/check icon. The Continue button shows a loading spinner (16px, replacing the arrow icon) during async validation. If validation fails, the button shakes briefly (translateX -4px→4px→-2px→2px→0, 400ms) and an error message appears below it.",
+      "completion-screen": "Replaces step-content and step-indicator after the final step is completed. A centered vertical flex column with items-center. Top: an animated check circle — a 72px diameter circle with background var(--d-accent) and a white checkmark SVG. The checkmark draws itself with a stroke-dasharray animation: dasharray equals the path length, dashoffset animates from full to 0 over 600ms with a cubic-bezier(0.65, 0, 0.35, 1) easing. The circle itself scales from 0.8 to 1.0 with a slight overshoot (spring) during the same period. Below: 'You are all set!' heading (text-2xl font-bold text-foreground, margin-top 24px), a congratulatory description (text-base text-muted, max-width 400px, text-center, margin-top 8px, e.g., 'Your account is configured and ready to go.'), and a primary 'Get Started' button (margin-top 32px, large size, min-width 160px). Confetti animation: 40 small particles (4-8px each, mix of circles and rectangles) in accent, green (#22c55e), amber (#f59e0b), and purple (#8b5cf6) colors burst outward from the center of the screen in a fountain pattern, each with random velocity, gentle gravity, rotation, and opacity fade. The burst lasts 2.5 seconds total, particles fade out individually as they slow. Confetti is rendered in a fixed overlay layer with pointer-events: none.",
+      "skip-button": "A subtle, low-emphasis text button that appears on the left side of the navigation row for optional steps. Renders as text-xs text-muted with no background or border. Text reads 'Skip this step' or 'I'll do this later'. On hover: text color strengthens to text-foreground with an underline. On click: advances to the next step without saving the current step's data. Only present on steps explicitly marked as skippable — mandatory steps do not show this button."
+    }
+  },
+  "accessibility": {
+    "role": "form",
+    "aria-label": "Onboarding wizard",
+    "announcements": [
+      "Step {current} of {total}: {step title}",
+      "Step {title} completed, moving to step {next}",
+      "Onboarding complete — you're all set",
+      "Validation error: {error message}",
+      "Step skipped, moving to step {next}"
+    ],
+    "keyboard": [
+      "Tab: move between form fields and navigation buttons within a step",
+      "Enter: submit current step (equivalent to clicking Continue)",
+      "Escape: go back to previous step or close the wizard if on step 1",
+      "Arrow Left/Right: navigate step indicator (visual only, does not skip steps)",
+      "Shift+Tab: reverse tab order through form fields"
+    ]
+  },
+  "responsive": {
+    "mobile": "Step indicator simplifies to a compact format: 'Step 2 of 4' text label with a full-width progress bar beneath it — numbered circles are hidden to save vertical space. Step content goes full-width with 16px horizontal padding. Navigation buttons stack vertically: Continue button full-width on top, Back button full-width below, SkipButton as a centered text link at the bottom. Step transitions change from horizontal slide to a simple cross-fade (300ms) to avoid horizontal overflow issues. Completion confetti still plays but with fewer particles (20). The check circle scales down to 56px.",
+    "tablet": "Step indicator shows numbered circles but without step labels beneath them to save space. Content area max-width 560px. Navigation buttons remain horizontal. Step transitions use horizontal slide. Completion screen maintains full animations. Touch-friendly button sizes (min height 44px).",
+    "desktop": "Full step indicator with numbered circles, connecting lines, and optional step labels. Content area at max-width 640px with generous surrounding whitespace. All animations at full fidelity. Keyboard shortcuts enabled. Progress bar and step indicator are both visible. Confetti uses the full 40-particle burst."
+  },
+  "motion": {
+    "micro": {
+      "step-circle-activate": "Active circle scales from 32px to 36px + shadow ring expands, 300ms spring",
+      "button-hover": "Primary button: subtle brightness increase (filter: brightness(1.05)), 100ms ease-out",
+      "button-press": "scale(0.98), 80ms ease-out, return 120ms ease-out",
+      "validation-shake": "Continue button shakes translateX(-4px→4px→-2px→2px→0), 400ms ease-out on validation failure"
+    },
+    "transitions": {
+      "step-forward": "Outgoing content slides left (translateX(0→-100%)) + fade; incoming content slides in from right (translateX(100%→0)) + fade, 300ms ease-out",
+      "step-backward": "Outgoing content slides right (translateX(0→100%)) + fade; incoming content slides in from left (translateX(-100%→0)) + fade, 300ms ease-out",
+      "progress-fill": "Progress bar width transitions smoothly 400ms ease-out on step change",
+      "line-fill": "Connecting lines between step circles fill with accent color 300ms ease-out when a step completes",
+      "completion-enter": "Content cross-fades from final step to completion screen, 400ms ease-in-out"
+    },
+    "ambient": {
+      "checkmark-draw": "SVG checkmark stroke-dashoffset animates from pathLength to 0 over 600ms cubic-bezier(0.65, 0, 0.35, 1), creating a drawing effect",
+      "confetti-burst": "40 particles burst outward from center: each with random angle (0-360deg), velocity (200-500px), gravity pull (300px/s²), rotation (random 0-720deg over lifetime), and opacity fade (1.0→0 in final 500ms). Total duration 2.5s. Particles use mix of circle and rounded-rectangle shapes in 4 colors.",
+      "active-ring-pulse": "Active step circle's outer ring shadow pulses opacity 0.1→0.2→0.1 slowly, 3s ease-in-out infinite, providing a subtle breathing effect"
+    }
+  },
+  "interactions": [
+    "animate-on-mount",
+    "stagger-children",
+    "click-select",
+    "keyboard-navigation",
+    "focus-trap"
+  ],
+  "composition": {
+    "OnboardingWizard": "Wizard(d-section, centered, max-width) > [StepIndicator + ProgressBar + StepContent + NavigationButtons] | CompletionScreen",
+    "StepIndicator": "Indicator(flex-row, centered) > StepCircle*(numbered|checked|upcoming) + ConnectingLine*(filled|unfilled)",
+    "ProgressBar": "Bar(d-annotation, thin, full-width) > Fill(accent, width-transition)",
+    "StepContent": "Content(d-surface, centered, max-width-640, slide-transition) > [Title + Description? + StepBody(form|info)]",
+    "NavigationButtons": "Actions(flex-row, justify-between|end) > [SkipButton? + BackButton?(ghost) + ContinueButton(primary)]",
+    "CompletionScreen": "Celebration(centered, flex-col) > [CheckCircle(animated-draw) + Heading + Description + CTAButton] + ConfettiOverlay(ephemeral)"
+  }
+}

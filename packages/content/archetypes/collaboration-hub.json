@@ -1,0 +1,87 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "collaboration-hub",
+  "role": "auxiliary",
+  "version": "2.1.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Collaboration Hub",
+  "description": "Producer collaboration and royalty operations surface with contributor presence, credits, split validation, signatures, and payout readiness.",
+  "visual_brief": "Music operations workspace for credits, presence, and splits. The interface should feel like label-ready production tooling: contributor rows, role badges, signed/pending states, split meters, payout readiness, release guardrails, and clear validation totals. Desktop should use an ops board with contributor rows plus a readiness sidecar, not a sparse grid of people cards. Use operational density, calm dark surfaces, exact route active states, and unmistakable valid/invalid states. It should not resemble generic team cards or CRM people lists.",
+  "responsive": {
+    "mobile": "Split meters pin above stacked contributor forms. Contributor rows become compact cards with master/publishing percentages and signature state visible.",
+    "tablet": "Validation summary and contributor list stack; ledger moves below.",
+    "desktop": "Validation totals, contributor rows, split meters, readiness sidecar, and ledger can be visible together with table-like alignment."
+  },
+  "accessibility": {
+    "landmarks": ["main"],
+    "keyboard": ["Tab moves through percentage inputs", "Enter commits edited percentages", "Esc cancels edit"],
+    "notes": "Announce split totals and invalid states; color cannot be the only indicator of pending or invalid signatures."
+  },
+  "tags": ["collaboration", "royalties", "splits", "team", "music", "credits"],
+  "classification": {
+    "triggers": {
+      "primary": ["collaborators", "royalty splits", "co-writers", "music team", "producer splits"],
+      "secondary": ["splits", "contributors", "credits", "payouts", "signatures"],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "directives": [
+    "Collaboration pages should read as music ops surfaces, not generic team management.",
+    "The /collab route owns collaborator presence; /collab/splits owns split validation. Navigation should not highlight both routes at once.",
+    "Split validation must be visually unambiguous and practical."
+  ],
+  "pages": [
+    {
+      "id": "collaborators",
+      "patterns": [
+        { "pattern": "card-grid", "preset": "content", "as": "grid" },
+        { "pattern": "team-member-row", "preset": "standard", "as": "members" },
+        { "pattern": "session-inspector", "preset": "aside", "as": "presence" }
+      ],
+      "default_layout": ["card-grid", "team-member-row", "session-inspector"],
+      "directives": [
+        "Use dense contributor rows with role, live edit state, master/publishing split chips, and signature state.",
+        "On desktop, pair the contributor board with a release-readiness sidecar so the route does not feel empty."
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "splits",
+      "patterns": [
+        { "pattern": "producer-split-workbench", "preset": "workbench", "as": "workbench" },
+        { "pattern": "data-table", "preset": "standard", "as": "ledger" }
+      ],
+      "default_layout": ["producer-split-workbench", "data-table"],
+      "directives": [
+        "Use the split workbench as the primary surface; the ledger is supporting history.",
+        "Show master and publishing totals, signed/pending state, and payout readiness."
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "collaborators": "Producer collaborator directory with role, active session, contribution count, split status, signature state, and presence. It should feel connected to current music sessions rather than corporate team cards. Desktop should read as a credits/release operations board with supporting readiness status.",
+    "splits": "Royalty split workbench for the active track. Master and publishing meters validate to 100%, contributor rows show roles/signatures/payout readiness, and desktop includes supporting signature timeline, distribution gates, clearance queue, and ledger panels so the route reads like release operations rather than a single sparse table."
+  },
+  "features": ["collaboration", "royalties", "credits", "split-validation", "signatures"],
+  "shells": {
+    "sidebar-main": "Left navigation sidebar with primary content column"
+  },
+  "dependencies": {
+    "patterns": {
+      "card-grid": "^1.0.0",
+      "team-member-row": "^1.0.0",
+      "session-inspector": "^1.1.0",
+      "producer-split-workbench": "^1.0.0",
+      "data-table": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": ["studio-dark", "carbon-neon"],
+    "modes": ["dark"]
+  }
+}

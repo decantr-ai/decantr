@@ -1,0 +1,131 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "community-feed",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Community Feed",
+  "description": "Social community feed with posts, discussions, reactions, comments, and a member directory. Drives engagement and connection in event and community platforms.",
+  "tags": [
+    "community",
+    "social",
+    "feed",
+    "discussions",
+    "members"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "community feed",
+        "social feed",
+        "discussion board",
+        "community forum"
+      ],
+      "secondary": [
+        "posts",
+        "comments",
+        "reactions",
+        "member directory"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "feed",
+      "patterns": [
+        {
+          "pattern": "post-list",
+          "preset": "standard",
+          "as": "posts"
+        },
+        {
+          "pattern": "activity-feed",
+          "preset": "standard",
+          "as": "activity"
+        },
+        {
+          "pattern": "emoji-reaction-bar",
+          "preset": "inline",
+          "as": "reactions"
+        }
+      ],
+      "default_layout": [
+        "posts",
+        "activity",
+        "reactions"
+      ],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "post-detail",
+      "patterns": [
+        {
+          "pattern": "comment-thread",
+          "preset": "standard",
+          "as": "comments"
+        },
+        {
+          "pattern": "emoji-reaction-bar",
+          "preset": "inline",
+          "as": "reactions"
+        }
+      ],
+      "default_layout": [
+        "comments",
+        "reactions"
+      ],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "members",
+      "patterns": [
+        {
+          "pattern": "card-grid",
+          "preset": "content",
+          "as": "member-cards"
+        }
+      ],
+      "default_layout": [
+        "member-cards"
+      ],
+      "shell": "top-nav-main"
+    }
+  ],
+  "page_briefs": {
+    "feed": "Scrollable community feed with a compose box at the top for new posts. Below, a post list displays user posts with avatars, timestamps, text content, images, and inline emoji reaction bars. A sidebar activity feed shows recent community highlights and trending discussions.",
+    "post-detail": "Single post view with the full post content at the top, followed by a threaded comment section with nested replies, user avatars, and timestamps. Inline emoji reaction bars appear on both the post and individual comments. A reply input anchors at the bottom.",
+    "members": "Member directory displayed as a content card grid. Each card shows a member avatar, display name, bio excerpt, join date, and contribution count. Search and filter controls at the top allow filtering by role or activity level."
+  },
+  "features": [
+    "feed",
+    "discussions",
+    "reactions",
+    "comments"
+  ],
+  "shells": {
+    "top-nav-main": "Top navigation bar with main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "post-list": "^1.0.0",
+      "activity-feed": "^1.0.0",
+      "emoji-reaction-bar": "^1.0.0",
+      "comment-thread": "^1.0.0",
+      "card-grid": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  }
+}

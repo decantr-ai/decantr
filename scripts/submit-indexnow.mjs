@@ -4,7 +4,6 @@ import { decodeXML } from 'entities';
 const DEFAULT_KEY = '24d33581c24e009daf33a15d040ef127';
 const DEFAULT_SITEMAPS = [
   'https://decantr.ai/sitemap.xml',
-  'https://registry.decantr.ai/sitemap.xml',
 ];
 const INDEXNOW_ENDPOINT = process.env.INDEXNOW_ENDPOINT || 'https://api.indexnow.org/indexnow';
 const MAX_URLS_PER_BATCH = 10000;

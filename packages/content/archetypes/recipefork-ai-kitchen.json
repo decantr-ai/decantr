@@ -1,0 +1,95 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "recipefork-ai-kitchen",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipefork AI Kitchen",
+  "description": "Authenticated AI kitchen workspace for Recipefork with chat history and photo-to-recipe generation flows.",
+  "tags": [
+    "recipes",
+    "ai",
+    "chat",
+    "vision",
+    "generation",
+    "2026"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "recipe ai chat",
+        "photo to recipe",
+        "recipefork generate page"
+      ],
+      "secondary": [
+        "cooking assistant",
+        "image recipe generation"
+      ],
+      "negative": [
+        "dashboard"
+      ]
+    },
+    "implies": [
+      "auth"
+    ],
+    "weight": 0.9,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "chat",
+      "patterns": [
+        {
+          "pattern": "recipefork-kitchen-chat",
+          "preset": "standard",
+          "as": "kitchen-chat"
+        }
+      ],
+      "default_layout": [
+        "kitchen-chat"
+      ],
+      "shell": "recipefork-top-nav"
+    },
+    {
+      "id": "generate",
+      "patterns": [
+        {
+          "pattern": "recipefork-photo-generator",
+          "preset": "split",
+          "as": "photo-generator"
+        }
+      ],
+      "default_layout": [
+        "photo-generator"
+      ],
+      "shell": "recipefork-top-nav"
+    }
+  ],
+  "page_briefs": {
+    "chat": "Account-bound AI kitchen conversation with persistent chat history. The surface should feel like a focused utility page inside the main product shell rather than a separate assistant product.",
+    "generate": "Photo-to-recipe generation page with a large single-image upload surface and a generated recipe preview panel beside or beneath it depending on width."
+  },
+  "features": [
+    "chat-history",
+    "image-upload",
+    "auth",
+    "generation-history"
+  ],
+  "dependencies": {
+    "patterns": {
+      "recipefork-kitchen-chat": ">=1.0.0",
+      "recipefork-photo-generator": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "recipefork",
+      "clean"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

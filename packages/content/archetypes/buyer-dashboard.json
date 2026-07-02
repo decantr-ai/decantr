@@ -1,0 +1,124 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "buyer-dashboard",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Buyer Dashboard",
+  "description": "Buyer account hub with bookings, saved favorites, and messaging. Centralizes the buyer experience in a two-sided marketplace.",
+  "tags": [
+    "marketplace",
+    "buyer",
+    "dashboard",
+    "bookings",
+    "messaging"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "buyer dashboard",
+        "my bookings",
+        "buyer account",
+        "purchase history"
+      ],
+      "secondary": [
+        "favorites",
+        "saved listings",
+        "buyer messages",
+        "order tracking"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "bookings",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "booking-list"
+        }
+      ],
+      "default_layout": [
+        "booking-list"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "favorites",
+      "patterns": [
+        {
+          "pattern": "card-grid",
+          "preset": "product",
+          "as": "saved-listings"
+        }
+      ],
+      "default_layout": [
+        "saved-listings"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "messages",
+      "patterns": [
+        {
+          "pattern": "conversation-list",
+          "preset": "standard",
+          "as": "threads"
+        },
+        {
+          "pattern": "chat-thread",
+          "preset": "standard",
+          "as": "active-thread"
+        }
+      ],
+      "default_layout": [
+        "threads",
+        "active-thread"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "bookings": "Table view of all buyer bookings with columns for listing name, dates, status, and total cost. Each row expands to show booking details and actions like cancel or reschedule. Status badges indicate confirmed, pending, or completed states.",
+    "favorites": "Grid of saved listings displayed as product cards with thumbnail, title, price, and rating. Heart icon toggle allows quick unfavoriting. Empty state prompts the buyer to browse and save listings.",
+    "messages": "Split-panel messaging view. Left panel shows a scrollable conversation list with seller avatars, last message preview, and timestamps. Right panel displays the active chat thread with message bubbles, contextual listing reference cards, and a text input."
+  },
+  "features": [
+    "bookings",
+    "favorites",
+    "messaging"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "data-table": "^1.0.0",
+      "card-grid": "^1.0.0",
+      "conversation-list": "^1.0.0",
+      "chat-thread": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  },
+  "directives": [
+    "Buyer dashboard sidebar nav MUST include three sections: Bookings, Favorites, Messages \u2014 in that order. Each link should show a small count badge when there are unread/upcoming items (e.g. 'Bookings 2', 'Messages 3').",
+    "Bookings list: show upcoming bookings FIRST (with check-in date, listing thumbnail, host name, status chip), then past bookings beneath a 'Past stays' divider. Each booking row must be tappable into a detail/messaging view.",
+    "Favorites: render as a card-grid identical to /browse cards (image, title, location, rating, price) \u2014 NOT a stripped-down list. The user is comparing saved options against each other; remove a card with a heart icon toggle.",
+    "Messages: two-pane layout \u2014 left rail is conversation list (host avatar + listing thumbnail + last message preview + timestamp), right pane is the active thread. Clicking a conversation updates the right pane without page navigation. On mobile, list and thread swap \u2014 show one at a time with a back arrow.",
+    "Empty states are warm, not sterile: empty Bookings \u2192 'No trips booked yet \u2014 start with /browse', empty Favorites \u2192 'Spaces you \u2764 will live here', empty Messages \u2192 'Conversations with hosts appear here once you reach out'."
+  ]
+}

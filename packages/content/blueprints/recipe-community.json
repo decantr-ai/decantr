@@ -1,0 +1,259 @@
+{
+  "$schema": "https://decantr.ai/schemas/blueprint.v1.json",
+  "id": "recipe-community",
+  "version": "2.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipe Community",
+  "description": "Warm, appetite-driven recipe community with browsing, cook mode, recipe creation, social features, and a marketing landing page. Multi-archetype composition with full auth and settings.",
+  "blueprint_portfolio": {
+    "visibility": "labs",
+    "maturity": "experimental",
+    "rationale": "Interesting community-commerce direction, but it stays in Labs until the registry has a published flagship recipe blueprint to recommend beside it.",
+    "artifact": {
+      "status": "candidate",
+      "showcase": "recipe-community",
+      "notes": "Visible through Labs; promote after the recipe-domain positioning and scaffold proof are tightened."
+    }
+  },
+  "tags": [
+    "recipes",
+    "food",
+    "community",
+    "cooking",
+    "social",
+    "2026"
+  ],
+  "compose": [
+    "recipe-browser",
+    "cook-mode",
+    "recipe-creator",
+    "recipe-social",
+    "marketing-recipe",
+    "auth-full",
+    "settings-full"
+  ],
+  "theme": {
+    "id": "auradecantism",
+    "mode": "light",
+    "shape": "rounded"
+  },
+  "personality": "Warm, appetite-driven recipe community with rich food photography as the visual anchor. Earthy tones with pops of warm orange and herb green. Card-based recipe grid where each card is a gorgeous food photo with overlaid title. Recipe detail pages flow: hero image, ingredient list with drag-to-reorder, step-by-step instructions with the stepper pattern. Cook mode is distraction-free with large text and step navigation. Social features include emoji reactions, collections, and creator profiles. Lucide icons. Everything makes you hungry.",
+  "voice": {
+    "tone": "Warm and encouraging. Celebrates food and creativity.",
+    "cta_verbs": [
+      "Cook",
+      "Save",
+      "Share",
+      "Follow",
+      "Create",
+      "Collect"
+    ],
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Execute",
+      "Deploy"
+    ],
+    "empty_states": "Inviting and appetizing. An empty cookbook should inspire the user to save their first recipe, not feel like an error. Use food-related metaphors.",
+    "errors": "Gentle and understanding. If a recipe upload fails, offer to retry. Keep the kitchen metaphor alive without being cheesy.",
+    "loading": "Recipe card skeletons with image placeholders showing a subtle plate outline. Shimmer animation in warm tones."
+  },
+  "features": [
+    "search",
+    "filter",
+    "gallery",
+    "drag-drop",
+    "social",
+    "reactions",
+    "collections",
+    "timer",
+    "auth",
+    "mfa",
+    "oauth",
+    "marketing",
+    "seo",
+    "keyboard-shortcuts"
+  ],
+  "routes": {
+    "/": {
+      "shell": "top-nav-footer",
+      "archetype": "marketing-recipe",
+      "page": "home"
+    },
+    "/recipes": {
+      "shell": "top-nav-main",
+      "archetype": "recipe-browser",
+      "page": "recipes"
+    },
+    "/recipes/:id": {
+      "shell": "top-nav-main",
+      "archetype": "recipe-browser",
+      "page": "recipe-detail"
+    },
+    "/recipes/:id/cook": {
+      "shell": "minimal-header",
+      "archetype": "cook-mode",
+      "page": "cooking"
+    },
+    "/recipes/create": {
+      "shell": "sidebar-main",
+      "archetype": "recipe-creator",
+      "page": "create"
+    },
+    "/my-recipes": {
+      "shell": "sidebar-main",
+      "archetype": "recipe-creator",
+      "page": "my-recipes"
+    },
+    "/feed": {
+      "shell": "top-nav-main",
+      "archetype": "recipe-social",
+      "page": "feed"
+    },
+    "/collections": {
+      "shell": "top-nav-main",
+      "archetype": "recipe-social",
+      "page": "collections"
+    },
+    "/profile/:id": {
+      "shell": "top-nav-main",
+      "archetype": "recipe-social",
+      "page": "profile"
+    },
+    "/login": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "login"
+    },
+    "/register": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "register"
+    },
+    "/forgot-password": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "forgot-password"
+    },
+    "/reset-password": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "reset-password"
+    },
+    "/verify-email": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "verify-email"
+    },
+    "/mfa-setup": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "mfa-setup"
+    },
+    "/mfa-verify": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "mfa-verify"
+    },
+    "/phone-verify": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "phone-verify"
+    },
+    "/settings/profile": {
+      "shell": "sidebar-aside",
+      "archetype": "settings-full",
+      "page": "profile"
+    },
+    "/settings/security": {
+      "shell": "sidebar-aside",
+      "archetype": "settings-full",
+      "page": "security"
+    },
+    "/settings/preferences": {
+      "shell": "sidebar-aside",
+      "archetype": "settings-full",
+      "page": "preferences"
+    },
+    "/settings/danger": {
+      "shell": "sidebar-aside",
+      "archetype": "settings-full",
+      "page": "danger"
+    }
+  },
+  "overrides": {
+    "features_add": [
+      "theme-toggle",
+      "command-palette"
+    ],
+    "features_remove": [],
+    "pages": {},
+    "pages_remove": []
+  },
+  "dependencies": {
+    "archetypes": {
+      "recipe-browser": ">=1.0.0",
+      "cook-mode": ">=1.0.0",
+      "recipe-creator": ">=1.0.0",
+      "recipe-social": ">=1.0.0",
+      "marketing-recipe": ">=1.0.0",
+      "auth-full": ">=1.0.0",
+      "settings-full": ">=1.0.0"
+    }
+  },
+  "navigation": {
+    "command_palette": true,
+    "hotkeys": [
+      {
+        "key": "g r",
+        "route": "/recipes",
+        "label": "Go to Recipes"
+      },
+      {
+        "key": "g f",
+        "route": "/feed",
+        "label": "Go to Feed"
+      },
+      {
+        "key": "g c",
+        "route": "/collections",
+        "label": "Go to Collections"
+      },
+      {
+        "key": "g n",
+        "route": "/recipes/create",
+        "label": "New Recipe"
+      },
+      {
+        "key": "g m",
+        "route": "/my-recipes",
+        "label": "My Recipes"
+      },
+      {
+        "key": "g p",
+        "route": "/profile/me",
+        "label": "Go to Profile"
+      }
+    ]
+  },
+  "seo_hints": {
+    "schema_org": [
+      "WebApplication",
+      "Recipe",
+      "CollectionPage"
+    ],
+    "meta_priorities": [
+      "description",
+      "og:title",
+      "og:image"
+    ]
+  },
+  "suggested_themes": [
+    "auradecantism",
+    "earth",
+    "studio",
+    "clean",
+    "dopamine"
+  ]
+}

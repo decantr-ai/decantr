@@ -1,0 +1,127 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "landing-resources",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Landing Resources",
+  "description": "Resources and blog section for a product landing site. Provides SEO depth with blog posts, guides, and resource listings that support the main product narrative.",
+  "tags": [
+    "resources",
+    "blog",
+    "seo",
+    "content",
+    "landing",
+    "2026"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "product blog",
+        "resource center",
+        "landing blog",
+        "product resources",
+        "content marketing blog"
+      ],
+      "secondary": [
+        "seo content",
+        "guides",
+        "tutorials",
+        "product updates",
+        "knowledge base"
+      ],
+      "negative": [
+        "dashboard",
+        "admin",
+        "checkout"
+      ]
+    },
+    "implies": [
+      "seo",
+      "content"
+    ],
+    "weight": 0.8,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "blog",
+      "patterns": [
+        {
+          "pattern": "card-grid",
+          "preset": "content",
+          "as": "blog-cards"
+        }
+      ],
+      "default_layout": [
+        "blog-cards"
+      ],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "blog-post",
+      "patterns": [
+        {
+          "pattern": "legal-prose",
+          "preset": "standard",
+          "as": "post-body"
+        },
+        {
+          "pattern": "breadcrumb-nav",
+          "preset": "standard",
+          "as": "breadcrumbs"
+        }
+      ],
+      "default_layout": [
+        "breadcrumbs",
+        "post-body"
+      ],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "resources",
+      "patterns": [
+        {
+          "pattern": "card-grid",
+          "preset": "content",
+          "as": "resource-cards"
+        }
+      ],
+      "default_layout": [
+        "resource-cards"
+      ],
+      "shell": "top-nav-main"
+    }
+  ],
+  "page_briefs": {
+    "blog": "Card grid of blog posts with featured image, title, excerpt, date, and category tag. Reverse chronological order. Clean layout matching the product landing aesthetic.",
+    "blog-post": "Breadcrumb navigation at top linking back to blog. Long-form article view with comfortable reading typography, author attribution, publication date, and share buttons. Related posts at bottom.",
+    "resources": "Card grid of resources (guides, case studies, whitepapers) with resource type badge, title, description, and download or read link. Filterable by type."
+  },
+  "features": [
+    "seo",
+    "search",
+    "rss"
+  ],
+  "shells": {
+    "top-nav-main": "Top navigation bar with main content area"
+  },
+  "suggested_theme": {
+    "ids": [
+      "luminarum",
+      "clean"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  },
+  "dependencies": {
+    "patterns": {
+      "card-grid": ">=1.0.0",
+      "legal-prose": ">=1.0.0",
+      "breadcrumb-nav": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

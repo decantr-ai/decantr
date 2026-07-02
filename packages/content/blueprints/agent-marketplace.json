@@ -1,0 +1,222 @@
+{
+  "$schema": "https://decantr.ai/schemas/blueprint.v1.json",
+  "id": "agent-marketplace",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Agent Marketplace",
+  "description": "Full agent marketplace platform for discovering, deploying, and monitoring autonomous agent swarms. Combines orchestration dashboard, auth, marketing landing, and AI transparency views.",
+  "blueprint_portfolio": {
+    "visibility": "public",
+    "maturity": "supported-contract",
+    "rationale": "Supported registry blueprint that remains useful in All without being promoted as a flagship default.",
+    "artifact": {
+      "status": "candidate",
+      "showcase": "agent-marketplace",
+      "notes": "Showcase-backed candidate; certification requires artifact evidence beyond registry availability."
+    }
+  },
+  "tags": [
+    "agents",
+    "marketplace",
+    "orchestration",
+    "ai",
+    "monitoring",
+    "saas",
+    "2026"
+  ],
+  "compose": [
+    "agent-orchestrator",
+    "auth-full",
+    "marketing-saas",
+    "ai-transparency"
+  ],
+  "theme": {
+    "mode": "dark",
+    "shape": "rounded",
+    "id": "carbon-neon"
+  },
+  "personality": "Confident cyber-minimal agent marketplace. Neon accent glows on dark void backgrounds. Monospace data typography. Agent status shown through color-coded rings and pulse animations. Think Linear meets a mission control center. Lucide icons. No decorative elements — every pixel serves the operator.",
+  "voice": {
+    "tone": "Operational and precise. Speaks to agent operators and platform engineers. Data-first, minimal prose.",
+    "cta_verbs": [
+      "Deploy",
+      "Monitor",
+      "Configure",
+      "Browse",
+      "Inspect",
+      "Activate"
+    ],
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Buy now",
+      "Exciting"
+    ],
+    "empty_states": "Mission-control style. An empty agent fleet should prompt deployment of the first agent with a clear setup flow. No whimsy.",
+    "errors": "Diagnostic and actionable. Include agent IDs, error codes, and timestamps. Suggest remediation steps or link to runbooks.",
+    "loading": "Status ring skeletons with pulse animation. Agent cards show placeholder rings while data streams in. Monospace data fields use blinking cursor placeholders."
+  },
+  "features": [
+    "agents",
+    "monitoring",
+    "orchestration",
+    "real-time",
+    "websockets",
+    "auth",
+    "mfa",
+    "oauth",
+    "analytics",
+    "observability",
+    "marketing",
+    "seo"
+  ],
+  "routes": {
+    "/": {
+      "page": "home",
+      "shell": "top-nav-footer",
+      "archetype": "marketing-saas"
+    },
+    "/login": {
+      "page": "login",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/register": {
+      "page": "register",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/forgot-password": {
+      "page": "forgot-password",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/reset-password": {
+      "page": "reset-password",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/verify-email": {
+      "page": "verify-email",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/agents": {
+      "page": "agent-overview",
+      "shell": "sidebar-main",
+      "archetype": "agent-orchestrator"
+    },
+    "/agents/:id": {
+      "page": "agent-detail",
+      "shell": "sidebar-main",
+      "archetype": "agent-orchestrator"
+    },
+    "/agents/config": {
+      "page": "agent-config",
+      "shell": "sidebar-main",
+      "archetype": "agent-orchestrator"
+    },
+    "/marketplace": {
+      "page": "agent-marketplace",
+      "shell": "sidebar-main",
+      "archetype": "agent-orchestrator"
+    },
+    "/transparency": {
+      "page": "model-overview",
+      "shell": "sidebar-main",
+      "archetype": "ai-transparency"
+    },
+    "/transparency/inference": {
+      "page": "inference-log",
+      "shell": "sidebar-main",
+      "archetype": "ai-transparency"
+    },
+    "/transparency/confidence": {
+      "page": "confidence-explorer",
+      "shell": "sidebar-main",
+      "archetype": "ai-transparency"
+    },
+    "/mfa-setup": {
+      "page": "mfa-setup",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/mfa-verify": {
+      "page": "mfa-verify",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/phone-verify": {
+      "page": "phone-verify",
+      "shell": "centered",
+      "archetype": "auth-full"
+    }
+  },
+  "overrides": {
+    "features_add": [
+      "theme-toggle",
+      "command-palette"
+    ],
+    "features_remove": [],
+    "pages": {},
+    "pages_remove": []
+  },
+  "seo_hints": {
+    "schema_org": [
+      "Organization",
+      "WebApplication",
+      "SoftwareApplication"
+    ],
+    "meta_priorities": [
+      "description",
+      "og:image",
+      "twitter:card"
+    ]
+  },
+  "navigation": {
+    "command_palette": true,
+    "hotkey_semantics": {
+      "chord_window_ms": 900,
+      "input_guard": true,
+      "modifier_suppression": true,
+      "match_case": false
+    },
+    "hotkeys": [
+      {
+        "key": "g a",
+        "route": "/agents",
+        "label": "Go to Agents"
+      },
+      {
+        "key": "g m",
+        "route": "/marketplace",
+        "label": "Go to Marketplace"
+      },
+      {
+        "key": "g t",
+        "route": "/transparency",
+        "label": "Go to Transparency"
+      },
+      {
+        "key": "?",
+        "action": "openShortcutsHelp",
+        "label": "Show keyboard shortcuts"
+      }
+    ]
+  },
+  "dependencies": {
+    "archetypes": {
+      "agent-orchestrator": ">=1.0.0",
+      "auth-full": ">=1.0.0",
+      "marketing-saas": ">=1.0.0",
+      "ai-transparency": ">=1.0.0"
+    }
+  },
+  "suggested_themes": [
+    "carbon-neon",
+    "carbon",
+    "terminal",
+    "neon-cyber"
+  ]
+}

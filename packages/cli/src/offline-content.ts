@@ -1,5 +1,6 @@
 import { cpSync, existsSync, mkdirSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const CONTENT_TYPES = ['archetypes', 'blueprints', 'patterns', 'themes', 'shells'] as const;
 
@@ -32,16 +33,17 @@ function hydrateContentRoot(projectDir: string, contentRoot: string): boolean {
 
 export interface OfflineRegistrySeedResult {
   seeded: boolean;
-  strategy: 'workspace-cache' | 'configured-content-root' | 'sibling-content-root' | null;
+  strategy: 'workspace-cache' | 'configured-content-root' | 'workspace-content-root' | 'installed-content-package' | null;
 }
 
 /**
- * Seed a fresh Decantr project with local registry content so offline init/new
+ * Seed a fresh Decantr project with local content corpus data so offline init/new
  * can resolve blueprints, archetypes, themes, shells, and patterns without the
  * hosted API. Resolution order favors the most explicit local source first:
  * 1. DECANTR_CONTENT_DIR
  * 2. Existing workspace .decantr/cache or .decantr/custom
- * 3. Sibling ../decantr-content checkout
+ * 3. Workspace packages/content
+ * 4. Installed @decantr/content package
  */
 export function seedOfflineRegistry(
   projectDir: string,
@@ -69,10 +71,24 @@ export function seedOfflineRegistry(
     return { seeded: true, strategy: 'workspace-cache' };
   }
 
-  const siblingContentRoot = resolve(workspaceRoot, '..', 'decantr-content');
-  if (hydrateContentRoot(projectDir, siblingContentRoot)) {
-    return { seeded: true, strategy: 'sibling-content-root' };
+  const workspaceContentRoot = resolve(workspaceRoot, 'packages', 'content');
+  if (hydrateContentRoot(projectDir, workspaceContentRoot)) {
+    return { seeded: true, strategy: 'workspace-content-root' };
+  }
+
+  const installedContentRoot = resolveInstalledContentRoot();
+  if (installedContentRoot && hydrateContentRoot(projectDir, installedContentRoot)) {
+    return { seeded: true, strategy: 'installed-content-package' };
   }
 
   return { seeded: false, strategy: null };
+}
+
+function resolveInstalledContentRoot(): string | null {
+  try {
+    const entry = fileURLToPath(import.meta.resolve('@decantr/content'));
+    return resolve(dirname(entry), '..');
+  } catch {
+    return null;
+  }
 }

@@ -198,7 +198,8 @@ export class RegistryClient {
   ) {
     this.projectRoot = options.projectRoot || process.cwd();
     this.cacheDir = options.cacheDir || join(this.projectRoot, '.decantr', 'cache');
-    this.apiUrl = options.apiUrl || process.env.DECANTR_API_URL || DEFAULT_API_URL;
+    this.apiUrl =
+      options.apiUrl || process.env.DECANTR_API_URL || process.env.REGISTRY_URL || DEFAULT_API_URL;
     this.offline = options.offline || false;
     this.apiClient = new RegistryAPIClient({
       baseUrl: this.apiUrl,

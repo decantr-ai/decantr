@@ -1,0 +1,472 @@
+{
+  "$schema": "https://decantr.ai/schemas/theme.v1.json",
+  "id": "fintech",
+  "version": "1.0.0",
+  "name": "Fintech",
+  "description": "Data-dense dark-mode financial terminal optimized for real-time market data. Deep dark backgrounds with indigo and cyan accents. Monospace numbers, tight spacing, and minimal motion for professional trading and analytics interfaces.",
+  "tags": [
+    "dark",
+    "finance",
+    "terminal",
+    "data-dense",
+    "professional",
+    "trading",
+    "monospace"
+  ],
+  "personality": "precise + data-driven + professional + fast",
+  "seed": {
+    "primary": "#6366F1",
+    "secondary": "#818CF8",
+    "accent": "#22D3EE",
+    "background": "#0C0E14"
+  },
+  "palette": {
+    "background": {
+      "dark": "#0C0E14"
+    },
+    "surface": {
+      "dark": "#12141C"
+    },
+    "surface-raised": {
+      "dark": "#1A1D28"
+    },
+    "border": {
+      "dark": "#2A2D3A"
+    },
+    "text": {
+      "dark": "#E2E8F0"
+    },
+    "text-muted": {
+      "dark": "#94A3B8"
+    },
+    "primary": {
+      "dark": "#6366F1"
+    },
+    "primary-hover": {
+      "dark": "#818CF8"
+    },
+    "secondary": {
+      "dark": "#818CF8"
+    },
+    "secondary-hover": {
+      "dark": "#A5B4FC"
+    },
+    "accent": {
+      "dark": "#22D3EE"
+    },
+    "accent-hover": {
+      "dark": "#67E8F9"
+    }
+  },
+  "modes": [
+    "dark"
+  ],
+  "shapes": [
+    "sharp"
+  ],
+  "cvd_support": [],
+  "tokens": {
+    "base": {
+      "success": "#22C55E",
+      "danger": "#EF4444",
+      "warning": "#F59E0B",
+      "info": "#22D3EE"
+    },
+    "domain": {
+      "gain": "success",
+      "loss": "danger",
+      "neutral": "info",
+      "bid": "success",
+      "ask": "danger",
+      "volume": "info"
+    }
+  },
+  "typography": {
+    "scale": "modular",
+    "heading_weight": 600,
+    "body_weight": 400,
+    "display": "'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif",
+    "body": "'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif"
+  },
+  "decantr_compat": ">=2.0.0",
+  "source": "core",
+  "decorators": {
+    "fin-card": "Dark card with 1px border, no shadow. Minimal surface separation for data-dense layouts.",
+    "fin-metric": "Large monospace number with optional inline sparkline. Tabular-nums for alignment in data grids.",
+    "fin-table": "Dense table with alternating row tints and tight padding. Optimized for financial data scanning.",
+    "fin-ticker": "Horizontal scrolling ticker strip for real-time price data. Color-coded gain/loss values.",
+    "fin-alert": "Top-border severity stripe with dark tinted background. Compact for dense dashboard layouts.",
+    "fin-surface": "Dark layered background with subtle depth. Creates visual hierarchy in data-heavy interfaces.",
+    "fin-chart": "Chart container with subtle grid lines and dark background. Optimized for financial chart overlays.",
+    "fin-badge": "Compact monospace badge for status and values. Minimal padding, tabular-nums.",
+    "fin-input": "Dark input with minimal 1px border. Compact styling for trading interfaces and data entry."
+  },
+  "spatial": {
+    "density_bias": 2,
+    "content_gap_shift": -1,
+    "section_padding": "1rem",
+    "card_wrapping": "none",
+    "surface_override": null
+  },
+  "motion": {
+    "preference": "minimal",
+    "reduce_motion": true,
+    "entrance": "instant",
+    "micro": "instant",
+    "timing": "linear",
+    "durations": {
+      "hover": "50ms",
+      "entrance": "0ms",
+      "modal": "100ms",
+      "page": "0ms",
+      "instant": "50ms",
+      "fast": "100ms",
+      "base": "180ms",
+      "slow": "320ms",
+      "slower": "500ms",
+      "stagger": "40ms"
+    },
+    "easings": {
+      "ease": "cubic-bezier(0.25, 0.1, 0.25, 1)",
+      "easeOut": "cubic-bezier(0, 0, 0.2, 1)",
+      "easeIn": "cubic-bezier(0.4, 0, 1, 1)",
+      "spring": "cubic-bezier(0.34, 1.4, 0.64, 1)"
+    }
+  },
+  "effects": {
+    "enabled": true,
+    "intensity": "subtle",
+    "type_mapping": {
+      "card": [
+        "fin-card"
+      ],
+      "metric": [
+        "fin-metric"
+      ],
+      "input": [
+        "fin-input"
+      ],
+      "table": [
+        "fin-table"
+      ],
+      "badge": [
+        "fin-badge"
+      ],
+      "chart": [
+        "fin-chart"
+      ]
+    },
+    "optional_effects": {
+      "glow": false,
+      "grain": false,
+      "gradient": false
+    },
+    "component_fallback": {
+      "Card": "card",
+      "MetricCard": "metric",
+      "Input": "input",
+      "Table": "table",
+      "Badge": "badge"
+    }
+  },
+  "compositions": {
+    "dashboard": {
+      "description": "Trading dashboard with multi-panel layout. Real-time charts, order books, positions, and ticker.",
+      "shell": "sidebar-main",
+      "effects": [
+        "fin-card",
+        "fin-metric",
+        "fin-chart"
+      ]
+    },
+    "analytics": {
+      "description": "Financial analytics with dense data tables, comparison charts, and metric grids.",
+      "shell": "sidebar-main",
+      "effects": [
+        "fin-table",
+        "fin-metric",
+        "fin-chart"
+      ]
+    },
+    "auth": {
+      "description": "Minimal dark authentication with centered card. Professional and secure appearance.",
+      "shell": "centered",
+      "card_style": "fin-card"
+    },
+    "marketing": {
+      "description": "Fintech marketing page with dark hero, data visualization showcases, and feature grids.",
+      "shell": "top-nav-footer",
+      "effects": [
+        "fin-chart",
+        "fin-metric"
+      ]
+    }
+  },
+  "radius": {
+    "philosophy": "sharp",
+    "base": 4
+  },
+  "pattern_preferences": {
+    "prefer": [
+      "trading-terminal",
+      "order-book",
+      "price-chart",
+      "portfolio-grid",
+      "transaction-table",
+      "ticker-strip"
+    ],
+    "avoid": [
+      "playful-cards",
+      "rounded-hero"
+    ],
+    "default_presets": {
+      "portfolio-grid": "table",
+      "transaction-table": "dense-table",
+      "order-book": "split-panel"
+    }
+  },
+  "shell": {
+    "preferred": [
+      "sidebar-main",
+      "terminal-split"
+    ],
+    "avoid": [
+      "full-bleed",
+      "centered"
+    ],
+    "nav_style": "minimal",
+    "default_nav_state": "collapsed",
+    "root": "fin-surface",
+    "nav": "fin-card",
+    "header": "fin-ticker",
+    "navLabel": "",
+    "brand": "",
+    "dimensions": null
+  },
+  "decorator_definitions": {
+    "fin-card": {
+      "description": "Dark card with 1px border, no shadow. Minimal surface separation for data-dense layouts.",
+      "intent": "Use for all content containers in financial interfaces. The borderline-only approach maximizes density while maintaining visual separation. No shadow keeps the interface flat and professional.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #12141C)",
+        "border": "1px solid var(--d-border, #2A2D3A)",
+        "border-radius": "4px",
+        "padding": "12px"
+      },
+      "pairs_with": [
+        "fin-surface",
+        "fin-metric",
+        "fin-table"
+      ],
+      "usage": [
+        "Data panels",
+        "Chart containers",
+        "Order book sections",
+        "Portfolio cards"
+      ]
+    },
+    "fin-metric": {
+      "description": "Large monospace number with optional inline sparkline. Tabular-nums for alignment in data grids.",
+      "intent": "Use for key financial values: prices, P&L, portfolio totals. Monospace ensures column alignment in grids; large size enables quick scanning.",
+      "suggested_properties": {
+        "font-family": "ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, monospace",
+        "font-size": "1.5rem",
+        "font-weight": "600",
+        "font-variant-numeric": "tabular-nums",
+        "line-height": "1.2",
+        "letter-spacing": "-0.02em"
+      },
+      "pairs_with": [
+        "fin-card",
+        "fin-badge",
+        "fin-chart"
+      ],
+      "usage": [
+        "Portfolio values",
+        "Price displays",
+        "P&L numbers",
+        "Market cap figures",
+        "Volume displays"
+      ]
+    },
+    "fin-table": {
+      "description": "Dense table with alternating row tints and tight padding. Optimized for financial data scanning.",
+      "intent": "Use for transaction histories, order books, positions, and any tabular financial data. Alternating tints aid row scanning; tight padding maximizes data density.",
+      "suggested_properties": {
+        "width": "100%",
+        "border-collapse": "collapse",
+        "font-family": "ui-monospace, monospace",
+        "font-variant-numeric": "tabular-nums",
+        "font-size": "13px"
+      },
+      "pairs_with": [
+        "fin-card",
+        "fin-badge",
+        "fin-surface"
+      ],
+      "usage": [
+        "Order books",
+        "Transaction histories",
+        "Position tables",
+        "Watchlists",
+        "Trade logs"
+      ]
+    },
+    "fin-ticker": {
+      "description": "Horizontal scrolling ticker strip for real-time price data. Color-coded gain/loss values.",
+      "intent": "Use as a header or footer strip showing real-time market data. The scrolling motion conveys live data; green/red coloring shows direction at a glance.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #12141C)",
+        "border-bottom": "1px solid var(--d-border, #2A2D3A)",
+        "padding": "6px 0",
+        "font-family": "ui-monospace, monospace",
+        "font-size": "13px",
+        "white-space": "nowrap",
+        "overflow": "hidden"
+      },
+      "pairs_with": [
+        "fin-surface",
+        "fin-metric"
+      ],
+      "usage": [
+        "Market ticker strips",
+        "Price headers",
+        "Live data feeds",
+        "Index summaries"
+      ]
+    },
+    "fin-alert": {
+      "description": "Top-border severity stripe with dark tinted background. Compact for dense dashboard layouts.",
+      "intent": "Use for trade alerts, risk warnings, and system notifications. The top border provides severity indication without consuming horizontal space.",
+      "suggested_properties": {
+        "border-top": "3px solid var(--alert-color, #6366F1)",
+        "background": "var(--alert-bg, rgba(99, 102, 241, 0.08))",
+        "border-radius": "0 0 4px 4px",
+        "padding": "10px 14px",
+        "font-size": "13px"
+      },
+      "pairs_with": [
+        "fin-card",
+        "fin-badge",
+        "fin-surface"
+      ],
+      "usage": [
+        "Trade alerts",
+        "Risk warnings",
+        "Price alerts",
+        "System notifications",
+        "Margin warnings"
+      ]
+    },
+    "fin-surface": {
+      "description": "Dark layered background with subtle depth. Creates visual hierarchy in data-heavy interfaces.",
+      "intent": "Use as the root background for financial applications. The deep dark tone reduces eye strain during extended trading sessions and makes data colors pop.",
+      "suggested_properties": {
+        "background-color": "var(--d-bg, #0C0E14)",
+        "color": "var(--d-text, #E2E8F0)",
+        "min-height": "100vh"
+      },
+      "pairs_with": [
+        "fin-card",
+        "fin-ticker"
+      ],
+      "usage": [
+        "Page root backgrounds",
+        "App shell backgrounds",
+        "Dashboard foundations"
+      ]
+    },
+    "fin-chart": {
+      "description": "Chart container with subtle grid lines and dark background. Optimized for financial chart overlays.",
+      "intent": "Use for all chart and graph containers. The subtle grid lines aid data reading without competing with chart data. Dark background maximizes chart color contrast.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #12141C)",
+        "border": "1px solid var(--d-border, #2A2D3A)",
+        "border-radius": "4px",
+        "padding": "16px",
+        "position": "relative"
+      },
+      "pairs_with": [
+        "fin-card",
+        "fin-metric",
+        "fin-surface"
+      ],
+      "usage": [
+        "Candlestick charts",
+        "Line charts",
+        "Volume charts",
+        "Portfolio performance graphs",
+        "Market depth charts"
+      ]
+    },
+    "fin-badge": {
+      "description": "Compact monospace badge for status and values. Minimal padding, tabular-nums.",
+      "intent": "Use for inline status indicators and small data labels. Monospace ensures consistent width for dynamic values like percentages and prices.",
+      "suggested_properties": {
+        "font-family": "ui-monospace, monospace",
+        "font-size": "12px",
+        "font-weight": "500",
+        "font-variant-numeric": "tabular-nums",
+        "padding": "2px 6px",
+        "border-radius": "3px"
+      },
+      "pairs_with": [
+        "fin-table",
+        "fin-card",
+        "fin-metric"
+      ],
+      "usage": [
+        "Percentage changes",
+        "Trade status labels",
+        "Market state badges",
+        "Volume indicators"
+      ]
+    },
+    "fin-input": {
+      "description": "Dark input with minimal 1px border. Compact styling for trading interfaces and data entry.",
+      "intent": "Use for all form inputs in trading and analytics interfaces. Compact sizing fits dense layouts; dark styling maintains immersion.",
+      "suggested_properties": {
+        "background": "var(--d-surface-raised, #1A1D28)",
+        "border": "1px solid var(--d-border, #2A2D3A)",
+        "border-radius": "4px",
+        "padding": "8px 10px",
+        "font-family": "ui-monospace, monospace",
+        "color": "var(--d-text, #E2E8F0)",
+        "font-size": "13px"
+      },
+      "pairs_with": [
+        "fin-card",
+        "fin-surface"
+      ],
+      "usage": [
+        "Order entry fields",
+        "Search inputs",
+        "Price inputs",
+        "Quantity fields",
+        "Filter inputs"
+      ]
+    }
+  },
+  "elevation": {
+    "1": {
+      "light": "0 1px 2px rgba(0,0,0,0.06)",
+      "dark": "0 1px 2px rgba(0,0,0,0.45)"
+    },
+    "2": {
+      "light": "0 2px 4px rgba(0,0,0,0.08)",
+      "dark": "0 2px 4px rgba(0,0,0,0.55)"
+    },
+    "3": {
+      "light": "0 4px 12px rgba(0,0,0,0.10)",
+      "dark": "0 4px 12px rgba(0,0,0,0.60)"
+    },
+    "4": {
+      "light": "0 8px 24px rgba(0,0,0,0.14)",
+      "dark": "0 8px 24px rgba(0,0,0,0.65)"
+    },
+    "5": {
+      "light": "0 16px 48px rgba(0,0,0,0.18)",
+      "dark": "0 16px 48px rgba(0,0,0,0.70)"
+    }
+  }
+}

@@ -1,0 +1,143 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "leaderboard",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Leaderboard",
+  "description": "Ranked list of items with position, avatar, name, and score. Supports spotlight, ranked, and grid presets.",
+  "tags": [
+    "gaming",
+    "ranking",
+    "scores",
+    "competition",
+    "social"
+  ],
+  "classification": {
+    "triggers": [
+      "leaderboard",
+      "ranking",
+      "top players",
+      "high scores",
+      "standings"
+    ],
+    "tier": "recommended"
+  },
+  "components": ["Card", "Badge", "Avatar", "Text", "icon"],
+  "default_preset": "ranked",
+  "presets": {
+    "spotlight": {
+      "description": "Top 3 highlighted with large cards, rest in compact list",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap4 _md:gc3",
+        "slots": {
+          "top": "Top-three ranked entries rendered as large spotlight cards",
+          "rest": "Remaining entries rendered below as a compact ranked list"
+        }
+      }
+    },
+    "ranked": {
+      "description": "Full ranked list with position numbers and progress indicators",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap2",
+        "slots": {
+          "items": "Dense ordered list of ranked entries with position, avatar, name, score, and optional delta"
+        },
+        "style": "numbered-list",
+        "showChange": true
+      }
+    },
+    "grid": {
+      "description": "Card grid for achievements or badges display",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap4 _sm:gc2 _xl:gc3",
+        "slots": {
+          "items": "Ranked entries rendered as achievement cards with badge, avatar, name, and score"
+        },
+        "style": "grid",
+        "columns": 3
+      }
+    }
+  },
+  "slots": {
+    "position": {
+      "type": "number",
+      "required": true
+    },
+    "avatar": {
+      "type": "image",
+      "required": false
+    },
+    "name": {
+      "type": "text",
+      "required": true
+    },
+    "score": {
+      "type": "number",
+      "required": true
+    },
+    "change": {
+      "type": "delta",
+      "required": false
+    },
+    "badge": {
+      "type": "image",
+      "required": false
+    }
+  },
+  "layout": {
+    "container": "section",
+    "header": [
+      "title",
+      "filter?"
+    ],
+    "body": [
+      "items"
+    ],
+    "footer": [
+      "pagination?",
+      "view-all?"
+    ]
+  },
+  "visual_brief": "Ranked vertical list where each row shows a position number (with gold/silver/bronze styling for top 3), a user avatar, display name, and a numeric score on the right. Top-three items in the spotlight preset are enlarged with medal icons and a subtle glow or card treatment. The ranked preset is a dense list with alternating row shading. Grid preset arranges entries as cards in a responsive grid with position badge, avatar, name, and score. Position changes show up/down arrows with green/red coloring.",
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap2",
+    "slots": {
+      "items": "Dense ordered list of ranked entries with position, avatar, name, score, and optional delta"
+    }
+  },
+  "responsive": {
+    "mobile": "Single-column list. Spotlight cards stack vertically. Avatars reduce to 32px. Score values right-aligned.",
+    "tablet": "Spotlight top-3 in a horizontal row, remaining entries in a list below. Grid preset uses 2 columns.",
+    "desktop": "Spotlight top-3 prominently displayed. Full list with generous spacing. Grid preset uses 3-4 columns."
+  },
+  "layout_hints": {
+    "rank_priority": "Position and score should be the first read, with avatar and display name supporting that ranking hierarchy.",
+    "spotlight_role": "Top entries may receive stronger treatment, but the ranked list should still feel like one coherent leaderboard rather than two disconnected components.",
+    "delta_signal": "Rank movement indicators should support the ranking read without becoming more visually prominent than the score itself."
+  },
+  "motion": {
+    "micro": "Hovered rows or cards may sharpen slightly, and rank-change indicators may brighten enough to confirm movement.",
+    "transitions": "Sorting or live rank updates should preserve orientation so users can follow position changes without the board feeling unstable."
+  },
+  "interactions": [
+    "drag-reorder",
+    "click-select",
+    "animate-on-mount",
+    "stagger-children",
+    "scroll-reveal"
+  ],
+  "accessibility": {
+    "role": "list",
+    "aria-label": "Leaderboard",
+    "keyboard": [
+      "If entries are interactive, focus should move rank by rank in reading order."
+    ],
+    "announcements": [
+      "Rank, player or team name, score, and movement should be exposed semantically so leaderboard meaning does not depend on medal colors or layout treatment alone."
+    ]
+  }
+}

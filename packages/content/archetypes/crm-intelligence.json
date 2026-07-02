@@ -1,0 +1,85 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "crm-intelligence",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "CRM Intelligence",
+  "description": "AI-generated sales intelligence dashboard with win/loss analysis, revenue forecasting, relationship mapping, and actionable insights derived from CRM data.",
+  "tags": [
+    "crm",
+    "ai",
+    "intelligence",
+    "forecasting",
+    "analytics"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "crm intelligence",
+        "sales insights",
+        "ai analytics",
+        "revenue forecast",
+        "win loss analysis"
+      ],
+      "secondary": [
+        "relationship intelligence",
+        "deal scoring",
+        "pipeline analytics",
+        "sales ai",
+        "predictive"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "insights",
+      "patterns": [
+        {
+          "pattern": "kpi-grid",
+          "preset": "dashboard",
+          "as": "insight-kpis"
+        },
+        {
+          "pattern": "chart-grid",
+          "preset": "standard",
+          "as": "insight-charts"
+        },
+        {
+          "pattern": "relationship-graph",
+          "preset": "network",
+          "as": "relationship-map"
+        }
+      ],
+      "default_layout": [
+        "kpi-grid",
+        "chart-grid",
+        "relationship-graph"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "insights": "AI-powered intelligence dashboard. Top KPI row shows win rate trend, forecast accuracy, pipeline velocity, and at-risk deal count with AI confidence indicators. A chart grid below renders win/loss waterfall, revenue forecast cone, deal stage conversion funnel, and rep performance comparisons. Bottom section displays an interactive network relationship graph connecting contacts, companies, and deals, with edge thickness representing interaction strength and node color indicating sentiment."
+  },
+  "features": [
+    "ai-insights",
+    "forecasting",
+    "analytics"
+  ],
+  "suggested_theme": {
+    "ids": [
+      "luminarum",
+      "clean",
+      "carbon"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

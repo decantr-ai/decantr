@@ -1,0 +1,57 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "producer-split-workbench",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Producer Split Workbench",
+  "description": "Royalty and credit split workbench for producers with contributor roles, master/publishing percentages, validation totals, signing status, and payout readiness.",
+  "category": "music",
+  "tags": ["2026", "music", "royalties", "splits", "credits", "collaboration", "workbench"],
+  "components": ["ContributorSplitRow", "SplitMeter", "RoleBreakdown", "ValidationBanner", "SignatureStatus", "PayoutReadiness"],
+  "default_preset": "workbench",
+  "presets": {
+    "workbench": {
+      "description": "Full split editor with validation meters, role breakdowns, signing status, and payout readiness",
+      "layout": { "layout": "stack", "atoms": "_flex _flex-col _gap-4 _w-full" }
+    },
+    "summary": {
+      "description": "Compact split summary for inspectors and track detail pages",
+      "layout": { "layout": "stack", "atoms": "_flex _flex-col _gap-2 _w-full" }
+    }
+  },
+  "visual_brief": "A label-ready royalty split surface. The top shows selected track, master split meter, publishing split meter, validation total, and release readiness. Contributor rows show avatar, role, master %, publishing %, songwriter credit, publisher, status, and signing action with table-like alignment. Invalid totals are visually obvious through text, icon, and color. Signed rows feel locked; pending rows show clear next actions. The workbench should feel operational, trustable, and audit-ready rather than decorative.",
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _flex-col _gap-4 _w-full",
+    "slots": {
+      "split-meters": "Master and publishing totals with 100% validation and over/under warnings.",
+      "contributors": "Editable contributor rows with role, credits, percentages, status, and signature state.",
+      "readiness": "Payout routing, contract status, and export readiness summary."
+    }
+  },
+  "composition": {
+    "ProducerSplitWorkbench": "Root(stack) > [ValidationBanner + SplitMeter* + ContributorSplitRow* + PayoutReadiness]",
+    "ContributorSplitRow": "Grid > [Avatar + RoleBreakdown + MasterPercent + PublishingPercent + SignatureStatus + Actions]"
+  },
+  "motion": {
+    "micro": {
+      "percent-edit": "meter value animates to new total in 180ms",
+      "validation-change": "banner pulses once on invalid/valid transition"
+    }
+  },
+  "interactions": ["inline-edit", "status-pulse", "keyboard-navigation", "real-time-updates"],
+  "responsive": {
+    "mobile": "Contributor rows become stacked forms with split meters pinned above the list.",
+    "desktop": "Use a dense grid with meters and contributor rows visible together."
+  },
+  "accessibility": {
+    "role": "form",
+    "aria-label": "Royalty split workbench",
+    "keyboard": ["Tab: move through split fields", "Enter: commit edited percentage", "Esc: cancel edit"],
+    "announcements": ["Master split total {percent}%", "Publishing split total {percent}%", "Split validation {status}"]
+  },
+  "layout_hints": {
+    "trust": "Validation and signed/pending states must be impossible to miss.",
+    "density": "Use table-like alignment on desktop but switch to readable stacked forms on mobile."
+  }
+}

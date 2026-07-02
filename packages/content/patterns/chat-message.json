@@ -1,0 +1,122 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "chat-message",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Chat Message",
+  "description": "Single message bubble for user or AI responses. Supports markdown rendering, code blocks, attachments, reactions, and edit mode.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Avatar",
+        "Button",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Avatar",
+    "Button",
+    "icon"
+  ],
+  "default_preset": "assistant",
+  "presets": {
+    "user": {
+      "description": "Right-aligned message bubble with primary-tinted background for user messages",
+      "components": [
+        "Avatar",
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _jce _gap3 _py2",
+        "slots": {
+          "content": "Message content with full markdown rendering",
+          "timestamp": "Relative or absolute timestamp (optional)",
+          "actions": "Copy, edit, delete action buttons on hover"
+        }
+      }
+    },
+    "assistant": {
+      "description": "Left-aligned message bubble with surface background and avatar for AI responses",
+      "components": [
+        "Avatar",
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _jcs _gap3 _py2",
+        "slots": {
+          "avatar": "AI avatar or icon",
+          "sender": "Name/label (optional)",
+          "content": "Message content with full markdown rendering",
+          "timestamp": "Relative or absolute timestamp",
+          "actions": "Copy, react, branch action buttons on hover"
+        }
+      }
+    },
+    "system": {
+      "description": "Centered system message with muted styling for status updates",
+      "components": [
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _jcc _py2",
+        "slots": {
+          "content": "System message text"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "row",
+    "atoms": "_flex _jcs _gap3 _py2",
+    "slots": {
+      "avatar": "Optional avatar/icon",
+      "sender": "Name/label",
+      "timestamp": "Relative or absolute timestamp",
+      "content": "Full markdown rendering with code blocks, images, links",
+      "actions": "Copy, edit, delete, react, branch buttons"
+    }
+  },
+  "visual_brief": "Message bubble layout with avatar on the left (user messages) or a model icon (assistant messages). Sender name in small bold text with a relative timestamp to the right. Content area supports full markdown: paragraphs, headings, bold/italic, bulleted lists, code blocks with syntax highlighting and copy button, inline code, images, and links. Action buttons (copy, edit, delete, react, branch) appear on hover in a small row above or below the message. User messages align left with a subtle surface background. Assistant messages use a slightly different surface shade. System messages are centered with muted italic text.",
+  "responsive": {
+    "mobile": "Avatar size reduces to 28px. Action buttons appear on long-press instead of hover. Code blocks scroll horizontally. Message content takes full width minus avatar.",
+    "tablet": "Standard layout with 32px avatars. Actions appear on hover/tap.",
+    "desktop": "Full layout with 36px avatars, hover actions, and generous content width for code blocks."
+  },
+  "layout_hints": {
+    "message_priority": "Lead with sender role and content first, with timestamp and actions clearly secondary. The bubble should feel like a communication artifact rather than a generic card.",
+    "role_clarity": "User, assistant, and system variants should preserve a stable reading pattern while making authorship obvious at a glance.",
+    "action_reveal": "Hover or long-press actions should support the message without disrupting the conversational flow or changing bubble geometry dramatically."
+  },
+  "motion": {
+    "micro": "Hover actions, copy affordances, and reaction states may fade or sharpen in gently around the message bubble.",
+    "transitions": "Streaming or appended assistant content should feel readable and calm, preserving message continuity rather than performing dramatic reveal animations."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "hover-reveal"
+  ],
+  "accessibility": {
+    "role": "article",
+    "aria-label": "Chat message",
+    "keyboard": [
+      "Message actions should be reachable after the message content in a predictable order."
+    ],
+    "announcements": [
+      "Sender role, timestamp, and message content should be exposed semantically so conversation flow remains understandable without relying on alignment alone."
+    ]
+  },
+  "composition": {
+    "ChatMessage": "Row(d-surface, align: role) > [Avatar? + MessageBody + Timestamp?(mono-data, text-xs)]",
+    "MessageBody": "Bubble(d-surface, variant: role) > [SenderName?(font-bold, text-sm) + Content(markdown) + CodeBlock?(syntax-highlight, copy-button)]",
+    "MessageActions": "Row(d-interactive, show-on-hover) > IconButton(variant: ghost)[]"
+  }
+}

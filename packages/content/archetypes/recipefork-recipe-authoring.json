@@ -1,0 +1,216 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "recipefork-recipe-authoring",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipefork Recipe Authoring",
+  "description": "Dual-mode recipe authoring workspace for Recipefork with Simple Mode and Chef Mode editing, drafts, hydrated editing, a shared structured ingredient editor, safe simple-to-chef conversion, hierarchical instruction groups, optional plating presentation, inline cookbook assignment, cooking tips, and rich recipe stories.",
+  "tags": [
+    "recipes",
+    "authoring",
+    "chef-mode",
+    "editor",
+    "drafts",
+    "2026"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "recipefork recipe editor",
+        "chef mode recipe editor",
+        "dual mode recipe form",
+        "advanced recipe authoring"
+      ],
+      "secondary": [
+        "structured ingredient editor",
+        "instruction group editor",
+        "recipe story editor",
+        "hydrated recipe edit"
+      ],
+      "negative": [
+        "browse",
+        "analytics"
+      ]
+    },
+    "implies": [
+      "drafts",
+      "image-upload"
+    ],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "create",
+      "patterns": [
+        {
+          "pattern": "recipefork-recipe-mode-switch",
+          "preset": "split",
+          "as": "mode-switch"
+        },
+        {
+          "pattern": "recipefork-recipe-metadata-form",
+          "preset": "authoring",
+          "as": "recipe-metadata"
+        },
+        {
+          "pattern": "recipefork-simple-recipe-editor",
+          "preset": "standard",
+          "as": "simple-editor"
+        },
+        {
+          "pattern": "recipefork-chef-ingredients-editor",
+          "preset": "structured",
+          "as": "chef-ingredients"
+        },
+        {
+          "pattern": "recipefork-chef-instruction-editor",
+          "preset": "hierarchical",
+          "as": "chef-instructions"
+        },
+        {
+          "pattern": "recipefork-presentation-editor",
+          "preset": "ai-assisted",
+          "as": "recipe-presentation"
+        },
+        {
+          "pattern": "recipefork-cooking-tips-editor",
+          "preset": "bullet-editor",
+          "as": "cooking-tips"
+        },
+        {
+          "pattern": "recipefork-recipe-story-editor",
+          "preset": "expandable",
+          "as": "recipe-story"
+        },
+        {
+          "pattern": "recipefork-cookbook-assignment",
+          "preset": "inline-assignment",
+          "as": "cookbook-assignment"
+        }
+      ],
+      "default_layout": [
+        "mode-switch",
+        "recipe-metadata",
+        "cookbook-assignment",
+        "simple-editor",
+        "chef-ingredients",
+        "chef-instructions",
+        "recipe-presentation",
+        "cooking-tips",
+        "recipe-story"
+      ],
+      "shell": "recipefork-top-nav"
+    },
+    {
+      "id": "edit",
+      "patterns": [
+        {
+          "pattern": "detail-header",
+          "preset": "standard",
+          "as": "edit-header"
+        },
+        {
+          "pattern": "recipefork-recipe-metadata-form",
+          "preset": "authoring",
+          "as": "recipe-metadata"
+        },
+        {
+          "pattern": "recipefork-simple-recipe-editor",
+          "preset": "standard",
+          "as": "simple-editor"
+        },
+        {
+          "pattern": "recipefork-chef-ingredients-editor",
+          "preset": "structured",
+          "as": "chef-ingredients"
+        },
+        {
+          "pattern": "recipefork-chef-instruction-editor",
+          "preset": "hierarchical",
+          "as": "chef-instructions"
+        },
+        {
+          "pattern": "recipefork-presentation-editor",
+          "preset": "ai-assisted",
+          "as": "recipe-presentation"
+        },
+        {
+          "pattern": "recipefork-cooking-tips-editor",
+          "preset": "bullet-editor",
+          "as": "cooking-tips"
+        },
+        {
+          "pattern": "recipefork-recipe-story-editor",
+          "preset": "expandable",
+          "as": "recipe-story"
+        },
+        {
+          "pattern": "recipefork-cookbook-assignment",
+          "preset": "inline-assignment",
+          "as": "cookbook-assignment"
+        }
+      ],
+      "default_layout": [
+        "edit-header",
+        "recipe-metadata",
+        "cookbook-assignment",
+        "simple-editor",
+        "chef-ingredients",
+        "chef-instructions",
+        "recipe-presentation",
+        "cooking-tips",
+        "recipe-story"
+      ],
+      "shell": "recipefork-top-nav"
+    }
+  ],
+  "page_briefs": {
+    "create": "Recipefork's authoring entry point. Starts with a dual-mode switch between Simple Mode and Chef Mode, but both modes now share the same structured ingredient authoring surface. Chef Mode remains the hard blocker: grouped instruction sets, step imagery, timing, ingredient-step linkage, optional plating presentation, cooking tips, drafts, cookbook assignment, and rich stories must all be expressible without loss.",
+    "edit": "Hydrated edit surface for existing recipes. Editing must round-trip every Chef Mode field: stable ingredient IDs, instruction groups, step images, required ingredient links, derived timing, optional plating presentation, cooking tips, story HTML, cookbook assignment, and draft-versus-published state. Simple recipes should hydrate into the same structured ingredient editor without losing their original ingredient lines, and support safe conversion into Chef Mode in place for drafts or via draft-copy for published recipes."
+  },
+  "features": [
+    "simple-mode",
+    "chef-mode",
+    "drafts",
+    "image-upload",
+    "hydrated-editing",
+    "structured-ingredients",
+    "hierarchical-instructions",
+    "presentation",
+    "cooking-tips",
+    "mode-conversion",
+    "rich-story",
+    "autosave",
+    "cookbook-assignment"
+  ],
+  "dependencies": {
+    "patterns": {
+      "recipefork-recipe-mode-switch": ">=1.0.0",
+      "recipefork-recipe-metadata-form": ">=1.0.0",
+      "recipefork-cookbook-assignment": ">=1.0.0",
+      "recipefork-simple-recipe-editor": ">=1.0.0",
+      "recipefork-chef-ingredients-editor": ">=1.0.0",
+      "recipefork-chef-instruction-editor": ">=1.0.0",
+      "recipefork-presentation-editor": ">=1.0.0",
+      "recipefork-cooking-tips-editor": ">=1.0.0",
+      "recipefork-recipe-story-editor": ">=1.0.0",
+      "detail-header": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "recipefork",
+      "clean"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ],
+    "shapes": [
+      "rounded"
+    ]
+  }
+}

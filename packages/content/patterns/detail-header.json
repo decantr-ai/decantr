@@ -1,0 +1,140 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "detail-header",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Detail Header",
+  "description": "Page header for detail views with title, metadata, status, and action buttons",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Avatar",
+        "Badge",
+        "Button",
+        "Breadcrumb",
+        "Separator",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Avatar",
+    "Badge",
+    "Button",
+    "Breadcrumb"
+  ],
+  "contained": false,
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Title, subtitle/description, status badge, breadcrumb, and action buttons. Horizontal layout with bottom border.",
+      "components": [
+        "Badge",
+        "Button",
+        "Breadcrumb",
+        "Separator",
+        "icon"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _col _gap4 _pb4 _bbsolid _bcborder",
+        "slots": {
+          "breadcrumb": "Navigation breadcrumb trail with BreadcrumbItem links",
+          "title-row": "Horizontal row with title on left and action buttons on right: _flex _row _jcsb _aic",
+          "title": "Page heading with _heading2",
+          "subtitle": "Description text with _bodysm _fgmuted",
+          "status": "Badge showing current status (active, draft, archived)",
+          "actions": "Action buttons group: edit, delete, share with _flex _gap2"
+        }
+      }
+    },
+    "profile": {
+      "description": "Large avatar on the left, name/title/bio on the right, stats row, and action buttons (follow, message).",
+      "components": [
+        "Avatar",
+        "Badge",
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _row _gap6 _items[start]",
+        "slots": {
+          "avatar": "Large Avatar (96px) with image and fallback initials",
+          "info": "Vertical column with name, title, bio: _flex _col _gap2 _flex1",
+          "name": "Display name with _heading2",
+          "title": "Role or title with _bodysm _fgmuted",
+          "bio": "Short biography with _body _fgmuted",
+          "stats": "Horizontal stats row (followers, posts, etc.): _flex _gap6",
+          "actions": "Action buttons: follow (primary), message (outline)"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "row",
+    "atoms": "_flex _col _gap4 _pb4 _bbsolid _bcborder",
+    "slots": {
+      "breadcrumb": "Navigation breadcrumb trail",
+      "title-row": "Title + actions horizontal row",
+      "title": "Page heading",
+      "subtitle": "Description text",
+      "status": "Status badge",
+      "actions": "Action buttons"
+    }
+  },
+  "io": {
+    "consumes": [
+      "data"
+    ],
+    "produces": [
+      "actions"
+    ],
+    "actions": [
+      "edit",
+      "delete",
+      "share"
+    ]
+  },
+  "visual_brief": "Page header area with a breadcrumb navigation trail at the top, followed by a title row containing a large heading on the left and action buttons on the right. Below the title, a subtitle or description paragraph in muted text. An optional status badge appears inline next to the title. The profile preset adds an avatar to the left of the title. All elements are separated by consistent vertical spacing with a subtle bottom border below the entire header block.",
+  "layout_hints": {
+    "shell_alignment": "Treat detail-header as a section that sits inside the shell rhythm. It should not recreate shell-level page-width wrappers or duplicate breadcrumb bars already owned by the shell.",
+    "action_balance": "Action controls should support the title rather than overpower it. Keep the title as the primary visual anchor and use compact buttons for secondary actions.",
+    "status_badge": "Status indicators should read as supporting metadata and wrap gracefully below the title on narrow widths."
+  },
+  "responsive": {
+    "mobile": "Breadcrumb collapses to back arrow with parent name. Action buttons move below the title and stack full-width. Status badge wraps below the title on its own line.",
+    "tablet": "Standard layout. Actions remain inline right of title. Breadcrumb shows full path.",
+    "desktop": "Full header with all elements comfortably positioned. Generous whitespace above and below."
+  },
+  "motion": {
+    "micro": "Action buttons may use subtle hover and focus transitions. Status badges should remain visually stable rather than animate heavily.",
+    "transitions": "Detail headers can fade up softly with the page container, but avoid dramatic motion that competes with the title hierarchy."
+  },
+  "interactions": [
+    "hover-reveal",
+    "keyboard-navigation",
+    "animate-on-mount",
+    "click-select"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Detail header",
+    "keyboard": [
+      "Tab moves through breadcrumbs and action buttons in reading order."
+    ],
+    "announcements": [
+      "The page title should be announced before supporting metadata and actions."
+    ],
+    "focus_management": "If a route change lands at a detail header, keep the heading reachable as an early focus destination and ensure breadcrumb links remain semantically distinct from actions."
+  },
+  "composition": {
+    "DetailHeader": "Section(d-section, flex-col, gap-4, border-bottom) > [Breadcrumb + TitleRow + Subtitle?(text-muted)]",
+    "TitleRow": "Row(space-between) > [Title(heading2) + StatusBadge?(d-annotation) + ActionButtons(d-interactive)]",
+    "ActionButtons": "Row(gap-2) > Button(variant: ghost)[]",
+    "ProfileHeader": "Row(d-section, gap-6) > [Avatar(large, 96px) + InfoColumn > [Name(heading2) + Title(text-muted) + Bio + StatsRow + ActionButtons]]"
+  }
+}

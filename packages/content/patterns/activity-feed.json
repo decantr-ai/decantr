@@ -1,0 +1,154 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "activity-feed",
+  "version": "1.1.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Activity Feed",
+  "description": "Chronological list of activity events with avatars, timestamps, and action descriptions. The feed owns its rows and grouping, not the outer section spacing around it.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Avatar",
+        "Badge",
+        "Button",
+        "Separator",
+        "ScrollArea",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Avatar",
+    "Badge",
+    "Button"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Vertical timeline with avatar, user name, action text, timestamp. Grouped by date.",
+      "components": [
+        "Avatar",
+        "Badge",
+        "Button",
+        "Separator",
+        "icon"
+      ],
+      "layout": {
+        "layout": "column",
+        "atoms": "_flex _col _gap2 _w[100%]",
+        "slots": {
+          "date-header": "Date group separator with _textsm _fgmuted _fontmedium",
+          "feed-item": "Single activity row: _flex _row _gap3 _items[start]",
+          "avatar": "User Avatar with fallback initials",
+          "content": "Action text with user name (_fontmedium) and description",
+          "timestamp": "Relative time label with _textsm _fgmuted",
+          "load-more": "Button at bottom to load older activities"
+        }
+      }
+    },
+    "compact": {
+      "description": "Dense list without avatars, just icon + text + relative time",
+      "components": [
+        "Badge",
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "column",
+        "atoms": "_flex _col _gap1 _w[100%]",
+        "slots": {
+          "feed-item": "Compact row: _flex _row _gap2 _aic",
+          "icon": "Small type icon indicator",
+          "content": "Action text in single line, truncated",
+          "timestamp": "Relative time, right-aligned"
+        }
+      }
+    },
+    "detailed": {
+      "description": "Each activity is a mini-card with full context, attachments, and reply option",
+      "components": [
+        "Avatar",
+        "Badge",
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "column",
+        "atoms": "_flex _col _gap4 _w[100%]",
+        "slots": {
+          "feed-card": "Activity card: _flex _col _gap2 _p4 _r3 _border _border[var(--border)]",
+          "card-header": "Avatar + user + timestamp row",
+          "card-body": "Full action description and optional attachment preview",
+          "card-actions": "Reply, Like, Share action Buttons"
+        }
+      }
+    }
+  },
+  "visual_brief": "Vertical timeline of activity events grouped by date. Each date group starts with a muted, small-text date header. Individual feed items are horizontal rows: a circular avatar (with fallback initials) on the left, then a content block with the user name in medium-weight text followed by the action description in normal weight, and a relative timestamp (e.g. '2h ago') in small muted text right-aligned or below. Items are separated by subtle dividers or spacing. The compact preset drops avatars and uses small type-indicator icons instead. The detailed preset wraps each item in a bordered card with attachment previews and action buttons (reply, like).",
+  "responsive": {
+    "mobile": "Full-width feed. Avatar size reduces to 32px. Timestamp moves below the content text instead of right-aligned. Detailed preset card actions stack vertically. Load-more button goes full-width.",
+    "tablet": "Standard layout with avatars at 36px. Timestamp stays inline right-aligned. Comfortable spacing with gap3.",
+    "desktop": "Full layout with 40px avatars. Generous spacing. Detailed preset shows attachment previews inline. Actions row is fully horizontal."
+  },
+  "motion": {
+    "micro": "Feed item rows highlight on hover with subtle background transition over 150ms. Action buttons in detailed preset scale on hover.",
+    "transitions": "New activity items slide in from the top with 300ms ease-out translateY(-10px) to translateY(0) plus opacity 0 to 1. Staggered by 80ms per item when multiple arrive. Load-more items fade in from below."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "stagger-children",
+    "real-time-updates",
+    "hover-reveal",
+    "scroll-reveal"
+  ],
+  "accessibility": {
+    "role": "feed",
+    "aria-label": "Activity feed",
+    "keyboard": [
+      "Tab moves through feed items and inline actions in chronological order.",
+      "Load-more controls remain reachable after the newest visible group."
+    ],
+    "announcements": [
+      "New activity items should be announced without rereading the full feed.",
+      "Date group headers should remain semantically distinct from entries."
+    ],
+    "focus_management": "Do not steal focus when new events arrive. Preserve the reader's current position unless they explicitly choose to jump to the latest item."
+  },
+  "default_layout": {
+    "layout": "column",
+    "atoms": "_flex _col _gap2 _w[100%]",
+    "slots": {
+      "date-header": "Date group separator with _textsm _fgmuted _fontmedium",
+      "feed-item": "Single activity row: _flex _row _gap3 _items[start]",
+      "avatar": "User Avatar with fallback initials",
+      "content": "Action text with user name and description",
+      "timestamp": "Relative time label",
+      "load-more": "Button at bottom to load older activities"
+    }
+  },
+  "io": {
+    "consumes": [
+      "search",
+      "view",
+      "filters"
+    ],
+    "produces": [],
+    "actions": [
+      "load-more",
+      "mark-read"
+    ]
+  },
+  "layout_hints": {
+    "event_treatment": "Each event row: small colored dot (8px, color by event type) + timestamp (mono-data, text-xs) + description. Hover: subtle bg highlight.",
+    "grouping": "Group events by date. Date header: d-label with accent left-border. Today/Yesterday labels, then ISO dates.",
+    "empty_state": "Encouraging: 'No activity yet. Publish your first item to see it here.'"
+  },
+  "composition": {
+    "ActivityFeed": "Container(d-data, flex-col, full-width) > [DateGroup[] + LoadMore?(d-interactive)]",
+    "DateGroup": "Group(d-data) > [DateHeader(d-annotation, text-muted) + FeedItem[]]",
+    "FeedItem": "Row(d-data-row, hoverable) > [Avatar(fallback-initials) + Content(flex-col) > [UserName(font-medium) + ActionText] + Timestamp(mono-data, text-xs, text-muted)]"
+  }
+}

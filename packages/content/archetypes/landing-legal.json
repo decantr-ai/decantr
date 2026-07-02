@@ -1,0 +1,101 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "landing-legal",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Landing Legal",
+  "description": "Legal pages for a product landing site including privacy policy and terms of service. Clean prose layouts for legal content.",
+  "tags": [
+    "legal",
+    "privacy",
+    "terms",
+    "compliance",
+    "landing",
+    "2026"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "legal pages",
+        "privacy policy",
+        "terms of service",
+        "legal compliance",
+        "product legal"
+      ],
+      "secondary": [
+        "tos",
+        "privacy",
+        "terms",
+        "cookie policy",
+        "legal documents"
+      ],
+      "negative": [
+        "dashboard",
+        "editor",
+        "checkout"
+      ]
+    },
+    "implies": [
+      "compliance"
+    ],
+    "weight": 0.5,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "privacy",
+      "patterns": [
+        {
+          "pattern": "legal-prose",
+          "preset": "standard",
+          "as": "privacy-content"
+        }
+      ],
+      "default_layout": [
+        "privacy-content"
+      ],
+      "shell": "top-nav-footer"
+    },
+    {
+      "id": "terms",
+      "patterns": [
+        {
+          "pattern": "legal-prose",
+          "preset": "standard",
+          "as": "terms-content"
+        }
+      ],
+      "default_layout": [
+        "terms-content"
+      ],
+      "shell": "top-nav-footer"
+    }
+  ],
+  "page_briefs": {
+    "privacy": "Clean legal prose layout with privacy policy content. Table of contents sidebar or anchor links for sections. Last-updated date at top. Readable typography with clear section headings.",
+    "terms": "Clean legal prose layout with terms of service content. Numbered sections with clear headings. Last-updated date at top. Same readable typography as privacy page."
+  },
+  "features": [
+    "seo"
+  ],
+  "shells": {
+    "top-nav-footer": "Top navigation bar with footer for legal and social links"
+  },
+  "suggested_theme": {
+    "ids": [
+      "luminarum",
+      "clean"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  },
+  "dependencies": {
+    "patterns": {
+      "legal-prose": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

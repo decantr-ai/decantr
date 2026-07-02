@@ -1,0 +1,141 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "content-feed",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Content Feed",
+  "description": "Exclusive content feed with posts, media players, comments, and tier-gated content. Infinite scroll support.",
+  "dependencies": {
+    "patterns": {
+      "unlock-gate": "^1.0.0"
+    },
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Card",
+        "Badge",
+        "Avatar",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Card",
+    "Badge",
+    "Avatar",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Chronological content feed with embedded media players, comments, and tier-gated posts",
+      "components": [
+        "Button",
+        "Card",
+        "Badge",
+        "Avatar",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6 _maxw[720px] _mx[auto]",
+        "slots": {
+          "filters": "Type, tier filter buttons",
+          "items": "Content posts",
+          "load-more": "Infinite scroll trigger"
+        }
+      }
+    },
+    "grid": {
+      "description": "Grid layout for visual content",
+      "components": [
+        "Card",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc2 _md:gc3 _gap4",
+        "slots": {
+          "items": "Content cards in grid"
+        }
+      }
+    },
+    "compact": {
+      "description": "Dense single-column list view with reduced card padding and no inline comments",
+      "components": [
+        "Card",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap2",
+        "slots": {
+          "items": "Compact post rows"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap6",
+    "slots": {
+      "filters": "Content filters",
+      "items": "Post feed",
+      "load-more": "Pagination"
+    }
+  },
+  "io": {
+    "produces": [
+      "post-click",
+      "unlock-click",
+      "like-click"
+    ],
+    "consumes": [
+      "post-data",
+      "creator-data",
+      "user-tier"
+    ]
+  },
+  "visual_brief": "Vertical feed of content cards in chronological order. Each card shows an author row (avatar, name, timestamp), the post content (text, images, embedded video player), engagement stats (likes, comments count), and a comment input area. Tier-gated content shows a blurred preview with a lock icon and 'Subscribe to unlock' overlay. Filter tabs at the top allow switching between All, Text, Video, Audio, and Images. The grid preset arranges cards in a masonry layout. Compact preset removes the comment area and reduces card padding.",
+  "responsive": {
+    "mobile": "Single-column full-width cards. Video players scale to container width. Filters become a horizontal scrollable row. Load-more button replaces infinite scroll for performance.",
+    "tablet": "Single-column feed with comfortable card widths. Filters visible in a row.",
+    "desktop": "Feed constrained to a centered content column (680px). Grid preset uses two or three columns."
+  },
+  "layout_hints": {
+    "feed_priority": "Author identity and content body come first, then engagement and gating states. The feed should feel editorial and sequential rather than like a dashboard of unrelated cards.",
+    "gate_discipline": "Locked or tier-gated items should preserve the same post hierarchy as unlocked posts so monetization reads as part of the feed, not a separate widget.",
+    "filter_role": "Filter tabs should act as a lightweight mode selector above the stream, not as a second navigation system."
+  },
+  "motion": {
+    "micro": "Feed cards, engagement controls, and gated overlays may respond subtly on hover and focus, while likes or unlock affordances may confirm interaction without breaking reading flow.",
+    "transitions": "Filter changes and content loading should preserve chronological continuity, with gentle entry or fade behavior rather than abrupt masonry reshuffles."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "stagger-children",
+    "scroll-reveal",
+    "lift-hover"
+  ],
+  "accessibility": {
+    "role": "feed",
+    "aria-label": "Content feed",
+    "keyboard": [
+      "Feed items and their main actions should follow a clear top-to-bottom order, with comment and unlock actions reachable after the content."
+    ],
+    "announcements": [
+      "Author, timestamp, content type, and gated state should be exposed semantically so each post remains understandable without visual overlays alone."
+    ]
+  },
+  "composition": {
+    "ContentFeed": "Container(d-section, flex-col, centered) > [FilterTabs(d-control) + PostList + LoadMore?(d-interactive)]",
+    "PostList": "List(flex-col, gap-6) > PostCard[]",
+    "PostCard": "Card(d-surface) > [AuthorRow > [Avatar + Name + Timestamp(text-muted)] + PostContent(markdown, media?) + EngagementBar > [LikeCount + CommentCount] + CommentInput?]",
+    "GatedPost": "PostCard(blurred) > [LockOverlay(d-annotation, icon: lock) + SubscribeCTA(d-interactive)]"
+  }
+}

@@ -15,7 +15,7 @@ const files = [
 ];
 
 const LINK_PATTERN = /\[[^\]]+\]\((https?:\/\/[^)\s]+)(?:\s+"[^"]*")?\)|href=["'](https?:\/\/[^"']+)["']/g;
-const PUBLIC_DECANTR_HOSTS = new Set(['decantr.ai', 'registry.decantr.ai', 'api.decantr.ai']);
+const PUBLIC_DECANTR_HOSTS = new Set(['decantr.ai', 'api.decantr.ai']);
 
 const urls = new Set();
 

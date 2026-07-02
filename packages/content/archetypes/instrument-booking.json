@@ -1,0 +1,82 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "instrument-booking",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Instrument Booking",
+  "description": "Shared instrument reservation system for research labs. Researchers see availability calendars for lab equipment and book time slots.",
+  "tags": [
+    "booking",
+    "instruments",
+    "scheduling",
+    "lab",
+    "equipment"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "instrument booking",
+        "equipment reservation",
+        "instrument scheduling"
+      ],
+      "secondary": [
+        "book instrument",
+        "lab equipment",
+        "scheduling"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "instruments",
+      "path": "/instruments",
+      "patterns": [
+        { "pattern": "card-grid", "preset": "icon", "as": "instruments" },
+        { "pattern": "instrument-schedule", "preset": "week", "as": "schedule" }
+      ],
+      "default_layout": ["card-grid", "instrument-schedule"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "instrument-detail",
+      "path": "/instruments/:id",
+      "patterns": [
+        { "pattern": "detail-header", "preset": "standard", "as": "header" },
+        { "pattern": "instrument-schedule", "preset": "day", "as": "schedule" },
+        { "pattern": "data-table", "preset": "compact", "as": "usage" }
+      ],
+      "default_layout": ["detail-header", "instrument-schedule", "data-table"],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "instruments": "Instrument directory and weekly planner. Icon card grid at the top lists each instrument with thumbnail, status chip (available, in use, down), and quick-book button. Week instrument schedule below overlays reservations across all instruments in a weekly grid with colored blocks per researcher.",
+    "instrument-detail": "Per-instrument booking page. Standard detail header covers instrument name, model, location, PI owner, and primary reserve CTA. Day instrument schedule fills the main region with hourly slots for the selected date and drag-to-book interaction. Compact data table logs recent usage sessions with user, duration, and notes."
+  },
+  "features": [
+    "booking",
+    "scheduling",
+    "instruments"
+  ],
+  "shells": {
+    "sidebar-main": "Authenticated app shell with sidebar navigation and main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "card-grid": "^1.0.0",
+      "instrument-schedule": "^1.0.0",
+      "detail-header": "^1.0.0",
+      "data-table": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": ["swiss"],
+    "modes": ["light", "dark"]
+  }
+}

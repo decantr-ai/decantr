@@ -1,8 +1,8 @@
 # Decantr Content Health
 
-Content Health is the local observability surface for Decantr registry content repositories. It answers: are the content files schema-valid, do blueprints and archetypes point at publishable registry items, where is generation guidance thin, and what should the content author fix first?
+Content Health is the local observability surface for the official Decantr content corpus. It answers: are the content files schema-valid, do blueprints and archetypes point at usable corpus records, where is generation guidance thin, and what should the content author fix first?
 
-It is designed for repositories such as `decantr-content`, not customer applications. Customer applications should use [Project Health](project-health.md).
+It is designed for `packages/content`, not customer applications. Customer applications should use [Project Health](project-health.md).
 
 ## Commands
 
@@ -23,7 +23,7 @@ decantr content check --prompt <finding-id>
 
 ## What It Checks
 
-Content Health scans local registry content directories:
+Content Health scans local content directories:
 
 - `patterns/`
 - `themes/`
@@ -33,7 +33,7 @@ Content Health scans local registry content directories:
 
 The report includes:
 
-- schema validation against the public `@decantr/registry` schemas
+- schema validation against the public `@decantr/content` schemas
 - id and filename consistency
 - duplicate ids by content type
 - blueprint theme, compose, route, shell, and archetype references
@@ -41,7 +41,7 @@ The report includes:
 - quality coverage for pattern visual guidance, interactions, theme decorators, blueprint personality, blueprint voice, and archetype page briefs
 - AI-ready remediation prompts and recommended commands
 
-Hard publish-blocking issues are errors. Softer coverage gaps, such as missing concrete pattern files for semantic archetype layout names, are warnings so official content can keep expressive layout vocabulary while still making coverage debt visible.
+Hard release-blocking issues are errors. Softer coverage gaps, such as missing concrete pattern files for semantic archetype layout names, are warnings so official content can keep expressive layout vocabulary while still making coverage debt visible.
 
 ## CI
 
@@ -51,7 +51,7 @@ Recommended default gate:
 decantr content check --ci --fail-on error --markdown --output content-health.md
 ```
 
-Use `--fail-on error` for publish-readiness: invalid JSON, schema failures, duplicate ids, and missing hard references block. Use `--fail-on warn` when you want missing suggested themes, missing concrete pattern coverage, or quality guidance gaps to block a pull request.
+Use `--fail-on error` for release-readiness: invalid JSON, schema failures, duplicate ids, and missing hard references block. Use `--fail-on warn` when you want missing suggested themes, missing concrete pattern coverage, or quality guidance gaps to block a pull request.
 
 Example GitHub Actions step after the CLI version containing Content Health is published:
 
@@ -60,11 +60,11 @@ Example GitHub Actions step after the CLI version containing Content Health is p
   run: npx @decantr/cli content check --ci --fail-on error --markdown --output content-health.md
 ```
 
-## Relationship To Registry Drift
+## Relationship To Hosted API Drift
 
-Content Health is local and does not call the hosted registry by default. It tells you whether the repo content is internally healthy before publication.
+Content Health is local and does not call the hosted API by default. It tells you whether the corpus is internally healthy before package or API deployment.
 
-Live registry drift remains a separate audit lane. In `decantr-content`, keep using the registry drift workflow to compare local files with `https://api.decantr.ai/v1` and catch missing, extra, or changed hosted records.
+Live registry drift and sync-to-registry workflows are retired in Decantr 3.8. The content API should be rebuilt from the `@decantr/content` package, so old drift assumptions should fail during package, build, and deployment checks instead of through a separate publishing lane.
 
 ## Relationship To Telemetry
 
@@ -75,6 +75,6 @@ Content Health is not Decantr product telemetry. It does not send content files,
 | Surface | Repository | Primary User | Signal |
 | --- | --- | --- | --- |
 | Project Health | Customer app | App developer | Contract drift, route/runtime evidence, pack state, remediation |
-| Content Health | Registry content repo | Decantr/content operator | Schema validity, content references, generation guidance coverage |
+| Content Health | `packages/content` | Decantr/content operator | Schema validity, content references, generation guidance coverage |
 
-The two reports are intentionally separate so enterprise customers can inspect their own app health while Decantr operators can inspect the quality of the registry supply chain.
+The two reports are intentionally separate so enterprise customers can inspect their own app health while Decantr operators can inspect the quality of the official corpus.

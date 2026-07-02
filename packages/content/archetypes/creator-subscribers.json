@@ -1,0 +1,99 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "creator-subscribers",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Creator Subscribers",
+  "description": "Fan and subscriber management for creators. View, filter, and engage with your audience.",
+  "tags": [
+    "creator",
+    "subscribers",
+    "fans",
+    "audience",
+    "management"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "subscriber management",
+        "fan list",
+        "audience management"
+      ],
+      "secondary": [
+        "subscriber analytics",
+        "fan engagement"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "subscribers",
+      "patterns": [
+        {
+          "pattern": "subscriber-list",
+          "preset": "standard",
+          "as": "subscriber-table"
+        }
+      ],
+      "default_layout": [
+        "subscriber-list"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "subscriber-detail",
+      "patterns": [
+        {
+          "pattern": "detail-header",
+          "preset": "standard",
+          "as": "subscriber-header"
+        },
+        {
+          "pattern": "activity-feed",
+          "preset": "standard",
+          "as": "subscriber-activity"
+        }
+      ],
+      "default_layout": [
+        "detail-header",
+        "activity-feed"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "subscribers": "Data table of subscribers with columns for avatar, name, tier badge, join date, total spent, and status. Search and filter controls above the table. Bulk action toolbar for messaging.",
+    "subscriber-detail": "Detail header showing subscriber avatar, name, tier, and engagement score. Below, an activity feed of the subscriber's recent actions including purchases, comments, and subscription changes."
+  },
+  "features": [
+    "subscriber-filtering",
+    "export-csv",
+    "messaging",
+    "tier-management"
+  ],
+  "shells": {
+    "sidebar-main": "Creator dashboard with sidebar navigation"
+  },
+  "dependencies": {
+    "patterns": {
+      "subscriber-list": "^1.0.0",
+      "detail-header": "^1.0.0",
+      "activity-feed": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "studio"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

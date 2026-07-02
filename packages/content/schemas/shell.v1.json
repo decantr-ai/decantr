@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/shell.v1.json",
+  "title": "Decantr Shell",
+  "type": "object",
+  "required": [
+    "$schema",
+    "id",
+    "name"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "https://decantr.ai/schemas/shell.v1.json"
+    },
+    "id": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+    },
+    "name": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+    },
+    "description": {
+      "type": "string"
+    },
+    "root": {
+      "type": "string"
+    },
+    "nav": {
+      "type": "string"
+    },
+    "header": {
+      "type": "string"
+    },
+    "nav_style": {
+      "type": "string"
+    },
+    "dimensions": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true
+    },
+    "layout": {
+      "type": "string"
+    },
+    "atoms": {
+      "type": "string"
+    },
+    "config": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "configurable": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "guidance": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/stringMap"
+    },
+    "internal_layout": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "code": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/codeSpec"
+    }
+  },
+  "additionalProperties": true
+}

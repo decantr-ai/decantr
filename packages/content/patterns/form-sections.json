@@ -1,0 +1,180 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "form-sections",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Form Sections",
+  "description": "Grouped form fields organized in labeled sections with validation",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Card",
+        "Input",
+        "Select",
+        "Switch",
+        "Checkbox",
+        "Button",
+        "Label",
+        "Textarea",
+        "RadioGroup"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Card",
+    "Input",
+    "Select",
+    "Switch",
+    "Checkbox",
+    "Button",
+    "Label",
+    "Textarea",
+    "RadioGroup"
+  ],
+  "default_preset": "settings",
+  "presets": {
+    "settings": {
+      "description": "Vertical stack of sections, each with a title/description on the left and form fields on the right (2-column layout per section). Save button at bottom.",
+      "components": [
+        "Card",
+        "Input",
+        "Select",
+        "Switch",
+        "Button",
+        "Label",
+        "Textarea"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6 _p4",
+        "slots": {
+          "section": "Card with 2-column layout: labels left, fields right",
+          "section-title": "Section heading with _heading4 and description with _bodysm _fgmuted",
+          "field-group": "Grid of form fields with _grid _gc1 _lg:gc2 _gap4",
+          "actions": "Bottom-aligned save/cancel buttons"
+        }
+      }
+    },
+    "creation": {
+      "description": "Single-column wizard-like form with sections as steps. Progress indicator at top, prev/next buttons.",
+      "components": [
+        "Card",
+        "Input",
+        "Select",
+        "Checkbox",
+        "Button",
+        "Label",
+        "Textarea"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6 _p4 _mw[640px] _mx[auto]",
+        "slots": {
+          "progress": "Step indicator bar at top showing current/total steps",
+          "step-card": "Single Card containing current step fields",
+          "step-title": "Step heading with _heading4",
+          "field-group": "Vertical stack of form fields with _flex _col _gap4",
+          "navigation": "Prev/Next buttons at bottom"
+        }
+      }
+    },
+    "structured": {
+      "description": "Dense form with fieldsets, collapsible sections, and inline validation. Good for complex data entry.",
+      "components": [
+        "Card",
+        "Input",
+        "Select",
+        "Checkbox",
+        "RadioGroup",
+        "Button",
+        "Label",
+        "Textarea"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4 _p4",
+        "slots": {
+          "fieldset": "Collapsible Card section with border and legend-style title",
+          "field-row": "Horizontal field groups with _grid _gc2 _gap4 for dense layout",
+          "inline-validation": "Error text below fields with _textsm _fgdestructive",
+          "actions": "Button group with save, cancel, reset"
+        }
+      }
+    }
+  },
+  "visual_brief": "Vertical stack of grouped form fields. Each section has a heading/description on the left and form controls on the right (2-column at desktop, stacked on mobile). Labels above fields. Max-width 640px. Single card wrapping or no card. Save/cancel buttons at bottom.",
+  "layout_hints": {
+    "label_position": "stacked",
+    "note": "Labels go ABOVE their field, not side-by-side. This prevents the label-field gap problem at wide viewports.",
+    "max_width": "Form content should be constrained to max-width: 40rem (640px). Full-width forms are hard to read.",
+    "section_grouping": "Group related fields under section headers. Use a SINGLE d-surface card for the entire form, OR no card at all. Do NOT wrap each section in its own separate card.",
+    "icon_placement": "Section header icons render INLINE with the heading text (icon left of heading, vertically centered), not floating outside the card border.",
+    "select_styling": "Apply d-control to ALL form elements including <select>. Add appearance: none and a custom SVG chevron for consistent styling.",
+    "textarea": "Textareas should have min-height: 6rem to visually differentiate from single-line inputs."
+  },
+  "motion": {
+    "micro": "Collapsible sections expand/collapse with 250ms ease height transition. Validation errors shake the invalid field with a 300ms horizontal oscillation (translateX +/-4px).",
+    "transitions": "Section content fades in on expand with 200ms ease. Step transitions in creation preset cross-fade over 250ms."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "inline-edit",
+    "keyboard-navigation"
+  ],
+  "responsive": {
+    "mobile": "Collapse all sections to a single column. Section titles stack above fields, actions become full-width when helpful, and dense structured layouts reduce to simple vertical groups.",
+    "tablet": "Preserve the section rhythm while allowing field groups to split into two columns only when labels and controls still read clearly.",
+    "desktop": "Use the intended multi-column section layout, but keep the overall form constrained in width so long label or helper text blocks remain readable."
+  },
+  "accessibility": {
+    "role": "form",
+    "aria-label": "Form",
+    "keyboard": [
+      "Tab navigates between form fields",
+      "Shift+Tab navigates backwards between fields",
+      "Enter submits when focus is on submit button",
+      "Space toggles checkboxes and switches",
+      "Arrow keys navigate within radio groups"
+    ],
+    "announcements": [
+      "Validation error: {field} — {message}",
+      "Section {name} expanded",
+      "Section {name} collapsed",
+      "Form submitted successfully"
+    ],
+    "focus_management": "First invalid field receives focus on failed validation. On section expand, focus moves to first field in the section. On step change in creation preset, focus moves to first field of new step."
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap6 _p4",
+    "slots": {
+      "section": "Card with 2-column layout: labels left, fields right",
+      "section-title": "Section heading with _heading4 and description",
+      "field-group": "Grid of form fields with _grid _gc1 _lg:gc2 _gap4",
+      "actions": "Bottom-aligned save/cancel buttons"
+    }
+  },
+  "io": {
+    "consumes": [
+      "data"
+    ],
+    "produces": [
+      "form-data"
+    ],
+    "actions": [
+      "save",
+      "cancel",
+      "reset"
+    ]
+  },
+  "composition": {
+    "FormSections": "Container(d-section, flex-col, gap-6) > [Section[] + ActionButtons]",
+    "Section": "Card(d-surface) > [SectionTitle(heading4) + Description?(text-muted) + FieldGroup(d-control, grid: 1/2-col)]",
+    "FieldGroup": "Grid > Field[]",
+    "Field": "Stack(flex-col) > [Label(font-medium) + Input(d-control) + ErrorText?(d-annotation, text-destructive)]",
+    "ActionButtons": "Row(d-interactive) > [SaveButton(variant: primary) + CancelButton(variant: ghost)]"
+  }
+}

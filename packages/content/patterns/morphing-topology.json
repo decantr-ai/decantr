@@ -1,0 +1,113 @@
+{
+  "id": "morphing-topology",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Morphing Topology",
+  "description": "A layout that reshapes its zone structure based on AI-detected user context. Zones expand, collapse, merge, and split using animated CSS grid-template changes driven by application state. Integrates with Decantr's composition topology system: zones map to archetype roles (primary, gateway, public, auxiliary), and transitions between zone configurations are smooth and meaningful. For adaptive dashboards, context-aware workspaces, and AI-orchestrated interfaces that reorganize around what the user is doing.",
+  "category": "generative",
+  "tags": [
+    "2026",
+    "generative",
+    "adaptive",
+    "topology",
+    "grid",
+    "context-aware",
+    "AI",
+    "zones"
+  ],
+  "components": [
+    "MorphZone",
+    "TransitionBorder",
+    "ContextBadge",
+    "LayoutToggle",
+    "ZoneLabel"
+  ],
+  "default_preset": "balanced",
+  "presets": {
+    "balanced": {
+      "description": "Equal-weight zone distribution. All zones visible at similar sizes in a 2x2 or 3-column grid. Default starting state before context signals arrive. Grid uses fr units for proportional sizing.",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap4 _p4"
+      }
+    },
+    "focus-expand": {
+      "description": "One zone expanded to 70% of viewport while others collapse to sidebar thumbnails. Triggered when AI detects sustained interaction in a single zone. Expanded zone gets full content rendering; collapsed zones show summary + ZoneLabel only.",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap2 _p4"
+      }
+    },
+    "merged": {
+      "description": "Two adjacent zones merge into a single larger zone when their content is contextually related. TransitionBorder between them dissolves. The merged zone inherits both zones' content in a combined layout. ContextBadge shows merge reason.",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap4 _p4"
+      }
+    },
+    "split": {
+      "description": "A single zone divides into two when the AI detects multiple distinct concerns. Animated split with TransitionBorder appearing as a growing divider. Each new zone gets its own ZoneLabel and ContextBadge.",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap4 _p4"
+      }
+    },
+    "stacked-fallback": {
+      "description": "All zones stacked vertically in a single column. Used when morphing is disabled, on small screens, or when grid animation is not supported. Zones maintain their expand/collapse state as accordion sections.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4 _p4"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gap4 _p4",
+    "slots": {
+      "zone-container": "The CSS grid parent that holds all zones. Grid template rows and columns animate between configurations using transition on grid-template-rows and grid-template-columns properties. Container must have explicit dimensions for grid animation to work.",
+      "zone-panel": "Individual content zone rendered as a MorphZone. Each zone has an ID tied to a Decantr archetype role or section. Content within the zone is independently scrollable. Zone size is driven by grid-area assignment that changes with topology state. Minimum zone size prevents content from becoming unusable.",
+      "transition-boundary": "The visual and interactive border between adjacent zones. TransitionBorder renders as a subtle divider that can be dragged to manually resize zones. During merge transitions, the border dissolves with opacity animation. During splits, it grows from a center point. Border includes a drag handle on hover.",
+      "context-indicator": "ContextBadge displaying why the current topology shape was chosen. Shows labels like 'Focused on code review', 'Merged: related data sources', or 'Split: multiple concerns detected'. Badge positioned at the top of the affected zone. Can be dismissed but reappears on next topology change.",
+      "layout-controls": "LayoutToggle allowing manual override of AI-driven topology. Options: balanced, focus on [zone], merge [zone+zone], reset. Toggle persists user preference and suppresses AI changes until reset. Controls can be placed in a toolbar or as a floating widget."
+    }
+  },
+  "accessibility": {
+    "role": "region",
+    "aria_label": "Adaptive workspace layout",
+    "announcements": [
+      "Announce topology changes: 'Layout changed: [zone] expanded to focus view'",
+      "Announce zone merges: '[zone A] and [zone B] merged'",
+      "Announce zone splits: '[zone] split into [zone A] and [zone B]'",
+      "Announce manual override: 'Layout locked to [configuration]'"
+    ],
+    "keyboard": [
+      "Tab navigates between zones in DOM order",
+      "Ctrl+Arrow keys resize the focused zone's grid area",
+      "Ctrl+M merges the focused zone with the adjacent zone",
+      "Ctrl+Shift+S splits the focused zone",
+      "Ctrl+0 resets to balanced topology",
+      "L key opens LayoutToggle controls"
+    ],
+    "reduce_motion": "Grid template changes apply instantly without CSS transition. TransitionBorder merge/split animations disabled. Zone resize is immediate. All topology changes still occur but without visual animation."
+  },
+  "responsive": {
+    "mobile": "Switch to stacked-fallback preset. Zones render as collapsible accordion panels. Only one zone expanded at a time. LayoutToggle hidden; AI-driven topology changes limited to reordering zones by relevance.",
+    "tablet": "Maximum 2-column grid. Focus-expand uses 60/40 split instead of 70/30. TransitionBorder drag handles enlarged for touch (48px hit target). ContextBadge displayed as a dismissible toast rather than inline badge."
+  },
+  "visual_brief": "CSS Grid container with named zones that animate between configurations. In the balanced preset, zones are evenly distributed in a 2x2 or 3-column grid. Focus-expand preset enlarges one zone to take two-thirds of the space while others shrink. Merged preset combines adjacent zones into a single large panel. Split preset divides a zone into two sub-panels. Zone boundaries show subtle transition borders that animate during layout changes. Each zone has a small label badge in the corner indicating its role (primary, gateway, auxiliary). The stacked-fallback preset arranges all zones in a single column.",
+  "interactions": [
+    "drag-nodes",
+    "pan-background",
+    "zoom-scroll",
+    "click-select",
+    "hover-tooltip",
+    "animate-on-mount"
+  ],
+  "composition": {
+    "MorphingTopology": "Grid(d-section, animated-template) > [ZonePanel[] + TransitionBorder[] + LayoutControls?]",
+    "ZonePanel": "Panel(d-surface, grid-area: dynamic, scrollable) > [ZoneLabel(d-annotation) + ContextBadge?(d-annotation) + Content]",
+    "TransitionBorder": "Divider(d-control, draggable, dissolve-on-merge)",
+    "LayoutControls": "Panel(d-control, floating) > [LayoutToggle > Option(d-interactive)[] + ResetButton]"
+  }
+}

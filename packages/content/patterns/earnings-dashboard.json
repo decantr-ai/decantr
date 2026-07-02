@@ -1,0 +1,132 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "earnings-dashboard",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Earnings Dashboard",
+  "description": "Revenue analytics dashboard with KPIs, charts, tier breakdown, and recent transactions. Date range filtering and export capabilities.",
+  "dependencies": {
+    "patterns": {
+      "kpi-grid": "^1.0.0"
+    },
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Card",
+        "Badge",
+        "Select",
+        "icon"
+      ],
+      "charts": [
+        "LineChart",
+        "BarChart",
+        "PieChart"
+      ]
+    }
+  },
+  "components": [
+    "Button",
+    "Card",
+    "Badge",
+    "Select",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full analytics view with all charts and data",
+      "components": [
+        "Button",
+        "Card",
+        "Badge",
+        "Select",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6",
+        "slots": {
+          "kpis": "Revenue, MRR, subscribers, churn metrics",
+          "revenue-chart": "Line/bar chart of revenue over time",
+          "tier-breakdown": "Revenue by tier pie chart",
+          "recent-transactions": "Latest payments table",
+          "payout-status": "Next payout info card"
+        }
+      }
+    },
+    "summary": {
+      "description": "Condensed KPI view for dashboard home",
+      "components": [
+        "Card",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc2 _lg:gc4 _gap4",
+        "slots": {
+          "kpis": "Key metrics cards"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap6",
+    "slots": {
+      "kpis": "Key metrics",
+      "charts": "Revenue charts",
+      "transactions": "Recent payments"
+    }
+  },
+  "io": {
+    "produces": [
+      "date-range-changed",
+      "export-triggered"
+    ],
+    "consumes": [
+      "earnings-data",
+      "transaction-data"
+    ]
+  },
+  "visual_brief": "Dashboard layout with a row of KPI metric cards at the top (total revenue, subscribers, MRR, churn rate), each showing the value, trend arrow (up/down with green/red color), and percentage change. Below the KPIs, a large revenue line chart with date range selector (7d, 30d, 90d, 1y) and an overlaid area fill. A tier breakdown section shows revenue per subscription tier as a horizontal stacked bar or donut chart. A recent transactions table at the bottom lists individual payments with date, subscriber, amount, and status. Export button in the header.",
+  "responsive": {
+    "mobile": "KPI cards scroll horizontally or stack in a 2x2 grid. Charts take full width with simplified labels. Transactions table becomes a card list. Export button moves to a menu.",
+    "tablet": "KPIs in a single row. Charts render at full container width. Transactions table with horizontal scroll if needed.",
+    "desktop": "Full dashboard grid. KPIs span the top. Charts and tier breakdown side by side. Transactions table with all columns visible."
+  },
+  "layout_hints": {
+    "summary_first": "Lead with headline earnings metrics, then trend visualization, then transaction detail. The dashboard should tell a financial story from top to bottom rather than feeling like a loose pile of widgets.",
+    "chart_balance": "Revenue chart and tier breakdown should feel related but not equal in weight if one is clearly the primary insight surface.",
+    "trust_rhythm": "Keep totals, dates, and transaction states legible and conservative. This is a financial dashboard, so stability and clarity matter more than visual spectacle."
+  },
+  "motion": {
+    "micro": "KPI values and charts may reveal with restrained count-up or fade-in behavior, while export or range controls should respond crisply on hover and focus.",
+    "transitions": "Date-range changes should animate smoothly enough to preserve context without making revenue interpretation feel unstable."
+  },
+  "interactions": [
+    "drag-reorder",
+    "click-select",
+    "animate-on-mount",
+    "real-time-updates",
+    "hover-tooltip"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Earnings dashboard",
+    "keyboard": [
+      "Header controls, KPI cards, charts, and transaction surfaces should remain keyboard reachable in reading order."
+    ],
+    "announcements": [
+      "Revenue totals, trend directions, and date-range changes should be exposed semantically so the dashboard remains understandable beyond visual chart treatments."
+    ]
+  },
+  "composition": {
+    "EarningsDashboard": "Container(d-section, flex-col, gap-6) > [KPIRow + RevenueChart + TierBreakdown + TransactionsTable + PayoutStatus?]",
+    "KPIRow": "Grid(d-data, 4-col) > KPICard(d-surface)[]",
+    "KPICard": "Card > [Value(heading2, mono-data) + TrendArrow(color: positive|negative) + Label(text-muted)]",
+    "RevenueChart": "Card(d-surface) > [DateRangeSelector(d-control) + Chart(d-data, area-fill)]",
+    "TransactionsTable": "Card(d-surface) > [Table(d-data) > TransactionRow[]]"
+  }
+}

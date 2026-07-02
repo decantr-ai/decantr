@@ -1,0 +1,83 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "secondary-market",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Secondary Market",
+  "description": "Peer-to-peer trading surface for fractional asset tokens. Investors view order books, place buy and sell orders, and watch live price action.",
+  "tags": [
+    "trading",
+    "secondary-market",
+    "order-book",
+    "exchange",
+    "liquidity"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "secondary market",
+        "order book",
+        "token trading",
+        "asset exchange"
+      ],
+      "secondary": [
+        "trade",
+        "buy sell",
+        "market",
+        "liquidity"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "market",
+      "path": "/market",
+      "patterns": [
+        { "pattern": "data-table", "preset": "standard", "as": "orderbook" },
+        { "pattern": "chart-grid", "preset": "standard", "as": "prices" }
+      ],
+      "default_layout": ["data-table", "chart-grid"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "trade",
+      "path": "/market/:id/trade",
+      "patterns": [
+        { "pattern": "trade-modal", "preset": "buy", "as": "ticket" },
+        { "pattern": "valuation-chart", "preset": "line", "as": "chart" }
+      ],
+      "default_layout": ["valuation-chart", "trade-modal"],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "market": "Market overview page. Standard data table shows the consolidated order book with bid and ask ladders, last trade price, 24h volume, and spread per asset. Chart grid alongside plots rolling price charts and volume histograms for the selected asset.",
+    "trade": "Focused trade execution view. Line valuation chart fills the main area showing recent price action and depth markers. Buy-preset trade modal anchors to the side with quantity, limit price, order type, and confirm flow."
+  },
+  "features": [
+    "trading",
+    "order-book",
+    "market-data"
+  ],
+  "shells": {
+    "sidebar-main": "Authenticated app shell with sidebar navigation and main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "data-table": "^1.0.0",
+      "chart-grid": "^1.0.0",
+      "trade-modal": "^1.0.0",
+      "valuation-chart": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": ["swiss"],
+    "modes": ["dark", "light"]
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "review-system",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Review System",
+  "description": "Review submission flow for marketplace transactions. Allows buyers to rate, write text reviews, and upload photos after a completed booking.",
+  "tags": [
+    "marketplace",
+    "reviews",
+    "ratings",
+    "feedback",
+    "user-generated"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "write review",
+        "leave review",
+        "review submission",
+        "rating form"
+      ],
+      "secondary": [
+        "star rating",
+        "photo review",
+        "booking feedback"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "write-review",
+      "patterns": [
+        {
+          "pattern": "form-sections",
+          "preset": "standard",
+          "as": "review-form"
+        }
+      ],
+      "default_layout": [
+        "review-form"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "write-review": "Guided review submission form anchored to a specific booking. Top section shows a compact booking summary card with listing thumbnail and dates. Form sections include star rating selectors for overall and category scores, a text area for the written review, a photo upload dropzone, and a submit button with preview toggle."
+  },
+  "features": [
+    "reviews",
+    "ratings",
+    "photos"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "form-sections": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  },
+  "directives": [
+    "Write-review form MUST collect: 1-5 star rating (required) + headline (single line) + body (multiline) + optional photos. Stars first, headline second, body third \u2014 NOT a free-form textarea-only form.",
+    "Star rating control: 5 horizontal stars, click to select. Selected stars filled in accent. Hovering pre-fills up to that star (so 4-star hover shows 4 stars filled). Show a small label below ('Excellent', 'Good', 'OK', 'Disappointing', 'Bad') keyed to the rating count.",
+    "Photo upload: small thumbnail strip below the body field. Each thumbnail shows a remove button on hover. Drag-drop into the strip, OR click 'Add photo' to file-pick. Maximum 6 photos.",
+    "Review submission MUST show a confirmation state \u2014 'Thanks! Your review is now public.' \u2014 not a silent navigation away. Include a 'View your review' link.",
+    "Form validation is friendly: empty stars \u2192 'Tap to rate', empty body \u2192 'Tell other guests what you loved'. Avoid 'This field is required'."
+  ]
+}

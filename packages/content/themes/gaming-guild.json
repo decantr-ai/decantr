@@ -1,0 +1,341 @@
+{
+  "$schema": "https://decantr.ai/schemas/theme.v1.json",
+  "id": "gaming-guild",
+  "version": "1.0.0",
+  "name": "Gaming Guild",
+  "description": "Immersive guild-hall visual language. Electric indigo + neon emerald palette, glow elevation, smooth motion. Deep indigo surface stack in dark mode. RPG-inspired typography with monospace data readouts and uppercase micro labels.",
+  "tags": [
+    "gaming",
+    "rpg",
+    "guild",
+    "indigo",
+    "neon",
+    "immersive"
+  ],
+  "personality": "rounded + glow elevation + smooth motion + thin borders + vivid gradients",
+  "seed": {
+    "primary": "#3b82f6",
+    "secondary": "#06d6a0",
+    "accent": "#a855f7",
+    "background": "#e8edf5"
+  },
+  "modes": [
+    "light",
+    "dark"
+  ],
+  "shapes": [
+    "sharp",
+    "rounded",
+    "pill"
+  ],
+  "decantr_compat": ">=2.0.0",
+  "source": "community",
+  "palette": {
+    "background": {
+      "light": "#E8EDF5",
+      "dark": "#0A0A0F"
+    },
+    "surface": {
+      "light": "#F0F4FA",
+      "dark": "#111118"
+    },
+    "surface-raised": {
+      "light": "#FFFFFF",
+      "dark": "#1A1A25"
+    },
+    "border": {
+      "light": "#C8D0E0",
+      "dark": "#2A2A40"
+    },
+    "text": {
+      "light": "#141830",
+      "dark": "#E8EDF5"
+    },
+    "text-muted": {
+      "light": "#5A6080",
+      "dark": "#8888AA"
+    },
+    "primary": {
+      "light": "#3B82F6",
+      "dark": "#60A5FA"
+    },
+    "primary-hover": {
+      "light": "#2563EB",
+      "dark": "#93C5FD"
+    }
+  },
+  "decorators": {
+    "gg-dark": "Near-black background (#0A0A0F) with subtle grid pattern.",
+    "gg-sidebar": "Dark sidebar with accent-colored active states.",
+    "gg-hero": "Hero with animated gradient background.",
+    "gg-neon-glow": "Neon glow effect behind hero elements.",
+    "gg-stat-pulse": "Stats with subtle pulse animation.",
+    "gg-rank-badge": "Rank position with metallic gradient (gold/silver/bronze).",
+    "gg-achievement-shine": "Achievement cards with shine animation on hover.",
+    "gg-slide-in": "Entrance: slide from left with slight bounce."
+  },
+  "spatial": {
+    "density_bias": -1,
+    "content_gap_shift": 0,
+    "section_padding": "4rem",
+    "card_wrapping": "minimal",
+    "surface_override": null
+  },
+  "motion": {
+    "preference": "subtle",
+    "reduce_motion": true,
+    "entrance": "gg-slide-in",
+    "micro": "bouncy",
+    "timing": "ease-out",
+    "durations": {
+      "hover": "100ms",
+      "entrance": "300ms",
+      "instant": "60ms",
+      "fast": "120ms",
+      "base": "220ms",
+      "slow": "380ms",
+      "slower": "550ms",
+      "stagger": "50ms"
+    },
+    "easings": {
+      "ease": "cubic-bezier(0.34, 1.56, 0.64, 1)",
+      "easeOut": "cubic-bezier(0.34, 1.56, 0.64, 1)",
+      "easeIn": "cubic-bezier(0.4, 0, 1, 1)",
+      "spring": "cubic-bezier(0.68, -0.6, 0.32, 1.6)"
+    }
+  },
+  "effects": {
+    "enabled": true,
+    "intensity": "strong",
+    "type_mapping": {
+      "hero_section": [
+        "gg-neon-glow"
+      ],
+      "stat_display": [
+        "gg-stat-pulse"
+      ],
+      "leaderboard": [
+        "gg-rank-badge"
+      ],
+      "achievement": [
+        "gg-achievement-shine"
+      ]
+    }
+  },
+  "radius": {
+    "philosophy": "rounded",
+    "base": 8
+  },
+  "shell": {
+    "preferred": [
+      "sidebar-main"
+    ],
+    "avoid": [
+      "centered",
+      "minimal-header"
+    ],
+    "nav_style": "filled",
+    "default_nav_state": "expanded",
+    "root": "gg-dark",
+    "nav": "gg-sidebar",
+    "header": "gg-hero"
+  },
+  "card_styles": {
+    "neon": {
+      "description": "Dark card with neon border glow",
+      "properties": {
+        "background": "rgba(0,0,0,0.6)",
+        "border": "2px solid var(--gg-accent)",
+        "box-shadow": "0 0 20px var(--gg-accent-glow)",
+        "border-radius": "8px"
+      }
+    },
+    "solid": {
+      "description": "Filled card with accent color",
+      "properties": {
+        "background": "var(--gg-accent)",
+        "border-radius": "8px",
+        "color": "#000"
+      }
+    }
+  },
+  "typography": {
+    "scale": "modular",
+    "heading_weight": 600,
+    "body_weight": 400,
+    "display": "'Rajdhani', 'Orbitron', 'Inter', ui-sans-serif, sans-serif",
+    "body": "'Inter', ui-sans-serif, system-ui, sans-serif"
+  },
+  "decorator_definitions": {
+    "gg-dark": {
+      "description": "Near-black background (#0A0A0F) with subtle grid pattern.",
+      "intent": "Use as the root page background to create the immersive dark guild-hall atmosphere. The grid pattern adds a subtle HUD aesthetic.",
+      "suggested_properties": {
+        "background-color": "#0A0A0F",
+        "color": "var(--d-text, #E8EDF5)",
+        "min-height": "100vh"
+      },
+      "pairs_with": [
+        "gg-sidebar",
+        "gg-neon-glow"
+      ],
+      "usage": [
+        "Page root containers",
+        "App shell backgrounds"
+      ]
+    },
+    "gg-sidebar": {
+      "description": "Dark sidebar with accent-colored active states.",
+      "intent": "Use for the primary sidebar navigation. Active states use the electric indigo accent to indicate current location.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #111118)",
+        "border-right": "1px solid var(--d-border, #2A2A40)",
+        "width": "240px"
+      },
+      "pairs_with": [
+        "gg-dark",
+        "gg-hero"
+      ],
+      "usage": [
+        "Sidebar navigation",
+        "Guild menu panels"
+      ]
+    },
+    "gg-hero": {
+      "description": "Hero with animated gradient background.",
+      "intent": "Use for the main hero section of guild pages. The animated gradient creates energy and excitement for the gaming context.",
+      "suggested_properties": {
+        "background": "linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(6, 214, 160, 0.1), rgba(168, 85, 247, 0.1))",
+        "padding": "80px 0",
+        "position": "relative",
+        "overflow": "hidden"
+      },
+      "pairs_with": [
+        "gg-dark",
+        "gg-neon-glow"
+      ],
+      "usage": [
+        "Hero sections",
+        "Guild banner areas",
+        "Featured content headers"
+      ]
+    },
+    "gg-neon-glow": {
+      "description": "Neon glow effect behind hero elements.",
+      "intent": "Use as a background glow behind hero text and featured elements. The neon glow adds the high-energy gaming atmosphere.",
+      "suggested_properties": {
+        "box-shadow": "0 0 30px rgba(59, 130, 246, 0.3), 0 0 60px rgba(6, 214, 160, 0.15)",
+        "position": "relative"
+      },
+      "pairs_with": [
+        "gg-hero",
+        "gg-dark"
+      ],
+      "usage": [
+        "Hero element accents",
+        "Featured content highlights",
+        "Active state glows"
+      ]
+    },
+    "gg-stat-pulse": {
+      "description": "Stats with subtle pulse animation.",
+      "intent": "Use for live stat displays and real-time metrics. The pulse animation communicates that data is live and actively updating.",
+      "suggested_properties": {
+        "animation": "gg-pulse 2s ease-in-out infinite",
+        "font-variant-numeric": "tabular-nums",
+        "font-family": "ui-monospace, monospace"
+      },
+      "pairs_with": [
+        "gg-dark",
+        "gg-rank-badge"
+      ],
+      "usage": [
+        "Live stat counters",
+        "Real-time metrics",
+        "Active player counts",
+        "Score displays"
+      ]
+    },
+    "gg-rank-badge": {
+      "description": "Rank position with metallic gradient (gold/silver/bronze).",
+      "intent": "Use for leaderboard rank positions and achievement tiers. The metallic gradients instantly communicate rank hierarchy.",
+      "suggested_properties": {
+        "border-radius": "8px",
+        "padding": "4px 12px",
+        "font-weight": "700",
+        "text-transform": "uppercase",
+        "font-size": "12px"
+      },
+      "pairs_with": [
+        "gg-stat-pulse",
+        "gg-achievement-shine"
+      ],
+      "usage": [
+        "Leaderboard positions",
+        "Rank badges",
+        "Achievement tier labels"
+      ]
+    },
+    "gg-achievement-shine": {
+      "description": "Achievement cards with shine animation on hover.",
+      "intent": "Use for achievement and reward cards. The shine animation on hover creates a collectible, trophy-like feel.",
+      "suggested_properties": {
+        "background": "var(--d-surface-raised, #1A1A25)",
+        "border": "1px solid var(--d-border, #2A2A40)",
+        "border-radius": "8px",
+        "overflow": "hidden",
+        "position": "relative"
+      },
+      "pairs_with": [
+        "gg-rank-badge",
+        "gg-neon-glow"
+      ],
+      "usage": [
+        "Achievement cards",
+        "Reward displays",
+        "Trophy showcases",
+        "Unlock cards"
+      ]
+    },
+    "gg-slide-in": {
+      "description": "Entrance: slide from left with slight bounce.",
+      "intent": "Use as the entrance animation for content panels and cards. The bounce adds playful energy fitting the gaming context.",
+      "suggested_properties": {
+        "animation": "gg-slide-in 300ms ease-out both",
+        "opacity": "0",
+        "transform": "translateX(-20px)"
+      },
+      "pairs_with": [
+        "gg-dark",
+        "gg-achievement-shine"
+      ],
+      "usage": [
+        "Card entrance animations",
+        "Panel reveals",
+        "List item animations"
+      ]
+    }
+  },
+  "elevation": {
+    "1": {
+      "light": "0 1px 2px rgba(0,0,0,0.06)",
+      "dark": "0 1px 2px rgba(0,0,0,0.4)"
+    },
+    "2": {
+      "light": "0 2px 6px rgba(0,0,0,0.08)",
+      "dark": "0 2px 8px rgba(255, 255, 255, 0.06)"
+    },
+    "3": {
+      "light": "0 6px 16px rgba(0,0,0,0.10)",
+      "dark": "0 4px 16px rgba(255, 255, 255, 0.08)"
+    },
+    "4": {
+      "light": "0 12px 32px rgba(0,0,0,0.14)",
+      "dark": "0 8px 28px rgba(255, 255, 255, 0.12)"
+    },
+    "5": {
+      "light": "0 24px 64px rgba(0,0,0,0.18)",
+      "dark": "0 16px 48px rgba(255, 255, 255, 0.16)"
+    }
+  }
+}

@@ -1,0 +1,196 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "gaming-community",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Gaming Community",
+  "description": "Guild hub, news feed, hall of fame, and member profiles for social gaming communities",
+  "tags": [
+    "gaming",
+    "community",
+    "guild",
+    "leaderboard",
+    "social",
+    "esports"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "guild",
+        "clan",
+        "community",
+        "leaderboard",
+        "social gaming"
+      ],
+      "secondary": [
+        "news feed",
+        "member profile",
+        "hall of fame",
+        "achievements",
+        "esports"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "main",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "landing",
+          "as": "guild-hero"
+        },
+        "kpi-grid",
+        "activity-feed",
+        {
+          "pattern": "leaderboard",
+          "preset": "spotlight",
+          "as": "top-players"
+        }
+      ],
+      "default_layout": [
+        {
+          "pattern": "hero",
+          "preset": "landing",
+          "as": "guild-hero"
+        },
+        "kpi-grid",
+        {
+          "cols": [
+            "activity-feed",
+            "top-players"
+          ],
+          "at": "lg"
+        }
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "news",
+      "patterns": [
+        "filter-bar",
+        "post-list",
+        {
+          "pattern": "emoji-reaction-bar",
+          "preset": "inline",
+          "as": "reactions"
+        },
+        {
+          "pattern": "notification-center",
+          "preset": "dropdown",
+          "as": "notifications"
+        }
+      ],
+      "default_layout": [
+        "notifications",
+        "filter-bar",
+        "post-list",
+        "reactions"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "hall-of-fame",
+      "patterns": [
+        "stats-bar",
+        {
+          "pattern": "leaderboard",
+          "preset": "ranked",
+          "as": "guild-leaderboard"
+        },
+        "timeline"
+      ],
+      "default_layout": [
+        "stats-bar",
+        {
+          "pattern": "leaderboard",
+          "preset": "ranked",
+          "as": "guild-leaderboard"
+        },
+        "timeline"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "member-profile",
+      "patterns": [
+        {
+          "pattern": "detail-header",
+          "preset": "profile",
+          "as": "player-header"
+        },
+        "kpi-grid",
+        {
+          "pattern": "leaderboard",
+          "preset": "grid",
+          "as": "achievements"
+        },
+        "activity-feed",
+        "timeline"
+      ],
+      "default_layout": [
+        {
+          "pattern": "detail-header",
+          "preset": "profile",
+          "as": "player-header"
+        },
+        "kpi-grid",
+        {
+          "cols": [
+            "achievements",
+            "activity-feed"
+          ],
+          "span": {
+            "achievements": 2
+          },
+          "at": "lg"
+        },
+        "timeline"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "main": "Guild hub landing. Hero banner with guild name and emblem. KPI cards showing member count, active players, and weekly XP. Two-column layout below: activity feed on the left, top-players leaderboard spotlight on the right.",
+    "news": "Guild news feed. Filter bar with category and date filters. Below, a list of news posts with title, author avatar, timestamp, and preview text. Clickable rows for full articles.",
+    "hall-of-fame": "Stats bar with all-time records at the top. Ranked leaderboard table below with position, player avatar, name, score, and achievement badges. Historical timeline at the bottom showing guild milestones.",
+    "member-profile": "Player profile header with avatar, username, rank badge, and KPI stats row. Two-column layout: wider achievements grid with unlocked badges, narrower activity feed with recent plays. Timeline at the bottom showing player history."
+  },
+  "features": [
+    "guild-state",
+    "achievements",
+    "realtime-data"
+  ],
+  "shells": {
+    "sidebar-main": "Left sidebar with grouped nav (INFO + SPOTLIGHT sections) + main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "activity-feed": "^1.0.0",
+      "detail-header": "^1.0.0",
+      "filter-bar": "^1.0.0",
+      "hero": "^1.0.0",
+      "kpi-grid": "^1.0.0",
+      "leaderboard": "^1.0.0",
+      "post-list": "^1.0.0",
+      "stats-bar": "^1.0.0",
+      "timeline": "^1.0.0",
+      "emoji-reaction-bar": "^1.0.0",
+      "notification-center": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "gaming-guild"
+    ],
+    "modes": [
+      "dark"
+    ]
+  }
+}

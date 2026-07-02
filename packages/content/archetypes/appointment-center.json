@@ -1,0 +1,113 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "appointment-center",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Appointment Center",
+  "description": "Appointment management hub with list view, booking flow, and appointment details with telehealth join capability.",
+  "tags": [
+    "health",
+    "appointments",
+    "booking",
+    "telehealth",
+    "scheduling"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "appointment scheduling",
+        "appointment center",
+        "booking system",
+        "appointment management"
+      ],
+      "secondary": [
+        "telehealth",
+        "provider booking",
+        "visit scheduling",
+        "calendar booking"
+      ],
+      "negative": []
+    },
+    "implies": [
+      "telehealth-room"
+    ],
+    "weight": 0.8,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "appointments",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "appointment-list"
+        }
+      ],
+      "default_layout": [
+        "data-table"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "book",
+      "patterns": [
+        {
+          "pattern": "booking-calendar",
+          "preset": "provider-select",
+          "as": "booking-flow"
+        }
+      ],
+      "default_layout": [
+        "booking-calendar"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "appointment-detail",
+      "patterns": [
+        {
+          "pattern": "detail-header",
+          "preset": "standard",
+          "as": "appointment-info"
+        }
+      ],
+      "default_layout": [
+        "detail-header"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "appointments": "Appointment list at /appointments. Filterable data table shows all past and upcoming appointments with columns for date, time, provider, type (in-person/telehealth), status (confirmed, pending, completed, cancelled). Row actions for rescheduling, cancelling, and joining telehealth sessions.",
+    "book": "Booking flow at /appointments/book. Provider-select booking calendar lets patients choose a provider from a sidebar list, then pick an available time slot on the calendar. Step indicators show progress through provider selection, time selection, reason for visit, and confirmation.",
+    "appointment-detail": "Appointment detail at /appointments/:id. Detail header shows appointment date, time, provider photo and name, visit type, and location or telehealth link. Action buttons for rescheduling, cancelling, and joining telehealth. Below the header, visit notes and pre-visit instructions are displayed."
+  },
+  "features": [
+    "appointments",
+    "booking",
+    "telehealth"
+  ],
+  "shells": {
+    "sidebar-main": "Persistent left sidebar with patient navigation, main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "data-table": "^1.0.0",
+      "booking-calendar": "^1.0.0",
+      "detail-header": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "clean",
+      "medical"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

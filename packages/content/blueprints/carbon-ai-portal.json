@@ -1,0 +1,252 @@
+{
+  "$schema": "https://decantr.ai/schemas/blueprint.v1.json",
+  "id": "carbon-ai-portal",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Carbon AI Portal",
+  "description": "Complete AI chatbot platform with auth, marketing, settings, and legal pages. Sleek developer-tool aesthetic with neutral-cool grays and soft muted blue accent.",
+  "blueprint_portfolio": {
+    "visibility": "hidden",
+    "maturity": "fold-candidate",
+    "rationale": "Kept addressable by slug for compatibility, but folded out of public browsing because a newer blueprint carries the same job-to-be-done more clearly.",
+    "recommended_alternative": "agent-studio",
+    "artifact": {
+      "status": "candidate",
+      "showcase": "carbon-ai-portal",
+      "notes": "Prefer agent-studio in public discovery unless this slug is requested directly."
+    }
+  },
+  "tags": [
+    "ai",
+    "chatbot",
+    "saas",
+    "developer",
+    "professional"
+  ],
+  "compose": [
+    "ai-chatbot",
+    "auth-full",
+    "settings-full",
+    "marketing-saas",
+    "about-hybrid",
+    "contact",
+    "legal"
+  ],
+  "theme": {
+    "mode": "dark",
+    "shape": "rounded",
+    "id": "carbon"
+  },
+  "personality": "Production-ready AI chatbot with refined glassmorphic depth. Muted stormy-blue palette with soft drop shadows and subtle backdrop blur on panels. Lucide icons throughout. Rich typographic hierarchy — Inter or system sans-serif for body, monospace for code and data. Polished form fields with visible focus rings, smooth hover-lift transitions on cards and buttons. No emoji in UI. Think Claude meets Linear.",
+  "voice": {
+    "tone": "Intelligent and measured. Speaks like a premium developer tool. Technical accuracy matters. Warm but never casual.",
+    "cta_verbs": [
+      "Start chat",
+      "New conversation",
+      "Send",
+      "Export",
+      "Configure",
+      "Upgrade"
+    ],
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Hey there",
+      "Awesome"
+    ],
+    "empty_states": "Thoughtful and inviting. An empty conversation list should welcome the user and suggest a first prompt or use case. Settings pages show clear descriptions of each option.",
+    "errors": "Calm and specific. AI response failures should explain rate limits or model availability. Form errors use inline validation with specific guidance.",
+    "loading": "Chat messages stream token-by-token with a blinking cursor. Conversation list shows skeleton cards. Settings forms show field outlines while preferences load."
+  },
+  "overrides": {
+    "pages": {},
+    "pages_remove": [],
+    "features_add": [
+      "theme-toggle"
+    ],
+    "features_remove": []
+  },
+  "dependencies": {
+    "archetypes": {
+      "ai-chatbot": "^1.0.0",
+      "auth-full": "^1.0.0",
+      "settings-full": "^1.0.0",
+      "marketing-saas": "^1.0.0",
+      "about-hybrid": "^1.0.0",
+      "contact": "^1.0.0",
+      "legal": "^1.0.0"
+    }
+  },
+  "features": [
+    "chat",
+    "markdown",
+    "code-highlight",
+    "file-upload",
+    "mentions",
+    "reactions",
+    "export",
+    "auth",
+    "mfa",
+    "oauth",
+    "email-verification",
+    "password-reset",
+    "profile-edit",
+    "password-change",
+    "mfa-management",
+    "session-management",
+    "theme-toggle",
+    "account-deletion",
+    "pricing-toggle",
+    "testimonials",
+    "feature-grid",
+    "team-grid",
+    "values-display",
+    "form-validation",
+    "spam-protection",
+    "file-attachment",
+    "toc-navigation",
+    "print-friendly",
+    "smooth-scroll"
+  ],
+  "routes": {
+    "/": {
+      "shell": "top-nav-footer",
+      "archetype": "marketing-saas",
+      "page": "home"
+    },
+    "/about": {
+      "shell": "top-nav-footer",
+      "archetype": "about-hybrid",
+      "page": "about"
+    },
+    "/contact": {
+      "shell": "top-nav-footer",
+      "archetype": "contact",
+      "page": "contact"
+    },
+    "/privacy": {
+      "shell": "top-nav-footer",
+      "archetype": "legal",
+      "page": "privacy"
+    },
+    "/terms": {
+      "shell": "top-nav-footer",
+      "archetype": "legal",
+      "page": "terms"
+    },
+    "/cookies": {
+      "shell": "top-nav-footer",
+      "archetype": "legal",
+      "page": "cookies"
+    },
+    "/login": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "login"
+    },
+    "/register": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "register"
+    },
+    "/forgot-password": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "forgot-password"
+    },
+    "/reset-password": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "reset-password"
+    },
+    "/verify-email": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "verify-email"
+    },
+    "/mfa-setup": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "mfa-setup"
+    },
+    "/mfa-verify": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "mfa-verify"
+    },
+    "/chat": {
+      "shell": "chat-portal",
+      "archetype": "ai-chatbot",
+      "page": "new"
+    },
+    "/chat/:id": {
+      "shell": "chat-portal",
+      "archetype": "ai-chatbot",
+      "page": "chat"
+    },
+    "/settings/profile": {
+      "shell": "chat-portal",
+      "archetype": "settings-full",
+      "page": "profile"
+    },
+    "/settings/security": {
+      "shell": "chat-portal",
+      "archetype": "settings-full",
+      "page": "security"
+    },
+    "/settings/preferences": {
+      "shell": "chat-portal",
+      "archetype": "settings-full",
+      "page": "preferences"
+    },
+    "/settings/account": {
+      "shell": "chat-portal",
+      "archetype": "settings-full",
+      "page": "danger"
+    },
+    "/phone-verify": {
+      "page": "phone-verify",
+      "shell": "centered",
+      "archetype": "auth-full"
+    }
+  },
+  "seo_hints": {
+    "schema_org": [
+      "Organization",
+      "WebApplication",
+      "SoftwareApplication"
+    ],
+    "meta_priorities": [
+      "description",
+      "og:image",
+      "twitter:card"
+    ]
+  },
+  "navigation": {
+    "command_palette": true,
+    "hotkeys": [
+      {
+        "key": "g h",
+        "route": "/",
+        "label": "Go to Home"
+      },
+      {
+        "key": "g c",
+        "route": "/chat",
+        "label": "Go to Chat"
+      },
+      {
+        "key": "g s",
+        "route": "/settings/profile",
+        "label": "Go to Settings"
+      }
+    ]
+  },
+  "suggested_themes": [
+    "carbon",
+    "glassmorphism",
+    "clean",
+    "launchpad"
+  ]
+}

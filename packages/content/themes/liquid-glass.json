@@ -1,0 +1,223 @@
+{
+  "$schema": "https://decantr.ai/schemas/theme.v1.json",
+  "id": "liquid-glass",
+  "version": "1.0.0",
+  "name": "Liquid Glass",
+  "description": "Apple-inspired premium glass aesthetic. Refined, dynamic refraction feel. Extreme blur values, dramatic opacity ramp, specular highlights. True black dark mode.",
+  "tags": [
+    "apple",
+    "premium",
+    "glass",
+    "refraction",
+    "specular"
+  ],
+  "personality": "pill + glass elevation + smooth motion + thin borders + vivid gradients",
+  "seed": {
+    "primary": "#007aff",
+    "secondary": "#5856d6",
+    "accent": "#34c759",
+    "background": "#f2f2f7"
+  },
+  "palette": {
+    "background": {
+      "light": "#F2F2F7",
+      "dark": "#000000"
+    },
+    "surface": {
+      "light": "rgba(255,255,255,0.72)",
+      "dark": "rgba(28,28,30,0.72)"
+    },
+    "surface-raised": {
+      "light": "rgba(255,255,255,0.85)",
+      "dark": "rgba(44,44,46,0.85)"
+    },
+    "border": {
+      "light": "rgba(0,0,0,0.08)",
+      "dark": "rgba(255,255,255,0.10)"
+    },
+    "text": {
+      "light": "#1C1C1E",
+      "dark": "#F2F2F7"
+    },
+    "text-muted": {
+      "light": "#6E6E73",
+      "dark": "#8E8E93"
+    },
+    "primary": {
+      "light": "#007AFF",
+      "dark": "#0A84FF"
+    },
+    "primary-hover": {
+      "light": "#0066DD",
+      "dark": "#409CFF"
+    }
+  },
+  "modes": [
+    "light",
+    "dark"
+  ],
+  "shapes": [
+    "sharp",
+    "rounded",
+    "pill"
+  ],
+  "decantr_compat": ">=2.0.0",
+  "source": "community",
+  "decorators": {
+    "glass-panel": "Frosted glass panel with backdrop-filter blur(40px), semi-transparent surface background, thin 0.5px border.",
+    "glass-card": "Rounded card with extreme backdrop blur, specular highlight gradient at top edge, and subtle border opacity.",
+    "glass-nav": "Sticky navigation with blur(20px) backdrop, dynamic transparency that increases on scroll.",
+    "glass-input": "Translucent input field with frosted background, rounded corners, and blue focus ring with gentle glow."
+  },
+  "spatial": {
+    "density_bias": 0,
+    "content_gap_shift": 0,
+    "section_padding": "4rem",
+    "card_wrapping": "standard"
+  },
+  "motion": {
+    "preference": "subtle",
+    "reduce_motion": false,
+    "entrance": "fade",
+    "timing": "ease-out",
+    "durations": {
+      "hover": "150ms",
+      "entrance": "300ms",
+      "instant": "100ms",
+      "fast": "180ms",
+      "base": "300ms",
+      "slow": "500ms",
+      "slower": "750ms",
+      "stagger": "70ms"
+    },
+    "easings": {
+      "ease": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "easeOut": "cubic-bezier(0, 0, 0.2, 1)",
+      "easeIn": "cubic-bezier(0.4, 0, 1, 1)",
+      "spring": "cubic-bezier(0.34, 1.56, 0.64, 1)"
+    }
+  },
+  "typography_hints": {
+    "scale": "modular",
+    "heading_weight": 600,
+    "body_weight": 400
+  },
+  "motion_hints": {
+    "preference": "subtle",
+    "reduce_motion_default": true
+  },
+  "decorator_definitions": {
+    "glass-panel": {
+      "description": "Frosted glass panel with backdrop-filter blur(40px), semi-transparent surface background, thin 0.5px border.",
+      "intent": "Use for large content areas and panels. The extreme 40px blur creates the premium Apple-inspired depth effect.",
+      "suggested_properties": {
+        "background": "var(--d-surface, rgba(255,255,255,0.72))",
+        "backdrop-filter": "blur(40px)",
+        "-webkit-backdrop-filter": "blur(40px)",
+        "border": "0.5px solid var(--d-border, rgba(0,0,0,0.08))",
+        "border-radius": "16px"
+      },
+      "pairs_with": [
+        "glass-card",
+        "glass-nav"
+      ],
+      "usage": [
+        "Content panels",
+        "Sidebar containers",
+        "Modal bodies",
+        "Large containers"
+      ]
+    },
+    "glass-card": {
+      "description": "Rounded card with extreme backdrop blur, specular highlight gradient at top edge, and subtle border opacity.",
+      "intent": "Use for cards that need the premium refractive glass look. The specular highlight at the top edge mimics real glass refraction.",
+      "suggested_properties": {
+        "background": "var(--d-surface-raised, rgba(255,255,255,0.85))",
+        "backdrop-filter": "blur(40px)",
+        "-webkit-backdrop-filter": "blur(40px)",
+        "border": "0.5px solid var(--d-border, rgba(0,0,0,0.08))",
+        "border-radius": "16px"
+      },
+      "pairs_with": [
+        "glass-panel",
+        "glass-nav"
+      ],
+      "usage": [
+        "Feature cards",
+        "Content cards",
+        "Product cards",
+        "Interactive cards"
+      ]
+    },
+    "glass-nav": {
+      "description": "Sticky navigation with blur(20px) backdrop, dynamic transparency that increases on scroll.",
+      "intent": "Use for the primary navigation bar. The blur backdrop creates a floating, elevated navigation that feels premium.",
+      "suggested_properties": {
+        "background": "var(--d-surface, rgba(255,255,255,0.72))",
+        "backdrop-filter": "blur(20px)",
+        "-webkit-backdrop-filter": "blur(20px)",
+        "border-bottom": "0.5px solid var(--d-border, rgba(0,0,0,0.08))",
+        "position": "sticky",
+        "top": "0",
+        "z-index": "100"
+      },
+      "pairs_with": [
+        "glass-panel",
+        "glass-card"
+      ],
+      "usage": [
+        "Navigation bars",
+        "Sticky headers",
+        "Top bars"
+      ]
+    },
+    "glass-input": {
+      "description": "Translucent input field with frosted background, rounded corners, and blue focus ring with gentle glow.",
+      "intent": "Use for form inputs that should feel lightweight and integrated with the glass surface.",
+      "suggested_properties": {
+        "background": "rgba(255, 255, 255, 0.5)",
+        "backdrop-filter": "blur(10px)",
+        "-webkit-backdrop-filter": "blur(10px)",
+        "border": "0.5px solid var(--d-border, rgba(0,0,0,0.08))",
+        "border-radius": "10px",
+        "transition": "border-color 150ms ease, box-shadow 150ms ease"
+      },
+      "pairs_with": [
+        "glass-panel",
+        "glass-card"
+      ],
+      "usage": [
+        "Search inputs",
+        "Form fields",
+        "Text inputs",
+        "Filter fields"
+      ]
+    }
+  },
+  "typography": {
+    "display": "'Inter', ui-sans-serif, system-ui, sans-serif",
+    "body": "'Inter', ui-sans-serif, system-ui, sans-serif"
+  },
+  "elevation": {
+    "1": {
+      "light": "0 1px 2px rgba(0,0,0,0.05)",
+      "dark": "0 1px 2px rgba(0,0,0,0.30)"
+    },
+    "2": {
+      "light": "0 2px 6px rgba(0,0,0,0.07)",
+      "dark": "0 2px 6px rgba(0,0,0,0.40)"
+    },
+    "3": {
+      "light": "0 6px 16px rgba(0,0,0,0.09)",
+      "dark": "0 6px 16px rgba(0,0,0,0.45)"
+    },
+    "4": {
+      "light": "0 12px 32px rgba(0,0,0,0.12)",
+      "dark": "0 12px 32px rgba(0,0,0,0.50)"
+    },
+    "5": {
+      "light": "0 24px 64px rgba(0,0,0,0.16)",
+      "dark": "0 24px 64px rgba(0,0,0,0.55)"
+    }
+  }
+}

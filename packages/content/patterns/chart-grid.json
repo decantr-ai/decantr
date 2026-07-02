@@ -1,0 +1,129 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "chart-grid",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Chart Grid",
+  "description": "Grid of chart cards for dashboard data visualization",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Card",
+        "CardHeader",
+        "CardBody"
+      ],
+      "charts": []
+    }
+  },
+  "contained": false,
+  "components": [
+    "Card",
+    "CardHeader",
+    "CardBody"
+  ],
+  "default_preset": "dashboard",
+  "presets": {
+    "dashboard": {
+      "description": "2x2 grid of chart cards, each with a title, chart placeholder area, and legend",
+      "components": [
+        "Card",
+        "CardHeader",
+        "CardBody"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _lg:gc2 _gap4",
+        "slots": {
+          "chart-card": "Repeated Card wrapping a chart placeholder area",
+          "chart-title": "Chart title in CardHeader with _textsm _fontmedium",
+          "chart-area": "Placeholder div with min-height and data-chart-type attribute",
+          "legend": "Simple legend row below chart area"
+        }
+      }
+    },
+    "wide": {
+      "description": "Single row of charts, side-scrollable on mobile",
+      "components": [
+        "Card"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _row _gap4 _overflow[auto]",
+        "slots": {
+          "chart-card": "Horizontally scrollable Card with chart placeholder",
+          "chart-title": "Chart title with _textsm _fontmedium",
+          "chart-area": "Placeholder div with min-height and data-chart-type attribute"
+        }
+      }
+    },
+    "mixed": {
+      "description": "Asymmetric layout: one large chart spanning 2 cols + two smaller charts",
+      "components": [
+        "Card"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _lg:gc2 _gap4",
+        "slots": {
+          "primary-chart": "Large chart Card spanning 2 columns with data-chart-type",
+          "secondary-charts": "Two smaller chart Cards in the second row"
+        }
+      }
+    }
+  },
+  "visual_brief": "Grid of chart cards for dashboard analytics. Each card is a contained surface (d-surface) with a compact header showing the chart title in small medium-weight text and an optional time-range selector. The chart area occupies the card body with a minimum height of 200px and renders line charts, bar charts, area charts, or pie charts via data-chart-type attributes. A simple horizontal legend sits below the chart area with colored dots and labels. The mixed preset features one large chart spanning two columns in the first row, with two smaller charts below. Cards have consistent rounded corners and border styling.",
+  "responsive": {
+    "mobile": "Single column — all charts stack vertically at full width. Chart minimum height reduces to 160px. Legend wraps to multiple lines if needed. Wide preset becomes vertical stack instead of horizontal scroll.",
+    "tablet": "Two-column grid activates. Mixed preset large chart still spans full width, smaller charts go side by side below. Chart height at 200px.",
+    "desktop": "Full two-column grid. Mixed preset spans correctly. Wide preset shows horizontal scrollable row. Charts at full minimum height with comfortable legend spacing."
+  },
+  "layout_hints": {
+    "grid_ownership": "This pattern owns the chart-card grid only. Parent dashboards should provide larger section framing, filters, or explanatory copy outside the chart grid itself.",
+    "chart_balance": "Keep chart titles, value context, and legends tightly associated with each chart so the grid reads as one analytical block instead of a collage of unrelated cards.",
+    "mixed_variant": "When one primary chart spans extra width, secondary charts should remain visually subordinate but rhythmically aligned beneath it."
+  },
+  "motion": {
+    "micro": "Chart cards may brighten their border or surface slightly on hover, and legends may fade in cleanly with the chart content.",
+    "transitions": "Chart data should animate in a restrained way that preserves readability. Filters or time-range changes should cross-fade or morph smoothly rather than jarringly re-rendering the whole grid."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "hover-tooltip",
+    "stagger-children",
+    "real-time-updates"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Chart grid",
+    "keyboard": [
+      "If cards or legends are interactive, tab through each chart card and its controls in reading order."
+    ],
+    "announcements": [
+      "Chart title, metric intent, and key legend information should be exposed semantically rather than relying on color alone."
+    ]
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gc1 _lg:gc2 _gap4",
+    "slots": {
+      "chart-card": "Repeated Card wrapping a chart placeholder area",
+      "chart-title": "Chart title in CardHeader with _textsm _fontmedium",
+      "chart-area": "Placeholder div with min-height and data-chart-type attribute",
+      "legend": "Simple legend row below chart area"
+    }
+  },
+  "io": {
+    "consumes": [
+      "date-range",
+      "filters"
+    ],
+    "produces": []
+  },
+  "composition": {
+    "ChartGrid": "Grid(d-section, responsive: 1/2-col) > ChartCard[]",
+    "ChartCard": "Card(d-surface) > [CardHeader > Title(font-medium) + ChartArea(d-data, min-height) + Legend(d-annotation)]",
+    "Legend": "Row(gap-2) > LegendItem(dot + label)[]"
+  }
+}

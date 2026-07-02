@@ -1,0 +1,137 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "prototype-demo-bezel",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Prototype Demo Bezel",
+  "description": "Arcade-screen demo frame for product videos, interactive prototypes, image sequences, before-after states, or playable product previews.",
+  "category": "campaign",
+  "tags": [
+    "campaign",
+    "demo",
+    "prototype",
+    "media",
+    "product",
+    "launch"
+  ],
+  "components": [
+    "Media",
+    "Button",
+    "Tabs",
+    "Badge",
+    "Slider"
+  ],
+  "contained": false,
+  "default_preset": "demo-screen",
+  "presets": {
+    "demo-screen": {
+      "description": "Large bezel-framed product demo with controls, caption strip, status LEDs, and CTA.",
+      "components": [
+        "Media",
+        "Button",
+        "Tabs",
+        "Badge"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap5 _wfull _maxw[78rem] _mx[auto]",
+        "slots": {
+          "screen": "Product video, screenshot, prototype, or interactive demo inside a thick bezel.",
+          "control-strip": "Play, pause, chapter, or mode controls styled as cabinet buttons.",
+          "caption": "Short explanation of what the viewer is seeing.",
+          "status-leds": "Tiny labeled state lights for Prototype, Shipping, Beta, or Live.",
+          "demo-cta": "Open full demo, watch walkthrough, or try prototype."
+        }
+      }
+    },
+    "before-after-bezel": {
+      "description": "Single bezel with a before-after slider or mode switch to demonstrate product transformation.",
+      "components": [
+        "Media",
+        "Button",
+        "Tabs",
+        "Slider",
+        "Badge"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap5 _wfull _maxw[72rem] _mx[auto]",
+        "slots": {
+          "comparison-screen": "Before-after or mode comparison surface.",
+          "mode-tabs": "Scenario tabs or state controls.",
+          "outcome-strip": "Results or proof metrics tied to the demo.",
+          "demo-cta": "Try or watch action."
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gap5 _wfull _maxw[78rem] _mx[auto]",
+    "slots": {
+      "screen": "Bezel-framed product demo media",
+      "control-strip": "Cabinet-style demo controls",
+      "caption": "Demo explanation",
+      "status-leds": "Prototype state indicators",
+      "demo-cta": "Demo action"
+    }
+  },
+  "visual_brief": "A product demo that looks embedded in a physical arcade screen or product-testing console. The visual content should be real product evidence: screenshot, prototype, render, video frame, packaging, controller, or clear placeholder with aspect ratio. Avoid decorative abstract gradients as the demo. Controls should use recognizable icons and tactile rectangular arcade-button styling with hard press states. Mode controls should read as a clustered control group, with the primary reserve/watch action separated intentionally rather than scattered across the whole bezel.",
+  "responsive": {
+    "mobile": "Use a 4:3 or square screen ratio with controls wrapping below. Captions stay outside the media so they do not cover product details.",
+    "tablet": "Maintain large screen area and place controls in a horizontal strip.",
+    "desktop": "Use a large 16:9 or 5:3 screen with caption and status controls integrated below the bezel."
+  },
+  "layout_hints": {
+    "media_integrity": "Reserve stable aspect ratio so demos do not shift layout when media loads.",
+    "evidence_first": "The demo must reveal the product, not just vibe. Use realistic UI or product imagery.",
+    "controls": "Use icon buttons where possible for play, pause, next, previous, and fullscreen. Cluster related mode controls together; place the primary conversion action at the far edge or in its own clear action area."
+  },
+  "motion": {
+    "micro": {
+      "control-press": "button depresses with hard shadow collapse",
+      "mode-switch": "screen content swaps with quick pixel wipe under reduced motion fallback"
+    },
+    "transitions": {
+      "screen-load": "screen powers on with instant reveal and subtle LED blink."
+    }
+  },
+  "interactions": [
+    "click-select",
+    "keyboard-navigation",
+    "hover-reveal",
+    "animate-on-mount"
+  ],
+  "composition": {
+    "PrototypeDemoBezel": "Section > [ScreenFrame + ControlStrip + Caption + StatusLeds + DemoCta]",
+    "ScreenFrame": "Bezel(arcade-bezel) > ProductMedia",
+    "ControlStrip": "Toolbar > IconButton[] + ModeTabs?"
+  },
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Product prototype demo",
+    "keyboard": [
+      "Media controls must be keyboard reachable.",
+      "Tabs or mode switches should use standard arrow-key behavior."
+    ],
+    "announcements": [
+      "Demo mode changed to {mode}.",
+      "Video playback {state}."
+    ],
+    "focus_management": "Fullscreen or modal demo views should trap focus and restore it to the launch control on close."
+  },
+  "io": {
+    "consumes": [
+      "product-demo-media",
+      "prototype-status"
+    ],
+    "produces": [
+      "demo-engagement"
+    ],
+    "actions": [
+      "play-demo",
+      "switch-demo-mode",
+      "open-full-demo"
+    ]
+  }
+}

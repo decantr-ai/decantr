@@ -1,0 +1,123 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "command-rail",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Command Rail",
+  "description": "Horizontal or stacked rail of short command snippets for CLI-driven workflows. Used to expose init, refresh, health, publish, or registry commands near the content they affect.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "CodeBlock",
+        "Button",
+        "Badge",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "CodeBlock",
+    "Button",
+    "Badge",
+    "icon"
+  ],
+  "contained": false,
+  "default_preset": "copyable",
+  "presets": {
+    "copyable": {
+      "description": "A compact command row with label, monospace command, optional context badge, and copy button.",
+      "components": [
+        "CodeBlock",
+        "Button",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap3",
+        "slots": {
+          "command-label": "Short purpose label such as Init, Refresh, Health, or Publish.",
+          "command-snippet": "One-line monospace command with wrapping protection.",
+          "command-meta": "Optional shell, package manager, or target context.",
+          "copy-action": "Icon button with copied state."
+        }
+      }
+    },
+    "rail": {
+      "description": "Horizontal rail of two to four commands. Each command remains compact and independently copyable.",
+      "components": [
+        "CodeBlock",
+        "Button",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _lg:gc2 _gap3",
+        "slots": {
+          "command-card": "Compact copyable command surface."
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap3",
+    "slots": {
+      "command-label": "Command purpose label",
+      "command-snippet": "One-line CLI command",
+      "command-meta": "Optional context badge",
+      "copy-action": "Copy button"
+    }
+  },
+  "visual_brief": "A practical command surface that feels crisp and developer-native without becoming a terminal dump. The command should be the hero of each row, with labels and copy controls kept compact. This pattern should make it obvious what to run next while preserving polish and accessibility.",
+  "responsive": {
+    "mobile": "Stack commands vertically. Commands wrap or horizontally scroll inside their own code region without forcing page overflow.",
+    "tablet": "Two-column command rail when commands are short.",
+    "desktop": "Horizontal or two-column rail. Align copy buttons consistently."
+  },
+  "layout_hints": {
+    "command_length": "Keep commands short enough to scan. Move long explanatory flags into docs or helper text.",
+    "copy_state": "Copy buttons should have an accessible label and a copied confirmation state.",
+    "context": "Use badges for shell, package manager, or project target only when they prevent ambiguity."
+  },
+  "motion": {
+    "micro": "Copy actions can briefly swap icon/state. Hover should sharpen the command surface without moving layout.",
+    "transitions": "Copied confirmation should be immediate and fade out after a short delay."
+  },
+  "interactions": [
+    "click-select",
+    "keyboard-navigation",
+    "hover-reveal"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Command rail",
+    "keyboard": [
+      "Copy buttons should be reachable after each command snippet."
+    ],
+    "announcements": [
+      "Copied state should be announced with aria-live or an equivalent status pattern."
+    ],
+    "focus_management": "Focus should not enter decorative code tokens one by one. One command and one copy action per item is enough."
+  },
+  "composition": {
+    "CommandRail": "StackOrGrid > CommandItem[]",
+    "CommandItem": "Surface > [Label + CodeSnippet + Meta? + CopyButton]",
+    "CopyButton": "Button(icon-only, aria-label, copied-status)"
+  },
+  "io": {
+    "consumes": [
+      "commands"
+    ],
+    "produces": [
+      "copied-command"
+    ],
+    "actions": [
+      "command-copy"
+    ]
+  }
+}

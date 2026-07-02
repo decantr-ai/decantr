@@ -1,0 +1,157 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "engagement-hub",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Engagement Hub",
+  "description": "Citizen engagement hub with dashboards, petitions, voting, and threaded comments. Primary entry point for civic participation platforms enabling residents to track and influence local decisions.",
+  "tags": [
+    "civic",
+    "engagement",
+    "petitions",
+    "voting",
+    "community",
+    "government"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "civic engagement",
+        "citizen engagement",
+        "petitions platform",
+        "community voting",
+        "civic participation"
+      ],
+      "secondary": [
+        "petitions",
+        "voting",
+        "public comments",
+        "civic dashboard"
+      ],
+      "negative": [
+        "enterprise",
+        "ecommerce"
+      ]
+    },
+    "implies": [
+      "petitions",
+      "voting",
+      "comments"
+    ],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "path": "/engage",
+      "patterns": [
+        {
+          "pattern": "kpi-grid",
+          "preset": "dashboard",
+          "as": "civic-metrics"
+        },
+        {
+          "pattern": "activity-feed",
+          "preset": "standard",
+          "as": "civic-activity"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "content",
+          "as": "active-items"
+        }
+      ],
+      "default_layout": [
+        "civic-metrics",
+        "civic-activity",
+        "active-items"
+      ],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "petitions",
+      "path": "/petitions",
+      "patterns": [
+        {
+          "pattern": "card-grid",
+          "preset": "content",
+          "as": "petition-grid"
+        },
+        {
+          "pattern": "search-filter-bar",
+          "preset": "standard",
+          "as": "petition-filters"
+        }
+      ],
+      "default_layout": [
+        "petition-filters",
+        "petition-grid"
+      ],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "petition-detail",
+      "path": "/petitions/:id",
+      "patterns": [
+        {
+          "pattern": "petition-card",
+          "preset": "featured",
+          "as": "petition-hero"
+        },
+        {
+          "pattern": "voting-breakdown",
+          "preset": "bars",
+          "as": "petition-votes"
+        },
+        {
+          "pattern": "comment-thread",
+          "preset": "standard",
+          "as": "petition-comments"
+        }
+      ],
+      "default_layout": [
+        "petition-hero",
+        "petition-votes",
+        "petition-comments"
+      ],
+      "shell": "top-nav-main"
+    }
+  ],
+  "page_briefs": {
+    "home": "Citizen dashboard greets the resident with a KPI grid highlighting active petitions, upcoming votes, trending issues, and personal participation stats. An activity feed streams recent neighborhood decisions, official responses, and comment replies. Below, a content card grid surfaces recommended petitions, upcoming public meetings, and open service requests tailored to the citizen's district.",
+    "petitions": "Petition discovery page with a search-filter bar supporting keyword search plus filters for category, district, status (gathering/active/closed), and signature progress. Below, a content card grid renders each petition as a card with title, excerpt, signature count, progress bar toward goal, deadline, and category tag.",
+    "petition-detail": "Dedicated petition view leads with a featured petition card containing title, full description, author, target official, signature goal, deadline, and primary sign button. A voting-breakdown bars chart visualizes support by district or demographic. Below, a threaded comment section lets citizens debate the proposal with nested replies, reactions, and official responses pinned to the top."
+  },
+  "features": [
+    "petitions",
+    "voting",
+    "comments"
+  ],
+  "shells": {
+    "top-nav-main": "Top navigation with civic sections and main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "kpi-grid": ">=1.0.0",
+      "activity-feed": ">=1.0.0",
+      "card-grid": ">=1.0.0",
+      "search-filter-bar": ">=1.0.0",
+      "petition-card": ">=1.0.0",
+      "voting-breakdown": ">=1.0.0",
+      "comment-thread": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "civic",
+      "professional"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

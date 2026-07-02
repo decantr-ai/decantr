@@ -1,0 +1,132 @@
+{
+  "id": "trade-modal",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Trade Modal",
+  "description": "A trade execution modal for buying or selling securities with order-type selection, quantity/price inputs, live market info, estimated total calculation, fee breakdown, and order-preview confirmation before execution.",
+  "category": "finance",
+  "tags": [
+    "2026",
+    "finance",
+    "trading",
+    "modal",
+    "order-entry",
+    "execution",
+    "buy",
+    "sell"
+  ],
+  "components": [
+    "OrderTypeTab",
+    "QuantityInput",
+    "PriceInput",
+    "EstimatedTotal",
+    "ConfirmButton",
+    "MarketInfo",
+    "DirectionToggle",
+    "FeeBreakdown",
+    "OrderPreview"
+  ],
+  "default_preset": "buy",
+  "presets": {
+    "buy": {
+      "description": "Green-accented buy-side trade modal for market, limit, or stop purchases. Direction toggle locked to Buy. Confirm button uses success color scheme to reinforce purchase intent and prevent direction errors.",
+      "layout": {
+        "layout": "form",
+        "atoms": "_w100 _grid _gap4 _p5 _max-w-480"
+      }
+    },
+    "sell": {
+      "description": "Red-accented sell-side trade modal mirroring the buy preset with direction locked to Sell. Confirm button uses destructive color. Surfaces position-held indicator to ensure voluntary sale does not exceed current holdings.",
+      "layout": {
+        "layout": "form",
+        "atoms": "_w100 _grid _gap4 _p5 _max-w-480"
+      }
+    },
+    "limit": {
+      "description": "Order-type expanded preset showing both quantity and limit-price inputs side-by-side. Calculates estimated total live as price changes. Used when user wants explicit price control rather than market execution.",
+      "layout": {
+        "layout": "form",
+        "atoms": "_w100 _grid _gap4 _p5 _max-w-480"
+      }
+    }
+  },
+  "visual_brief": "A focused modal dialog rendered as a d-surface card floating centered over a backdrop-blur overlay, max-width 480px. Top of modal displays the security symbol in text-2xl bold mono-data ('AAPL') with company name in text-sm muted beneath, and a close X icon button in the top-right corner. A DirectionToggle appears as a two-segment pill (Buy/Sell) with the active side filled in accent color (success green for buy, destructive red for sell) and the inactive side ghosted. Below, OrderTypeTabs render as a three-segment underline-style tabstrip (Market / Limit / Stop) with the active tab showing a primary-colored underline and semibold label. The form body shows a QuantityInput with plus/minus steppers flanking a mono-data numeric input showing share count, labeled 'Quantity' above. When limit or stop is active, a PriceInput appears labeled 'Limit Price' or 'Stop Price' with a currency-symbol prefix and mono-data numeric field. MarketInfo sits as an inline callout row displaying 'Last: $178.42 | Bid: $178.40 | Ask: $178.44 | 24h: +1.23%' in compact d-annotation mono-data. The EstimatedTotal calculates live as 'Est. Total: $17,842.00' in text-lg semibold mono-data. A FeeBreakdown expands below as a small itemized list: 'Commission: $0.00, Exchange fee: $0.03, Total fees: $0.03'. An OrderPreview sub-card (secondary surface, subtle border) previews the complete order in human language: 'Buy 100 shares of AAPL at market, estimated $17,842.00'. Finally, a ConfirmButton spans the full width in the direction-appropriate color (success green for buy, destructive red for sell) with text like 'Place Buy Order' or 'Place Sell Order'. Button press opens a secondary confirmation dialog requiring a second explicit click. Validation warnings appear inline (insufficient balance, exceeds position) in amber or red annotation chips above the confirm button.",
+  "layout_hints": {
+    "container": "d-surface modal, centered, max-w-480, backdrop-blur",
+    "note": "Trade execution is irrevocable financial action. Two-step confirmation required. Color-code aggressively to prevent buy/sell direction errors. Always show estimated total and fees before confirm.",
+    "direction_colors": "Buy=success/emerald, Sell=destructive/red. These colors MUST be consistent across DirectionToggle, ConfirmButton, and EstimatedTotal emphasis. Color-code text and borders, not just fills.",
+    "market_info": "MarketInfo uses d-annotation with live-updating bid/ask/last. Refresh indicator (pulsing dot) shows data freshness. Stale data >5s triggers amber warning.",
+    "order_preview": "OrderPreview is a human-language restatement of the order parameters. Critical for preventing fat-finger errors. Must update live as inputs change.",
+    "fee_transparency": "FeeBreakdown MUST itemize every fee (commission, exchange, SEC, regulatory). Total fees visible before confirm. Never hide fees in footnotes."
+  },
+  "default_layout": {
+    "layout": "form",
+    "atoms": "_w100 _grid _gap4 _p5 _max-w-480",
+    "slots": {
+      "header": "Top section showing security symbol (mono-data text-2xl bold), company name (text-sm muted), and a close icon-button in the top-right corner. Optionally includes a position-held indicator showing current shares owned.",
+      "direction-toggle": "Two-segment pill toggle for Buy/Sell direction. Active side filled with direction-color (success for buy, destructive for sell). Determines color scheme of entire modal including ConfirmButton.",
+      "order-type-tabs": "Three-segment tabstrip (Market / Limit / Stop) with underline indicator on active tab. Tab selection shows/hides PriceInput and changes execution semantics.",
+      "quantity-input": "Numeric input with plus/minus steppers for share-count entry. Uses mono-data tabular-nums. Label above reads 'Quantity'. Validates against available balance (buy) or current position (sell).",
+      "price-input": "Conditional input (shown for Limit and Stop order types) with currency-symbol prefix and mono-data numeric field. Label above reads 'Limit Price' or 'Stop Price' based on active tab.",
+      "market-info": "Inline callout row displaying live market data: Last, Bid, Ask, and 24h change. Uses mono-data compact text. Pulsing indicator shows refresh freshness.",
+      "estimated-total": "Large-text calculated total (quantity × price) with fee-inclusive and fee-exclusive variants. Updates live as inputs change.",
+      "fee-breakdown": "Itemized fee list (commission, exchange, regulatory) in small d-annotation text. Expandable if fees are complex. Total fees always visible.",
+      "order-preview": "Secondary sub-card showing human-language restatement of the complete order. Updates live. Critical readback to prevent fat-finger errors.",
+      "confirm-button": "Full-width primary button in direction-appropriate color. Opens secondary confirmation dialog on first click. Only executes order after second explicit confirmation.",
+      "validation-warnings": "Inline chips above confirm button showing validation errors (insufficient balance, exceeds position, market closed). Color-coded amber (warning) or red (blocking)."
+    }
+  },
+  "accessibility": {
+    "role": "dialog",
+    "aria-label": "Trade execution modal",
+    "announcements": [
+      "Order type changed to {type}",
+      "Estimated total: {total} including {fees} in fees",
+      "Warning: {message}",
+      "Order submitted — {direction} {quantity} shares of {symbol}"
+    ],
+    "keyboard": [
+      "Tab: cycle through order-type tabs and inputs",
+      "Arrow Up/Down: adjust quantity stepper",
+      "Enter: advance to confirmation dialog from ConfirmButton",
+      "Escape: close modal without executing order",
+      "B/S: toggle Buy/Sell direction"
+    ]
+  },
+  "responsive": {
+    "mobile": "Modal expands to full-screen sheet rising from bottom with rounded top corners. DirectionToggle and OrderTypeTabs remain at top. Inputs stack vertically with full-width. ConfirmButton sticky at bottom of sheet.",
+    "tablet": "Standard centered modal at max-w-480px. Minor padding adjustments."
+  },
+  "motion": {
+    "micro": {
+      "stepper-click": "button scale 1.0 to 0.95 to 1.0 80ms ease-out",
+      "tab-switch": "underline slide to active tab 200ms ease-out",
+      "direction-toggle": "pill-fill cross-fade 150ms ease-in-out"
+    },
+    "transitions": {
+      "modal-open": "scale 0.96 to 1.0 + fade 200ms spring",
+      "modal-close": "scale 1.0 to 0.96 + fade 150ms ease-in",
+      "preview-update": "OrderPreview text cross-fade 150ms ease-out on input change"
+    },
+    "ambient": {
+      "market-data-pulse": "MarketInfo freshness dot opacity 0.4 to 1.0 to 0.4 1s ease-in-out infinite",
+      "stale-data-warning": "MarketInfo border flash amber when data >5s stale"
+    }
+  },
+  "interactions": [
+    "animate-on-mount",
+    "focus-trap",
+    "keyboard-navigation"
+  ],
+  "composition": {
+    "TradeModal": "Modal(d-surface, backdrop-blur, max-w-480) > [Header + DirectionToggle + OrderTypeTab[] + QuantityInput + PriceInput? + MarketInfo + EstimatedTotal + FeeBreakdown + OrderPreview + ValidationWarnings? + ConfirmButton]",
+    "DirectionToggle": "Toggle(d-control, data-direction) > [BuySegment + SellSegment]",
+    "OrderTypeTab": "Tab(d-control, data-order-type, data-active?) > [TabLabel + ActiveUnderline?]",
+    "QuantityInput": "Input(d-control, data-numeric) > [DecrementStepper + NumericField + IncrementStepper]",
+    "PriceInput": "Input(d-control, data-currency) > [CurrencySymbol + NumericField]",
+    "MarketInfo": "Row(d-annotation) > [LastPrice + BidAsk + ChangePercent + FreshnessDot]",
+    "EstimatedTotal": "Callout(d-annotation, data-total) > [TotalLabel + TotalValue]",
+    "ConfirmButton": "Button(d-control, data-direction-color, full-width) > [ButtonLabel]"
+  }
+}

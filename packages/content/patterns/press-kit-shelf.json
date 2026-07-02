@@ -1,0 +1,132 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "press-kit-shelf",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Press Kit Shelf",
+  "description": "Campaign press and media asset shelf for logos, product shots, fact sheets, launch screenshots, demo videos, and founder bios.",
+  "category": "campaign",
+  "tags": [
+    "campaign",
+    "press",
+    "media-kit",
+    "assets",
+    "launch",
+    "download"
+  ],
+  "components": [
+    "Button",
+    "Badge",
+    "Media",
+    "Tabs",
+    "icon"
+  ],
+  "contained": false,
+  "default_preset": "asset-shelf",
+  "presets": {
+    "asset-shelf": {
+      "description": "Shelf-like rows of press assets with file type, preview, use case, and download/copy actions.",
+      "components": [
+        "Button",
+        "Badge",
+        "Media",
+        "Tabs",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap5 _wfull _maxw[76rem] _mx[auto]",
+        "slots": {
+          "asset-category-tabs": "Logo, screenshots, founder, product, facts, video, and brand tabs.",
+          "asset-shelf-row": "Shelf row of downloadable campaign assets.",
+          "asset-preview": "Thumbnail or document preview with stable dimensions.",
+          "asset-meta": "File type, size, recommended use, and license note.",
+          "asset-actions": "Download, copy link, copy caption, or open preview."
+        }
+      }
+    },
+    "press-page": {
+      "description": "Full press page layout with launch facts, press quote, contact block, and asset shelves.",
+      "components": [
+        "Button",
+        "Badge",
+        "Media",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap6 _wfull _maxw[74rem] _mx[auto]",
+        "slots": {
+          "launch-facts": "Short factual summary and launch timeline.",
+          "press-contact": "Media contact and response time note.",
+          "asset-shelf-row": "Downloadable assets grouped by type."
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gap5 _wfull _maxw[76rem] _mx[auto]",
+    "slots": {
+      "asset-category-tabs": "Press asset categories",
+      "asset-shelf-row": "Downloadable asset row",
+      "asset-preview": "Asset thumbnail or preview",
+      "asset-meta": "File details and usage note",
+      "asset-actions": "Download and copy actions"
+    }
+  },
+  "visual_brief": "A retro shelf of campaign materials, like boxed inserts, manuals, stickers, screenshots, and product photos laid out for press. Keep previews real and inspectable. Use tabs or segmented controls for categories. Avoid generic document cards and vague download buttons.",
+  "responsive": {
+    "mobile": "Tabs become horizontal scroll or dropdown. Asset rows stack with preview first, actions below.",
+    "tablet": "Two-column asset shelf.",
+    "desktop": "Wide shelf rows with preview, metadata, and action controls aligned."
+  },
+  "layout_hints": {
+    "asset_truth": "Show file type, dimensions or size, and recommended use for each asset.",
+    "download_controls": "Use recognizable download, copy, external-link, and play icons in buttons.",
+    "press_context": "Include concise factual launch copy, not marketing fluff."
+  },
+  "motion": {
+    "micro": {
+      "tab-switch": "instant category swap with short focus-retaining transition",
+      "download-press": "button press state confirms download or copy action"
+    }
+  },
+  "interactions": [
+    "click-select",
+    "hover-reveal",
+    "animate-on-mount",
+    "keyboard-navigation"
+  ],
+  "composition": {
+    "PressKitShelf": "Section > [Header + AssetCategoryTabs + AssetShelfRow[] + PressContact?]",
+    "AssetShelfRow": "Row > [AssetPreview + AssetMeta + AssetActions]",
+    "AssetActions": "ButtonGroup > [Download + CopyLink + Preview?]"
+  },
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Press kit assets",
+    "keyboard": [
+      "Tabs should use standard tablist keyboard behavior.",
+      "Download and copy actions must have explicit labels with asset names."
+    ],
+    "announcements": [
+      "Copied link for {asset}.",
+      "Selected press category {category}."
+    ]
+  },
+  "io": {
+    "consumes": [
+      "press-assets",
+      "launch-facts"
+    ],
+    "produces": [
+      "press-action"
+    ],
+    "actions": [
+      "asset-download",
+      "asset-copy-link",
+      "asset-preview"
+    ]
+  }
+}

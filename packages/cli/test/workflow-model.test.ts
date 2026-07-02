@@ -16,7 +16,7 @@ function detectedProject(overrides: Partial<DetectedProject> = {}): DetectedProj
 }
 
 describe('resolveWorkflowPolicy', () => {
-  it('defaults new registry-backed projects to greenfield scaffold with Decantr CSS', () => {
+  it('defaults new content-backed projects to greenfield scaffold with contract-only adoption', () => {
     const policy = resolveWorkflowPolicy({
       command: 'new',
       detected: detectedProject(),
@@ -24,7 +24,7 @@ describe('resolveWorkflowPolicy', () => {
     });
 
     expect(policy.workflowMode).toBe('greenfield-scaffold');
-    expect(policy.adoptionMode).toBe('decantr-css');
+    expect(policy.adoptionMode).toBe('contract-only');
   });
 
   it('treats existing registry-backed init as hybrid contract-only unless greenfield is explicit', () => {
@@ -48,6 +48,6 @@ describe('resolveWorkflowPolicy', () => {
     });
 
     expect(policy.workflowMode).toBe('greenfield-scaffold');
-    expect(policy.adoptionMode).toBe('decantr-css');
+    expect(policy.adoptionMode).toBe('contract-only');
   });
 });

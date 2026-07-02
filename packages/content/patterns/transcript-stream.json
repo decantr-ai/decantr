@@ -1,0 +1,125 @@
+{
+  "id": "transcript-stream",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Transcript Stream",
+  "description": "Real-time speech-to-text transcription display with speaker attribution, timestamps, confidence indicators, and multiple layout modes including continuous scroll, segmented blocks, and subtitle overlay.",
+  "category": "voice",
+  "tags": [
+    "2027",
+    "frontier",
+    "voice",
+    "transcription",
+    "speech-to-text",
+    "real-time",
+    "streaming",
+    "accessibility"
+  ],
+  "components": [
+    "TranscriptContainer",
+    "TranscriptSegment",
+    "SpeakerLabel",
+    "TimestampBadge",
+    "ConfidenceIndicator",
+    "LiveCursor"
+  ],
+  "default_preset": "stream",
+  "presets": {
+    "stream": {
+      "description": "Continuous vertical scroll of transcription text — words appear one by one as recognized, auto-scrolling to keep latest text visible at the bottom",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _gap-3 _overflow-y-auto _scroll-smooth _p-4"
+      }
+    },
+    "segmented": {
+      "description": "Timestamped blocks grouped by speaker turns — each block is a discrete card with speaker label, timestamp range, and full utterance text for easy scanning",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _gap-4 _overflow-y-auto _scroll-smooth _p-4"
+      }
+    },
+    "subtitle": {
+      "description": "Bottom-centered overlay with translucent dark background — max 2 lines of text, centered alignment, auto-fades old text as new speech arrives, optimized for video/media overlays",
+      "layout": {
+        "layout": "flex",
+        "atoms": "_fixed _bottom-0 _left-0 _right-0 _flex _justify-center _p-4 _pointer-events-none"
+      }
+    }
+  },
+  "visual_brief": "A vertically scrolling transcript where text appears word-by-word in real time as speech is transcribed. In stream mode: the container is a full-height scrollable area with a subtle left border accent. Each segment occupies a row — on the left side, a colored dot (10px circle, unique color per speaker derived from a hash of the speaker name) followed by the speaker's name in text-xs font-medium. The transcribed text flows inline to the right of the speaker label, with words appearing one at a time with a very brief fade-in (opacity 0→1 over 100ms). On the far right, a muted timestamp (text-xs, text-muted, tabular-nums) shows HH:MM:SS. The LiveCursor is a 2px-wide vertical bar in accent color, positioned immediately after the last transcribed word, blinking with a 1s opacity animation (1→0→1). Low-confidence words (below 0.7 threshold) render with a dotted underline (text-decoration: underline dotted var(--d-warning)) and slightly reduced opacity (0.7). Hovering a low-confidence word shows a tooltip with the confidence score and alternative hypotheses. The container auto-scrolls to the bottom on each new word, but pauses auto-scroll if the user manually scrolls up (with a 'Jump to latest' pill button appearing at the bottom). In segmented mode: each speaker turn is a distinct card (d-surface, rounded-lg, p-3). The card header shows the speaker dot + name on the left and a timestamp range ('2:04 – 2:18') on the right. The card body contains the full utterance text in text-sm. Cards stack vertically with gap-4. In subtitle mode: text renders in a centered box (max-width 80%, bg-black/75%, backdrop-blur-sm, rounded-lg, px-4 py-2). Text is white, text-base, font-medium, text-center. Maximum 2 lines — older text fades out as new text pushes in. No speaker labels; no timestamps. The container is positioned fixed at the bottom of the viewport.",
+  "layout_hints": {
+    "container": "block, full-height recommended for stream/segmented; fixed overlay for subtitle",
+    "note": "For stream and segmented modes, the container should fill available height to enable scrolling. For subtitle mode, use position:fixed or position:absolute relative to a media player container.",
+    "auto_scroll": "Implement scroll-anchoring: auto-scroll to bottom on new content, but disengage when user scrolls up. Show a 'Jump to latest' button (small pill, bottom-center of container) when disengaged.",
+    "speaker_colors": "Generate deterministic colors per speaker by hashing the speaker ID through a palette of 8 distinct hues. Ensure sufficient contrast against background.",
+    "performance": "For long transcripts (>1000 segments), implement virtualized scrolling to maintain performance. Only render segments within the visible viewport plus a 200px buffer."
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _flex-col _gap-3 _overflow-y-auto _scroll-smooth _p-4 _h-full",
+    "slots": {
+      "transcript-container": "The outer scrollable container holding all transcript segments. Uses overflow-y: auto with scroll-behavior: smooth. Has a subtle left border (3px solid var(--d-accent) at 20% opacity) to visually anchor the timeline. The container listens for scroll events to detect user-initiated scrolling vs programmatic auto-scroll. When the user scrolls more than 100px above the bottom, auto-scroll disengages and a floating 'Jump to latest' pill appears (position: sticky, bottom: 8px, center-aligned, bg-accent, text-accent-foreground, rounded-full, px-3 py-1, text-xs, shadow-md, cursor-pointer). Clicking the pill scrolls to bottom and re-engages auto-scroll.",
+      "transcript-segment": "Repeating slot — one per speaker utterance or continuous speech block. In stream mode: a horizontal flex row (items-start, gap-2). Left column (flex-shrink-0, w-28): SpeakerLabel. Center column (flex-1, min-w-0): the transcribed text, rendered as inline spans — each word is its own span element to enable per-word fade-in animation and per-word confidence styling. Right column (flex-shrink-0, w-16, text-right): TimestampBadge. The segment has a subtle bottom border (1px solid var(--d-border) at 30% opacity) separating it from the next segment. Padding: py-2. In segmented mode: each segment is wrapped in a d-surface card (rounded-lg, p-3, shadow-sm). The header row contains SpeakerLabel (left) and TimestampBadge showing range (right). The body row below contains the full utterance text in text-sm with normal line-height.",
+      "speaker-label": "A horizontal flex element (items-center, gap-1.5) showing a colored dot (10px circle, border-radius-full, flex-shrink-0) and the speaker's name (text-xs, font-medium, truncate, max-w-24). The dot color is deterministic per speaker, derived from hashing the speaker identifier through a curated palette of 8 high-contrast colors. When a speaker is currently speaking, the dot has a pulse animation (scale 1→1.2→1, 1.5s, infinite). The name truncates with ellipsis if longer than the allotted width.",
+      "timestamp-badge": "A small inline badge displaying the segment's timestamp in HH:MM:SS or M:SS format. Uses text-xs, font-mono, tabular-nums, text-muted styling. In segmented mode, shows a range ('2:04 – 2:18'). In stream mode, shows the start time of the segment. In subtitle mode, timestamps are hidden entirely. The badge is flex-shrink-0 to prevent wrapping.",
+      "confidence-indicator": "Applied per-word as a conditional styling modifier rather than a separate visual element. Words with confidence score below 0.7 receive: opacity 0.7, text-decoration underline dotted with var(--d-warning) color, cursor help. On hover, a small tooltip (d-annotation, positioned above the word) shows 'Confidence: 62%' and up to 3 alternative transcriptions ('Did you mean: alternative1, alternative2?'). Words above 0.7 confidence have no special styling.",
+      "live-cursor": "A blinking vertical bar (2px wide, 1em tall) in var(--d-accent) color, positioned inline immediately after the last transcribed word. Blinks with a CSS animation: opacity 1→0→1 over 1s, steps(2) timing for a classic cursor blink. When speech pauses for more than 2 seconds, the cursor fades out (opacity→0 over 500ms). When speech resumes, it fades back in. In subtitle mode, the cursor is hidden — replaced by a subtle ellipsis animation ('...') appended to the last word during active speech."
+    }
+  },
+  "accessibility": {
+    "role": "log",
+    "aria-label": "Live transcription",
+    "aria-live": "polite",
+    "announcements": [
+      "New speaker: {speaker_name}",
+      "{speaker_name} said: {text}",
+      "Transcription paused",
+      "Transcription resumed",
+      "Low confidence word detected: {word}"
+    ],
+    "keyboard": [
+      "Tab: move between segments",
+      "Arrow Up/Down: scroll through transcript",
+      "Home: jump to beginning of transcript",
+      "End: jump to latest transcript (re-engage auto-scroll)",
+      "Enter: expand segment to show confidence details",
+      "Escape: close confidence tooltip"
+    ]
+  },
+  "responsive": {
+    "mobile": "Speaker labels collapse to dot-only (name hidden) to save horizontal space. Timestamps hidden in stream mode — available on tap. Subtitle mode uses max-width: 95% and text-sm. Segments use full-width layout. Touch: tap a segment to reveal timestamp and confidence info.",
+    "tablet": "Full speaker labels shown. Segmented mode cards have comfortable padding. Subtitle mode at max-width: 70%. Timestamp always visible."
+  },
+  "motion": {
+    "micro": {
+      "word-appear": "opacity 0→1 over 100ms ease-out, per word as it is transcribed",
+      "confidence-hover": "tooltip fade-in 150ms ease-out on hover"
+    },
+    "transitions": {
+      "segment-enter": "translateY(8px) + opacity 0 → translateY(0) + opacity 1 over 200ms ease-out",
+      "auto-scroll-pill": "translateY(20px) + opacity 0 → translateY(0) + opacity 1 over 200ms ease-out",
+      "preset-switch": "crossfade 300ms ease-in-out"
+    },
+    "ambient": {
+      "live-cursor-blink": "opacity steps(2) 1s infinite",
+      "speaker-dot-pulse": "scale(1→1.2→1) 1.5s ease-in-out infinite when speaker is active",
+      "subtitle-text-cycle": "old line slides up + fades out, new line slides up from below, 250ms ease-out"
+    }
+  },
+  "interactions": [
+    "animate-on-mount",
+    "stagger-children",
+    "real-time-updates",
+    "scroll-reveal"
+  ],
+  "composition": {
+    "TranscriptStream": "Section(d-section, flex-col, overflow-y-auto, scroll-smooth) > TranscriptSegment*(d-surface?) > [...content] + LiveCursor",
+    "TranscriptSegment": "Row(flex, items-start, gap-2) > [SpeakerLabel + TranscriptText(inline spans) + TimestampBadge + ConfidenceIndicator?]",
+    "SpeakerLabel": "Flex(items-center, gap-1.5) > [Dot(10px, bg-speaker-color, pulse?) + Name(text-xs, font-medium, truncate)]",
+    "TimestampBadge": "Span(text-xs, font-mono, tabular-nums, text-muted) > TimeString",
+    "ConfidenceIndicator": "Tooltip(d-annotation, on-hover) > [Score + Alternatives?]",
+    "LiveCursor": "Span(inline, 2px-wide, 1em-tall, bg-accent, blink-animation)"
+  }
+}

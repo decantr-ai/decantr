@@ -1,0 +1,100 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "unit-detail",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Unit Detail",
+  "description": "Single unit details including specs, current tenant, lease info, rent history, maintenance, and documents.",
+  "dependencies": {
+    "patterns": {
+      "tenant-card": "^1.0.0",
+      "payment-history": "^1.0.0"
+    },
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "icon",
+        "Badge",
+        "Tabs"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "icon",
+    "Badge",
+    "Tabs"
+  ],
+  "default_preset": "view",
+  "presets": {
+    "view": {
+      "description": "Full unit detail view with specs, current tenant info, and tabbed rent and maintenance history",
+      "components": [
+        "Button",
+        "icon",
+        "Badge",
+        "Tabs"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6",
+        "slots": {
+          "header": "Unit number, property name, status badge, edit",
+          "specs": "Beds, baths, sqft, floor, amenities",
+          "tenant": "Current tenant info (embedded tenant-card)",
+          "lease": "Current lease summary",
+          "tabs": "Rent history, maintenance, documents tabs",
+          "rent-history": "Payment history for this unit",
+          "maintenance": "Maintenance history",
+          "documents": "Unit-specific documents"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap6",
+    "slots": {
+      "header": "Unit header",
+      "specs": "Unit specifications",
+      "tenant": "Tenant information",
+      "tabs": "History tabs"
+    }
+  },
+  "visual_brief": "Detail view for a single rental unit. Header shows unit number/name, status badge (occupied, vacant, maintenance), and action buttons. A specs section displays key-value pairs: bedroom count, bathroom count, square footage, floor, rent amount. A tenant information card shows the current tenant (avatar, name, contact, lease dates) or 'Vacant' with a list-unit button. Tabbed content below shows: Rent History (payment records), Maintenance (ticket list), and Documents (lease, inspection reports). The view preset is the only preset, displaying all information.",
+  "responsive": {
+    "mobile": "Single-column stacked layout. Specs in a 2-column key-value grid. Tenant card full-width. Tabs become a dropdown or accordion.",
+    "tablet": "Standard layout. Specs and tenant info side by side. Tabs in a row.",
+    "desktop": "Full layout with specs, tenant card, and tabs all comfortably displayed."
+  },
+  "layout_hints": {
+    "header_priority": "Lead with unit identity, occupancy state, and the most important operational actions. The user should understand whether the unit is occupied and healthy before reading deep history.",
+    "tab_discipline": "Rent history, maintenance, and documents are secondary exploration surfaces. Keep the active tab state strong and the shared unit context stable above them.",
+    "vacancy_translation": "When a unit is vacant, preserve the same structural rhythm as occupied states while swapping tenant context for a clear vacancy action path."
+  },
+  "motion": {
+    "micro": "Header actions and tab states may sharpen slightly on hover and focus. Vacancy or maintenance status indicators may draw gentle emphasis when needed.",
+    "transitions": "Switching between tabs should preserve the sense of remaining on the same unit, not feeling like a full page jump."
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Unit detail",
+    "keyboard": [
+      "Header actions should precede tab controls, and tab panels should follow a predictable reading order."
+    ],
+    "announcements": [
+      "Unit identity, status, tenant context, and active tab should be communicated semantically so the page remains understandable without relying on visual arrangement alone."
+    ]
+  },
+  "composition": {
+    "UnitDetail": "Container(d-section, flex-col, gap-6) > [Header + Specs + CurrentTenant? + TabContent]",
+    "Header": "Row(d-surface, space-between) > [UnitNumber(heading2) + StatusBadge(d-annotation) + ActionButtons(d-interactive)]",
+    "Specs": "Grid(d-data, key-value) > [Bedrooms + Bathrooms + SqFt(mono-data) + FloorPlan?]",
+    "TabContent": "Tabs(d-control) > [LeaseTab + PaymentTab + MaintenanceTab + DocumentsTab]"
+  }
+}

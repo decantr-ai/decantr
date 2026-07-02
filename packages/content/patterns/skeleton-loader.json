@@ -1,0 +1,114 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "skeleton-loader",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Skeleton Loader",
+  "description": "Animated placeholder pattern mimicking content layout during loading states. Renders muted rectangles, circles, and lines with a shimmer sweep animation that indicates ongoing data retrieval without spinner fatigue.",
+  "category": "loading",
+  "tags": [
+    "2026",
+    "loading",
+    "skeleton",
+    "placeholder",
+    "shimmer",
+    "progressive",
+    "perceived-performance"
+  ],
+  "components": [
+    "SkeletonBlock",
+    "SkeletonCircle",
+    "SkeletonLine",
+    "SkeletonGroup"
+  ],
+  "default_preset": "card",
+  "presets": {
+    "card": {
+      "description": "Card skeleton with a large image rectangle at top, title line, and two description lines beneath — mimics a media card",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap3 _p4 _rounded-lg"
+      }
+    },
+    "table": {
+      "description": "Table skeleton with a header row of evenly spaced blocks and multiple body rows of varying-width lines in columns",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap2 _w-full"
+      }
+    },
+    "list": {
+      "description": "List skeleton with repeating rows, each containing a small circle (avatar) on the left and two stacked lines (name + detail) on the right",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap3 _w-full"
+      }
+    },
+    "text": {
+      "description": "Paragraph skeleton with multiple horizontal lines of varying widths (100%, 100%, 80%, 60%) simulating a block of body text",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap2 _w-full"
+      }
+    },
+    "profile": {
+      "description": "Profile skeleton with a large centered circle (avatar), a medium-width name line below, and a wider bio line beneath that",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _aic _gap3 _py4"
+      }
+    }
+  },
+  "visual_brief": "Rounded rectangles and circles rendered in a muted surface color (approximately 8% lighter than the page background, no border, no shadow). Each shape has a shimmer animation: a diagonal linear gradient (transparent at 0%, 10% lighter highlight at 50%, transparent at 100%) that translates continuously from left to right across the element over 1.5 seconds with ease-in-out timing, repeating infinitely. The gradient is angled at approximately 105 degrees for a natural diagonal sweep. Shape dimensions match the content they replace: SkeletonBlock renders as a filled rectangle with 8px border-radius (used for images, cards, headers — configurable aspect ratio); SkeletonCircle renders as a perfect circle (used for avatars, icons — configurable diameter, default 40px); SkeletonLine renders as a thin rounded rectangle 12px tall with 4px border-radius (used for text lines — width varies: 100%, 80%, 60% to mimic ragged text edges). SkeletonGroup is a layout wrapper that arranges its children in rows or columns. In the card preset, a 16:9 ratio SkeletonBlock sits at the top, followed by a SkeletonLine at 70% width (title), then two SkeletonLines at 100% and 60% width (description). In the table preset, a header row uses 4-5 evenly-spaced SkeletonBlocks (80px wide, 16px tall), and body rows repeat 5 times with SkeletonLines of varying widths per column. In the profile preset, a 64px SkeletonCircle is centered, with a 40% width SkeletonLine (name) and a 70% width SkeletonLine (bio) below it. All shimmer animations are synchronized — every skeleton element on the page pulses in unison by using the same animation-delay reference point, creating a cohesive wave effect rather than individual element flickers.",
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap3 _w-full",
+    "slots": {
+      "skeleton-group": "A layout container that wraps skeleton primitives (SkeletonBlock, SkeletonCircle, SkeletonLine) and arranges them in flex row or column layouts. Supports gap spacing, alignment, and nested groups for complex content shapes. Each group inherits the shimmer animation timing from the root to keep all elements synchronized.",
+      "skeleton-block": "A filled rounded rectangle placeholder for image areas, card headers, or any rectangular content region. Configurable width, height, and aspect-ratio. Default border-radius 8px. Background is a muted surface tone. The shimmer gradient overlay sweeps across it left-to-right.",
+      "skeleton-circle": "A perfect circle placeholder for avatars, icons, or circular UI elements. Configurable diameter (default 40px). Same muted surface color and shimmer treatment as blocks.",
+      "skeleton-line": "A thin horizontal rectangle (12px height, 4px border-radius) representing a line of text. Width is configurable and typically varies across lines (100%, 80%, 60%) to simulate the ragged right edge of real text. Multiple lines stack vertically with consistent gap."
+    }
+  },
+  "accessibility": {
+    "role": "status",
+    "aria-label": "Content loading",
+    "announcements": [
+      "Content is loading, please wait",
+      "Content loaded successfully",
+      "Loading {section_name} content"
+    ],
+    "keyboard": [
+      "Tab: skip past skeleton region to next interactive element",
+      "Screen readers announce 'loading' status and notify when content replaces the skeleton"
+    ]
+  },
+  "responsive": {
+    "mobile": "Skeleton shapes span full container width. Card preset uses 1:1 aspect ratio for image block instead of 16:9. Table preset reduces to 2-3 visible columns. Shimmer animation uses reduced motion query — falls back to a static muted block with subtle opacity pulse if prefers-reduced-motion is set.",
+    "tablet": "Standard layouts maintained. Card preset uses 4:3 aspect ratio. Table preset shows all columns. Profile circle stays 64px.",
+    "desktop": "Full layouts as designed. Card preset uses 16:9 aspect ratio for image block. Multiple skeleton cards can sit in a responsive grid. Shimmer animation runs at full fidelity."
+  },
+  "motion": {
+    "micro": {
+      "shimmer-sweep": "background-position translateX(-100%→100%) 1.5s ease-in-out infinite on each skeleton element"
+    },
+    "transitions": {
+      "skeleton-to-content": "opacity 1→0 + scale(1→0.98) 200ms ease-in on skeleton, then content fades in with opacity 0→1 300ms ease-out",
+      "staggered-reveal": "each skeleton element fades out with 50ms stagger delay for a cascading reveal effect"
+    },
+    "ambient": {
+      "synchronized-shimmer": "all skeleton elements share identical animation-delay: 0ms so the shimmer wave sweeps across the entire layout uniformly"
+    }
+  },
+  "interactions": [
+    "animate-on-mount",
+    "real-time-updates",
+    "status-pulse"
+  ],
+  "composition": {
+    "SkeletonGroup": "Container(d-surface, flex, gap) > [SkeletonBlock | SkeletonCircle | SkeletonLine]*",
+    "SkeletonBlock": "Rect(d-muted, rounded-lg, shimmer-gradient, aspect-ratio: configurable)",
+    "SkeletonCircle": "Circle(d-muted, rounded-full, shimmer-gradient, size: configurable)",
+    "SkeletonLine": "Line(d-muted, h-12px, rounded-sm, shimmer-gradient, width: configurable)"
+  }
+}

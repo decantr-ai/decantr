@@ -5,7 +5,7 @@ Status: Active
 
 Release work in Decantr is owned by a boring, procedural Release Steward lane. Publishing is not complete when npm accepts a package. It is complete only when source, npm, git tags, and release notes all agree.
 
-This runbook is the source of truth for Git + npm release closeout in `decantr-monorepo`, and for registry-content publish closeout in `decantr-content`.
+This runbook is the source of truth for Git + npm release closeout in `decantr-monorepo`, including the `@decantr/content` package. The historical `decantr-content` repository is no longer an active release lane.
 
 ## Core Rule
 
@@ -227,34 +227,32 @@ The Release Steward must ask for explicit user approval before:
 - changing npm dist-tags
 - creating, deleting, or moving git tags
 - force-pushing
-- running a non-dry-run registry sync in `decantr-content`
-- pruning live registry content
+- deploying or closing external production infrastructure such as Fly, Vercel, Supabase, Stripe, PostHog, DNS, or MCP directory submissions
 
 If approval was already explicit in the user request, proceed through the scripted path and still run closeout.
 
-## decantr-content Flow
+## Content Package Flow
 
-`decantr-content` is not an npm-published package. It is the source of truth for official registry content, so its release closeout is about registry readiness and CLI alignment:
+Decantr 3.8 moves official content into `packages/content` as the public `@decantr/content` package. Its closeout is about package readiness, content health, and CLI/API alignment:
 
 ```bash
-npm install
-npm run validate
-npm run registry:v2-certify
-npm run content:health:json
-npm run content:health:suppressions
-npm run registry:audit -- --report-json=./registry-drift-report.json --summary-markdown=./registry-drift-summary.md
-npm run release:closeout
+pnpm install
+pnpm --filter @decantr/content validate
+pnpm --filter @decantr/content content:health:json
+pnpm --filter @decantr/content content:health:suppressions
+pnpm --filter @decantr/content content:intelligence
+pnpm audit:content-package
 ```
 
-Before live registry publish, run the `Publish to Registry` workflow in dry-run mode and review `sync-report.json`. A live sync requires explicit maintainer confirmation; pruning requires a separate explicit confirmation after a dry-run report.
+Hosted registry sync and pruning workflows are retired. Content changes ship through monorepo release, npm package publication, and Fly content API deployment.
 
-The content repo should keep its pinned `@decantr/cli` version aligned with the monorepo release line so Content Health and registry certification exercise the current public contract.
+The archived `decantr-content` repository should point contributors to `decantr-ai/decantr/packages/content`.
 
 ## Agent Contract
 
 Any AI assistant working on Decantr release tasks must use the Release Steward lane:
 
-1. identify the repo (`decantr-monorepo` or `decantr-content`)
+1. identify the repo (`decantr-monorepo`; the historical `decantr-content` repo is archived after 3.8 release)
 2. use scripts as the source of truth
 3. keep filters consistent across publish and verify commands
 4. update release notes and docs in the same branch

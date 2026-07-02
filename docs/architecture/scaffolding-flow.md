@@ -349,26 +349,24 @@
 
 
 ┌─────────────────────────────────────────────────────────────────────┐
-│                CONTENT REGISTRY PIPELINE                            │
+│                OFFICIAL CONTENT CORPUS PIPELINE                     │
 │                                                                     │
-│  decantr-content repo (JSON files)                                  │
+│  packages/content (JSON files + schemas + helpers)                  │
 │       │                                                             │
-│       │  push to main                                               │
+│       │  pull request                                               │
 │       ▼                                                             │
-│  GitHub Actions: validate.js → sync-to-registry.js                  │
+│  GitHub Actions: validate → content health → package audit          │
 │       │                                                             │
-│       │  POST /v1/admin/sync (X-Admin-Key)                          │
+│       │  monorepo release                                           │
 │       ▼                                                             │
-│  Supabase DB (namespace=@official, status=published)                │
+│  @decantr/content npm package                                       │
 │       │                                                             │
-│       ├──→ API serves: GET /v1/{type}/@official/{slug}              │
+│       ├──→ API serves content/reference routes from package data    │
 │       │       │                                                     │
-│       │       ├──→ CLI fetches (Custom → API → Cache)               │
-│       │       └──→ MCP server fetches (RegistryAPIClient)           │
+│       │       ├──→ CLI fetches content packs/search/schemas         │
+│       │       └──→ MCP decantr_registry compatibility tool reads    │
 │       │                                                             │
-│       └──→ Community publishes: POST /v1/content                    │
-│               │                                                     │
-│               └──→ Moderation queue (untrusted users)               │
+│       └──→ Projects may codify private vocabulary as local law      │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```

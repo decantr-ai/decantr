@@ -1,0 +1,75 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "billing-portal",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Billing Portal",
+  "description": "Subscription and billing management with tier comparison, upgrade flow, and Stripe billing portal integration.",
+  "tags": [
+    "billing",
+    "subscription",
+    "pricing",
+    "upgrade",
+    "stripe"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "billing",
+        "subscription",
+        "pricing",
+        "upgrade"
+      ],
+      "secondary": [
+        "stripe",
+        "plan",
+        "tier",
+        "payment"
+      ],
+      "negative": []
+    },
+    "implies": [
+      "auth",
+      "billing"
+    ],
+    "weight": 0.8,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "billing",
+      "path": "/dashboard/billing",
+      "default_layout": [
+        "tier-upgrade-card",
+        "kpi-grid"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "billing": "Current plan summary card at top showing tier name, price, and usage bar. Below, a tier comparison grid with feature checkmarks and upgrade buttons. KPI row showing spend, usage limits, and next billing date."
+  },
+  "features": [
+    "auth",
+    "billing"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "tier-upgrade-card": "^1.0.0",
+      "kpi-grid": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "luminarum"
+    ],
+    "modes": [
+      "dark"
+    ]
+  }
+}

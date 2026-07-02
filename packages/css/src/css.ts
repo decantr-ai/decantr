@@ -115,7 +115,7 @@ const ARB_PROPS: Record<string, string> = {
   // runtime didn't resolve; same class of silent-failure applies when
   // pattern JSONs use prefixes not in this map. These additions cover
   // every bracket prefix observed across the 209 archetype + 80+ pattern
-  // JSONs in decantr-content.
+  // JSONs in @decantr/content.
   overflow: 'overflow',
   pointer: 'pointer-events',
   text: 'text-align',

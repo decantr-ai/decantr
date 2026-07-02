@@ -1,0 +1,122 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "cta-section",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "CTA Section",
+  "description": "Full-width call-to-action section with headline, description, and action buttons",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button"
+  ],
+  "contained": false,
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Centered headline + subtext + primary/secondary buttons. Background can have gradient or subtle pattern.",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "hero",
+        "atoms": "_flex _col _items[center] _text[center] _py12 _px4 _gap4",
+        "slots": {
+          "headline": "Section heading with _heading2, centered",
+          "description": "Supporting paragraph with _body _fgmuted _mw[640px]",
+          "cta-group": "Horizontal Button group with _flex _gap3, primary + secondary"
+        }
+      }
+    },
+    "split": {
+      "description": "Two-column: text on left, image/illustration on right",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_grid _gc1 _lg:gc2 _gap6 _items[center] _py8",
+        "slots": {
+          "text-col": "Left column with headline, description, and CTA buttons: _flex _col _gap4",
+          "headline": "Section heading with _heading2",
+          "description": "Supporting paragraph with _body _fgmuted",
+          "cta-group": "Horizontal Button group with _flex _gap3",
+          "media-col": "Right column with image or illustration"
+        }
+      }
+    },
+    "banner": {
+      "description": "Compact horizontal bar with text on left, single button on right. Good for inline CTAs between content sections.",
+      "components": [
+        "Button"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _row _justify[between] _items[center] _py4 _px6 _rounded _bgprimary/10",
+        "slots": {
+          "text": "Inline text with _body _fontmedium",
+          "cta": "Single primary Button on the right"
+        }
+      }
+    }
+  },
+  "visual_brief": "Full-width call-to-action section with generous vertical padding (py12) and centered content. A bold heading2-scale headline sits at top, followed by a supporting paragraph in muted text constrained to 640px max-width for readability. Two CTA buttons arranged horizontally below — the primary button filled with brand color, the secondary as a ghost/outlined variant. The section background can carry a subtle gradient, pattern, or elevated surface treatment to stand out from adjacent content sections. The split preset places text and CTA on the left with an illustration or image on the right. The banner preset is a compact horizontal bar with accent background tint, text on the left and a single button on the right.",
+  "layout_hints": {
+    "shell_rhythm": "CTA sections should feel like a deliberate break in the page rhythm, but they still inherit the shell-owned width and spacing system. Do not add extra page wrappers around them.",
+    "cta_priority": "The primary CTA must be visually dominant, but secondary CTAs should still feel aligned and intentional rather than like an afterthought.",
+    "background_treatment": "Use a distinct but controlled background treatment so the CTA reads as a purposeful moment, not as a random card dropped into the page."
+  },
+  "responsive": {
+    "mobile": "Standard preset: content stacks vertically, full-width. CTA buttons stack vertically at full width. Split preset becomes single column with image below text. Banner preset wraps text and button vertically.",
+    "tablet": "Standard stays centered. Split preset activates two-column grid. Banner remains horizontal. Padding adjusts to py8.",
+    "desktop": "Full layout as designed. Standard centered with generous spacing. Split shows two-column with image. Banner compact and horizontal with accent background."
+  },
+  "motion": {
+    "micro": "CTA buttons may lift or brighten subtly on hover and focus, but the section itself should remain visually stable.",
+    "transitions": "CTA sections can fade or reveal softly with the page flow over 200-300ms, avoiding large parallax or attention-seeking animation.",
+    "ambient": "Background gradients or highlights may breathe very subtly, but should never distract from the headline and CTA group."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "stagger-children",
+    "glow-hover"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Call to action section",
+    "keyboard": [
+      "Tab moves through the CTA buttons in visual order."
+    ],
+    "announcements": [
+      "Headline and supporting copy should be announced before CTA buttons so the user understands the action context."
+    ],
+    "focus_management": "Do not trap focus in CTA groups. Buttons should remain easy to reach after preceding page content in normal reading order."
+  },
+  "default_layout": {
+    "layout": "hero",
+    "atoms": "_flex _col _items[center] _text[center] _py12 _px4 _gap4",
+    "slots": {
+      "headline": "Section heading, centered",
+      "description": "Supporting paragraph",
+      "cta-group": "Action buttons"
+    }
+  },
+  "io": {
+    "consumes": [],
+    "produces": [],
+    "actions": [
+      "cta-click"
+    ]
+  }
+}

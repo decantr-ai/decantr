@@ -127,13 +127,7 @@ export function resolveWorkflowPolicy(input: {
   const adoptionMode: AdoptionMode =
     requestedAdoption ??
     input.workflowSeed?.adoptionMode ??
-    (workflowMode === 'brownfield-attach'
-      ? 'contract-only'
-      : workflowMode === 'hybrid-compose'
-        ? 'contract-only'
-        : workflowMode === 'greenfield-contract-only'
-          ? 'contract-only'
-          : 'decantr-css');
+    'contract-only';
 
   const contentSource: ContentSource = hasRegistryContent
     ? input.offline

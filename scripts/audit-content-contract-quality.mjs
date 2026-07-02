@@ -7,7 +7,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, '..');
 const defaultContentRoot = process.env.DECANTR_CONTENT_DIR
   ? resolve(process.env.DECANTR_CONTENT_DIR)
-  : resolve(repoRoot, '..', 'decantr-content');
+  : resolve(repoRoot, 'packages', 'content');
 const showcaseManifestPath = join(repoRoot, 'apps', 'showcase', 'manifest.json');
 
 const BP_RE = /^_(sm|md|lg|xl):(.+)$/;

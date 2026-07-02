@@ -1,0 +1,181 @@
+{
+  "id": "workspace-aside",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Workspace Aside",
+  "description": "Three-column layout for collaborative editing with page tree navigation, document editor body, and comment/activity sidebar. Used by document-editor archetype for real-time collaboration.",
+  "layout": "grid",
+  "atoms": "_grid _h[100vh]",
+  "config": {
+    "regions": [
+      "header",
+      "nav",
+      "body",
+      "aside"
+    ],
+    "grid": {
+      "areas": [
+        [
+          "nav",
+          "header",
+          "header"
+        ],
+        [
+          "nav",
+          "body",
+          "aside"
+        ]
+      ]
+    },
+    "nav": {
+      "position": "left",
+      "width": "240px",
+      "collapseTo": "48px",
+      "collapseBelow": "lg"
+    },
+    "header": {
+      "height": "52px",
+      "sticky": true
+    },
+    "body": {
+      "scroll": true,
+      "editorMode": true
+    },
+    "aside": {
+      "width": "280px",
+      "collapsible": true,
+      "collapseBelow": "xl"
+    }
+  },
+  "configurable": {
+    "nav": {
+      "positions": [
+        "left"
+      ],
+      "modes": [
+        "full",
+        "rail",
+        "hidden"
+      ]
+    },
+    "header": {
+      "toggleable": true
+    },
+    "aside": {
+      "toggleable": true
+    },
+    "sizing": {
+      "sidebarWidth": {
+        "min": 48,
+        "max": 320,
+        "default": 240
+      },
+      "headerHeight": {
+        "min": 44,
+        "max": 64,
+        "default": 52
+      },
+      "asideWidth": {
+        "min": 240,
+        "max": 400,
+        "default": 280
+      }
+    }
+  },
+  "internal_layout": {
+    "root": {
+      "display": "grid",
+      "height": "100vh",
+      "grid_template": "columns: sidebar 1fr aside; rows: 52px 1fr",
+      "atoms": "_grid _h[100vh]"
+    },
+    "sidebar": {
+      "width": "240px",
+      "collapsed_width": "48px",
+      "collapse_breakpoint": "lg",
+      "position": "left",
+      "direction": "column",
+      "border": "right",
+      "background": "var(--d-surface)",
+      "grid_span": "row 1/3",
+      "atoms": "_flex _col _bgmuted _borderR",
+      "brand": {
+        "height": "52px",
+        "display": "flex",
+        "align": "center",
+        "justify": "space-between",
+        "padding": "0.75rem",
+        "border": "bottom",
+        "content": "Pages heading + collapse toggle"
+      },
+      "nav": {
+        "flex": "1",
+        "overflow_y": "auto",
+        "padding": "0.5rem",
+        "item_gap": "0.25rem",
+        "item_padding": "0.5rem",
+        "item_content": "Page icon (emoji) + page title (truncated). Collapsed: icon only."
+      },
+      "footer": {
+        "border": "top",
+        "padding": "0.5rem",
+        "content": "New Page button (full-width outline)"
+      }
+    },
+    "header": {
+      "height": "52px",
+      "display": "flex",
+      "align": "center",
+      "justify": "space-between",
+      "padding": "0 1.5rem",
+      "border": "bottom",
+      "background": "var(--d-bg)",
+      "grid_span": "column 2/4",
+      "left_content": "Document title",
+      "right_content": "Share button + collaborator avatars (stacked, max 4 + overflow count) + notifications + user avatar",
+      "button_sizing": "Buttons in the header use compact sizing: py-1.5 px-3 text-sm (~32px tall). The header is a tight 52px bar \u2014 default d-interactive padding is too large here."
+    },
+    "body": {
+      "flex": "1",
+      "direction": "column",
+      "overflow_y": "auto",
+      "padding": "2rem",
+      "atoms": "_flex _col _overflow[auto] _p8",
+      "note": "Document editor area. Scrollable. Editor mode enabled."
+    },
+    "aside": {
+      "width": "280px",
+      "collapsible": true,
+      "collapse_breakpoint": "xl",
+      "direction": "column",
+      "border": "left",
+      "background": "var(--d-bg)",
+      "atoms": "_flex _col _borderL _bgbg _overflow[auto]",
+      "header": {
+        "display": "flex",
+        "align": "center",
+        "justify": "space-between",
+        "padding": "1rem",
+        "border": "bottom",
+        "content": "Comments label + close button"
+      },
+      "body": {
+        "flex": "1",
+        "overflow_y": "auto",
+        "padding": "1rem",
+        "note": "Comment/activity thread."
+      },
+      "note": "Right comment/activity sidebar. Toggleable. When collapsed, shows a floating message-square icon button to reopen."
+    }
+  },
+  "guidance": {
+    "section_label_treatment": "d-label[data-anchor]",
+    "section_density": "compact",
+    "shell_spacing": "Workspace-aside owns the page-tree navigation width, the shared editor header, the main editor canvas spacing, and the right collaboration rail. Route content should not add extra full-page wrappers or duplicate shell padding; let the document body and collaboration aside stay distinct but coordinated."
+  },
+  "code": {
+    "imports": "Target-specific imports vary. Translate the internal_layout contract into your framework's page tree nav, shared editor header, primary work region, and optional collaboration aside.",
+    "example": "WorkspaceAsideShell(root) -> NavTree(collapse or rail state) + Header(document title, share controls, collaborator stack) + Body(primary workspace) + Aside(comments or activity, collapsible)"
+  },
+  "$schema": "https://decantr.ai/schemas/shell.v1.json"
+}

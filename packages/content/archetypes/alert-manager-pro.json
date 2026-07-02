@@ -1,0 +1,154 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "alert-manager-pro",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Alert Manager Pro",
+  "description": "Alert and incident management interface with active alert views, rule builder, incident timelines, and war-room detail pages for coordinated response.",
+  "tags": [
+    "observability",
+    "alerts",
+    "incidents",
+    "on-call",
+    "rules"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "alert manager",
+        "incident management",
+        "alert rules",
+        "on-call management",
+        "alert dashboard"
+      ],
+      "secondary": [
+        "pagerduty",
+        "incident response",
+        "war room",
+        "alert routing",
+        "escalation"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "alerts",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "alert-list"
+        },
+        {
+          "pattern": "kpi-grid",
+          "preset": "compact",
+          "as": "alert-summary"
+        }
+      ],
+      "default_layout": [
+        "kpi-grid",
+        "data-table"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "alert-rules",
+      "patterns": [
+        {
+          "pattern": "alert-rule-builder",
+          "preset": "advanced",
+          "as": "rule-builder"
+        },
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "rules-list"
+        }
+      ],
+      "default_layout": [
+        "alert-rule-builder",
+        "data-table"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "incidents",
+      "patterns": [
+        {
+          "pattern": "timeline",
+          "preset": "standard",
+          "as": "incident-timeline"
+        },
+        {
+          "pattern": "activity-feed",
+          "preset": "detailed",
+          "as": "incident-feed"
+        }
+      ],
+      "default_layout": [
+        "timeline",
+        "activity-feed"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "incident-detail",
+      "patterns": [
+        {
+          "pattern": "kpi-grid",
+          "preset": "compact",
+          "as": "incident-kpis"
+        },
+        {
+          "pattern": "chart-grid",
+          "preset": "standard",
+          "as": "incident-charts"
+        },
+        {
+          "pattern": "activity-feed",
+          "preset": "standard",
+          "as": "war-room-feed"
+        },
+        {
+          "pattern": "timeline",
+          "preset": "standard",
+          "as": "incident-events"
+        }
+      ],
+      "default_layout": [
+        "kpi-grid",
+        "chart-grid",
+        "activity-feed",
+        "timeline"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "alerts": "Active alerts overview. Compact KPI strip at the top shows counts by severity — critical, warning, and info — plus mean time to acknowledge. Below, a full-width data table lists every active alert with columns for name, service, severity, fired-at timestamp, and current status, sortable and filterable.",
+    "alert-rules": "Alert rule configuration page. Top section hosts an advanced rule builder with metric selector, threshold editor, evaluation window, and notification channel routing. Below, a data table lists all existing rules with columns for name, condition summary, status, and last-triggered timestamp.",
+    "incidents": "Incident list and timeline view. A vertical timeline on the left shows incidents chronologically with severity-colored markers. The right panel renders a detailed activity feed for the selected incident, showing status changes, responder actions, and linked alerts in reverse-chronological order.",
+    "incident-detail": "War-room view for a single incident. Compact KPI row shows duration, affected services, and current severity. Chart grid below plots key metrics around the incident window. An activity feed captures all responder updates, status changes, and automated actions. A timeline at the bottom reconstructs the full sequence of events from detection through resolution."
+  },
+  "features": [
+    "alerts",
+    "incidents",
+    "rules",
+    "on-call"
+  ],
+  "suggested_theme": {
+    "ids": [
+      "fintech",
+      "carbon",
+      "neon-dark"
+    ],
+    "modes": [
+      "dark"
+    ]
+  }
+}

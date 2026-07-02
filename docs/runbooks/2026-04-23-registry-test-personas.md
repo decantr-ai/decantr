@@ -1,5 +1,9 @@
 # Registry Test Personas
 
+Status: Historical / retired in Decantr 3.8
+
+The hosted registry account, billing, organization, and dashboard validation path is no longer active. Keep this page only as historical context for closing Supabase/Stripe/Vercel resources.
+
 This runbook defines the hosted registry test-account matrix for authenticated product validation.
 
 The seed path is intentionally service-role based and dry-run by default. It lets us validate Free, Pro, Team, Enterprise, and Admin dashboard behavior without relying on live Stripe checkout during product smoke tests.

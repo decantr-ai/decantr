@@ -12,12 +12,12 @@ Decantr is the governance layer between product intent and AI-edited frontend co
 | --- | --- | --- |
 | **[Brownfield adoption](docs/reference/workflow-model.md#brownfield-adoption)** &nbsp;⭐ | Attaching Decantr to an existing Angular/React/Vue/etc. project | `decantr scan` -> `decantr adopt --yes` |
 | **[Hybrid operating layer](docs/reference/workflow-model.md#hybrid-operating-layer)** | An attached app wants selected Decantr or project-owned UI law, without source takeover | `decantr codify`, `decantr doctor`, `decantr task` |
-| **[Greenfield starter kit](#greenfield-blueprint)** | New project, published app composition as the starting point | `decantr new my-app --blueprint=<id> --workflow=greenfield --adoption=decantr-css` |
+| **[Greenfield content contract](#greenfield-content-contracts)** | New project, official content-corpus composition as governance context | `decantr new my-app --blueprint=<id> --workflow=greenfield` |
 | **Greenfield contract-only** | New project or repo that wants Decantr governance but no blueprint/runtime takeover | `decantr init --workflow=greenfield --adoption=contract-only` |
 
 ---
 
-## Greenfield Starter Kits
+## Greenfield Content Contracts
 
 ### 1. Scaffold from a blueprint
 
@@ -26,9 +26,9 @@ npx @decantr/cli new my-app --blueprint=esports-hq
 cd my-app
 ```
 
-A starter kit is a published app composition — theme, sections, pages, layouts, voice, and personality. It is a starting point, not the product center. The public registry now keeps blueprint discovery intentionally small: **Featured** and **Certified** are the strongest default picks, **All** shows supported contracts, and **Labs** is opt-in for promising but less-proven directions. Try `esports-hq`, `agent-studio`, or `registry-platform` to start, or run `decantr list blueprints --blueprint-set featured` to browse the curated set.
+A blueprint is official corpus content: theme, sections, pages, layouts, voice, and personality that compile into Decantr contracts and execution packs. It is reference material for governance, not a public marketplace or runtime takeover. Try `esports-hq`, `agent-studio`, or `carbon-ai-portal`, or run `decantr list blueprints --blueprint-set featured` to browse the curated set.
 
-> **Adapter availability.** `react-vite`, `next-app`, `vanilla-vite`, `vue-vite`, `sveltekit`, `angular`, and `solid-vite` are certified runnable starter adapters. Other contract targets remain valid Decantr targets but initialize through `generic-web` contract-only mode — Decantr writes the contract, you own the runtime.
+> **Adapter availability.** Greenfield defaults to contract-only governance. The legacy `@decantr/css` runnable adapters (`react-vite`, `next-app`, `vanilla-vite`, `vue-vite`, `sveltekit`, `angular`, and `solid-vite`) remain available only when explicitly requested with `--adoption=decantr-css`. Other targets initialize through `generic-web` contract-only mode.
 
 ### 2. What just got generated
 
@@ -85,7 +85,7 @@ Canonical shapes live in the [published schemas](https://decantr.ai/schemas/); t
 | --- | --- |
 | CLI | Guides users through workflow commands (`setup`, `adopt`, `doctor`, `task`, `verify`, `resolve`, `ci`, `codify`, `connect cursor`), keeps advanced primitives available, writes v2 Evidence Bundles, runs workspace health, installs CI, opens Studio Control Room locally, configures Cursor activation, and audits official-vocabulary supply-chain health |
 | MCP server | Exposes Decantr directly to AI tools - essence reads, vocabulary resolution, context reads, pack compilation, drift checks, critique, audit, v2 evidence bundles, workspace health, health-loop guidance, and repair prompts |
-| Hosted registry/API | Certified vocabulary and hosted pack compilation for teams that want official content context, without overriding repo-owned local law |
+| Content API | Fly-hosted helper for official corpus search, schemas, intelligence summaries, showcase metadata, and execution-pack compilation |
 | Verifier | Shared audit, critique, Project Health, Evidence Bundle, component reuse drift, behavior-obligation drift, style bridge drift, stable diagnostic code, typed repair ID, graph-anchored finding, contract assertion, and report-schema engine |
 | Showcase apps | Audited benchmark corpus and verification targets for Decantr-generated scaffolds |
 
@@ -98,12 +98,13 @@ Security review starts with the installed npm surface, not the whole monorepo. T
 | Package | Role |
 | --- | --- |
 | `@decantr/essence-spec` | Essence schemas, validation, migration, and TypeScript types |
-| `@decantr/registry` | Certified vocabulary contracts, schemas, content utilities, and API client surfaces |
-| `@decantr/css` | Framework-agnostic CSS atom runtime |
+| `@decantr/content` | Official content corpus, schemas, validation, search, resolution, and content health helpers |
+| `@decantr/registry` | Legacy compatibility package for content/API client naming in Decantr 3.x |
+| `@decantr/css` | Legacy optional CSS atom adapter; not a default adoption path |
 | `@decantr/core` | Execution-pack compiler primitives, typed Contract graph builders, graph diffs, snapshot history, hybrid graph ranking, evidence/proof ingestion, and Contract capsules |
 | `@decantr/verifier` | Shared audit, critique, v2 Evidence Bundle, loop readiness, authority resolution, component reuse drift, behavior-obligation drift, style bridge drift, stable diagnostic code, typed repair ID, graph-anchored finding, contract assertion, and report-schema engine |
 | `@decantr/mcp-server` | MCP delivery surface for assistants and agent tooling |
-| `@decantr/cli` | Local scaffold, registry, Project Health CI/Studio, audit, and maintenance workflows |
+| `@decantr/cli` | Local contract, content, Project Health CI/Studio, audit, and maintenance workflows |
 | `@decantr/vite-plugin` | Experimental local guard feedback overlay for Vite |
 
 Full release/support status lives in [docs/reference/package-support-matrix.md](docs/reference/package-support-matrix.md).
@@ -112,10 +113,9 @@ Full release/support status lives in [docs/reference/package-support-matrix.md](
 
 | Path | Role |
 | --- | --- |
-| `apps/api` | Hosted API for registry, packs, critique, audit, auth, org, and billing-adjacent flows |
-| `apps/registry` | Next.js registry portal and internal dogfood surface |
+| `apps/api` | Fly-hosted content API for corpus, schemas, search, intelligence, showcase metadata, and execution packs |
 | `apps/showcase-host` | Shared Vite host for live blueprint showcase capsules |
-| `apps/showcase/` | Showcase manifest and verification reports used by the API and registry |
+| `apps/showcase/` | Showcase manifest and verification reports used by the content API |
 | `packages/*` | Core Decantr packages and supporting runtime surfaces |
 | `docs/` | Public docs, audits, architecture notes, schemas, and runbooks |
 | `scripts/` | Audit, release, showcase, schema, and packaging automation |
@@ -133,7 +133,7 @@ pnpm test
 pnpm lint
 pnpm audit:public-api
 pnpm audit:package-permissions
-pnpm audit:registry-dogfood
+pnpm audit:content-package
 pnpm showcase:verify:shortlist
 pnpm benchmark:realworld-corpus -- --config scripts/realworld-corpus.first-mile.json --cli packages/cli/dist/index.js --out /tmp/decantr-realworld-corpus-3.7
 pnpm release:verify
@@ -160,7 +160,7 @@ decantr suggest --from-code --file app/page.tsx --project apps/web
 decantr suggest "standardize buttons" --project apps/web
 ```
 
-Source-code suggestions rank both registry patterns and accepted `.decantr/local-patterns.json` against the selected app's file contents. From an app root, `decantr suggest "button" --from-code --file src/App.tsx` surfaces project-owned law without extra flags; from a monorepo root, add `--project apps/web`.
+Source-code suggestions rank official content patterns and accepted `.decantr/local-patterns.json` against the selected app's file contents. From an app root, `decantr suggest "button" --from-code --file src/App.tsx` surfaces project-owned law without extra flags; from a monorepo root, add `--project apps/web`.
 
 Brownfield adoption:
 
@@ -214,16 +214,16 @@ decantr verify --project apps/web --base-url http://localhost:3000 --evidence
 
 `analyze` now writes Brownfield intelligence artifacts in addition to the proposal: `.decantr/brownfield-intelligence.json`, `.decantr/theme-inventory.json`, and `.decantr/enrichment-backlog.md`. Essence V4 stays unchanged; multi-theme apps are observed in the inventory and kept as local task context until the team explicitly promotes that model. When local law, a style bridge, or Decantr CSS is accepted, Decantr calls that out as Hybrid instead of pretending every existing app is still only contract-only.
 
-`scan` is the safe first look: it is read-only and tells you whether Decantr sees a plausible UI app before anything is written. `adopt` orchestrates the primitive Brownfield flow (`analyze`, proposal acceptance, hosted pack hydration when online, first typed Contract graph baseline, Project Health, optional browser evidence, optional CI) so users do not need to memorize the internal command chain. In contract-only/offline adoption, hosted packs can be deferred; `doctor`, `health`, and `refresh --check` treat missing hosted packs as optional context unless a present `pack-manifest.json` references missing files. `studio` gives a local visual view of what Decantr found, while `doctor` explains project/workspace state, generated artifacts, typed graph freshness, CI wiring, and the active adoption lane: Brownfield contract-only, Hybrid local law, Hybrid style bridge, Hybrid Decantr CSS, Hybrid composition, or Greenfield. `codify --from-audit` proposes project-owned local law in `.decantr/local-patterns.proposal.json` and `.decantr/rules.proposal.json`, with source evidence, confidence tiers, likely variants for button/card/form/theme families, and optional `behavior_obligations` for observed forms or destructive confirmation dialogs; `codify --style-bridge` proposes `.decantr/style-bridge.proposal.json`, mapping Decantr intent to project-owned tokens/classes without installing Decantr CSS; `codify --map-pattern <slug>` maps a hosted or bundled registry pattern into an advisory local-law proposal without changing source. After review, `codify --accept` promotes whichever proposals exist so `task`, `suggest`, `ci`, Project Health, and MCP task context treat them as Hybrid authority, while hosted registry patterns remain optional guidance until mapped into project-owned law. When typed graph artifacts exist, `task` and MCP task context rank route graph nodes with the task text so matching components, local rules, behavior obligations, findings, evidence, and source artifacts rise before the edit. The primitive commands remain available for advanced and scripted workflows.
+`scan` is the safe first look: it is read-only and tells you whether Decantr sees a plausible UI app before anything is written. `adopt` orchestrates the primitive Brownfield flow (`analyze`, proposal acceptance, optional content pack hydration when online, first typed Contract graph baseline, Project Health, optional browser evidence, optional CI) so users do not need to memorize the internal command chain. In contract-only/offline adoption, content packs can be deferred; `doctor`, `health`, and `refresh --check` treat missing packs as optional context unless a present `pack-manifest.json` references missing files. `studio` gives a local visual view of what Decantr found, while `doctor` explains project/workspace state, generated artifacts, typed graph freshness, CI wiring, and the active adoption lane: Brownfield contract-only, Hybrid local law, Hybrid style bridge, Hybrid Decantr CSS, Hybrid composition, or Greenfield. `codify --from-audit` proposes project-owned local law in `.decantr/local-patterns.proposal.json` and `.decantr/rules.proposal.json`, with source evidence, confidence tiers, likely variants for button/card/form/theme families, and optional `behavior_obligations` for observed forms or destructive confirmation dialogs; `codify --style-bridge` proposes `.decantr/style-bridge.proposal.json`, mapping Decantr intent to project-owned tokens/classes without installing Decantr CSS; `codify --map-pattern <slug>` maps official content guidance into an advisory local-law proposal without changing source. After review, `codify --accept` promotes whichever proposals exist so `task`, `suggest`, `ci`, Project Health, and MCP task context treat them as Hybrid authority, while official corpus patterns remain optional guidance until mapped into project-owned law. When typed graph artifacts exist, `task` and MCP task context rank route graph nodes with the task text so matching components, local rules, behavior obligations, findings, evidence, and source artifacts rise before the edit. The primitive commands remain available for advanced and scripted workflows.
 
-Registry and verification:
+Content and verification:
 
 ```bash
-decantr registry summary       --namespace @official --json
-decantr registry compile-packs decantr.essence.json --write-context
-decantr registry compile-packs apps/web/decantr.essence.json --write-context
-decantr registry critique-file src/pages/Home.tsx  --namespace @official --json
-decantr registry audit-project --namespace @official --json
+decantr content summary       --namespace @official --json
+decantr content compile-packs decantr.essence.json --write-context
+decantr content compile-packs apps/web/decantr.essence.json --write-context
+decantr audit src/pages/Home.tsx
+decantr audit
 decantr showcase verification  --json
 ```
 
@@ -235,13 +235,13 @@ Project Health, CI, and diagnosis:
 
 ```bash
 decantr doctor
-decantr doctor --project apps/registry
+decantr doctor --project apps/web
 decantr verify
 decantr verify --base-url http://localhost:3000 --evidence
 decantr verify --since-baseline
-decantr ci --project apps/registry
+decantr ci --project apps/web
 decantr ci --workspace --changed --since origin/main
-decantr ci init --project apps/registry
+decantr ci init --project apps/web
 decantr ci init --workspace
 decantr health --format markdown
 decantr health --prompt <finding-id>
@@ -266,7 +266,7 @@ decantr telemetry explain
 decantr telemetry link --enable --org <org-slug>
 ```
 
-Telemetry stays product-level: command names, aggregate lifecycle counts, registry sources, Project Health scores/counts, private-registry readiness, and billing intent. `decantr telemetry explain` prints the CLI event catalog subset and never-collected list before a team opts in. It does not collect source code, prompts, raw paths, emails, private package slugs, or health report contents.
+Telemetry stays product-level: command names, aggregate lifecycle counts, content sources, Project Health scores/counts, and adoption workflow signals. `decantr telemetry explain` prints the CLI event catalog subset and never-collected list before a team opts in. It does not collect source code, prompts, raw paths, emails, private package slugs, or health report contents.
 
 Official content supply chain:
 
@@ -331,7 +331,6 @@ See the full [FAQ](docs/faq.md) for common setup, brownfield, Studio, migration,
 
 ## Links
 
-- Registry — [registry.decantr.ai](https://registry.decantr.ai)
 - Discord — [discord.gg/WeDpBd4xFU](https://discord.gg/WeDpBd4xFU)
 - FAQ — [docs/faq.md](docs/faq.md)
 - Monorepos — [docs/guides/monorepos.md](docs/guides/monorepos.md)
@@ -340,7 +339,7 @@ See the full [FAQ](docs/faq.md) for common setup, brownfield, Studio, migration,
 - Command surface — [docs/reference/command-surface.md](docs/reference/command-surface.md)
 - Content Health — [docs/reference/content-health.md](docs/reference/content-health.md)
 - Workflow model — [docs/reference/workflow-model.md](docs/reference/workflow-model.md)
-- Public API reference — [docs/reference/registry-public-api.md](docs/reference/registry-public-api.md)
+- Content API reference — [docs/reference/registry-public-api.md](docs/reference/registry-public-api.md)
 - Package support matrix — [docs/reference/package-support-matrix.md](docs/reference/package-support-matrix.md)
 
 ## Contributing
@@ -351,4 +350,4 @@ Use [Discord](https://discord.gg/WeDpBd4xFU) for quick setup help, showcase feed
 
 ## License
 
-MIT. The source repositories are MIT licensed; hosted services such as the registry and API may publish separate service terms without changing the source-code license.
+MIT. The source repositories are MIT licensed; hosted services such as the content API may publish separate service terms without changing the source-code license.

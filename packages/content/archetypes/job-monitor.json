@@ -1,0 +1,109 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "job-monitor",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Job Monitor",
+  "description": "Pipeline job run monitoring with run history, step-by-step trace waterfall, live log streaming, and performance KPIs.",
+  "tags": [
+    "data",
+    "monitoring",
+    "jobs",
+    "logs",
+    "observability"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "job monitor",
+        "pipeline monitoring",
+        "job history",
+        "run monitor"
+      ],
+      "secondary": [
+        "pipeline logs",
+        "job runs",
+        "execution history",
+        "pipeline observability"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 0.8,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "jobs",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "job-history"
+        }
+      ],
+      "default_layout": [
+        "data-table"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "job-detail",
+      "patterns": [
+        {
+          "pattern": "trace-waterfall",
+          "preset": "standard",
+          "as": "step-trace"
+        },
+        {
+          "pattern": "log-stream",
+          "preset": "standard",
+          "as": "live-logs"
+        },
+        {
+          "pattern": "kpi-grid",
+          "preset": "compact",
+          "as": "run-metrics"
+        }
+      ],
+      "default_layout": [
+        "kpi-grid",
+        "trace-waterfall",
+        "log-stream"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "jobs": "Job history at /jobs. Data table of pipeline runs with columns for pipeline name, run ID, status (success, failed, running, queued), start time, duration, rows processed, and trigger type (scheduled, manual). Filters for status, pipeline, and date range. Running jobs show a progress indicator.",
+    "job-detail": "Job detail at /jobs/:id. Top row of compact KPI cards shows duration, rows processed, error count, and throughput. Below, a trace waterfall visualizes each pipeline step as a horizontal bar on a timeline — extract, transform, load phases with sub-steps. Color coding for success (green), failure (red), and slow (amber). Bottom section streams live logs with severity filtering (info, warn, error) and search."
+  },
+  "features": [
+    "monitoring",
+    "logs",
+    "job-history"
+  ],
+  "shells": {
+    "sidebar-main": "Persistent left sidebar with navigation, main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "data-table": "^1.0.0",
+      "trace-waterfall": "^1.0.0",
+      "log-stream": "^1.0.0",
+      "kpi-grid": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon",
+      "technical"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "recipefork-cookbook-assignment",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipefork Cookbook Assignment",
+  "description": "Inline cookbook assignment block for Recipefork authoring flows with cookbook loading state, multi-select assignment, and inline new-cookbook creation.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Card",
+        "Button",
+        "Input",
+        "Label",
+        "Badge",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Card",
+    "Button",
+    "Input",
+    "Label",
+    "Badge",
+    "icon"
+  ],
+  "default_preset": "inline-assignment",
+  "presets": {
+    "inline-assignment": {
+      "description": "Authoring-side cookbook assignment section with skeleton loading, cookbook chips/cards, and inline create-new-cookbook controls that run before final redirect.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "loading-state": "Skeleton or spinner state while cookbooks are fetched",
+          "cookbook-list": "Selectable cookbook rows with visibility and recipe counts",
+          "new-cookbook": "Inline title input and create/cancel controls for a new cookbook",
+          "assignment-feedback": "Success or partial-failure messaging when the recipe save succeeds but cookbook assignment fails"
+        }
+      }
+    }
+  },
+  "visual_brief": "This should feel like a natural part of publishing or saving a recipe, not an afterthought modal. The loading state should be obvious, the selection affordances should be light, and the new-cookbook path should not derail the primary authoring flow.",
+  "composition": {
+    "RecipeforkCookbookAssignment": "Card(recipefork-assignment) > [LoadingState | CookbookList + NewCookbookInline + Feedback]"
+  }
+}

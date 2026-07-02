@@ -41,6 +41,43 @@ async function runCliAsync(cwd: string, args: string, env?: NodeJS.ProcessEnv): 
   }
 }
 
+function makeV4Essence() {
+  return {
+    version: '4.0.0',
+    dna: {
+      theme: { id: 'clean', mode: 'light', shape: 'rounded' },
+      spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+      typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+      color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+      radius: { philosophy: 'rounded', base: 8 },
+      elevation: { system: 'layered', max_levels: 3 },
+      motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+      accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+      personality: ['professional'],
+    },
+    blueprint: {
+      sections: [
+        {
+          id: 'dashboard',
+          role: 'primary',
+          shell: 'sidebar-main',
+          features: ['auth'],
+          description: 'Dashboard section',
+          pages: [{ id: 'home', route: '/', layout: ['hero'] }],
+        },
+      ],
+      features: ['auth'],
+      routes: { '/': { section: 'dashboard', page: 'home' } },
+    },
+    meta: {
+      archetype: 'dashboard',
+      target: 'react',
+      platform: { type: 'spa', routing: 'history' },
+      guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+    },
+  };
+}
+
 describe('registry commands (e2e)', () => {
   let testDir: string;
 
@@ -1384,7 +1421,7 @@ describe('registry commands (e2e)', () => {
     expect(readFileSync(scaffoldPackPath, 'utf-8')).toContain('# Scaffold Pack');
   });
 
-  it('registry critique-file posts local source and essence to the hosted verifier', async () => {
+  it('registry critique-file remains a local compatibility alias', async () => {
     const requests: Array<{ url?: string; method?: string; body?: string }> = [];
     const server = createServer((req, res) => {
       let body = '';
@@ -1429,22 +1466,7 @@ describe('registry commands (e2e)', () => {
 
     writeFileSync(
       join(testDir, 'decantr.essence.json'),
-      JSON.stringify(
-        {
-          version: '2.0.0',
-          archetype: 'dashboard',
-          theme: { id: 'clean', mode: 'light' },
-          personality: ['professional'],
-          platform: { type: 'spa', routing: 'history' },
-          structure: [{ id: 'home', shell: 'sidebar-main', layout: ['hero'] }],
-          features: ['auth'],
-          density: { level: 'comfortable', content_gap: '1.5rem' },
-          guard: { mode: 'guided' },
-          target: 'react',
-        },
-        null,
-        2,
-      ),
+      JSON.stringify(makeV4Essence(), null, 2),
     );
     writeFileSync(
       join(testDir, 'Home.tsx'),
@@ -1466,30 +1488,11 @@ describe('registry commands (e2e)', () => {
 
     const json = JSON.parse(output);
     expect(json.$schema).toBe('https://decantr.ai/schemas/file-critique-report.v1.json');
-    expect(
-      requests.some((request) => {
-        if (
-          request.method !== 'POST' ||
-          !request.url?.includes('/v1/critique/file?namespace=%40official') ||
-          !request.body
-        ) {
-          return false;
-        }
-        try {
-          const posted = JSON.parse(request.body);
-          return (
-            posted.filePath === 'Home.tsx' &&
-            typeof posted.code === 'string' &&
-            posted.essence?.archetype === 'dashboard'
-          );
-        } catch {
-          return false;
-        }
-      }),
-    ).toBe(true);
+    expect(json.findings.length).toBeGreaterThan(0);
+    expect(requests.some((request) => request.url?.includes('/v1/critique/file'))).toBe(false);
   });
 
-  it('registry audit-project posts essence, optional dist, and optional source snapshots to the hosted verifier', async () => {
+  it('registry audit-project remains a local compatibility alias', async () => {
     const requests: Array<{ url?: string; method?: string; body?: string }> = [];
     const server = createServer((req, res) => {
       let body = '';
@@ -1615,22 +1618,7 @@ describe('registry commands (e2e)', () => {
 
     writeFileSync(
       join(testDir, 'decantr.essence.json'),
-      JSON.stringify(
-        {
-          version: '2.0.0',
-          archetype: 'dashboard',
-          theme: { id: 'clean', mode: 'light' },
-          personality: ['professional'],
-          platform: { type: 'spa', routing: 'history' },
-          structure: [{ id: 'home', shell: 'sidebar-main', layout: ['hero'] }],
-          features: ['auth'],
-          density: { level: 'comfortable', content_gap: '1.5rem' },
-          guard: { mode: 'guided' },
-          target: 'react',
-        },
-        null,
-        2,
-      ),
+      JSON.stringify(makeV4Essence(), null, 2),
     );
     mkdirSync(join(testDir, 'dist', 'assets'), { recursive: true });
     mkdirSync(join(testDir, 'src', 'pages'), { recursive: true });
@@ -1663,28 +1651,8 @@ describe('registry commands (e2e)', () => {
 
     const json = JSON.parse(output);
     expect(json.$schema).toBe('https://decantr.ai/schemas/project-audit-report.v1.json');
-    expect(
-      requests.some((request) => {
-        if (
-          request.method !== 'POST' ||
-          !request.url?.includes('/v1/audit/project?namespace=%40official') ||
-          !request.body
-        ) {
-          return false;
-        }
-        try {
-          const posted = JSON.parse(request.body);
-          return (
-            posted.essence?.archetype === 'dashboard' &&
-            typeof posted.dist?.indexHtml === 'string' &&
-            posted.dist?.assets?.['/assets/app.js']?.includes('console.log') &&
-            posted.sources?.files?.['src/pages/Home.tsx']?.includes('style')
-          );
-        } catch {
-          return false;
-        }
-      }),
-    ).toBe(true);
+    expect(json.summary.runtimeAuditChecked).toBe(true);
+    expect(requests.some((request) => request.url?.includes('/v1/audit/project'))).toBe(false);
   });
 
   it('forwards sort parameters for search and list commands', async () => {

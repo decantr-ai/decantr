@@ -1,0 +1,393 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "launch-campaign",
+  "role": "public",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Launch Campaign",
+  "description": "Public product-launch funnel for campaign-style launches, preorders, waitlists, crowdfunding-inspired reward tiers, product demos, maker stories, updates, checkout, press assets, and post-conversion sharing.",
+  "tags": [
+    "campaign",
+    "launch",
+    "marketing",
+    "conversion",
+    "preorder",
+    "waitlist",
+    "crowdfunding"
+  ],
+  "suggested_theme": {
+    "ids": [
+      "retro-arcade"
+    ],
+    "modes": [
+      "dark"
+    ],
+    "shapes": [
+      "sharp"
+    ]
+  },
+  "personality": [
+    "playful",
+    "campaign-driven",
+    "retro",
+    "conversion-focused",
+    "transparent"
+  ],
+  "visual_brief": "A campaign funnel that feels like a premium retro product drop: full-bleed cabinet atmosphere, strong centered safe area, physical product evidence, boxed-kit packaging, reward cartridges, campaign momentum, and honest launch caveats. Interaction surfaces must feel like physical controls with breathing room: rectangular buttons need generous x-padding, demo mode controls should cluster together, and scoreboard counters need padded interiors. Avoid generic SaaS landing-page structure, soft card grids, vague feature sections, pill CTAs, cramped controls, and decorative arcade motifs that do not support conversion.",
+  "voice": {
+    "tone": "Excited, direct, transparent, and maker-led. Sell the launch mission while staying honest about status and delivery.",
+    "cta_verbs": [
+      "Back",
+      "Reserve",
+      "Join",
+      "Unlock",
+      "Choose",
+      "Share",
+      "Watch"
+    ],
+    "avoid": [
+      "Submit",
+      "Buy now",
+      "Learn more",
+      "Revolutionary",
+      "Limited time!!!"
+    ],
+    "empty_states": "Use campaign-native copy: No updates yet, First backers will appear here, or Press assets are being packed.",
+    "errors": "Inline and specific. Preserve the pledge/reserve flow and never hide payment, fulfillment, or waitlist caveats.",
+    "loading": "Show stable bezels, counters, and manual panels immediately. Fill data without layout shift."
+  },
+  "features": [
+    "marketing",
+    "seo",
+    "analytics",
+    "conversion",
+    "campaign-progress",
+    "reward-tiers",
+    "preorder",
+    "waitlist",
+    "referrals",
+    "press-kit",
+    "updates",
+    "checkout"
+  ],
+  "pages": [
+    {
+      "id": "home",
+      "shell": "full-bleed",
+      "patterns": [
+        {
+          "pattern": "campaign-marquee-hero",
+          "preset": "product-kickstarter-cabinet",
+          "as": "launch-hero"
+        },
+        {
+          "pattern": "backer-progress-console",
+          "preset": "funding-console",
+          "as": "campaign-progress"
+        },
+        {
+          "pattern": "prototype-demo-bezel",
+          "preset": "demo-screen",
+          "as": "prototype-demo"
+        },
+        {
+          "pattern": "product-box-spec-panel",
+          "preset": "box-back",
+          "as": "product-specs"
+        },
+        {
+          "pattern": "reward-tier-selector",
+          "preset": "cartridge-row",
+          "as": "reward-tiers"
+        },
+        {
+          "pattern": "stretch-goal-ladder",
+          "preset": "level-map",
+          "as": "stretch-goals"
+        },
+        {
+          "pattern": "founder-comic-strip",
+          "preset": "story-panels",
+          "as": "maker-story"
+        },
+        {
+          "pattern": "backer-wall-ticker",
+          "preset": "ticker-wall",
+          "as": "supporter-proof"
+        },
+        {
+          "pattern": "continue-screen-cta",
+          "preset": "continue-screen",
+          "as": "final-cta"
+        }
+      ],
+      "default_layout": [
+        "campaign-marquee-hero",
+        "backer-progress-console",
+        "prototype-demo-bezel",
+        "product-box-spec-panel",
+        "reward-tier-selector",
+        "stretch-goal-ladder",
+        "founder-comic-strip",
+        "backer-wall-ticker",
+        "continue-screen-cta"
+      ],
+      "description": "Primary campaign funnel page from product reveal through pledge/reserve action.",
+      "directives": [
+        "Render the home page as a campaign funnel, not a generic product landing page.",
+        "Use campaign-native sections and avoid generic hero, features, pricing, testimonials, card-grid, and cta-banner substitutes.",
+        "Keep the first viewport full-bleed but place content inside a clear campaign cabinet safe area.",
+        "Show physical product evidence early: boxed kit, cartridge, controller, prototype UI, render, video, screenshot, packaging, or a stable visual placeholder.",
+        "Primary CTAs should use rectangular controller-button treatment with hard press states, not pill buttons.",
+        "Do not let button labels, icons, or LED counter text touch their borders; Retro Arcade should feel tactile, not cramped."
+      ]
+    },
+    {
+      "id": "rewards",
+      "shell": "full-bleed",
+      "patterns": [
+        {
+          "pattern": "reward-tier-selector",
+          "preset": "comparison-console",
+          "as": "reward-comparison"
+        },
+        {
+          "pattern": "product-box-spec-panel",
+          "preset": "manual-foldout",
+          "as": "reward-details"
+        },
+        {
+          "pattern": "backer-progress-console",
+          "preset": "funding-console",
+          "as": "reward-progress"
+        },
+        {
+          "pattern": "continue-screen-cta",
+          "preset": "continue-screen",
+          "as": "reward-cta"
+        }
+      ],
+      "default_layout": [
+        "reward-tier-selector",
+        "product-box-spec-panel",
+        "backer-progress-console",
+        "continue-screen-cta"
+      ],
+      "description": "Reward and preorder tier detail page.",
+      "directives": [
+        "Treat reward tiers as campaign packages or cartridges rather than SaaS pricing cards.",
+        "Selected reward tiers should snap into an active console state with hard borders and a mechanical press effect.",
+        "Expose inventory, delivery/access timing, and caveats near the tier action."
+      ]
+    },
+    {
+      "id": "updates",
+      "shell": "full-bleed",
+      "patterns": [
+        {
+          "pattern": "launch-update-log",
+          "preset": "update-console",
+          "as": "campaign-updates"
+        },
+        {
+          "pattern": "backer-progress-console",
+          "preset": "funding-console",
+          "as": "campaign-status"
+        },
+        {
+          "pattern": "continue-screen-cta",
+          "preset": "continue-screen",
+          "as": "updates-cta"
+        }
+      ],
+      "default_layout": [
+        "launch-update-log",
+        "backer-progress-console",
+        "continue-screen-cta"
+      ],
+      "description": "Campaign updates, fulfillment notes, and maker announcements.",
+      "directives": [
+        "Prioritize factual progress, blockers, unlocked milestones, and fulfillment status over blog-style marketing posts."
+      ]
+    },
+    {
+      "id": "story",
+      "shell": "full-bleed",
+      "patterns": [
+        {
+          "pattern": "founder-comic-strip",
+          "preset": "story-panels",
+          "as": "maker-story"
+        },
+        {
+          "pattern": "product-box-spec-panel",
+          "preset": "manual-foldout",
+          "as": "product-origin"
+        },
+        {
+          "pattern": "continue-screen-cta",
+          "preset": "continue-screen",
+          "as": "story-cta"
+        }
+      ],
+      "default_layout": [
+        "founder-comic-strip",
+        "product-box-spec-panel",
+        "continue-screen-cta"
+      ],
+      "description": "Maker story, origin, prototype journey, and campaign ask.",
+      "directives": [
+        "Tell a clear problem-prototype-proof-launch story with real product or maker evidence."
+      ]
+    },
+    {
+      "id": "demo",
+      "shell": "full-bleed",
+      "patterns": [
+        {
+          "pattern": "prototype-demo-bezel",
+          "preset": "demo-screen",
+          "as": "product-demo"
+        },
+        {
+          "pattern": "product-box-spec-panel",
+          "preset": "box-back",
+          "as": "demo-specs"
+        },
+        {
+          "pattern": "continue-screen-cta",
+          "preset": "continue-screen",
+          "as": "demo-cta"
+        }
+      ],
+      "default_layout": [
+        "prototype-demo-bezel",
+        "product-box-spec-panel",
+        "continue-screen-cta"
+      ],
+      "description": "Prototype or product demo page.",
+      "directives": [
+        "The demo page must show concrete product evidence in a stable media frame before asking for conversion.",
+        "Cluster demo mode controls together and separate the primary conversion action intentionally so controls do not appear randomly distributed."
+      ]
+    },
+    {
+      "id": "checkout",
+      "shell": "full-bleed",
+      "patterns": [
+        {
+          "pattern": "pledge-checkout-panel",
+          "preset": "pledge-flow",
+          "as": "pledge-checkout"
+        }
+      ],
+      "default_layout": [
+        "pledge-checkout-panel"
+      ],
+      "description": "Focused pledge, preorder, or waitlist reservation flow.",
+      "directives": [
+        "Keep checkout calm and readable. The retro theme should support trust, not overwhelm form completion.",
+        "Make payment timing, delivery/access expectations, and consent text explicit."
+      ]
+    },
+    {
+      "id": "thanks",
+      "shell": "full-bleed",
+      "patterns": [
+        {
+          "pattern": "continue-screen-cta",
+          "preset": "share-after-action",
+          "as": "success-screen"
+        },
+        {
+          "pattern": "share-quest-panel",
+          "preset": "referral-quest",
+          "as": "share-quest"
+        },
+        {
+          "pattern": "backer-wall-ticker",
+          "preset": "static-wall",
+          "as": "supporter-wall"
+        }
+      ],
+      "default_layout": [
+        "continue-screen-cta",
+        "share-quest-panel",
+        "backer-wall-ticker"
+      ],
+      "description": "Post-conversion thank-you, referral, and share page.",
+      "directives": [
+        "Lead with confirmation before asking for sharing.",
+        "Explain referral unlocks plainly and avoid manipulative sharing pressure."
+      ]
+    },
+    {
+      "id": "press",
+      "shell": "full-bleed",
+      "patterns": [
+        {
+          "pattern": "press-kit-shelf",
+          "preset": "press-page",
+          "as": "press-kit"
+        },
+        {
+          "pattern": "product-box-spec-panel",
+          "preset": "box-back",
+          "as": "press-facts"
+        }
+      ],
+      "default_layout": [
+        "press-kit-shelf",
+        "product-box-spec-panel"
+      ],
+      "description": "Press kit, launch facts, media assets, and contact information.",
+      "directives": [
+        "Press assets should be factual, inspectable, and easy to download or copy.",
+        "Avoid generic marketing cards; use shelf/manual/asset treatments."
+      ]
+    }
+  ],
+  "page_briefs": {
+    "home": "Full campaign funnel. First viewport uses campaign-marquee-hero with a physical product-theater visual, status counters, countdown, and direct pledge/reserve action. The hero should read like a premium Kickstarter cabinet: boxed kit, cartridge, controller deck, or product packaging rather than a generic UI mock. Hero CTAs use rectangular controller buttons with generous label/icon spacing. Progress console follows to establish momentum and its LED counters must have padded interiors, clear module gaps, and outer breathing room. Demo bezel shows concrete prototype/product evidence with related controls clustered together and the conversion action separated intentionally. Product box spec panel explains what is included and when it ships or unlocks. Reward tier selector lets visitors choose a campaign package. Stretch goal ladder shows shared milestones. Founder comic strip builds trust through maker story and prototype proof. Backer wall ticker adds social proof. Continue screen CTA closes with one decisive rectangular controller action.",
+    "rewards": "Reward detail page for comparing founder packs, preorder bundles, beta access, or collector editions. The page should expose price, contents, inventory, delivery/access timing, caveats, and selection actions without looking like SaaS pricing cards.",
+    "updates": "Campaign update page. Pinned latest update, category filters, factual update entries, progress console, and CTA. Updates should cover prototype, funding, shipping, stretch goals, and backer announcements.",
+    "story": "Maker story page. Comic/manual panels explain the problem, prototype journey, user signal, and why support matters. Product specs and campaign ask follow.",
+    "demo": "Product demo page. Large bezel-framed demo with controls and product evidence, followed by specs and a conversion CTA.",
+    "checkout": "Focused pledge or waitlist flow. Stepper, selected reward summary, supporter details, payment/reserve mode, order summary, and explicit confirmation action.",
+    "thanks": "Post-conversion page. Confirm the action, expose referral/share unlock progress, and show supporter wall without creating pressure.",
+    "press": "Press page with launch facts, media contact, logo/product/founder assets, screenshots, video, fact sheet, and usage notes."
+  },
+  "motion": {
+    "preference": "moderate",
+    "reduce_motion": true,
+    "page_transitions": "Short snap-in transitions for campaign sections. Disable ticker movement and scanline motion under reduced motion.",
+    "micro_interactions": "Buttons depress, counters tick, selected reward tiers snap into active state, and progress bars fill once per view."
+  },
+  "accessibility": {
+    "wcag_level": "AA",
+    "focus_visible": true,
+    "skip_nav": true,
+    "notes": [
+      "High-saturation colors must maintain readable contrast.",
+      "Motion-heavy ticker and scanline effects require reduced-motion fallbacks.",
+      "Campaign urgency must be expressed in text, not color alone."
+    ]
+  },
+  "dependencies": {
+    "patterns": {
+      "campaign-marquee-hero": ">=1.0.0",
+      "backer-progress-console": ">=1.0.0",
+      "reward-tier-selector": ">=1.0.0",
+      "stretch-goal-ladder": ">=1.0.0",
+      "prototype-demo-bezel": ">=1.0.0",
+      "product-box-spec-panel": ">=1.0.0",
+      "founder-comic-strip": ">=1.0.0",
+      "backer-wall-ticker": ">=1.0.0",
+      "press-kit-shelf": ">=1.0.0",
+      "continue-screen-cta": ">=1.0.0",
+      "pledge-checkout-panel": ">=1.0.0",
+      "launch-update-log": ">=1.0.0",
+      "share-quest-panel": ">=1.0.0"
+    }
+  }
+}

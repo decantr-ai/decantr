@@ -1,0 +1,620 @@
+{
+  "$schema": "https://decantr.ai/schemas/theme.v1.json",
+  "id": "retro-arcade",
+  "version": "1.0.0",
+  "name": "Retro Arcade",
+  "description": "Premium retro product-launch energy. Saturated cabinet plastics, boxed-toy packaging, pixel marquee typography, LED scoreboards, hard-edged controller buttons, campaign-safe full-bleed staging, and Kickstarter-style funnel moments that feel physical, collectible, and conversion-ready.",
+  "tags": [
+    "retro",
+    "arcade",
+    "campaign",
+    "launch",
+    "playful",
+    "conversion"
+  ],
+  "personality": "physical product launch cabinet + boxed toy set energy + hard rectangular controller buttons with generous x-padding + pixel marquee type + breathable LED scoreboard counters + product packaging hero + no pill CTAs + no soft shadows + vivid campaign color",
+  "seed": {
+    "primary": "#FF2E63",
+    "secondary": "#00E5FF",
+    "accent": "#FFE156",
+    "background": "#100B2D"
+  },
+  "palette": {
+    "background": {
+      "light": "#FFF6D6",
+      "dark": "#100B2D"
+    },
+    "surface": {
+      "light": "#FFFDF2",
+      "dark": "#17113D"
+    },
+    "surface-raised": {
+      "light": "#FFECC2",
+      "dark": "#24185C"
+    },
+    "border": {
+      "light": "#18112F",
+      "dark": "#FFF6D6"
+    },
+    "text": {
+      "light": "#18112F",
+      "dark": "#FFF6D6"
+    },
+    "text-muted": {
+      "light": "#6D587E",
+      "dark": "#BEB0D9"
+    },
+    "primary": {
+      "light": "#E60046",
+      "dark": "#FF2E63"
+    },
+    "primary-hover": {
+      "light": "#BD003A",
+      "dark": "#FF5C84"
+    },
+    "secondary": {
+      "light": "#008EA3",
+      "dark": "#00E5FF"
+    },
+    "secondary-hover": {
+      "light": "#006F80",
+      "dark": "#66F0FF"
+    },
+    "accent": {
+      "light": "#D39200",
+      "dark": "#FFE156"
+    },
+    "accent-hover": {
+      "light": "#A87300",
+      "dark": "#FFEA86"
+    }
+  },
+  "modes": [
+    "light",
+    "dark"
+  ],
+  "shapes": [
+    "sharp",
+    "rounded"
+  ],
+  "decantr_compat": ">=2.0.0",
+  "source": "community",
+  "decorators": {
+    "arcade-canvas": "Full-page cabinet backdrop with deep indigo base, subtle scanline texture, and generous safe-area gutters for launch content.",
+    "arcade-marquee": "High-contrast headline band with 4px border, alternating accent ticks, pixel display type, and tight uppercase rhythm.",
+    "arcade-bezel": "Screen-like frame with thick dark border, inset cyan edge, and flat screen surface for product demos or campaign modules.",
+    "arcade-cabinet-shell": "Physical cabinet wrapper for first-viewport product scenes, checkout kiosks, continue screens, and major funnel moments.",
+    "arcade-product-box": "Boxed product or cartridge visual treatment with hard outline, diagonal art fields, spine labels, inventory marks, and physical launch proof.",
+    "arcade-button": "Rectangular controller-style pressable control with 3px border, hard 6px offset shadow, saturated fill, active press translation, and generous horizontal padding so label/icon content never touches the walls.",
+    "arcade-controller-button": "Square or rectangular hardware button grammar for CTAs, mode tabs, icon controls, and reward selection. Avoid pill silhouettes and cramped label/icon spacing.",
+    "arcade-cartridge": "Reward tier shell shaped like a product cartridge or boxed founder pack, with top notch, status strip, price, contents, and active snap state.",
+    "arcade-ticket-rail": "Horizontal proof/ticker rail for backer activity, press mentions, referral progress, and campaign momentum.",
+    "arcade-token": "Hard-edged token badge with double border, notch-like details, uppercase label, and mono numeric counter support.",
+    "arcade-led-counter": "Segment-display metric treatment with mono tabular numbers, dark strip background, electric cyan/yellow digits, and enough internal padding for numbers to breathe.",
+    "arcade-scoreboard": "Large scoreboard module for funding progress, countdowns, launch KPIs, and proof counters. Counters should be grouped as display modules with clear gaps and inset breathing room.",
+    "arcade-pixel-border": "Hard stepped border treatment using square corners, 2px inner highlight, and no blur.",
+    "arcade-progress-track": "Thick campaign progress bar with segmented tick marks, hard border, and high-contrast fill states.",
+    "arcade-manual-panel": "Instruction-manual surface with off-white fill, heavy border, numbered labels, and sticker-like accent tags.",
+    "arcade-sticker": "Rotated small label with saturated fill, hard border, and playful campaign note styling."
+  },
+  "spatial": {
+    "density_bias": -1,
+    "content_gap_shift": 2,
+    "section_padding": "7rem",
+    "card_wrapping": "none",
+    "surface_override": "Use full-width bands, cabinet shells, boxed product scenes, cartridge racks, scoreboards, rails, counters, and instruction panels instead of generic card grids."
+  },
+  "motion": {
+    "preference": "moderate",
+    "reduce_motion": false,
+    "entrance": "snap-in",
+    "micro": "press",
+    "timing": "steps(2, end)",
+    "durations": {
+      "hover": "90ms",
+      "entrance": "260ms",
+      "instant": "50ms",
+      "fast": "120ms",
+      "base": "220ms",
+      "slow": "380ms",
+      "slower": "540ms",
+      "stagger": "55ms"
+    },
+    "easings": {
+      "ease": "cubic-bezier(0.3, 0, 0.1, 1)",
+      "easeOut": "cubic-bezier(0.16, 1, 0.3, 1)",
+      "easeIn": "cubic-bezier(0.7, 0, 0.84, 0)",
+      "spring": "cubic-bezier(0.34, 1.56, 0.64, 1)"
+    }
+  },
+  "effects": {
+    "enabled": true,
+    "intensity": "medium",
+    "type_mapping": {
+      "page_root": [
+        "arcade-canvas"
+      ],
+      "hero_section": [
+        "arcade-marquee",
+        "arcade-cabinet-shell",
+        "arcade-product-box"
+      ],
+      "feature_section": [
+        "arcade-manual-panel",
+        "arcade-pixel-border"
+      ],
+      "cta_button": [
+        "arcade-button",
+        "arcade-controller-button"
+      ],
+      "reward_tier": [
+        "arcade-cartridge"
+      ],
+      "metric": [
+        "arcade-led-counter",
+        "arcade-scoreboard"
+      ],
+      "progress": [
+        "arcade-progress-track"
+      ],
+      "badge": [
+        "arcade-token",
+        "arcade-sticker"
+      ],
+      "ticker": [
+        "arcade-ticket-rail"
+      ]
+    },
+    "optional_effects": {
+      "scanlines": true,
+      "pixel_ticks": true,
+      "marquee_chase": true,
+      "button_press_depth": true,
+      "product_float": true,
+      "soft_glow": false,
+      "gradient_orbs": false
+    },
+    "component_fallback": {
+      "Card": "arcade-manual-panel",
+      "Button": "arcade-button",
+      "Badge": "arcade-token",
+      "Progress": "arcade-progress-track",
+      "PricingCard": "arcade-cartridge",
+      "HeroMedia": "arcade-product-box"
+    }
+  },
+  "pattern_preferences": {
+    "prefer": [
+      "campaign-marquee-hero",
+      "product-box-spec-panel",
+      "backer-progress-console",
+      "reward-tier-selector",
+      "stretch-goal-ladder",
+      "prototype-demo-bezel",
+      "continue-screen-cta"
+    ],
+    "avoid": [
+      "card-grid",
+      "hero",
+      "hero-split",
+      "cta-banner",
+      "pill-navigation",
+      "soft-card-pricing"
+    ],
+    "default_presets": {
+      "campaign-marquee-hero": "product-kickstarter-cabinet",
+      "reward-tier-selector": "cartridge-row",
+      "prototype-demo-bezel": "demo-screen",
+      "product-box-spec-panel": "box-back",
+      "continue-screen-cta": "continue-screen"
+    }
+  },
+  "shell": {
+    "preferred": [
+      "full-bleed",
+      "top-nav-main",
+      "minimal-header"
+    ],
+    "avoid": [
+      "sidebar-main",
+      "terminal-split"
+    ],
+    "nav_style": "cabinet-rail",
+    "default_nav_state": "expanded",
+    "root": "arcade-canvas",
+    "nav": "arcade-marquee",
+    "header": "arcade-bezel",
+    "brand": "arcade-led-counter"
+  },
+  "typography_hints": {
+    "scale": "modular",
+    "heading_weight": 700,
+    "body_weight": 500
+  },
+  "motion_hints": {
+    "preference": "moderate",
+    "reduce_motion_default": true
+  },
+  "radius": {
+    "philosophy": "sharp",
+    "base": 4
+  },
+  "decorator_definitions": {
+    "arcade-canvas": {
+      "description": "Full-page cabinet backdrop with deep indigo base, subtle scanline texture, and generous safe-area gutters for launch content.",
+      "intent": "Use on page roots and full-bleed sections. The canvas should feel immersive while preserving a centered campaign safe area.",
+      "suggested_properties": {
+        "background-color": "#100B2D",
+        "background-image": "linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px)",
+        "background-size": "100% 4px",
+        "color": "#FFF6D6",
+        "min-height": "100vh"
+      },
+      "pairs_with": [
+        "arcade-marquee",
+        "arcade-bezel"
+      ],
+      "usage": [
+        "Page roots",
+        "Full-bleed campaign bands",
+        "Launch homepages"
+      ]
+    },
+    "arcade-marquee": {
+      "description": "High-contrast headline band with 4px border, alternating accent ticks, pixel display type, and tight uppercase rhythm.",
+      "intent": "Use for hero headlines, section titles, and primary campaign identity. The marquee must be a dominant visual signal.",
+      "suggested_properties": {
+        "border": "4px solid #FFF6D6",
+        "background": "#FF2E63",
+        "color": "#FFF6D6",
+        "font-family": "'Press Start 2P', 'Space Grotesk', ui-sans-serif, sans-serif",
+        "text-transform": "uppercase",
+        "letter-spacing": "0"
+      },
+      "pairs_with": [
+        "arcade-canvas",
+        "arcade-button"
+      ],
+      "usage": [
+        "Hero labels",
+        "Section headers",
+        "Campaign status bands"
+      ]
+    },
+    "arcade-bezel": {
+      "description": "Screen-like frame with thick dark border, inset cyan edge, and flat screen surface for product demos or campaign modules.",
+      "intent": "Use for product demos, progress consoles, and pledge modules. The bezel replaces generic cards.",
+      "suggested_properties": {
+        "background": "#17113D",
+        "border": "5px solid #FFF6D6",
+        "box-shadow": "inset 0 0 0 3px #00E5FF",
+        "border-radius": "6px",
+        "padding": "24px"
+      },
+      "pairs_with": [
+        "arcade-led-counter",
+        "arcade-progress-track"
+      ],
+      "usage": [
+        "Demo screens",
+        "Progress modules",
+        "Campaign panels"
+      ]
+    },
+    "arcade-cabinet-shell": {
+      "description": "Physical cabinet wrapper for first-viewport product scenes, checkout kiosks, continue screens, and major funnel moments.",
+      "intent": "Use when a section should feel like a physical launch object rather than a web card. It is ideal for the hero product stage, conversion kiosk, and final continue screen.",
+      "suggested_properties": {
+        "background": "linear-gradient(180deg, rgba(255,246,214,0.06), transparent 34%), #17113D",
+        "border": "5px solid #FFF6D6",
+        "border-radius": "4px",
+        "box-shadow": "inset 0 0 0 3px #00E5FF, 12px 12px 0 #050318",
+        "padding": "24px"
+      },
+      "pairs_with": [
+        "arcade-product-box",
+        "arcade-scoreboard",
+        "arcade-button"
+      ],
+      "usage": [
+        "Product hero stages",
+        "Checkout kiosks",
+        "Continue screens",
+        "Major campaign modules"
+      ]
+    },
+    "arcade-product-box": {
+      "description": "Boxed product or cartridge visual treatment with hard outline, diagonal art fields, spine labels, inventory marks, and physical launch proof.",
+      "intent": "Use above the fold to make the product unmistakable. This should read like packaging, a creator kit, a hardware deck, a cartridge, or a collectible product box.",
+      "suggested_properties": {
+        "background": "#FFFDF2",
+        "color": "#18112F",
+        "border": "4px solid #18112F",
+        "border-radius": "4px",
+        "box-shadow": "10px 10px 0 #050318"
+      },
+      "pairs_with": [
+        "arcade-cabinet-shell",
+        "arcade-marquee",
+        "arcade-cartridge"
+      ],
+      "usage": [
+        "Hero product visuals",
+        "Packaging mockups",
+        "Product evidence slots",
+        "Press asset previews"
+      ]
+    },
+    "arcade-button": {
+      "description": "Rectangular controller-style pressable control with 3px border, hard 6px offset shadow, saturated fill, and active press translation.",
+      "intent": "Use for all primary and secondary actions. Buttons should feel like raised hardware keys that depress into the cabinet surface. Avoid pill shapes for Retro Arcade CTAs.",
+      "suggested_properties": {
+        "background": "#FFE156",
+        "color": "#18112F",
+        "border": "3px solid #18112F",
+        "border-radius": "4px",
+        "box-shadow": "6px 6px 0 #18112F",
+        "min-height": "3.2rem",
+        "min-width": "9.5rem",
+        "padding": "0.82rem 1.35rem",
+        "gap": "0.72rem",
+        "font-weight": "800",
+        "transition": "transform 90ms ease-out, box-shadow 90ms ease-out"
+      },
+      "pairs_with": [
+        "arcade-marquee",
+        "arcade-token"
+      ],
+      "usage": [
+        "Primary CTAs",
+        "Reward selection",
+        "Checkout actions",
+        "Share buttons"
+      ]
+    },
+    "arcade-controller-button": {
+      "description": "Square or rectangular hardware button grammar for CTAs, icon controls, mode tabs, and reward selection.",
+      "intent": "Use when a button should feel like an 80s controller or cabinet input. Press states should translate and collapse the hard shadow.",
+      "suggested_properties": {
+        "border": "3px solid #18112F",
+        "border-radius": "4px",
+        "background": "#00E5FF",
+        "box-shadow": "6px 6px 0 #18112F",
+        "padding": "0.82rem 1.35rem",
+        "gap": "0.72rem",
+        "transform-active": "translate(6px, 6px)"
+      },
+      "pairs_with": [
+        "arcade-button",
+        "arcade-bezel"
+      ],
+      "usage": [
+        "Mode tabs",
+        "Icon controls",
+        "Demo controls",
+        "Secondary CTAs"
+      ]
+    },
+    "arcade-cartridge": {
+      "description": "Reward tier shell shaped like a product cartridge or boxed founder pack.",
+      "intent": "Use instead of pricing cards. Each tier should include a notch, label, price, inventory strip, contents, and a clearly active snap state.",
+      "suggested_properties": {
+        "background": "#FFFDF2",
+        "border": "4px solid #18112F",
+        "border-radius": "4px",
+        "box-shadow": "8px 8px 0 #050318",
+        "min-height": "28rem"
+      },
+      "pairs_with": [
+        "arcade-button",
+        "arcade-progress-track"
+      ],
+      "usage": [
+        "Reward tiers",
+        "Preorder bundles",
+        "Founder packs",
+        "Selectable campaign packages"
+      ]
+    },
+    "arcade-token": {
+      "description": "Hard-edged token badge with double border, notch-like details, uppercase label, and mono numeric counter support.",
+      "intent": "Use for compact status, backer levels, limited-run labels, and pledge tokens.",
+      "suggested_properties": {
+        "border": "3px double #18112F",
+        "border-radius": "4px",
+        "background": "#FFE156",
+        "color": "#18112F",
+        "font-weight": "800",
+        "text-transform": "uppercase"
+      },
+      "pairs_with": [
+        "arcade-button",
+        "arcade-led-counter"
+      ],
+      "usage": [
+        "Badges",
+        "Backer counts",
+        "Tier markers",
+        "Campaign state chips"
+      ]
+    },
+    "arcade-scoreboard": {
+      "description": "Large scoreboard module for funding progress, countdowns, launch KPIs, and proof counters.",
+      "intent": "Use when metrics should feel public, live, and trustworthy. Pair counters with labels and progress text so the data stays accessible. Leave visible breathing room between the outer bezel, status label, counter modules, and progress track.",
+      "suggested_properties": {
+        "background": "linear-gradient(180deg, #24185C 0%, #17113D 100%)",
+        "border": "5px solid #FFF6D6",
+        "box-shadow": "inset 0 0 0 3px #00E5FF, 12px 12px 0 #050318",
+        "padding": "1.45rem",
+        "gap": "1.45rem"
+      },
+      "pairs_with": [
+        "arcade-led-counter",
+        "arcade-progress-track"
+      ],
+      "usage": [
+        "Funding consoles",
+        "Countdown strips",
+        "Campaign proof sections",
+        "Order summaries"
+      ]
+    },
+    "arcade-ticket-rail": {
+      "description": "Horizontal proof/ticker rail for backer activity, press mentions, referral progress, and campaign momentum.",
+      "intent": "Use as a full-width band, not a card. Keep ticker copy short and duplicate content for continuous marquee motion with reduced-motion fallback.",
+      "suggested_properties": {
+        "background": "#FF2E63",
+        "color": "#FFF6D6",
+        "border-block": "4px solid #FFF6D6",
+        "overflow": "hidden"
+      },
+      "pairs_with": [
+        "arcade-scoreboard",
+        "arcade-sticker"
+      ],
+      "usage": [
+        "Backer tickers",
+        "Press mention rails",
+        "Referral progress",
+        "Campaign proof bands"
+      ]
+    },
+    "arcade-led-counter": {
+      "description": "Segment-display metric treatment with mono tabular numbers, dark strip background, and electric cyan/yellow digits.",
+      "intent": "Use for funding totals, countdowns, backer counts, and reward inventory. Numbers must be highly legible and never pressed against the border.",
+      "suggested_properties": {
+        "background": "#060417",
+        "color": "#00E5FF",
+        "border": "3px solid #FFE156",
+        "font-family": "'IBM Plex Mono', ui-monospace, monospace",
+        "font-variant-numeric": "tabular-nums",
+        "min-height": "7.5rem",
+        "padding": "1.15rem 1.25rem",
+        "gap": "0.55rem"
+      },
+      "pairs_with": [
+        "arcade-bezel",
+        "arcade-progress-track"
+      ],
+      "usage": [
+        "Metric strips",
+        "Counters",
+        "Campaign timers",
+        "Funding totals"
+      ]
+    },
+    "arcade-pixel-border": {
+      "description": "Hard stepped border treatment using square corners, 2px inner highlight, and no blur.",
+      "intent": "Use when a section needs retro structure without becoming another card.",
+      "suggested_properties": {
+        "border": "4px solid #18112F",
+        "box-shadow": "inset 0 0 0 2px #FFF6D6",
+        "border-radius": "0",
+        "background": "#FFFDF2"
+      },
+      "pairs_with": [
+        "arcade-sticker",
+        "arcade-manual-panel"
+      ],
+      "usage": [
+        "Spec panels",
+        "Manual surfaces",
+        "Tier rows",
+        "Story panels"
+      ]
+    },
+    "arcade-progress-track": {
+      "description": "Thick campaign progress bar with segmented tick marks, hard border, and high-contrast fill states.",
+      "intent": "Use for funding, stretch goals, tier availability, and onboarding completion. Progress should feel like campaign momentum.",
+      "suggested_properties": {
+        "height": "18px",
+        "border": "3px solid #FFF6D6",
+        "background": "repeating-linear-gradient(90deg, #24185C 0 16px, #17113D 16px 20px)",
+        "border-radius": "4px",
+        "overflow": "hidden"
+      },
+      "pairs_with": [
+        "arcade-led-counter",
+        "arcade-token"
+      ],
+      "usage": [
+        "Funding progress",
+        "Stretch goals",
+        "Inventory meters",
+        "Referral progress"
+      ]
+    },
+    "arcade-manual-panel": {
+      "description": "Instruction-manual surface with off-white fill, heavy border, numbered labels, and sticker-like accent tags.",
+      "intent": "Use for explanatory sections, product specs, story steps, and launch instructions. This replaces generic marketing cards.",
+      "suggested_properties": {
+        "background": "#FFFDF2",
+        "color": "#18112F",
+        "border": "3px solid #18112F",
+        "border-radius": "6px",
+        "padding": "24px"
+      },
+      "pairs_with": [
+        "arcade-sticker",
+        "arcade-pixel-border"
+      ],
+      "usage": [
+        "Product specs",
+        "How-it-works sections",
+        "Founder story",
+        "FAQ/manual content"
+      ]
+    },
+    "arcade-sticker": {
+      "description": "Rotated small label with saturated fill, hard border, and playful campaign note styling.",
+      "intent": "Use sparingly for limited-run notes, shipping states, early-bird labels, and proof cues.",
+      "suggested_properties": {
+        "background": "#00E5FF",
+        "color": "#18112F",
+        "border": "2px solid #18112F",
+        "border-radius": "4px",
+        "padding": "4px 10px",
+        "font-weight": "800",
+        "text-transform": "uppercase",
+        "transform": "rotate(-2deg)"
+      },
+      "pairs_with": [
+        "arcade-manual-panel",
+        "arcade-button"
+      ],
+      "usage": [
+        "Limited labels",
+        "Launch notes",
+        "Inventory tags",
+        "Proof badges"
+      ]
+    }
+  },
+  "typography": {
+    "display": "'Press Start 2P', 'Space Grotesk', ui-sans-serif, sans-serif",
+    "body": "'Space Grotesk', 'Inter', ui-sans-serif, system-ui, sans-serif",
+    "mono": "'IBM Plex Mono', 'JetBrains Mono', ui-monospace, monospace"
+  },
+  "elevation": {
+    "1": {
+      "light": "none",
+      "dark": "none"
+    },
+    "2": {
+      "light": "3px 3px 0 #18112F",
+      "dark": "3px 3px 0 #060417"
+    },
+    "3": {
+      "light": "5px 5px 0 #18112F",
+      "dark": "5px 5px 0 #060417"
+    },
+    "4": {
+      "light": "7px 7px 0 #18112F",
+      "dark": "7px 7px 0 #060417"
+    },
+    "5": {
+      "light": "9px 9px 0 #18112F",
+      "dark": "9px 9px 0 #060417"
+    }
+  }
+}

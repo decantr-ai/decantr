@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Audit the hosted Decantr public API surfaces that power portal/CLI/MCP reads.
+ * Audit the hosted Decantr content API surfaces that power CLI/MCP reads.
  *
  * Usage:
  *   node scripts/audit-public-api.mjs
@@ -11,24 +11,19 @@
  *   node scripts/audit-public-api.mjs --fail-on-error
  *
  * Environment variables:
- *   REGISTRY_URL - Public API base URL (default: https://api.decantr.ai/v1)
- *   CONTENT_NAMESPACE - Namespace used for registry list/summary checks (default: @official)
- *   REGISTRY_API_KEY / DECANTR_API_KEY / PUBLIC_API_AUDIT_API_KEY - Optional key for authenticated hosted analysis checks.
+ *   DECANTR_API_URL - Public content API base URL (default: https://api.decantr.ai/v1)
+ *   REGISTRY_URL - Legacy compatibility alias for DECANTR_API_URL
+ *   CONTENT_NAMESPACE - Namespace used for content list/summary checks (default: @official)
  *   FAIL_ON_PUBLIC_API_ERROR - Set to "true" to exit non-zero when any check fails
- *   PUBLIC_API_AUDIT_CORE_ONLY - Set to "true" to skip hosted pack-select and verifier endpoints
+ *   PUBLIC_API_AUDIT_CORE_ONLY - Set to "true" to skip hosted pack-select
  */
 
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 
 const args = process.argv.slice(2);
-const REGISTRY_URL = process.env.REGISTRY_URL || 'https://api.decantr.ai/v1';
+const DECANTR_API_URL = process.env.DECANTR_API_URL || process.env.REGISTRY_URL || 'https://api.decantr.ai/v1';
 const CONTENT_NAMESPACE = process.env.CONTENT_NAMESPACE || '@official';
-const API_KEY =
-  process.env.REGISTRY_API_KEY ||
-  process.env.DECANTR_API_KEY ||
-  process.env.PUBLIC_API_AUDIT_API_KEY ||
-  '';
 const REPORT_PATH =
   args.find((arg) => arg.startsWith('--report-json='))?.slice('--report-json='.length) || null;
 const SUMMARY_PATH =
@@ -38,8 +33,6 @@ const FAIL_ON_ERROR =
 const CORE_ONLY =
   args.includes('--core-only') || process.env.PUBLIC_API_AUDIT_CORE_ONLY === 'true';
 const INCLUDE_HOSTED_PACK_SELECT = !CORE_ONLY;
-const INCLUDE_HOSTED_CRITIQUE = !CORE_ONLY;
-const INCLUDE_HOSTED_PROJECT_AUDIT = !CORE_ONLY;
 
 function ensureParentDir(path) {
   mkdirSync(dirname(path), { recursive: true });
@@ -49,15 +42,8 @@ function isObject(value) {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function hostedAnalysisHeaders() {
-  return {
-    'Content-Type': 'application/json',
-    ...(API_KEY ? { Authorization: `Bearer ${API_KEY}` } : {}),
-  };
-}
-
 async function fetchJson(path, init) {
-  const response = await fetch(`${REGISTRY_URL}${path}`, init);
+  const response = await fetch(`${DECANTR_API_URL}${path}`, init);
   const text = await response.text();
   let json = null;
 
@@ -190,74 +176,6 @@ const CHECKS = [
       },
     },
   ] : []),
-  ...(INCLUDE_HOSTED_CRITIQUE ? [
-    {
-      name: 'hosted-file-critique',
-      path: `/critique/file?namespace=${encodeURIComponent(CONTENT_NAMESPACE)}`,
-      init: {
-        method: 'POST',
-        headers: hostedAnalysisHeaders(),
-        body: JSON.stringify({
-          essence: SAMPLE_ESSENCE,
-          filePath: 'src/pages/Home.tsx',
-          code: '<button style={{ color: "#ff00ff" }}>Click me</button>',
-        }),
-      },
-      validate(response) {
-        if (!API_KEY) {
-          return response.status === 401;
-        }
-        return response.ok &&
-          isObject(response.json) &&
-          response.json.$schema === 'https://decantr.ai/schemas/file-critique-report.v1.json';
-      },
-      details(response) {
-        if (!API_KEY) {
-          return response.status === 401 ? 'auth required as expected' : response.text;
-        }
-        if (isObject(response.json)) {
-          return `overall=${response.json.overall ?? 'n/a'} findings=${Array.isArray(response.json.findings) ? response.json.findings.length : 'n/a'}`;
-        }
-        return response.text;
-      },
-    },
-  ] : []),
-  ...(INCLUDE_HOSTED_PROJECT_AUDIT ? [
-    {
-      name: 'hosted-project-audit',
-      path: `/audit/project?namespace=${encodeURIComponent(CONTENT_NAMESPACE)}`,
-      init: {
-        method: 'POST',
-        headers: hostedAnalysisHeaders(),
-        body: JSON.stringify({
-          essence: SAMPLE_ESSENCE,
-          dist: {
-            indexHtml: '<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Audit</title></head><body><div id="root"></div><script type="module" src="/assets/app.js"></script></body></html>',
-            assets: {
-              '/assets/app.js': 'console.log("/");',
-            },
-          },
-        }),
-      },
-      validate(response) {
-        if (!API_KEY) {
-          return response.status === 401;
-        }
-        return response.ok &&
-          isObject(response.json) &&
-          response.json.$schema === 'https://decantr.ai/schemas/project-audit-report.v1.json';
-      },
-      details(response) {
-        if (!API_KEY) {
-          return response.status === 401 ? 'auth required as expected' : response.text;
-        }
-        if (isObject(response.json?.summary)) {
-          return `runtime_checked=${response.json.summary.runtimeAuditChecked ?? 'n/a'} warnings=${response.json.summary.warnCount ?? 'n/a'}`;
-        }
-        return response.text;
-      },
-    },
-  ] : []),
   {
     name: 'public-search',
     path: '/search?q=portfolio&type=blueprint&limit=1',
@@ -297,7 +215,7 @@ const CHECKS = [
     },
   },
   {
-    name: 'registry-intelligence-summary',
+    name: 'content-intelligence-summary',
     path: `/intelligence/summary?namespace=${encodeURIComponent(CONTENT_NAMESPACE)}`,
     validate(response) {
       return response.ok &&
@@ -330,7 +248,7 @@ function buildMarkdownSummary(report) {
     '# Public API Audit',
     '',
     `- Audited at: ${report.auditedAt}`,
-    `- Registry: ${report.registryUrl}`,
+    `- Content API: ${report.apiUrl}`,
     `- Namespace: ${report.namespace}`,
     '',
     '| Check | Status | Passed | Details |',
@@ -386,7 +304,7 @@ async function main() {
 
   const report = {
     auditedAt: new Date().toISOString(),
-    registryUrl: REGISTRY_URL,
+    apiUrl: DECANTR_API_URL,
     namespace: CONTENT_NAMESPACE,
     summary: {
       total: results.length,

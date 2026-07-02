@@ -1,0 +1,108 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "webhook-manager",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Webhook Manager",
+  "description": "Webhook endpoint configuration, event filtering, delivery monitoring, and retry management for platform integrations.",
+  "tags": [
+    "webhooks",
+    "integrations",
+    "events",
+    "delivery",
+    "retry"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "webhook manager",
+        "webhook configuration",
+        "webhook endpoints",
+        "event subscriptions",
+        "webhook delivery"
+      ],
+      "secondary": [
+        "delivery log",
+        "retry logic",
+        "event filtering",
+        "webhook testing",
+        "payload inspection"
+      ],
+      "negative": [
+        "no-webhooks",
+        "polling-only"
+      ]
+    },
+    "implies": [
+      "api-console"
+    ],
+    "weight": 0.6,
+    "tier": "optional"
+  },
+  "pages": [
+    {
+      "id": "endpoints",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "endpoints-table"
+        }
+      ],
+      "default_layout": [
+        "endpoints-table"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "endpoint-detail",
+      "patterns": [
+        {
+          "pattern": "form-sections",
+          "preset": "standard",
+          "as": "endpoint-config"
+        },
+        {
+          "pattern": "webhook-debugger",
+          "preset": "live",
+          "as": "delivery-log"
+        }
+      ],
+      "default_layout": [
+        "endpoint-config",
+        "delivery-log"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "endpoints": "Webhook endpoints list in a data table with columns for URL, subscribed events count, status toggle, success rate, and last triggered timestamp. Create-endpoint button in the header. Each row is clickable to navigate to endpoint detail. Bulk actions for enabling, disabling, and deleting endpoints.",
+    "endpoint-detail": "Endpoint configuration and monitoring page. Top section is a form with URL field, secret display, event type multi-select with category grouping, and active toggle. Below, a live webhook debugger shows a streaming delivery log with expandable rows revealing request headers, payload JSON, response status, and latency. Retry button on failed deliveries."
+  },
+  "features": [
+    "webhooks",
+    "event-filtering",
+    "retry-logic"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "data-table": "^1.0.0",
+      "form-sections": "^1.0.0",
+      "webhook-debugger": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  }
+}

@@ -1,0 +1,115 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "command-palette",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Command Palette",
+  "description": "Cmd+K style command search overlay with fuzzy search, categories, and keyboard navigation.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full command palette with categories and recent commands",
+      "components": [
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_fixed _inset0 _flex _center _z[100] _bg[rgba(0,0,0,0.8)]",
+        "slots": {
+          "search": "Fuzzy search input",
+          "results": "Command list with categories",
+          "preview": "Optional command preview/help",
+          "recent": "Recent commands section"
+        }
+      }
+    },
+    "minimal": {
+      "description": "Simple search-only command palette",
+      "components": [
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_fixed _inset0 _flex _center _z[100] _bg[rgba(0,0,0,0.8)]",
+        "slots": {
+          "search": "Search input",
+          "results": "Flat command list"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_fixed _inset0 _flex _center _z[100]",
+    "slots": {
+      "search": "Fuzzy search input",
+      "results": "Command list",
+      "preview": "Command preview"
+    }
+  },
+  "features": [
+    "fuzzy-search",
+    "keyboard-navigation",
+    "command-categories",
+    "shortcut-hints",
+    "recent-commands"
+  ],
+  "keyboard_shortcuts": {
+    "Ctrl+K": "Open palette",
+    "Cmd+K": "Open palette (Mac)",
+    "Escape": "Close palette",
+    "ArrowUp": "Previous command",
+    "ArrowDown": "Next command",
+    "Enter": "Execute command"
+  },
+  "visual_brief": "Centered modal overlay with a large search input at the top featuring a magnifying glass icon and placeholder text ('Type a command...'). Below the input, a scrollable results list shows matched commands grouped by category (Navigation, Actions, Settings) with muted category headers. Each result row displays an icon on the left, command name in medium weight, description in muted text, and a keyboard shortcut badge on the right. The currently selected item has a highlighted surface background. The overlay has a backdrop blur and rounded corners with a subtle border.",
+  "layout_hints": {
+    "result_priority": "Search input is the hero. Results should read like a decisive command list, not a generic menu. Category grouping must support scanning without dominating the surface.",
+    "overlay_balance": "The palette should feel compact and intentional. Do not let preview panels, badges, or secondary metadata turn it into a cluttered dialog.",
+    "shortcut_visibility": "Keyboard hints should support command discovery, but should not overpower the command label and description.",
+    "required_wrapping": "The d-palette element MUST be rendered inside d-modal[data-align=\"top\"] with a d-modal-backdrop sibling. Without the d-modal wrapper the palette renders as a top-level full-width strip pinned to the viewport. The d-modal provides positioning + max-width centering; d-modal-backdrop provides scrim + click-to-close. This is non-negotiable.",
+    "section_grouping": "Commands MUST be grouped into sections via d-palette-section eyebrow rows. The blueprint provides `navigation.command_palette.commands` with explicit `section` strings (e.g., \"Navigation\", \"Account\") — honor them. A flat alphabetical list is wrong.",
+    "row_anatomy": "Each d-palette-row has 3 slots: [Lucide icon (16px) | label (text-sm) | d-kbd hotkey (right-aligned mono)]. The hotkey slot can be empty for commands without bindings, but the slot rhythm must be preserved for visual alignment."
+  },
+  "responsive": {
+    "mobile": "Palette takes full screen width with slight horizontal margin. Results list fills available height. No keyboard shortcut badges shown. Touch-optimized row heights.",
+    "tablet": "Centered overlay at 560px width. Standard row heights with shortcut badges visible.",
+    "desktop": "Centered overlay at 640px max-width. Full keyboard navigation with shortcut badges. Preview panel optionally visible on the right for selected commands."
+  },
+  "motion": {
+    "micro": "Result hover, selection, and shortcut emphasis may animate subtly over 120-180ms.",
+    "transitions": "Palette open, close, and result filtering should feel immediate but polished: fade and slight scale or slide over 150-220ms."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "keyboard-navigation",
+    "focus-trap",
+    "click-select"
+  ],
+  "accessibility": {
+    "role": "dialog",
+    "aria-label": "Command palette",
+    "keyboard": [
+      "Arrow keys move between results.",
+      "Enter activates the selected command.",
+      "Escape closes the palette and returns focus to the invoking trigger."
+    ],
+    "announcements": [
+      "Result count and current selection should be announced clearly as the query changes."
+    ],
+    "focus_management": "When the palette opens, move focus to the search field. On close, restore focus to the invoking control or command trigger."
+  }
+}

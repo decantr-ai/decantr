@@ -1,0 +1,108 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "marketing-pipeline",
+  "role": "public",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Pipeline Studio Landing",
+  "description": "Public marketing landing page for a data pipeline studio. Vision hero, feature highlights, how-it-works walkthrough, pricing tiers, and call-to-action.",
+  "tags": [
+    "data",
+    "marketing",
+    "landing",
+    "pipeline",
+    "seo"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "pipeline landing page",
+        "data pipeline marketing",
+        "etl marketing",
+        "pipeline studio landing"
+      ],
+      "secondary": [
+        "data platform marketing",
+        "pipeline website",
+        "data tool landing",
+        "etl landing page"
+      ],
+      "negative": []
+    },
+    "implies": [
+      "pipeline-builder"
+    ],
+    "weight": 0.6,
+    "tier": "optional"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "vision",
+          "as": "hero"
+        },
+        {
+          "pattern": "features",
+          "preset": "standard",
+          "as": "features"
+        },
+        {
+          "pattern": "how-it-works",
+          "preset": "standard",
+          "as": "how-it-works"
+        },
+        {
+          "pattern": "pricing",
+          "preset": "standard",
+          "as": "pricing"
+        },
+        {
+          "pattern": "cta-section",
+          "preset": "standard",
+          "as": "cta"
+        }
+      ],
+      "default_layout": [
+        "hero",
+        "features",
+        "how-it-works",
+        "pricing",
+        "cta-section"
+      ],
+      "shell": "top-nav-footer"
+    }
+  ],
+  "page_briefs": {
+    "home": "Pipeline studio landing at /. Vision hero with bold headline ('Build pipelines visually, run them reliably') over an animated canvas preview showing nodes connecting in real time. Features section with icon cards for visual builder, 100+ connectors, SQL transforms, and real-time monitoring. How-it-works section with three numbered steps (connect sources, build transforms, deploy and monitor). Pricing section with free, pro, and enterprise tiers. Bottom CTA with sign-up form and GitHub stars badge."
+  },
+  "features": [
+    "marketing",
+    "seo"
+  ],
+  "shells": {
+    "top-nav-footer": "Top navigation bar with logo and links, footer with sitemap and legal links"
+  },
+  "dependencies": {
+    "patterns": {
+      "hero": "^1.0.0",
+      "features": "^1.0.0",
+      "how-it-works": "^1.0.0",
+      "pricing": "^1.0.0",
+      "cta-section": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon",
+      "technical"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  }
+}

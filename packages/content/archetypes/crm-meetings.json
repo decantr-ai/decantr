@@ -1,0 +1,95 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "crm-meetings",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "CRM Meetings",
+  "description": "Meeting management interface with calendar views, AI-generated recaps, transcription, and automatic action item extraction linked to CRM contacts and deals.",
+  "tags": [
+    "crm",
+    "meetings",
+    "calendar",
+    "ai",
+    "transcription"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "crm meetings",
+        "meeting management",
+        "meeting calendar",
+        "ai meeting recap",
+        "meeting scheduler"
+      ],
+      "secondary": [
+        "transcription",
+        "action items",
+        "meeting notes",
+        "call recording",
+        "meeting insights"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "meetings",
+      "patterns": [
+        {
+          "pattern": "calendar-view",
+          "preset": "week",
+          "as": "meeting-calendar"
+        }
+      ],
+      "default_layout": [
+        "calendar-view"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "meeting-detail",
+      "patterns": [
+        {
+          "pattern": "detail-header",
+          "preset": "standard",
+          "as": "meeting-header"
+        },
+        {
+          "pattern": "timeline",
+          "preset": "standard",
+          "as": "meeting-timeline"
+        }
+      ],
+      "default_layout": [
+        "detail-header",
+        "timeline"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "meetings": "Weekly calendar view showing all scheduled meetings as time-blocked cards with attendee avatars, deal association, and meeting type badges. Supports drag-to-reschedule, click-to-create, and day/week/month toggle. Upcoming meetings show join-call buttons; past meetings display AI recap availability badges.",
+    "meeting-detail": "Post-meeting detail page. A detail header shows meeting title, date, duration, attendees, and linked deal. Below, a timeline reconstructs the meeting flow with AI-generated topic segments, key discussion points, action items with assignees, and a searchable transcript. Each action item can be converted to a task or linked to a deal stage."
+  },
+  "features": [
+    "meetings",
+    "ai-recap",
+    "transcription",
+    "action-items"
+  ],
+  "suggested_theme": {
+    "ids": [
+      "luminarum",
+      "clean",
+      "carbon"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

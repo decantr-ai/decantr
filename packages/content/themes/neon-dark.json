@@ -1,0 +1,220 @@
+{
+  "$schema": "https://decantr.ai/schemas/theme.v1.json",
+  "id": "neon-dark",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Neon Dark",
+  "description": "High-contrast dark theme with electric neon accents. For agent dashboards, cyber UIs, and spatial interfaces.",
+  "category": "dark",
+  "tags": [
+    "2026",
+    "neon",
+    "cyber",
+    "dark",
+    "vibrant"
+  ],
+  "seed": {
+    "primary": "#00E5FF",
+    "secondary": "#B388FF",
+    "accent": "#76FF03"
+  },
+  "palette": {
+    "background": {
+      "dark": "#0A0A0F",
+      "light": "#FAFAFA"
+    },
+    "surface": {
+      "dark": "#12121A",
+      "light": "#FFFFFF"
+    },
+    "surface-raised": {
+      "dark": "#1A1A25",
+      "light": "#F5F5F5"
+    },
+    "border": {
+      "dark": "#2A2A3A",
+      "light": "#E0E0E0"
+    },
+    "text": {
+      "dark": "#E8E8F0",
+      "light": "#1A1A25"
+    },
+    "text-muted": {
+      "dark": "#8888AA",
+      "light": "#666680"
+    },
+    "primary": {
+      "dark": "#00E5FF",
+      "light": "#00ACC1"
+    },
+    "primary-hover": {
+      "dark": "#33EBFF",
+      "light": "#00B8D4"
+    }
+  },
+  "modes": [
+    "dark"
+  ],
+  "tokens": {
+    "base": {
+      "success": "#00E676",
+      "danger": "#FF1744",
+      "warning": "#FFD600",
+      "info": "#448AFF"
+    }
+  },
+  "decorators": {
+    "neon-card": "Dark card with neon cyan border glow, 1px solid border, and box-shadow using primary at 30% opacity.",
+    "neon-badge": "Compact pill badge with neon fill color, dark text, and subtle glow shadow matching the badge color.",
+    "neon-input": "Dark input with thin neon border, glowing focus ring in primary cyan, dark surface background.",
+    "neon-grid-line": "Subtle grid pattern overlay at 5% opacity using thin lines for cyberpunk dashboard aesthetic."
+  },
+  "spatial": {
+    "density_bias": 2,
+    "content_gap_shift": -1,
+    "section_padding": "4rem",
+    "card_wrapping": "tight"
+  },
+  "motion": {
+    "preference": "moderate",
+    "reduce_motion": false,
+    "entrance": "fade",
+    "timing": "ease-out",
+    "durations": {
+      "hover": "100ms",
+      "entrance": "250ms",
+      "instant": "60ms",
+      "fast": "120ms",
+      "base": "200ms",
+      "slow": "350ms",
+      "slower": "550ms",
+      "stagger": "50ms"
+    },
+    "easings": {
+      "ease": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "easeOut": "cubic-bezier(0, 0, 0.2, 1)",
+      "easeIn": "cubic-bezier(0.4, 0, 1, 1)",
+      "spring": "cubic-bezier(0.34, 1.56, 0.64, 1)"
+    }
+  },
+  "typography_hints": {
+    "scale": "1.25",
+    "heading_weight": 700,
+    "body_weight": 400
+  },
+  "motion_hints": {
+    "preference": "full",
+    "reduce_motion_default": false
+  },
+  "decorator_definitions": {
+    "neon-card": {
+      "description": "Dark card with neon cyan border glow, 1px solid border, and box-shadow using primary at 30% opacity.",
+      "intent": "Use for data panels and dashboard widgets. The neon glow border creates the cyberpunk dashboard aesthetic.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #12121A)",
+        "border": "1px solid rgba(0, 229, 255, 0.3)",
+        "border-radius": "6px",
+        "box-shadow": "0 0 12px rgba(0, 229, 255, 0.15)"
+      },
+      "pairs_with": [
+        "neon-badge",
+        "neon-input",
+        "neon-grid-line"
+      ],
+      "usage": [
+        "Dashboard panels",
+        "Agent status cards",
+        "Data widgets",
+        "Metric containers"
+      ]
+    },
+    "neon-badge": {
+      "description": "Compact pill badge with neon fill color, dark text, and subtle glow shadow matching the badge color.",
+      "intent": "Use for status indicators and category labels. Neon fill with dark text creates high-contrast readability on dark surfaces.",
+      "suggested_properties": {
+        "border-radius": "9999px",
+        "padding": "2px 10px",
+        "font-size": "11px",
+        "font-weight": "600",
+        "color": "#0A0A0F"
+      },
+      "pairs_with": [
+        "neon-card",
+        "neon-input"
+      ],
+      "usage": [
+        "Status badges",
+        "Priority labels",
+        "Agent state indicators",
+        "Category tags"
+      ]
+    },
+    "neon-input": {
+      "description": "Dark input with thin neon border, glowing focus ring in primary cyan, dark surface background.",
+      "intent": "Use for form inputs in dark dashboards. The neon focus ring provides clear visibility against the dark background.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #12121A)",
+        "border": "1px solid var(--d-border, #2A2A3A)",
+        "border-radius": "6px",
+        "color": "var(--d-text, #E8E8F0)",
+        "transition": "border-color 100ms ease, box-shadow 100ms ease"
+      },
+      "pairs_with": [
+        "neon-card",
+        "neon-badge"
+      ],
+      "usage": [
+        "Command inputs",
+        "Search fields",
+        "Filter inputs",
+        "Form fields"
+      ]
+    },
+    "neon-grid-line": {
+      "description": "Subtle grid pattern overlay at 5% opacity using thin lines for cyberpunk dashboard aesthetic.",
+      "intent": "Use as a background overlay on dashboard pages. The grid pattern adds the cyberpunk spatial interface feel.",
+      "suggested_properties": {
+        "background-image": "linear-gradient(rgba(0, 229, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 229, 255, 0.05) 1px, transparent 1px)",
+        "background-size": "40px 40px",
+        "pointer-events": "none",
+        "position": "fixed",
+        "inset": "0"
+      },
+      "pairs_with": [
+        "neon-card",
+        "neon-badge"
+      ],
+      "usage": [
+        "Dashboard background overlays",
+        "Spatial interface grids",
+        "Page-level decoration"
+      ]
+    }
+  },
+  "typography": {
+    "display": "'Inter', ui-sans-serif, system-ui, sans-serif",
+    "body": "'Inter', ui-sans-serif, system-ui, sans-serif"
+  },
+  "elevation": {
+    "1": {
+      "light": "0 1px 2px rgba(0,0,0,0.06)",
+      "dark": "0 1px 2px rgba(0,0,0,0.4)"
+    },
+    "2": {
+      "light": "0 2px 6px rgba(0,0,0,0.08)",
+      "dark": "0 2px 8px rgba(255, 255, 255, 0.06)"
+    },
+    "3": {
+      "light": "0 6px 16px rgba(0,0,0,0.10)",
+      "dark": "0 4px 16px rgba(255, 255, 255, 0.08)"
+    },
+    "4": {
+      "light": "0 12px 32px rgba(0,0,0,0.14)",
+      "dark": "0 8px 28px rgba(255, 255, 255, 0.12)"
+    },
+    "5": {
+      "light": "0 24px 64px rgba(0,0,0,0.18)",
+      "dark": "0 16px 48px rgba(255, 255, 255, 0.16)"
+    }
+  }
+}

@@ -1,0 +1,112 @@
+{
+  "$schema": "https://decantr.ai/schemas/blueprint.v1.json",
+  "id": "product-landing",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Product Landing Page",
+  "description": "Bold, high-impact product landing page composition with split hero, feature showcase, pricing, testimonials, resources blog, and legal pages. Multi-archetype composition designed to convert visitors into users.",
+  "blueprint_portfolio": {
+    "visibility": "public",
+    "maturity": "supported-contract",
+    "rationale": "Supported registry blueprint that remains useful in All without being promoted as a flagship default.",
+    "artifact": {
+      "status": "candidate",
+      "showcase": "product-landing",
+      "notes": "Showcase-backed candidate; certification requires artifact evidence beyond registry availability."
+    }
+  },
+  "tags": ["landing", "marketing", "conversion", "product", "saas", "2026"],
+  "compose": [
+    "landing-hero",
+    "landing-resources",
+    "landing-legal"
+  ],
+  "theme": {
+    "mode": "dark",
+    "shape": "rounded",
+    "id": "luminarum"
+  },
+  "personality": "Bold, high-impact product landing page designed to convert. Dark premium background with vibrant geometric accent elements. Split hero with confident typography and a prominent CTA button. Feature sections alternate between full-bleed and contained layouts for visual rhythm. Social proof is prominent — logos, testimonials, case study snippets. The pricing section is clear and decisive. Below-the-fold content builds the narrative: problem → solution → proof → action. Blog/resources add SEO depth. Lucide icons. Mobile-first, fast-loading.",
+  "voice": {
+    "tone": "Confident and compelling. Sells the vision, not features.",
+    "cta_verbs": ["Start", "Try", "Explore", "See", "Learn", "Get Started"],
+    "avoid": ["Submit", "Click here", "Please enter", "Buy now", "Sign up today"],
+    "empty_states": "N/A for landing pages — all content is authored, not user-generated.",
+    "errors": "Minimal. Form submission errors should be inline and specific. Never break the conversion flow.",
+    "loading": "Hero content loads instantly (SSR/SSG). Below-fold sections fade in on scroll intersection. No loading states visible to users."
+  },
+  "features": [
+    "marketing",
+    "seo",
+    "analytics",
+    "scroll-animations"
+  ],
+  "routes": {
+    "/": {
+      "page": "home",
+      "shell": "full-bleed",
+      "archetype": "landing-hero"
+    },
+    "/demo": {
+      "page": "demo",
+      "shell": "full-bleed",
+      "archetype": "landing-hero"
+    },
+    "/blog": {
+      "page": "blog",
+      "shell": "top-nav-main",
+      "archetype": "landing-resources"
+    },
+    "/blog/:id": {
+      "page": "blog-post",
+      "shell": "top-nav-main",
+      "archetype": "landing-resources"
+    },
+    "/resources": {
+      "page": "resources",
+      "shell": "top-nav-main",
+      "archetype": "landing-resources"
+    },
+    "/privacy": {
+      "page": "privacy",
+      "shell": "top-nav-footer",
+      "archetype": "landing-legal"
+    },
+    "/terms": {
+      "page": "terms",
+      "shell": "top-nav-footer",
+      "archetype": "landing-legal"
+    }
+  },
+  "overrides": {
+    "features_add": [],
+    "features_remove": [],
+    "pages": {},
+    "pages_remove": []
+  },
+  "seo_hints": {
+    "schema_org": ["WebSite", "SoftwareApplication", "Product"],
+    "meta_priorities": ["description", "og:title", "og:image"]
+  },
+  "navigation": {
+    "command_palette": true,
+    "hotkeys": [
+      { "key": "g h", "route": "/", "label": "Go to Home" },
+      { "key": "g b", "route": "/blog", "label": "Go to Blog" },
+      { "key": "g r", "route": "/resources", "label": "Go to Resources" }
+    ]
+  },
+  "dependencies": {
+    "archetypes": {
+      "landing-hero": ">=1.0.0",
+      "landing-resources": ">=1.0.0",
+      "landing-legal": ">=1.0.0"
+    }
+  },
+  "suggested_themes": [
+    "luminarum",
+    "launchpad",
+    "carbon",
+    "clean"
+  ]
+}

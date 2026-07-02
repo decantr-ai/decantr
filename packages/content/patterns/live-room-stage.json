@@ -1,0 +1,63 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "live-room-stage",
+  "version": "1.1.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Live Room Stage",
+  "description": "Live co-production room stage combining voice presence, shared transport, room participants, chat highlights, takes, and synchronized playback state.",
+  "category": "music",
+  "tags": ["2026", "music", "live-room", "collaboration", "voice", "co-production", "session"],
+  "components": ["SpeakerStage", "ParticipantTiles", "SharedTransport", "RoomChatPreview", "TakeQueue", "CueMarkers", "LatencyStatus"],
+  "default_preset": "room",
+  "presets": {
+    "room": {
+      "description": "Full co-production room with speaker stage, participants, shared transport, cue markers, and chat highlights",
+      "layout": { "layout": "grid", "atoms": "_grid _gap-4 _w-full" }
+    },
+    "compact": {
+      "description": "Compact room card/stage for room browser previews",
+      "layout": { "layout": "stack", "atoms": "_flex _flex-col _gap-3 _w-full" }
+    }
+  },
+  "visual_brief": "A live studio room, not a generic video call. The main stage shows current speaker or shared session state, participant presence, talk/mute state, latency, role badges, cue markers, and take queue. A shared transport strip shows everyone locked to the same playhead. Browser-card previews must show host, cue, status, participants, BPM, key, and latency as separated chips or aligned columns; never concatenate room metadata. Chat is present but visually subordinate to session state. The surface should feel like remote co-production software: calm, precise, and music-aware.",
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gap-4 _w-full",
+    "slots": {
+      "stage": "Primary room stage with speaker/session focus, talk state, and shared playback.",
+      "participants": "Tiles with avatars, roles, mic state, and edit cursor state.",
+      "session-sync": "Shared transport, latency, cue markers, and take queue.",
+      "chat-preview": "Compact chat/reaction stream with shared track links."
+    }
+  },
+  "composition": {
+    "LiveRoomStage": "Root(grid) > [SpeakerStage + ParticipantTiles + SharedTransport + TakeQueue + RoomChatPreview]",
+    "SpeakerStage": "Panel > [CurrentSpeaker | SharedSessionPreview + LatencyStatus]"
+  },
+  "motion": {
+    "micro": {
+      "speaker-change": "stage border shifts to active speaker color in 160ms",
+      "cue-complete": "take queue item slides into completed state"
+    },
+    "ambient": {
+      "voice-activity": "participant ring pulses to voice level",
+      "shared-playhead": "transport advances while room is playing"
+    }
+  },
+  "interactions": ["real-time-updates", "status-pulse", "hover-reveal", "keyboard-navigation"],
+  "responsive": {
+    "mobile": "Stage first, participant strip horizontally scrolls, chat and take queue become tabs.",
+    "desktop": "Stage and session sync dominate; chat remains a side rail. Room browser layouts can pair preview cards with a monitor sidecar for latency, armed takes, next cue, and master bus status."
+  },
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Live production room",
+    "keyboard": ["Space: toggle shared playback", "V: mute or unmute voice", "C: focus chat", "Q: add cue marker"],
+    "announcements": ["{participant} is speaking", "Room latency {latency} ms", "Cue marker {name} added"]
+  },
+  "layout_hints": {
+    "session_first": "Shared audio session state should visually outrank generic video chat.",
+    "presence": "Participant state must show voice, edit, and sync status clearly.",
+    "metadata_spacing": "BPM, key, and latency should render as individual chips with gap, separator, or aligned columns."
+  }
+}

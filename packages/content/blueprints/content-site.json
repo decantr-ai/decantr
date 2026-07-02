@@ -1,0 +1,110 @@
+{
+  "$schema": "https://decantr.ai/schemas/blueprint.v1.json",
+  "id": "content-site",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Content Site",
+  "description": "Reading-first public content site with article browser, newsletter archive, and marketing landing. Multi-archetype composition optimized for long-form consumption, editorial discovery, and subscriber growth.",
+  "blueprint_portfolio": {
+    "visibility": "labs",
+    "maturity": "experimental",
+    "rationale": "Interesting direction for advanced users, but not yet a default recommendation because the public positioning or scaffold proof needs more tightening.",
+    "artifact": {
+      "status": "candidate",
+      "showcase": "content-site",
+      "notes": "Visible through Labs; promote after clearer product positioning and evidence-backed scaffold quality."
+    }
+  },
+  "tags": ["content", "editorial", "articles", "blog", "newsletter", "reading", "2026"],
+  "compose": [
+    "content-reader",
+    "content-newsletter",
+    "marketing-content"
+  ],
+  "theme": {
+    "mode": "light",
+    "shape": "sharp",
+    "id": "editorial"
+  },
+  "personality": "Reading-first public content site optimized for long-form consumption. Generous line-height, comfortable measure (65-75 characters), and a clear typographic hierarchy that makes scanning effortless. Article cards feature bold headlines with subtle metadata. The reading view strips away distractions — just text, well-set. Newsletter archive is clean and browsable. Think Substack meets Medium's typography. Lucide icons. Dark mode available for night reading.",
+  "voice": {
+    "tone": "Clear and editorial. Respects the reader's time.",
+    "cta_verbs": ["Read", "Subscribe", "Browse", "Share", "Bookmark", "Explore"],
+    "avoid": ["Submit", "Click here", "Please enter", "Buy now"],
+    "empty_states": "Editorially appropriate. An empty category should suggest related topics or popular articles to keep readers engaged.",
+    "errors": "Minimal and unobtrusive. A 404 should suggest similar articles. Search with no results should offer alternative queries.",
+    "loading": "Article card skeletons with headline and excerpt placeholders. Subtle fade-in for content blocks. Reading experience never shows spinners."
+  },
+  "features": [
+    "search",
+    "analytics",
+    "rss",
+    "bookmarks",
+    "newsletter",
+    "dark-mode"
+  ],
+  "routes": {
+    "/": {
+      "page": "home",
+      "shell": "top-nav-footer",
+      "archetype": "marketing-content"
+    },
+    "/articles": {
+      "page": "articles",
+      "shell": "top-nav-main",
+      "archetype": "content-reader"
+    },
+    "/articles/:id": {
+      "page": "article-detail",
+      "shell": "top-nav-main",
+      "archetype": "content-reader"
+    },
+    "/categories": {
+      "page": "categories",
+      "shell": "top-nav-main",
+      "archetype": "content-reader"
+    },
+    "/subscribe": {
+      "page": "subscribe",
+      "shell": "minimal-header",
+      "archetype": "content-newsletter"
+    },
+    "/newsletter": {
+      "page": "archive",
+      "shell": "minimal-header",
+      "archetype": "content-newsletter"
+    }
+  },
+  "overrides": {
+    "features_add": ["theme-toggle"],
+    "features_remove": [],
+    "pages": {},
+    "pages_remove": []
+  },
+  "seo_hints": {
+    "schema_org": ["WebSite", "Blog", "Article"],
+    "meta_priorities": ["description", "og:title", "og:image"]
+  },
+  "navigation": {
+    "command_palette": true,
+    "hotkeys": [
+      { "key": "g h", "route": "/", "label": "Go to Home" },
+      { "key": "g a", "route": "/articles", "label": "Go to Articles" },
+      { "key": "g c", "route": "/categories", "label": "Go to Categories" },
+      { "key": "g n", "route": "/newsletter", "label": "Go to Newsletter" }
+    ]
+  },
+  "dependencies": {
+    "archetypes": {
+      "content-reader": ">=1.0.0",
+      "content-newsletter": ">=1.0.0",
+      "marketing-content": ">=1.0.0"
+    }
+  },
+  "suggested_themes": [
+    "editorial",
+    "paper",
+    "clean",
+    "luminarum"
+  ]
+}

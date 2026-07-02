@@ -1,0 +1,124 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "tree-view",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Tree View",
+  "description": "File/data tree with ASCII connectors for hierarchical navigation.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {
+      "terminal": "^1.0.0"
+    },
+    "requires_core": {
+      "components": [
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Expandable tree with ASCII connectors",
+      "components": [
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _mono _fggreen _overflow[auto]",
+        "slots": {
+          "root": "Tree root node",
+          "nodes": "Child tree nodes"
+        }
+      }
+    },
+    "flat": {
+      "description": "Indented list without connectors",
+      "components": [
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _mono _fggreen",
+        "slots": {
+          "items": "Indented list items"
+        }
+      }
+    },
+    "checkbox": {
+      "description": "Tree with selection checkboxes",
+      "components": [
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _mono _fggreen",
+        "slots": {
+          "nodes": "Tree nodes with checkboxes"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _mono _fggreen",
+    "slots": {
+      "root": "Tree root",
+      "nodes": "Tree nodes"
+    }
+  },
+  "features": [
+    "expand-collapse",
+    "multi-select",
+    "drag-drop",
+    "context-menu",
+    "search-filter",
+    "keyboard-navigation"
+  ],
+  "keyboard_shortcuts": {
+    "ArrowUp": "Previous node",
+    "ArrowDown": "Next node",
+    "ArrowLeft": "Collapse or go to parent",
+    "ArrowRight": "Expand or go to first child",
+    "Enter": "Select node",
+    "Space": "Toggle checkbox"
+  },
+  "ascii_connectors": {
+    "branch": "├── ",
+    "last": "└── ",
+    "vertical": "│   ",
+    "empty": "    "
+  },
+  "visual_brief": "Hierarchical tree rendered with ASCII connector characters (├── for branches, └── for last items, │ for vertical lines) in monospace font. Each node shows a folder or file icon (or expand/collapse toggle for branches), the item name, and optional metadata. Indentation increases per depth level with connector lines drawn vertically. The flat preset removes ASCII connectors and uses simple indentation. The checkbox preset adds a checkbox before each node for selection. Nodes are clickable to expand/collapse or to select. The currently selected node has a highlighted background.",
+  "responsive": {
+    "mobile": "Tree takes full width. Touch targets enlarged. Deep nesting truncates with horizontal scroll. Checkbox preset uses larger checkboxes.",
+    "tablet": "Standard tree layout. Comfortable node spacing for touch.",
+    "desktop": "Full tree with all connectors rendered crisply. Keyboard navigation (arrow keys). Comfortable indentation."
+  },
+  "layout_hints": {
+    "hierarchy_priority": "Depth and parent-child relationships should remain obvious before metadata or action affordances. The structure is the primary content.",
+    "selection_clarity": "Expanded, collapsed, and selected states should stay visually distinct so users always know where they are in the tree.",
+    "dense_nesting": "When depth gets large, prefer scroll or truncation strategies that preserve hierarchy over squeezing every node into a flattened list."
+  },
+  "motion": {
+    "micro": "Expand/collapse indicators and selected nodes may sharpen or brighten subtly to confirm navigation state.",
+    "transitions": "Opening branches should feel quick and structural, preserving the user's sense of place within the hierarchy."
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "accessibility": {
+    "role": "tree",
+    "aria-label": "Tree view",
+    "keyboard": [
+      "Arrow-key navigation, expansion, selection, and checkbox toggling should remain consistent with standard tree interaction patterns."
+    ],
+    "announcements": [
+      "Node name, depth, expanded state, and selection state should be exposed semantically so the tree remains understandable without ASCII connectors alone."
+    ]
+  }
+}

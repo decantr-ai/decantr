@@ -1,0 +1,469 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "swipe-feed",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Swipe Feed",
+  "description": "Primary archetype for mobile-first swipe-based social discovery apps. Hosts the core swipe deck (discover), matches grid, chat list and thread, own/other profile views, and settings — all under a single mobile-tab-bar shell with persistent bottom navigation. The first archetype in Decantr's catalog purpose-built around a card-stack swipe loop with match celebration and 1:1 chat.",
+  "tags": [
+    "swipe",
+    "feed",
+    "card-stack",
+    "matches",
+    "chat",
+    "profile",
+    "primary",
+    "mobile",
+    "consumer",
+    "social",
+    "2026"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "swipe app",
+        "dating discovery",
+        "rating community",
+        "card-stack social",
+        "tinder-like app",
+        "swipe-based matching"
+      ],
+      "secondary": [
+        "consumer social app",
+        "discovery feed",
+        "matchmaking primary",
+        "swipe loop"
+      ],
+      "negative": [
+        "dashboard",
+        "data table",
+        "enterprise admin",
+        "vertical post feed"
+      ]
+    },
+    "implies": [
+      "swipe-deck",
+      "match-celebration",
+      "chat",
+      "profile",
+      "tab-navigation"
+    ],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "discover",
+      "description": "Core swipe deck — the heart of the app. Filter bar at top, card stack centered, action buttons above tab bar.",
+      "patterns": [
+        {
+          "pattern": "filter-bar",
+          "preset": "compact",
+          "as": "circle-filter"
+        },
+        {
+          "pattern": "spatial-card-stack",
+          "preset": "deck",
+          "as": "swipe-deck"
+        },
+        {
+          "pattern": "swipe-card",
+          "preset": "standard",
+          "as": "deck-card-content"
+        },
+        {
+          "pattern": "swipe-action-bar",
+          "preset": "three-button",
+          "as": "swipe-actions"
+        },
+        {
+          "pattern": "match-celebration",
+          "preset": "first-match",
+          "as": "match-overlay"
+        },
+        {
+          "pattern": "hero",
+          "preset": "empty-state",
+          "as": "deck-empty"
+        },
+        {
+          "pattern": "bottom-tab-bar",
+          "preset": "standard",
+          "as": "tabs"
+        }
+      ],
+      "default_layout": [
+        "circle-filter",
+        "swipe-deck",
+        "swipe-actions",
+        "match-overlay",
+        "deck-empty",
+        "tabs"
+      ],
+      "shell": "mobile-tab-bar",
+      "directives": [
+        "Filter bar at top of body: 4 chips — All / Nearby / My Interests / New — single-select, default 'All'. Changing selection refetches the deck with mock data.",
+        "Swipe deck occupies the largest visual share of the body — at least 60% of body height. Card width 320px, aspect ratio 3/4. Use spatial-card-stack deck preset gestural defaults (30% threshold, ±15deg rotateY, spring physics).",
+        "Each card uses swipe-card pattern as its content slot — full-bleed photo with bottom gradient overlay carrying name, age, distance, bio, interests.",
+        "Swipe-action-bar sits 16px above the bottom-tab-bar with 3 buttons: Pass (X), Super Like (star, optional), Like (heart). Hotkeys: ←/↑/→.",
+        "On a successful match (mock-randomized: 30% chance on right-swipe in demo mode), trigger match-celebration overlay. First-match preset includes confetti.",
+        "When the deck is exhausted: show hero empty-state with copy 'You've seen everyone nearby! Check back later.' + a Refresh button that re-randomizes the mock deck.",
+        "Bottom-tab-bar persists with 'Swipe' tab active. Badge dots appear on Matches and Chat tabs when new matches/messages arrive."
+      ]
+    },
+    {
+      "id": "matches",
+      "description": "Grid of matched users with new-match indicators and a top presence rail.",
+      "patterns": [
+        {
+          "pattern": "presence-avatars",
+          "preset": "detailed",
+          "as": "new-matches-rail"
+        },
+        {
+          "pattern": "stats-bar",
+          "preset": "default",
+          "as": "matches-counter"
+        },
+        {
+          "pattern": "avatar-grid-tile",
+          "preset": "standard",
+          "as": "match-tile"
+        },
+        {
+          "pattern": "hero",
+          "preset": "empty-state",
+          "as": "matches-empty"
+        },
+        {
+          "pattern": "bottom-tab-bar",
+          "preset": "standard",
+          "as": "tabs"
+        }
+      ],
+      "default_layout": [
+        "new-matches-rail",
+        "matches-counter",
+        "match-tile",
+        "matches-empty",
+        "tabs"
+      ],
+      "shell": "mobile-tab-bar",
+      "directives": [
+        "Top section: 'New Matches' label with horizontal scrolling presence-avatars rail showing matches from the last 24h. Tap an avatar to open the chat thread.",
+        "Below the rail: stats-bar with 1-2 stats — 'X new matches', 'Y total connections'. Use coral primary accent for the numerics.",
+        "Main grid: 3-column responsive grid of avatar-grid-tile (4 cols on tablet+, 5 cols on desktop within the 480px column). Each tile shows the matched user's circular avatar, name, and a violet new-match dot if unviewed. Tap navigates to /u/:userId.",
+        "If no matches yet: show hero empty-state with copy 'No matches yet. Keep swiping — your circle is forming.' and an illustration of two avatars meeting.",
+        "Bottom-tab-bar with 'Matches' active. Badge dot on Matches tab cleared when this page is viewed."
+      ]
+    },
+    {
+      "id": "chat-list",
+      "description": "Inbox of conversations with last-message preview and timestamp.",
+      "patterns": [
+        {
+          "pattern": "conversation-list",
+          "preset": "standard",
+          "as": "inbox"
+        },
+        {
+          "pattern": "hero",
+          "preset": "empty-state",
+          "as": "chat-empty"
+        },
+        {
+          "pattern": "bottom-tab-bar",
+          "preset": "standard",
+          "as": "tabs"
+        }
+      ],
+      "default_layout": [
+        "inbox",
+        "chat-empty",
+        "tabs"
+      ],
+      "shell": "mobile-tab-bar",
+      "directives": [
+        "Conversation list shows each chat as a row: circular avatar (using swipecircle-photo-frame), name, last message preview (truncated 1 line), timestamp (e.g., '2h', 'Yesterday', 'Mon'), and an unread coral dot if unread.",
+        "Tap a conversation to navigate to /chat/:userId (the chat-thread page).",
+        "If no conversations yet: show hero empty-state 'Start a conversation. Match with someone first!' with a Heart icon and a CTA back to /discover.",
+        "Bottom-tab-bar with 'Chat' active. Badge dot on Chat tab cleared when this page is viewed."
+      ]
+    },
+    {
+      "id": "chat-thread",
+      "description": "Full 1:1 chat thread with message bubbles and an input composer.",
+      "patterns": [
+        {
+          "pattern": "chat-header",
+          "preset": "compact",
+          "as": "thread-header"
+        },
+        {
+          "pattern": "chat-thread",
+          "preset": "standard",
+          "as": "messages"
+        },
+        {
+          "pattern": "chat-message",
+          "preset": "user",
+          "as": "msg-user"
+        },
+        {
+          "pattern": "chat-message",
+          "preset": "assistant",
+          "as": "msg-other"
+        },
+        {
+          "pattern": "chat-input",
+          "preset": "standard",
+          "as": "composer"
+        },
+        {
+          "pattern": "bottom-tab-bar",
+          "preset": "standard",
+          "as": "tabs"
+        }
+      ],
+      "default_layout": [
+        "thread-header",
+        "messages",
+        "composer",
+        "tabs"
+      ],
+      "shell": "mobile-tab-bar",
+      "directives": [
+        "Chat header has back-button (left), partner avatar + name (center, tap → opens /u/:userId), and a More menu (right) for mute/block/report.",
+        "Messages area is the only scrolling region. My messages render right-aligned with coral fill (swipecircle-bubble decorator); their messages render left-aligned with cream fill.",
+        "Pre-populated mock conversation: 4-6 messages showing realistic banter (greeting, question, response, follow-up).",
+        "Composer at the bottom: rounded-pill text input with auto-grow (max 4 lines), Smile/Attach icons inside, Send button (coral pill) appears on right when input is non-empty.",
+        "Bottom-tab-bar remains visible by default. On input focus, hide tab-bar with a 200ms slide-down to maximize keyboard space; restore on blur."
+      ]
+    },
+    {
+      "id": "profile-own",
+      "description": "Logged-in user's own profile with edit access, stats, interests, and settings link.",
+      "patterns": [
+        {
+          "pattern": "mobile-profile-hero",
+          "preset": "own-profile",
+          "as": "profile-hero"
+        },
+        {
+          "pattern": "stats-bar",
+          "preset": "default",
+          "as": "swipe-stats"
+        },
+        {
+          "pattern": "tech-pills",
+          "preset": "standard",
+          "as": "interests-display"
+        },
+        {
+          "pattern": "settings-nav",
+          "preset": "standard",
+          "as": "settings-link-list"
+        },
+        {
+          "pattern": "bottom-tab-bar",
+          "preset": "standard",
+          "as": "tabs"
+        }
+      ],
+      "default_layout": [
+        "profile-hero",
+        "swipe-stats",
+        "interests-display",
+        "settings-link-list",
+        "tabs"
+      ],
+      "shell": "mobile-tab-bar",
+      "directives": [
+        "Profile hero uses own-profile preset: full-bleed cover photo (45vh), overlapping circular avatar, name+age+bio, single 'Edit Profile' coral pill CTA.",
+        "Stats-bar shows 3 stats: 'X swiped', 'Y matches', 'Z.W★ rating' — each stat formatted with lowercase units per voice guidelines.",
+        "Interests display: tech-pills rendered as the curated interest list selected during onboarding (read-only here; editable via Edit Profile).",
+        "Settings-nav: a list of links — Notifications, Privacy, Help, Logout (simulated). Tap navigates to /settings or relevant sub-routes.",
+        "Bottom-tab-bar with 'Profile' active. No badge on Profile tab."
+      ]
+    },
+    {
+      "id": "profile-other",
+      "description": "Read-only view of another user's profile with action buttons (Message / Like Again / Report).",
+      "patterns": [
+        {
+          "pattern": "mobile-profile-hero",
+          "preset": "other-profile",
+          "as": "profile-hero"
+        },
+        {
+          "pattern": "stats-bar",
+          "preset": "default",
+          "as": "user-stats"
+        },
+        {
+          "pattern": "tech-pills",
+          "preset": "standard",
+          "as": "interests-display"
+        },
+        {
+          "pattern": "bottom-tab-bar",
+          "preset": "standard",
+          "as": "tabs"
+        }
+      ],
+      "default_layout": [
+        "profile-hero",
+        "user-stats",
+        "interests-display",
+        "tabs"
+      ],
+      "shell": "mobile-tab-bar",
+      "directives": [
+        "Profile hero uses other-profile preset: cover, avatar, name+age+bio, three action buttons (Message coral pill / Like Again white-bordered pill / Report icon-only ghost). Back button at top-left of cover.",
+        "Stats-bar shows: 'Joined {date}', 'Active {timestamp}', 'Mutual matches: N' — informational, not numeric metrics.",
+        "Interests display: shared interests highlighted (coral-filled), other interests in muted-border style.",
+        "Bottom-tab-bar inherits active state from the page user navigated from (typically Matches or Chat). Hidden on input focus is N/A here (no input)."
+      ]
+    },
+    {
+      "id": "settings",
+      "description": "Simple settings list — notifications, privacy toggles, account management, simulated logout.",
+      "patterns": [
+        {
+          "pattern": "settings-nav",
+          "preset": "standard",
+          "as": "settings-list"
+        },
+        {
+          "pattern": "form",
+          "preset": "standard",
+          "as": "settings-toggles"
+        },
+        {
+          "pattern": "bottom-tab-bar",
+          "preset": "standard",
+          "as": "tabs"
+        }
+      ],
+      "default_layout": [
+        "settings-list",
+        "settings-toggles",
+        "tabs"
+      ],
+      "shell": "mobile-tab-bar",
+      "directives": [
+        "Settings-nav at the top: vertical list of sections — Notifications, Privacy, Account, Help, About — each with a chevron-right and a brief subtitle.",
+        "Below the nav, a form with toggles for the most-used preferences: Push notifications (on/off), Show me on Discover (on/off), Read receipts (on/off).",
+        "Bottom of the page: a 'Log Out' link in danger color (var(--d-danger)). Confirmation modal on tap. In demo mode, logout clears the localStorage demo flag and routes to /.",
+        "Bottom-tab-bar with 'Profile' active (settings is a sub-route of profile)."
+      ]
+    }
+  ],
+  "page_briefs": {
+    "discover": "The heart of SwipeCircle. Mobile-tab-bar shell with the compact header showing brand mark, a 'Filters' chip-button (opens a bottom-sheet to change All/Nearby/Interests/New), and a small profile avatar at right (tap → /me). Body: a top compact filter bar (4 chips), then the swipe deck centered vertically — taking 60%+ of body height. Cards are 320×420px in the deck stack, with the front card fully interactive. Each card is a swipe-card pattern: full-bleed photo, bottom gradient overlay carrying 'Maya, 27', distance tag, bio, and 4 interest pills. Swipe right past 30% threshold flies the card off with rotateY +15deg, opacity 0, and a coral wash overlay; the next card springs forward. 16px below the deck, the swipe-action-bar with 3 buttons: X (60×60 white circle, muted), Star (48×48, violet), Heart (60×60 white circle, coral). On a match (30% mock random), the match-celebration overlay takes over: backdrop fade-in, coral-to-violet burst, two avatars sliding in from the sides meeting in the center with a heart pop, 'It's a Match!' headline, two CTAs. Auto-dismisses after 4s. Bottom-tab-bar persists. The page feels alive — animations everywhere, but never fighting the user.",
+    "matches": "Mobile-tab-bar shell, compact header with title 'Matches'. Body opens with a 'New Matches' label and a horizontal scrolling presence-avatars rail (60×60 circular tiles with online dots and last-active timestamps). Below, a small stats-bar: '8 new matches · 24 total · 4.2★ rating' in coral primary. Below that: a 3-column grid of avatar-grid-tile cards. Each tile is a soft-shadow square with a circular 80px avatar (swipecircle-photo-frame ring), name underneath, and a violet new-match dot at top-right if unviewed. Tiles enter with a 40ms stagger on first paint. Hover lifts the tile +2px. Tap navigates to /u/:userId. If no matches yet, hero empty-state replaces the grid: an illustration of two avatars meeting, copy 'No matches yet. Keep swiping — your circle is forming.', and a coral pill 'Start swiping →' that routes to /discover. Bottom-tab-bar with Matches active.",
+    "chat-list": "Mobile-tab-bar shell, compact header 'Chats' with a small Search icon at right. Body is a single-column conversation-list. Each row is 64px tall with: 48×48 circular avatar (swipecircle-photo-frame), 2-line stack — name (font-medium) over last-message preview (font-normal, muted, ellipsis-truncated), timestamp at right ('2h', 'Yesterday', 'Mon') and an unread coral dot if there are new messages. Rows have a 1px hairline separator in muted border color. Tap navigates to /chat/:userId. Empty state: hero with Heart icon, copy 'Start a conversation. Match with someone first!', and a coral pill CTA back to /discover. Bottom-tab-bar with Chat active.",
+    "chat-thread": "Mobile-tab-bar shell, but the header is replaced by chat-header (compact preset): back arrow at left, partner's small 32×32 circular avatar + name centered, More icon at right. Body is the chat-thread pattern — full-height scrolling messages area with chat-message bubbles. My messages right-aligned with swipecircle-bubble decorator (coral fill, white text, right-tail). Their messages left-aligned (cream fill, dark text, left-tail). Pre-populated mock conversation of 4-6 messages showing natural-feeling banter with timestamps. At the bottom: chat-input pattern — rounded pill text input with auto-grow, Smile and Attach icons inside, and a coral Send pill button that appears when input is non-empty. Tap-to-send + Enter-to-send both work. Bottom-tab-bar persists by default but slides down on input focus to maximize keyboard space, slides back up on blur.",
+    "profile-own": "Mobile-tab-bar shell, no header (the mobile-profile-hero takes its place visually). Body: mobile-profile-hero in own-profile preset — full-bleed cover photo (45vh), gradient overlay at bottom, More icon at top-right. Circular 96×96 avatar (swipecircle-photo-frame, coral ring) overlaps the bottom edge of the cover. Below the cover: name+age in display font, distance+activity tag, 1-3 sentence bio. Then a single full-width coral pill 'Edit Profile' button (with Edit icon). Below the hero block: stats-bar with 3 stats — 'X swiped · Y matches · Z.W★ rating' — coral numerics, muted labels. Then tech-pills displaying selected interests (read-only, soft border style). Then settings-nav: a clean list of Notifications / Privacy / Help / Logout, each row with a small leading icon and a chevron-right at the right. Tap navigates. Bottom-tab-bar with Profile active.",
+    "profile-other": "Same shell pattern as profile-own but with mobile-profile-hero in other-profile preset. Cover photo, BackButton at top-left, MoreMenuButton at top-right, overlapping avatar. Name+age, distance+activity (e.g. 'Online now'). Bio. Then the action row: 'Message' coral pill (primary, ~50% width) with Send icon, 'Like Again' white-bordered pill with Heart icon, 'Report' ghost icon-only button (Flag icon, muted color). Stats-bar shows 'Joined March 2026', 'Active 2h ago', 'Mutual matches: 3'. Tech-pills shows interests with shared ones highlighted in coral fill, others in muted-border. Bottom-tab-bar inherits active state from referrer (Matches or Chat).",
+    "settings": "Simple settings page on mobile-tab-bar shell. Header shows 'Settings' title with back button. Body: settings-nav (standard preset) at top — vertical list of section links: Notifications (Bell icon), Privacy (Lock icon), Account (User icon), Help (HelpCircle icon), About (Info icon). Each row is 56px tall with leading icon, label, optional subtitle, and chevron-right. Below the nav, a form with the most common toggles: 'Push notifications', 'Show me on Discover', 'Read receipts' — each a labeled switch (coral when on, muted when off). At the bottom of the body, with 32px breathing room above: 'Log Out' link in danger color, centered, ghost style. Tap shows a confirmation modal ('Are you sure?'); confirm clears demo state and routes to /. Bottom-tab-bar with Profile active."
+  },
+  "features": [
+    "swipe-deck",
+    "matches",
+    "match-celebration",
+    "chat",
+    "profile",
+    "filter-bar",
+    "tab-navigation",
+    "empty-states",
+    "demo-mode",
+    "keyboard-shortcuts"
+  ],
+  "directives": [
+    "All pages share the mobile-tab-bar shell and persist the bottom-tab-bar across page transitions",
+    "Bottom-tab-bar 4 items: Swipe (/discover, Heart icon, hotkey g d), Matches (/matches, Users icon, hotkey g m), Chat (/chat, MessageCircle icon, hotkey g c), Profile (/me, User icon, hotkey g p)",
+    "Swipe gestures (← / →) only fire on the /discover route — input_guard prevents firing while typing in chat",
+    "Match celebration triggers on a successful right-swipe (mocked: 30% chance in demo mode) — first-match preset adds confetti, subsequent matches use subsequent-match preset",
+    "All photo content uses circular swipecircle-photo-frame for avatars, full-bleed with gradient overlay for cards",
+    "Demo mode (localStorage flag 'sc_demo' = true) populates 30 mock cards on first /discover load, 12 mock matches, and 3 pre-existing chat threads with sample histories"
+  ],
+  "navigation_items": [
+    {
+      "label": "Swipe",
+      "route": "/discover",
+      "icon": "Heart",
+      "hotkey": "g d",
+      "active_match": "/discover"
+    },
+    {
+      "label": "Matches",
+      "route": "/matches",
+      "icon": "Users",
+      "hotkey": "g m",
+      "active_match": "/matches",
+      "badge": "new-matches-count"
+    },
+    {
+      "label": "Chat",
+      "route": "/chat",
+      "icon": "MessageCircle",
+      "hotkey": "g c",
+      "active_match": "/chat",
+      "badge": "unread-chats-count"
+    },
+    {
+      "label": "Profile",
+      "route": "/me",
+      "icon": "User",
+      "hotkey": "g p",
+      "active_match": "/me"
+    }
+  ],
+  "shells": {
+    "mobile-tab-bar": "Mobile-first shell with sticky compact header (52px), single-scroll body with bottom padding, and fixed bottom tab-bar (64px + safe-area inset). The bottom tab-bar hosts 4 nav items rendered by bottom-tab-bar pattern. Body owns the only scroll axis."
+  },
+  "dependencies": {
+    "patterns": {
+      "spatial-card-stack": ">=1.0.0",
+      "swipe-card": ">=1.0.0",
+      "swipe-action-bar": ">=1.0.0",
+      "match-celebration": ">=1.0.0",
+      "filter-bar": ">=1.0.0",
+      "presence-avatars": ">=1.0.0",
+      "stats-bar": ">=1.0.0",
+      "avatar-grid-tile": ">=1.0.0",
+      "conversation-list": ">=1.0.0",
+      "chat-thread": ">=1.0.0",
+      "chat-message": ">=1.0.0",
+      "chat-input": ">=1.0.0",
+      "chat-header": ">=1.0.0",
+      "mobile-profile-hero": ">=1.0.0",
+      "tech-pills": ">=1.0.0",
+      "settings-nav": ">=1.0.0",
+      "form": ">=1.0.0",
+      "hero": ">=1.0.0",
+      "bottom-tab-bar": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "swipecircle"
+    ],
+    "modes": [
+      "light"
+    ],
+    "shapes": [
+      "pill"
+    ]
+  },
+  "personality": [
+    "Mobile-first social discovery primary archetype. Photo-centric swipe deck dominates the visual hierarchy with bouncy spring physics and tactile gestural feedback. Coral primaries pop against warm peach backgrounds; violet match accents punctuate moments of joy. Bottom-tab-bar persists for always-available navigation. Match moments feel celebratory with the coral-to-violet burst overlay; chats feel intimate with rounded swipecircle-bubble messages. Empty states encourage rather than scold. Designed to feel native on iPhone but elegantly scaled in the 480px-wide centered desktop column."
+  ],
+  "certification": {
+    "tier": "demo",
+    "rationale": "Contains demo-mode localStorage session guidance; excluded from enterprise artifact sets."
+  }
+}

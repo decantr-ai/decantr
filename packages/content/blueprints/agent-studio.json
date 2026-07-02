@@ -1,0 +1,291 @@
+{
+  "$schema": "https://decantr.ai/schemas/blueprint.v1.json",
+  "id": "agent-studio",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Agent Studio",
+  "description": "Precision engineering studio for building, testing, and deploying AI agents. Combines agent builder, prompt library, tool registry, eval suite, trace viewer, and full auth with marketing landing.",
+  "blueprint_portfolio": {
+    "visibility": "featured",
+    "maturity": "certified-flagship",
+    "rationale": "Flagship blueprint with a maintained showcase capsule, thumbnail asset, and smoke-green shortlist verification suitable for first-run discovery.",
+    "artifact": {
+      "status": "certified",
+      "showcase": "agent-studio",
+      "notes": "Certified Artifact Contract V0: showcase capsule plus shortlist verification report are available in the Decantr monorepo."
+    }
+  },
+  "tags": [
+    "ai",
+    "agents",
+    "studio",
+    "builder",
+    "tools",
+    "prompts",
+    "eval",
+    "traces",
+    "2026"
+  ],
+  "compose": [
+    "agent-studio",
+    "prompt-library",
+    "tool-registry",
+    "eval-suite",
+    "trace-viewer",
+    "marketing-ai-studio",
+    "auth-full",
+    "settings-full"
+  ],
+  "theme": {
+    "mode": "dark",
+    "shape": "rounded",
+    "id": "carbon-neon"
+  },
+  "personality": "Precision engineering studio for AI agents. Carbon-dark surfaces with neon cyan highlights on active elements. Monospace typography for all prompts, traces, and model outputs. Split-pane interfaces reminiscent of an IDE — left tree, center editor, right preview. Think VS Code meets Langsmith. Interactions are immediate and keyboard-first. Every surface exists to reduce iteration cycles. Lucide icons. No decoration — every pixel serves the builder.",
+  "voice": {
+    "tone": "Technical and precise. Speaks to AI engineers and prompt designers.",
+    "cta_verbs": [
+      "Build",
+      "Test",
+      "Deploy",
+      "Trace",
+      "Iterate",
+      "Compare"
+    ],
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Easy",
+      "Simple"
+    ],
+    "empty_states": "IDE-style emptiness. An empty workspace should guide the user to create their first agent with a clear setup wizard. Minimal and purposeful.",
+    "errors": "Diagnostic and developer-friendly. Include error codes, stack context, and suggested fixes. Link to documentation when available.",
+    "loading": "Skeleton panes with blinking cursor placeholders in monospace fields. Split panels show loading shimmer. Progress bars for long operations."
+  },
+  "features": [
+    "agents",
+    "prompts",
+    "tools",
+    "evals",
+    "traces",
+    "auth",
+    "mfa",
+    "oauth",
+    "marketing",
+    "seo",
+    "keyboard-shortcuts",
+    "split-pane"
+  ],
+  "routes": {
+    "/": {
+      "page": "home",
+      "shell": "top-nav-footer",
+      "archetype": "marketing-ai-studio"
+    },
+    "/login": {
+      "page": "login",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/register": {
+      "page": "register",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/forgot-password": {
+      "page": "forgot-password",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/reset-password": {
+      "page": "reset-password",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/verify-email": {
+      "page": "verify-email",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/mfa-setup": {
+      "page": "mfa-setup",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/mfa-verify": {
+      "page": "mfa-verify",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/phone-verify": {
+      "page": "phone-verify",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/agents": {
+      "page": "agents",
+      "shell": "sidebar-aside",
+      "archetype": "agent-studio"
+    },
+    "/agents/:id": {
+      "page": "agent-detail",
+      "shell": "sidebar-aside",
+      "archetype": "agent-studio"
+    },
+    "/agents/config": {
+      "page": "agent-config",
+      "shell": "sidebar-aside",
+      "archetype": "agent-studio"
+    },
+    "/agents/tools": {
+      "page": "agent-tools",
+      "shell": "sidebar-aside",
+      "archetype": "agent-studio"
+    },
+    "/prompts": {
+      "page": "prompts",
+      "shell": "sidebar-main",
+      "archetype": "prompt-library"
+    },
+    "/prompts/:id": {
+      "page": "prompt-detail",
+      "shell": "sidebar-main",
+      "archetype": "prompt-library"
+    },
+    "/prompts/compare": {
+      "page": "prompt-compare",
+      "shell": "sidebar-main",
+      "archetype": "prompt-library"
+    },
+    "/tools": {
+      "page": "tools",
+      "shell": "sidebar-main",
+      "archetype": "tool-registry"
+    },
+    "/tools/:id": {
+      "page": "tool-detail",
+      "shell": "sidebar-main",
+      "archetype": "tool-registry"
+    },
+    "/evals": {
+      "page": "evals",
+      "shell": "sidebar-main",
+      "archetype": "eval-suite"
+    },
+    "/evals/:id": {
+      "page": "eval-detail",
+      "shell": "sidebar-main",
+      "archetype": "eval-suite"
+    },
+    "/evals/compare": {
+      "page": "eval-compare",
+      "shell": "sidebar-main",
+      "archetype": "eval-suite"
+    },
+    "/evals/create": {
+      "page": "eval-create",
+      "shell": "sidebar-main",
+      "archetype": "eval-suite"
+    },
+    "/traces": {
+      "page": "traces",
+      "shell": "sidebar-main",
+      "archetype": "trace-viewer"
+    },
+    "/traces/:id": {
+      "page": "trace-detail",
+      "shell": "sidebar-main",
+      "archetype": "trace-viewer"
+    },
+    "/settings/profile": {
+      "page": "profile",
+      "shell": "sidebar-aside",
+      "archetype": "settings-full"
+    },
+    "/settings/security": {
+      "page": "security",
+      "shell": "sidebar-aside",
+      "archetype": "settings-full"
+    },
+    "/settings/preferences": {
+      "page": "preferences",
+      "shell": "sidebar-aside",
+      "archetype": "settings-full"
+    },
+    "/settings/danger": {
+      "page": "danger",
+      "shell": "sidebar-aside",
+      "archetype": "settings-full"
+    }
+  },
+  "overrides": {
+    "features_add": [
+      "theme-toggle",
+      "command-palette"
+    ],
+    "features_remove": [],
+    "pages": {},
+    "pages_remove": []
+  },
+  "seo_hints": {
+    "schema_org": [
+      "Organization",
+      "WebApplication",
+      "SoftwareApplication"
+    ],
+    "meta_priorities": [
+      "description",
+      "og:image",
+      "twitter:card"
+    ]
+  },
+  "navigation": {
+    "command_palette": true,
+    "hotkeys": [
+      {
+        "key": "g a",
+        "route": "/agents",
+        "label": "Go to Agents"
+      },
+      {
+        "key": "g p",
+        "route": "/prompts",
+        "label": "Go to Prompts"
+      },
+      {
+        "key": "g t",
+        "route": "/tools",
+        "label": "Go to Tools"
+      },
+      {
+        "key": "g e",
+        "route": "/evals",
+        "label": "Go to Evals"
+      },
+      {
+        "key": "g r",
+        "route": "/traces",
+        "label": "Go to Traces"
+      }
+    ]
+  },
+  "dependencies": {
+    "archetypes": {
+      "agent-studio": ">=1.0.0",
+      "prompt-library": ">=1.0.0",
+      "tool-registry": ">=1.0.0",
+      "eval-suite": ">=1.0.0",
+      "trace-viewer": ">=1.0.0",
+      "marketing-ai-studio": ">=1.0.0",
+      "auth-full": ">=1.0.0",
+      "settings-full": ">=1.0.0"
+    }
+  },
+  "suggested_themes": [
+    "carbon-neon",
+    "carbon",
+    "terminal",
+    "fintech"
+  ]
+}

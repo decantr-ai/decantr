@@ -1,0 +1,148 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "file-browser",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "File Browser",
+  "description": "File and folder tree with preview panel, breadcrumb navigation, and multi-select for comprehensive file management.",
+  "category": "content-management",
+  "tags": [
+    "2026",
+    "files",
+    "folders",
+    "tree",
+    "file-manager",
+    "drag-and-drop",
+    "content-management",
+    "preview"
+  ],
+  "components": [
+    "FolderTree",
+    "FileList",
+    "FileCard",
+    "FileRow",
+    "PreviewPanel",
+    "BreadcrumbBar",
+    "ActionBar",
+    "UploadDropzone"
+  ],
+  "default_preset": "split",
+  "presets": {
+    "tree": {
+      "description": "Sidebar folder tree navigation with a flat file list on the right — traditional file manager layout optimized for deep folder hierarchies",
+      "layout": {
+        "layout": "split",
+        "atoms": "_flex _row _h-full _bg-surface _border _rounded"
+      }
+    },
+    "grid": {
+      "description": "Icon grid view showing file cards with thumbnails and names in a responsive masonry-like grid — best for visual browsing of images and documents",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _grid-cols-auto-fill _gap-4 _p-4 _bg-surface"
+      }
+    },
+    "list": {
+      "description": "Table-style list view with sortable columns (name, size, type, modified date) — optimized for detailed file information and bulk operations",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _h-full _bg-surface _border _rounded"
+      }
+    },
+    "split": {
+      "description": "Three-panel layout: folder tree left, file list center, preview panel right — the most comprehensive view combining navigation, listing, and preview in one screen",
+      "layout": {
+        "layout": "split",
+        "atoms": "_flex _row _h-full _bg-surface _border _rounded"
+      }
+    }
+  },
+  "visual_brief": "A two-or-three-panel file management interface with clean lines and clear visual hierarchy. The leftmost panel is the FolderTree (240px wide, collapsible): a vertical list of folders with indentation levels (16px per level) connected by thin vertical and horizontal connector lines (1px solid var(--d-border-subtle), gray) forming an ASCII-tree-like structure. Folder icons are small (16px) filled folder shapes that rotate open (chevron turns 90deg) when expanded. The active/selected folder has an accent-tinted background row (var(--d-accent) at 10% opacity) with accent-colored text. Hovering any folder row shows a subtle background tint. The center panel is the FileList (flex: 1, fills remaining space). Above it spans the BreadcrumbBar: a horizontal path showing the current location as clickable segments separated by chevron-right icons (e.g., 'Home > Projects > Design > Assets'), each segment in text-sm with hover underline, the final segment in font-semibold. Below the breadcrumb is the ActionBar: a horizontal toolbar with icon+label buttons for Upload, New Folder, Delete, and a view-mode toggle (grid/list icons), plus a search input on the right side (240px wide, with a search icon prefix). The file list itself renders either as FileCards in grid mode (120px wide cards with a 64px icon/thumbnail centered above the filename) or FileRows in list mode (table rows with columns: checkbox, icon, name, size, type, date modified, each sortable by clicking the column header). File icons use distinct shapes and colors per type: documents are blue page icons, images are green landscape icons, code files are purple bracket icons, archives are amber box icons, PDFs are red document icons. Selected files have an accent-tinted background (var(--d-accent) at 8% opacity) with a visible checkbox checked state. Multi-select is supported via Shift+click (range) and Ctrl/Cmd+click (additive). The rightmost panel is the PreviewPanel (320px wide, slides in from the right when a file is selected). It shows: a large thumbnail or file-type icon at the top (200px max-height), the filename (text-base font-semibold), file metadata in a key-value list (Size, Type, Created, Modified, Owner — each as text-sm rows), and quick action buttons (Download, Share, Rename, Delete) as ghost-style icon+label buttons. The UploadDropzone activates on drag-over: a full-area overlay (position: absolute, inset: 0, z-index above all content) with a dashed border (3px dashed var(--d-accent), border-radius 12px), translucent accent-tinted background (var(--d-accent) at 8%), and a centered column with a large upload cloud icon (48px) and 'Drop files to upload' text (text-lg, text-accent). During file drag operations, a ghost badge follows the cursor showing the count of files being moved ('3 files') in a small accent pill.",
+  "layout_hints": {
+    "container": "multi-panel",
+    "note": "The split preset uses a three-panel layout with resizable dividers. The folder tree and preview panels are collapsible. Panel widths should be adjustable via drag handles on the divider borders.",
+    "folder_tree": "Connector lines use a combination of vertical lines (from parent to last child) and horizontal stubs (from vertical line to folder icon). Use CSS ::before pseudo-elements on each tree item. Indent each level by 16px.",
+    "file_icons": "File type icons MUST be visually distinct — do not use a generic file icon for everything. Use color-coded icons: blue for documents (.doc, .txt), green for images (.png, .jpg), purple for code (.js, .ts, .py), amber for archives (.zip, .tar), red for PDFs. This color coding is essential for quick visual scanning.",
+    "selection": "Selected files must have a clearly visible accent background tint AND a checked checkbox. Multi-select interactions: click selects single, Shift+click selects range, Ctrl/Cmd+click toggles individual selection.",
+    "preview_panel": "The preview panel should only appear when a file (not folder) is selected. For image files, show an actual thumbnail. For other files, show a large file-type icon. The panel slides in from the right edge with a 250ms animation."
+  },
+  "default_layout": {
+    "layout": "split",
+    "atoms": "_flex _row _h-full _bg-surface _rounded _border _overflow-hidden",
+    "slots": {
+      "folder-tree": "Left panel, 240px wide (resizable, min 180px, max 360px), with a right border (1px solid var(--d-border-subtle)). Contains a vertical scrollable list of folder entries. Each entry is a horizontal row: an expand/collapse chevron (16px, rotates 0deg→90deg on expand, hidden for empty folders), a folder icon (16px, filled style, accent-colored when selected), and the folder name (text-sm, truncated with ellipsis). Indentation: each nesting level adds 16px of left padding. Connector lines: a thin vertical line (1px solid var(--d-border-muted)) runs from a parent's expand icon down to its last child, with horizontal stubs (12px wide) branching to each child. The active folder row has background: color-mix(in srgb, var(--d-accent) 10%, transparent) with the folder name in accent color and font-medium. Hover rows get a subtle background tint (var(--d-bg-muted)). Right-click opens a context menu (Rename, Delete, New Subfolder). The panel header shows 'Folders' in text-xs uppercase tracking-wide text-muted with a collapse button (chevron-left icon) on the right.",
+      "breadcrumb-bar": "Horizontal bar above the file list area, height 40px, padding 0 16px, flex items center, border-bottom 1px solid var(--d-border-subtle). Shows the current folder path as a series of clickable text segments: each segment is a text-sm link (text-muted, hover: text-foreground, hover: underline) separated by chevron-right icons (12px, text-muted). The final (current) segment is text-foreground font-semibold and is not clickable. If the path is too long, early segments collapse into a '...' dropdown that reveals the full path on click. A home icon (16px) precedes the first segment as a clickable root link.",
+      "action-bar": "Horizontal toolbar below the breadcrumb bar, height 44px, padding 0 12px, flex items center gap-2, border-bottom 1px solid var(--d-border-subtle). Left section: Upload button (primary variant, small size, upload-cloud icon + 'Upload' text), New Folder button (ghost variant, folder-plus icon + 'New Folder'), Delete button (ghost variant, trash icon, text-error, disabled unless files are selected, shows selected count). Separator (1px vertical line, 20px tall, var(--d-border-muted)). View toggle: two icon buttons (grid-view and list-view) where the active mode has accent background. Right section: search input (240px wide, border-radius 8px, search icon prefix, placeholder 'Search files...', text-sm). When files are selected, an additional '3 selected' indicator appears with a 'Clear selection' text button.",
+      "file-list": "Center panel, flex: 1, scrollable vertically. In list mode: a table layout with a sticky header row showing column names (Checkbox, Name, Size, Type, Modified) in text-xs uppercase tracking-wide text-muted font-medium. Each column header is clickable to sort (shows an up/down arrow indicator). Rows alternate between transparent and var(--d-bg-muted) at 30% opacity for scanability. Each FileRow: height 44px, flex items center, padding 0 12px. Row contents: checkbox (18px, rounded-sm, accent-checked), file type icon (20px, color-coded), file name (text-sm, flex-1, truncated), file size (text-xs, text-muted, 80px wide), file type label (text-xs, text-muted, 100px wide), modified date (text-xs, text-muted, 140px wide). Selected rows have accent-tinted background. Hover rows get subtle background. Double-click opens file/folder. In grid mode: a responsive grid (grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)), gap 16px, padding 16px). Each FileCard: a vertical stack (width fills grid cell) with a centered icon or thumbnail (64px height area), file name below (text-xs, text-center, max 2 lines with line-clamp-2), and a selected state showing an accent ring around the card. Hover lifts the card slightly (translateY(-2px), shadow increase).",
+      "preview-panel": "Right panel, 320px wide (resizable, min 240px, max 480px), with a left border (1px solid var(--d-border-subtle)). Slides in from the right when a file is selected, slides out when deselected. Top section: a large preview area (padding 24px, centered) showing either a thumbnail image (max-width 100%, max-height 200px, object-fit contain, rounded 8px with subtle shadow) or a large file-type icon (72px) on a muted circular background (120px diameter). Below: the filename (text-base font-semibold, padding 0 24px, word-break), then a metadata section (padding 16px 24px) with key-value rows: each row has a label (text-xs text-muted uppercase, 80px wide) and a value (text-sm text-foreground). Metadata includes: Size, Type, Created, Modified, Owner, Location. Below metadata: a divider line, then a row of quick-action ghost buttons (Download, Share, Rename, Move, Delete) with icon + label, arranged as a flex-wrap row with 8px gap. The Delete button uses text-error color.",
+      "upload-dropzone": "An overlay that activates when files are dragged over the browser window. Position: absolute, inset: 0, z-index: 50 (above all panel content). Border: 3px dashed var(--d-accent) with border-radius 12px. Background: color-mix(in srgb, var(--d-accent) 8%, var(--d-bg-surface) 92%). Contains a centered vertical flex column: a large cloud-upload icon (48px, text-accent), 'Drop files to upload' heading (text-lg, font-semibold, text-accent), and 'or click to browse' subtext (text-sm, text-muted). The overlay fades in over 200ms when drag enters and fades out over 150ms when drag leaves. On drop, transitions to an upload progress state showing a progress bar and file list."
+    }
+  },
+  "accessibility": {
+    "role": "application",
+    "aria-label": "File browser",
+    "announcements": [
+      "Navigated to folder {name}",
+      "{count} files selected",
+      "File {name} preview opened",
+      "Uploading {count} files — {percent}% complete",
+      "File {name} deleted",
+      "Sorted by {column} {ascending|descending}"
+    ],
+    "keyboard": [
+      "Tab: move focus between folder tree, file list, and preview panel",
+      "Arrow Up/Down: navigate files in list, folders in tree",
+      "Arrow Left/Right: collapse/expand folders in tree, move between columns in list",
+      "Enter: open selected file or navigate into folder",
+      "Space: toggle file selection",
+      "Shift+Arrow: extend selection range",
+      "Ctrl/Cmd+A: select all files in current folder",
+      "Delete/Backspace: delete selected files (with confirmation)",
+      "Ctrl/Cmd+C/V: copy/paste files",
+      "F2: rename selected file",
+      "Ctrl/Cmd+Shift+N: create new folder",
+      "Escape: clear selection or close preview panel"
+    ]
+  },
+  "responsive": {
+    "mobile": "Single-panel layout only. Folder tree becomes a full-screen overlay triggered by a hamburger/folder icon in the action bar. File list defaults to a simplified list view (name + icon + size only, no table columns). Preview panel becomes a bottom sheet on file tap. Breadcrumb bar shows only the current folder name with a back arrow. Action bar simplifies to essential actions behind an overflow menu. Upload dropzone is replaced by an upload button that opens the system file picker. Multi-select uses a long-press to enter selection mode with checkboxes.",
+    "tablet": "Two-panel layout: folder tree (collapsible) + file list. Preview panel is a slide-over overlay from the right (50% width). Grid view shows 4-5 columns of file cards. Action bar shows primary actions with remaining in overflow. Drag-and-drop supported for file organization. Breadcrumb bar shows full path with horizontal scroll if needed.",
+    "desktop": "Full three-panel split layout. All panels visible simultaneously with resizable dividers (drag handles on borders). Folder tree 240px, file list flex, preview 320px. Full table columns in list view with sortable headers. Keyboard shortcuts fully enabled. Right-click context menus on files and folders. Drag-and-drop between folders with visual drop indicators. Search input with real-time filtering and type-ahead."
+  },
+  "motion": {
+    "micro": {
+      "row-hover": "background-color transition 100ms ease-out",
+      "card-hover": "translateY(-2px) + shadow increase, 150ms ease-out",
+      "folder-expand": "chevron rotates 0→90deg, 200ms ease-out; children slide down with stagger 50ms each",
+      "checkbox-check": "scale bounce 1.0→1.2→1.0, 200ms ease-out with checkmark draw animation"
+    },
+    "transitions": {
+      "preview-open": "Preview panel slides in from right edge, width 0→320px, 250ms ease-out with content fade-in 150ms delay",
+      "preview-close": "Panel slides out to right, 200ms ease-in, content fades immediately",
+      "view-switch": "Cross-fade between grid and list views, 200ms ease-in-out with content scale 0.98→1.0",
+      "dropzone-activate": "Overlay fades in from opacity 0→1 over 200ms with border dash animation"
+    },
+    "ambient": {
+      "upload-progress": "Progress bar fills with smooth width transition, striped gradient animation moving left-to-right at 1s linear infinite",
+      "drag-ghost": "File count badge follows cursor with 50ms position lerp for smooth trailing effect"
+    }
+  },
+  "interactions": [
+    "click-select",
+    "hover-reveal",
+    "animate-on-mount",
+    "keyboard-navigation"
+  ],
+  "composition": {
+    "FileBrowser": "Browser(d-section, flex-row, full-height) > [FolderTree?(d-surface) + MainArea(flex-col, flex-1) + PreviewPanel?(d-surface)]",
+    "MainArea": "Area(flex-col) > [BreadcrumbBar + ActionBar + FileList(scrollable)]",
+    "FolderTree": "Tree(d-surface, scrollable, resizable) > FolderEntry*(indented, connectors) > [Chevron + FolderIcon + Name]",
+    "FileList": "List(d-surface, scrollable) > FileRow*(d-interactive) | FileCard*(d-interactive)",
+    "FileRow": "Row(d-interactive, flex-row) > [Checkbox + TypeIcon + Name + Size + Type + Modified]",
+    "FileCard": "Card(d-interactive, flex-col, centered) > [Thumbnail|TypeIcon + FileName]",
+    "PreviewPanel": "Panel(d-surface, slide-in, resizable) > [Preview(image|icon) + Filename + Metadata(key-value) + QuickActions]",
+    "BreadcrumbBar": "Bar(d-annotation, flex-row) > Segment*(clickable, chevron-separated)",
+    "ActionBar": "Bar(d-control, flex-row) > [UploadButton + NewFolderButton + DeleteButton + ViewToggle + SearchInput]",
+    "UploadDropzone": "Overlay(d-interactive, dashed-border, centered) > [UploadIcon + DropText + BrowseLink]"
+  }
+}

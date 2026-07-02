@@ -1,0 +1,119 @@
+{
+  "id": "drag-sort-list",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Drag Sort List",
+  "description": "A vertically reorderable list with drag handles, keyboard reordering support, and animated position indicators for intuitive item rearrangement.",
+  "category": "interaction",
+  "tags": [
+    "2026",
+    "interaction",
+    "drag-and-drop",
+    "sortable",
+    "reorder",
+    "list"
+  ],
+  "components": [
+    "SortableList",
+    "SortableItem",
+    "DragHandle",
+    "PositionIndicator",
+    "DropZone"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full-featured sortable list with drag handles, item content, and optional trailing actions — suitable for settings pages, playlist editors, and priority lists",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _gap-0 _w100"
+      }
+    },
+    "compact": {
+      "description": "Minimal-height sortable rows at 36px each, optimized for dense data scenarios like column reordering panels or bulk sort interfaces",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _gap-0 _w100 _text-sm"
+      }
+    },
+    "numbered": {
+      "description": "Sortable list with live-updating rank numbers displayed to the left of each item, ideal for leaderboards, priority queues, and ranked preference lists",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _gap-0 _w100"
+      }
+    }
+  },
+  "visual_brief": "A vertical stack of list items, each rendered as a full-width row with a 6-dot grip icon (two columns of three dots, styled in muted gray) flush to the left edge serving as the drag handle. The drag handle area is 40px wide with a subtle hover background tint. Each item row has 12px vertical padding, a 1px bottom border in border-muted color, and transitions background-color on hover to a faint surface tint. When a user initiates a drag, the grabbed item lifts above the list with an elevated box-shadow (0 8px 24px rgba(0,0,0,0.15)) and a slight scale transform (1.02), maintaining its full width. The original position shows a 2px-high accent-colored horizontal line spanning the full list width as a drop indicator. As the dragged item moves vertically, items below the cursor shift downward with a smooth 200ms ease transition, and the accent drop-indicator line tracks the insertion point between items. On drop, the item settles into its new position with a 150ms ease-out transition. The numbered preset prepends a 32px-wide column showing rank numbers (1, 2, 3...) in semi-bold muted text that re-index live during drag — numbers animate between positions with a counter transition. The compact preset reduces row height to 36px, uses text-sm for content, narrows the drag handle to 28px, and removes the bottom border in favor of alternating row background tints (transparent / surface-subtle). All presets show a focus-visible ring (2px accent outline, 2px offset) around the currently keyboard-focused item.",
+  "layout_hints": {
+    "container": "card or inline",
+    "note": "Best placed inside a d-surface card. Each SortableItem is a full-width row. The list should have a max-height with overflow-y auto for long lists.",
+    "drag_handle": "The 6-dot grip icon MUST be the leftmost element in each row. It uses a 2×3 grid of 4px circles with 3px gaps. Color: text-muted, hover: text-default. cursor: grab, active: cursor: grabbing.",
+    "drop_zone": "The drop indicator line is absolutely positioned between items. It spans the full width of the list container, is 2px tall, and uses the accent color with a subtle glow (box-shadow: 0 0 4px var(--d-accent))."
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _flex-col _gap-0 _w100 _relative",
+    "slots": {
+      "sortable-list": "The outer container for all sortable items. Renders as a vertical flex column with no gap (items are flush). Sets role='listbox' and aria-label='Reorderable list'. Manages drag state, tracks the currently dragged item index, and calculates drop position from pointer coordinates. On keyboard reorder, dispatches announcements like 'Item moved to position 3 of 7'. Has a subtle 1px border and border-radius-md when placed standalone.",
+      "sortable-item": "Repeating slot — one per list entry. Each item is a horizontal flex row with align-items center. Layout: [DragHandle (40px fixed) | Content (flex-1) | Actions? (auto)]. Background: transparent, hover: surface-subtle. Border-bottom: 1px solid border-muted (except last child). Padding: 12px vertical, 8px horizontal. When being dragged: position fixed, z-index 1000, width matches original, box-shadow: 0 8px 24px rgba(0,0,0,0.15), transform: scale(1.02), pointer-events: none on children except the handle. When another item is being dragged over this slot, it translates Y by the height of the dragged item with a 200ms ease transition. aria-roledescription='sortable item', aria-grabbed tracks drag state.",
+      "drag-handle": "A 40px-wide touch target containing a 6-dot grip icon (two vertical columns of three 4px circles, spaced 3px apart, centered within the handle area). Color: text-muted by default, text-default on hover. cursor: grab (grabbing when active). The handle has a subtle rounded background on hover (4px border-radius, bg-surface-hover). On focus-visible, shows a 2px accent ring. This is the only element that initiates drag — the rest of the row does not trigger reorder on pointer down. For touch devices, the handle area expands to 48px for easier targeting.",
+      "position-indicator": "The horizontal drop-target line shown between items during an active drag operation. Absolutely positioned within the list container at the calculated insertion point. Width: 100%, height: 2px, background: accent color. Enhanced with a subtle glow: box-shadow 0 0 6px color-mix(in srgb, var(--d-accent) 40%, transparent). Appears with a fast 100ms fade-in. Hidden when no drag is active. In the numbered preset, the indicator also shows a small floating badge with the prospective rank number.",
+      "drop-zone": "An invisible overlay region calculated per item that determines which gap the pointer is closest to. Each item has a top-half and bottom-half hit zone. When the pointer enters the top half, the indicator appears above that item; bottom half places it below. The drop zone extends 8px beyond the list edges to allow inserting at the very top or bottom. Visual feedback: none (the position-indicator handles all visual cues)."
+    }
+  },
+  "accessibility": {
+    "role": "listbox",
+    "aria-label": "Reorderable list",
+    "announcements": [
+      "Item {name} picked up from position {from}",
+      "Item {name} moved to position {to} of {total}",
+      "Item {name} dropped at position {to}",
+      "Reorder cancelled, item returned to position {from}"
+    ],
+    "keyboard": [
+      "Tab: move focus between sortable items",
+      "Space: pick up or drop the focused item for reordering",
+      "Arrow Up: move picked-up item one position up",
+      "Arrow Down: move picked-up item one position down",
+      "Escape: cancel reorder and return item to original position",
+      "Home: move picked-up item to first position",
+      "End: move picked-up item to last position"
+    ]
+  },
+  "responsive": {
+    "mobile": "Drag handle touch target expands to 48px width. Long-press (300ms) on the handle initiates drag to prevent accidental reorders during scroll. Drop indicator line remains 2px but gains a wider glow for visibility on small screens. Compact preset increases row height to 44px for touch accessibility. Numbered preset reduces rank number font size to text-xs.",
+    "tablet": "Full drag behavior supported with touch. Drag handle is 44px. Scroll container supports momentum scrolling while drag is inactive. When a drag is active, container scroll locks to prevent conflicting gestures.",
+    "desktop": "Standard mouse-based drag and drop. Drag handle shows grab cursor. Smooth item displacement animations at 200ms. Keyboard reorder fully supported with live aria announcements."
+  },
+  "motion": {
+    "micro": {
+      "handle-hover": "background-color fade 150ms ease",
+      "item-hover": "background-color fade 120ms ease"
+    },
+    "transitions": {
+      "item-lift": "box-shadow 0→elevated + scale 1→1.02, 200ms ease-out",
+      "item-drop": "box-shadow elevated→0 + scale 1.02→1, 150ms ease-out",
+      "item-shift": "translateY 200ms ease",
+      "rank-update": "counter value tween 200ms ease-in-out"
+    },
+    "ambient": {
+      "indicator-glow": "box-shadow pulse on accent 1.5s ease-in-out infinite while drag active"
+    }
+  },
+  "interactions": [
+    "drag-reorder",
+    "click-select",
+    "animate-on-mount",
+    "hover-reveal",
+    "stagger-children"
+  ],
+  "composition": {
+    "SortableList": "Container(d-section, role=listbox) > SortableItem*",
+    "SortableItem": "Row(d-interactive, flex, align-center) > [DragHandle + Content(flex-1) + Actions?]",
+    "DragHandle": "TouchTarget(40px, cursor=grab) > GripIcon(6-dot)",
+    "PositionIndicator": "Line(absolute, accent, 2px-h, full-width, glow)",
+    "DropZone": "HitArea(invisible, per-item, top-half|bottom-half)"
+  }
+}

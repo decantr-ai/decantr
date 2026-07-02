@@ -1,0 +1,96 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "marketing-crm",
+  "role": "public",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "CRM Marketing",
+  "description": "Public marketing landing page for the AI-native CRM. Showcases AI-powered sales features, pipeline management, pricing, and customer testimonials with strong conversion CTAs.",
+  "tags": [
+    "marketing",
+    "landing",
+    "crm",
+    "seo",
+    "public"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "crm landing page",
+        "crm marketing",
+        "sales crm homepage",
+        "ai crm landing",
+        "crm product page"
+      ],
+      "secondary": [
+        "crm pricing",
+        "crm features",
+        "sales platform",
+        "try crm",
+        "crm sign up"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "split",
+          "as": "hero"
+        },
+        {
+          "pattern": "features",
+          "preset": "standard",
+          "as": "features"
+        },
+        {
+          "pattern": "testimonials",
+          "preset": "standard",
+          "as": "testimonials"
+        },
+        {
+          "pattern": "pricing",
+          "preset": "standard",
+          "as": "pricing"
+        },
+        {
+          "pattern": "cta-section",
+          "preset": "standard",
+          "as": "cta"
+        }
+      ],
+      "default_layout": [
+        "hero",
+        "features",
+        "testimonials",
+        "pricing",
+        "cta-section"
+      ],
+      "shell": "top-nav-footer"
+    }
+  ],
+  "page_briefs": {
+    "home": "Conversion-focused CRM landing page. Opens with a split hero — bold headline and subhead on the left, product screenshot showing the AI pipeline board on the right, with primary and secondary CTA buttons. Scrolls into a feature grid showcasing AI enrichment, smart pipeline, meeting intelligence, and email assist. Testimonials section displays customer quotes in a three-column card layout. Pricing presents starter, professional, and enterprise tiers. Closes with a full-width CTA section encouraging free trial sign-up."
+  },
+  "features": [
+    "marketing",
+    "seo"
+  ],
+  "suggested_theme": {
+    "ids": [
+      "luminarum",
+      "clean",
+      "launchpad"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

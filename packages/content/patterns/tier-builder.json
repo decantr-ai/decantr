@@ -1,0 +1,131 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "tier-builder",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Tier Builder",
+  "description": "Subscription tier configuration interface with drag-reorder, benefit editor, pricing inputs, and live preview.",
+  "dependencies": {
+    "patterns": {
+      "tier-card": "^1.0.0"
+    },
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Card",
+        "Input",
+        "Badge",
+        "Switch",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Card",
+    "Input",
+    "Badge",
+    "Switch",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full tier editor with drag-reorder, benefits, and live preview",
+      "components": [
+        "Button",
+        "Card",
+        "Input",
+        "Badge",
+        "Switch",
+        "icon"
+      ],
+      "layout": {
+        "layout": "split",
+        "atoms": "_grid _gc1 _lg:gc2 _gap6",
+        "slots": {
+          "tier-list": "Existing tiers with drag handles for reordering",
+          "tier-form": "Create/edit tier form with all fields",
+          "benefits-editor": "Add/remove/reorder tier benefits",
+          "price-input": "Monthly and yearly pricing inputs",
+          "preview": "Live tier card preview"
+        }
+      }
+    },
+    "compact": {
+      "description": "Simplified tier list view for mobile",
+      "components": [
+        "Button",
+        "Card",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "tier-list": "Compact tier cards",
+          "add-button": "Add tier button"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "split",
+    "atoms": "_grid _gc1 _lg:gc2 _gap6",
+    "slots": {
+      "tier-list": "Existing tiers",
+      "tier-form": "Tier editor form",
+      "benefits-editor": "Benefits management",
+      "preview": "Live preview"
+    }
+  },
+  "io": {
+    "produces": [
+      "tier-data",
+      "tier-saved"
+    ],
+    "consumes": [
+      "existing-tiers"
+    ]
+  },
+  "visual_brief": "Configuration interface for creating and managing subscription tiers. A tier list on the left shows existing tiers as draggable cards with name, price, and subscriber count. Selecting a tier opens an editor form on the right with fields: tier name input, price input (with currency selector), description textarea, and a benefits editor (sortable list of benefit items with add/remove). A live preview card shows how the tier will appear to subscribers. The compact preset combines the list and editor into a single-column flow. 'Add Tier' button at the bottom of the tier list.",
+  "responsive": {
+    "mobile": "Single-column layout — tier list at top, editor below when a tier is selected. Preview at the bottom. Drag-to-reorder uses long-press.",
+    "tablet": "Two-column layout — tier list on left, editor on right. Preview below the editor.",
+    "desktop": "Three-column layout — tier list, editor, and live preview all visible simultaneously."
+  },
+  "layout_hints": {
+    "builder_priority": "The tier list establishes structure, the form enables editing, and the preview confirms the subscriber-facing result. Keep those roles visually distinct.",
+    "edit_focus": "Selected tier context should remain obvious while editing benefits and pricing so users never lose track of which plan they are changing.",
+    "mobile_sequence": "On narrow screens, preserve a stable top-to-bottom flow from list to editor to preview instead of forcing simultaneous multi-panel density."
+  },
+  "motion": {
+    "micro": "Drag handles, selected tiers, and benefit rows may sharpen or highlight subtly during editing interactions.",
+    "transitions": "Tier reordering, selection changes, and preview updates should feel direct and workbench-like rather than playful."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "inline-edit",
+    "keyboard-navigation"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Tier builder",
+    "keyboard": [
+      "Tier selection, form fields, and any sortable benefits should remain operable by keyboard with clear focus and ordering cues."
+    ],
+    "announcements": [
+      "Selected tier, pricing values, and benefit changes should be exposed semantically so plan editing remains understandable without drag interactions alone."
+    ]
+  },
+  "composition": {
+    "TierBuilder": "Container(d-section, split: list|editor|preview) > [TierList + TierForm + LivePreview?]",
+    "TierList": "Panel(d-surface, flex-col) > [TierItem(d-data-row, draggable)[] + AddTierButton(d-interactive)]",
+    "TierItem": "Row(d-data-row) > [DragHandle + TierName(font-medium) + Price(mono-data) + SubscriberCount(d-annotation)]",
+    "TierForm": "Form(d-surface) > [NameInput(d-control) + PriceInput(d-control, currency) + DescriptionTextarea(d-control) + BenefitsEditor > BenefitRow(d-data-row, sortable)[]]",
+    "LivePreview": "Panel(d-surface) > TierCard"
+  }
+}

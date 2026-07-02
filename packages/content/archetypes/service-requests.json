@@ -1,0 +1,141 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "service-requests",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Service Requests",
+  "description": "Citizen service request system with submission forms, map pin placement, kanban tracking, and status timelines. Enables residents to report issues and track resolution.",
+  "tags": [
+    "service-requests",
+    "311",
+    "civic",
+    "mapping",
+    "citizen-reports",
+    "kanban"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "service requests",
+        "311 system",
+        "citizen reports",
+        "issue reporting",
+        "civic requests"
+      ],
+      "secondary": [
+        "report pothole",
+        "issue tracking",
+        "municipal requests"
+      ],
+      "negative": [
+        "customer support",
+        "enterprise ticketing"
+      ]
+    },
+    "implies": [
+      "service-requests",
+      "mapping"
+    ],
+    "weight": 0.8,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "requests",
+      "path": "/requests",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "request-table"
+        },
+        {
+          "pattern": "kanban-board",
+          "preset": "standard",
+          "as": "request-board"
+        }
+      ],
+      "default_layout": [
+        "request-table",
+        "request-board"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "new-request",
+      "path": "/requests/new",
+      "patterns": [
+        {
+          "pattern": "form-sections",
+          "preset": "standard",
+          "as": "request-form"
+        },
+        {
+          "pattern": "map-view",
+          "preset": "pins",
+          "as": "location-picker"
+        }
+      ],
+      "default_layout": [
+        "request-form",
+        "location-picker"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "request-detail",
+      "path": "/requests/:id",
+      "patterns": [
+        {
+          "pattern": "detail-header",
+          "preset": "standard",
+          "as": "request-header"
+        },
+        {
+          "pattern": "timeline",
+          "preset": "standard",
+          "as": "status-timeline"
+        }
+      ],
+      "default_layout": [
+        "request-header",
+        "status-timeline"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "requests": "Service request management page offers both a data table view with sortable columns for request id, category, location, reporter, status, assigned crew, priority, and SLA age, and a kanban board view with columns for Submitted, Triaged, In Progress, Resolved, and Closed. Users can toggle between views for different workflows.",
+    "new-request": "New request submission page splits into a form-sections panel on the left with category selector, description textarea, photo uploader, and contact fields, paired with a pin-mode map view on the right where the citizen drops a marker on the exact location of the issue. The selected coordinates auto-populate the form.",
+    "request-detail": "Request detail page shows a detail header with request id, category icon, reporter, location address, current status pill, assigned crew, and priority. Below, a status timeline renders every event from submission through triage, assignment, work orders, resolution, and closure, each entry timestamped with the actor and attached photos or notes."
+  },
+  "features": [
+    "service-requests",
+    "mapping"
+  ],
+  "shells": {
+    "sidebar-main": "Left sidebar with request categories and main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "data-table": ">=1.0.0",
+      "kanban-board": ">=1.0.0",
+      "form-sections": ">=1.0.0",
+      "map-view": ">=1.0.0",
+      "detail-header": ">=1.0.0",
+      "timeline": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "civic",
+      "professional"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

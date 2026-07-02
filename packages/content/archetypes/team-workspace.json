@@ -1,0 +1,71 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "team-workspace",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Team Workspace",
+  "description": "Team member management and permission configuration. Data table of members with role badges and a permission matrix for fine-grained access control.",
+  "tags": ["team", "members", "permissions", "roles", "workspace", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["team management", "team workspace", "team members", "user management", "permissions"],
+      "secondary": ["roles", "access control", "invite members", "team settings"],
+      "negative": ["analytics", "billing", "marketing"]
+    },
+    "implies": [],
+    "weight": 0.8,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "team",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "team-table"
+        },
+        {
+          "pattern": "team-member-row",
+          "preset": "standard",
+          "as": "member-row"
+        }
+      ],
+      "default_layout": ["team-table"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "permissions",
+      "patterns": [
+        {
+          "pattern": "permission-matrix",
+          "preset": "standard",
+          "as": "permissions-grid"
+        }
+      ],
+      "default_layout": ["permissions-grid"],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "team": "Data table listing all team members with columns for name, email, role badge, status, and last active. Row actions include edit role, remove, and resend invite. Invite button in the header opens a modal. Filterable by role and status.",
+    "permissions": "Permission matrix grid with roles as columns and permissions as rows. Toggle switches at each intersection. Role descriptions at column headers. Changes auto-save with confirmation toast."
+  },
+  "features": ["invite", "roles", "permissions", "search"],
+  "shells": {
+    "sidebar-main": "Collapsible sidebar navigation with main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "data-table": ">=1.0.0",
+      "team-member-row": ">=1.0.0",
+      "permission-matrix": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": ["auradecantism"],
+    "modes": ["dark", "light"]
+  }
+}

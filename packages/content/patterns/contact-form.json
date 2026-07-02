@@ -1,0 +1,135 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "contact-form",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Contact Form",
+  "description": "Working contact form with validation, honeypot spam protection, file attachment, and department dropdown.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full contact form with all fields",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6 _maxw[600px] _mx[auto]",
+        "slots": {
+          "header": "Title and description",
+          "fields": "Form inputs (name, email, department, message)",
+          "attachments": "File attachment area",
+          "submit": "Submit button",
+          "success": "Success message after submission",
+          "info": "Contact info sidebar (optional)"
+        }
+      }
+    },
+    "split": {
+      "description": "Primary contact form with a dominant form column and a narrower companion panel for contact details, response expectations, and social links.",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _lg:gc2 _gap6",
+        "slots": {
+          "header": "Title and description at the top of the form column.",
+          "fields": "Main form inputs (name, email, department, message) in a stable vertical stack.",
+          "attachments": "Optional file attachment area below the message field.",
+          "submit": "Submit button anchored to the end of the form column.",
+          "success": "Success message that clearly replaces the form state after submission.",
+          "info": "Companion contact panel aligned to the top of the split layout with stacked contact channels, response window, and social actions."
+        }
+      }
+    },
+    "compact": {
+      "description": "Simplified contact form with minimal fields",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "fields": "Email and message only",
+          "submit": "Submit button"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap6 _maxw[600px] _mx[auto]",
+    "slots": {
+      "header": "Title and description",
+      "fields": "Form inputs",
+      "submit": "Submit button",
+      "success": "Success confirmation",
+      "info": "Contact info (optional)"
+    }
+  },
+  "visual_brief": "Vertically stacked form with a header (title and short description), input fields for name, email, department dropdown, subject, and a multiline message textarea. An optional file attachment area with a paperclip icon sits below the textarea. A honeypot field is hidden from visual display. The submit button is primary-colored at the bottom. Success state replaces the form with a checkmark icon and confirmation message. Compact preset removes the department dropdown and attachment area. An optional contact-info sidebar shows phone, email, and address.",
+  "visual_brief": "Vertically stacked form with a header (title and short description), input fields for name, email, department dropdown, subject, and a multiline message textarea. An optional file attachment area with a paperclip icon sits below the textarea. A honeypot field is hidden from visual display. The submit button is primary-colored at the bottom. Success state replaces the form with a checkmark icon and confirmation message. Compact preset removes the department dropdown and attachment area. Split preset pairs the primary form with a narrower companion panel for phone, email, location, response expectations, and social actions; that panel stays aligned to the top of the layout rather than stretching to match the full form height. Contact channels inside the companion panel render as stacked rows with a small circular icon chip on the left and a two-line label/value block on the right. Social or outreach actions at the bottom should render as unmistakable buttons or action rows with icon, label, and clear hit area rather than loose inline text links.",
+  "layout_hints": {
+    "field_grouping": "Keep related fields in a stable vertical rhythm and avoid splitting short contact forms into overly wide multi-column arrangements.",
+    "submit_zone": "The primary submit action should feel anchored to the end of the form, not float disconnected from the field stack.",
+    "success_state": "Success confirmation should replace or clearly supersede the form state so the user understands the submission is complete.",
+    "split_ratio": "When the optional info panel is shown beside the form, keep the form column visually dominant and the companion panel narrower. Do not use an equal-width split unless the route contract explicitly calls for it.",
+    "info_stack": "Contact info in the companion panel should read as a stacked list of channels or facts, not as a wrapped inline row that leaves large empty card areas behind.",
+    "sidebar_alignment": "The optional info panel should align to the top of the split layout and size to its content. It should not stretch just to match the form column height.",
+    "channel_presentation": "Icon-bearing contact rows should align on a shared baseline with the icon wrapped in a compact circular or rounded chip. Avoid icons floating above labels or drifting independently of the channel text.",
+    "social_actions": "Companion-panel social links should read as explicit actions with button treatment or clear action rows. Do not leave them as loose text labels with ambiguous hit areas."
+  },
+  "responsive": {
+    "mobile": "Full-width form with stacked fields. Submit button goes full-width. Contact info section moves below the form. File attachment uses native file picker.",
+    "tablet": "Form centered at 500px max-width. Contact info appears beside the form if space allows, but split preset may still collapse to a single column if the companion panel would feel cramped.",
+    "desktop": "Form at 500px max-width centered or beside a contact info panel. Split preset uses a dominant form column with a compact top-aligned companion panel instead of a fully stretched equal split. Companion actions should stack or wrap into clearly separated buttons rather than forming a loose text row."
+  },
+  "motion": {
+    "micro": "Inputs and submit actions use calm hover and focus transitions. Attachment zones may highlight softly on drag-over.",
+    "transitions": "Validation and success states should fade or expand gently over 180-250ms without shifting the whole layout abruptly."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "inline-edit",
+    "keyboard-navigation"
+  ],
+  "accessibility": {
+    "role": "form",
+    "aria-label": "Contact form",
+    "keyboard": [
+      "Tab moves through fields, attachment controls, and submit actions in order.",
+      "Enter should submit only when the submit button or an intentional submit control is active."
+    ],
+    "announcements": [
+      "Validation errors should be announced with field-specific explanations.",
+      "Successful submission should be announced clearly."
+    ],
+    "focus_management": "Move focus to the first invalid field on failed validation, and move focus to the success confirmation heading or message after successful submission."
+  },
+  "composition": {
+    "ContactForm": "Stack(d-section) > [Header + FieldStack(d-control) + AttachmentZone? + SubmitAction + SuccessState?]",
+    "SplitContactForm": "ResponsiveSplit(form-dominant) > [FormColumn(ContactForm) + InfoColumn(d-surface, top-aligned) > [ContactChannel* + ResponseNote + ActionRow*]]",
+    "ContactChannel": "Row(compact-icon-chip + label-value stack) > [IconChip + ChannelBody > [Label + Value]]",
+    "CompanionAction": "ActionRow(d-interactive or explicit action pill) > [Icon + Label + optional direction hint]"
+  }
+}

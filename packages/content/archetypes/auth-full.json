@@ -1,0 +1,199 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "auth-full",
+  "role": "gateway",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Auth Full",
+  "description": "Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.",
+  "tags": [
+    "auth",
+    "authentication",
+    "login",
+    "register",
+    "mfa"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "authentication",
+        "login",
+        "sign in",
+        "register",
+        "sign up"
+      ],
+      "secondary": [
+        "forgot password",
+        "mfa",
+        "two-factor",
+        "email verification"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "core"
+  },
+  "pages": [
+    {
+      "id": "login",
+      "patterns": [
+        {
+          "pattern": "auth-form",
+          "preset": "login",
+          "as": "form"
+        }
+      ],
+      "default_layout": [
+        "form"
+      ],
+      "shell": "centered"
+    },
+    {
+      "id": "register",
+      "patterns": [
+        {
+          "pattern": "auth-form",
+          "preset": "register",
+          "as": "form"
+        }
+      ],
+      "default_layout": [
+        "form"
+      ],
+      "shell": "centered"
+    },
+    {
+      "id": "forgot-password",
+      "patterns": [
+        {
+          "pattern": "auth-form",
+          "preset": "forgot-password",
+          "as": "form"
+        }
+      ],
+      "default_layout": [
+        "form"
+      ],
+      "shell": "centered"
+    },
+    {
+      "id": "reset-password",
+      "patterns": [
+        {
+          "pattern": "auth-form",
+          "preset": "reset-password",
+          "as": "form"
+        }
+      ],
+      "default_layout": [
+        "form"
+      ],
+      "shell": "centered"
+    },
+    {
+      "id": "verify-email",
+      "patterns": [
+        {
+          "pattern": "auth-form",
+          "preset": "verify-email",
+          "as": "form"
+        }
+      ],
+      "default_layout": [
+        "form"
+      ],
+      "shell": "centered"
+    },
+    {
+      "id": "mfa-setup",
+      "patterns": [
+        {
+          "pattern": "auth-form",
+          "preset": "mfa-setup",
+          "as": "form"
+        }
+      ],
+      "default_layout": [
+        "form"
+      ],
+      "shell": "centered"
+    },
+    {
+      "id": "mfa-verify",
+      "patterns": [
+        {
+          "pattern": "auth-form",
+          "preset": "mfa-verify",
+          "as": "form"
+        }
+      ],
+      "default_layout": [
+        "form"
+      ],
+      "shell": "centered"
+    },
+    {
+      "id": "phone-verify",
+      "patterns": [
+        {
+          "pattern": "auth-form",
+          "preset": "phone-verify",
+          "as": "form"
+        }
+      ],
+      "default_layout": [
+        "form"
+      ],
+      "shell": "centered"
+    }
+  ],
+  "page_briefs": {
+    "login": "Centered card on a clean background. Email and password fields, primary sign-in button, OAuth provider row, and links to register and forgot-password.",
+    "register": "Centered card with name, email, password fields and strength meter. Terms checkbox, register button, and link back to login.",
+    "forgot-password": "Minimal centered card with email field and submit button. Brief instructional text above explaining the password reset email process.",
+    "reset-password": "Centered card with new password and confirm password fields, strength indicator, and save button. Token-authenticated view reached from email link.",
+    "verify-email": "Centered status card showing a verification message with animated checkmark on success or a resend-link button if pending.",
+    "mfa-setup": "Centered card with QR code display for authenticator app, manual key fallback, and a 6-digit code input to confirm setup.",
+    "mfa-verify": "Minimal centered card with a 6-digit code input, verify button, and a link to use backup codes as an alternative.",
+    "phone-verify": "Centered card with phone number display, 6-digit SMS code input field, verify button, and resend code link."
+  },
+  "features": [
+    "auth",
+    "mfa",
+    "oauth",
+    "email-verification",
+    "password-reset"
+  ],
+  "directives": [
+    "Use `d-shell[data-layout=\"centered\"]` + `d-shell-centered-card` for all auth pages — NOT a hand-rolled centering wrapper.",
+    "Auth bypass for dev: `localStorage.decantr_authenticated = 'true'` gates protected routes. The login/register pages accept ANY credentials (no real backend) and set the flag before redirecting to the blueprint's authenticated entry route.",
+    "OAuth provider buttons MUST use real icons from lucide-react (Github, Chrome, Mail) — no inline SVGs or emoji stand-ins.",
+    "MFA code inputs render as a single `d-control` with `inputMode=\"numeric\"` and `autoComplete=\"one-time-code\"` + `maxLength=6`, not 6 separate digit boxes.",
+    "Error + success states use `d-annotation[data-status=\"error|success\"]` above the form, never inline red/green text.",
+    "Route guards compose with route elements, not shell outlets — wrap protected route components in a `<RequireAuth>` HOC/wrapper that checks the auth flag before rendering. Do NOT render the entire shell unconditionally and gate inside its outlet — that produces a reauth flash. Redirect happens before any protected page mounts.",
+    "MFA setup pages render the QR code via `d-qr-placeholder` (CSS-only). MFA verify pages use the single-control `d-control` numeric input. Phone-verify pages use a separate `d-control[type=\"tel\"]` with country-code prefix in a `d-step-chip` to its left. These three pages share an archetype but have distinct rendering — never collapse them into one component."
+  ],
+  "shells": {
+    "centered": "Centered card layout for focused auth forms"
+  },
+  "dependencies": {
+    "patterns": {
+      "auth-form": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  },
+  "certification": {
+    "tier": "demo",
+    "rationale": "Contains dev auth-bypass guidance and accept-any-credentials instructions; excluded from enterprise artifact sets until rewritten."
+  }
+}

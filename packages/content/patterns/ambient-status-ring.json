@@ -1,0 +1,125 @@
+{
+  "id": "ambient-status-ring",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Ambient Status Ring",
+  "description": "Always-on status indicator that conveys system state through color, motion, and shape — available as a circular ring, dot, horizontal bar, or ambient background glow.",
+  "category": "ambient",
+  "tags": [
+    "2027",
+    "frontier",
+    "ambient",
+    "status",
+    "indicator",
+    "real-time",
+    "animation",
+    "system-health"
+  ],
+  "components": [
+    "StatusRing",
+    "PulseAnimation",
+    "StateLabel",
+    "DetailTooltip"
+  ],
+  "default_preset": "ring",
+  "presets": {
+    "ring": {
+      "description": "A thin 3px circular ring border that changes color and animation speed based on system state — idle is muted, active rotates, warning pulses amber, error pulses red rapidly",
+      "layout": {
+        "layout": "flex",
+        "atoms": "_inline-flex _items-center _justify-center _rounded-full"
+      }
+    },
+    "dot": {
+      "description": "A small 8px circle suitable for inline status indication next to labels or in table rows — color-coded with optional pulse animation for active/warning/error states",
+      "layout": {
+        "layout": "flex",
+        "atoms": "_inline-flex _items-center _gap-1.5"
+      }
+    },
+    "bar": {
+      "description": "A horizontal strip (4px tall, full container width) that acts as a status border along the top or bottom of a container — color and animation convey state",
+      "layout": {
+        "layout": "flex",
+        "atoms": "_w-full _h-1 _rounded-full"
+      }
+    },
+    "glow": {
+      "description": "A soft ambient background glow applied to a container — uses box-shadow inset or radial gradient to tint the container background with the status color at low opacity",
+      "layout": {
+        "layout": "flex",
+        "atoms": "_relative _rounded-xl _overflow-hidden"
+      }
+    }
+  },
+  "visual_brief": "In ring mode: a circular ring rendered as an SVG circle element with stroke-width: 3px and no fill. The ring's default size is 48px diameter (configurable via CSS custom property --ring-size). The stroke color and animation change based on system state: IDLE — stroke: var(--d-muted) at 40% opacity, no animation, static. ACTIVE — stroke: var(--d-accent), gentle clockwise rotation animation (the stroke has a 25% gap created via stroke-dasharray, and the gap rotates around the circle over an 8s linear infinite cycle), producing a subtle spinning effect. WARNING — stroke: var(--d-warning)/amber, pulse animation where the stroke opacity oscillates between 0.4 and 1.0 over a 2s ease-in-out infinite cycle. ERROR — stroke: var(--d-destructive)/red, rapid pulse animation (opacity 0.3→1→0.3 over 0.5s ease-in-out infinite), combined with a subtle scale pulse (scale 1→1.05→1) for urgency. SUCCESS — stroke: var(--d-success)/green, brief flash animation (opacity 0→1 over 150ms, hold 600ms, then transition to idle state over 300ms). All state transitions use a 400ms color crossfade so the ring never jumps between colors. In dot mode: an 8px circle (border-radius: 50%) with the same color states. Active state uses the pulse scale animation (1→1.3→1, 1.5s). Warning and error use the same pulse timings as ring mode. The dot can be paired with a StateLabel (text-xs, font-medium, same color as dot) to the right. In bar mode: a full-width horizontal rectangle, 4px tall, rounded-full. Color states match ring. Active state adds a shimmer animation — a 50%-width lighter band sweeps left-to-right across the bar every 3s. Warning/error pulses are opacity-based. In glow mode: the status color is applied as an inset box-shadow (0 0 60px 20px {status-color} at 8% opacity) on the container, creating a soft ambient tint. Active state gently oscillates the glow intensity (8%→15%→8% over 4s). Warning intensifies to 20% with 2s pulse. Error intensifies to 25% with 0.5s pulse. The glow is layered behind all content via a ::before pseudo-element with pointer-events: none.",
+  "layout_hints": {
+    "container": "inline for ring/dot, block for bar/glow",
+    "note": "The ring and dot presets are inline elements designed to sit next to text or within flex rows. The bar preset should be placed at the top or bottom edge of a container. The glow preset wraps an existing container and adds the ambient effect.",
+    "state_management": "The component accepts a 'state' prop with values: idle, active, warning, error, success. State transitions should be debounced — brief error flickers (under 500ms) should not trigger the error animation to avoid visual noise.",
+    "color_customization": "Each state maps to a CSS custom property: --status-idle, --status-active, --status-warning, --status-error, --status-success. These default to the d-token equivalents but can be overridden."
+  },
+  "default_layout": {
+    "layout": "flex",
+    "atoms": "_inline-flex _items-center _justify-center _rounded-full",
+    "slots": {
+      "status-ring": "The primary SVG element rendering the status ring. Structure: SVG (width/height: var(--ring-size, 48px), viewBox: '0 0 48 48') > circle (cx: 24, cy: 24, r: 21, fill: none, stroke-width: 3, stroke-linecap: round). The circle uses stroke-dasharray to create the rotating gap effect in active state: dasharray='50 16' (approximately 75% visible, 25% gap on a ~132px circumference). A CSS animation rotates the dashoffset for the spinning effect. The SVG has a drop-shadow filter applied during warning/error states: filter: drop-shadow(0 0 4px {status-color}). Transitions between states use: stroke 400ms ease-in-out, filter 400ms ease-in-out. The ring can optionally contain content in its center (e.g., an icon or number) via a foreignObject or an overlaid HTML element centered with absolute positioning.",
+      "pulse-animation": "Not a separate DOM element but a set of CSS keyframe animations applied to the StatusRing/Dot/Bar/Glow. Defined keyframes: @keyframes ring-rotate { to { stroke-dashoffset: -66 } } — 8s linear infinite for active. @keyframes pulse-opacity { 0%,100% { opacity: 0.4 } 50% { opacity: 1 } } — 2s for warning, 0.5s for error. @keyframes pulse-scale { 0%,100% { transform: scale(1) } 50% { transform: scale(1.05) } } — 0.5s for error only. @keyframes shimmer { 0% { transform: translateX(-100%) } 100% { transform: translateX(200%) } } — 3s for bar active. @keyframes glow-breathe { 0%,100% { opacity: 0.08 } 50% { opacity: 0.15 } } — 4s for glow active. All animations use will-change for GPU acceleration.",
+      "state-label": "Optional text label displayed beside the ring/dot. Renders in text-xs, font-medium with color matching the current status state. Content examples: 'Active', 'Warning: High latency', 'Error: Connection lost', 'Idle'. The label smoothly crossfades its color when state changes (color 400ms ease-in-out). In ring and glow presets, the label is hidden by default. In dot preset, it appears to the right of the dot with gap-1.5. In bar preset, it can be centered above or below the bar.",
+      "detail-tooltip": "A hover/focus-activated tooltip (d-annotation, rounded-lg, shadow-md, p-2, text-xs, max-w-48) that appears above the status indicator. Shows detailed state information: current state name, duration in current state ('Active for 2m 34s'), and optional detail message ('Processing 142 requests'). The tooltip has a small arrow/caret pointing to the indicator. It appears with a 200ms fade-in + translateY(-4px→0) transition on hover after a 500ms delay (to avoid accidental triggers). Disappears immediately on mouse leave with 150ms fade-out."
+    }
+  },
+  "accessibility": {
+    "role": "status",
+    "aria-label": "System status indicator",
+    "aria-live": "polite",
+    "announcements": [
+      "System status: {state}",
+      "Status changed from {previous_state} to {new_state}",
+      "Warning: {detail_message}",
+      "Error: {detail_message}",
+      "System returned to normal"
+    ],
+    "keyboard": [
+      "Tab: focus the status indicator to hear current state via screen reader",
+      "Enter/Space: show detail tooltip when focused",
+      "Escape: dismiss detail tooltip"
+    ]
+  },
+  "responsive": {
+    "mobile": "Ring size reduces to 36px. Dot remains 8px. Bar remains 4px full-width. Glow intensity reduced by 50% to save GPU. State labels hidden on mobile to save space — accessible via tooltip on tap. Tooltip triggered by tap instead of hover.",
+    "tablet": "Full ring size. All presets at standard dimensions. Tooltip on hover with 500ms delay."
+  },
+  "motion": {
+    "micro": {
+      "state-color-change": "stroke/background-color 400ms ease-in-out",
+      "tooltip-appear": "opacity 0→1 + translateY(-4px→0) 200ms ease-out after 500ms delay"
+    },
+    "transitions": {
+      "idle-to-active": "stroke color crossfade 400ms + rotation animation begins with 300ms ease-in ramp",
+      "active-to-idle": "rotation animation decelerates over 600ms + stroke color crossfade 400ms",
+      "any-to-error": "stroke color 200ms (faster for urgency) + pulse begins immediately",
+      "success-flash": "stroke → success color 150ms, hold 600ms, then crossfade to idle 300ms"
+    },
+    "ambient": {
+      "active-rotation": "stroke-dashoffset rotation 8s linear infinite",
+      "warning-pulse": "opacity 0.4→1→0.4 2s ease-in-out infinite",
+      "error-pulse": "opacity 0.3→1→0.3 + scale 1→1.05→1 0.5s ease-in-out infinite",
+      "bar-shimmer": "lighter band translateX sweep 3s ease-in-out infinite",
+      "glow-breathe": "shadow opacity 8%→15%→8% 4s ease-in-out infinite"
+    }
+  },
+  "interactions": [
+    "status-pulse",
+    "real-time-updates",
+    "animate-on-mount"
+  ],
+  "composition": {
+    "AmbientStatusRing": "Wrapper(inline-flex|block, items-center) > [StatusRing(svg|div, animated, state-driven) + StateLabel?(text-xs, state-colored) + DetailTooltip?(d-annotation, on-hover)]",
+    "StatusRing": "SVG(viewBox, circle, stroke-animated) | Div(rounded-full|rounded-bar, bg-state-color, animated)",
+    "PulseAnimation": "CSS-keyframes(applied-to-parent, state-driven, GPU-accelerated)",
+    "StateLabel": "Span(text-xs, font-medium, color: state-color, transition: color 400ms)",
+    "DetailTooltip": "Annotation(d-annotation, rounded-lg, shadow-md, p-2, text-xs) > [StateName + Duration + DetailMessage?]"
+  }
+}

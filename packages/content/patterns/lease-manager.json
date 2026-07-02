@@ -1,0 +1,129 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "lease-manager",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Lease Manager",
+  "description": "Lease document and term management including summary, editing, documents, amendments, and renewal workflow.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "icon",
+        "Badge",
+        "Input",
+        "Select"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "icon",
+    "Badge",
+    "Input",
+    "Select"
+  ],
+  "default_preset": "overview",
+  "presets": {
+    "overview": {
+      "description": "Lease summary view with key terms",
+      "components": [
+        "Button",
+        "icon",
+        "Badge"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "header": "Lease ID, status badge",
+          "parties": "Tenant(s) and property owner",
+          "terms": "Start/end dates, rent, deposit",
+          "documents": "Uploaded lease documents",
+          "actions": "Renew, terminate, amend buttons"
+        }
+      }
+    },
+    "edit": {
+      "description": "Lease term editing form with editable date, rent, and deposit fields plus document upload",
+      "components": [
+        "Button",
+        "icon",
+        "Input",
+        "Select"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "form": "Lease term form fields",
+          "documents": "Document upload",
+          "actions": "Save/cancel"
+        }
+      }
+    },
+    "summary": {
+      "description": "Compact lease summary for tenant portal",
+      "components": [
+        "Badge"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap2 _p4",
+        "slots": {
+          "dates": "Start and end dates",
+          "rent": "Monthly rent amount",
+          "status": "Lease status"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap4",
+    "slots": {
+      "header": "Lease header",
+      "terms": "Lease terms",
+      "documents": "Documents",
+      "actions": "Actions"
+    }
+  },
+  "visual_brief": "Structured lease management view with a header showing lease ID, property address, and status badge (active, expired, pending). Below, a terms section displays key-value pairs: start date, end date, monthly rent, deposit, late fee policy. A documents list shows lease PDFs and amendments as file rows with download buttons. An actions bar provides Edit, Renew, and Terminate buttons. The edit preset switches terms to editable inputs. Summary preset shows a condensed single-card overview. Amendment history appears as a collapsible timeline.",
+  "responsive": {
+    "mobile": "Single-column stacked layout. Terms display as a two-column key-value grid. Documents list is full-width. Action buttons stack vertically.",
+    "tablet": "Standard layout with terms in a comfortable grid. Documents and actions visible without scrolling.",
+    "desktop": "Full layout with generous spacing. Terms, documents, and actions all visible in a single view."
+  },
+  "layout_hints": {
+    "contract_priority": "Lease identity and current legal state come first, followed by financial terms, documents, and lifecycle actions. The pattern should feel like a contractual control surface, not a generic settings form.",
+    "document_role": "Lease documents and amendments should feel like authoritative supporting material attached to the current lease state rather than just a file list.",
+    "summary_consistency": "Overview, edit, and summary variants should preserve the same lease vocabulary so moving between read and write modes does not shift the mental model."
+  },
+  "motion": {
+    "micro": "Action buttons and status affordances may sharpen slightly on hover. Amendment or document rows may reveal controls subtly when focused.",
+    "transitions": "Entering edit mode or expanding amendment history should preserve the sense of one evolving lease record rather than swapping to a separate tool."
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Lease manager",
+    "keyboard": [
+      "Lease actions, term fields, and document rows should be reachable in the same top-to-bottom order in both overview and edit states."
+    ],
+    "announcements": [
+      "Lease status, dates, rent, and document context should be exposed semantically so the record remains understandable without relying on badge color or layout grouping alone."
+    ]
+  },
+  "composition": {
+    "LeaseManager": "Container(d-section, flex-col, gap-4) > [Header + Parties + Terms + Documents + Actions]",
+    "Header": "Row(d-surface) > [LeaseID(mono-data) + StatusBadge(d-annotation)]",
+    "Terms": "Grid(d-data, key-value) > [StartDate + EndDate + Rent(mono-data) + Deposit + LateFee]",
+    "Documents": "List(d-data) > FileRow(d-data-row)[]",
+    "Actions": "Row(d-interactive) > [RenewButton + TerminateButton(variant: destructive) + AmendButton(variant: ghost)]"
+  }
+}

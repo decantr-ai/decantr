@@ -79,7 +79,8 @@ export class RegistryAPIClient {
   private cache = new Map<string, CacheEntry<unknown>>();
 
   constructor(options: RegistryAPIClientOptions = {}) {
-    this.baseUrl = options.baseUrl ?? DEFAULT_BASE_URL;
+    this.baseUrl =
+      options.baseUrl ?? process.env.DECANTR_API_URL ?? process.env.REGISTRY_URL ?? DEFAULT_BASE_URL;
     this.apiKey = options.apiKey;
     this.accessToken = options.accessToken;
     this.timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;

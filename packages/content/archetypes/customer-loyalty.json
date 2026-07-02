@@ -1,0 +1,75 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "customer-loyalty",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Customer Loyalty",
+  "description": "Customer relationship and loyalty program management. Tracks guest history, preferences, tier status, and rewards.",
+  "tags": ["restaurant", "customers", "loyalty", "rewards", "crm", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["customer loyalty", "rewards program", "guest tracking", "customer crm"],
+      "secondary": ["regulars", "vip", "loyalty tiers", "guest preferences"],
+      "negative": ["kitchen", "inventory"]
+    },
+    "implies": ["loyalty"],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "customers",
+      "patterns": [
+        { "pattern": "data-table", "preset": "standard", "as": "customer-list" },
+        { "pattern": "search-filter-bar", "preset": "standard", "as": "customer-filters" }
+      ],
+      "default_layout": ["customer-filters", "customer-list"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "customer-detail",
+      "patterns": [
+        { "pattern": "detail-header", "preset": "standard", "as": "customer-header" },
+        { "pattern": "activity-feed", "preset": "standard", "as": "visit-history" },
+        { "pattern": "timeline", "preset": "standard", "as": "relationship-timeline" }
+      ],
+      "default_layout": ["customer-header", "visit-history", "relationship-timeline"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "loyalty-program",
+      "patterns": [
+        { "pattern": "tier-builder", "preset": "standard", "as": "tiers" },
+        { "pattern": "kpi-grid", "preset": "dashboard", "as": "loyalty-kpis" }
+      ],
+      "default_layout": ["loyalty-kpis", "tiers"],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "customers": "Search and filter bar at top with filters for tier, last-visit date, total spend, and birthday. Data table lists customers with name, tier badge, visits, lifetime value, last visit, and preferred contact method.",
+    "customer-detail": "Detail header with guest photo, name, tier badge, lifetime spend, and visit count. Activity feed shows recent visits with party size, spend, and notes. Timeline below plots the full relationship from first visit through milestones.",
+    "loyalty-program": "Dashboard KPI grid showing active members, redemption rate, points issued, and revenue-lift from loyalty. Tier builder lets operators configure reward tiers with thresholds, benefits, and point multipliers."
+  },
+  "features": ["loyalty", "customer-tracking"],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area for customer operations"
+  },
+  "suggested_theme": {
+    "ids": ["clean", "auradecantism"],
+    "modes": ["light", "auto"]
+  },
+  "dependencies": {
+    "patterns": {
+      "data-table": ">=1.0.0",
+      "search-filter-bar": ">=1.0.0",
+      "detail-header": ">=1.0.0",
+      "activity-feed": ">=1.0.0",
+      "timeline": ">=1.0.0",
+      "tier-builder": ">=1.0.0",
+      "kpi-grid": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

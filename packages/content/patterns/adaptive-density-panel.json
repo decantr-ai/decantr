@@ -1,0 +1,130 @@
+{
+  "id": "adaptive-density-panel",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Adaptive Density Panel",
+  "description": "Self-adjusting container panel that smoothly transitions between information density levels — auto mode uses viewport width and user behavior to determine optimal density, with manual compact/comfortable/spacious overrides.",
+  "category": "ambient",
+  "tags": [
+    "2027",
+    "frontier",
+    "ambient",
+    "density",
+    "adaptive",
+    "responsive",
+    "AI",
+    "layout",
+    "accessibility"
+  ],
+  "components": [
+    "DensityPanel",
+    "DensityControl",
+    "ContentRegion",
+    "OverflowIndicator",
+    "FocusMask"
+  ],
+  "default_preset": "auto",
+  "presets": {
+    "auto": {
+      "description": "AI-determined density that adapts based on viewport width, scroll velocity, time-on-page, and content volume — narrows spacing when scanning, widens when reading deeply",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _gap-auto _transition-all _duration-300"
+      }
+    },
+    "compact": {
+      "description": "Maximum information density with tight spacing, small text, and minimal padding — optimized for power users who need to see many items at once, data tables, and dashboard views",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _gap-1 _text-xs _p-2"
+      }
+    },
+    "comfortable": {
+      "description": "Default balanced density with standard spacing, readable text size, and moderate padding — the general-purpose setting suitable for most content and users",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _gap-3 _text-sm _p-4"
+      }
+    },
+    "spacious": {
+      "description": "Minimal information density with generous spacing, larger text, and ample padding — focus mode that reduces visual noise and highlights fewer items for deep reading or presentation",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _gap-6 _text-base _p-6"
+      }
+    }
+  },
+  "visual_brief": "A container panel (d-section, rounded-xl, border, bg-surface) whose internal spacing, font sizes, and padding animate smoothly between density levels. The panel has a header bar and a content area. HEADER: a slim horizontal bar (flex, items-center, justify-between, px matching current density padding, py-2, border-b). On the left: an optional section title (font-semibold, size matching density). On the right: the DensityControl — a segmented control with 3 clickable segments representing density levels. Each segment shows a symbolic icon: compact = three tightly spaced horizontal lines (hamburger-like, 12px), comfortable = three moderately spaced lines (14px), spacious = two widely spaced lines (16px). The active segment has bg-accent/15% and text-accent. Inactive segments are text-muted. The control is 72px wide total, rounded-full, with a 1px border. In auto mode, a small 'A' badge overlays the control indicating automatic mode; clicking any segment overrides auto with the selected density. A long-press on the auto badge re-engages auto mode. CONTENT AREA: the ContentRegion fills the remaining panel space. Its CSS custom properties change per density level — COMPACT: --density-gap: 4px; --density-text: 0.75rem; --density-padding: 8px; --density-line-height: 1.3. COMFORTABLE: --density-gap: 12px; --density-text: 0.875rem; --density-padding: 16px; --density-line-height: 1.5. SPACIOUS: --density-gap: 24px; --density-text: 1rem; --density-padding: 24px; --density-line-height: 1.7. All properties transition simultaneously over 300ms ease-in-out, creating a smooth breathing effect as the panel expands or contracts. Children within the content region inherit these custom properties for their own gap, font-size, padding, and line-height. OVERFLOW: when density hides items (compact can show 20 items, comfortable 12, spacious 6 in the same viewport height), an OverflowIndicator appears at the bottom — a subtle bar (h-8, flex, items-center, justify-center, bg-gradient from transparent to surface, text-xs, text-muted) reading '+8 more items' or 'Scroll for more'. The count updates dynamically as density changes. FOCUS MASK: in spacious mode, an optional FocusMask can dim non-hovered items to 40% opacity, creating a spotlight effect where only the item under the cursor/focus is fully visible. Items transition opacity over 200ms on hover. The mask is disabled in compact and comfortable modes.",
+  "layout_hints": {
+    "container": "block section, fills available width",
+    "note": "The DensityPanel works best as a container wrapping list-like content (feed items, table rows, card grids). The density CSS custom properties should be inherited by child components for consistent density scaling.",
+    "auto_algorithm": "Auto density uses: (1) viewport width — under 640px defaults to compact, 640–1024px comfortable, over 1024px comfortable. (2) Scroll velocity — fast scrolling (>200px/s sustained for 2s) temporarily shifts to compact for scanning. (3) Idle time — if user stops scrolling for 10s, shift toward comfortable/spacious. (4) Content volume — if total items exceed 2x viewport capacity, prefer compact. These signals are weighted and blended, not hard thresholds.",
+    "transition_smoothness": "All density properties MUST transition together in a single 300ms animation. Do not stagger — simultaneous transition of gap, font-size, padding, and line-height creates a unified breathing effect. Use the CSS transition shorthand: transition: all 300ms ease-in-out.",
+    "content_awareness": "Child components should declare a data-density-aware attribute. The DensityPanel will set --density-level: compact|comfortable|spacious as a CSS custom property and data-density attribute on the root, allowing children to adapt beyond just spacing (e.g., hiding secondary text in compact, showing avatars only in comfortable+)."
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _flex-col _rounded-xl _border _bg-surface _overflow-hidden _transition-all _duration-300",
+    "slots": {
+      "density-panel": "The root container element. A d-section with rounded-xl, border, bg-surface, overflow-hidden. Sets CSS custom properties based on current density: --density-gap, --density-text, --density-padding, --density-line-height, --density-level. These properties are set on the element's style attribute and transitioned. The panel also sets a data-density attribute ('compact', 'comfortable', 'spacious') on the root element for CSS selector-based child adaptation. In auto mode, the panel runs a lightweight observer: (1) ResizeObserver on the panel for viewport changes, (2) scroll event listener on ContentRegion for velocity tracking, (3) IntersectionObserver on child items for content volume assessment. Density changes are debounced by 500ms to prevent jitter.",
+      "density-control": "A segmented control in the panel header for manual density selection. Structure: a flex container (inline-flex, items-center, rounded-full, border, bg-muted/5%, h-7). Three segment buttons, each ~24px wide: COMPACT segment contains an SVG icon of 3 tightly stacked horizontal lines (each 10px wide, 1.5px tall, gap: 2px between lines). COMFORTABLE segment: 3 lines with gap: 3px. SPACIOUS segment: 2 lines with gap: 5px. Each segment has padding: 4px 6px, rounded-full (for the active indicator), cursor: pointer. The active segment has background: var(--d-accent) at 15% opacity, and the icon strokes use var(--d-accent). Inactive segments: icon strokes use var(--d-muted). Transition between active states: background-color 200ms ease-out. When auto mode is active, a small circular badge (12px, bg-accent, text-accent-foreground, text-[8px], font-bold, absolute top: -4px, right: -4px) shows 'A'. Clicking a segment disables auto and locks to that density. Re-enabling auto: long-press (800ms) on any segment, or a small 'Auto' text button adjacent to the control.",
+      "content-region": "The main content area below the header. Uses flex-col layout with gap: var(--density-gap). Padding: var(--density-padding). Font-size: var(--density-text). Line-height: var(--density-line-height). The content region holds child items (passed via slot/children). All spacing and text sizing is driven by the CSS custom properties, so any content placed inside automatically respects the current density. The region has overflow-y: auto for scrolling when content exceeds the panel height. Scroll events on this region feed into the auto-density algorithm (velocity tracking). The region also tracks which children are visible via IntersectionObserver to power the OverflowIndicator count.",
+      "overflow-indicator": "A fixed-bottom bar within the content region that appears when content overflows the visible area. Structure: a div (sticky, bottom: 0, h-8, flex, items-center, justify-center, pointer-events-none except for the text link). Background: a gradient from transparent (top) to var(--d-surface) (bottom) over 32px, creating a smooth fade-out of content. Centered text: '{N} more items' or 'Scroll for more' in text-xs, text-muted. The count N is computed as total children minus visible children (determined by IntersectionObserver). When all items are visible, the indicator is hidden (display: none). The indicator animates in/out with opacity 0→1 over 200ms when visibility changes. Optionally, the text is a clickable link that scrolls to reveal the next set of items.",
+      "focus-mask": "An optional overlay effect activated in spacious density mode. When enabled, all content items within the ContentRegion that are NOT currently hovered or focused receive opacity: 0.4 and a slight blur (filter: blur(0.5px)). The hovered/focused item remains at opacity: 1, no blur, and may receive a subtle scale(1.01) lift. This creates a spotlight/focus effect ideal for presentations or deep reading. Transitions: opacity 200ms ease-out, filter 200ms ease-out, transform 200ms ease-out. The mask is controlled by a parent-level CSS rule: [data-density='spacious'] .content-item:not(:hover):not(:focus-within) { opacity: 0.4; filter: blur(0.5px); }. Disabled in compact and comfortable modes — all items remain at full opacity."
+    }
+  },
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Adaptive density content panel",
+    "announcements": [
+      "Density changed to {level}",
+      "Auto density mode {enabled|disabled}",
+      "Showing {visible} of {total} items",
+      "{N} more items available — scroll to view",
+      "Focus mode {enabled|disabled}"
+    ],
+    "keyboard": [
+      "Ctrl+Shift+1: set compact density",
+      "Ctrl+Shift+2: set comfortable density",
+      "Ctrl+Shift+3: set spacious density",
+      "Ctrl+Shift+0: toggle auto density",
+      "Tab: cycle through density control segments, then into content items",
+      "Arrow Up/Down: scroll content region",
+      "F: toggle focus mask in spacious mode"
+    ]
+  },
+  "responsive": {
+    "mobile": "DensityControl moves from the header to a floating action button (40px circle, bottom-right of panel, shadow-lg). Tapping cycles through density levels. Auto mode defaults to compact on viewport < 375px. OverflowIndicator always visible if content overflows. FocusMask disabled on touch devices (no hover).",
+    "tablet": "DensityControl in header as standard. Auto mode responsive to both viewport width and orientation changes. FocusMask available on devices with fine pointer (stylus)."
+  },
+  "motion": {
+    "micro": {
+      "density-control-hover": "segment bg-accent/10% 150ms ease-out",
+      "density-control-active": "segment scale(0.95) 100ms",
+      "overflow-text-hover": "text color muted→accent 150ms"
+    },
+    "transitions": {
+      "density-change": "all CSS custom properties (gap, font-size, padding, line-height) transition simultaneously over 300ms ease-in-out — unified breathing effect",
+      "overflow-show": "opacity 0→1 200ms ease-out",
+      "overflow-hide": "opacity 1→0 200ms ease-in",
+      "focus-mask-engage": "non-hovered items opacity 1→0.4 + blur 0→0.5px 200ms ease-out",
+      "focus-mask-disengage": "all items opacity→1 + blur→0 200ms ease-out"
+    },
+    "ambient": {
+      "auto-density-shift": "density transitions triggered by user behavior are slightly slower (500ms) than manual switches (300ms) to feel organic rather than jarring",
+      "auto-badge-pulse": "the 'A' badge on density control has a subtle opacity oscillation (0.7→1→0.7) over 3s ease-in-out infinite to indicate auto mode is actively monitoring"
+    }
+  },
+  "interactions": [
+    "click-select",
+    "animate-on-mount"
+  ],
+  "composition": {
+    "AdaptiveDensityPanel": "Section(d-section, rounded-xl, border, bg-surface) > [Header(flex, border-b) > [Title? + DensityControl] + ContentRegion(flex-col, density-responsive) > [Content* + OverflowIndicator?] + FocusMask?]",
+    "DensityControl": "SegmentedControl(inline-flex, rounded-full, border) > [CompactSegment + ComfortableSegment + SpaciousSegment] + AutoBadge?(12px, circle, accent)",
+    "ContentRegion": "Div(flex-col, gap: var(--density-gap), p: var(--density-padding), overflow-y-auto) > [ChildItems*(density-aware)]",
+    "OverflowIndicator": "Div(sticky, bottom-0, h-8, gradient-fade, text-center) > CountText(text-xs, text-muted)",
+    "FocusMask": "CSS-rule(applied-via-data-density='spacious', dims non-hovered items to 40% opacity + subtle blur)"
+  }
+}

@@ -1,0 +1,129 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "json-viewer",
+  "version": "1.1.2",
+  "decantr_compat": ">=2.0.0",
+  "name": "JSON Viewer",
+  "description": "Artifact viewer for registry contracts with syntax highlighting, line numbers, copy actions, summary metrics, and optional tabs for JSON, commands, and evidence.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "contained": false,
+  "components": [
+    "Button",
+    "icon"
+  ],
+  "default_preset": "artifact",
+  "presets": {
+    "artifact": {
+      "description": "Premium artifact panel with a padded toolbar, segmented tab strip, syntax-highlighted JSON, and supporting summary metadata.",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap0 _r3 _overflow[hidden] _border _bordermuted/20",
+        "slots": {
+          "header": "Toolbar row with artifact title, summary badges, and copy-to-clipboard Button. Maintain a shared horizontal inset so title and actions never sit flush against the frame.",
+          "tabs": "Segmented tab strip for JSON, Commands, and Evidence views with the same horizontal inset as the toolbar",
+          "summary-strip": "Compact metadata row with line count, byte size, schema id, or root key count",
+          "line-numbers": "Gutter column with line numbers, _fgmuted _textxs _mono",
+          "json-content": "Syntax-highlighted JSON with collapsible nodes. Keys in _fgprimary, strings in _fgwarning, numbers in _fgsuccess, booleans in _fgaccent",
+          "footer": "Optional footer with copy confirmation, notes, or schema guidance"
+        }
+      }
+    },
+    "collapsible": {
+      "description": "Full JSON viewer with collapsible object/array nodes, syntax highlighting, line numbers, and a copy button in the header.",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap0 _r3 _overflow[hidden] _border _bordermuted/20",
+        "slots": {
+          "header": "Toolbar row with title, expand/collapse all toggle, and copy-to-clipboard Button",
+          "line-numbers": "Gutter column with line numbers, _fgmuted _textxs _mono",
+          "json-content": "Syntax-highlighted JSON with collapsible nodes. Keys in _fgprimary, strings in _fgsuccess, numbers in _fgwarning, booleans in _fgdestructive",
+          "footer": "Optional footer with byte size and node count"
+        }
+      }
+    },
+    "inline": {
+      "description": "Inline JSON snippet, non-collapsible, with copy button. For small JSON payloads.",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_relative _r2 _overflow[hidden] _border _bordermuted/20",
+        "slots": {
+          "copy-button": "Absolute top-right copy Button",
+          "json-content": "Syntax-highlighted JSON, no line numbers"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap0 _r3 _overflow[hidden] _border _bordermuted/20",
+    "slots": {
+      "header": "Toolbar with title, summary, and copy button",
+      "tabs": "Segmented tab strip",
+      "json-content": "Syntax-highlighted JSON"
+    }
+  },
+  "visual_brief": "A premium contract viewer panel with the feel of a polished shadcn-style code surface, but expressed through Decantr treatments and decorators. The header is compact and editorial: title on the left, a small metadata strip in the middle, and copy actions on the right. Every section inside the frame shares a consistent horizontal inset so the title, tabs, cards, and footer read as one curated artifact surface instead of touching the border. Below the header, a segmented tab control can switch between JSON, Commands, and Evidence views. The JSON body uses a stronger `lum-code-block` treatment with an accent top border, subdued line-number gutter, and vivid but restrained syntax colors. The whole panel should feel like a trustworthy artifact explorer, not just a raw textarea dump.",
+  "layout_hints": {
+    "viewer_treatment": "Use lum-code-block or an equivalent artifact treatment with a dark body, an accent top border, and a compact toolbar. The code panel should feel purposeful and premium, not like a default developer console. The outer frame owns the inset rhythm for every inner band.",
+    "toolbar": "Header bar: title on the left, summary metrics in the middle, and copy/secondary actions on the right. A small segmented tab strip may sit directly beneath or inside the toolbar. Keep a shared x-axis inset across toolbar, tabs, content, and footer.",
+    "syntax": "Syntax highlighting uses theme-accented colors: keys=coral, strings=amber, numbers=cyan, booleans=green, null=muted.",
+    "artifact_summary": "Always surface a few useful stats before the raw JSON: line count, byte size, schema id, root key count, or command availability. Summary chips should feel tucked into the frame, not pressed against the edge."
+  },
+  "responsive": {
+    "mobile": "Full-width viewer with horizontal scroll for deeply nested content. Tabs collapse into a compact segmented control, but the frame still keeps a small internal gutter. Nodes default to collapsed beyond depth 2 and summary metrics wrap into two rows.",
+    "tablet": "Standard viewer width with a compact tab strip. Nodes expand to depth 3 by default and summary metrics stay visible without overwhelming the header.",
+    "desktop": "Full viewer with comfortable width. Tabs, summary metrics, and copy actions all remain visible. Horizontal space accommodates deep nesting without crowding."
+  },
+  "motion": {
+    "micro": "Copy actions, tab switches, and collapsible node toggles may animate subtly over 120-180ms. Avoid flashy motion inside code surfaces.",
+    "transitions": "Tab and artifact-state changes should cross-fade or slide minimally so the viewer remains trustworthy and stable."
+  },
+  "interactions": [
+    "hover-reveal",
+    "click-select",
+    "animate-on-mount",
+    "keyboard-navigation"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "JSON contract viewer",
+    "keyboard": [
+      "Tab moves through tabs, copy actions, and expandable nodes.",
+      "Arrow keys may navigate tree nodes when the JSON body is rendered as an interactive tree."
+    ],
+    "announcements": [
+      "Copy success and tab changes should be announced clearly.",
+      "Artifact summary metrics should be available before the raw JSON body."
+    ],
+    "focus_management": "Keep focus stable when switching tabs or copying values, and do not drop keyboard users into the middle of a deep JSON tree unexpectedly."
+  },
+  "composition": {
+    "ArtifactViewer": "Panel(lum-code-block, stack, padded-frame) > [Toolbar + Tabs + SummaryStrip + JsonPane + Footer]",
+    "Toolbar": "Row(d-data, compact) > [Title + SummaryBadges + ActionButtons]",
+    "Tabs": "SegmentedControl(d-interactive) > [JsonTab + CommandsTab + EvidenceTab]",
+    "JsonPane": "CodeRegion(mono, syntax-highlighted) > [LineNumbers + JsonTree]",
+    "SummaryStrip": "Row(d-annotation, compact) > [Lines + Bytes + Schema + RootKeys]"
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "team-management",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Team Management",
+  "description": "Organization and team management for Team-tier users. Manage members, roles, invitations, and shared org content.",
+  "tags": [
+    "team",
+    "organization",
+    "members",
+    "roles",
+    "collaboration"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "team",
+        "organization",
+        "members",
+        "roles"
+      ],
+      "secondary": [
+        "invite",
+        "collaboration",
+        "org-content",
+        "permissions"
+      ],
+      "negative": []
+    },
+    "implies": [
+      "auth"
+    ],
+    "weight": 0.7,
+    "tier": "optional"
+  },
+  "pages": [
+    {
+      "id": "team-overview",
+      "path": "/dashboard/team",
+      "default_layout": [
+        "kpi-grid",
+        "team-member-row"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "team-members",
+      "path": "/dashboard/team/members",
+      "default_layout": [
+        "search-filter-bar",
+        "team-member-row"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "team-content",
+      "path": "/dashboard/team/content",
+      "default_layout": [
+        "content-card-grid"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "team-overview": "Team summary page. KPI cards at top showing member count, active users, and content published. Below, a member list with avatar, name, role badge, and last-active date per row.",
+    "team-members": "Full member management view. Search bar and role filter at top. Member rows below with avatar, name, email, role dropdown, and action buttons for remove/change-role. Invite button in the header.",
+    "team-content": "Shared organization content grid. Card grid showing team-published content items with author avatar, title, type badge, and publication date."
+  },
+  "features": [
+    "auth",
+    "team"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "kpi-grid": "^1.0.0",
+      "team-member-row": "^1.0.0",
+      "search-filter-bar": "^1.0.0",
+      "content-card-grid": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "luminarum"
+    ],
+    "modes": [
+      "dark"
+    ]
+  }
+}

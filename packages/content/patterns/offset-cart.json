@@ -1,0 +1,109 @@
+{
+  "id": "offset-cart",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Offset Cart",
+  "description": "A carbon offset marketplace cart with browsable project cards, tonnage selectors, certification badges, and a running impact summary sidebar.",
+  "category": "climate",
+  "tags": [
+    "2026",
+    "climate",
+    "offsets",
+    "marketplace",
+    "cart",
+    "carbon-credits",
+    "sustainability"
+  ],
+  "components": [
+    "OffsetProject",
+    "ImpactBadge",
+    "TonnageSelector",
+    "ProjectImage",
+    "CertificationChip",
+    "TotalImpact"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full marketplace layout with grid of browsable project cards on the left and persistent cart summary sidebar docked to the right edge",
+      "layout": {
+        "layout": "split-3-1",
+        "atoms": "_grid _grid-cols-4 _gap-6 _w100 _p-6"
+      }
+    },
+    "minimal": {
+      "description": "Compact checkout-focused view showing only selected projects in a single column with inline quantity controls and summary footer",
+      "layout": {
+        "layout": "single-column",
+        "atoms": "_flex _flex-col _gap-4 _w100 _max-w-xl _mx-auto _p-6"
+      }
+    },
+    "comparison": {
+      "description": "Side-by-side comparison of multiple candidate offset projects aligned on certification, cost per tonne, vintage, and verification status rows",
+      "layout": {
+        "layout": "horizontal-compare",
+        "atoms": "_grid _grid-cols-3 _gap-4 _w100 _p-6"
+      }
+    }
+  },
+  "visual_brief": "A marketplace grid of offset project cards, each showing a high-quality photograph at the top depicting project type (dense forest canopy for reforestation, wind turbines at sunset for renewable, industrial scrubbers for direct air capture, mangrove coastline for blue carbon). Below the image: project name in bold sans-serif, location in muted italic, certification chips arranged in a row (Verra VCS, Gold Standard, CCB, ACR) with small recognisable logos. Cost per tonne displayed prominently in monospace (e.g. '$18.50/tCO2e'), vintage year, and verification status pill (Verified / Pending). A tonnage selector with minus/plus buttons and numeric input sits at the bottom of each card with an 'Add to Cart' button. Right-docked cart sidebar displays total tonnes, total cost, projected impact in monospace, certification mix as tiny stacked bars, and a prominent checkout button. Cart line items show thumbnail, project name, tonnes x rate, and remove button.",
+  "layout_hints": {
+    "container": "d-section",
+    "note": "Project cards use d-interactive with cursor:pointer. Images must maintain 16:9 aspect ratio. Certifications rendered with text labels, not icon-only.",
+    "currency": "All monetary values in monospace with currency symbol prefix. Tonnage values always include tCO2e unit."
+  },
+  "default_layout": {
+    "layout": "split-3-1",
+    "atoms": "_grid _grid-cols-4 _gap-6 _w100 _p-6",
+    "slots": {
+      "offset-project": "Repeating project card. Contains image, name, location, certifications, price, tonnage selector, and add-to-cart control.",
+      "project-image": "Top-of-card photograph showing project visual. 16:9 aspect, rounded top corners.",
+      "certification-chip": "Small labeled pill with certification standard name (Verra, Gold Standard, etc.) and subtle standard-specific color.",
+      "tonnage-selector": "Input group with minus/plus buttons around a numeric input for tonnes to purchase.",
+      "impact-badge": "Small badge on each card showing equivalent impact (e.g. 'offsets 3 flights' or 'powers 2 homes/yr').",
+      "total-impact": "Right sidebar cart summary showing running total tonnes, total cost, certification mix, line items, and checkout button."
+    }
+  },
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Carbon offset marketplace and cart",
+    "announcements": [
+      "Added {tonnes} tCO2e of {project} to cart",
+      "Cart total {tonnes} tCO2e at {cost}"
+    ],
+    "keyboard": [
+      "Tab: cycle through project cards and cart items",
+      "Enter: add selected project to cart",
+      "Arrow Up/Down: adjust tonnage selector",
+      "Delete: remove item from cart when focused"
+    ]
+  },
+  "responsive": {
+    "mobile": "Project grid becomes single column. Cart summary moves to sticky bottom sheet with expand handle.",
+    "tablet": "Project grid 2 columns with cart sidebar remaining docked right."
+  },
+  "motion": {
+    "micro": {
+      "card-hover": "elevation raise + image zoom(1.03) 200ms ease-out",
+      "add-to-cart": "button pulse + cart icon bounce 300ms spring"
+    },
+    "transitions": {
+      "cart-add": "new line item slide-in from top 400ms ease-out",
+      "cart-remove": "line item slide-out + height collapse 300ms ease-in"
+    },
+    "ambient": {
+      "checkout-pulse": "subtle button glow on checkout CTA 2.5s ease-in-out infinite"
+    }
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "composition": {
+    "OffsetCart": "Section(d-section) > [ProjectGrid > OffsetProject[](d-interactive) + CartSidebar > TotalImpact]",
+    "OffsetProject": "Card(d-surface, data-interactive) > [ProjectImage + ProjectInfo > [ProjectName + Location + CertificationChip[] + PriceLabel + ImpactBadge] + TonnageSelector + AddToCartButton]",
+    "TotalImpact": "Panel(d-surface, sticky) > [TotalTonnes(mono) + TotalCost(mono) + CertificationMix + CartLineItem[] + CheckoutButton]",
+    "TonnageSelector": "InputGroup > [MinusButton + NumberInput + PlusButton]",
+    "CertificationChip": "Chip(d-annotation, data-standard) > [StandardLogo + StandardName]"
+  }
+}

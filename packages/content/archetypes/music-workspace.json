@@ -1,0 +1,104 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "music-workspace",
+  "role": "primary",
+  "version": "2.1.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Music Workspace",
+  "description": "DAW-first producer session workspace with transport, arrangement canvas, mixer console, stem crate, and contextual session inspector.",
+  "visual_brief": "Premium authenticated DAW workspace. The session route should look like an instrument-grade product surface: dark neutral shell, crisp sidebar, exact active navigation, sticky studio header, compact transport rail, beat-grid arrangement canvas, right inspector, and horizontal mixer console. Visual hierarchy starts with playback and the current arrangement, not dashboard cards. Use one dominant cyan interaction accent, amber playhead/readiness, magenta only for armed/remote collaborator states, and tabular mono data for timecode, BPM, key, dB, latency, and split percentages. Dense is good; cramped, decorative, or generic SaaS is not.",
+  "responsive": {
+    "mobile": "Top studio header plus compact transport, then segmented tabs for Arrange, Mixer, Inspect, and Stems. Arrangement uses horizontal timeline scroll with fixed-height stem rows. Mixer uses fixed-width channel strips in horizontal scroll. Inspector and crate render as tab panels or bottom sheets.",
+    "tablet": "Arrangement remains primary; inspector collapses or stacks below; mixer can be horizontal scroll. Keep transport visible above the active panel.",
+    "desktop": "Sidebar, sticky header, transport, arrangement, inspector, mixer, and stem crate are available without modal navigation."
+  },
+  "accessibility": {
+    "landmarks": ["navigation", "main", "complementary"],
+    "keyboard": ["Space toggles playback", "R arms recording", "I toggles inspector", "Arrow keys nudge focused timeline position"],
+    "notes": "Use real buttons for transport controls, aria-label the arrangement and mixer regions, announce playback and export readiness changes, and keep focus visible on dense controls."
+  },
+  "tags": ["music", "production", "audio", "workspace", "daw", "mixer"],
+  "classification": {
+    "triggers": {
+      "primary": ["music producer", "daw", "audio workspace", "session editor", "track editor", "mix session"],
+      "secondary": ["stems", "waveform", "mixing", "automation", "transport"],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "directives": [
+    "Treat this section as the visual and functional center of Producer Studio.",
+    "The app should feel like a serious audio workstation: compact controls, timeline alignment, live meters, and deterministic session data.",
+    "Responsive behavior must preserve DAW readability through panel switching or horizontal timeline scroll."
+  ],
+  "navigation_items": [
+    { "label": "Session", "route": "/session", "icon": "SlidersHorizontal", "hotkey": "g s", "active_match": "/session" },
+    { "label": "Tracks", "route": "/tracks", "icon": "Library", "hotkey": "g t", "active_match": "/tracks" },
+    { "label": "Collaborators", "route": "/collab", "icon": "UserCircle", "hotkey": "g c", "active_match": "/collab" },
+    { "label": "Splits", "route": "/collab/splits", "icon": "Percent", "hotkey": "g p", "active_match": "/collab/splits" },
+    { "label": "Rooms", "route": "/rooms", "icon": "Radio", "hotkey": "g r", "active_match": "/rooms" }
+  ],
+  "pages": [
+    {
+      "id": "session",
+      "patterns": [
+        { "pattern": "daw-transport-bar", "preset": "studio", "as": "transport" },
+        { "pattern": "arrangement-canvas", "preset": "session", "as": "arrangement" },
+        { "pattern": "mixer-console", "preset": "console", "as": "mixer" },
+        { "pattern": "session-inspector", "preset": "aside", "as": "inspector" },
+        { "pattern": "stem-browser", "preset": "compact", "as": "crate" }
+      ],
+      "default_layout": [
+        "daw-transport-bar",
+        { "cols": ["arrangement-canvas", "session-inspector"], "at": "lg", "span": { "arrangement-canvas": 9, "session-inspector": 3 } },
+        "mixer-console",
+        "stem-browser"
+      ],
+      "directives": [
+        "Render a complete production cockpit on desktop: transport, arrangement, mixer, inspector, and stem crate.",
+        "Keep desktop nav active states exact enough that /collab and /collab/splits cannot both appear selected.",
+        "On mobile, keep transport sticky and switch arrangement, mixer, inspector, and crate through tabs."
+      ],
+      "shell": "sidebar-aside"
+    },
+    {
+      "id": "session-detail",
+      "patterns": [
+        { "pattern": "daw-transport-bar", "preset": "studio", "as": "transport" },
+        { "pattern": "arrangement-canvas", "preset": "session", "as": "arrangement" },
+        { "pattern": "mixer-console", "preset": "compact", "as": "mixer" },
+        { "pattern": "session-inspector", "preset": "aside", "as": "inspector" }
+      ],
+      "default_layout": [
+        "daw-transport-bar",
+        { "cols": ["arrangement-canvas", "session-inspector"], "at": "lg", "span": { "arrangement-canvas": 9, "session-inspector": 3 } },
+        "mixer-console"
+      ],
+      "shell": "sidebar-aside"
+    }
+  ],
+  "page_briefs": {
+    "session": "Primary authenticated DAW cockpit. A sticky transport strip sits above the arrangement canvas. The main canvas shows stem rows, waveform regions, markers, automation curves, and collaborator cursors. The mixer console anchors below with live meters and a master bus. A right inspector shows selected stem metadata, split readiness, comments, and export state. Mobile switches these panels intentionally instead of squeezing the desktop grid.",
+    "session-detail": "Saved session/version detail for a specific track. It opens with transport and arrangement context, highlights the selected version and mix changes in the inspector, and keeps a compact mixer for branch/review decisions."
+  },
+  "features": ["session-editing", "transport", "arrangement", "stems", "mixing", "automation", "collaboration-presence"],
+  "shells": {
+    "sidebar-aside": "Responsive DAW shell with left navigation, sticky transport-aware header, primary arrangement canvas, and collapsible inspector"
+  },
+  "dependencies": {
+    "patterns": {
+      "daw-transport-bar": "^1.0.0",
+      "arrangement-canvas": "^1.0.0",
+      "mixer-console": "^1.0.0",
+      "session-inspector": "^1.1.0",
+      "stem-browser": "^1.1.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": ["studio-dark", "carbon-neon"],
+    "modes": ["dark"]
+  }
+}

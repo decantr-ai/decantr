@@ -1,0 +1,84 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "product-management",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Product Management",
+  "description": "Product catalog CRUD and inventory management with data tables, edit forms, and Kanban-style inventory boards for e-commerce admin operations.",
+  "tags": ["products", "inventory", "crud", "catalog", "admin", "ecommerce", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["product management", "catalog management", "product crud", "inventory management"],
+      "secondary": ["product editor", "sku management", "stock tracking", "product list"],
+      "negative": ["storefront", "checkout", "customer-facing"]
+    },
+    "implies": ["bulk-actions", "search"],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "products",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "product-table"
+        }
+      ],
+      "default_layout": ["product-table"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "product-edit",
+      "patterns": [
+        {
+          "pattern": "form-sections",
+          "preset": "structured",
+          "as": "product-form"
+        }
+      ],
+      "default_layout": ["product-form"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "inventory",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "compact",
+          "as": "stock-table"
+        },
+        {
+          "pattern": "kanban-board",
+          "preset": "compact",
+          "as": "stock-board"
+        }
+      ],
+      "default_layout": ["stock-table", "stock-board"],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "products": "Data table with product image thumbnail, name, SKU, price, stock count, status badge (active/draft/archived), and actions column with edit and archive buttons. Bulk select checkbox column for batch operations. Search and filter bar above with category dropdown, stock status chips, and text search.",
+    "product-edit": "Structured form sections for product editing: basic info (name, description, SKU), pricing (price, compare-at, cost), media (image upload with drag-and-drop), variants (size/color matrix), inventory (stock count, low-stock threshold), and SEO (title, description, URL slug). Save and discard buttons anchored at bottom.",
+    "inventory": "Compact data table showing SKU, product name, current stock, reorder point, and status badge. Below, a compact Kanban board with columns for In Stock, Low Stock, Out of Stock, and On Order, with product cards that can be dragged between states."
+  },
+  "features": ["bulk-actions", "search", "inline-editing", "image-upload"],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area"
+  },
+  "suggested_theme": {
+    "ids": ["auradecantism", "carbon"],
+    "modes": ["dark", "light"]
+  },
+  "dependencies": {
+    "patterns": {
+      "data-table": ">=1.0.0",
+      "form-sections": ">=1.0.0",
+      "kanban-board": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

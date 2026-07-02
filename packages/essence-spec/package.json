@@ -1,6 +1,6 @@
 {
   "name": "@decantr/essence-spec",
-  "version": "3.4.0",
+  "version": "3.8.0",
   "description": "Essence schemas, validation, migration, and TypeScript types for Decantr",
   "keywords": [
     "decantr",

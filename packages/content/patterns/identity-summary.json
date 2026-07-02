@@ -1,0 +1,115 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "identity-summary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Identity Summary",
+  "description": "Profile or author summary surface with a compact media anchor, name/title stack, supporting bio, metadata rows, and optional action links.",
+  "category": "profile",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Avatar",
+        "Badge",
+        "Button",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Avatar",
+    "Badge",
+    "Button",
+    "icon"
+  ],
+  "default_preset": "editorial",
+  "presets": {
+    "editorial": {
+      "description": "Identity block for about pages and portfolio bios with a media anchor, role/title stack, biography, metadata facts, and optional action row.",
+      "components": [
+        "Avatar",
+        "Badge",
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "split",
+        "atoms": "_flex _col _gap5",
+        "slots": {
+          "media": "Compact visual anchor on the left: real portrait, monogram, or branded mark. Roughly 88-112px square or circular.",
+          "identity": "Name, role/title, and short biography stacked with a clear hierarchy.",
+          "meta": "Two to four compact fact rows such as location, email, practice, or availability. Each row uses an aligned icon chip plus label/value stack or a short fact pill.",
+          "actions": "Optional explicit action buttons or links such as email, CV download, or social profile links."
+        }
+      }
+    },
+    "compact": {
+      "description": "Small inline identity summary for sidebars, article bylines, or compact author surfaces.",
+      "components": [
+        "Avatar",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _row _gap4 _aic",
+        "slots": {
+          "media": "Avatar or monogram chip",
+          "identity": "Short identity stack with name and subtitle",
+          "meta": "Optional single-line supporting fact"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "split",
+    "atoms": "_flex _col _gap5",
+    "slots": {
+      "media": "Profile media anchor",
+      "identity": "Name, role, and summary",
+      "meta": "Supporting identity facts",
+      "actions": "Optional actions"
+    }
+  },
+  "visual_brief": "A calm, premium identity panel rather than a dashboard widget. The media anchor sits at the left as a compact portrait, monogram, or decorative mark and should feel intentional, not like a placeholder avatar block. To the right is a vertical identity stack: name in a strong heading weight, role or title in muted supporting type, and a short biography at a comfortable reading measure. Supporting metadata sits directly beneath the biography as a compact two-column fact cluster or a short inline fact row, depending on available width. Metadata items should use consistent icon chips or quiet fact pills so the information feels attached to the identity stack rather than floating elsewhere in the card. Optional actions should read as compact editorial affordances — small action pills, secondary links, or understated buttons — not as large operational rows lifted from settings or contact panels.",
+  "layout_hints": {
+    "media_scale": "Keep the media anchor compact enough that it supports the identity instead of overwhelming it. If there is no real portrait, treat the media slot as a decorative identity mark rather than pretending it is a photo.",
+    "identity_hierarchy": "Name, role/title, biography, and metadata should read as one coherent stack. Do not detach metadata into a visually separate footer unless the route contract explicitly asks for that.",
+    "meta_attachment": "Location, email, practice, and availability facts should align to the text column and stay visually tied to the identity content. Avoid icons floating above labels or drifting away from the value text.",
+    "meta_density": "Metadata should stay compact and editorial. Prefer a calm fact cluster or short fact grid over a long stack of heavy utility rows unless the route explicitly needs an operational contact panel.",
+    "action_clarity": "If action links are shown, render them as explicit but compact actions. Avoid ambiguous naked text labels, but also avoid making editorial identity panels look like an admin action list."
+  },
+  "responsive": {
+    "mobile": "Collapse to a single-column stack: media anchor first, then identity copy, then metadata and actions. Keep the text measure comfortable and let metadata rows stack instead of wrapping awkwardly.",
+    "tablet": "Allow either a split composition with compact media on the left or a stacked composition depending on width. Metadata can sit beneath the identity block in two columns if it stays calm and aligned.",
+    "desktop": "Use a compact media anchor with a clear text column. Metadata should sit under the biography in a compact fact cluster, and actions should remain a restrained row of editorial affordances rather than a vertical utility list."
+  },
+  "motion": {
+    "micro": "Any hover or focus feedback should stay restrained. Identity surfaces should feel editorial and stable, not animated like a dashboard tile.",
+    "transitions": "If biography or metadata rows appear progressively, use a gentle fade or rise over 180-220ms without disturbing the overall panel rhythm."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "hover-reveal"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Identity summary",
+    "keyboard": [
+      "Tab should move through any action links or buttons in a clear reading order after the identity content."
+    ],
+    "announcements": [
+      "Name, title, biography, and supporting metadata should be announced in a coherent order.",
+      "If actions are present, their purpose should be explicit from the accessible label."
+    ],
+    "focus_management": "Keep focus on explicit actions only. Decorative media and icon chips should not become stray tab stops."
+  },
+  "composition": {
+    "IdentitySummary": "Panel(d-surface, editorial) > [IdentityRow > [MediaAnchor + IdentityStack > [Name(heading-scale) + Title(text-muted) + Bio + MetaCluster]] + ActionRow?]",
+    "MetaCluster": "ResponsiveFactCluster(compact, 2-col-or-inline) > MetaFact*(icon-chip + label/value stack or fact pill)",
+    "ActionRow": "Row(compact editorial actions) > ActionLink*(icon + label)"
+  }
+}

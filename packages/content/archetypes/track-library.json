@@ -1,0 +1,90 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "track-library",
+  "role": "auxiliary",
+  "version": "2.1.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Track Library",
+  "description": "Producer track and stem catalog with waveform previews, searchable production metadata, version history, and quick-open session context.",
+  "visual_brief": "Premium production crate, not an admin table and not a sparse card gallery. Track rows should scan like a music tool: waveform preview, BPM/key chips, status, collaborator initials, version count, last bounce, and quick-open session action. Desktop should combine a dense track browser with a compact session queue or inspector sidecar so the route feels populated and purposeful at wide widths. Use compact rows, quiet borders, subtle selected states, and one accent color for active/hover affordance. Avoid generic card grids unless each card contains real audio/product signal.",
+  "responsive": {
+    "mobile": "Search stays visible. Filters become horizontal chips. Track rows stack waveform first, then metadata, then status/actions.",
+    "tablet": "Use two-column detail/list where space allows; keep waveform previews readable.",
+    "desktop": "Dense list or table with aligned metadata columns, waveform previews, version state, quick actions, and a supporting queue/inspector sidecar visible."
+  },
+  "accessibility": {
+    "landmarks": ["main"],
+    "keyboard": ["Arrow keys move through stems or tracks", "Enter opens selected track", "A adds selected stem to session"],
+    "notes": "Treat waveform previews as decorative unless interactive; label preview and open actions clearly."
+  },
+  "tags": ["music", "tracks", "library", "versions", "catalog", "stems"],
+  "classification": {
+    "triggers": {
+      "primary": ["track library", "song catalog", "music files", "tracks list", "stem library"],
+      "secondary": ["versions", "revisions", "track manager", "sample crate"],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "directives": [
+    "The library should feel like a production crate, not a generic admin table.",
+    "Every track or stem row needs audio-specific metadata and waveform preview where practical."
+  ],
+  "pages": [
+    {
+      "id": "tracks",
+      "patterns": [
+        { "pattern": "stem-browser", "preset": "library", "as": "browser" },
+        { "pattern": "data-table", "preset": "standard", "as": "catalog" },
+        { "pattern": "search-filter-bar", "preset": "standard", "as": "filters" }
+      ],
+      "default_layout": ["search-filter-bar", "stem-browser", "data-table"],
+      "directives": [
+        "Prioritize waveform previews, BPM, key, status, collaborators, and last bounce over generic table columns.",
+        "On desktop, avoid leaving the lower viewport empty; pair the stem browser with a queue, inspector, or selected-track sidecar."
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "track-detail",
+      "patterns": [
+        { "pattern": "daw-transport-bar", "preset": "studio", "as": "transport" },
+        { "pattern": "arrangement-canvas", "preset": "preview", "as": "arrangement-preview" },
+        { "pattern": "version-history", "preset": "sidebar", "as": "versions" },
+        { "pattern": "session-inspector", "preset": "aside", "as": "inspector" }
+      ],
+      "default_layout": [
+        "daw-transport-bar",
+        { "cols": ["arrangement-canvas", "version-history"], "at": "lg", "span": { "arrangement-canvas": 8, "version-history": 4 } },
+        "session-inspector"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "tracks": "Searchable producer crate. Search and facets filter by status, BPM, key, collaborator, genre, and usage. The main browser shows dense waveform preview rows with current mix status, contributors, version count, and quick-open session action. Desktop includes a compact session queue or selected-track sidecar so the page does not collapse into sparse cards.",
+    "track-detail": "Track review surface with compact transport, read-only arrangement preview, version timeline, bounce notes, and inspector details for selected version/stem. Version rows must separate label, author/time metadata, and notes with explicit spacing so text never appears concatenated."
+  },
+  "features": ["track-management", "versions", "stem-browser", "waveform-preview"],
+  "shells": {
+    "sidebar-main": "Responsive left navigation sidebar with primary content column"
+  },
+  "dependencies": {
+    "patterns": {
+      "stem-browser": "^1.1.0",
+      "data-table": "^1.0.0",
+      "search-filter-bar": "^1.0.0",
+      "daw-transport-bar": "^1.0.0",
+      "arrangement-canvas": "^1.0.0",
+      "version-history": "^1.0.0",
+      "session-inspector": "^1.1.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": ["studio-dark", "carbon-neon"],
+    "modes": ["dark"]
+  }
+}

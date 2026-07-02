@@ -1,0 +1,133 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "testimonials",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Testimonials",
+  "description": "Customer testimonial quotes with avatars, names, roles, and optional company logos",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Card",
+        "Avatar",
+        "Image",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Card",
+    "Avatar",
+    "Image",
+    "icon"
+  ],
+  "default_preset": "grid",
+  "presets": {
+    "grid": {
+      "description": "Grid of testimonial cards, each with quote, avatar, name, and role",
+      "components": [
+        "Card",
+        "Avatar",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _md:gc2 _lg:gc3 _gap6 _py12 _px6",
+        "slots": {
+          "heading": "Optional section heading with _heading2 _textCenter",
+          "testimonial-card": "Card with quote icon, testimonial text, and author row",
+          "quote-icon": "Large decorative open-quote icon in muted primary color at top",
+          "quote-text": "Testimonial paragraph with _body _italic _leading[relaxed]",
+          "author": "Row: Avatar (40px) + name (_textsm _fontmedium) + role/company (_textsm _fgmuted)"
+        }
+      }
+    },
+    "carousel": {
+      "description": "Horizontally scrollable carousel with one featured testimonial visible at a time",
+      "components": [
+        "Card",
+        "Avatar",
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _aic _gap6 _py12 _px6 _overflow[hidden]",
+        "slots": {
+          "testimonial-slide": "Single visible testimonial with large quote text and author",
+          "navigation": "Prev/next arrow Buttons and dot indicators below",
+          "author": "Centered Avatar + name + role + optional company logo"
+        }
+      }
+    },
+    "featured": {
+      "description": "Single large testimonial with company logo, centered layout",
+      "components": [
+        "Avatar",
+        "Image",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _aic _textCenter _gap6 _py16 _px6 _mw[720px] _mx[auto]",
+        "slots": {
+          "company-logo": "Company or brand logo Image above quote",
+          "quote-text": "Large testimonial text with _textlg _italic _leading[relaxed]",
+          "author": "Avatar + name + role centered below quote"
+        }
+      }
+    }
+  },
+  "visual_brief": "Section displaying customer testimonials in a grid of cards. Each card has a large decorative open-quote icon (in muted primary color) at the top-left, followed by the testimonial text in italic body-size type with relaxed line-height. At the bottom of each card, an author row shows a circular avatar (40px), the person's name in medium-weight small text, and their role/company in muted small text. Cards have consistent padding (p6), rounded corners, and subtle border or shadow. The carousel preset shows one testimonial at a time with large centered text, prev/next arrow buttons on either side, and dot navigation indicators below. The featured preset centers a single prominent testimonial with the company logo above the quote.",
+  "responsive": {
+    "mobile": "Grid collapses to single column. Cards go full-width. Carousel shows one testimonial with swipe gesture support and dot indicators. Featured preset reduces quote text size. Padding to px4 py8.",
+    "tablet": "Two-column grid. Carousel controls visible. Featured preset centered with comfortable max-width.",
+    "desktop": "Three-column grid with gap6. Carousel shows prev/next buttons on hover. Featured preset at 720px max-width centered."
+  },
+  "motion": {
+    "micro": "Carousel slides transition with 400ms ease translateX. Auto-play advances every 5s.",
+    "transitions": "Testimonial cards fade in on section enter with 300ms ease. Carousel dot indicators pulse on active transition."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "stagger-children",
+    "scroll-reveal",
+    "drag-reorder"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-roledescription": "carousel",
+    "aria-label": "Customer testimonials",
+    "keyboard": [
+      "Tab moves to next/previous carousel controls",
+      "Enter or Space activates carousel navigation buttons",
+      "Arrow Left/Right navigates between slides in carousel preset"
+    ],
+    "announcements": [
+      "Testimonial {number} of {total}",
+      "Slide changed to testimonial by {author}"
+    ],
+    "focus_management": "Carousel pauses auto-play when any element within receives focus. Resumes on blur after 3s delay."
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gc1 _md:gc2 _lg:gc3 _gap6 _py12 _px6",
+    "slots": {
+      "testimonial-card": "Quote card with author info",
+      "quote-text": "Testimonial paragraph",
+      "author": "Avatar, name, and role"
+    }
+  },
+  "composition": {
+    "Testimonials": "Grid(d-section, responsive: 1/2/3-col) > TestimonialCard[]",
+    "TestimonialCard": "Card(d-surface) > [QuoteIcon(d-annotation) + QuoteText(italic) + AuthorRow > [Avatar + AuthorInfo > [Name(font-medium) + Role(text-muted)] + CompanyLogo?]]"
+  },
+  "layout_hints": {
+    "card_treatment": "Testimonial cards should use d-surface with a thin left border (3px solid) that rotates through accent/primary colors per card. This creates visual variety without inconsistency. Include a large decorative open-quote mark in low-opacity accent color.",
+    "avatar_treatment": "Avatars should have a subtle ring: 2px solid var(--d-primary) with 2px gap (outline-offset). This frames the person and adds polish.",
+    "section_background": "Use a very subtle gradient background: linear-gradient(180deg, var(--d-bg), color-mix(in srgb, var(--d-surface) 30%, var(--d-bg))). This creates visual separation from pricing above without being heavy."
+  }
+}

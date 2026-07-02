@@ -1,0 +1,117 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "marketing-ai-studio",
+  "role": "public",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "AI Studio Marketing",
+  "description": "Marketing landing page for the AI Agent Studio, showcasing features, workflow demos, pricing tiers, and conversion CTAs.",
+  "tags": [
+    "marketing",
+    "landing",
+    "ai",
+    "studio",
+    "seo",
+    "public",
+    "2026"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "ai studio marketing",
+        "agent studio landing",
+        "ai studio landing page",
+        "agent builder marketing",
+        "ai studio homepage"
+      ],
+      "secondary": [
+        "ai product page",
+        "agent platform marketing",
+        "ai studio pricing",
+        "agent builder site",
+        "ai studio launch"
+      ],
+      "negative": [
+        "dashboard",
+        "admin",
+        "chatbot"
+      ]
+    },
+    "implies": [
+      "seo",
+      "conversion"
+    ],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "vision",
+          "as": "landing-hero"
+        },
+        {
+          "pattern": "features",
+          "preset": "standard",
+          "as": "feature-showcase"
+        },
+        {
+          "pattern": "how-it-works",
+          "preset": "standard",
+          "as": "workflow-steps"
+        },
+        {
+          "pattern": "pricing",
+          "preset": "standard",
+          "as": "pricing-tiers"
+        },
+        {
+          "pattern": "cta-section",
+          "preset": "standard",
+          "as": "bottom-cta"
+        }
+      ],
+      "default_layout": [
+        "landing-hero",
+        "feature-showcase",
+        "workflow-steps",
+        "pricing-tiers",
+        "bottom-cta"
+      ],
+      "shell": "top-nav-footer"
+    }
+  ],
+  "page_briefs": {
+    "home": "Full-length marketing landing page. Vision hero at top with bold headline, subtitle, animated agent-building illustration, and primary CTA button. Features section below with icon cards for key capabilities (prompt editor, tool registry, eval suite, trace viewer). How-it-works section with numbered steps and connecting flow lines. Pricing tier cards with feature checklists and highlighted recommended plan. Bottom CTA section with dark background, compelling copy, and sign-up button."
+  },
+  "features": [
+    "marketing",
+    "seo"
+  ],
+  "shells": {
+    "top-nav-footer": "Fixed top navigation bar with logo and links, sticky footer with legal and social links"
+  },
+  "suggested_theme": {
+    "ids": [
+      "gradient-mesh",
+      "carbon"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  },
+  "dependencies": {
+    "patterns": {
+      "hero": ">=1.0.0",
+      "features": ">=1.0.0",
+      "how-it-works": ">=1.0.0",
+      "pricing": ">=1.0.0",
+      "cta-section": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

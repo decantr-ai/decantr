@@ -1,0 +1,157 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "share-modal",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Share Modal",
+  "description": "Invite collaborators and manage document sharing. Includes email invite, shareable link, and current collaborators management.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Input",
+        "Select",
+        "Avatar",
+        "Tabs",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Input",
+    "Select",
+    "Avatar",
+    "Tabs",
+    "icon"
+  ],
+  "default_preset": "invite",
+  "presets": {
+    "invite": {
+      "description": "Email invite form with role selector",
+      "components": [
+        "Button",
+        "Input",
+        "Select",
+        "icon"
+      ],
+      "layout": {
+        "layout": "modal",
+        "atoms": "_flex _col _gap4 _p6 _w[480px]",
+        "slots": {
+          "header": "Modal title and close button",
+          "invite-form": "Email input with role selector",
+          "send-button": "Send invitation button"
+        }
+      }
+    },
+    "link": {
+      "description": "Shareable link management with copy-to-clipboard URL, permission settings, and expiration controls",
+      "components": [
+        "Button",
+        "Input",
+        "Select",
+        "icon"
+      ],
+      "layout": {
+        "layout": "column",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "link-display": "Shareable URL with copy button",
+          "link-settings": "Permission level for link access",
+          "toggle": "Enable/disable link sharing"
+        }
+      }
+    },
+    "members": {
+      "description": "Current collaborators list with role management",
+      "components": [
+        "Avatar",
+        "Button",
+        "Select",
+        "icon"
+      ],
+      "layout": {
+        "layout": "column",
+        "atoms": "_flex _col _gap2",
+        "slots": {
+          "members-list": "List of current collaborators with roles",
+          "pending": "Pending invitations"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "modal",
+    "atoms": "_flex _col _gap4 _p6 _w[480px]",
+    "slots": {
+      "tabs": "Invite / Link / Members navigation",
+      "invite-form": "Email input with role selector and autocomplete",
+      "link-settings": "Shareable link toggle and permissions",
+      "members-list": "Current collaborators with role management",
+      "pending": "Pending invitations list"
+    }
+  },
+  "io": {
+    "consumes": [
+      "document",
+      "members",
+      "pending",
+      "suggestions"
+    ],
+    "produces": [
+      "invite",
+      "role-change",
+      "remove-member"
+    ],
+    "actions": [
+      "send-invite",
+      "cancel-invite",
+      "change-role",
+      "remove-member",
+      "toggle-link",
+      "copy-link"
+    ]
+  },
+  "visual_brief": "Modal dialog with tabs for Invite, Link, and Members. The Invite tab shows an email input with autocomplete, a role dropdown (Viewer, Editor, Admin), and a Send button. The Link tab has a toggle to enable/disable shareable link, the link URL in a copy-able input, and permission settings (view/edit, expiration). The Members tab lists current collaborators as rows with avatar, name, email, role dropdown, and a remove button. Pending invitations show an 'Invited' badge with a resend option. The modal header shows the document or resource name being shared.",
+  "responsive": {
+    "mobile": "Modal takes near-full screen. Tabs render as a top bar. Email input full-width. Member list scrolls vertically. Role dropdowns use native selects.",
+    "tablet": "Centered modal at 520px width. Standard tab navigation. Member list comfortable.",
+    "desktop": "Centered modal at 560px width. Full tab layout. Member management with inline role selectors."
+  },
+  "layout_hints": {
+    "sharing_priority": "Lead with the current resource context and the simplest sharing action first. Invite, link, and members tabs should feel like different lenses on the same access model, not separate tools.",
+    "tab_role": "Tabs should preserve a stable modal frame while changing only the relevant access workflow underneath.",
+    "member_clarity": "Current access state and pending invites should stay visually distinct so permission management feels trustworthy and easy to audit."
+  },
+  "motion": {
+    "micro": "Tab changes, invite success, and copy-link feedback may sharpen or fade subtly to confirm access actions.",
+    "transitions": "The modal should open and switch tabs smoothly enough to preserve context without feeling like a separate page navigation."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "focus-trap",
+    "keyboard-navigation"
+  ],
+  "accessibility": {
+    "role": "dialog",
+    "aria-label": "Share modal",
+    "keyboard": [
+      "Focus should move into the active share flow immediately, with tabs, invite fields, link controls, and member actions reachable in order."
+    ],
+    "announcements": [
+      "Resource name, active tab, pending invite state, and role changes should be communicated semantically so sharing state is understandable without relying on modal layout alone."
+    ]
+  },
+  "composition": {
+    "ShareModal": "Modal(d-surface, centered) > [Header + Tabs + TabContent]",
+    "Header": "Row(space-between) > [Title(heading3) + CloseButton(d-interactive)]",
+    "Tabs": "TabBar(d-control) > [InviteTab + LinkTab + MembersTab]",
+    "InviteForm": "Section > [EmailInput(d-control, autocomplete) + RoleSelect(d-control) + SendButton(d-interactive, variant: primary)]",
+    "MembersList": "List(flex-col) > MemberRow[]",
+    "MemberRow": "Row > [Avatar + Name + Email(text-muted) + RoleSelect(d-control) + RemoveButton(d-interactive, variant: ghost)]"
+  }
+}

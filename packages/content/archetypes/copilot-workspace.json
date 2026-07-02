@@ -1,0 +1,110 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "copilot-workspace",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Copilot Workspace",
+  "description": "Main application workspace with an AI copilot overlay. Features a toggleable copilot panel that provides context-aware suggestions and chat alongside the primary work surface.",
+  "tags": [
+    "copilot",
+    "ai",
+    "workspace",
+    "assistant",
+    "productivity"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "copilot workspace",
+        "ai copilot",
+        "ai assistant overlay",
+        "copilot app",
+        "ai-powered workspace"
+      ],
+      "secondary": [
+        "copilot panel",
+        "ai sidebar",
+        "context-aware assistant",
+        "ai suggestions",
+        "smart workspace"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "workspace",
+      "patterns": [
+        {
+          "pattern": "chat-thread",
+          "preset": "standard",
+          "as": "copilot-thread"
+        },
+        {
+          "pattern": "chat-input",
+          "preset": "standard",
+          "as": "copilot-input"
+        }
+      ],
+      "default_layout": [
+        "chat-thread",
+        "chat-input"
+      ],
+      "shell": "copilot-overlay"
+    },
+    {
+      "id": "workspace-detail",
+      "patterns": [
+        {
+          "pattern": "detail-header",
+          "preset": "standard",
+          "as": "item-header"
+        },
+        {
+          "pattern": "chat-thread",
+          "preset": "standard",
+          "as": "copilot-thread"
+        }
+      ],
+      "default_layout": [
+        "detail-header",
+        "chat-thread"
+      ],
+      "shell": "copilot-overlay"
+    }
+  ],
+  "page_briefs": {
+    "workspace": "Primary workspace view with a copilot overlay panel. The main content area displays the user's work surface — items, documents, or dashboards. A toggleable copilot panel slides in from the right edge, containing a chat thread for conversational AI interaction and an anchored input bar. The copilot is aware of the current workspace context and offers proactive suggestions. Keyboard shortcut (Cmd+K) toggles the copilot panel.",
+    "workspace-detail": "Detail view for a specific item within the workspace. A detail header displays the item title, metadata, status, and action buttons. The main content area shows item-specific information. The copilot overlay panel on the right is pre-loaded with context about the viewed item, allowing users to ask questions or request actions related to it. The copilot thread shows contextual suggestions based on the item's state."
+  },
+  "features": [
+    "copilot",
+    "ai-suggestions",
+    "context-awareness",
+    "keyboard-shortcuts"
+  ],
+  "shells": {
+    "copilot-overlay": "Main work surface with a toggleable AI copilot panel overlay on the right edge"
+  },
+  "dependencies": {
+    "patterns": {
+      "chat-thread": "^1.0.0",
+      "chat-input": "^1.0.0",
+      "detail-header": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  }
+}

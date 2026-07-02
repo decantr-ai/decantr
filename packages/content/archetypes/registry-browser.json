@@ -1,0 +1,121 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "registry-browser",
+  "role": "primary",
+  "version": "1.1.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Registry Browser",
+  "description": "Public content browsing for a design registry. Search, filter, and explore patterns, themes, blueprints, archetypes, and shells.",
+  "tags": [
+    "registry",
+    "browser",
+    "search",
+    "content",
+    "explore"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "registry",
+        "browse",
+        "explore",
+        "catalog"
+      ],
+      "secondary": [
+        "search",
+        "filter",
+        "patterns",
+        "themes",
+        "blueprints"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 0.9,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "homepage",
+      "default_layout": [
+        "search-filter-bar",
+        "registry-discovery-cta-grid",
+        "content-card-grid"
+      ],
+      "shell": "top-nav-main",
+      "notes": "Registry landing for builders. Hero search plus a discovery CTA grid, featured blueprints, and showcase-forward discovery."
+    },
+    {
+      "id": "browse",
+      "path": "/browse",
+      "default_layout": [
+        "search-filter-bar",
+        "content-card-grid"
+      ],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "browse-type",
+      "path": "/browse/[type]",
+      "default_layout": [
+        "search-filter-bar",
+        "content-card-grid"
+      ],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "detail",
+      "path": "/[type]/[namespace]/[slug]",
+      "default_layout": [
+        "content-detail-hero",
+        "json-viewer"
+      ],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "profile",
+      "default_layout": [
+        "detail-header",
+        "content-card-grid",
+        "activity-feed"
+      ],
+      "shell": "top-nav-main",
+      "notes": "Public user profile showing published items and activity."
+    }
+  ],
+  "page_briefs": {
+    "homepage": "Registry landing for app-builders. Search remains the hero, but the page should quickly orient users toward official blueprints, discovery CTA cards, and live showcases rather than analytics. Quick-start actions should be visually strong, clearly interactive, and owned by a dedicated discovery pattern instead of page-local runtime styling. Use one consistent public-shell inset rhythm and keep every section purposeful.",
+    "browse": "Search-first browsing page. The filter bar should expose search, type, source, and sort only. Cards should lead with title, type, description, and source line. Remove operator-facing trust chips from browse entirely and keep the layout calm, editorial, and easy to scan.",
+    "browse-type": "Filtered registry view for a single content type. Same search/source/sort rhythm as the main browse page, pre-filtered to the selected type. Type identity should remain strong without creating visual clutter.",
+    "detail": "Content detail page. Hero content is intent-first, with quick-start guidance, human-readable source identity, and trust surfaces that explain why an item matters. Recommendation, showcase, and verification signals belong here, not on browse cards.",
+    "profile": "Public profile showing avatar, username, bio, and published item count with the same curated shell spacing as the rest of the registry browser. Published content cards should match browse-card hierarchy, including thumbnail, type chip, source line, and simpler metadata."
+  },
+  "features": [
+    "search",
+    "pagination"
+  ],
+  "shells": {
+    "top-nav-main": "Top navigation bar with main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "search-filter-bar": "^1.0.0",
+      "registry-discovery-cta-grid": "^1.0.0",
+      "content-card-grid": "^1.0.0",
+      "content-detail-hero": "^1.0.0",
+      "detail-header": "^1.0.0",
+      "json-viewer": "^1.0.0",
+      "namespace-badge": "^1.0.0",
+      "activity-feed": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "luminarum"
+    ],
+    "modes": [
+      "dark"
+    ]
+  }
+}

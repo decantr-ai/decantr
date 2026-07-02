@@ -1,0 +1,113 @@
+{
+  "id": "case-brief-card",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Case Brief Card",
+  "description": "A case brief summary card displaying Bluebook citation, court, outcome, holding summary, key facts, and optional research annotation margin.",
+  "category": "legal",
+  "tags": [
+    "2026",
+    "legal",
+    "research",
+    "case-brief",
+    "precedent",
+    "citation",
+    "card"
+  ],
+  "components": [
+    "CaseCitation",
+    "CourtBadge",
+    "HoldingSummary",
+    "KeyFacts",
+    "OutcomeBadge",
+    "AnnotationMargin"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full brief card showing citation, court, outcome, holding summary, and bulleted key facts for typical research workflow usage",
+      "layout": {
+        "layout": "card",
+        "atoms": "_relative _w100 _p-6 _rounded-lg _bg-surface _border"
+      }
+    },
+    "minimal": {
+      "description": "Citation-only compact card for bibliography lists and quick reference collections showing only the formatted citation and court badge",
+      "layout": {
+        "layout": "card-compact",
+        "atoms": "_flex _items-center _gap-3 _w100 _p-3 _rounded _bg-surface _border"
+      }
+    },
+    "research": {
+      "description": "Extended card with right-docked annotation margin column for user notes, highlights, and personal research commentary attached inline",
+      "layout": {
+        "layout": "card-with-margin",
+        "atoms": "_grid _grid-cols-[1fr_240px] _gap-4 _w100 _p-6 _rounded-lg _bg-surface _border"
+      }
+    }
+  },
+  "visual_brief": "A card with the full Bluebook citation rendered at top in monospace font at prominent size (e.g. 'Roe v. Wade, 410 U.S. 113 (1973)'). Immediately below the citation, a row of badges: court badge (SCOTUS, 9th Cir., D. Mass.) with court-specific color coding, and outcome badge (Affirmed: green, Reversed: red, Remanded: amber, Vacated: purple). A short decided-date chip. Holding summary appears as a 2-3 line blockquote-styled paragraph in italic serif font set off with a left border. Key Facts section below shows a bulleted list of 3-5 concise fact bullets. Research preset adds a right margin column with annotation surface where user notes appear as sticky-note style cards in pale yellow with timestamp and optional highlight-color indicators linking to specific text spans.",
+  "layout_hints": {
+    "container": "d-surface",
+    "note": "Citations must always use Bluebook format. Court badge uses text abbreviation, never icon-only.",
+    "outcome_colors": "Outcome semantics are fixed: Affirmed green, Reversed red, Remanded amber, Vacated purple, Dismissed gray."
+  },
+  "default_layout": {
+    "layout": "card",
+    "atoms": "_relative _w100 _p-6 _rounded-lg _bg-surface _border",
+    "slots": {
+      "case-citation": "Top-of-card monospace Bluebook citation with case name and reporter reference.",
+      "court-badge": "Colored pill showing court abbreviation (SCOTUS, 9th Cir., etc.) with court-specific palette.",
+      "outcome-badge": "Pill showing case disposition (Affirmed, Reversed, Remanded, Vacated) with semantic color.",
+      "holding-summary": "Italic serif blockquote paragraph set off with left border containing 2-3 line holding summary.",
+      "key-facts": "Bulleted list of 3-5 concise material facts from the case.",
+      "annotation-margin": "Right-docked column (research preset only) containing user-authored annotation notes and highlights."
+    }
+  },
+  "accessibility": {
+    "role": "article",
+    "aria-label": "Case brief",
+    "announcements": [
+      "Case {citation}: court {court}, outcome {outcome}",
+      "Holding: {summary}"
+    ],
+    "keyboard": [
+      "Tab: focus card",
+      "Enter: expand to full case view",
+      "N: add annotation (research preset)",
+      "H: highlight selection (research preset)"
+    ]
+  },
+  "responsive": {
+    "mobile": "Research preset collapses annotation margin to bottom drawer. Citation may wrap to two lines.",
+    "tablet": "Standard layout retained. Research margin narrows to 200px."
+  },
+  "motion": {
+    "micro": {
+      "card-hover": "elevation raise + citation highlight 150ms ease-out",
+      "fact-hover": "bullet point accent 120ms ease"
+    },
+    "transitions": {
+      "expand-full": "card height grow + content fade-in 300ms ease-in-out",
+      "annotation-add": "new note slide-in from right 300ms ease-out"
+    },
+    "ambient": {
+      "highlighted-fact": "subtle background glow on linked fact when annotation hovered 2s ease-in-out"
+    }
+  },
+  "interactions": [
+    "lift-hover",
+    "click-select",
+    "animate-on-mount"
+  ],
+  "composition": {
+    "CaseBriefCard": "Card(d-surface) > [Header > [CaseCitation(mono) + BadgeRow > [CourtBadge + OutcomeBadge + DateChip]] + HoldingSummary(italic-quote) + KeyFacts > FactBullet[] + AnnotationMargin?]",
+    "CaseCitation": "Text(mono, prominent) > CitationString",
+    "CourtBadge": "Pill(d-annotation, data-court) > CourtAbbreviation",
+    "OutcomeBadge": "Pill(d-annotation, data-outcome) > OutcomeLabel",
+    "HoldingSummary": "Blockquote(serif-italic, left-border) > SummaryText",
+    "KeyFacts": "List(bulleted) > FactItem[]",
+    "AnnotationMargin": "Column(d-annotation) > AnnotationNote[] > [Timestamp + NoteBody + HighlightLink]"
+  }
+}

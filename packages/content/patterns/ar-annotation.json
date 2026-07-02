@@ -1,0 +1,137 @@
+{
+  "id": "ar-annotation",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "AR Annotation",
+  "description": "Annotation overlay for marking up images, scenes, and spatial content with positioned hotspots, text labels, measurement lines, and A/B comparison sliders.",
+  "category": "spatial",
+  "tags": [
+    "2027",
+    "frontier",
+    "spatial",
+    "annotation",
+    "AR",
+    "overlay",
+    "measurement",
+    "comparison",
+    "interactive"
+  ],
+  "components": [
+    "AnnotationCanvas",
+    "Hotspot",
+    "AnnotationLabel",
+    "MeasurementLine",
+    "CompareSlider",
+    "ZoomControls"
+  ],
+  "default_preset": "hotspot",
+  "presets": {
+    "hotspot": {
+      "description": "Clickable pulsing circles positioned on an image or scene — each hotspot expands on hover/click to reveal a label card with title, description, and optional media",
+      "layout": {
+        "layout": "spatial",
+        "atoms": "_relative _w-full _overflow-hidden _rounded-lg"
+      }
+    },
+    "label": {
+      "description": "Positioned text labels with speech-bubble tails pointing to annotated elements — labels are always visible and can be dragged to reposition in edit mode",
+      "layout": {
+        "layout": "spatial",
+        "atoms": "_relative _w-full _overflow-hidden _rounded-lg"
+      }
+    },
+    "measurement": {
+      "description": "SVG line overlays with distance and area annotations — endpoints are draggable, measurement text updates in real-time as lines are adjusted",
+      "layout": {
+        "layout": "spatial",
+        "atoms": "_relative _w-full _overflow-hidden _rounded-lg"
+      }
+    },
+    "compare": {
+      "description": "A/B comparison slider splitting the view with a draggable vertical divider — shows before image on the left and after image on the right, with a handle for scrubbing",
+      "layout": {
+        "layout": "spatial",
+        "atoms": "_relative _w-full _overflow-hidden _rounded-lg"
+      }
+    }
+  },
+  "visual_brief": "A full-bleed container holding an image or scene as the base layer, with interactive annotation elements positioned absolutely on top using percentage-based coordinates (so annotations scale with the image). In hotspot mode: each hotspot is a 24px circle with a 2px solid accent-colored border and a translucent accent fill (10% opacity). A pulsing ring animation radiates outward (scale 1→2, opacity 1→0, 2s infinite) creating a radar-ping effect that draws attention. On hover, the hotspot scales to 1.2x with a 150ms ease-out transition. On click, a label card expands from the hotspot position: a rounded-lg surface (d-surface, shadow-lg, min-w-48, max-w-72, p-3) with a small 8px triangular tail/caret pointing from the card toward the hotspot center. The card contains: a title (text-sm, font-semibold), a description (text-xs, text-muted, line-clamp-3), and an optional thumbnail image (rounded-md, w-full, aspect-video, object-cover). The card enters with scale(0.8)→scale(1) + opacity 0→1 over 200ms spring. Clicking elsewhere or pressing Escape closes the card. Multiple hotspots can exist simultaneously; only one card is open at a time. In label mode: each annotation is a positioned speech-bubble card (d-surface, rounded-lg, shadow-md, p-2, text-xs). The card has a triangular tail (8px CSS triangle) pointing toward the annotated point. A thin line (1px, muted color) connects the tail tip to the exact annotated coordinate on the image. Labels are always visible (not hidden behind hotspots). In edit mode, labels can be dragged to reposition — a drag handle icon appears on hover. In measurement mode: SVG lines overlay the image. Each measurement consists of two endpoint circles (8px, filled accent) connected by a solid line (2px, accent color). At the midpoint of the line, a text element shows the measurement value ('142px', '3.2m', etc.) in a small pill (bg-surface, rounded-full, px-2, text-xs, font-mono, shadow-sm). Endpoints are draggable — as they move, the measurement text updates in real-time. Lines can be straight (distance) or form closed polygons (area). In compare mode: the container is split vertically. Left side shows the 'before' image, right side shows the 'after' image. A vertical divider line (2px, bg-accent) separates them, with a circular handle (32px, bg-surface, shadow-lg, border-2 border-accent) at its center. The handle is draggable left/right, clipping each image accordingly using clip-path. Two small labels ('Before' / 'After') appear at the top of each side in muted text. The divider defaults to 50% and can be scrubbed from 0% to 100%. ZoomControls appear in the bottom-right: a vertical stack of icon buttons (zoom-in, zoom-out, fit-to-view, each 32px circle, bg-surface, shadow-md). Pinch-to-zoom and scroll-to-zoom are also supported. The zoom applies a CSS transform: scale() to the entire annotation canvas, with transform-origin at the pinch/scroll center point.",
+  "layout_hints": {
+    "container": "block, aspect-ratio matches source image",
+    "note": "The AnnotationCanvas should match the source image's aspect ratio. All annotation positions use percentage coordinates (x: 0-100, y: 0-100) so they scale correctly when the container resizes. In responsive layouts, ensure the container width is fluid but the aspect ratio is preserved.",
+    "positioning": "Annotations use position: absolute with left/top as percentages. Transform: translate(-50%, -50%) centers the annotation on its coordinate point.",
+    "z_ordering": "Image layer: z-index 0. Measurement lines: z-index 1. Hotspots: z-index 2. Labels/Cards: z-index 3. ZoomControls: z-index 4. Compare divider: z-index 5.",
+    "zoom_bounds": "Zoom range: 0.5x to 4x. Default: 1x (fit to container). When zoomed in, the canvas becomes pannable via drag."
+  },
+  "default_layout": {
+    "layout": "spatial",
+    "atoms": "_relative _w-full _overflow-hidden _rounded-lg _bg-muted",
+    "slots": {
+      "annotation-canvas": "The root container wrapping the image and all annotation layers. Position: relative. Overflow: hidden. Border-radius: rounded-lg. The canvas applies CSS transform: scale(var(--zoom-level, 1)) with transition: transform 200ms ease-out for smooth zoom. Transform-origin dynamically set to the last zoom interaction point. The canvas contains three layers in order: (1) ImageLayer — the base image as an <img> or background-image, width: 100%, height: auto, object-fit: contain, pointer-events: none. (2) SVG overlay — a full-size SVG (position: absolute, inset: 0, width: 100%, height: 100%) containing measurement lines and hotspot pulse animations. (3) HTML annotation layer — position: absolute, inset: 0, containing Hotspot and AnnotationLabel elements positioned via percentage-based left/top.",
+      "hotspot": "Repeating slot — one per annotation point. A 24px circle (position: absolute, left/top as percentage, transform: translate(-50%, -50%)). The circle has: background: var(--d-accent) at 10% opacity, border: 2px solid var(--d-accent), border-radius: 50%, cursor: pointer. A ::after pseudo-element creates the pulse ring animation (position: absolute, inset: -4px, border: 2px solid var(--d-accent), border-radius: 50%, animation: pulse-ring 2s ease-out infinite). On hover: scale(1.2), background opacity increases to 20%, transition 150ms. On click: the hotspot triggers the opening of its associated AnnotationLabel card. The hotspot has a data-annotation-id attribute linking it to its label content. Active (expanded) hotspot: background opacity 30%, border-width 3px.",
+      "annotation-label": "A floating card that appears when a hotspot is clicked or always visible in label mode. Structure: d-surface container (position: absolute, rounded-lg, shadow-lg, p-3, min-w-48, max-w-72, z-index: 3). The card has a triangular tail (8×8px CSS border-triangle) on the edge closest to the associated hotspot. Tail direction is computed dynamically — if the hotspot is near the top of the canvas, the tail points up and the card appears below, and vice versa for all four directions. Card content: title (text-sm, font-semibold, mb-1), description (text-xs, text-muted, line-clamp-3), optional image (rounded-md, w-full, aspect-video, object-cover, mt-2). A small close button (16px, X icon, absolute top-right) dismisses the card in hotspot mode. In label mode, the card is always visible and has a thin connector line (1px, dashed, muted) from the tail tip to the annotation coordinate.",
+      "measurement-line": "Repeating slot — one per measurement. Rendered in the SVG overlay layer. Each measurement consists of: two circle endpoints (r: 4, fill: var(--d-accent), cursor: grab), a connecting line (stroke: var(--d-accent), stroke-width: 2, stroke-linecap: round), and a midpoint text label. The text label is a foreignObject containing a small pill (bg-surface, rounded-full, px-2 py-0.5, text-xs, font-mono, shadow-sm) showing the measurement value. Endpoints have hover state (r: 6, fill-opacity: 0.8) and are draggable — on drag, the line and label update in real-time. For polygon measurements (area), endpoints connect in sequence and the final endpoint connects back to the first, with a filled polygon (accent color at 5% opacity) showing the enclosed area. Area measurement displayed at the polygon centroid.",
+      "compare-slider": "A full-size overlay for A/B comparison. Two images (before and after) are stacked, each position: absolute, inset: 0, width: 100%, height: 100%, object-fit: contain. The 'after' image uses clip-path: inset(0 0 0 var(--split-position)) to reveal only the right portion. A vertical divider line (position: absolute, top: 0, bottom: 0, left: var(--split-position), width: 2px, bg-accent) marks the split. Centered on the divider: a circular handle (32px diameter, bg-surface, border: 2px solid var(--d-accent), shadow-lg, rounded-full, cursor: ew-resize, z-index: 5). The handle contains a left-right arrow icon (16px). Dragging the handle updates --split-position (0% to 100%) in real-time. Two labels ('Before' / 'After') in text-xs, font-medium, text-muted, bg-surface/80%, px-2 py-0.5, rounded sit at the top-left and top-right of their respective sides.",
+      "zoom-controls": "A vertical stack of icon buttons anchored to the bottom-right of the canvas (position: absolute, bottom: 12px, right: 12px, z-index: 4). Three buttons stacked vertically with gap-1: zoom-in (+ icon), zoom-out (- icon), fit-to-view (expand icon). Each button: 32px circle, bg-surface, border, shadow-md, rounded-full, cursor: pointer. Hover: bg-accent/10%, scale(1.05). Active: scale(0.95). Zoom-in increases scale by 0.25 (max 4x). Zoom-out decreases by 0.25 (min 0.5x). Fit-to-view resets to scale(1). A small zoom level badge (text-xs, font-mono, bg-surface, rounded, px-1) appears above the buttons showing current zoom ('1.5x') — visible only when zoom is not 1x."
+    }
+  },
+  "accessibility": {
+    "role": "img",
+    "aria-label": "Annotated image with interactive markers",
+    "announcements": [
+      "Annotation: {title} at position {x}%, {y}%",
+      "Opened annotation: {title} — {description}",
+      "Closed annotation: {title}",
+      "Measurement: {value} between point A and point B",
+      "Zoom level: {level}x",
+      "Comparison slider at {position}%"
+    ],
+    "keyboard": [
+      "Tab: cycle through hotspots/annotations in DOM order",
+      "Enter/Space: open annotation card for focused hotspot",
+      "Escape: close open annotation card",
+      "Arrow keys: nudge annotation position in edit mode (1% per keypress)",
+      "+/-: zoom in/out",
+      "0: reset zoom to fit",
+      "Left/Right arrows: move compare slider (when focused) by 5% increments"
+    ]
+  },
+  "responsive": {
+    "mobile": "Hotspot size increases to 32px for touch targets. Label cards render full-width at the bottom of the canvas (sheet-style) instead of positioned near the hotspot. Measurement endpoints increase to 12px radius for touch. Compare slider handle increases to 44px. Zoom controls stack horizontally at bottom-center. Pinch-to-zoom supported natively.",
+    "tablet": "Hotspots at 28px. Label cards positioned near hotspots with dynamic tail direction. Full measurement interactivity with touch. Compare slider at standard 32px handle. Zoom via pinch and button controls."
+  },
+  "motion": {
+    "micro": {
+      "hotspot-hover": "scale(1.2) + bg-opacity increase, 150ms ease-out",
+      "zoom-button-hover": "scale(1.05) + bg-accent/10%, 150ms ease-out",
+      "compare-handle-hover": "scale(1.1) + shadow-elevation, 150ms"
+    },
+    "transitions": {
+      "label-open": "scale(0.8→1) + opacity(0→1), 200ms cubic-bezier(0.34, 1.56, 0.64, 1)",
+      "label-close": "scale(1→0.9) + opacity(1→0), 150ms ease-in",
+      "zoom-change": "transform: scale() 200ms ease-out",
+      "compare-slide": "clip-path update at 60fps (no transition — immediate for responsiveness)"
+    },
+    "ambient": {
+      "hotspot-pulse": "ring scale(1→2) + opacity(1→0), 2s ease-out infinite — radar ping effect",
+      "measurement-endpoint-idle": "subtle opacity oscillation (0.7→1→0.7) 3s ease-in-out infinite when not being dragged"
+    }
+  },
+  "interactions": [
+    "hover-tooltip",
+    "animate-on-mount",
+    "pan-background"
+  ],
+  "composition": {
+    "ARAnnotation": "Canvas(d-section, relative, overflow-hidden, rounded-lg) > [ImageLayer + SVGOverlay + AnnotationLayer + ZoomControls]",
+    "ImageLayer": "Img(absolute, inset-0, w-full, h-full, object-contain, pointer-events-none)",
+    "SVGOverlay": "SVG(absolute, inset-0, w-full, h-full) > [MeasurementLine* + HotspotPulseRing*]",
+    "AnnotationLayer": "Div(absolute, inset-0) > [Hotspot*(d-interactive, positioned-%) + AnnotationLabel*(d-surface, positioned)]",
+    "Hotspot": "Div(absolute, 24px, circle, accent-border, pulsing) > ClickHandler → AnnotationLabel",
+    "AnnotationLabel": "Surface(d-surface, rounded-lg, shadow-lg, p-3) > [Title + Description + Image? + CloseButton?]",
+    "MeasurementLine": "SVG-Group > [Endpoint*(circle, draggable) + Line(stroke) + MidpointLabel(foreignObject, pill)]",
+    "CompareSlider": "Div(absolute, inset-0) > [BeforeImg + AfterImg(clipped) + Divider(vertical, accent) + Handle(circle, draggable)]",
+    "ZoomControls": "Stack(absolute, bottom-right, gap-1) > [ZoomIn + ZoomOut + FitToView] + ZoomBadge?"
+  }
+}

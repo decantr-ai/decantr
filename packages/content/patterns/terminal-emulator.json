@@ -1,0 +1,117 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "terminal-emulator",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Terminal Emulator",
+  "description": "Interactive terminal input/output area with command history, tab completion, and ANSI color support.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {
+      "terminal": "^1.0.0"
+    },
+    "requires_core": {
+      "components": [
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Scrollable output with input line and command prompt",
+      "components": [
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _hfull _mono _bgblack _fggreen",
+        "slots": {
+          "output": "Scrollable command output with ANSI color support",
+          "input": "Command input with $ prompt and blinking cursor",
+          "history": "Command history accessible via up/down arrows"
+        }
+      }
+    },
+    "readonly": {
+      "description": "Output only display, no input capability",
+      "components": [],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _hfull _mono _bgblack _fggreen",
+        "slots": {
+          "output": "Scrollable read-only output display"
+        }
+      }
+    },
+    "split": {
+      "description": "Input and output in separate panes",
+      "components": [],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _hfull _mono _bgblack _fggreen",
+        "slots": {
+          "output": "Top pane for command output",
+          "input": "Bottom pane for command input"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _hfull _mono _bgblack _fggreen",
+    "slots": {
+      "output": "Scrollable command output with ANSI color support",
+      "input": "Command input with prompt and cursor",
+      "history": "Command history navigation"
+    }
+  },
+  "features": [
+    "command-history",
+    "tab-completion",
+    "ansi-colors",
+    "copy-paste",
+    "clear-screen",
+    "search-history"
+  ],
+  "keyboard_shortcuts": {
+    "Enter": "Execute command",
+    "ArrowUp": "Previous command in history",
+    "ArrowDown": "Next command in history",
+    "Ctrl+L": "Clear screen",
+    "Ctrl+R": "Search history",
+    "Tab": "Autocomplete"
+  },
+  "visual_brief": "Dark-background panel with a scrollable output area showing previous command-output pairs in monospace green-on-dark text. ANSI color codes render as styled spans (red errors, yellow warnings, blue info, etc.). At the bottom, a command input line shows a prompt character ($ or >) followed by a blinking cursor. Tab completion suggestions appear as a horizontal row above the input. Command history is navigable with up/down arrows. The readonly preset disables the input and shows only output. The split preset divides into two side-by-side terminal panels.",
+  "responsive": {
+    "mobile": "Terminal takes full width. Font size adjusts for readability on small screens. Tab completion uses a scrollable row. Command history via swipe gestures.",
+    "tablet": "Standard terminal proportions. Comfortable font size. Tab completion visible.",
+    "desktop": "Full terminal with generous width for long output lines. Split preset available. Tab completion and history fully functional."
+  },
+  "layout_hints": {
+    "io_priority": "Output history should remain visually dominant, with the prompt/input line clearly anchored as the next action. Tab completion and history controls support the loop but should not break it.",
+    "terminal_continuity": "Command, output, and prompt should read as one continuous session rather than separate cards or widgets.",
+    "split_variant": "When split mode is used, preserve one clearly active pane so users understand where command focus currently lives."
+  },
+  "motion": {
+    "micro": "Prompt focus, completions, and active pane state may brighten subtly to confirm input readiness.",
+    "transitions": "Command execution and output streaming should feel like continuous terminal flow rather than chunked UI animation."
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "accessibility": {
+    "role": "application",
+    "aria-label": "Terminal emulator",
+    "keyboard": [
+      "Focus should move predictably between output, prompt, history, and completion suggestions without losing command context."
+    ],
+    "announcements": [
+      "Prompt readiness, command output, errors, and active completions should be exposed semantically so the terminal remains usable beyond color and cursor cues."
+    ]
+  }
+}

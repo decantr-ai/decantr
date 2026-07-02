@@ -65,11 +65,12 @@ pnpm seo:docs-sitemap
 git diff --check
 ```
 
-For `decantr-content`:
+For `@decantr/content`:
 
 ```bash
-npm install
-npm run validate
+pnpm --filter @decantr/content validate
+pnpm --filter @decantr/content test
+pnpm audit:content-package
 git diff --check
 ```
 
@@ -98,7 +99,7 @@ The following operations remain hard stops until the maintainer explicitly asks 
 - `npm dist-tag add`, `npm dist-tag rm`, or `npm dist-tag ls` mutations
 - `git tag`, `git push origin <tag>`, or `git push`
 - hosted docs deployment
-- live registry sync or prune from `decantr-content`
+- external infrastructure changes such as Fly deploys, Vercel/Supabase/Stripe/PostHog closeout, DNS changes, or MCP directory submission updates
 
 ## Release Note
 

@@ -1,0 +1,118 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "pricing-usage",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Pricing Usage",
+  "description": "Usage-based pricing section with volume tiers, calculator, feature comparison table, and FAQ accordion.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Badge",
+        "Card",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Badge",
+    "Card",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full pricing section with tiers, calculator, and comparison",
+      "components": [
+        "Button",
+        "Badge",
+        "Card",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap12 _py16 _px6",
+        "slots": {
+          "toggle": "Monthly/annual billing toggle",
+          "tiers": "Volume tier pricing cards",
+          "calculator": "Usage estimator slider/input",
+          "comparison": "Feature comparison table",
+          "faq": "Frequently asked questions accordion"
+        }
+      }
+    },
+    "compact": {
+      "description": "Simplified pricing cards without calculator",
+      "components": [
+        "Button",
+        "Badge",
+        "Card",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap8 _py12 _px6",
+        "slots": {
+          "toggle": "Monthly/annual toggle",
+          "tiers": "Pricing tier cards"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap12 _py16 _px6",
+    "slots": {
+      "toggle": "Monthly/annual billing toggle",
+      "tiers": "Volume tier pricing cards",
+      "calculator": "Usage estimator",
+      "comparison": "Feature comparison table",
+      "faq": "FAQ accordion"
+    }
+  },
+  "visual_brief": "Usage-based pricing section with a monthly/annual toggle at the top, followed by volume tier cards displayed in a horizontal row. Each tier card shows the tier name, unit price, included volume, overage rate, and a CTA button — the recommended tier gets an accent border and a popular badge. Below the tiers, an interactive usage calculator with a slider lets users estimate their monthly cost. A feature comparison table follows with checkmark/dash cells. The section closes with an FAQ accordion.",
+  "layout_hints": {
+    "comparison_rhythm": "Keep pricing tiers, calculator, comparison, and FAQ in a clear decision-making sequence. Avoid collapsing everything into one visually dense pricing wall.",
+    "recommended_tier": "The recommended tier should read as a confident primary option without making the surrounding cards feel secondary or broken.",
+    "calculator_placement": "The usage calculator should feel tightly connected to the tier comparison rather than like a detached widget underneath the section."
+  },
+  "responsive": {
+    "mobile": "Tier cards stack vertically in a single column with full-width cards. Usage calculator slider becomes full-width with the cost estimate displayed below. Comparison table converts to a stacked card layout (one card per tier) with feature rows inside each card. FAQ accordion items take full width with larger tap targets.",
+    "tablet": "Tier cards display in a 2-column grid, wrapping to a second row if more than two tiers. Comparison table remains tabular but horizontally scrollable if more than three tiers. Calculator and FAQ maintain standard layout.",
+    "desktop": "Tier cards display in a single horizontal row (up to four tiers). Comparison table renders as a full-width sticky-header table. Calculator shows slider and cost estimate side-by-side. FAQ renders in a max-width centered column for readability."
+  },
+  "motion": {
+    "micro": "Tier highlights, calculator feedback, and toggle states may animate over 150-220ms, but pricing should remain calm and trustworthy.",
+    "transitions": "Billing toggle and calculator updates should cross-fade or count smoothly without causing card reflow shocks."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "real-time-updates",
+    "hover-tooltip"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Usage pricing section",
+    "keyboard": [
+      "Tab moves through billing toggle, tier CTAs, calculator controls, and FAQ items in order."
+    ],
+    "announcements": [
+      "Price changes from billing-toggle or calculator updates should be announced clearly.",
+      "Recommended or current-plan state should not rely on color alone."
+    ],
+    "focus_management": "Keep focus on the toggle or calculator control that changed the pricing state instead of moving users unexpectedly into the table or FAQ."
+  },
+  "composition": {
+    "PricingUsage": "Container(d-section, centered, gap-12) > [BillingToggle(d-control) + TierCards + UsageCalculator? + ComparisonTable? + FAQ?]",
+    "TierCards": "Grid(responsive: 1/2/4-col) > TierCard[]",
+    "TierCard": "Card(d-surface, accent-border?: recommended) > [TierName(heading4) + UnitPrice(mono-data, heading2) + Volume + OverageRate(text-muted) + CTAButton(d-interactive)]",
+    "UsageCalculator": "Card(d-surface) > [Slider(d-control) + CostEstimate(mono-data, heading3)]",
+    "ComparisonTable": "Table(d-data) > [HeaderRow > TierName[] + FeatureRow > Cell(icon: check|dash)[]]",
+    "FAQ": "Accordion(d-surface) > FAQItem(collapsible)[]"
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "transformation-editor",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Transformation Editor",
+  "description": "SQL and code transformation editor with split-pane layout for writing queries alongside live data preview.",
+  "tags": [
+    "data",
+    "sql",
+    "transformation",
+    "code-editor",
+    "etl"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "transformation editor",
+        "sql editor",
+        "data transformation",
+        "transform builder"
+      ],
+      "secondary": [
+        "query editor",
+        "code transformation",
+        "data mapping",
+        "etl transforms"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 0.8,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "transforms",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "transform-list"
+        }
+      ],
+      "default_layout": [
+        "data-table"
+      ],
+      "shell": "sidebar-aside"
+    },
+    {
+      "id": "transform-editor",
+      "patterns": [
+        {
+          "pattern": "split-pane",
+          "preset": "horizontal",
+          "as": "editor-preview"
+        }
+      ],
+      "default_layout": [
+        "split-pane"
+      ],
+      "shell": "sidebar-aside"
+    },
+    {
+      "id": "data-preview",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "sample-data"
+        },
+        {
+          "pattern": "json-viewer",
+          "preset": "standard",
+          "as": "raw-output"
+        }
+      ],
+      "default_layout": [
+        "data-table",
+        "json-viewer"
+      ],
+      "shell": "sidebar-aside"
+    }
+  ],
+  "page_briefs": {
+    "transforms": "Transform list at /transforms. Data table of saved transformations with columns for name, type (SQL, Python, dbt), input source, output destination, last modified, and author. Row actions for editing, duplicating, and deleting. Create-new button opens a blank editor.",
+    "transform-editor": "Transform editor at /transforms/:id. Horizontal split pane with code editor on top (syntax-highlighted SQL or Python with autocomplete for table and column names) and live data preview table on the bottom. Run button executes the transform against sample data and populates the preview. Right aside panel shows column mapping and type inference.",
+    "data-preview": "Data preview at /transforms/:id/preview. Full sample data view with paginated data table showing transformed output rows. Toggle between table view and raw JSON viewer for inspecting individual records. Column headers show inferred types. Row count and execution time displayed in a status bar."
+  },
+  "features": [
+    "sql-editor",
+    "transformations",
+    "data-preview"
+  ],
+  "shells": {
+    "sidebar-aside": "Left sidebar navigation, main content area, right aside panel for context"
+  },
+  "dependencies": {
+    "patterns": {
+      "data-table": "^1.0.0",
+      "split-pane": "^1.0.0",
+      "json-viewer": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon",
+      "technical"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  }
+}

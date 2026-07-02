@@ -1,0 +1,126 @@
+{
+  "id": "governance-ballot",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Governance Ballot",
+  "description": "A governance voting ballot for shareholder resolutions or DAO proposals, featuring proposal context, single/multi/weighted vote options, rationale capture, voting-power disclosure, and quorum progress tracking.",
+  "category": "finance",
+  "tags": [
+    "2026",
+    "finance",
+    "governance",
+    "voting",
+    "dao",
+    "ballot",
+    "proposal",
+    "democracy"
+  ],
+  "components": [
+    "ProposalHeader",
+    "VoteOption",
+    "WeightSlider",
+    "RationaleBox",
+    "VotingPower",
+    "SubmitVote",
+    "QuorumProgress",
+    "VoteOptionRadio",
+    "VoteOptionCheckbox"
+  ],
+  "default_preset": "single-choice",
+  "presets": {
+    "single-choice": {
+      "description": "Radio-button ballot where voters select exactly one option from Yes/No/Abstain or a list of mutually exclusive choices. Standard for binary or simple-choice proposals like director elections and bylaw amendments.",
+      "layout": {
+        "layout": "form",
+        "atoms": "_w100 _grid _gap4 _p6"
+      }
+    },
+    "multi-choice": {
+      "description": "Checkbox ballot allowing selection of multiple compatible options. Used for board-slate elections where voters pick multiple candidates or for approving multiple non-exclusive resolutions within one ballot.",
+      "layout": {
+        "layout": "form",
+        "atoms": "_w100 _grid _gap4 _p6"
+      }
+    },
+    "weighted": {
+      "description": "Slider-based ballot letting voters allocate their voting power across multiple options by percentage. Slider values sum to 100% with live redistribution, used for quadratic voting and budget-allocation proposals.",
+      "layout": {
+        "layout": "form",
+        "atoms": "_w100 _grid _gap4 _p6"
+      }
+    }
+  },
+  "visual_brief": "A focused ballot card rendered as a d-surface with generous padding, centered in the viewport with max-width 640px. At the top, a QuorumProgress bar spans the full card width showing a horizontal thin progress track with the filled portion in primary color and quorum-threshold marked by a vertical tick with label ('Quorum: 51%'). Above the bar, a small d-annotation chip shows 'Quorum met' or 'Quorum pending' status. Below sits the ProposalHeader: proposal number in mono-data muted ('Proposal #2026-04'), proposal title in text-xl semibold, proposal summary in text-sm body copy, and a meta row with chips for proposal type (bylaw/slate/resolution/treasury), voting deadline (countdown timer), and proposer identity. A divider separates the header from the voting interface. The VoteOption list renders as stacked cards; single-choice uses large radio circles with 24px diameter left-aligned, multi-choice uses 20px square checkboxes, and weighted uses horizontal sliders with live percentage readouts. Each option has an option-label in semibold and an option-description in body-muted text. When weighted, a constraint message shows 'Must total 100%' with a live sum chip that turns emerald when valid or amber when not. Below options, the RationaleBox is an expandable textarea labeled 'Rationale (optional)' with 'Public' toggle determining whether the rationale becomes visible with the vote record. Below that, VotingPower renders as a callout card showing the voter's power prominently: 'Your voting power: 2,345 shares = 1.2% of eligible' in text-lg mono-data semibold, with entitlement source (e.g., 'Held since record date Mar 15, 2026'). Finally, a large SubmitVote button spans the full width in primary color with text 'Cast Vote' — once cast, transforms to a disabled success chip showing 'Vote recorded — tx 0xabc...'. The entire card uses subtle shadow elevation. All interactions include confirmation dialogs before irrevocable submission.",
+  "layout_hints": {
+    "container": "d-surface card, centered, max-w-640px",
+    "note": "Governance ballots are irrevocable actions. Require explicit confirmation before submission. Never auto-submit. Disclose voting power and quorum status prominently.",
+    "quorum_progress": "QuorumProgress uses d-annotation[data-bar] with primary fill + vertical quorum-threshold tick. Show percentage numeric label above bar.",
+    "vote_options": "VoteOption cards are d-surface[data-interactive] with selected state showing thicker border + primary accent. Radio=circle 24px, Checkbox=square 20px, Slider=100% width horizontal track with numeric readout.",
+    "voting_power": "VotingPower MUST display before SubmitVote button. Shows shares/tokens held + percentage of eligible supply. Include entitlement source (record date, delegation, etc.).",
+    "submit_guard": "SubmitVote opens confirmation dialog showing: selected option(s), rationale preview, voting power committed, and 'this action cannot be undone' warning. Transaction hash returned after submission."
+  },
+  "default_layout": {
+    "layout": "form",
+    "atoms": "_w100 _grid _gap4 _p6 _max-w-640",
+    "slots": {
+      "quorum-progress": "Top of card. Horizontal progress bar showing votes-cast as percentage of total eligible. Quorum threshold marked with vertical tick line and numeric label. Status chip above bar indicates whether quorum has been achieved.",
+      "proposal-header": "Section showing proposal number, title, summary, proposer identity, voting deadline countdown, and proposal-type chip. Uses text-xl semibold for title and body-muted for summary. Links to full proposal document.",
+      "vote-options": "Repeating slot — one VoteOption per choice. Renders as radio (single-choice), checkbox (multi-choice), or slider (weighted) based on preset. Each option card shows option-label, description, and selected-state indicator. Clicking selects the option.",
+      "weight-sliders": "Weighted-preset-only slot. Horizontal sliders for each option with live percentage readouts. A constraint message shows total-must-equal-100% with validation chip that changes color based on current sum.",
+      "rationale-box": "Optional expandable textarea for voter's written rationale. Includes 'Public' toggle controlling whether rationale becomes visible in the public vote record versus kept private to the voter.",
+      "voting-power": "Callout card showing voter's voting weight (shares/tokens), percentage of eligible supply, and entitlement source (record date, delegation chain, token balance timestamp).",
+      "submit-vote": "Full-width primary-color submit button. Triggers confirmation dialog before finalizing. Post-submission, transforms to success chip showing transaction hash and timestamp."
+    }
+  },
+  "accessibility": {
+    "role": "form",
+    "aria-label": "Governance voting ballot",
+    "announcements": [
+      "Selected option: {option}",
+      "Current weight allocation: {total}%",
+      "Vote submitted — transaction {hash}",
+      "Quorum {met|pending}: {percent}% of eligible have voted"
+    ],
+    "keyboard": [
+      "Tab: cycle through vote options and form controls",
+      "Space/Enter: select radio or toggle checkbox",
+      "Arrow keys: adjust slider weight (weighted preset)",
+      "Enter: submit ballot from SubmitVote button",
+      "Escape: cancel confirmation dialog"
+    ]
+  },
+  "responsive": {
+    "mobile": "Full-width ballot card with padding reduced to 16px. VoteOption cards stack vertically at full width. WeightSlider becomes vertical on very narrow screens. VotingPower callout collapses to compact summary. SubmitVote remains full-width.",
+    "tablet": "Centered ballot card at 90% viewport width. Standard layout with all slots visible."
+  },
+  "motion": {
+    "micro": {
+      "option-select": "border-width 1px to 2px + background tint 150ms ease-out",
+      "slider-drag": "track-fill width update 80ms linear",
+      "quorum-fill": "progress-bar width 0 to target 600ms ease-out on mount"
+    },
+    "transitions": {
+      "rationale-expand": "height auto + fade 200ms ease-out",
+      "submit-to-recorded": "button scale + cross-fade to success chip 400ms ease-out",
+      "weight-redistribute": "sibling-slider values ease-in-out 200ms"
+    },
+    "ambient": {
+      "deadline-countdown": "pulse timer display when <24h remaining 1s ease-in-out infinite"
+    }
+  },
+  "interactions": [
+    "click-select",
+    "animate-on-mount",
+    "scale-hover"
+  ],
+  "composition": {
+    "GovernanceBallot": "Surface(d-surface, form, max-w-640) > [QuorumProgress + ProposalHeader + VoteOption[] + WeightSlider[]? + RationaleBox + VotingPower + SubmitVote]",
+    "ProposalHeader": "Section(d-annotation) > [ProposalNumber + ProposalTitle + ProposalSummary + ProposerIdentity + DeadlineCountdown + TypeChip]",
+    "VoteOption": "Card(d-surface, data-interactive, data-selected?) > [OptionIndicator(radio|checkbox|slider) + OptionLabel + OptionDescription]",
+    "WeightSlider": "Control(d-annotation, data-slider) > [SliderTrack + SliderThumb + PercentReadout]",
+    "VotingPower": "Callout(d-annotation, data-voting-power) > [SharesHeld + PercentEligible + EntitlementSource]",
+    "QuorumProgress": "Bar(d-annotation, data-bar) > [ProgressTrack + ProgressFill + QuorumTick + StatusChip]",
+    "SubmitVote": "Button(d-control, data-primary, full-width) > [ButtonLabel + ConfirmationDialog?]"
+  }
+}

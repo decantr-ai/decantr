@@ -1,0 +1,300 @@
+{
+  "$schema": "https://decantr.ai/schemas/blueprint.v1.json",
+  "id": "realtime-collaboration-workspace",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Real-Time Collaboration Workspace",
+  "description": "Complete collaboration platform with live presence, remote cursors, inline comments, and hierarchical pages. Notion/Linear-style productivity workspace with warm, content-focused design.",
+  "blueprint_portfolio": {
+    "visibility": "featured",
+    "maturity": "certified-flagship",
+    "rationale": "Flagship blueprint with a maintained showcase capsule, thumbnail asset, and smoke-green shortlist verification suitable for first-run discovery.",
+    "artifact": {
+      "status": "certified",
+      "showcase": "realtime-collaboration-workspace",
+      "notes": "Certified Artifact Contract V0: showcase capsule plus shortlist verification report are available in the Decantr monorepo."
+    }
+  },
+  "tags": [
+    "collaboration",
+    "realtime",
+    "productivity",
+    "workspace",
+    "documents",
+    "notion",
+    "linear"
+  ],
+  "compose": [
+    "workspace-home",
+    "document-editor",
+    "workspace-settings",
+    "auth-full",
+    "settings-full",
+    "marketing-productivity",
+    "about-hybrid",
+    "contact",
+    "legal"
+  ],
+  "theme": {
+    "mode": "light",
+    "shape": "rounded",
+    "id": "paper"
+  },
+  "personality": "Warm, distraction-free collaboration workspace built for focused teamwork. Light paper-like backgrounds with comfortable reading typography. Presence indicators use distinct warm colors per collaborator. Inline comments appear as subtle margin annotations. Page tree navigation is clean and collapsible. The document editor prioritizes content over chrome — toolbar hides on scroll, formatting is keyboard-first. Real-time cursors and selections feel natural, not distracting. Think Notion meets Google Docs — productive, polished, and genuinely collaborative.",
+  "voice": {
+    "tone": "Warm, collaborative, and productivity-focused. Speaks in we/us language. Celebrates team accomplishments.",
+    "cta_verbs": [
+      "Create",
+      "Share",
+      "Invite",
+      "Comment",
+      "Publish",
+      "Export"
+    ],
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Buy",
+      "Deploy"
+    ],
+    "empty_states": "Inviting and action-oriented. An empty workspace should feel like a fresh notebook — exciting, not barren. Suggest creating a first page or importing content.",
+    "errors": "Calm and recovery-focused. Sync conflicts should show both versions and let the user choose. Never lose work silently.",
+    "loading": "Document outline skeletons with line-height placeholders. Presence avatars fade in as connections establish. Page tree shows structure while content loads."
+  },
+  "overrides": {
+    "pages": {},
+    "pages_remove": [],
+    "features_add": [
+      "theme-toggle",
+      "presence",
+      "realtime"
+    ],
+    "features_remove": []
+  },
+  "dependencies": {
+    "archetypes": {
+      "workspace-home": "^1.0.0",
+      "document-editor": "^1.0.0",
+      "workspace-settings": "^1.0.0",
+      "auth-full": "^1.0.0",
+      "settings-full": "^1.0.0",
+      "marketing-productivity": "^1.0.0",
+      "about-hybrid": "^1.0.0",
+      "contact": "^1.0.0",
+      "legal": "^1.0.0"
+    }
+  },
+  "features": [
+    "realtime",
+    "search",
+    "favorites",
+    "recent-history",
+    "presence",
+    "comments",
+    "mentions",
+    "versioning",
+    "sharing",
+    "export",
+    "markdown",
+    "slash-commands",
+    "team-management",
+    "permissions",
+    "billing",
+    "admin",
+    "auth",
+    "mfa",
+    "oauth",
+    "email-verification",
+    "password-reset",
+    "profile-edit",
+    "password-change",
+    "mfa-management",
+    "session-management",
+    "theme-toggle",
+    "account-deletion",
+    "marketing",
+    "pricing",
+    "testimonials",
+    "cta",
+    "team-grid",
+    "values-display",
+    "form-validation",
+    "spam-protection",
+    "file-attachment",
+    "toc-navigation",
+    "print-friendly",
+    "smooth-scroll"
+  ],
+  "routes": {
+    "/": {
+      "shell": "top-nav-footer",
+      "archetype": "marketing-productivity",
+      "page": "home"
+    },
+    "/about": {
+      "shell": "top-nav-footer",
+      "archetype": "about-hybrid",
+      "page": "about"
+    },
+    "/contact": {
+      "shell": "top-nav-footer",
+      "archetype": "contact",
+      "page": "contact"
+    },
+    "/pricing": {
+      "shell": "top-nav-footer",
+      "archetype": "marketing-productivity",
+      "page": "pricing"
+    },
+    "/privacy": {
+      "shell": "top-nav-footer",
+      "archetype": "legal",
+      "page": "privacy"
+    },
+    "/terms": {
+      "shell": "top-nav-footer",
+      "archetype": "legal",
+      "page": "terms"
+    },
+    "/cookies": {
+      "shell": "top-nav-footer",
+      "archetype": "legal",
+      "page": "cookies"
+    },
+    "/login": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "login"
+    },
+    "/register": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "register"
+    },
+    "/forgot-password": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "forgot-password"
+    },
+    "/reset-password": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "reset-password"
+    },
+    "/verify-email": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "verify-email"
+    },
+    "/mfa-setup": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "mfa-setup"
+    },
+    "/mfa-verify": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "mfa-verify"
+    },
+    "/phone-verify": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "phone-verify"
+    },
+    "/home": {
+      "shell": "sidebar-main",
+      "archetype": "workspace-home",
+      "page": "dashboard"
+    },
+    "/doc/:id": {
+      "shell": "workspace-aside",
+      "archetype": "document-editor",
+      "page": "doc"
+    },
+    "/settings": {
+      "shell": "sidebar-main",
+      "archetype": "workspace-settings",
+      "page": "general"
+    },
+    "/settings/members": {
+      "shell": "sidebar-main",
+      "archetype": "workspace-settings",
+      "page": "members"
+    },
+    "/settings/permissions": {
+      "shell": "sidebar-main",
+      "archetype": "workspace-settings",
+      "page": "permissions"
+    },
+    "/settings/billing": {
+      "shell": "sidebar-main",
+      "archetype": "workspace-settings",
+      "page": "billing"
+    },
+    "/team": {
+      "shell": "sidebar-main",
+      "archetype": "workspace-settings",
+      "page": "members"
+    },
+    "/profile": {
+      "shell": "sidebar-main",
+      "archetype": "settings-full",
+      "page": "profile"
+    },
+    "/profile/security": {
+      "shell": "sidebar-main",
+      "archetype": "settings-full",
+      "page": "security"
+    },
+    "/profile/preferences": {
+      "shell": "sidebar-main",
+      "archetype": "settings-full",
+      "page": "preferences"
+    },
+    "/profile/account": {
+      "shell": "sidebar-main",
+      "archetype": "settings-full",
+      "page": "danger"
+    }
+  },
+  "seo_hints": {
+    "schema_org": [
+      "Organization",
+      "WebApplication",
+      "SoftwareApplication",
+      "CollaborativeWorkspace"
+    ],
+    "meta_priorities": [
+      "description",
+      "og:image",
+      "twitter:card"
+    ]
+  },
+  "navigation": {
+    "command_palette": true,
+    "hotkeys": [
+      {
+        "key": "g h",
+        "route": "/home",
+        "label": "Go to Home"
+      },
+      {
+        "key": "g s",
+        "route": "/settings",
+        "label": "Go to Settings"
+      },
+      {
+        "key": "g t",
+        "route": "/team",
+        "label": "Go to Team"
+      }
+    ]
+  },
+  "suggested_themes": [
+    "paper",
+    "clean",
+    "glassmorphism",
+    "carbon"
+  ]
+}

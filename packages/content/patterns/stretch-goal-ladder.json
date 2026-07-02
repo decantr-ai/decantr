@@ -1,0 +1,128 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "stretch-goal-ladder",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Stretch Goal Ladder",
+  "description": "Campaign milestone ladder for unlocked, active, and upcoming stretch goals with playful retro progress states.",
+  "category": "campaign",
+  "tags": [
+    "campaign",
+    "stretch-goals",
+    "milestones",
+    "progress",
+    "launch",
+    "rewards"
+  ],
+  "components": [
+    "Progress",
+    "Badge",
+    "icon",
+    "Tooltip"
+  ],
+  "contained": false,
+  "default_preset": "level-map",
+  "presets": {
+    "level-map": {
+      "description": "Horizontal level-select path with milestone gates, unlock labels, and progress connector.",
+      "components": [
+        "Progress",
+        "Badge",
+        "icon",
+        "Tooltip"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap6 _wfull _maxw[76rem] _mx[auto]",
+        "slots": {
+          "goal-node": "Milestone gate with amount/signup target, unlock title, and state.",
+          "connector": "Segmented path line showing current campaign progress.",
+          "active-goal": "Current next unlock emphasized with larger label and CTA note.",
+          "legend": "Unlocked, next, and locked state labels."
+        }
+      }
+    },
+    "vertical-unlocks": {
+      "description": "Mobile-friendly vertical milestone ladder with locked/unlocked states and short notes for each unlock.",
+      "components": [
+        "Progress",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4 _wfull _maxw[42rem] _mx[auto]",
+        "slots": {
+          "goal-row": "Milestone row with target, status icon, unlock title, and description.",
+          "progress-spine": "Vertical connector line between milestones.",
+          "current-marker": "You are here marker for active milestone."
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gap6 _wfull _maxw[76rem] _mx[auto]",
+    "slots": {
+      "goal-node": "Milestone gate",
+      "connector": "Segmented unlock path",
+      "active-goal": "Current next unlock summary",
+      "legend": "State labels"
+    }
+  },
+  "visual_brief": "A retro level-select path for campaign stretch goals. Milestones should look like unlock gates or level nodes, not ordinary timeline cards. Use clear states for unlocked, current, and locked. The active goal should tell visitors what happens next if they back or share.",
+  "responsive": {
+    "mobile": "Switch to a vertical ladder with large tap targets and no cramped angled text.",
+    "tablet": "Use a wrapped path with two rows if there are more than four goals.",
+    "desktop": "Horizontal level map with connector line and active-goal summary alongside or below."
+  },
+  "layout_hints": {
+    "state_clarity": "Do not rely on color alone. Use labels and icons for locked/unlocked/current.",
+    "goal_copy": "Each goal should explain the backer benefit, not just the internal milestone.",
+    "path_role": "The ladder should create momentum and shared mission, not just list features."
+  },
+  "motion": {
+    "micro": {
+      "unlock": "node flashes accent color once, then settles into unlocked state",
+      "hover": "current node lifts by 2px with hard shadow"
+    },
+    "transitions": {
+      "path-fill": "connector progresses from left to right or top to bottom over 600ms"
+    }
+  },
+  "interactions": [
+    "animate-on-mount",
+    "hover-tooltip",
+    "hover-reveal",
+    "keyboard-navigation"
+  ],
+  "composition": {
+    "StretchGoalLadder": "Section > [Header + LevelMap + ActiveGoal + Legend]",
+    "LevelMap": "Path > GoalNode[]",
+    "GoalNode": "Target + UnlockTitle + StateBadge + DetailTooltip?"
+  },
+  "accessibility": {
+    "role": "list",
+    "aria-label": "Campaign stretch goals",
+    "keyboard": [
+      "Tab moves through goal nodes when they expose detail tooltips.",
+      "Enter opens goal detail when available."
+    ],
+    "announcements": [
+      "Stretch goal unlocked: {goal}.",
+      "Next stretch goal: {goal} at {target}."
+    ]
+  },
+  "io": {
+    "consumes": [
+      "stretch-goals",
+      "campaign-progress"
+    ],
+    "produces": [
+      "next-unlock-awareness"
+    ],
+    "actions": [
+      "goal-detail-open"
+    ]
+  }
+}

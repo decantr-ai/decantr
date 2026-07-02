@@ -1,0 +1,199 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "crm-dashboard",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "CRM Dashboard",
+  "description": "Primary sales overview dashboard with pipeline visualization, contact management, deal tracking, AI-powered enrichment, and revenue forecasting.",
+  "tags": [
+    "crm",
+    "sales",
+    "pipeline",
+    "contacts",
+    "deals",
+    "ai"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "crm dashboard",
+        "sales dashboard",
+        "pipeline overview",
+        "deal management",
+        "contact management"
+      ],
+      "secondary": [
+        "sales crm",
+        "revenue forecasting",
+        "deal tracking",
+        "customer relationship",
+        "ai enrichment"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "dashboard",
+      "patterns": [
+        {
+          "pattern": "kpi-grid",
+          "preset": "dashboard",
+          "as": "sales-kpis"
+        },
+        {
+          "pattern": "deal-pipeline-board",
+          "preset": "compact",
+          "as": "pipeline-summary"
+        },
+        {
+          "pattern": "activity-feed",
+          "preset": "compact",
+          "as": "recent-activity"
+        }
+      ],
+      "default_layout": [
+        "kpi-grid",
+        "deal-pipeline-board",
+        "activity-feed"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "pipeline",
+      "patterns": [
+        {
+          "pattern": "deal-pipeline-board",
+          "preset": "standard",
+          "as": "pipeline"
+        }
+      ],
+      "default_layout": [
+        "deal-pipeline-board"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "contacts",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "contact-list"
+        }
+      ],
+      "default_layout": [
+        "data-table"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "contact-detail",
+      "patterns": [
+        {
+          "pattern": "creator-profile",
+          "preset": "standard",
+          "as": "contact-profile"
+        },
+        {
+          "pattern": "activity-feed",
+          "preset": "standard",
+          "as": "contact-activity"
+        },
+        {
+          "pattern": "relationship-graph",
+          "preset": "radial",
+          "as": "contact-relationships"
+        }
+      ],
+      "default_layout": [
+        "creator-profile",
+        "activity-feed",
+        "relationship-graph"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "deals",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "deal-list"
+        },
+        {
+          "pattern": "kpi-grid",
+          "preset": "compact",
+          "as": "deal-kpis"
+        }
+      ],
+      "default_layout": [
+        "kpi-grid",
+        "data-table"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "deal-detail",
+      "patterns": [
+        {
+          "pattern": "detail-header",
+          "preset": "standard",
+          "as": "deal-header"
+        },
+        {
+          "pattern": "timeline",
+          "preset": "standard",
+          "as": "deal-timeline"
+        },
+        {
+          "pattern": "activity-feed",
+          "preset": "standard",
+          "as": "deal-activity"
+        },
+        {
+          "pattern": "form-sections",
+          "preset": "standard",
+          "as": "deal-fields"
+        }
+      ],
+      "default_layout": [
+        "detail-header",
+        "timeline",
+        "activity-feed",
+        "form-sections"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "dashboard": "Sales command center. Top KPI row displays total pipeline value, deals closed this month, win rate, and average deal cycle. A compact pipeline board below shows deals as cards across stage columns with drag-to-advance. A compact activity feed on the right lists recent emails, calls, and deal updates in reverse-chronological order.",
+    "pipeline": "Full-width Kanban-style pipeline board. Each column represents a deal stage from prospecting through closed-won and closed-lost. Deal cards show company name, value, owner avatar, and days-in-stage. Cards are draggable between columns. Column headers display aggregate value and deal count.",
+    "contacts": "Searchable contact directory rendered as a full-width data table. Columns include name, company, title, last contacted date, deal association, and lead score. Supports inline search, column sorting, bulk actions, and CSV export.",
+    "contact-detail": "Contact profile page. Left column shows a profile card with avatar, name, company, title, and AI-enriched firmographic data. Center column displays an activity feed of all interactions — emails, calls, meetings, and notes. Right column renders a radial relationship graph mapping connections to other contacts and deals.",
+    "deals": "Deal list view. Compact KPI strip at top shows total pipeline value, weighted forecast, deals at risk, and average deal size. Below, a data table lists all deals with columns for name, company, stage, value, close date, and owner, supporting sort, filter, and bulk operations.",
+    "deal-detail": "Single deal detail page. A detail header spans the top with deal name, value, stage badge, close date, and owner. Below left, a vertical timeline traces the deal from creation through every stage transition. Center activity feed captures all related emails, calls, notes, and file attachments. Right panel hosts editable form sections for deal properties, custom fields, and next steps."
+  },
+  "features": [
+    "pipeline",
+    "contacts",
+    "deals",
+    "ai-enrichment",
+    "forecasting"
+  ],
+  "suggested_theme": {
+    "ids": [
+      "luminarum",
+      "clean",
+      "carbon"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

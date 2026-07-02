@@ -1,0 +1,108 @@
+{
+  "id": "scope-breakdown",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Scope Breakdown",
+  "description": "A structured breakdown of Scope 1, 2, and 3 emissions with drill-down category detail, year-over-year change indicators, and multiple visualization modes.",
+  "category": "climate",
+  "tags": [
+    "2026",
+    "climate",
+    "emissions",
+    "scope",
+    "ghg-protocol",
+    "breakdown",
+    "sustainability"
+  ],
+  "components": [
+    "ScopeCard",
+    "CategoryList",
+    "EmissionBar",
+    "PercentChange",
+    "TrendIndicator"
+  ],
+  "default_preset": "bars",
+  "presets": {
+    "bars": {
+      "description": "Three horizontally-stacked scope cards with expandable category bars showing emission sources ranked by magnitude within each scope",
+      "layout": {
+        "layout": "grid-3",
+        "atoms": "_grid _grid-cols-3 _gap-6 _w100 _p-6"
+      }
+    },
+    "donut": {
+      "description": "Three-ring nested donut chart with Scope 1/2/3 totals in outer ring and categories as inner ring segments with center value label",
+      "layout": {
+        "layout": "centered",
+        "atoms": "_flex _items-center _justify-center _w100 _p-6"
+      }
+    },
+    "timeline": {
+      "description": "Quarterly progression view stacking scope contributions over time showing trend lines and cumulative emissions across reporting periods",
+      "layout": {
+        "layout": "horizontal-stack",
+        "atoms": "_flex _flex-col _w100 _p-6 _gap-4"
+      }
+    }
+  },
+  "visual_brief": "Three large equal-width cards sit side-by-side (Scope 1, Scope 2, Scope 3), each with a bold header strip colored to scope semantics (red, orange, yellow). Inside each card, the total tCO2e is rendered extremely large in monospace numerals (48px) with the scope title above. Directly below the total, a percent-of-company-total badge and a YoY change chip with up/down arrow indicator (red arrow = emissions increased, green = decreased). Expanding the card reveals a list of emission categories (Stationary Combustion, Mobile Combustion, Purchased Electricity, Purchased Heat, Purchased Goods, Business Travel, Employee Commuting, etc.) as horizontal bars with category name on left, bar fill showing relative size, and tCO2e value right-aligned in monospace. Timeline preset replaces cards with a stacked area chart crossing Q1-Q4 columns.",
+  "layout_hints": {
+    "container": "d-section",
+    "note": "Scope cards must be clickable (d-surface data-interactive) to expand/collapse category detail. Use elevation change on expand.",
+    "number_formatting": "Emission totals rendered in monospace. Use comma separators for thousands. Always include tCO2e unit suffix.",
+    "trend_direction": "In climate contexts, decreasing emissions is POSITIVE. Green arrow for decrease, red for increase. Do not invert."
+  },
+  "default_layout": {
+    "layout": "grid-3",
+    "atoms": "_grid _grid-cols-3 _gap-6 _w100 _p-6",
+    "slots": {
+      "scope-card": "Repeating card per scope. Rounded surface with colored header strip. Shows scope name, total tCO2e (large monospace), percent of total, YoY change chip, and expandable category list.",
+      "category-list": "Nested list within each scope-card, revealed on expand. Each row shows category name, horizontal emission bar, and tonnage value.",
+      "emission-bar": "Horizontal progress-style bar with width proportional to the category's share of scope total. Colored to match scope semantics.",
+      "percent-change": "Small chip displaying YoY delta. Positioned below the total. Includes directional arrow and absolute percentage.",
+      "trend-indicator": "Arrow glyph (up/down) with semantic color. Green down = improvement, red up = regression in climate context."
+    }
+  },
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Emissions scope breakdown",
+    "announcements": [
+      "Scope {n}: {value} tCO2e, {change} year over year",
+      "Category {name} expanded with {count} line items"
+    ],
+    "keyboard": [
+      "Tab: cycle through scope cards",
+      "Enter or Space: expand/collapse category detail",
+      "Arrow Down: move to next category within expanded card",
+      "Escape: collapse expanded card"
+    ]
+  },
+  "responsive": {
+    "mobile": "Scope cards stack vertically at full width. Category lists remain expandable. Timeline preset renders as vertical time axis.",
+    "tablet": "Two-column grid for scope cards with third card full-width below. Donut preset maintains centered layout with smaller diameter."
+  },
+  "motion": {
+    "micro": {
+      "card-hover": "elevation raise + border-highlight 150ms ease-out",
+      "bar-fill": "width 0 to target 600ms ease-out on mount"
+    },
+    "transitions": {
+      "card-expand": "height auto + content fade-in 300ms ease-in-out",
+      "preset-switch": "cross-fade 400ms"
+    },
+    "ambient": {
+      "trend-pulse": "subtle trend-indicator opacity 0.8 to 1.0 3s ease-in-out infinite"
+    }
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "composition": {
+    "ScopeBreakdown": "Section(d-section) > ScopeCard[](d-surface, data-interactive) > [ScopeName + TotalEmissions(mono-lg) + PercentChange + TrendIndicator + CategoryList > EmissionBar[]]",
+    "ScopeCard": "Surface(rounded, colored-header) > [Header(ScopeName + ScopeBadge) + Body(Total + Change) + Footer(ExpandToggle)]",
+    "CategoryList": "List(collapsible) > CategoryRow[] > [CategoryName + EmissionBar + TonnageValue]",
+    "EmissionBar": "Bar(horizontal, proportional) > Fill(scope-colored)",
+    "PercentChange": "Chip(d-annotation) > [TrendIndicator + DeltaPercent]"
+  }
+}

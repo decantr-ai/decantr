@@ -1,0 +1,107 @@
+{
+  "id": "secure-document-viewer",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Secure Document Viewer",
+  "description": "Secure document viewing surface with watermark overlay, download guards, redaction display, and audit trail indicators for confidential document workflows.",
+  "category": "document",
+  "tags": ["2026", "document", "secure", "viewer", "watermark", "audit", "confidential"],
+  "components": ["DocumentCanvas", "WatermarkLayer", "PageNavigator", "ZoomControls", "DownloadGuard", "AuditBadge"],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full viewer with page navigator, zoom controls, watermark overlay, download guard, and audit badge for complete secure viewing",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _w-full _h-full _bg-canvas"
+      }
+    },
+    "minimal": {
+      "description": "Preview-only mode without download controls or pagination, used for quick reviews and inline embeds with watermark still enforced",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _w-full _h-full _bg-canvas _pointer-events-restricted"
+      }
+    },
+    "redacted": {
+      "description": "Specialized variant highlighting redaction overlays prominently for legal and compliance review workflows where redactions must be auditable",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _w-full _h-full _bg-canvas"
+      }
+    }
+  },
+  "visual_brief": "A document page rendered within a scrollable viewport with a diagonal repeating watermark overlay that covers the entire document area. Watermark text reads 'CONFIDENTIAL - {user.email} - {timestamp}' at 45 degrees, repeated in a grid pattern with approximately 12% opacity in text-muted color, rotated and tiled across the page. A thin control bar (48px tall) sits above the document showing: page navigator center (e.g. '3 of 24') with previous/next arrows, zoom controls right (-, percentage, +), download button at far right that shows a lock icon and opens a permission-check modal. Audit badge floats in the bottom-right corner as a small dark pill reading 'VIEW LOGGED' with a small eye icon, semi-transparent with backdrop-blur. Redactions appear as solid black rectangles overlaid on document text with white 'REDACTED' label centered. Page transitions with smooth scroll. Document canvas has subtle shadow suggesting paper.",
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _flex-col _w-full _h-full _bg-canvas",
+    "slots": {
+      "control-bar": "Horizontal toolbar (48px) at top with page navigator, zoom controls, and download guard button. Light background with subtle border-bottom.",
+      "document-canvas": "Main scrollable document viewport. Renders pages sequentially with subtle paper shadow and gutter between pages. Supports click-to-zoom and pan at higher zoom levels.",
+      "watermark-layer": "Overlay layer on top of document content rendering diagonal repeating watermark pattern. Non-interactive pointer-events-none. Opacity 12% of text-muted color. Text includes user identity and timestamp.",
+      "page-content": "Individual rendered page within the canvas. Standard document page with text, images, and layout preserved from source.",
+      "redaction-overlay": "Black rectangles positioned absolutely over redacted regions with white 'REDACTED' label centered. Must render above document content but below watermark.",
+      "audit-badge": "Floating pill (bottom-right) showing that this view is being logged. Backdrop-blur semi-transparent. Small eye icon with 'VIEW LOGGED' text.",
+      "download-guard": "Download button that triggers permission check modal before allowing file download. Shows lock icon when user lacks download permission."
+    }
+  },
+  "responsive": {
+    "mobile": "Control bar stacks: page navigator on top row, zoom and download on second row. Watermark text reduces font size but maintains density. Single-page scroll mode only.",
+    "tablet": "Standard layout with slightly condensed control bar. Touch pinch-to-zoom enabled.",
+    "desktop": "Full layout with all controls inline. Keyboard shortcuts for navigation and zoom enabled."
+  },
+  "layout_hints": {
+    "document_priority": "The secured document itself is the primary surface. Watermarks, redactions, and audit cues should protect the content without obscuring normal reading more than necessary.",
+    "control_role": "Navigation, zoom, and guarded download controls belong in one compact strip above the page stack, not scattered around the viewer.",
+    "audit_visibility": "Audit and confidentiality signals should stay present and credible without overpowering the legal or review content."
+  },
+  "layout_hints": {
+    "document_priority": "The secured document itself is the primary surface. Watermarks, redactions, and audit cues should protect the content without obscuring normal reading more than necessary.",
+    "control_role": "Navigation, zoom, and guarded download controls belong in one compact strip above the page stack, not scattered around the viewer.",
+    "audit_visibility": "Audit and confidentiality signals should stay present and credible without overpowering the legal or review content."
+  },
+  "motion": {
+    "micro": {
+      "page-change": "scroll-snap 200ms ease-out to new page",
+      "zoom-change": "scale transform 180ms ease-out on document-canvas"
+    },
+    "transitions": {
+      "redaction-reveal": "opacity fade 300ms when redaction hover shows audit info",
+      "download-guard-open": "modal scale + backdrop fade 200ms ease-out"
+    },
+    "ambient": {
+      "audit-badge-pulse": "subtle opacity 0.7 to 1 pulse 3s ease-in-out infinite reminding user of logging"
+    }
+  },
+  "interactions": [
+    "click-select",
+    "animate-on-mount",
+    "keyboard-navigation",
+    "hover-reveal"
+  ],
+  "composition": {
+    "SecureDocumentViewer": "Root(d-section, stack) > [ControlBar + DocumentCanvas + AuditBadge]",
+    "ControlBar": "Toolbar(d-control) > [PageNavigator + ZoomControls + DownloadGuard]",
+    "DocumentCanvas": "Viewport(scrollable) > [PageContent* + RedactionOverlay* + WatermarkLayer(pointer-events-none)]",
+    "AuditBadge": "Pill(d-annotation, fixed, bottom-right, backdrop-blur) > [EyeIcon + 'VIEW LOGGED']"
+  },
+  "accessibility": {
+    "role": "document",
+    "aria-label": "Secure document viewer",
+    "announcements": [
+      "Page {current} of {total}",
+      "Zoom set to {level}%",
+      "Download requires {permission} permission",
+      "{count} redactions on this page"
+    ],
+    "keyboard": [
+      "PageDown/PageUp: next/previous page",
+      "Home/End: first/last page",
+      "+/-: zoom in/out",
+      "0: fit to width",
+      "Ctrl+D: download (if permitted)",
+      "Escape: close guard modal"
+    ]
+  }
+}

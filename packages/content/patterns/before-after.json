@@ -1,0 +1,105 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "before-after",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Before After",
+  "description": "Side-by-side comparison section showing two states: without and with the product. Visualizes drift and inconsistency on one side versus consistency and alignment on the other. Useful for demonstrating value through contrast, with browser-frame mockups or card-based layouts.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Card",
+        "Badge"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Card",
+    "Badge"
+  ],
+  "contained": false,
+  "default_preset": "browser-frames",
+  "presets": {
+    "browser-frames": {
+      "description": "Two-column grid comparing 'without' (left, warm/red gradient cards) and 'with' (right, cool/green gradient cards). Each column has a label and 3 stacked browser-frame mockups showing progressive states. Without-side shows drift: inconsistent layouts, varying spacing, mismatched components. With-side shows consistency: uniform structure, aligned elements. Includes a 'Zero Drift' pill badge on the with-side.",
+      "components": [
+        "Card",
+        "Badge"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc2 _gap12 _mw[920px] _mx[auto]",
+        "slots": {
+          "without-label": "Column label with _fs[0.85rem] _fw700 _uppercase _ls[0.08em] _mb4 _text[center], typically 'Without [Product]' in warm/red tone",
+          "without-frames": "3 stacked browser-frame mockup cards with warm gradient background (coral to pink). Each card has: a browser chrome bar with 3 dots and a label, followed by mock content blocks (varying heights and widths to show inconsistency). Cards use _rounded[14px] _p5 _mb4. Each successive frame shows increasing drift in layout.",
+          "with-label": "Column label with _fs[0.85rem] _fw700 _uppercase _ls[0.08em] _mb4 _text[center], typically 'With [Product]' in cool/green tone",
+          "with-frames": "3 stacked browser-frame mockup cards with cool gradient background (cyan to green). Each card has: a browser chrome bar with 3 dots and a label, followed by uniform mock content blocks (consistent heights and widths). Cards use _rounded[14px] _p5 _mb4. Includes a 'Zero Drift' Badge pill at the bottom: _inline _px4 _py1 _rounded[20px] _bggreen _fgdark _fs[0.72rem] _fw700 _uppercase."
+        }
+      }
+    },
+    "split-cards": {
+      "description": "Two columns of simple comparison cards without browser chrome. Left column uses warm-toned cards with labels showing the 'before' state. Right column uses cool-toned cards with labels showing the 'after' state. Simpler visual treatment focused on content comparison rather than browser mockups.",
+      "components": [
+        "Card",
+        "Badge"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc2 _gap12 _mw[920px] _mx[auto]",
+        "slots": {
+          "without-label": "Column header label with warm color, uppercase, centered",
+          "without-frames": "Stacked Card components with warm gradient backgrounds, each containing a drift-label and mock content showing inconsistent layouts",
+          "with-label": "Column header label with cool color, uppercase, centered",
+          "with-frames": "Stacked Card components with cool gradient backgrounds, each containing a consistency-label and mock content showing uniform layouts. Includes Zero Drift Badge."
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gc2 _gap12 _mw[920px] _mx[auto]",
+    "slots": {
+      "without-label": "Before/without column label",
+      "without-frames": "3 progressive state mockups showing drift",
+      "with-label": "After/with column label",
+      "with-frames": "3 consistent state mockups showing alignment"
+    }
+  },
+  "io": {
+    "consumes": [],
+    "produces": [],
+    "actions": []
+  },
+  "visual_brief": "Two-column comparison layout with a 'Without' column on the left and a 'With' column on the right. Each column has a label header and contains three progressive state mockups. The left side shows inconsistent, drifting UI states with misaligned elements and clashing styles. The right side shows clean, consistent, aligned UI states. Browser-frames preset wraps each mockup in a browser chrome frame with address bar and window controls. Split-cards preset uses bordered cards instead. A subtle vertical divider or gap separates the two columns.",
+  "responsive": {
+    "mobile": "Columns stack vertically — 'Without' section on top, 'With' section below. Mockup frames scale to full width. Label headers become more prominent to maintain the comparison narrative.",
+    "tablet": "Side-by-side layout maintained with reduced mockup sizes. Gap between columns tightens.",
+    "desktop": "Full two-column layout with generous spacing. Mockup frames at comfortable viewing size."
+  },
+  "layout_hints": {
+    "comparison_priority": "The contrast between drift and consistency should be obvious before the user studies individual frames. Column labels and overall left-right logic must stay unmistakable.",
+    "frame_rhythm": "Mockups should line up in a steady comparative rhythm so the viewer understands progression rather than seeing two unrelated stacks of cards.",
+    "mobile_translation": "When stacked, preserve the narrative order clearly so the user still reads the comparison as before-versus-after, not as two separate sections."
+  },
+  "motion": {
+    "micro": "Hovered frames may sharpen slightly and the active comparison side may brighten enough to reinforce the contrast.",
+    "transitions": "Any reveal or scroll-based entry should preserve the comparison frame rather than staggering the two sides independently."
+  },
+  "interactions": [
+    "drag-reorder",
+    "animate-on-mount"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Before and after comparison",
+    "keyboard": [
+      "If frames are interactive, focus should move through the comparison in a predictable without-first, with-second order."
+    ],
+    "announcements": [
+      "Column labels and the intended contrast between inconsistent and consistent states should be exposed semantically, not only through color or position."
+    ]
+  }
+}

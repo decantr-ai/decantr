@@ -1,0 +1,124 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "property-detail",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Property Detail",
+  "description": "Full property view with details, gallery, metrics, units, financials, documents, and maintenance history.",
+  "dependencies": {
+    "patterns": {
+      "unit-list": "^1.0.0"
+    },
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "icon",
+        "Badge",
+        "Tabs"
+      ],
+      "charts": [
+        "AreaChart"
+      ]
+    }
+  },
+  "components": [
+    "Button",
+    "icon",
+    "Badge",
+    "Tabs"
+  ],
+  "default_preset": "view",
+  "presets": {
+    "view": {
+      "description": "Full property detail view with tabs",
+      "components": [
+        "Button",
+        "icon",
+        "Badge",
+        "Tabs"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6",
+        "slots": {
+          "header": "Property name, address, edit button, back link",
+          "gallery": "Property photo gallery",
+          "metrics": "Key metrics row (occupancy, revenue, expenses, NOI)",
+          "tabs": "Overview, Units, Financials, Documents, Maintenance tabs",
+          "overview": "Property details (type, year, sqft, beds/baths)",
+          "units": "Unit list (embedded)",
+          "financials": "Property P&L summary",
+          "documents": "Property documents",
+          "maintenance": "Recent maintenance tickets",
+          "timeline": "Property activity history"
+        }
+      }
+    },
+    "create": {
+      "description": "Create or edit property form with address, type, unit count fields, and image upload area",
+      "components": [
+        "Button",
+        "icon",
+        "Input",
+        "Select",
+        "Textarea"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6 _maxw[800px]",
+        "slots": {
+          "header": "Form title",
+          "form": "Property form fields",
+          "images": "Image upload area",
+          "actions": "Save/cancel buttons"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap6",
+    "slots": {
+      "header": "Property header",
+      "gallery": "Photo gallery",
+      "metrics": "Key metrics",
+      "content": "Tabbed content area"
+    }
+  },
+  "visual_brief": "Full property view starting with a header showing property name, address, status badge, and action buttons (Edit, Archive). Below the header, a photo gallery as a horizontal scrollable strip or grid of thumbnails. A metrics row shows key stats: total units, occupancy rate, monthly revenue, NOI. The main content area uses horizontal tabs: Overview (property details and description), Units (unit list), Financials (income/expense summaries), Documents (lease PDFs, insurance), and Maintenance (ticket list). The create preset replaces display fields with an input form.",
+  "responsive": {
+    "mobile": "Single-column layout. Gallery becomes a swipeable carousel. Tabs become a dropdown selector or horizontally scrollable. Content sections stack fully.",
+    "tablet": "Standard layout with scrollable tab bar. Gallery shows 3-4 thumbnails. Content area comfortable width.",
+    "desktop": "Full layout with all tabs visible. Gallery shows full thumbnail row. Content area can show side-by-side panels within tabs."
+  },
+  "layout_hints": {
+    "asset_priority": "Lead with the property's identity and health first: address, status, and key metrics. Tabs should deepen that understanding without displacing the core property context.",
+    "gallery_role": "Photos should support recognition and context, not take over the page. Keep the gallery clearly subordinate to the operational summary.",
+    "tabbed_depth": "Overview, units, financials, documents, and maintenance should feel like one connected asset record, not separate microsites."
+  },
+  "motion": {
+    "micro": "Photo thumbnails, actions, and tab states may sharpen subtly on hover and focus.",
+    "transitions": "Tab and gallery interactions should preserve place and asset identity rather than creating abrupt mode switches."
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Property detail",
+    "keyboard": [
+      "Header actions, gallery controls, and tabs should appear before deeper property panels in keyboard order."
+    ],
+    "announcements": [
+      "Property name, status, address, and active tab context should be exposed semantically so the asset record remains understandable without relying on visual tab structure."
+    ]
+  },
+  "composition": {
+    "PropertyDetail": "Container(d-section, flex-col, gap-6) > [Header + Gallery + MetricsRow + TabContent]",
+    "Header": "Row(d-surface, space-between) > [PropertyName(heading2) + Address(text-muted) + StatusBadge(d-annotation) + ActionButtons(d-interactive)]",
+    "Gallery": "Row(d-data, scrollable) > Thumbnail(clickable)[]",
+    "MetricsRow": "Grid(d-data, 4-col) > MetricCard(d-surface)[]",
+    "TabContent": "Tabs(d-control) > [OverviewTab + UnitsTab + FinancialsTab + DocumentsTab + MaintenanceTab]"
+  }
+}

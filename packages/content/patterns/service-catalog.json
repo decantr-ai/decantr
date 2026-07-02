@@ -1,0 +1,94 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "service-catalog",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Service Catalog",
+  "description": "Grid or list of deployable services with status, region, and operational metadata for cloud and platform consoles.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Card",
+        "Badge",
+        "Button",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Card",
+    "Badge",
+    "Button",
+    "icon"
+  ],
+  "default_preset": "grid",
+  "presets": {
+    "grid": {
+      "description": "Responsive service card grid for browsing platform services and environments.",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _md:gc2 _xl:gc3 _gap4",
+        "slots": {
+          "toolbar": "Optional search, filters, and environment selectors",
+          "service-card": "Single service tile with icon, name, status, and metadata",
+          "service-actions": "Contextual actions such as open, deploy, or inspect"
+        }
+      }
+    },
+    "list": {
+      "description": "Denser row-based service catalog for operator-heavy pages.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap3",
+        "slots": {
+          "toolbar": "Optional search and filter row",
+          "service-row": "Single service row with status and actions"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gc1 _md:gc2 _xl:gc3 _gap4",
+    "slots": {
+      "toolbar": "Search and filter controls",
+      "service-card": "Service catalog card",
+      "service-actions": "Secondary actions"
+    }
+  },
+  "visual_brief": "Operational service catalog with clean, status-aware cards. Each item should surface the service identity, current health, region or environment, and a few practical facts without reading like a cluttered data table. The grid should feel like a modern control plane, not a marketing gallery.",
+  "responsive": {
+    "mobile": "Single-column stack. Metadata wraps cleanly and actions collapse into a single trailing affordance if needed.",
+    "tablet": "Two-column grid with enough width for service status, region, and one or two secondary facts.",
+    "desktop": "Three-column grid or dense list view depending on operator density. Cards remain easy to scan at a glance."
+  },
+  "layout_hints": {
+    "identity_first": "Lead with service name, type icon, and health state. Secondary metadata like region, deployment target, or runtime should support that first read.",
+    "operator_density": "Avoid stuffing every service property into the card. Prefer a small, repeatable metadata cluster and leave deeper diagnostics for drill-down views.",
+    "toolbar_rhythm": "If a toolbar is present, keep it visually separate from the grid. Parent workspace layout owns section spacing; the pattern owns only the toolbar-to-grid transition."
+  },
+  "motion": {
+    "micro": "Cards may lift or sharpen their border on hover. Status indicators may pulse subtly only when in degraded or deploying states.",
+    "transitions": "Filtering or sorting should cross-fade or stagger cards in gently without disrupting scanability."
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Service catalog",
+    "keyboard": [
+      "Tab should move through toolbar controls, then services, then any row or card actions in reading order."
+    ],
+    "announcements": [
+      "Each service should expose name, status, and key metadata semantically so health is not color-only."
+    ]
+  },
+  "composition": {
+    "ServiceCatalog": "Stack(d-section, operator) > [Toolbar?(d-control cluster) + ServiceGrid(d-data, responsive) > ServiceCard[]]",
+    "ServiceCard": "Card(d-surface, hoverable) > [Identity(icon + name + status) + MetaRow(d-annotation)* + Actions?(d-interactive cluster)]"
+  }
+}

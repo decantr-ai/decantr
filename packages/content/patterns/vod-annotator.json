@@ -1,0 +1,112 @@
+{
+  "id": "vod-annotator",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "VOD Annotator",
+  "description": "A video-on-demand playback surface with timeline annotation flags, drawing overlay tools, tag filtering, and replay markers for esports coaching review.",
+  "category": "esports",
+  "tags": [
+    "2026",
+    "esports",
+    "video",
+    "vod",
+    "annotation",
+    "coaching",
+    "review"
+  ],
+  "components": [
+    "VideoPlayer",
+    "AnnotationTimeline",
+    "DrawingOverlay",
+    "MarkerFlag",
+    "TagChip",
+    "ReplayButton"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Single video player with annotation timeline beneath, drawing overlay on top of video, and tag-filtering chip rail along the bottom",
+      "layout": {
+        "layout": "stacked",
+        "atoms": "_flex _flex-col _gap-3 _w100 _max-w-6xl _mx-auto _p-4"
+      }
+    },
+    "multi-angle": {
+      "description": "Synchronized grid of player POV video feeds viewed simultaneously with shared timeline and aligned annotation markers across all angles",
+      "layout": {
+        "layout": "grid-2",
+        "atoms": "_grid _grid-cols-2 _gap-2 _w100 _p-4"
+      }
+    },
+    "heatmap": {
+      "description": "Timeline heatmap overlay showing aggregated play frequency and annotation density across the VOD duration for pattern-spotting review",
+      "layout": {
+        "layout": "stacked",
+        "atoms": "_flex _flex-col _gap-3 _w100 _p-4"
+      }
+    }
+  },
+  "visual_brief": "A dark-background coaching surface. Large 16:9 video player at top with standard playback controls (play/pause, scrub, time, speed, volume, fullscreen) overlaid at bottom of the video on hover. A transparent drawing overlay sits atop the video, enabled by toolbar toggle, allowing arrows, circles, rectangles, and freehand lines in brand-accent colors. Directly below the player, an annotation timeline strip spans full width with colored marker flags planted at annotation timestamps (color encodes tag type: red=mistake, green=highlight, blue=rotation, purple=teamfight, amber=objective). Hovering a flag reveals a mini-preview thumbnail and annotation text. A horizontal tag chip rail below timeline acts as filters — click a chip to hide/show flag types. Each annotation in the list has a replay button that jumps to that timestamp and loops the moment. Commenter avatars appear as small circles on each flag showing who created it.",
+  "layout_hints": {
+    "container": "d-section",
+    "note": "Video player must be 16:9 aspect. Drawing overlay must be toggleable to avoid interfering with scrub controls.",
+    "tag_colors": "Tag color semantics must stay consistent across annotations: mistake=red, highlight=green, rotation=blue, teamfight=purple, objective=amber."
+  },
+  "default_layout": {
+    "layout": "stacked",
+    "atoms": "_flex _flex-col _gap-3 _w100 _max-w-6xl _mx-auto _p-4",
+    "slots": {
+      "video-player": "16:9 HTML5 or custom video element with playback controls overlay, scrub bar, speed, volume, fullscreen.",
+      "drawing-overlay": "Transparent SVG canvas layered over the video supporting arrows, shapes, freehand drawing with brand-accent colors.",
+      "annotation-timeline": "Horizontal strip beneath video showing marker-flag planted at each annotation timestamp, synchronized with playback.",
+      "marker-flag": "Repeating colored flag element on timeline. Color encodes tag type. Click jumps to timestamp.",
+      "tag-chip": "Filter chip in bottom rail toggling visibility of a tag category across markers.",
+      "replay-button": "Button beside each annotation list entry that seeks and loops the annotated moment."
+    }
+  },
+  "accessibility": {
+    "role": "application",
+    "aria-label": "Video annotation review surface",
+    "announcements": [
+      "Annotation at {timestamp}: {tag} by {author}",
+      "Filter {tag} {enabled|disabled}"
+    ],
+    "keyboard": [
+      "Space: play/pause video",
+      "J / L: seek back/forward 5s",
+      "M: mute",
+      "F: fullscreen",
+      "N: create new annotation at current timestamp",
+      "D: toggle drawing overlay",
+      "Arrow Left/Right: previous/next annotation"
+    ]
+  },
+  "responsive": {
+    "mobile": "Tag chip rail scrolls horizontally. Drawing tools move to bottom action sheet. Multi-angle collapses to single view with tab switcher.",
+    "tablet": "Standard layout retained. Timeline marker size reduced."
+  },
+  "motion": {
+    "micro": {
+      "flag-hover": "marker scale(1.3) + preview thumbnail slide-up 180ms ease-out",
+      "chip-toggle": "chip opacity dim when disabled 150ms"
+    },
+    "transitions": {
+      "seek-jump": "playhead smooth-scrub 300ms ease-in-out",
+      "drawing-draw": "stroke path draw-in with follow-cursor immediate"
+    },
+    "ambient": {
+      "playhead-pulse": "timeline playhead subtle glow pulse 2s ease-in-out infinite while playing"
+    }
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "composition": {
+    "VodAnnotator": "Section(d-section) > [VideoPlayer(16:9) > [VideoElement + DrawingOverlay + PlaybackControls] + AnnotationTimeline > MarkerFlag[] + TagChipRail > TagChip[] + AnnotationList > AnnotationEntry[] > [Timestamp + TagBadge + AuthorAvatar + NoteText + ReplayButton]]",
+    "VideoPlayer": "Player(aspect-16-9) > [Video + Overlays + Controls(scrub, play, speed, vol, fs)]",
+    "DrawingOverlay": "SVG(layered, toggleable) > DrawLayer(arrows, shapes, freehand)",
+    "AnnotationTimeline": "Strip(horizontal, scrub-synced) > [TimelineTrack + MarkerFlag[] + Playhead]",
+    "MarkerFlag": "Flag(d-interactive, tag-colored) > [FlagIcon + AuthorAvatar + PreviewOnHover]"
+  }
+}

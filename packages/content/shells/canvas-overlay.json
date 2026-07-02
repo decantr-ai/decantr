@@ -1,0 +1,94 @@
+{
+  "$schema": "https://decantr.ai/schemas/shell.v1.json",
+  "id": "canvas-overlay",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Canvas Overlay",
+  "description": "Full-bleed spatial shell with a primary canvas, floating toolbar overlays, and presence/status surfaces that sit above the canvas without consuming layout width.",
+  "layout": "stack",
+  "atoms": "_relative _h[100vh] _overflow-hidden",
+  "config": {
+    "regions": [
+      "header",
+      "body",
+      "overlay"
+    ],
+    "grid": {
+      "areas": [
+        [
+          "body"
+        ]
+      ]
+    },
+    "header": {
+      "height": "52px",
+      "sticky": false
+    },
+    "body": {
+      "scroll": false
+    }
+  },
+  "configurable": {
+    "header": {
+      "toggleable": true
+    },
+    "aside": {
+      "toggleable": true
+    },
+    "sizing": {
+      "headerHeight": {
+        "min": 44,
+        "max": 64,
+        "default": 52
+      }
+    }
+  },
+  "internal_layout": {
+    "root": {
+      "display": "grid",
+      "height": "100vh",
+      "atoms": "_relative _h[100vh] _overflow-hidden"
+    },
+    "header": {
+      "height": "52px",
+      "position": "absolute",
+      "top": "0",
+      "left": "0",
+      "right": "0",
+      "display": "flex",
+      "align": "center",
+      "justify": "space-between",
+      "padding": "0 clamp(1rem, 2vw, 1.5rem)",
+      "z_index": "40",
+      "background": "transparent",
+      "left_content": "Workspace title or breadcrumb anchor",
+      "right_content": "Secondary actions, view toggle, or collaborator summary. Keep controls compact so they do not dominate the canvas.",
+      "button_sizing": "Use compact controls in the overlay header: py-1.5 px-3 text-sm (~32px tall). Avoid oversized default button chrome."
+    },
+    "body": {
+      "position": "relative",
+      "height": "100vh",
+      "overflow": "hidden",
+      "atoms": "_relative _h[100vh] _overflow-hidden",
+      "note": "Primary full-bleed canvas lives here. This is not a card surface and should not inherit page-local shell padding."
+    },
+    "overlay": {
+      "position": "absolute",
+      "inset": "0",
+      "pointer_events": "none by default; interactive panels opt back in",
+      "z_index": "30",
+      "note": "Toolbar, presence indicators, and floating inspectors live above the canvas. These overlays must not consume permanent layout width."
+    }
+  },
+  "guidance": {
+    "shell_spacing": "Canvas-overlay owns the viewport edge insets for floating controls. Page components should place the canvas content and overlay surfaces only, not wrap them in extra shell-width containers or centered cards.",
+    "overlay_surfaces": "Floating inspectors and toolbars may use d-surface or theme decorators, but the base canvas should remain borderless and full-bleed.",
+    "mobile_behavior": "On narrow widths, collapse secondary overlay panels into bottom sheets or compact floating pills rather than shrinking the canvas itself.",
+    "section_label_treatment": "d-label[data-anchor]",
+    "section_density": "compact"
+  },
+  "code": {
+    "imports": "Target-specific imports vary. Translate the internal_layout contract into your framework's router outlet, canvas component, and overlay primitives.",
+    "example": "CanvasOverlayShell(root) -> Canvas(body as full-bleed viewport) + OverlayHeader(compact actions) + FloatingToolbar + PresenceIndicators + OptionalInspectorSheet"
+  }
+}

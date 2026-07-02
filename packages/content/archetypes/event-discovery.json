@@ -1,0 +1,130 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "event-discovery",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Event Discovery",
+  "description": "Event browsing and discovery interface with search, calendar, map, and detail views. Core exploration surface for event and community platforms.",
+  "tags": [
+    "events",
+    "discovery",
+    "calendar",
+    "search",
+    "community"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "event discovery",
+        "browse events",
+        "event listing",
+        "event directory"
+      ],
+      "secondary": [
+        "event calendar",
+        "event map",
+        "event search",
+        "event detail"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "events",
+      "patterns": [
+        {
+          "pattern": "search-filter-bar",
+          "preset": "standard",
+          "as": "search-filters"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "content",
+          "as": "event-cards"
+        },
+        {
+          "pattern": "calendar-view",
+          "preset": "month",
+          "as": "calendar"
+        },
+        {
+          "pattern": "map-view",
+          "preset": "pins",
+          "as": "map"
+        }
+      ],
+      "default_layout": [
+        "search-filters",
+        "event-cards",
+        "calendar",
+        "map"
+      ],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "event-detail",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "image-overlay",
+          "as": "event-hero"
+        },
+        {
+          "pattern": "timeline",
+          "preset": "standard",
+          "as": "schedule"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "product",
+          "as": "related-events"
+        }
+      ],
+      "default_layout": [
+        "event-hero",
+        "schedule",
+        "related-events"
+      ],
+      "shell": "top-nav-main"
+    }
+  ],
+  "page_briefs": {
+    "events": "Event listing page with a search and filter bar for date range, category, location, and price. Below, a content card grid shows event thumbnails, titles, dates, and venue info. View toggles switch between grid, monthly calendar, and map modes where pin clusters indicate event locations.",
+    "event-detail": "Immersive event detail page. A full-bleed hero with image overlay displays the event title, date, venue, and a prominent get-tickets button. Below, a timeline lays out the event schedule with session times, speakers, and descriptions. A related events card grid at the bottom encourages further discovery."
+  },
+  "features": [
+    "events",
+    "search",
+    "calendar",
+    "map",
+    "filters"
+  ],
+  "shells": {
+    "top-nav-main": "Top navigation bar with main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "search-filter-bar": "^1.0.0",
+      "card-grid": "^1.0.0",
+      "calendar-view": "^1.0.0",
+      "map-view": "^1.0.0",
+      "hero": "^1.0.0",
+      "timeline": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  }
+}

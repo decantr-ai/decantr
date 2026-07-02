@@ -3,7 +3,7 @@
 Decantr live showcases are served by one maintained Vite app at `apps/showcase-host`.
 Historical showcase projects are capsules under `apps/showcase-host/src/capsules/<slug>/`.
 
-`apps/showcase/` remains the stable metadata surface for API compatibility:
+`apps/showcase/` remains the stable metadata surface for content API compatibility:
 
 - `apps/showcase/manifest.json`
 - `apps/showcase/reports/shortlist-verification.json`
@@ -17,14 +17,14 @@ Public showcase URLs use the host route:
 /showcase/:slug/:path*
 ```
 
-The registry app rewrites every `/showcase/:path*` request to the copied showcase host SPA at `/showcase/index.html`.
+The content API may expose showcase metadata, but the public registry portal no longer hosts the showcase SPA. Serve the built host from an explicit docs/static deployment if a live showcase URL is needed.
 The outer host parses `:slug`, then iframe-loads the capsule runner:
 
 ```text
 /showcase/:slug/__runner?runner=1#/:path*
 ```
 
-Iframe isolation is intentional. Capsules may keep their generated global CSS, token files, and route assumptions without leaking styles into the registry UI or into other capsules.
+Iframe isolation is intentional. Capsules may keep their generated global CSS, token files, and route assumptions without leaking styles into a docs/static host or into other capsules.
 
 ## Capsule Shape
 
@@ -61,9 +61,8 @@ Use `--force` only when intentionally replacing an existing capsule.
 pnpm --filter ./apps/showcase-host build
 pnpm run showcase:verify:shortlist
 pnpm run showcase:validate
-pnpm --filter ./apps/registry build
 ```
 
 `scripts/build-showcases.mjs` builds the host once.
-`scripts/copy-showcase-dist.mjs` copies that host build into `apps/registry/public/showcase/` and writes the public showcase metadata files.
+The old registry-portal copy script was removed with `apps/registry`.
 `scripts/verify-showcase-shortlist.ts` keeps its legacy name for API compatibility, but verifies every active capsule in `apps/showcase/manifest.json`.

@@ -1,16 +1,8 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { Hono } from 'hono';
 import type { Env } from '../../src/types.js';
+import { searchRoutes } from '../../src/routes/search.js';
 import { assertMatchesSchema } from '../helpers/schema-assert.js';
-
-const mockCreateAdminClient = vi.fn();
-
-vi.mock('../../src/db/client.js', () => ({
-  createAdminClient: mockCreateAdminClient,
-  createUserClient: vi.fn(),
-}));
-
-const { searchRoutes } = await import('../../src/routes/search.js');
 
 function createTestApp() {
   const app = new Hono<Env>();
@@ -19,186 +11,44 @@ function createTestApp() {
 }
 
 describe('GET /v1/search', () => {
-  let app: ReturnType<typeof createTestApp>;
-  const rpc = vi.fn();
-
-  beforeEach(() => {
-    app = createTestApp();
-    rpc.mockReset();
-    mockCreateAdminClient.mockReset();
-    mockCreateAdminClient.mockReturnValue({
-      rpc,
-    });
-  });
-
-  it('applies shared ordering before paginating search results', async () => {
-    rpc.mockResolvedValue({
-      data: [
-        {
-          type: 'blueprint',
-          slug: 'zeta',
-          namespace: '@community',
-          version: '1.0.0',
-          data: {
-            name: 'Zeta',
-            description: 'Second result',
-            registry_presentation: {
-              thumbnail: {
-                path: 'thumbs/zeta.png',
-              },
-            },
-          },
-          published_at: '2026-04-09T00:00:00.000Z',
-          owner_display_name: 'Alice',
-          owner_username: 'alice',
-          total_count: 2,
-        },
-        {
-          type: 'blueprint',
-          slug: 'alpha',
-          namespace: '@community',
-          version: '1.0.0',
-          data: { name: 'Alpha', description: 'First result' },
-          published_at: '2026-04-08T00:00:00.000Z',
-          owner_display_name: 'Alice',
-          owner_username: 'alice',
-          total_count: 2,
-        },
-      ],
-      error: null,
-    });
-
-    const res = await app.request('/v1/search?q=port&sort=name&limit=1&offset=1');
+  it('searches the bundled official corpus', async () => {
+    const app = createTestApp();
+    const res = await app.request('/v1/search?q=agent&type=blueprints&limit=10');
 
     expect(res.status).toBe(200);
     const json = await res.json();
     assertMatchesSchema('search-response.v1.json', json);
-    expect(json.results.map((item: { slug: string }) => item.slug)).toEqual(['zeta']);
-    expect(json.results[0]?.thumbnail_url).toBe('http://localhost/v1/blueprints/%40community/zeta/thumbnail');
-    expect(rpc).toHaveBeenCalledWith('search_content', expect.objectContaining({
-      search_query: 'port',
-      result_limit: 500,
-      result_offset: 0,
-    }));
+    expect(json.total).toBeGreaterThan(0);
+    expect(json.results.some((item: { slug: string }) => item.slug === 'agent-studio')).toBe(true);
   });
 
-  it('filters search results down to recommended items when requested', async () => {
-    rpc.mockResolvedValue({
-      data: [
-        {
-          type: 'blueprint',
-          slug: 'portfolio',
-          namespace: '@official',
-          version: '1.0.0',
-          data: { name: 'Portfolio', description: 'Creator portfolio' },
-          published_at: '2026-04-09T00:00:00.000Z',
-          owner_display_name: 'Decantr',
-          owner_username: 'decantr',
-          total_count: 2,
-        },
-        {
-          type: 'blueprint',
-          slug: 'zeta',
-          namespace: '@community',
-          version: '1.0.0',
-          data: { name: 'Zeta', description: 'Community result' },
-          published_at: '2026-04-08T00:00:00.000Z',
-          owner_display_name: 'Alice',
-          owner_username: 'alice',
-          total_count: 2,
-        },
-      ],
-      error: null,
-    });
+  it('requires a query parameter', async () => {
+    const app = createTestApp();
+    const res = await app.request('/v1/search');
 
-    const res = await app.request('/v1/search?q=port&recommended=true');
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: 'Query parameter "q" is required' });
+  });
+
+  it('filters source to official content only', async () => {
+    const app = createTestApp();
+    const res = await app.request('/v1/search?q=agent&source=community');
 
     expect(res.status).toBe(200);
     const json = await res.json();
-    assertMatchesSchema('search-response.v1.json', json);
-    expect(json.total).toBe(1);
-    expect(json.results.map((item: { slug: string }) => item.slug)).toEqual(['portfolio']);
-    expect(rpc).toHaveBeenCalledWith('search_content', expect.objectContaining({
-      result_limit: 500,
-      result_offset: 0,
-    }));
+    expect(json.total).toBe(0);
+    expect(json.results).toEqual([]);
   });
 
-  it('filters search results by source when requested', async () => {
-    rpc.mockResolvedValue({
-      data: [
-        {
-          type: 'blueprint',
-          slug: 'portfolio',
-          namespace: '@official',
-          version: '1.0.0',
-          data: { name: 'Portfolio', description: 'Creator portfolio' },
-          published_at: '2026-04-09T00:00:00.000Z',
-          owner_display_name: 'Decantr',
-          owner_username: 'decantr',
-          total_count: 2,
-        },
-        {
-          type: 'blueprint',
-          slug: 'zeta',
-          namespace: '@community',
-          version: '1.0.0',
-          data: { name: 'Zeta', description: 'Community result' },
-          published_at: '2026-04-08T00:00:00.000Z',
-          owner_display_name: 'Alice',
-          owner_username: 'alice',
-          total_count: 2,
-        },
-      ],
-      error: null,
-    });
-
-    const res = await app.request('/v1/search?q=port&source=official');
+  it('filters recommended blueprint results using authored corpus metadata', async () => {
+    const app = createTestApp();
+    const res = await app.request('/v1/search?q=agent&type=blueprints&recommended=true');
 
     expect(res.status).toBe(200);
     const json = await res.json();
-    expect(json.total).toBe(1);
-    expect(json.results.map((item: { slug: string }) => item.slug)).toEqual(['portfolio']);
-  });
-
-  it('filters search results down to a requested intelligence source', async () => {
-    rpc.mockResolvedValue({
-      data: [
-        {
-          type: 'blueprint',
-          slug: 'portfolio',
-          namespace: '@official',
-          version: '1.0.0',
-          data: { name: 'Portfolio', description: 'Creator portfolio' },
-          published_at: '2026-04-09T00:00:00.000Z',
-          owner_display_name: 'Decantr',
-          owner_username: 'decantr',
-          total_count: 2,
-        },
-        {
-          type: 'blueprint',
-          slug: 'zeta',
-          namespace: '@community',
-          version: '1.0.0',
-          data: { name: 'Zeta', description: 'Community result' },
-          published_at: '2026-04-08T00:00:00.000Z',
-          owner_display_name: 'Alice',
-          owner_username: 'alice',
-          total_count: 2,
-        },
-      ],
-      error: null,
-    });
-
-    const res = await app.request('/v1/search?q=port&intelligence_source=hybrid');
-
-    expect(res.status).toBe(200);
-    const json = await res.json();
-    expect(json.total).toBe(1);
-    expect(json.results.map((item: { slug: string }) => item.slug)).toEqual(['portfolio']);
-    expect(rpc).toHaveBeenCalledWith('search_content', expect.objectContaining({
-      result_limit: 500,
-      result_offset: 0,
-    }));
+    expect(json.total).toBeGreaterThan(0);
+    expect(json.results.every((item: { intelligence?: { recommended?: boolean } }) =>
+      item.intelligence?.recommended === true,
+    )).toBe(true);
   });
 });

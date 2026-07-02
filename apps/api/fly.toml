@@ -1,4 +1,4 @@
-app = "decantr-registry"
+app = "decantr-api"
 primary_region = "iad"
 
 [build]

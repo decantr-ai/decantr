@@ -1,0 +1,111 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "project-library",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Project Library",
+  "description": "Browse, filter, and manage video projects and starter templates. Entry point for opening existing work and kicking off new productions from curated blueprints.",
+  "tags": [
+    "projects",
+    "library",
+    "templates",
+    "gallery",
+    "video",
+    "2026"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "project library",
+        "projects list",
+        "template gallery",
+        "my projects",
+        "video projects"
+      ],
+      "secondary": [
+        "starter templates",
+        "project management",
+        "browse projects"
+      ],
+      "negative": []
+    },
+    "implies": [
+      "templates"
+    ],
+    "weight": 0.8,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "projects",
+      "path": "/projects",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "project-table"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "content",
+          "as": "project-cards"
+        }
+      ],
+      "default_layout": [
+        "project-cards",
+        "project-table"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "templates",
+      "path": "/templates",
+      "patterns": [
+        {
+          "pattern": "card-grid",
+          "preset": "content",
+          "as": "template-gallery"
+        },
+        {
+          "pattern": "search-filter-bar",
+          "preset": "standard",
+          "as": "filters"
+        }
+      ],
+      "default_layout": [
+        "filters",
+        "template-gallery"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "projects": "Project library with dual view mode. Default view is a responsive card grid of project thumbnails (16:9 poster), project title, last-modified relative time, scene count pill, and status badge (draft/rendering/published). A toggle switches to a data-table view with sortable columns: name, scenes, duration, last edited, owner, and status. Top bar includes search input, status filter chips, and prominent 'New Project' button.",
+    "templates": "Template gallery with a prominent search and filter bar at top containing genre chips (cinematic, explainer, trailer, social), style filters, and duration ranges. Below, a dense card grid shows template cards with preview thumbnail, template name, short description, use-count badge, and a 'Use Template' action button that hover-reveals on each card."
+  },
+  "features": [
+    "project-management",
+    "templates"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area"
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  },
+  "dependencies": {
+    "patterns": {
+      "data-table": ">=1.0.0",
+      "card-grid": ">=1.0.0",
+      "search-filter-bar": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

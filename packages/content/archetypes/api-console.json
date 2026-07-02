@@ -1,0 +1,130 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "api-console",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "API Console",
+  "description": "Interactive API documentation, key management, and webhook configuration console for developer-facing SaaS platforms.",
+  "tags": [
+    "api",
+    "developer",
+    "documentation",
+    "webhooks",
+    "keys"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "api console",
+        "api explorer",
+        "api documentation",
+        "developer portal",
+        "api playground"
+      ],
+      "secondary": [
+        "api keys",
+        "webhook management",
+        "endpoint testing",
+        "rest api",
+        "api reference"
+      ],
+      "negative": [
+        "no-api",
+        "internal-only"
+      ]
+    },
+    "implies": [
+      "tenant-switcher-dashboard"
+    ],
+    "weight": 0.8,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "api-docs",
+      "patterns": [
+        {
+          "pattern": "api-explorer",
+          "preset": "grouped",
+          "as": "explorer"
+        }
+      ],
+      "default_layout": [
+        "explorer"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "api-keys",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "keys-table"
+        },
+        {
+          "pattern": "api-key-row",
+          "preset": "standard",
+          "as": "key-row"
+        }
+      ],
+      "default_layout": [
+        "keys-table"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "webhooks",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "webhooks-table"
+        },
+        {
+          "pattern": "webhook-debugger",
+          "preset": "standard",
+          "as": "debugger"
+        }
+      ],
+      "default_layout": [
+        "webhooks-table",
+        "debugger"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "api-docs": "Interactive API explorer organized by resource groups in a left sidebar. Each endpoint shows method badge, path, description, and expandable request/response examples. Try-it panel on the right lets developers make live API calls with their credentials.",
+    "api-keys": "API key management table with columns for key name, prefix, created date, last used, and status. Each row uses the api-key-row pattern with masked key display, copy button, and revoke action. Create-key button in the header opens a modal for naming and scoping new keys.",
+    "webhooks": "Webhook endpoint list in a data table with URL, events subscribed, status, and last delivery columns. Below the table, a webhook debugger panel shows recent delivery attempts with request/response payloads, status codes, and retry controls."
+  },
+  "features": [
+    "api-console",
+    "api-keys",
+    "webhooks",
+    "documentation"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "api-explorer": "^1.0.0",
+      "data-table": "^1.0.0",
+      "api-key-row": "^1.0.0",
+      "webhook-debugger": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  }
+}

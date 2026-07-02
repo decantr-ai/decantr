@@ -1,0 +1,132 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "marketing-creator",
+  "role": "public",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Marketing Creator",
+  "description": "Platform marketing landing page for creator monetization. Attract creators with features, pricing, and testimonials.",
+  "tags": [
+    "marketing",
+    "landing",
+    "creator-platform",
+    "pricing",
+    "features"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "creator platform marketing",
+        "monetization landing",
+        "creator signup"
+      ],
+      "secondary": [
+        "platform pricing",
+        "creator features"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "brand",
+          "as": "hero"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "feature",
+          "as": "features"
+        },
+        {
+          "pattern": "timeline",
+          "preset": "steps",
+          "as": "how-it-works"
+        },
+        {
+          "pattern": "pricing-usage",
+          "preset": "standard",
+          "as": "pricing"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "testimonial",
+          "as": "testimonials"
+        },
+        {
+          "pattern": "cta-banner",
+          "preset": "standard",
+          "as": "cta"
+        }
+      ],
+      "default_layout": [
+        "hero",
+        "features",
+        "how-it-works",
+        "pricing",
+        "testimonials",
+        "cta"
+      ],
+      "shell": "top-nav-footer"
+    },
+    {
+      "id": "pricing",
+      "patterns": [
+        {
+          "pattern": "pricing-usage",
+          "preset": "standard",
+          "as": "pricing-detail"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "faq",
+          "as": "faq"
+        }
+      ],
+      "default_layout": [
+        "pricing",
+        "faq"
+      ],
+      "shell": "top-nav-footer"
+    }
+  ],
+  "page_briefs": {
+    "home": "Scroll-driven marketing page. Brand hero with headline, subtext, and dual CTA buttons. Feature card grid with icons and descriptions. How-it-works timeline with numbered steps. Pricing section with tier cards. Testimonial cards from creators. Final CTA banner.",
+    "pricing": "Dedicated pricing page. Detailed pricing cards with feature comparison checklist on each tier. FAQ accordion section below with common questions and expandable answers."
+  },
+  "features": [
+    "hero-section",
+    "feature-grid",
+    "pricing-tiers",
+    "testimonials",
+    "faq"
+  ],
+  "shells": {
+    "top-nav-footer": "Marketing site layout with top nav and footer"
+  },
+  "dependencies": {
+    "patterns": {
+      "hero": "^1.0.0",
+      "card-grid": "^1.0.0",
+      "timeline": "^1.0.0",
+      "pricing-usage": "^1.0.0",
+      "cta-banner": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "studio"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

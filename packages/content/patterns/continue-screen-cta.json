@@ -1,0 +1,135 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "continue-screen-cta",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Continue Screen CTA",
+  "description": "Final campaign conversion section styled like a retro continue screen with countdown, pledge action, referral prompt, and confidence cues.",
+  "category": "campaign",
+  "tags": [
+    "campaign",
+    "cta",
+    "conversion",
+    "continue-screen",
+    "pledge",
+    "share"
+  ],
+  "components": [
+    "Button",
+    "Badge",
+    "Countdown",
+    "Progress",
+    "icon"
+  ],
+  "contained": false,
+  "default_preset": "continue-screen",
+  "presets": {
+    "continue-screen": {
+      "description": "Full-width final CTA with continue prompt, campaign countdown, pledge/reserve action, and share option.",
+      "components": [
+        "Button",
+        "Badge",
+        "Countdown",
+        "Progress",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _items[center] _gap6 _wfull _maxw[64rem] _mx[auto] _text[center] _py16",
+        "slots": {
+          "continue-prompt": "Large direct headline such as Continue the build, Back the first run, or Unlock beta access.",
+          "countdown": "Campaign timer or limited window note.",
+          "confidence-cues": "Short row of guarantee, prototype, shipping, or beta status cues.",
+          "action-row": "Primary pledge/reserve/join action and secondary share/demo action.",
+          "fine-print": "Plain-language fulfillment or launch caveat."
+        }
+      }
+    },
+    "share-after-action": {
+      "description": "Post-conversion continue screen prompting supporters to share, invite, or unlock referral rewards.",
+      "components": [
+        "Button",
+        "Badge",
+        "Progress",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _items[center] _gap5 _wfull _maxw[56rem] _mx[auto] _text[center] _py12",
+        "slots": {
+          "success-message": "Thank-you headline.",
+          "referral-progress": "Progress toward referral unlock.",
+          "share-actions": "Copy link, share, email, or social actions.",
+          "next-step": "What happens next."
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _items[center] _gap6 _wfull _maxw[64rem] _mx[auto] _text[center] _py16",
+    "slots": {
+      "continue-prompt": "Final conversion headline",
+      "countdown": "Campaign timer or urgency cue",
+      "confidence-cues": "Trust cues",
+      "action-row": "Primary and secondary actions",
+      "fine-print": "Fulfillment caveat"
+    }
+  },
+  "visual_brief": "A decisive final CTA that feels like an arcade Continue screen. Use giant readable copy, one primary action, a supporting share/demo action, and confidence cues. Avoid generic centered CTA banners, gradient blobs, or vague marketing copy. The section should close the campaign loop.",
+  "responsive": {
+    "mobile": "Single-column with full-width buttons and compact confidence cue stack.",
+    "tablet": "Centered layout with wrapped action row.",
+    "desktop": "Large centered continue prompt with countdown and action row visible without scrolling within the section."
+  },
+  "layout_hints": {
+    "primary_action": "Only one primary action should dominate.",
+    "copy": "Use direct launch language: Back the first run, Reserve your kit, Join beta, or Share to unlock.",
+    "fine_print": "Keep caveats visible and human."
+  },
+  "motion": {
+    "micro": {
+      "countdown-tick": "LED digit update without layout shift",
+      "button-press": "hard press effect"
+    },
+    "transitions": {
+      "enter": "Continue prompt snaps in with short stagger for cues and actions."
+    }
+  },
+  "interactions": [
+    "click-select",
+    "status-pulse",
+    "keyboard-navigation"
+  ],
+  "composition": {
+    "ContinueScreenCta": "Section > [ContinuePrompt + Countdown? + ConfidenceCues + ActionRow + FinePrint]",
+    "ActionRow": "Flex(wrap) > [PrimaryAction + SecondaryAction?]",
+    "ConfidenceCues": "Rail > CueBadge[]"
+  },
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Campaign final call to action",
+    "keyboard": [
+      "Primary action should be first in the action row focus order.",
+      "Share/copy actions should announce success."
+    ],
+    "announcements": [
+      "Copied campaign link.",
+      "Campaign ends in {time}."
+    ]
+  },
+  "io": {
+    "consumes": [
+      "campaign-countdown",
+      "trust-cues"
+    ],
+    "produces": [
+      "final-conversion-intent"
+    ],
+    "actions": [
+      "pledge-click",
+      "waitlist-click",
+      "share-click"
+    ]
+  }
+}

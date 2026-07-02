@@ -1,0 +1,83 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "lab-notebook",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Lab Notebook",
+  "description": "Primary authoring surface for a scientific research lab. Researchers maintain an electronic lab notebook with hierarchical page tree, rich entries, and checklist protocols.",
+  "tags": [
+    "research",
+    "lab",
+    "notebook",
+    "science",
+    "eln",
+    "experiments"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "lab notebook",
+        "electronic lab notebook",
+        "eln",
+        "research notebook"
+      ],
+      "secondary": [
+        "notebook",
+        "entries",
+        "research log"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "notebook",
+      "path": "/notebook",
+      "patterns": [
+        { "pattern": "page-tree", "preset": "standard", "as": "tree" },
+        { "pattern": "notebook-entry", "preset": "standard", "as": "entry" }
+      ],
+      "default_layout": ["page-tree", "notebook-entry"],
+      "shell": "sidebar-aside"
+    },
+    {
+      "id": "entry-detail",
+      "path": "/notebook/:id",
+      "patterns": [
+        { "pattern": "notebook-entry", "preset": "standard", "as": "entry" },
+        { "pattern": "protocol-step", "preset": "checklist", "as": "protocol" }
+      ],
+      "default_layout": ["notebook-entry", "protocol-step"],
+      "shell": "sidebar-aside"
+    }
+  ],
+  "page_briefs": {
+    "notebook": "Three-zone lab notebook workspace. Left sidebar hosts the hierarchical page tree of projects, experiments, and entries with drag-to-reorder. Center pane renders the active standard notebook entry with title, metadata, and rich body. Right aside shows linked protocols, samples, and attachments.",
+    "entry-detail": "Focused entry view. Standard notebook entry fills the main column with timestamped author, tags, rich text body, and inline figures. Checklist protocol step panel lists the ordered procedure with check-off state, timers, and reagent callouts aligned to the entry."
+  },
+  "features": [
+    "notebook",
+    "entries",
+    "authoring",
+    "protocols"
+  ],
+  "shells": {
+    "sidebar-aside": "Three-column shell with left sidebar, main content, and right aside"
+  },
+  "dependencies": {
+    "patterns": {
+      "page-tree": "^1.0.0",
+      "notebook-entry": "^1.0.0",
+      "protocol-step": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": ["swiss"],
+    "modes": ["light", "dark"]
+  }
+}

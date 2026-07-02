@@ -1,0 +1,113 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "character-library",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Character Library",
+  "description": "Manage reusable AI character references with persistent identity, appearance details, and consistency tracking across video scenes.",
+  "tags": [
+    "characters",
+    "library",
+    "cast",
+    "consistency",
+    "ai",
+    "video",
+    "2026"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "character library",
+        "cast manager",
+        "character sheets",
+        "character consistency",
+        "ai characters"
+      ],
+      "secondary": [
+        "character tracker",
+        "persona library",
+        "subject references"
+      ],
+      "negative": []
+    },
+    "implies": [
+      "consistency"
+    ],
+    "weight": 0.7,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "characters",
+      "path": "/characters",
+      "patterns": [
+        {
+          "pattern": "card-grid",
+          "preset": "content",
+          "as": "character-cards"
+        },
+        {
+          "pattern": "search-filter-bar",
+          "preset": "standard",
+          "as": "filters"
+        }
+      ],
+      "default_layout": [
+        "filters",
+        "character-cards"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "character-detail",
+      "path": "/characters/:id",
+      "patterns": [
+        {
+          "pattern": "character-sheet",
+          "preset": "detail",
+          "as": "full-sheet"
+        },
+        {
+          "pattern": "data-table",
+          "preset": "compact",
+          "as": "appearances"
+        }
+      ],
+      "default_layout": [
+        "full-sheet",
+        "appearances"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "characters": "Character roster with search and filter bar at top offering text search, role chips (protagonist, supporting, extra), and consistency-score filter. Card grid shows portrait-oriented character cards with hero image, character name, role badge, project-count pill, and a small consistency indicator ring. Floating 'New Character' action appears bottom-right.",
+    "character-detail": "Full character sheet layout with hero portrait image on the left and character attributes on the right: name, role, physical description, wardrobe notes, voice traits, and reference prompt. Below the sheet, a compact data table lists every scene the character appears in with scene number, project name, timestamp, and a consistency-score column with color-coded values."
+  },
+  "features": [
+    "character-tracking",
+    "consistency"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area"
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  },
+  "dependencies": {
+    "patterns": {
+      "card-grid": ">=1.0.0",
+      "search-filter-bar": ">=1.0.0",
+      "character-sheet": ">=1.0.0",
+      "data-table": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

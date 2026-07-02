@@ -1,0 +1,80 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "sample-inventory",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Sample Inventory",
+  "description": "Biological and chemical sample inventory management with chain-of-custody tracking. Researchers locate, log, and audit every sample in the lab.",
+  "tags": [
+    "samples",
+    "inventory",
+    "chain-of-custody",
+    "lab",
+    "research"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "sample inventory",
+        "sample tracking",
+        "specimen inventory"
+      ],
+      "secondary": [
+        "samples",
+        "specimens",
+        "chain of custody"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "samples",
+      "path": "/samples",
+      "patterns": [
+        { "pattern": "search-filter-bar", "preset": "standard", "as": "filters" },
+        { "pattern": "sample-tracker", "preset": "grid", "as": "inventory" }
+      ],
+      "default_layout": ["search-filter-bar", "sample-tracker"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "sample-detail",
+      "path": "/samples/:id",
+      "patterns": [
+        { "pattern": "detail-header", "preset": "standard", "as": "header" },
+        { "pattern": "sample-tracker", "preset": "timeline", "as": "custody" }
+      ],
+      "default_layout": ["detail-header", "sample-tracker"],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "samples": "Sample library view. Persistent search-filter bar across the top with facets for sample type, freezer, project, and date range. Grid sample tracker below renders each sample as a tile with barcode, label, storage location, and availability chip for quick scanning.",
+    "sample-detail": "Full sample provenance page. Standard detail header shows sample ID, type, origin, current custodian, and action buttons. Timeline sample tracker visualizes the chain-of-custody events from collection through aliquots, transfers, and analyses with signer names and timestamps."
+  },
+  "features": [
+    "samples",
+    "chain-of-custody",
+    "inventory"
+  ],
+  "shells": {
+    "sidebar-main": "Authenticated app shell with sidebar navigation and main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "search-filter-bar": "^1.0.0",
+      "sample-tracker": "^1.0.0",
+      "detail-header": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": ["swiss"],
+    "modes": ["light", "dark"]
+  }
+}

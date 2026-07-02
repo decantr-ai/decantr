@@ -1,0 +1,261 @@
+{
+  "$schema": "https://decantr.ai/schemas/theme.v1.json",
+  "id": "clean",
+  "version": "1.0.0",
+  "name": "Clean",
+  "description": "Professional, understated, universally appropriate. Subtle shadows, smooth motion, rounded corners. The safe default.",
+  "tags": [
+    "professional",
+    "minimal",
+    "universal",
+    "subtle"
+  ],
+  "personality": "rounded + subtle elevation + smooth motion + thin borders + no gradients",
+  "seed": {
+    "primary": "#1366D9",
+    "secondary": "#7c3aed",
+    "accent": "#0891b2",
+    "background": "#ffffff"
+  },
+  "modes": [
+    "light",
+    "dark"
+  ],
+  "shapes": [
+    "sharp",
+    "rounded",
+    "pill"
+  ],
+  "decantr_compat": ">=2.0.0",
+  "source": "community",
+  "palette": {
+    "background": {
+      "light": "#FFFFFF",
+      "dark": "#111111"
+    },
+    "surface": {
+      "light": "#FFFFFF",
+      "dark": "#1A1A1A"
+    },
+    "surface-raised": {
+      "light": "#F8F8F8",
+      "dark": "#222222"
+    },
+    "border": {
+      "light": "#E5E5E5",
+      "dark": "#333333"
+    },
+    "text": {
+      "light": "#111111",
+      "dark": "#F5F5F5"
+    },
+    "text-muted": {
+      "light": "#6B7280",
+      "dark": "#9CA3AF"
+    },
+    "primary": {
+      "light": "#1366D9",
+      "dark": "#3B82F6"
+    },
+    "primary-hover": {
+      "light": "#0D4EA6",
+      "dark": "#60A5FA"
+    }
+  },
+  "decorators": {
+    "clean-surface": "Pure white (#FFFFFF) or near-black (#111111) depending on mode.",
+    "clean-nav": "Minimal navigation with text links, no backgrounds.",
+    "clean-surface-raised": "Slightly elevated surface for cards (2% darker/lighter).",
+    "clean-card": "Bordered card with 1px border, 8px radius, no shadow at rest, subtle shadow on hover transition.",
+    "clean-input": "Standard input with thin border, rounded corners, and blue focus ring using primary color."
+  },
+  "spatial": {
+    "density_bias": 0,
+    "content_gap_shift": 0,
+    "section_padding": "4rem",
+    "card_wrapping": "standard",
+    "surface_override": null
+  },
+  "motion": {
+    "preference": "subtle",
+    "reduce_motion": true,
+    "entrance": "none",
+    "micro": "instant",
+    "timing": "ease-out",
+    "durations": {
+      "hover": "150ms",
+      "entrance": "200ms",
+      "instant": "80ms",
+      "fast": "150ms",
+      "base": "250ms",
+      "slow": "400ms",
+      "slower": "600ms",
+      "stagger": "60ms"
+    },
+    "easings": {
+      "ease": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "easeOut": "cubic-bezier(0, 0, 0.2, 1)",
+      "easeIn": "cubic-bezier(0.4, 0, 1, 1)",
+      "spring": "cubic-bezier(0.34, 1.56, 0.64, 1)"
+    }
+  },
+  "effects": {
+    "enabled": false,
+    "intensity": "none"
+  },
+  "radius": {
+    "philosophy": "rounded",
+    "base": 8
+  },
+  "shell": {
+    "preferred": [
+      "top-nav-main",
+      "sidebar-main"
+    ],
+    "avoid": [],
+    "nav_style": "minimal",
+    "default_nav_state": "collapsed",
+    "root": "clean-surface",
+    "nav": "clean-nav",
+    "header": ""
+  },
+  "card_styles": {
+    "flat": {
+      "description": "Borderless card with subtle background difference",
+      "properties": {
+        "background": "var(--clean-surface-raised)",
+        "border-radius": "8px"
+      }
+    },
+    "bordered": {
+      "description": "Card with thin border, no shadow",
+      "properties": {
+        "background": "var(--clean-surface)",
+        "border": "1px solid var(--clean-border)",
+        "border-radius": "8px"
+      }
+    }
+  },
+  "typography": {
+    "scale": "modular",
+    "heading_weight": 600,
+    "body_weight": 400,
+    "display": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+    "body": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif"
+  },
+  "decorator_definitions": {
+    "clean-surface": {
+      "description": "Pure white (#FFFFFF) or near-black (#111111) depending on mode.",
+      "intent": "Use as the root page background for the most neutral, universally appropriate foundation. Zero personality, maximum clarity.",
+      "suggested_properties": {
+        "background-color": "var(--d-bg, #FFFFFF)",
+        "color": "var(--d-text, #111111)",
+        "min-height": "100vh"
+      },
+      "pairs_with": [
+        "clean-nav",
+        "clean-card"
+      ],
+      "usage": [
+        "Page root containers",
+        "App shell backgrounds"
+      ]
+    },
+    "clean-nav": {
+      "description": "Minimal navigation with text links, no backgrounds.",
+      "intent": "Use for primary navigation that should be virtually invisible. Text links only, no backgrounds, no borders.",
+      "suggested_properties": {
+        "background": "transparent",
+        "padding": "16px 0"
+      },
+      "pairs_with": [
+        "clean-surface",
+        "clean-card"
+      ],
+      "usage": [
+        "Navigation bars",
+        "Header navigation",
+        "Minimal nav strips"
+      ]
+    },
+    "clean-surface-raised": {
+      "description": "Slightly elevated surface for cards (2% darker/lighter).",
+      "intent": "Use for content areas that need minimal visual separation from the background. The 2% shift is barely perceptible but creates hierarchy.",
+      "suggested_properties": {
+        "background": "var(--d-surface-raised, #F8F8F8)",
+        "border-radius": "var(--d-radius, 8px)"
+      },
+      "pairs_with": [
+        "clean-surface",
+        "clean-card"
+      ],
+      "usage": [
+        "Background sections",
+        "Subtle content areas",
+        "Secondary containers"
+      ]
+    },
+    "clean-card": {
+      "description": "Bordered card with 1px border, 8px radius, no shadow at rest, subtle shadow on hover transition.",
+      "intent": "Use for content containers that need clear but understated boundaries. Hover shadow adds interactivity without resting visual weight.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #FFFFFF)",
+        "border": "1px solid var(--d-border, #E5E5E5)",
+        "border-radius": "var(--d-radius, 8px)",
+        "transition": "box-shadow 150ms ease"
+      },
+      "pairs_with": [
+        "clean-surface",
+        "clean-input"
+      ],
+      "usage": [
+        "Content cards",
+        "Feature cards",
+        "List items",
+        "Settings panels"
+      ]
+    },
+    "clean-input": {
+      "description": "Standard input with thin border, rounded corners, and blue focus ring using primary color.",
+      "intent": "Use for all form inputs. Standard styling with blue focus ring is universally appropriate and accessible.",
+      "suggested_properties": {
+        "border": "1px solid var(--d-border, #E5E5E5)",
+        "border-radius": "var(--d-radius, 8px)",
+        "background": "var(--d-surface, #FFFFFF)",
+        "transition": "border-color 150ms ease, box-shadow 150ms ease"
+      },
+      "pairs_with": [
+        "clean-card",
+        "clean-surface"
+      ],
+      "usage": [
+        "Text inputs",
+        "Search fields",
+        "Form fields",
+        "Select dropdowns"
+      ]
+    }
+  },
+  "elevation": {
+    "1": {
+      "light": "0 1px 2px rgba(0,0,0,0.05)",
+      "dark": "0 1px 2px rgba(0,0,0,0.30)"
+    },
+    "2": {
+      "light": "0 2px 6px rgba(0,0,0,0.07)",
+      "dark": "0 2px 6px rgba(0,0,0,0.40)"
+    },
+    "3": {
+      "light": "0 6px 16px rgba(0,0,0,0.09)",
+      "dark": "0 6px 16px rgba(0,0,0,0.45)"
+    },
+    "4": {
+      "light": "0 12px 32px rgba(0,0,0,0.12)",
+      "dark": "0 12px 32px rgba(0,0,0,0.50)"
+    },
+    "5": {
+      "light": "0 24px 64px rgba(0,0,0,0.16)",
+      "dark": "0 24px 64px rgba(0,0,0,0.55)"
+    }
+  }
+}

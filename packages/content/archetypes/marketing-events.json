@@ -1,0 +1,89 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "marketing-events",
+  "role": "public",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Events Marketing",
+  "description": "Public-facing marketing and landing page for an event and community platform. Highlights featured events, testimonials, and sign-up CTAs.",
+  "tags": [
+    "events",
+    "marketing",
+    "landing",
+    "seo",
+    "public"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "events landing page",
+        "event platform marketing",
+        "events homepage"
+      ],
+      "secondary": [
+        "featured events",
+        "event platform about",
+        "community landing"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "landing",
+          "as": "hero"
+        },
+        {
+          "pattern": "testimonials",
+          "preset": "standard",
+          "as": "social-proof"
+        },
+        {
+          "pattern": "cta-section",
+          "preset": "standard",
+          "as": "cta"
+        }
+      ],
+      "default_layout": [
+        "hero",
+        "social-proof",
+        "cta"
+      ],
+      "shell": "top-nav-footer"
+    }
+  ],
+  "page_briefs": {
+    "home": "Events platform landing page with a vibrant hero section featuring a headline, subtext, and primary CTA buttons for browsing events or creating one. A testimonials carousel showcases quotes from organizers and attendees with photos. The page closes with a bold CTA section encouraging sign-up with value propositions for both organizers and attendees."
+  },
+  "features": [
+    "marketing",
+    "seo"
+  ],
+  "shells": {
+    "top-nav-footer": "Top navigation with footer layout for public pages"
+  },
+  "dependencies": {
+    "patterns": {
+      "hero": "^1.0.0",
+      "testimonials": "^1.0.0",
+      "cta-section": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  }
+}

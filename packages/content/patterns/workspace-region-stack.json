@@ -1,0 +1,74 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "workspace-region-stack",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Workspace Region Stack",
+  "description": "Internal dashboard/workspace layout primitive for stacking multiple panels, grids, or empty states inside a single labeled section without relying on d-section to create child spacing.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Card"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Card"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Comfortable vertical stack for grouping multiple surfaces or data regions inside one section label.",
+      "components": [
+        "Card"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4 _w[100%]",
+        "slots": {
+          "region-child": "Any child panel, grid, card group, or empty state that should maintain a stable vertical gap from the next child"
+        }
+      }
+    },
+    "compact": {
+      "description": "Slightly tighter stack for denser operator workspaces while preserving explicit child spacing.",
+      "components": [
+        "Card"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap3 _w[100%]",
+        "slots": {
+          "region-child": "Compact child panel, grid, card group, or empty state"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap4 _w[100%]",
+    "slots": {
+      "region-child": "Stacked workspace children"
+    }
+  },
+  "visual_brief": "A quiet structural primitive, not a visible widget. It exists to preserve clear x- and y-axis rhythm between multiple blocks that belong inside the same dashboard section. Think of it as the section's internal cadence: label first, then a measured stack of grids, surfaces, forms, summaries, or empty states. It should prevent collisions without adding its own decorative treatment.",
+  "responsive": {
+    "mobile": "Maintain explicit vertical gaps between children even when grids collapse or cards stack. Never depend on child margin hacks.",
+    "tablet": "Preserve the same region ordering and stable spacing while allowing children to reflow responsively.",
+    "desktop": "Use a comfortable but restrained vertical cadence so dense dashboard surfaces still feel organized."
+  },
+  "layout_hints": {
+    "ownership": "This pattern owns vertical spacing between sibling regions inside one section. Parent d-section still owns outer section padding and section-to-section rhythm.",
+    "section_role": "Use this when a single section label introduces multiple children such as a KPI grid followed by a summary card, or a filter panel followed by results.",
+    "anti_pattern": "Do not place multiple unwrapped sibling panels directly under a d-section and expect d-section to create child spacing. That responsibility belongs here."
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "composition": {
+    "WorkspaceRegionStack": "Stack(d-data, full-width) > RegionChild[]"
+  }
+}

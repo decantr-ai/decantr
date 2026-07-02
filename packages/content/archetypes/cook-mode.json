@@ -1,0 +1,57 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "cook-mode",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Cook Mode",
+  "description": "Distraction-free step-by-step cooking interface with large text, step navigation, and minimal chrome for hands-free kitchen use.",
+  "tags": ["cooking", "step-by-step", "cook-mode", "hands-free", "kitchen", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["cook mode", "cooking mode", "step by step cooking", "hands-free cooking", "kitchen mode"],
+      "secondary": ["recipe steps", "cooking instructions", "guided cooking", "cooking timer"],
+      "negative": ["browse", "search", "social", "admin"]
+    },
+    "implies": [],
+    "weight": 0.8,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "cooking",
+      "patterns": [
+        {
+          "pattern": "stepper",
+          "preset": "horizontal",
+          "as": "step-nav"
+        },
+        {
+          "pattern": "onboarding-wizard",
+          "preset": "carousel",
+          "as": "step-carousel"
+        }
+      ],
+      "default_layout": ["step-nav", "step-carousel"],
+      "shell": "minimal-header"
+    }
+  ],
+  "page_briefs": {
+    "cooking": "Distraction-free cooking interface. Minimal header with recipe title and exit button. Horizontal stepper at top shows overall progress. Main area displays the current step with large, readable text, step photo, and ingredient callouts. Navigation via previous/next buttons or swipe. Timer integration for timed steps. Designed for messy-hands kitchen use with large tap targets."
+  },
+  "features": ["timer", "voice-control", "wake-lock"],
+  "shells": {
+    "minimal-header": "Bare-minimum header with title and close button only, maximizing content area for cooking steps"
+  },
+  "dependencies": {
+    "patterns": {
+      "stepper": ">=1.0.0",
+      "onboarding-wizard": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": ["auradecantism"],
+    "modes": ["light"]
+  }
+}

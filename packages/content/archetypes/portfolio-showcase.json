@@ -1,0 +1,71 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "portfolio-showcase",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Portfolio Showcase",
+  "description": "Project grid and detail views for portfolio work. Grid-first showcase routes with strong atmosphere, generous whitespace, and large imagery that lets the work shine without redundant hero containers.",
+  "tags": ["portfolio", "showcase", "projects", "creative", "gallery", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["portfolio showcase", "project gallery", "work showcase", "creative portfolio", "project grid"],
+      "secondary": ["case study", "project detail", "work samples", "design portfolio", "portfolio gallery"],
+      "negative": ["blog", "about", "contact", "settings"]
+    },
+    "implies": ["portfolio-about", "portfolio-blog"],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "projects",
+      "patterns": [
+        {
+          "pattern": "card-grid",
+          "preset": "content",
+          "as": "project-grid"
+        }
+      ],
+      "default_layout": ["project-grid"],
+      "shell": "full-bleed"
+    },
+    {
+      "id": "project-detail",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "image-overlay",
+          "as": "project-hero"
+        },
+        {
+          "pattern": "detail-header",
+          "preset": "standard",
+          "as": "project-header"
+        }
+      ],
+      "default_layout": ["project-hero", "project-header"],
+      "shell": "full-bleed"
+    }
+  ],
+  "page_briefs": {
+    "projects": "Grid-first project showcase route. A brief editorial lead-in may appear above the grid, but the project cards are the primary visual proof and should arrive quickly. Avoid stacking a second oversized hero or empty proof panel above the cards. Each card shows a project thumbnail, title, and brief description, with generous gaps and responsive columns that adapt from 1 to 3 columns.",
+    "project-detail": "Full-bleed hero image with overlaid project title and metadata. Below, a detail header with project description, tech stack pills, timeline, and links. Content flows with full-bleed images interspersed with concise text blocks for case-study storytelling."
+  },
+  "features": ["gallery", "lightbox", "lazy-loading"],
+  "shells": {
+    "full-bleed": "Edge-to-edge layout with minimal chrome to maximize visual impact of project imagery"
+  },
+  "dependencies": {
+    "patterns": {
+      "card-grid": ">=1.0.0",
+      "hero": ">=1.0.0",
+      "detail-header": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": ["auradecantism"],
+    "modes": ["dark"]
+  }
+}

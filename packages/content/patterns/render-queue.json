@@ -1,0 +1,102 @@
+{
+  "id": "render-queue",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Render Queue",
+  "description": "Queue of AI generation jobs displaying status, progress, thumbnails, and cancel/retry actions for video and image rendering workflows.",
+  "category": "media",
+  "tags": ["2026", "media", "queue", "ai", "rendering", "jobs", "async"],
+  "components": ["RenderJob", "ProgressBar", "StatusBadge", "ThumbnailPreview", "CancelButton", "RetryButton"],
+  "default_preset": "list",
+  "presets": {
+    "list": {
+      "description": "Detailed row-per-job listing with thumbnail, prompt preview, progress bar, status badge, and action buttons for active monitoring",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _gap-2 _p-4 _w-full _bg-surface"
+      }
+    },
+    "compact": {
+      "description": "One-line compressed view showing status icon, name, and percentage for dense monitoring dashboards and sidebars",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _gap-1 _p-2 _w-full"
+      }
+    },
+    "cards": {
+      "description": "Visual card grid emphasizing thumbnails with progress overlay, ideal for creative review and gallery-style queue browsing",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _grid-cols-3 _gap-4 _p-4 _w-full"
+      }
+    }
+  },
+  "visual_brief": "Vertical list of render job rows. Each row has a 64x64px thumbnail preview on the left (rounded 8px, shows final output for complete jobs or skeleton shimmer for queued, with animated generation artifacts for rendering). Middle section has job name in semibold 14px type and prompt preview in 12px muted text with 1-line truncate. Progress bar below middle section is 4px tall with animated accent-color fill that shimmers while active. Percentage text (e.g. '67%') appears above the bar right-aligned. Status badge on right edge shows one of: queued (gray clock icon), rendering (blue spinning icon), complete (green check), failed (red x icon). Action area far right: cancel button (X icon) visible during queued/rendering states, retry button (refresh icon) visible on failed state, download button (arrow down) visible on complete state. Failed jobs have subtle red left border accent. Complete jobs get a soft success glow on row.",
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _flex-col _gap-2 _p-4 _w-full _bg-surface",
+    "slots": {
+      "job-row": "Repeating row (d-surface, data-interactive) representing a single render job. Horizontal flex layout with fixed-size thumbnail, flexible info column, fixed-width status and actions.",
+      "thumbnail-preview": "64x64px rounded preview image on left. Shows final output for complete jobs, loading shimmer for queued, animated preview frames for rendering, error icon for failed.",
+      "job-info": "Center column with job name (semibold 14px) and prompt preview (12px muted, single line with ellipsis truncation).",
+      "progress-bar": "4px tall bar below job info. Fill width animates to match percentage. Accent color with shimmer gradient during active rendering. Hidden when complete or failed.",
+      "status-badge": "Icon + label badge showing current state. Colors: queued=neutral, rendering=primary+animated, complete=success, failed=destructive.",
+      "action-buttons": "Right-edge action cluster. Cancel (X) for active jobs, Retry (refresh) for failed, Download (arrow) for complete."
+    }
+  },
+  "responsive": {
+    "mobile": "Thumbnail reduces to 48px. Prompt preview hidden. Action buttons collapse into kebab menu. Status badge shows icon only.",
+    "tablet": "Standard list layout with full metadata. Cards preset shows 2 columns.",
+    "desktop": "Full layout with all columns visible. Cards preset shows 3-4 columns."
+  },
+  "layout_hints": {
+    "queue_priority": "Job status and progress should be the first read, followed by preview and actions. The queue should help operators understand what is blocked, running, or complete at a glance.",
+    "row_consistency": "Queued, active, failed, and complete jobs should preserve the same row structure so status differences feel semantic rather than like different components.",
+    "cards_variant": "Card mode should remain clearly a queue view, not drift into a generic media gallery. Progress and status must stay visible."
+  },
+  "layout_hints": {
+    "queue_priority": "Job status and progress should be the first read, followed by preview and actions. The queue should help operators understand what is blocked, running, or complete at a glance.",
+    "row_consistency": "Queued, active, failed, and complete jobs should preserve the same row structure so status differences feel semantic rather than like different components.",
+    "cards_variant": "Card mode should remain clearly a queue view, not drift into a generic media gallery. Progress and status must stay visible."
+  },
+  "motion": {
+    "micro": {
+      "progress-shimmer": "gradient sweep 1.5s linear infinite during rendering",
+      "status-icon-spin": "rotate 360deg 1s linear infinite for rendering status"
+    },
+    "transitions": {
+      "job-complete": "row flash green + progress bar fill to 100% 400ms ease-out",
+      "job-remove": "slide-out-right + collapse height 250ms ease-in"
+    },
+    "ambient": {
+      "queued-pulse": "opacity 0.6 to 0.9 pulse 2s ease-in-out infinite for queued jobs"
+    }
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "composition": {
+    "RenderQueue": "Root(d-section, stack) > RenderJob*(d-interactive)",
+    "RenderJob": "Row(d-surface) > [ThumbnailPreview + JobInfo + ProgressBar + StatusBadge + ActionCluster]",
+    "ActionCluster": "Group > [CancelButton?(active) | RetryButton?(failed) | DownloadButton?(complete)]",
+    "CardsVariant": "Grid > JobCard*(d-surface) > [LargeThumbnail + ProgressOverlay + StatusBadge]"
+  },
+  "accessibility": {
+    "role": "list",
+    "aria-label": "Render job queue",
+    "announcements": [
+      "Job {name} started rendering",
+      "Job {name} completed",
+      "Job {name} failed: {error}",
+      "Job {name} cancelled"
+    ],
+    "keyboard": [
+      "Tab: cycle through job rows",
+      "Enter: open job detail",
+      "Delete: cancel selected job",
+      "R: retry selected failed job",
+      "D: download selected complete job"
+    ]
+  }
+}

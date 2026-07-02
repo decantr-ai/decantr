@@ -188,9 +188,7 @@ export async function cmdNewProject(
   const projectDir = resolve(workspaceRoot, projectName);
   const bootstrapTarget = resolveBootstrapTarget(options.target);
   const bootstrapAdapter = getBootstrapAdapter(bootstrapTarget);
-  const registryBackedScaffold = Boolean(options.blueprint || options.archetype);
-  const inferredAdoption =
-    options.adoption || (registryBackedScaffold ? 'decantr-css' : 'contract-only');
+  const inferredAdoption = options.adoption || 'contract-only';
   const shouldBootstrapRuntime = Boolean(bootstrapAdapter && inferredAdoption === 'decantr-css');
 
   // Validate project name
@@ -267,11 +265,11 @@ export async function cmdNewProject(
     console.log(dim(`  Seeded offline registry content from ${seeded.strategy}.`));
   } else if (requiresOfflineContent) {
     console.log(
-      `${YELLOW}  Offline blueprint/archetype resolution requires local registry content.${RESET}`,
+      `${YELLOW}  Offline blueprint/archetype resolution requires local content corpus data.${RESET}`,
     );
     console.log(
       dim(
-        '  No parent workspace cache/custom content or configured decantr-content source was found.',
+        '  No parent workspace cache/custom content, configured content source, or installed @decantr/content corpus was found.',
       ),
     );
     console.log('');
@@ -280,7 +278,7 @@ export async function cmdNewProject(
     console.log(`  ${cyan(packageManager + ' run dev')}`);
     console.log(`  ${cyan('decantr sync')}  ${dim('# when online, then rerun decantr init')}`);
     console.log(
-      `  ${cyan('DECANTR_CONTENT_DIR=/path/to/decantr-content decantr init --existing --offline')}  ${dim('# or seed a local content source')}`,
+      `  ${cyan('DECANTR_CONTENT_DIR=/path/to/content decantr init --existing --offline')}  ${dim('# or seed a local content source')}`,
     );
     console.log('');
     return;

@@ -1,0 +1,126 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "recipe-community",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipe Community",
+  "description": "Recipe sharing and food community app with browsable feed, recipe detail pages, creation tools, and user profiles.",
+  "tags": [
+    "recipes",
+    "food",
+    "community",
+    "cooking",
+    "social",
+    "content-sharing"
+  ],
+  "role": "primary",
+  "classification": {
+    "triggers": {
+      "primary": [
+        "recipe",
+        "recipe-community",
+        "food-community",
+        "cooking-app",
+        "recipe-sharing"
+      ],
+      "secondary": [
+        "cookbook",
+        "meal-planning",
+        "food-blog",
+        "kitchen",
+        "chef"
+      ],
+      "negative": [
+        "restaurant-pos",
+        "food-delivery",
+        "inventory"
+      ]
+    },
+    "implies": [
+      "social",
+      "content-sharing"
+    ],
+    "weight": 1,
+    "tier": "core"
+  },
+  "pages": [
+    {
+      "id": "feed",
+      "default_layout": [
+        "filter-bar",
+        "content-card-grid"
+      ],
+      "shell": "sidebar-main",
+      "notes": "Recipe feed: filter bar for cuisine, dietary tags, and sort; content card grid with recipe photos, titles, and ratings"
+    },
+    {
+      "id": "recipe-detail",
+      "default_layout": [
+        "content-detail-hero",
+        "comment-thread"
+      ],
+      "shell": "sidebar-main",
+      "notes": "Recipe detail: hero with photo, title, cook time, and ingredients; comment thread for community discussion and tips"
+    },
+    {
+      "id": "create",
+      "default_layout": [
+        {
+          "pattern": "form-sections",
+          "preset": "structured",
+          "as": "recipe-form"
+        },
+        "content-uploader"
+      ],
+      "shell": "sidebar-main",
+      "notes": "Recipe creation: structured form sections for title, ingredients, steps, and tags; content uploader for photos"
+    },
+    {
+      "id": "profile",
+      "default_layout": [
+        "creator-profile",
+        "content-card-grid"
+      ],
+      "shell": "sidebar-main",
+      "notes": "User profile: creator profile header with avatar, bio, and stats; content card grid of their published recipes"
+    }
+  ],
+  "page_briefs": {
+    "feed": "Filter bar at top with cuisine type chips (Italian, Mexican, Asian, etc.), dietary filters (vegetarian, gluten-free), difficulty level, and sort by (popular, recent, rating). Below, a responsive content card grid with large food photography, recipe title, cook time, difficulty badge, rating stars, and author avatar.",
+    "recipe-detail": "Content detail hero with full-width food photo, recipe title, author info, cook time, servings, and difficulty. Below the fold: ingredients list, step-by-step instructions with optional step photos. Comment thread at the bottom for tips, modifications, and community photos.",
+    "create": "Structured form sections: basic info (title, description, cuisine), ingredients (dynamic add/remove rows), instructions (numbered steps with optional photo per step), metadata (cook time, servings, difficulty, dietary tags). Content uploader for the hero photo and step images with drag-and-drop.",
+    "profile": "Creator profile header with avatar, display name, bio, follower/following counts, and total recipes. Below, a content card grid of their published recipes with the same card format as the feed. Tabs or filter for published, drafts, and saved recipes."
+  },
+  "features": [
+    "auth",
+    "search",
+    "social",
+    "content-upload",
+    "comments"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with category links and main content area"
+  },
+  "suggested_theme": {
+    "ids": [
+      "clean",
+      "paper"
+    ],
+    "modes": [
+      "light",
+      "auto"
+    ]
+  },
+  "dependencies": {
+    "patterns": {
+      "filter-bar": "^1.0.0",
+      "content-card-grid": "^1.0.0",
+      "content-detail-hero": "^1.0.0",
+      "comment-thread": "^1.0.0",
+      "form-sections": "^1.0.0",
+      "content-uploader": "^1.0.0",
+      "creator-profile": "^1.0.0"
+    },
+    "styles": {}
+  }
+}

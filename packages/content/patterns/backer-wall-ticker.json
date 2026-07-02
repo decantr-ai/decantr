@@ -1,0 +1,127 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "backer-wall-ticker",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Backer Wall Ticker",
+  "description": "Social-proof ticker and supporter wall for campaign backers, waitlist joins, referrals, quotes, cities, or recent pledge activity.",
+  "category": "campaign",
+  "tags": [
+    "campaign",
+    "backers",
+    "social-proof",
+    "ticker",
+    "launch",
+    "referrals"
+  ],
+  "components": [
+    "Avatar",
+    "Badge",
+    "Marquee",
+    "Toast",
+    "icon"
+  ],
+  "contained": false,
+  "default_preset": "ticker-wall",
+  "presets": {
+    "ticker-wall": {
+      "description": "Horizontal ticker rows mixed with supporter wall segments for recent pledge activity and testimonials.",
+      "components": [
+        "Avatar",
+        "Badge",
+        "Marquee",
+        "Toast",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4 _wfull _maxw[78rem] _mx[auto]",
+        "slots": {
+          "ticker-row": "Scrolling or static row of recent backer events.",
+          "supporter-grid": "Dense supporter names, avatars, locations, or quotes.",
+          "proof-summary": "Short trust summary tying backer activity to campaign momentum.",
+          "share-action": "Optional referral or share CTA."
+        }
+      }
+    },
+    "static-wall": {
+      "description": "Reduced-motion friendly static supporter wall with grouped names, quotes, and pledge badges.",
+      "components": [
+        "Avatar",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap3 _wfull _maxw[72rem] _mx[auto]",
+        "slots": {
+          "supporter-tile": "Small supporter entry with name, pledge, location, or quote.",
+          "proof-summary": "Campaign momentum note."
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap4 _wfull _maxw[78rem] _mx[auto]",
+    "slots": {
+      "ticker-row": "Recent backer activity ticker",
+      "supporter-grid": "Supporter wall",
+      "proof-summary": "Momentum summary",
+      "share-action": "Optional referral/share CTA"
+    }
+  },
+  "visual_brief": "A lively but legible social-proof surface. The ticker should feel like an arcade scoreboard or receipt roll of new supporters, not a noisy ad marquee. Respect reduced motion by switching to a static wall. Supporter content should build trust through real names, roles, cities, quotes, or pledge levels.",
+  "responsive": {
+    "mobile": "Use a static or very slow single-row ticker plus compact supporter list. Avoid tiny unreadable marquee text.",
+    "tablet": "Two ticker rows or static grouped wall.",
+    "desktop": "Ticker rows can span full width with supporter wall or proof summary below."
+  },
+  "layout_hints": {
+    "motion_safety": "Auto-scrolling must pause on hover/focus and disable under reduced motion.",
+    "proof_quality": "Prefer fewer meaningful supporter signals over endless anonymous names.",
+    "privacy": "Support anonymous backer states and avoid exposing sensitive pledge amounts unless explicitly public."
+  },
+  "motion": {
+    "ambient": {
+      "ticker": "slow horizontal scroll with pause on hover and reduced-motion static fallback",
+      "new-backer": "brief highlight pulse when a new supporter appears"
+    }
+  },
+  "interactions": [
+    "hover-reveal",
+    "click-select",
+    "real-time-updates",
+    "keyboard-navigation"
+  ],
+  "composition": {
+    "BackerWallTicker": "Section > [TickerRow[] + SupporterGrid + ProofSummary + ShareAction?]",
+    "TickerRow": "MarqueeOrStaticList > BackerEvent[]",
+    "BackerEvent": "Name + Action + RewardOrLocation + Time"
+  },
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Campaign supporter activity",
+    "keyboard": [
+      "Ticker pause control must be keyboard reachable when auto-scroll is active.",
+      "Animated updates should not steal focus."
+    ],
+    "announcements": [
+      "New supporter: {name} backed {tier}."
+    ],
+    "focus_management": "Do not continuously announce ticker movement. Announce only meaningful new events."
+  },
+  "io": {
+    "consumes": [
+      "backer-events",
+      "supporter-quotes"
+    ],
+    "produces": [
+      "social-proof"
+    ],
+    "actions": [
+      "ticker-pause",
+      "share-click"
+    ]
+  }
+}

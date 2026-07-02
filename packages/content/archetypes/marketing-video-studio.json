@@ -1,0 +1,121 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "marketing-video-studio",
+  "role": "public",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Marketing - AI Video Studio",
+  "description": "Public-facing landing page for an AI video studio product. Communicates vision, showcases features and workflow, presents pricing tiers, and drives signups with social proof.",
+  "tags": [
+    "marketing",
+    "landing",
+    "public",
+    "seo",
+    "video",
+    "ai",
+    "2026"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "marketing site",
+        "landing page",
+        "product homepage",
+        "ai video studio marketing",
+        "public site"
+      ],
+      "secondary": [
+        "pricing page",
+        "product landing",
+        "signup funnel"
+      ],
+      "negative": [
+        "dashboard",
+        "app"
+      ]
+    },
+    "implies": [
+      "seo"
+    ],
+    "weight": 0.9,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "path": "/",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "vision",
+          "as": "hero"
+        },
+        {
+          "pattern": "features",
+          "preset": "standard",
+          "as": "features"
+        },
+        {
+          "pattern": "how-it-works",
+          "preset": "standard",
+          "as": "workflow"
+        },
+        {
+          "pattern": "pricing",
+          "preset": "standard",
+          "as": "pricing"
+        },
+        {
+          "pattern": "testimonials",
+          "preset": "standard",
+          "as": "social-proof"
+        },
+        {
+          "pattern": "cta-section",
+          "preset": "standard",
+          "as": "final-cta"
+        }
+      ],
+      "default_layout": [
+        "hero",
+        "features",
+        "workflow",
+        "pricing",
+        "social-proof",
+        "final-cta"
+      ],
+      "shell": "top-nav-footer"
+    }
+  ],
+  "page_briefs": {
+    "home": "Long-scroll marketing landing. Opens with a vision-preset hero featuring an ambitious headline, sub-headline, dual CTA buttons (primary signup, secondary watch demo), and an immersive cinematic background video reel. A features grid follows with 3-4 columns of icon + headline + copy cards highlighting timeline editing, character consistency, prompt direction, and one-click rendering. Below, a how-it-works section walks through three numbered steps (write, direct, render) with animated illustrations. A pricing section presents tiered cards (starter, pro, studio) with feature checklists and contrasting primary-tier highlight. Testimonials section shows customer quote cards with avatar, name, and company logo. Page closes with a full-width cta-section containing final conversion headline and signup action. Top nav offers product, pricing, docs, and login links; footer holds company, legal, and social links."
+  },
+  "features": [
+    "marketing",
+    "seo"
+  ],
+  "shells": {
+    "top-nav-footer": "Public marketing layout with top navigation bar and footer"
+  },
+  "suggested_theme": {
+    "ids": [
+      "luminarum",
+      "carbon"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  },
+  "dependencies": {
+    "patterns": {
+      "hero": ">=1.0.0",
+      "features": ">=1.0.0",
+      "how-it-works": ">=1.0.0",
+      "pricing": ">=1.0.0",
+      "testimonials": ">=1.0.0",
+      "cta-section": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

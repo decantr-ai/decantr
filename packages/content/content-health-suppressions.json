@@ -1,0 +1,1469 @@
+{
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "description": "Intentional Content Health warning baseline for Decantr V2 registry certification. New warning IDs must be fixed or deliberately added with rationale before release.",
+  "generatedFrom": "npm run content:health:json",
+  "suppressionCount": 146,
+  "suppressions": [
+    {
+      "id": "reference-archetypes-about-hybrid-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/about-hybrid.json",
+      "type": "archetype",
+      "itemId": "about-hybrid",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-admin-analytics-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/admin-analytics.json",
+      "type": "archetype",
+      "itemId": "admin-analytics",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-admin-overview-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/admin-overview.json",
+      "type": "archetype",
+      "itemId": "admin-overview",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-agent-studio-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/agent-studio.json",
+      "type": "archetype",
+      "itemId": "agent-studio",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-api-console-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/api-console.json",
+      "type": "archetype",
+      "itemId": "api-console",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-appointment-center-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/appointment-center.json",
+      "type": "archetype",
+      "itemId": "appointment-center",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-asset-browser-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/asset-browser.json",
+      "type": "archetype",
+      "itemId": "asset-browser",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-audit-center-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/audit-center.json",
+      "type": "archetype",
+      "itemId": "audit-center",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-auth-flow-enterprise-json-archetype-page-layout-pattern-pattern-missi",
+      "severity": "warn",
+      "file": "archetypes/auth-flow-enterprise.json",
+      "type": "archetype",
+      "itemId": "auth-flow-enterprise",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-budget-planner-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/budget-planner.json",
+      "type": "archetype",
+      "itemId": "budget-planner",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-budget-transparency-json-archetype-page-layout-pattern-pattern-missin",
+      "severity": "warn",
+      "file": "archetypes/budget-transparency.json",
+      "type": "archetype",
+      "itemId": "budget-transparency",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-budget-transparency-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/budget-transparency.json",
+      "type": "archetype",
+      "itemId": "budget-transparency",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-buyer-dashboard-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/buyer-dashboard.json",
+      "type": "archetype",
+      "itemId": "buyer-dashboard",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-character-library-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/character-library.json",
+      "type": "archetype",
+      "itemId": "character-library",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-citation-tools-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/citation-tools.json",
+      "type": "archetype",
+      "itemId": "citation-tools",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-cloud-infrastructure-json-archetype-page-layout-pattern-pattern-missi",
+      "severity": "warn",
+      "file": "archetypes/cloud-infrastructure.json",
+      "type": "archetype",
+      "itemId": "cloud-infrastructure",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-community-feed-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/community-feed.json",
+      "type": "archetype",
+      "itemId": "community-feed",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-config-editor-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/config-editor.json",
+      "type": "archetype",
+      "itemId": "config-editor",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-content-author-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/content-author.json",
+      "type": "archetype",
+      "itemId": "content-author",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-content-newsletter-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/content-newsletter.json",
+      "type": "archetype",
+      "itemId": "content-newsletter",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-content-reader-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/content-reader.json",
+      "type": "archetype",
+      "itemId": "content-reader",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-contract-center-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/contract-center.json",
+      "type": "archetype",
+      "itemId": "contract-center",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-cook-mode-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/cook-mode.json",
+      "type": "archetype",
+      "itemId": "cook-mode",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-creator-content-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/creator-content.json",
+      "type": "archetype",
+      "itemId": "creator-content",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-creator-dashboard-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/creator-dashboard.json",
+      "type": "archetype",
+      "itemId": "creator-dashboard",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-customer-loyalty-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/customer-loyalty.json",
+      "type": "archetype",
+      "itemId": "customer-loyalty",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-customer-management-json-archetype-page-layout-pattern-pattern-missin",
+      "severity": "warn",
+      "file": "archetypes/customer-management.json",
+      "type": "archetype",
+      "itemId": "customer-management",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-daily-operations-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/daily-operations.json",
+      "type": "archetype",
+      "itemId": "daily-operations",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-data-repository-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/data-repository.json",
+      "type": "archetype",
+      "itemId": "data-repository",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-deal-workspace-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/deal-workspace.json",
+      "type": "archetype",
+      "itemId": "deal-workspace",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-deal-workspace-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/deal-workspace.json",
+      "type": "archetype",
+      "itemId": "deal-workspace",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-document-editor-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/document-editor.json",
+      "type": "archetype",
+      "itemId": "document-editor",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-document-vault-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/document-vault.json",
+      "type": "archetype",
+      "itemId": "document-vault",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-document-vault-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/document-vault.json",
+      "type": "archetype",
+      "itemId": "document-vault",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-ecommerce-checkout-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/ecommerce-checkout.json",
+      "type": "archetype",
+      "itemId": "ecommerce-checkout",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-engagement-hub-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/engagement-hub.json",
+      "type": "archetype",
+      "itemId": "engagement-hub",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-engagement-hub-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/engagement-hub.json",
+      "type": "archetype",
+      "itemId": "engagement-hub",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-eval-suite-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/eval-suite.json",
+      "type": "archetype",
+      "itemId": "eval-suite",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-event-discovery-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/event-discovery.json",
+      "type": "archetype",
+      "itemId": "event-discovery",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-experiment-tracker-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/experiment-tracker.json",
+      "type": "archetype",
+      "itemId": "experiment-tracker",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-fan-library-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/fan-library.json",
+      "type": "archetype",
+      "itemId": "fan-library",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-fan-storefront-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/fan-storefront.json",
+      "type": "archetype",
+      "itemId": "fan-storefront",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-gaming-community-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/gaming-community.json",
+      "type": "archetype",
+      "itemId": "gaming-community",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-governance-center-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/governance-center.json",
+      "type": "archetype",
+      "itemId": "governance-center",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-health-records-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/health-records.json",
+      "type": "archetype",
+      "itemId": "health-records",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-instrument-booking-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/instrument-booking.json",
+      "type": "archetype",
+      "itemId": "instrument-booking",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-inventory-supplies-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/inventory-supplies.json",
+      "type": "archetype",
+      "itemId": "inventory-supplies",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-investment-tracker-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/investment-tracker.json",
+      "type": "archetype",
+      "itemId": "investment-tracker",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-investor-portal-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/investor-portal.json",
+      "type": "archetype",
+      "itemId": "investor-portal",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-investor-portal-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/investor-portal.json",
+      "type": "archetype",
+      "itemId": "investor-portal",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-job-monitor-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/job-monitor.json",
+      "type": "archetype",
+      "itemId": "job-monitor",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-kitchen-display-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/kitchen-display.json",
+      "type": "archetype",
+      "itemId": "kitchen-display",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-lab-notebook-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/lab-notebook.json",
+      "type": "archetype",
+      "itemId": "lab-notebook",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-landing-hero-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/landing-hero.json",
+      "type": "archetype",
+      "itemId": "landing-hero",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-landing-hero-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/landing-hero.json",
+      "type": "archetype",
+      "itemId": "landing-hero",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-landing-legal-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/landing-legal.json",
+      "type": "archetype",
+      "itemId": "landing-legal",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-landing-resources-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/landing-resources.json",
+      "type": "archetype",
+      "itemId": "landing-resources",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-listing-browser-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/listing-browser.json",
+      "type": "archetype",
+      "itemId": "listing-browser",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-log-viewer-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/log-viewer.json",
+      "type": "archetype",
+      "itemId": "log-viewer",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-maintenance-center-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/maintenance-center.json",
+      "type": "archetype",
+      "itemId": "maintenance-center",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-marketing-ai-studio-json-archetype-page-layout-pattern-pattern-missin",
+      "severity": "warn",
+      "file": "archetypes/marketing-ai-studio.json",
+      "type": "archetype",
+      "itemId": "marketing-ai-studio",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-marketing-ai-studio-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/marketing-ai-studio.json",
+      "type": "archetype",
+      "itemId": "marketing-ai-studio",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-marketing-civic-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/marketing-civic.json",
+      "type": "archetype",
+      "itemId": "marketing-civic",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-marketing-civic-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/marketing-civic.json",
+      "type": "archetype",
+      "itemId": "marketing-civic",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-marketing-content-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/marketing-content.json",
+      "type": "archetype",
+      "itemId": "marketing-content",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-marketing-creator-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/marketing-creator.json",
+      "type": "archetype",
+      "itemId": "marketing-creator",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-marketing-deal-room-json-archetype-page-layout-pattern-pattern-missin",
+      "severity": "warn",
+      "file": "archetypes/marketing-deal-room.json",
+      "type": "archetype",
+      "itemId": "marketing-deal-room",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-marketing-deal-room-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/marketing-deal-room.json",
+      "type": "archetype",
+      "itemId": "marketing-deal-room",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-marketing-devtool-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/marketing-devtool.json",
+      "type": "archetype",
+      "itemId": "marketing-devtool",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-marketing-ecommerce-json-archetype-page-layout-pattern-pattern-missin",
+      "severity": "warn",
+      "file": "archetypes/marketing-ecommerce.json",
+      "type": "archetype",
+      "itemId": "marketing-ecommerce",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-marketing-events-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/marketing-events.json",
+      "type": "archetype",
+      "itemId": "marketing-events",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-marketing-finance-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/marketing-finance.json",
+      "type": "archetype",
+      "itemId": "marketing-finance",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-marketing-fractional-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/marketing-fractional.json",
+      "type": "archetype",
+      "itemId": "marketing-fractional",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-marketing-health-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/marketing-health.json",
+      "type": "archetype",
+      "itemId": "marketing-health",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-marketing-marketplace-json-archetype-page-layout-pattern-pattern-miss",
+      "severity": "warn",
+      "file": "archetypes/marketing-marketplace.json",
+      "type": "archetype",
+      "itemId": "marketing-marketplace",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-marketing-pipeline-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/marketing-pipeline.json",
+      "type": "archetype",
+      "itemId": "marketing-pipeline",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-marketing-platform-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/marketing-platform.json",
+      "type": "archetype",
+      "itemId": "marketing-platform",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-marketing-productivity-json-archetype-page-layout-pattern-pattern-mis",
+      "severity": "warn",
+      "file": "archetypes/marketing-productivity.json",
+      "type": "archetype",
+      "itemId": "marketing-productivity",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-marketing-recipe-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/marketing-recipe.json",
+      "type": "archetype",
+      "itemId": "marketing-recipe",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-marketing-restaurant-json-archetype-page-layout-pattern-pattern-missi",
+      "severity": "warn",
+      "file": "archetypes/marketing-restaurant.json",
+      "type": "archetype",
+      "itemId": "marketing-restaurant",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-marketing-saas-v2-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/marketing-saas-v2.json",
+      "type": "archetype",
+      "itemId": "marketing-saas-v2",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-marketing-swipecircle-json-archetype-page-layout-pattern-pattern-miss",
+      "severity": "warn",
+      "file": "archetypes/marketing-swipecircle.json",
+      "type": "archetype",
+      "itemId": "marketing-swipecircle",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-marketing-video-studio-json-archetype-page-layout-pattern-pattern-mis",
+      "severity": "warn",
+      "file": "archetypes/marketing-video-studio.json",
+      "type": "archetype",
+      "itemId": "marketing-video-studio",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-marketplace-messaging-json-archetype-page-layout-pattern-pattern-miss",
+      "severity": "warn",
+      "file": "archetypes/marketplace-messaging.json",
+      "type": "archetype",
+      "itemId": "marketplace-messaging",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-matter-management-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/matter-management.json",
+      "type": "archetype",
+      "itemId": "matter-management",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-meeting-archive-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/meeting-archive.json",
+      "type": "archetype",
+      "itemId": "meeting-archive",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-meeting-archive-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/meeting-archive.json",
+      "type": "archetype",
+      "itemId": "meeting-archive",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-menu-management-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/menu-management.json",
+      "type": "archetype",
+      "itemId": "menu-management",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-metrics-monitor-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/metrics-monitor.json",
+      "type": "archetype",
+      "itemId": "metrics-monitor",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-onboarding-wizard-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/onboarding-wizard.json",
+      "type": "archetype",
+      "itemId": "onboarding-wizard",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-order-fulfillment-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/order-fulfillment.json",
+      "type": "archetype",
+      "itemId": "order-fulfillment",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-order-management-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/order-management.json",
+      "type": "archetype",
+      "itemId": "order-management",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-organizer-dashboard-json-archetype-page-layout-pattern-pattern-missin",
+      "severity": "warn",
+      "file": "archetypes/organizer-dashboard.json",
+      "type": "archetype",
+      "itemId": "organizer-dashboard",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-owner-dashboard-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/owner-dashboard.json",
+      "type": "archetype",
+      "itemId": "owner-dashboard",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-ownership-dashboard-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/ownership-dashboard.json",
+      "type": "archetype",
+      "itemId": "ownership-dashboard",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-patient-dashboard-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/patient-dashboard.json",
+      "type": "archetype",
+      "itemId": "patient-dashboard",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-pipeline-builder-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/pipeline-builder.json",
+      "type": "archetype",
+      "itemId": "pipeline-builder",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-pm-financials-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/pm-financials.json",
+      "type": "archetype",
+      "itemId": "pm-financials",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-portfolio-about-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/portfolio-about.json",
+      "type": "archetype",
+      "itemId": "portfolio-about",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-portfolio-blog-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/portfolio-blog.json",
+      "type": "archetype",
+      "itemId": "portfolio-blog",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-portfolio-overview-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/portfolio-overview.json",
+      "type": "archetype",
+      "itemId": "portfolio-overview",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-portfolio-showcase-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/portfolio-showcase.json",
+      "type": "archetype",
+      "itemId": "portfolio-showcase",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-portfolio-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/portfolio.json",
+      "type": "archetype",
+      "itemId": "portfolio",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-product-management-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/product-management.json",
+      "type": "archetype",
+      "itemId": "product-management",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-project-library-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/project-library.json",
+      "type": "archetype",
+      "itemId": "project-library",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-prompt-director-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/prompt-director.json",
+      "type": "archetype",
+      "itemId": "prompt-director",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-prompt-library-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/prompt-library.json",
+      "type": "archetype",
+      "itemId": "prompt-library",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-property-manager-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/property-manager.json",
+      "type": "archetype",
+      "itemId": "property-manager",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-qa-workflow-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/qa-workflow.json",
+      "type": "archetype",
+      "itemId": "qa-workflow",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-qa-workflow-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/qa-workflow.json",
+      "type": "archetype",
+      "itemId": "qa-workflow",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-recipe-browser-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/recipe-browser.json",
+      "type": "archetype",
+      "itemId": "recipe-browser",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-recipe-creator-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/recipe-creator.json",
+      "type": "archetype",
+      "itemId": "recipe-creator",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-recipe-social-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/recipe-social.json",
+      "type": "archetype",
+      "itemId": "recipe-social",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-render-monitor-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/render-monitor.json",
+      "type": "archetype",
+      "itemId": "render-monitor",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-research-workspace-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/research-workspace.json",
+      "type": "archetype",
+      "itemId": "research-workspace",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-restaurant-floor-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/restaurant-floor.json",
+      "type": "archetype",
+      "itemId": "restaurant-floor",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-review-system-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/review-system.json",
+      "type": "archetype",
+      "itemId": "review-system",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-saas-analytics-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/saas-analytics.json",
+      "type": "archetype",
+      "itemId": "saas-analytics",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-saas-billing-v2-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/saas-billing-v2.json",
+      "type": "archetype",
+      "itemId": "saas-billing-v2",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-saas-overview-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/saas-overview.json",
+      "type": "archetype",
+      "itemId": "saas-overview",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-sample-inventory-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/sample-inventory.json",
+      "type": "archetype",
+      "itemId": "sample-inventory",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-secondary-market-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/secondary-market.json",
+      "type": "archetype",
+      "itemId": "secondary-market",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-seller-dashboard-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/seller-dashboard.json",
+      "type": "archetype",
+      "itemId": "seller-dashboard",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-server-station-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/server-station.json",
+      "type": "archetype",
+      "itemId": "server-station",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-service-requests-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/service-requests.json",
+      "type": "archetype",
+      "itemId": "service-requests",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-service-requests-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/service-requests.json",
+      "type": "archetype",
+      "itemId": "service-requests",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-settings-full-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/settings-full.json",
+      "type": "archetype",
+      "itemId": "settings-full",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-source-catalog-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/source-catalog.json",
+      "type": "archetype",
+      "itemId": "source-catalog",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-spatial-workspace-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/spatial-workspace.json",
+      "type": "archetype",
+      "itemId": "spatial-workspace",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-storefront-browse-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/storefront-browse.json",
+      "type": "archetype",
+      "itemId": "storefront-browse",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-swipe-feed-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/swipe-feed.json",
+      "type": "archetype",
+      "itemId": "swipe-feed",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-team-workspace-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/team-workspace.json",
+      "type": "archetype",
+      "itemId": "team-workspace",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-tenant-manager-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/tenant-manager.json",
+      "type": "archetype",
+      "itemId": "tenant-manager",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-tenant-portal-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/tenant-portal.json",
+      "type": "archetype",
+      "itemId": "tenant-portal",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-tenant-switcher-dashboard-json-archetype-page-layout-pattern-pattern-",
+      "severity": "warn",
+      "file": "archetypes/tenant-switcher-dashboard.json",
+      "type": "archetype",
+      "itemId": "tenant-switcher-dashboard",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-terminal-home-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/terminal-home.json",
+      "type": "archetype",
+      "itemId": "terminal-home",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-ticket-checkout-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/ticket-checkout.json",
+      "type": "archetype",
+      "itemId": "ticket-checkout",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-tool-registry-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/tool-registry.json",
+      "type": "archetype",
+      "itemId": "tool-registry",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-trace-viewer-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/trace-viewer.json",
+      "type": "archetype",
+      "itemId": "trace-viewer",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-transaction-history-json-archetype-page-layout-pattern-pattern-missin",
+      "severity": "warn",
+      "file": "archetypes/transaction-history.json",
+      "type": "archetype",
+      "itemId": "transaction-history",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-transformation-editor-json-archetype-suggested-theme-theme-missing",
+      "severity": "warn",
+      "file": "archetypes/transformation-editor.json",
+      "type": "archetype",
+      "itemId": "transformation-editor",
+      "category": "Missing Reference",
+      "rule": "archetype-suggested-theme",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-usage-billing-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/usage-billing.json",
+      "type": "archetype",
+      "itemId": "usage-billing",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-video-editor-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/video-editor.json",
+      "type": "archetype",
+      "itemId": "video-editor",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-webhook-manager-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/webhook-manager.json",
+      "type": "archetype",
+      "itemId": "webhook-manager",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-workspace-home-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/workspace-home.json",
+      "type": "archetype",
+      "itemId": "workspace-home",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    },
+    {
+      "id": "reference-archetypes-workspace-settings-json-archetype-page-layout-pattern-pattern-missing",
+      "severity": "warn",
+      "file": "archetypes/workspace-settings.json",
+      "type": "archetype",
+      "itemId": "workspace-settings",
+      "category": "Missing Reference",
+      "rule": "archetype-page-layout-pattern",
+      "rationale": "Known pre-V2 registry reference debt. Tracked as an intentional warning baseline until the referenced pattern/theme catalog items are fixed or the stale references are removed."
+    }
+  ]
+}

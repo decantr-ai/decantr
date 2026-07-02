@@ -1,0 +1,76 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "customer-management",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Customer Management",
+  "description": "Customer relationship management for e-commerce with customer list, profile detail views, activity feeds, and purchase history.",
+  "tags": ["customers", "crm", "profiles", "admin", "ecommerce", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["customer management", "customer list", "customer profiles", "customer crm"],
+      "secondary": ["customer detail", "purchase history", "lifetime value", "customer segments"],
+      "negative": ["storefront", "checkout", "product management"]
+    },
+    "implies": ["search", "filtering"],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "customers",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "customer-table"
+        }
+      ],
+      "default_layout": ["customer-table"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "customer-detail",
+      "patterns": [
+        {
+          "pattern": "detail-header",
+          "preset": "standard",
+          "as": "customer-header"
+        },
+        {
+          "pattern": "activity-feed",
+          "preset": "standard",
+          "as": "customer-activity"
+        },
+        {
+          "pattern": "data-table",
+          "preset": "compact",
+          "as": "purchase-history"
+        }
+      ],
+      "default_layout": ["customer-header", "customer-activity", "purchase-history"],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "customers": "Data table with customer name, email, total orders, lifetime value (currency formatted), last order date, segment badge, and link to full profile. Search and filter bar above with text search, segment chips, and LTV range filter. Bulk select for export and tagging.",
+    "customer-detail": "Detail header with customer avatar, name, email, join date, lifetime value, and segment badge. Activity feed showing recent interactions: orders placed, support tickets, reviews, and refund requests. Compact purchase history table at bottom with order number, date, items, total, and status."
+  },
+  "features": ["search", "filtering", "export", "tagging"],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area"
+  },
+  "suggested_theme": {
+    "ids": ["auradecantism", "carbon"],
+    "modes": ["dark", "light"]
+  },
+  "dependencies": {
+    "patterns": {
+      "data-table": ">=1.0.0",
+      "detail-header": ">=1.0.0",
+      "activity-feed": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

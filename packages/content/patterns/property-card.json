@@ -1,0 +1,112 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "property-card",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Property Card",
+  "description": "Single property overview card with key metrics including address, unit count, occupancy rate, and monthly revenue.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "icon",
+        "Badge"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "icon",
+    "Badge"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full property card with image and all metrics",
+      "components": [
+        "Button",
+        "icon",
+        "Badge"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap3 _p0 _r2 _overflow[hidden]",
+        "slots": {
+          "image": "Property photo (aspect-ratio 16/9)",
+          "content": "Property details and metrics",
+          "address": "Street address, city, state, zip",
+          "type": "Property type badge (residential, commercial, multi-family)",
+          "metrics": "Unit count, occupancy rate, monthly revenue",
+          "status": "Property status badge (active, inactive, for sale)",
+          "actions": "Quick action buttons (view, edit, menu)"
+        }
+      }
+    },
+    "compact": {
+      "description": "Condensed card for grid view without image",
+      "components": [
+        "Button",
+        "icon",
+        "Badge"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap2 _p4",
+        "slots": {
+          "header": "Property name and type badge",
+          "address": "Address line",
+          "metrics": "Compact metrics row",
+          "actions": "View button"
+        }
+      }
+    },
+    "list-item": {
+      "description": "Row format for table/list views",
+      "components": [
+        "Button",
+        "icon",
+        "Badge"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _aic _gap4 _p3 _borderB",
+        "slots": {
+          "image": "Small thumbnail",
+          "info": "Property name and address",
+          "metrics": "Units, occupancy, revenue",
+          "status": "Status badge",
+          "actions": "Action buttons"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap3",
+    "slots": {
+      "image": "Property photo",
+      "content": "Property details",
+      "metrics": "Key metrics",
+      "actions": "Action buttons"
+    }
+  },
+  "visual_brief": "Bordered card with a property photo at the top, followed by the property address and name. A metrics row shows unit count, occupancy rate (as a percentage with color coding — green for high, red for low), and monthly revenue. An action bar at the bottom provides View and Edit buttons. The compact preset removes the photo and shows a denser card with just address, key metrics, and actions. The list-item preset renders as a horizontal row suitable for table-like lists. Status badges indicate property state (active, maintenance, vacant).",
+  "responsive": {
+    "mobile": "Cards take full width. Photo height reduces. Metrics wrap to two rows. Action buttons go full-width.",
+    "tablet": "Two-column card grid. Standard card proportions with photo.",
+    "desktop": "Three-column grid or larger. Cards at comfortable size with all metrics inline."
+  },
+  "interactions": [
+    "lift-hover",
+    "click-select",
+    "animate-on-mount",
+    "stagger-children"
+  ],
+  "composition": {
+    "PropertyCard": "Card(d-surface, hoverable) > [Image(aspect-ratio: 16/9) + Content > [Address(font-medium) + TypeBadge(d-annotation) + MetricsRow + StatusBadge(d-annotation)] + Actions(d-interactive)]",
+    "MetricsRow": "Row(d-data, gap-3) > [UnitCount(mono-data) + OccupancyRate(mono-data, color: level) + Revenue(mono-data)]"
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "content-newsletter",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Content Newsletter",
+  "description": "Newsletter signup and archive experience. Landing-style subscribe page with hero and contact form, plus a browsable archive of past newsletters.",
+  "tags": [
+    "newsletter",
+    "subscribe",
+    "archive",
+    "email",
+    "content",
+    "2026"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "newsletter",
+        "email subscribe",
+        "newsletter archive",
+        "mailing list",
+        "newsletter signup"
+      ],
+      "secondary": [
+        "subscribe form",
+        "email list",
+        "newsletter history",
+        "digest",
+        "weekly update"
+      ],
+      "negative": [
+        "dashboard",
+        "admin",
+        "ecommerce"
+      ]
+    },
+    "implies": [
+      "subscription",
+      "email"
+    ],
+    "weight": 0.8,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "subscribe",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "landing",
+          "as": "subscribe-hero"
+        },
+        {
+          "pattern": "contact-form",
+          "preset": "standard",
+          "as": "subscribe-form"
+        }
+      ],
+      "default_layout": [
+        "subscribe-hero",
+        "subscribe-form"
+      ],
+      "shell": "minimal-header"
+    },
+    {
+      "id": "archive",
+      "patterns": [
+        {
+          "pattern": "card-grid",
+          "preset": "content",
+          "as": "newsletter-archive"
+        }
+      ],
+      "default_layout": [
+        "newsletter-archive"
+      ],
+      "shell": "minimal-header"
+    }
+  ],
+  "page_briefs": {
+    "subscribe": "Hero section with compelling headline about the newsletter value proposition and a brief description. Below, a clean subscribe form with email input and submit button. Optional name field. Social proof — subscriber count or testimonial quote. Minimal distractions.",
+    "archive": "Card grid of past newsletter issues showing issue title, date, brief summary, and read link. Reverse chronological order. Clean and browsable with consistent card sizing."
+  },
+  "features": [
+    "subscription",
+    "email"
+  ],
+  "shells": {
+    "minimal-header": "Minimal header with logo and back link, no heavy navigation"
+  },
+  "suggested_theme": {
+    "ids": [
+      "editorial",
+      "clean"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  },
+  "dependencies": {
+    "patterns": {
+      "hero": ">=1.0.0",
+      "contact-form": ">=1.0.0",
+      "card-grid": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

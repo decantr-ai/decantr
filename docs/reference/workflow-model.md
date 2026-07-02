@@ -126,7 +126,7 @@ Hybrid starts when an attached app moves beyond contract-only context and intent
 - **Hybrid with Decantr CSS**: `@decantr/css` and generated Decantr CSS are active where explicitly adopted.
 - **Hybrid composition**: the app selectively adds sections, pages, features, themes, or hosted execution packs while preserving existing source authority.
 
-The authority order is explicit: existing production source first, accepted local patterns/rules and style bridge next, Essence V4 contract next, and hosted registry patterns or execution packs as optional guidance unless the project maps them into local law. This is how Decantr helps with drift like "three different primary buttons" without pretending the public registry owns a contract-only app.
+The authority order is explicit: existing production source first, accepted local patterns/rules and style bridge next, Essence V4 contract next, and official corpus patterns or execution packs as optional guidance unless the project maps them into local law. This is how Decantr helps with drift like "three different primary buttons" without pretending the corpus owns a contract-only app.
 
 `decantr resolve` makes that order visible when the code and contract disagree. The default command is read-only: it groups conflicts, names the authority lane, and prints exact next commands such as repair source, accept observed source into contract, codify local law, update style bridge, regenerate graph/context, defer to drift log, or mark advisory. Only drift-log flags write directly to `.decantr/drift-log.json`; source, contract, local-law, and style-bridge changes stay in explicit workflows.
 

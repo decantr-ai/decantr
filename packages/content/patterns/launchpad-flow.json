@@ -1,0 +1,107 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "launchpad-flow",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Launchpad Flow",
+  "description": "Guided sequence that shows how a builder moves from selecting a Decantr blueprint to initializing, refreshing, checking, and iterating with AI-ready context.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Card",
+        "Badge",
+        "CodeBlock",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Card",
+    "Badge",
+    "CodeBlock",
+    "icon"
+  ],
+  "contained": false,
+  "default_preset": "steps",
+  "presets": {
+    "steps": {
+      "description": "Four-step horizontal or stacked flow: Choose, Initialize, Refresh, Verify. Each step carries a compact command or artifact reference.",
+      "components": [
+        "Card",
+        "Badge",
+        "CodeBlock",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _lg:gc4 _gap4",
+        "slots": {
+          "step-number": "Number or icon marker.",
+          "step-title": "Action-oriented step heading.",
+          "step-command": "Optional CLI command or file artifact.",
+          "step-proof": "Short note about what changes after this step."
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gc1 _lg:gc4 _gap4",
+    "slots": {
+      "step-number": "Number or icon marker",
+      "step-title": "Step heading",
+      "step-command": "CLI command or artifact",
+      "step-proof": "Outcome note"
+    }
+  },
+  "visual_brief": "A crisp operational flow that makes Decantr feel immediately usable. The sequence should look like a product workflow, not a tutorial wall. Use clear step labels, small command blocks, and simple connective rhythm so users understand the path from registry choice to verified project health.",
+  "responsive": {
+    "mobile": "Stack steps vertically with compact command blocks and visible step numbers.",
+    "tablet": "Two-column grid for four steps.",
+    "desktop": "Four-column flow with subtle connectors or aligned step markers."
+  },
+  "layout_hints": {
+    "step_count": "Use three to five steps. If more detail is needed, move it into an expandable or docs link outside the core flow.",
+    "commands": "Commands should be short and copyable. Avoid large code blocks inside this pattern.",
+    "outcomes": "Every step should state the artifact or confidence it creates: essence, context, health report, or remediation prompt."
+  },
+  "motion": {
+    "micro": "Step cards can highlight in sequence on hover or focus.",
+    "transitions": "Initial reveal may stagger from first step to last over 200-320ms."
+  },
+  "interactions": [
+    "stagger-children",
+    "animate-on-mount",
+    "click-select",
+    "keyboard-navigation"
+  ],
+  "accessibility": {
+    "role": "list",
+    "aria-label": "Launchpad workflow",
+    "keyboard": [
+      "Copyable commands and links should be focusable without trapping users in the flow."
+    ],
+    "announcements": [
+      "Expose each step number, title, command, and outcome in source order."
+    ],
+    "focus_management": "Focused steps should show the same state as hover and should not depend on connector visuals."
+  },
+  "composition": {
+    "LaunchpadFlow": "OrderedList > LaunchpadStep[]",
+    "LaunchpadStep": "Card > [Marker + Title + CommandSnippet? + Outcome]",
+    "CommandSnippet": "CodeBlock(compact, copyable)"
+  },
+  "io": {
+    "consumes": [],
+    "produces": [
+      "workflow-understanding"
+    ],
+    "actions": [
+      "command-copy",
+      "docs-click"
+    ]
+  }
+}

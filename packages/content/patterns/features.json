@@ -1,0 +1,118 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "features",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Features Section",
+  "description": "Feature showcase grid with icon, heading, and description for each feature",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Card",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Card",
+    "icon"
+  ],
+  "default_preset": "grid",
+  "presets": {
+    "grid": {
+      "description": "Grid of feature cards, each with icon, heading, and description",
+      "components": [
+        "Card",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _md:gc2 _lg:gc3 _gap6 _py12 _px6",
+        "slots": {
+          "heading": "Optional section heading with _heading2 _textCenter and subtext",
+          "feature-card": "Card or borderless block: icon + heading + description",
+          "feature-icon": "Icon in a rounded background circle (48px) with muted primary fill",
+          "feature-title": "Feature name with _heading4 _fontmedium",
+          "feature-description": "Short explanation with _bodysm _fgmuted, 2-3 lines"
+        }
+      }
+    },
+    "alternating": {
+      "description": "Alternating two-column rows: text left / image right, then reversed",
+      "components": [
+        "Card",
+        "icon",
+        "Image"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap16 _py16 _px6",
+        "slots": {
+          "feature-row": "Two-column grid: _grid _gc1 _lg:gc2 _gap8 _aic, alternating order",
+          "text-col": "Heading + description + optional link: _flex _col _gap3",
+          "media-col": "Screenshot, illustration, or icon cluster"
+        }
+      }
+    },
+    "icon-list": {
+      "description": "Compact vertical list of features with inline icons",
+      "components": [
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4 _py8 _px6 _mw[640px] _mx[auto]",
+        "slots": {
+          "feature-item": "Row: icon (24px) left + title and description stacked right",
+          "feature-title": "Feature name with _textsm _fontmedium",
+          "feature-description": "Short text with _textxs _fgmuted"
+        }
+      }
+    }
+  },
+  "visual_brief": "Grid of feature cards showcasing product capabilities. Each card contains a rounded background circle (48px) holding a feature icon in primary or accent color, a feature heading in medium-weight heading4 text below the icon, and a 2-3 line description in smaller muted text. Cards are evenly distributed in a 3-column grid with consistent gap6 spacing. Cards can be contained surfaces with padding and border, or borderless blocks that rely on spacing alone. An optional centered section heading and subtext sit above the grid. The alternating preset uses wide two-column rows instead \u2014 text on one side with a heading, description paragraph, and optional 'Learn more' link, and an image or illustration on the other, with the sides alternating each row. The icon-list preset is a compact single-column list with inline icons.",
+  "responsive": {
+    "mobile": "Single column. Feature cards stack vertically full-width. Icons center above text or align left in a row layout. Alternating preset stacks to single column with image above text. Gap reduces to gap4.",
+    "tablet": "Two-column grid. Alternating preset activates side-by-side layout. Icon-list stays single column. Comfortable spacing.",
+    "desktop": "Three-column grid for standard. Alternating preset at full two-column width with generous gap8. Icon-list centered at 640px max-width."
+  },
+  "motion": {
+    "micro": "Feature cards lift on hover with translateY(-2px) and subtle shadow increase over 200ms ease.",
+    "transitions": "Cards stagger in on section enter with fade-up (translateY(12px) to 0) at 300ms ease, 80ms stagger delay per card."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "stagger-children",
+    "scroll-reveal"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Features",
+    "keyboard": [
+      "Tab navigates between feature cards",
+      "Shift+Tab navigates backwards between feature cards"
+    ],
+    "announcements": [
+      "Feature section with {count} items",
+      "Feature: {title}"
+    ]
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gc1 _md:gc2 _lg:gc3 _gap6 _py12 _px6",
+    "slots": {
+      "feature-card": "Feature block with icon, title, description",
+      "feature-icon": "Icon in rounded background",
+      "feature-title": "Feature name",
+      "feature-description": "Feature explanation"
+    }
+  },
+  "layout_hints": {
+    "card_treatment": "Feature cards should use a subtle border (1px solid var(--d-border)) with a soft hover effect: translateY(-2px) + border-color transitions to primary on hover. Do NOT use heavy shadows \u2014 keep it flat and clean with border-based elevation.",
+    "icon_treatment": "Feature icons should sit inside a rounded-lg container with a tinted background: background: color-mix(in srgb, var(--d-accent) 10%, transparent). The icon itself uses var(--d-accent) color. This creates a subtle brand-tinted icon well.",
+    "section_background": "Alternate section background from the hero \u2014 if hero fades to var(--d-bg), features should have a slightly elevated background: var(--d-surface) or a 2% lighter shade, creating visual rhythm between sections."
+  }
+}

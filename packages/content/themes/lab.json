@@ -1,0 +1,437 @@
+{
+  "$schema": "https://decantr.ai/schemas/theme.v1.json",
+  "id": "lab",
+  "version": "1.0.0",
+  "name": "Lab",
+  "description": "Scientific research theme with pristine white surfaces, cyan accents, and IBM Plex Mono data displays. Precise 8px grid alignment and technical iconography for research, data, and laboratory interfaces.",
+  "tags": [
+    "light",
+    "scientific",
+    "research",
+    "technical",
+    "data",
+    "precise"
+  ],
+  "personality": "pristine + technical + data-focused + precise",
+  "seed": {
+    "primary": "#06B6D4",
+    "secondary": "#0E7490",
+    "accent": "#0891B2",
+    "background": "#FFFFFF"
+  },
+  "palette": {
+    "background": {
+      "light": "#FFFFFF"
+    },
+    "surface": {
+      "light": "#FAFAFA"
+    },
+    "surface-raised": {
+      "light": "#F4F4F5"
+    },
+    "border": {
+      "light": "#E4E4E7"
+    },
+    "text": {
+      "light": "#18181B"
+    },
+    "text-muted": {
+      "light": "#71717A"
+    },
+    "primary": {
+      "light": "#06B6D4"
+    },
+    "primary-hover": {
+      "light": "#0891B2"
+    },
+    "secondary": {
+      "light": "#0E7490"
+    },
+    "secondary-hover": {
+      "light": "#155E75"
+    },
+    "accent": {
+      "light": "#06B6D4"
+    },
+    "accent-hover": {
+      "light": "#0891B2"
+    }
+  },
+  "modes": [
+    "light"
+  ],
+  "shapes": [
+    "sharp"
+  ],
+  "cvd_support": [
+    "deuteranopia",
+    "protanopia"
+  ],
+  "tokens": {
+    "base": {
+      "success": "#10B981",
+      "danger": "#EF4444",
+      "warning": "#F59E0B",
+      "info": "#06B6D4"
+    },
+    "domain": {
+      "experiment-running": "info",
+      "experiment-complete": "success",
+      "experiment-failed": "danger",
+      "experiment-pending": "warning",
+      "experiment-archived": "text-muted",
+      "sample-valid": "success",
+      "sample-contaminated": "danger",
+      "sample-pending": "warning"
+    }
+  },
+  "typography": {
+    "scale": "modular",
+    "heading_weight": 500,
+    "body_weight": 400,
+    "display": "'IBM Plex Mono', 'JetBrains Mono', ui-monospace, monospace",
+    "body": "'Inter', ui-sans-serif, sans-serif"
+  },
+  "decantr_compat": ">=2.0.0",
+  "source": "core",
+  "decorators": {
+    "lab-panel": "White panels with precise 1px borders and sharp corners. Clean container for data and controls.",
+    "lab-hazard": "Yellow and black diagonal hazard stripes for warnings and caution zones.",
+    "lab-protocol": "Numbered step markers with circle badges and precise connectors for procedural displays.",
+    "lab-reading": "Monospace IBM Plex Mono data displays with tabular-nums and precise alignment.",
+    "lab-beaker": "Scientific iconography with cyan stroke weight matching 1.5px precision.",
+    "lab-grid": "Precise 8px grid alignment with visible baseline grid on hover or debug mode.",
+    "lab-barcode": "Monospace barcode-style displays for sample IDs and tracking codes.",
+    "lab-cyan-accent": "Cyan status indicators and highlights for active data streams and live readings."
+  },
+  "spatial": {
+    "density_bias": 1,
+    "content_gap_shift": 0,
+    "section_padding": "3rem",
+    "card_wrapping": "none",
+    "surface_override": null
+  },
+  "motion": {
+    "preference": "minimal",
+    "reduce_motion": true,
+    "entrance": "lab-fade",
+    "micro": "instant",
+    "timing": "linear",
+    "durations": {
+      "hover": "100ms",
+      "entrance": "150ms",
+      "modal": "150ms",
+      "page": "200ms",
+      "instant": "50ms",
+      "fast": "100ms",
+      "base": "180ms",
+      "slow": "320ms",
+      "slower": "500ms",
+      "stagger": "40ms"
+    },
+    "easings": {
+      "ease": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "easeOut": "cubic-bezier(0, 0, 0.2, 1)",
+      "easeIn": "cubic-bezier(0.4, 0, 1, 1)",
+      "spring": "cubic-bezier(0.34, 1.56, 0.64, 1)"
+    }
+  },
+  "effects": {
+    "enabled": true,
+    "intensity": "subtle",
+    "type_mapping": {
+      "panel": [
+        "lab-panel"
+      ],
+      "data": [
+        "lab-reading"
+      ],
+      "warning": [
+        "lab-hazard"
+      ],
+      "steps": [
+        "lab-protocol"
+      ],
+      "badge": [
+        "lab-cyan-accent"
+      ]
+    },
+    "optional_effects": {
+      "grid": false,
+      "hazard": true
+    },
+    "component_fallback": {
+      "Card": "panel",
+      "Code": "data",
+      "Alert": "warning",
+      "Steps": "steps",
+      "Badge": "badge"
+    }
+  },
+  "compositions": {
+    "experiment-dashboard": {
+      "description": "Experiment monitoring dashboard with live readings, protocol steps, and sample tracking.",
+      "shell": "sidebar-main",
+      "effects": [
+        "lab-panel",
+        "lab-reading",
+        "lab-cyan-accent"
+      ]
+    },
+    "protocol": {
+      "description": "Protocol step-by-step interface with numbered procedures and safety callouts.",
+      "shell": "top-nav-main",
+      "effects": [
+        "lab-protocol",
+        "lab-hazard",
+        "lab-panel"
+      ]
+    },
+    "marketing": {
+      "description": "Research platform marketing with technical precision and data visualization.",
+      "shell": "top-nav-footer",
+      "effects": [
+        "lab-panel",
+        "lab-reading"
+      ]
+    },
+    "data-explorer": {
+      "description": "Data exploration interface with precise readings, barcodes, and grid alignment.",
+      "shell": "sidebar-main",
+      "effects": [
+        "lab-reading",
+        "lab-barcode",
+        "lab-panel"
+      ]
+    }
+  },
+  "radius": {
+    "philosophy": "sharp",
+    "base": 2
+  },
+  "pattern_preferences": {
+    "prefer": [
+      "data-grid",
+      "protocol-steps",
+      "sample-tracker",
+      "reading-display",
+      "experiment-log"
+    ],
+    "avoid": [
+      "chat-portal"
+    ],
+    "default_presets": {
+      "data-grid": "table",
+      "sample-tracker": "list"
+    }
+  },
+  "shell": {
+    "preferred": [
+      "sidebar-main",
+      "top-nav-main"
+    ],
+    "avoid": [
+      "chat-portal",
+      "centered"
+    ],
+    "nav_style": "minimal",
+    "default_nav_state": "expanded",
+    "root": "lab-panel",
+    "nav": "lab-panel",
+    "header": "lab-cyan-accent",
+    "navLabel": "",
+    "brand": "",
+    "dimensions": null
+  },
+  "decorator_definitions": {
+    "lab-panel": {
+      "description": "White panels with precise 1px borders and sharp corners. Clean container for data and controls.",
+      "intent": "Use for all content containers. The pristine white with precise borders creates the clean laboratory aesthetic.",
+      "suggested_properties": {
+        "background": "#FFFFFF",
+        "border": "1px solid #E4E4E7",
+        "border-radius": "2px",
+        "padding": "16px"
+      },
+      "pairs_with": [
+        "lab-reading",
+        "lab-grid",
+        "lab-cyan-accent"
+      ],
+      "usage": [
+        "Data containers",
+        "Control panels",
+        "Instrument readouts",
+        "Dashboard sections"
+      ]
+    },
+    "lab-hazard": {
+      "description": "Yellow and black diagonal hazard stripes for warnings and caution zones.",
+      "intent": "Use for safety warnings, caution zones, and critical alerts. Industrial hazard-stripe aesthetic.",
+      "suggested_properties": {
+        "background": "repeating-linear-gradient(45deg, #F59E0B, #F59E0B 10px, #18181B 10px, #18181B 20px)",
+        "color": "#FFFFFF",
+        "padding": "8px 12px",
+        "font-weight": "700",
+        "text-transform": "uppercase",
+        "font-family": "'IBM Plex Mono', ui-monospace, monospace"
+      },
+      "pairs_with": [
+        "lab-panel",
+        "lab-protocol"
+      ],
+      "usage": [
+        "Safety warnings",
+        "Caution zones",
+        "Critical alerts",
+        "Biohazard indicators"
+      ]
+    },
+    "lab-protocol": {
+      "description": "Numbered step markers with circle badges and precise connectors for procedural displays.",
+      "intent": "Use for step-by-step protocols and procedures. Numbered badges with connectors communicate sequence clearly.",
+      "suggested_properties": {
+        "display": "flex",
+        "align-items": "center",
+        "gap": "12px",
+        "font-family": "'IBM Plex Mono', ui-monospace, monospace",
+        "counter-reset": "step"
+      },
+      "pairs_with": [
+        "lab-panel",
+        "lab-hazard",
+        "lab-reading"
+      ],
+      "usage": [
+        "Protocol steps",
+        "Procedures",
+        "Setup instructions",
+        "Workflow stages"
+      ]
+    },
+    "lab-reading": {
+      "description": "Monospace IBM Plex Mono data displays with tabular-nums and precise alignment.",
+      "intent": "Use for all numeric readouts, measurements, and data displays. Monospace ensures perfect column alignment.",
+      "suggested_properties": {
+        "font-family": "'IBM Plex Mono', 'JetBrains Mono', ui-monospace, monospace",
+        "font-variant-numeric": "tabular-nums",
+        "font-size": "14px",
+        "color": "#18181B",
+        "letter-spacing": "0"
+      },
+      "pairs_with": [
+        "lab-panel",
+        "lab-cyan-accent",
+        "lab-barcode"
+      ],
+      "usage": [
+        "Instrument readings",
+        "Data values",
+        "Measurements",
+        "Sensor outputs"
+      ]
+    },
+    "lab-beaker": {
+      "description": "Scientific iconography with cyan stroke weight matching 1.5px precision.",
+      "intent": "Use for icon treatments in scientific contexts. Precise stroke weights maintain technical credibility.",
+      "suggested_properties": {
+        "stroke": "#06B6D4",
+        "stroke-width": "1.5",
+        "fill": "none",
+        "width": "20px",
+        "height": "20px"
+      },
+      "pairs_with": [
+        "lab-panel",
+        "lab-cyan-accent"
+      ],
+      "usage": [
+        "Scientific icons",
+        "Lab equipment illustrations",
+        "Sample identifiers"
+      ]
+    },
+    "lab-grid": {
+      "description": "Precise 8px grid alignment with visible baseline grid on hover or debug mode.",
+      "intent": "Use as a debug overlay and spacing verification tool. Reinforces precision in layout.",
+      "suggested_properties": {
+        "background-image": "linear-gradient(to right, rgba(6, 182, 212, 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(6, 182, 212, 0.05) 1px, transparent 1px)",
+        "background-size": "8px 8px"
+      },
+      "pairs_with": [
+        "lab-panel",
+        "lab-reading"
+      ],
+      "usage": [
+        "Layout debug overlay",
+        "Spacing verification",
+        "Grid visualization"
+      ]
+    },
+    "lab-barcode": {
+      "description": "Monospace barcode-style displays for sample IDs and tracking codes.",
+      "intent": "Use for sample identifiers, tracking codes, and lot numbers. Tracks with bar-code scanning aesthetic.",
+      "suggested_properties": {
+        "font-family": "'IBM Plex Mono', 'Libre Barcode 128', ui-monospace, monospace",
+        "background": "#FFFFFF",
+        "color": "#18181B",
+        "padding": "4px 8px",
+        "border": "1px solid #E4E4E7",
+        "letter-spacing": "0.1em",
+        "font-size": "12px"
+      },
+      "pairs_with": [
+        "lab-reading",
+        "lab-panel"
+      ],
+      "usage": [
+        "Sample IDs",
+        "Tracking codes",
+        "Lot numbers",
+        "Asset tags"
+      ]
+    },
+    "lab-cyan-accent": {
+      "description": "Cyan status indicators and highlights for active data streams and live readings.",
+      "intent": "Use for active status indicators, live data markers, and interactive highlights. Signals activity.",
+      "suggested_properties": {
+        "color": "#06B6D4",
+        "border-color": "#06B6D4",
+        "background": "rgba(6, 182, 212, 0.08)"
+      },
+      "pairs_with": [
+        "lab-reading",
+        "lab-panel",
+        "lab-beaker"
+      ],
+      "usage": [
+        "Live status indicators",
+        "Active data markers",
+        "Selection highlights",
+        "Focus states"
+      ]
+    }
+  },
+  "elevation": {
+    "1": {
+      "light": "none",
+      "dark": "none"
+    },
+    "2": {
+      "light": "0 1px 2px rgba(0,0,0,0.04)",
+      "dark": "0 1px 2px rgba(0,0,0,0.2)"
+    },
+    "3": {
+      "light": "0 2px 4px rgba(0,0,0,0.06)",
+      "dark": "0 2px 4px rgba(0,0,0,0.3)"
+    },
+    "4": {
+      "light": "0 4px 8px rgba(0,0,0,0.08)",
+      "dark": "0 4px 8px rgba(0,0,0,0.4)"
+    },
+    "5": {
+      "light": "0 8px 16px rgba(0,0,0,0.10)",
+      "dark": "0 8px 16px rgba(0,0,0,0.5)"
+    }
+  }
+}

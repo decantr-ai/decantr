@@ -32,8 +32,7 @@ function resolveContentRoot(explicitRoot) {
   const repoRoot = resolve(packageRoot, '..', '..');
   const candidates = [
     explicitRoot,
-    resolve(repoRoot, '..', 'decantr-content'),
-    resolve(repoRoot, '..', '..', 'decantr-content'),
+    resolve(repoRoot, 'packages', 'content'),
   ].filter(Boolean);
 
   for (const candidate of candidates) {
@@ -499,7 +498,7 @@ function main() {
 
   if (!contentRoot) {
     console.error(
-      `${RED}Could not resolve decantr-content. Set DECANTR_CONTENT_DIR or pass a valid content root.${RESET}`,
+      `${RED}Could not resolve Decantr content corpus. Set DECANTR_CONTENT_DIR or pass a valid content root.${RESET}`,
     );
     process.exit(1);
   }
