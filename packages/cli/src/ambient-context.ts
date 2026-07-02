@@ -326,7 +326,7 @@ function walk(projectRoot: string, dir: string, items: AmbientContextItem[], dep
     if (shouldSkipDir(entry)) continue;
     const fullPath = join(dir, entry);
     const relPath = normalizedPath(relative(projectRoot, fullPath));
-    let stats;
+    let stats: ReturnType<typeof statSync>;
     try {
       stats = statSync(fullPath);
     } catch {

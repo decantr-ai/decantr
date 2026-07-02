@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { ApiContentType } from '@decantr/registry';
 import { API_CONTENT_TYPES, RegistryAPIClient } from '@decantr/registry';

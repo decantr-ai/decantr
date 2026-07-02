@@ -182,7 +182,7 @@ export async function cmdAddPage(
   args: string[],
   projectRoot: string = process.cwd(),
 ): Promise<void> {
-  if (!path || !path.includes('/')) {
+  if (!path?.includes('/')) {
     console.error(`${RED}Usage: decantr add page <section>/<page>${RESET}`);
     console.error(`${DIM}Example: decantr add page settings/notifications${RESET}`);
     process.exitCode = 1;
@@ -214,7 +214,8 @@ export async function cmdAddPage(
   }
 
   const route = normalizeRoute(readFlagValue(args, 'route') ?? pageId);
-  const routes = (essence.blueprint.routes ??= {});
+  essence.blueprint.routes ??= {};
+  const routes = essence.blueprint.routes;
   const existingRoute = routes[route];
   if (existingRoute) {
     console.error(

@@ -4,7 +4,7 @@ import { dirname, isAbsolute, join } from 'node:path';
 const GREEN = '\x1b[32m';
 const RED = '\x1b[31m';
 const DIM = '\x1b[2m';
-const CYAN = '\x1b[36m';
+const _CYAN = '\x1b[36m';
 const RESET = '\x1b[0m';
 
 export type ExportTarget = 'shadcn' | 'tailwind' | 'css-vars' | 'figma-tokens';
@@ -74,9 +74,10 @@ export const TAILWIND_COLOR_MAP: Record<string, string> = {
 export function parseTokensCSS(css: string): Map<string, string> {
   const tokens = new Map<string, string>();
   const re = /(--d-[\w-]+)\s*:\s*([^;]+);/g;
-  let match: RegExpExecArray | null;
-  while ((match = re.exec(css)) !== null) {
+  let match = re.exec(css);
+  while (match !== null) {
     tokens.set(match[1], match[2].trim());
+    match = re.exec(css);
   }
   return tokens;
 }

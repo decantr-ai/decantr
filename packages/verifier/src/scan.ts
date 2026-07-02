@@ -469,7 +469,7 @@ function detectPrimaryLanguage(projectRoot: string, packageJsonPresent: boolean)
   return 'unknown';
 }
 
-function detectProject(projectRoot: string): ProjectDetection {
+function _detectProject(projectRoot: string): ProjectDetection {
   const packageRead = readPackageJson(projectRoot);
   const pkg = packageRead.value;
   const dependencies = { ...(pkg?.dependencies ?? {}), ...(pkg?.devDependencies ?? {}) };
@@ -942,7 +942,7 @@ function detectDeclarativeRouteSpecRoutes(content: string): string[] {
   return [...routes];
 }
 
-function scanRoutes(projectRoot: string, detection: ProjectDetection): RouteScan {
+function _scanRoutes(projectRoot: string, detection: ProjectDetection): RouteScan {
   const appRoutes = ['src/app', 'app'].flatMap((dir) =>
     existsSync(join(projectRoot, dir))
       ? walkNextAppRoutes(join(projectRoot, dir), projectRoot, [])
@@ -992,7 +992,7 @@ function scanRoutes(projectRoot: string, detection: ProjectDetection): RouteScan
   return { strategy: 'none', routes: [] };
 }
 
-function countComponents(projectRoot: string, routes: RouteScan): ScanReportV1['components'] {
+function _countComponents(projectRoot: string, routes: RouteScan): ScanReportV1['components'] {
   const sourceFiles = walkFiles(projectRoot, { extensions: SOURCE_EXTENSIONS });
   const componentFiles = sourceFiles.filter((file) => {
     const base = file.split('/').pop() ?? file;
@@ -1031,7 +1031,7 @@ function extractCssEvidence(content: string): {
   };
 }
 
-function scanStyling(projectRoot: string, detection: ProjectDetection): StylingScan {
+function _scanStyling(projectRoot: string, detection: ProjectDetection): StylingScan {
   const deps = detection.dependencies;
   const cssFiles = walkFiles(projectRoot, { extensions: STYLE_EXTENSIONS });
   const themeSignals = new Set<string>();
@@ -1092,7 +1092,7 @@ function scanStyling(projectRoot: string, detection: ProjectDetection): StylingS
   };
 }
 
-function findAssistantRules(projectRoot: string): string[] {
+function _findAssistantRules(projectRoot: string): string[] {
   return RULE_FILES.filter((file) => existsSync(join(projectRoot, file)));
 }
 
@@ -1210,7 +1210,7 @@ function buildApplicability(
   };
 }
 
-function buildConfidence(
+function _buildConfidence(
   applicability: ScanReportV1['applicability'],
   detection: ProjectDetection,
   routes: RouteScan,

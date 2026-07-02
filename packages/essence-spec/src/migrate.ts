@@ -1,5 +1,4 @@
 import type {
-  BlueprintPage,
   DensityLevel,
   Essence,
   EssenceBlueprint,
@@ -233,7 +232,6 @@ function migrateGuard(mode: GuardMode): EssenceMeta['guard'] {
       return { mode: 'strict', dna_enforcement: 'error', blueprint_enforcement: 'warn' };
     case 'guided':
       return { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'off' };
-    case 'creative':
     default:
       return { mode: 'creative', dna_enforcement: 'off', blueprint_enforcement: 'off' };
   }

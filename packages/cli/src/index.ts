@@ -12,8 +12,6 @@ import {
 import type { EssenceFile, EssenceV4 } from '@decantr/essence-spec';
 import { evaluateGuard, isV4, validateEssence } from '@decantr/essence-spec';
 import type {
-  ApiContentType,
-  ComposeEntry,
   ContentIntelligenceMetadata,
   ContentIntelligenceSource,
   ExecutionPackBundleResponse,
@@ -112,6 +110,7 @@ import {
 import { seedOfflineRegistry } from './offline-content.js';
 import {
   confirm,
+  type InitOptions,
   mergeWithDefaults,
   parseFlags,
   runInteractivePrompts,
@@ -119,27 +118,22 @@ import {
 } from './prompts.js';
 import { RegistryClient, syncRegistry } from './registry.js';
 import {
-  type BlueprintOverrides,
   type ComposeSectionsResult,
   collectPatternIdsFromItems,
   composeArchetypes,
   composeSections,
   deriveTransitions,
   deriveZones,
-  generateScaffoldContext,
-  generateSectionContext,
   generateTopologySection,
   type LayoutItem,
   mapRegistryArchetypeToArchetypeData,
   mapRegistryPatternToPatternSpecSummary,
   mapRegistryThemeToThemeData,
   type PatternSpecSummary,
-  type RefreshResult,
   refreshDerivedFiles,
   scaffoldMinimal,
   scaffoldProject,
   type ThemeData,
-  type TopologyData,
   writeExecutionPackBundleArtifacts,
   type ZoneInput,
 } from './scaffold.js';
@@ -2554,7 +2548,7 @@ async function cmdInit(args: InitArgs) {
   const blueprints = blueprintsResult?.data.items ?? [];
   const themes = themesResult?.data.items ?? [];
 
-  let options;
+  let options: InitOptions;
 
   // Track which flags the user explicitly provided (before defaults are merged in)
   const userExplicit = {
@@ -6616,7 +6610,7 @@ async function main() {
           : 'shortlist';
       const jsonOutput = args.includes('--json');
 
-      if (requestedView && requestedView.startsWith('--')) {
+      if (requestedView?.startsWith('--')) {
         await printShowcaseBenchmarks('shortlist', jsonOutput);
         break;
       }
@@ -6648,7 +6642,7 @@ async function main() {
 
     case 'login': {
       const apiKeyArg = args[1];
-      if (apiKeyArg && apiKeyArg.startsWith('--api-key=')) {
+      if (apiKeyArg?.startsWith('--api-key=')) {
         const key = apiKeyArg.split('=')[1];
         saveCredentials({ access_token: key, api_key: key });
         console.log(success('API key saved.'));

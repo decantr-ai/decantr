@@ -1,7 +1,7 @@
 import type { LayoutItem } from '@decantr/essence-spec';
 import { describe, expect, it } from 'vitest';
 import type { PatternIO } from '../src/types.js';
-import { buildIOMap, deriveIOWirings, detectWirings, WIRING_RULES } from '../src/wiring.js';
+import { buildIOMap, deriveIOWirings, detectWirings } from '../src/wiring.js';
 
 /**
  * IO declarations for the core patterns, matching the fixture JSON files.

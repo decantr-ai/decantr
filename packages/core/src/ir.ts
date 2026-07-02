@@ -9,7 +9,6 @@ import type {
   IRPageNode,
   IRPatternMeta,
   IRPatternNode,
-  IRVisualEffect,
   IRWiring,
 } from './types.js';
 
@@ -26,13 +25,13 @@ function isColumnLayout(item: LayoutItem): item is ColumnLayout {
   return typeof item === 'object' && 'cols' in item;
 }
 
-function getPatternAlias(item: LayoutItem): string {
+function _getPatternAlias(item: LayoutItem): string {
   if (typeof item === 'string') return item;
   if (isPatternRef(item)) return item.as || item.pattern;
   return '';
 }
 
-function getPatternId(item: LayoutItem): string {
+function _getPatternId(item: LayoutItem): string {
   if (typeof item === 'string') return item;
   if (isPatternRef(item)) return item.pattern;
   return '';

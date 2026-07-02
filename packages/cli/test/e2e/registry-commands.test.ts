@@ -870,9 +870,9 @@ describe('registry commands (e2e)', () => {
 
   it('registry get-pack manifest can write the hosted manifest into .decantr/context', async () => {
     const server = createServer((req, res) => {
-      let body = '';
+      let _body = '';
       req.on('data', (chunk) => {
-        body += chunk;
+        _body += chunk;
       });
       req.on('end', () => {
         if (req.method === 'POST' && req.url?.startsWith('/v1/packs/select')) {
@@ -979,9 +979,9 @@ describe('registry commands (e2e)', () => {
 
   it('registry get-pack can write a selected hosted pack into .decantr/context', async () => {
     const server = createServer((req, res) => {
-      let body = '';
+      let _body = '';
       req.on('data', (chunk) => {
-        body += chunk;
+        _body += chunk;
       });
       req.on('end', () => {
         if (req.method === 'POST' && req.url?.startsWith('/v1/packs/select')) {
@@ -1109,9 +1109,9 @@ describe('registry commands (e2e)', () => {
 
   it('registry compile-packs can write hosted pack artifacts into .decantr/context', async () => {
     const server = createServer((req, res) => {
-      let body = '';
+      let _body = '';
       req.on('data', (chunk) => {
-        body += chunk;
+        _body += chunk;
       });
       req.on('end', () => {
         if (req.method === 'POST' && req.url?.startsWith('/v1/packs/compile')) {

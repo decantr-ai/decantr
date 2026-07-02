@@ -3026,7 +3026,7 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
       ) {
         const pages = listEssencePages(essence);
         const page = pages.find((p) => p.id === args.page_id);
-        if (page && page.layout) {
+        if (page?.layout) {
           // Extract expected patterns from layout
           const expectedPatterns = new Set<string>();
           for (const item of page.layout) {

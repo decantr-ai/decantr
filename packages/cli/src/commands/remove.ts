@@ -170,7 +170,7 @@ export async function cmdRemovePage(
   args: string[],
   projectRoot: string = process.cwd(),
 ): Promise<void> {
-  if (!path || !path.includes('/')) {
+  if (!path?.includes('/')) {
     console.error(`${RED}Usage: decantr remove page <section>/<page>${RESET}`);
     console.error(`${DIM}Example: decantr remove page settings/notifications${RESET}`);
     process.exitCode = 1;

@@ -39,7 +39,7 @@ const MAGENTA = '\x1b[35m';
 function success(text: string): string {
   return `${GREEN}${text}${RESET}`;
 }
-function error(text: string): string {
+function _error(text: string): string {
   return `${RED}${text}${RESET}`;
 }
 function dim(text: string): string {
@@ -48,7 +48,7 @@ function dim(text: string): string {
 function cyan(text: string): string {
   return `${CYAN}${text}${RESET}`;
 }
-function magenta(text: string): string {
+function _magenta(text: string): string {
   return `${MAGENTA}${text}${RESET}`;
 }
 

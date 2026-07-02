@@ -3,7 +3,6 @@ import type {
   ApiContentType,
   Archetype,
   Blueprint,
-  ContentItem,
   ContentListResponse,
   ExecutionPackBundleResponse,
   ExecutionPackManifest,
@@ -97,7 +96,7 @@ export class RegistryAPIClient {
       headers['X-API-Key'] = this.apiKey;
     }
     if (this.accessToken) {
-      headers['Authorization'] = `Bearer ${this.accessToken}`;
+      headers.Authorization = `Bearer ${this.accessToken}`;
     }
     return headers;
   }

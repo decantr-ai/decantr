@@ -27,7 +27,7 @@ import type {
   RouteEntry,
   SpatialTokenHints,
 } from '@decantr/essence-spec';
-import { computeSpatialTokens, isV4 } from '@decantr/essence-spec';
+import { computeSpatialTokens } from '@decantr/essence-spec';
 import type {
   ArchetypeRole,
   ComposeEntry,
@@ -2855,20 +2855,19 @@ ${successChecks}
  * Generate essence summary markdown from an Essence v4 document.
  * Used by refreshDerivedFiles to keep the summary in sync.
  */
-function generateEssenceSummaryV4(essence: EssenceV4): string {
+function _generateEssenceSummaryV4(essence: EssenceV4): string {
   const template = loadTemplate('essence-summary.md.template');
 
   const blueprint = essence.blueprint;
   const sections = blueprint.sections;
 
   // Build pages table
-  let pagesTable: string;
   const rows = sections.flatMap((s) =>
     s.pages.map(
       (p) => `| ${p.id} | ${s.shell} | ${p.layout.map(serializeLayoutItem).join(', ') || 'none'} |`,
     ),
   );
-  pagesTable = `| Page | Shell | Layout |\n|------|-------|--------|\n${rows.join('\n')}`;
+  const pagesTable = `| Page | Shell | Layout |\n|------|-------|--------|\n${rows.join('\n')}`;
 
   // Build features list
   const features = blueprint.features || [];
@@ -4042,24 +4041,24 @@ function generateSyntheticSlots(patternId: string, description: string): Record<
   const syntheticSlots: Record<string, string> = {};
 
   if (patternId.includes('feature') || desc.includes('feature')) {
-    syntheticSlots['grid'] = 'Grid of feature cards (icon + title + description)';
+    syntheticSlots.grid = 'Grid of feature cards (icon + title + description)';
     syntheticSlots['feature-card'] = 'Individual feature with icon, heading, and description text';
   }
   if (patternId.includes('pricing') || desc.includes('pricing')) {
-    syntheticSlots['tiers'] = 'Pricing tier cards (name, price, features list, CTA button)';
-    syntheticSlots['toggle'] = 'Monthly/annual billing toggle (optional)';
+    syntheticSlots.tiers = 'Pricing tier cards (name, price, features list, CTA button)';
+    syntheticSlots.toggle = 'Monthly/annual billing toggle (optional)';
   }
   if (patternId.includes('testimonial') || desc.includes('testimonial')) {
-    syntheticSlots['quotes'] = 'Testimonial cards (quote text, author name, role, avatar)';
+    syntheticSlots.quotes = 'Testimonial cards (quote text, author name, role, avatar)';
   }
   if (
     patternId.includes('cta') ||
     desc.includes('call-to-action') ||
     desc.includes('call to action')
   ) {
-    syntheticSlots['headline'] = 'CTA headline text';
-    syntheticSlots['description'] = 'Supporting description text';
-    syntheticSlots['actions'] = 'CTA button(s)';
+    syntheticSlots.headline = 'CTA headline text';
+    syntheticSlots.description = 'Supporting description text';
+    syntheticSlots.actions = 'CTA button(s)';
   }
   if (
     patternId.includes('how-it-works') ||
@@ -4067,20 +4066,20 @@ function generateSyntheticSlots(patternId: string, description: string): Record<
     desc.includes('timeline') ||
     desc.includes('steps')
   ) {
-    syntheticSlots['steps'] = 'Numbered steps (step number, title, description)';
+    syntheticSlots.steps = 'Numbered steps (step number, title, description)';
   }
   if (patternId.includes('team') || desc.includes('team')) {
-    syntheticSlots['members'] = 'Team member cards (avatar, name, role)';
+    syntheticSlots.members = 'Team member cards (avatar, name, role)';
   }
   if (patternId.includes('story') || desc.includes('story') || desc.includes('about')) {
-    syntheticSlots['content'] = 'Story/about narrative text content';
+    syntheticSlots.content = 'Story/about narrative text content';
   }
   if (patternId.includes('values') || desc.includes('values')) {
-    syntheticSlots['values'] = 'Value cards (icon/emoji, title, description)';
+    syntheticSlots.values = 'Value cards (icon/emoji, title, description)';
   }
   if (patternId.includes('form') || desc.includes('form') || desc.includes('contact')) {
-    syntheticSlots['fields'] = 'Form fields (name, email, message, etc.)';
-    syntheticSlots['submit'] = 'Submit button';
+    syntheticSlots.fields = 'Form fields (name, email, message, etc.)';
+    syntheticSlots.submit = 'Submit button';
   }
   if (
     patternId.includes('content') ||
@@ -4088,33 +4087,33 @@ function generateSyntheticSlots(patternId: string, description: string): Record<
     desc.includes('privacy') ||
     desc.includes('policy')
   ) {
-    syntheticSlots['body'] = 'Long-form text content with headings and paragraphs';
-    syntheticSlots['toc'] = 'Table of contents sidebar (optional)';
+    syntheticSlots.body = 'Long-form text content with headings and paragraphs';
+    syntheticSlots.toc = 'Table of contents sidebar (optional)';
   }
   if (patternId.includes('settings') || desc.includes('settings') || desc.includes('preferences')) {
-    syntheticSlots['sections'] = 'Settings sections (label, description, input/toggle)';
+    syntheticSlots.sections = 'Settings sections (label, description, input/toggle)';
   }
   if (patternId.includes('security') || desc.includes('security') || desc.includes('password')) {
-    syntheticSlots['sections'] = 'Security sections (password change, MFA toggle, session list)';
+    syntheticSlots.sections = 'Security sections (password change, MFA toggle, session list)';
   }
   if (patternId.includes('session') || desc.includes('session')) {
-    syntheticSlots['list'] = 'Active sessions list (device, location, last active, revoke button)';
+    syntheticSlots.list = 'Active sessions list (device, location, last active, revoke button)';
   }
   if (patternId.includes('message') || desc.includes('message') || desc.includes('chat')) {
-    syntheticSlots['messages'] = 'Message bubbles (user/assistant, content, timestamp)';
+    syntheticSlots.messages = 'Message bubbles (user/assistant, content, timestamp)';
   }
   if (patternId.includes('input') && desc.includes('chat')) {
-    syntheticSlots['textarea'] = 'Auto-expanding message input';
-    syntheticSlots['actions'] = 'Attach file button, send button';
+    syntheticSlots.textarea = 'Auto-expanding message input';
+    syntheticSlots.actions = 'Attach file button, send button';
   }
   if (patternId.includes('empty') || desc.includes('empty')) {
-    syntheticSlots['illustration'] = 'Empty state illustration or icon';
-    syntheticSlots['message'] = 'Welcome/empty state message';
-    syntheticSlots['suggestions'] = 'Suggested actions or prompts';
+    syntheticSlots.illustration = 'Empty state illustration or icon';
+    syntheticSlots.message = 'Welcome/empty state message';
+    syntheticSlots.suggestions = 'Suggested actions or prompts';
   }
   if (patternId.includes('header') && desc.includes('chat')) {
-    syntheticSlots['title'] = 'Conversation title or model name';
-    syntheticSlots['actions'] = 'Header action buttons (new chat, settings)';
+    syntheticSlots.title = 'Conversation title or model name';
+    syntheticSlots.actions = 'Header action buttons (new chat, settings)';
   }
 
   return syntheticSlots;

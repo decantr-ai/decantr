@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { EssenceFile, EssenceV4, ThemeMode, ThemeShape } from '@decantr/essence-spec';
+import type { EssenceFile, ThemeMode, ThemeShape } from '@decantr/essence-spec';
 import { isV4 } from '@decantr/essence-spec';
 import { RegistryClient } from '../registry.js';
 import { refreshDerivedFiles } from '../scaffold.js';
