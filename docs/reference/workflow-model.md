@@ -81,7 +81,7 @@ decantr connect cursor --project apps/web
 
 The command writes Cursor MCP config plus a Decantr project rule. It preserves existing MCP servers, keeps monorepo app scope in `project_path` / `--project`, and tells Cursor Agent to stop and report drift when runtime source and Decantr context disagree.
 
-In Decantr 3.6, these commands form the Brownfield control loop:
+In Decantr 3.7, these commands form the Brownfield control loop:
 
 1. `scan` or `doctor` to understand the app state.
 2. `task` to prepare route-scoped maker/checker instructions before editing.
@@ -93,6 +93,8 @@ In Decantr 3.6, these commands form the Brownfield control loop:
 Loop states are intentionally explicit: `needs_context`, `ready_to_edit`, `verify_required`, `repair_required`, `human_resolution_required`, `blocked_missing_context`, `blocked_missing_graph`, and `verified`. Decantr guides agents through the loop; it does not invoke agents, edit source, or run autonomous retry cycles.
 
 In monorepos, Decantr ranks app candidates before suggesting `--project`. Product UI apps receive positive signals from app-folder placement, frontend dependencies/configs, source trees, and names such as `web`, `remix`, `dashboard`, `client`, or `portal`. Docs, Storybook, API/server, MCP helper, workbench/demo, and package/library surfaces are penalized or filtered. `decantr workspace list --json` exposes rank, score, category, and reason metadata so users and agents can see why one app path was suggested first.
+
+The selected app remains the source of discovery truth after that. `scan`, `setup`, `workspace list`, `adopt`, `doctor`, `task`, `verify`, `ci`, and MCP all use the shared verifier discovery substrate: package-manager evidence can come from the workspace root, but framework, language, routes, components, styling, assistant rules, and limitations come from the selected app root. `decantr scan --project apps/web --json` emits `scan-report.v2`, including route signal count, taskable route count, component inventory confidence, and explicit low-confidence limitations.
 
 For CLI-only assistants, prefer:
 

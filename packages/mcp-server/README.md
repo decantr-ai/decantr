@@ -12,7 +12,7 @@ AI Frontend Governance for codebases touched by AI agents. Give Claude, Cursor, 
 
 ![Decantr MCP demo](https://raw.githubusercontent.com/decantr-ai/decantr/main/packages/mcp-server/assets/decantr-demo.gif)
 
-- **Structured Contract context** -- gives your AI assistant patterns, layouts, component specs, typed graph context, Brownfield/Hybrid authority, local law, behavior obligations, and task-time context instead of letting it guess
+- **Structured Contract context** -- gives your AI assistant patterns, layouts, component specs, shared Brownfield discovery metadata, typed graph context, Brownfield/Hybrid authority, local law, behavior obligations, and task-time context instead of letting it guess
 - **Evidence-backed repair loops** -- gives AI agents Project Health, component reuse drift, accepted behavior-obligation drift, accepted style bridge drift, stable diagnostic codes, typed repair IDs, graph-anchored Evidence Bundles, workspace health, and scoped repair prompts without uploading source
 - **Drift detection** -- catches when generated code deviates from your design intent
 - **Zero config** -- run with `npx`, no API keys or accounts required
@@ -138,12 +138,12 @@ The server exposes a hard 8-tool MCP surface. Pass an `action` to select the rou
 
 | Tool | Description | Example Input |
 |------|-------------|---------------|
-| `decantr_project` | Read local project state and workspace health | `{ "action": "state", "project_path": "apps/web" }` |
+| `decantr_project` | Read local project state, shared discovery summary, and workspace health | `{ "action": "state", "project_path": "apps/web" }` |
 | `decantr_contract` | Read Essence, validate, check drift, generate a skeleton, or read the Contract capsule | `{ "action": "validate", "path": "./decantr.essence.json" }` |
-| `decantr_context` | Read scaffold, section, page, task, and execution-pack context | `{ "action": "task", "project_path": "apps/web", "route": "/feed", "task": "improve recipe card loading" }` |
+| `decantr_context` | Read scaffold, section, page, task, shared discovery summary, and execution-pack context | `{ "action": "task", "project_path": "apps/web", "route": "/feed", "task": "improve recipe card loading" }` |
 | `decantr_graph` | Read graph snapshots, query graph nodes/edges, or traverse graph relations | `{ "action": "query", "project_path": "apps/web", "file_path": "src/app/page.tsx", "include_impact": true }` |
 | `decantr_registry` | Search and resolve hosted registry content, benchmarks, and execution packs | `{ "action": "resolve_pattern", "id": "data-table", "preset": "product" }` |
-| `decantr_verify` | Run audit, critique, findings, v2 evidence bundles, or health-loop reads | `{ "action": "evidence_bundle", "project_path": "apps/web" }` |
+| `decantr_verify` | Run audit, critique, findings, v2 evidence bundles with discovery metadata, or health-loop reads | `{ "action": "evidence_bundle", "project_path": "apps/web" }` |
 | `decantr_repair` | Return typed findings, repair plans, repair prompts, and v2 health-loop guidance | `{ "action": "health_loop", "project_path": "apps/web" }` |
 | `decantr_contract_write` | Explicit write surface for accepting drift, deferring drift to the drift log, or mutating Essence v4 | `{ "action": "update_essence", "operation": "add_feature", "payload": { "feature": "billing" } }` |
 
@@ -167,7 +167,7 @@ Registry and pack-resolution tools may call the configured Decantr API. Source u
 
 ### 3.4 Tool Surface Migration
 
-Decantr 3.4 consolidated legacy MCP tool names into the eight action-based tools above. Decantr 3.6 keeps that surface, preserves v2 task/evidence/workspace-health/health-loop contracts, and adds compatible metadata only through the consolidated tools. For example, `decantr_get_project_state` becomes `decantr_project` with `{ "action": "state" }`, `decantr_get_graph_snapshot` becomes `decantr_graph` with `{ "action": "snapshot" }`, and the legacy write tools become `decantr_contract_write` with `{ "action": "accept_drift" }` or `{ "action": "update_essence" }`.
+Decantr 3.4 consolidated legacy MCP tool names into the eight action-based tools above. Decantr 3.7 keeps that surface, preserves v2 task/evidence/workspace-health/health-loop contracts, and adds compatible discovery metadata only through the consolidated tools. For example, `decantr_get_project_state` becomes `decantr_project` with `{ "action": "state" }`, `decantr_get_graph_snapshot` becomes `decantr_graph` with `{ "action": "snapshot" }`, and the legacy write tools become `decantr_contract_write` with `{ "action": "accept_drift" }` or `{ "action": "update_essence" }`.
 
 ## How It Works
 

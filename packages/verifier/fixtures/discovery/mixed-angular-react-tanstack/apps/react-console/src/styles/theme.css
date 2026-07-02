@@ -1,0 +1,8 @@
+@theme {
+  --color-brand: #2563eb;
+  --radius-card: 8px;
+}
+
+.dark {
+  color-scheme: dark;
+}

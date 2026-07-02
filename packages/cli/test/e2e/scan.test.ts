@@ -60,6 +60,7 @@ describe('scan command', () => {
       join(testDir, 'package.json'),
       JSON.stringify({ private: true, workspaces: ['apps/*'] }, null, 2),
     );
+    writeFileSync(join(testDir, 'pnpm-lock.yaml'), 'lockfileVersion: 9.0\n');
     writeFileSync(
       join(testDir, 'apps', 'web', 'package.json'),
       JSON.stringify({ dependencies: { react: '^19.0.0' } }, null, 2),
@@ -76,7 +77,14 @@ describe('scan command', () => {
     const report = JSON.parse(output) as {
       schemaVersion?: string;
       input?: { value?: string };
-      project?: { framework?: string };
+      project?: {
+        framework?: string;
+        packageManager?: string;
+        primaryLanguage?: string;
+        projectPath?: string;
+      };
+      routes?: { routeSignalCount?: number; taskableRouteCount?: number };
+      components?: { componentCount?: number; confidence?: string };
       graphPreview?: {
         status?: string;
         canPreview?: boolean;
@@ -85,9 +93,16 @@ describe('scan command', () => {
       };
     };
 
-    expect(report.schemaVersion).toBe('scan-report.v1');
+    expect(report.schemaVersion).toBe('scan-report.v2');
     expect(report.input?.value).toBe('apps/web');
     expect(report.project?.framework).toBe('react');
+    expect(report.project?.packageManager).toBe('pnpm');
+    expect(report.project?.primaryLanguage).toBe('typescript');
+    expect(report.project?.projectPath).toBe('apps/web');
+    expect(report.routes?.routeSignalCount).toBeGreaterThanOrEqual(0);
+    expect(report.routes?.taskableRouteCount).toBeGreaterThanOrEqual(0);
+    expect(report.components?.componentCount).toBeGreaterThanOrEqual(1);
+    expect(report.components?.confidence).toMatch(/low|medium|high/);
     expect(report.graphPreview?.status).toBe('not_attached');
     expect(report.graphPreview?.canPreview).toBe(false);
     expect(report.graphPreview?.nextCommand).toBe('decantr adopt --yes --project apps/web');

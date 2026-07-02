@@ -1,0 +1,397 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/scan-report.v2.json",
+  "title": "Decantr Brownfield Scan Report V2",
+  "type": "object",
+  "required": [
+    "$schema",
+    "schemaVersion",
+    "generatedAt",
+    "input",
+    "source",
+    "confidence",
+    "applicability",
+    "project",
+    "routes",
+    "components",
+    "styling",
+    "staticHosting",
+    "assistant",
+    "pagesProbe",
+    "discovery",
+    "findings",
+    "recommendedCommands",
+    "privacy"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "https://decantr.ai/schemas/scan-report.v2.json"
+    },
+    "schemaVersion": {
+      "const": "scan-report.v2"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "input": {
+      "type": "object",
+      "required": ["kind", "value"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["local", "github-repo", "github-pages"]
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "source": {
+      "type": "object"
+    },
+    "confidence": {
+      "$ref": "#/$defs/confidence"
+    },
+    "applicability": {
+      "type": "object",
+      "required": ["status", "label", "reasons"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["strong_fit", "partial_fit", "not_applicable", "unknown"]
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reasons": {
+          "$ref": "#/$defs/stringArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "project": {
+      "type": "object",
+      "required": [
+        "framework",
+        "frameworkVersion",
+        "packageManager",
+        "primaryLanguage",
+        "hasTypeScript",
+        "hasTailwind",
+        "hasDecantr",
+        "packageName",
+        "evidence",
+        "workspaceScope",
+        "projectPath"
+      ],
+      "properties": {
+        "framework": {
+          "type": "string"
+        },
+        "frameworkVersion": {
+          "type": ["string", "null"]
+        },
+        "packageManager": {
+          "type": "string"
+        },
+        "primaryLanguage": {
+          "type": "string"
+        },
+        "hasTypeScript": {
+          "type": "boolean"
+        },
+        "hasTailwind": {
+          "type": "boolean"
+        },
+        "hasDecantr": {
+          "type": "boolean"
+        },
+        "packageName": {
+          "type": ["string", "null"]
+        },
+        "evidence": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "workspaceScope": {
+          "type": "string",
+          "enum": ["single-app", "workspace-app"]
+        },
+        "projectPath": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "routes": {
+      "type": "object",
+      "required": [
+        "strategy",
+        "count",
+        "items",
+        "routeSignalCount",
+        "taskableRouteCount",
+        "confidence",
+        "signals"
+      ],
+      "properties": {
+        "strategy": {
+          "type": "string"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/route"
+          }
+        },
+        "routeSignalCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "taskableRouteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "confidence": {
+          "$ref": "#/$defs/confidenceLevel"
+        },
+        "signals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/routeSignal"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "components": {
+      "type": "object",
+      "required": [
+        "pageCount",
+        "componentCount",
+        "directories",
+        "confidence",
+        "evidence",
+        "items",
+        "limitations"
+      ],
+      "properties": {
+        "pageCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "componentCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "directories": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "confidence": {
+          "$ref": "#/$defs/confidenceLevel"
+        },
+        "evidence": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/component"
+          }
+        },
+        "limitations": {
+          "$ref": "#/$defs/stringArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "styling": {
+      "type": "object"
+    },
+    "staticHosting": {
+      "type": "object"
+    },
+    "assistant": {
+      "type": "object",
+      "required": ["ruleFiles"],
+      "properties": {
+        "ruleFiles": {
+          "$ref": "#/$defs/stringArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "graphPreview": {
+      "type": "object"
+    },
+    "pagesProbe": {
+      "anyOf": [{ "type": "object" }, { "type": "null" }]
+    },
+    "discovery": {
+      "type": "object",
+      "required": [
+        "schemaVersion",
+        "workspace",
+        "projectEvidence",
+        "routeSignalCount",
+        "taskableRouteCount",
+        "routeConfidence",
+        "componentConfidence",
+        "componentEvidence",
+        "limitations"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "discovery.v1"
+        },
+        "workspace": {
+          "type": "object",
+          "required": ["projectPath", "scope"],
+          "properties": {
+            "projectPath": {
+              "type": "string"
+            },
+            "scope": {
+              "type": "string",
+              "enum": ["single-app", "workspace-app"]
+            }
+          },
+          "additionalProperties": false
+        },
+        "projectEvidence": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "routeSignalCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "taskableRouteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "routeConfidence": {
+          "$ref": "#/$defs/confidenceLevel"
+        },
+        "componentConfidence": {
+          "$ref": "#/$defs/confidenceLevel"
+        },
+        "componentEvidence": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "limitations": {
+          "$ref": "#/$defs/stringArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "recommendedCommands": {
+      "$ref": "#/$defs/stringArray"
+    },
+    "privacy": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "confidenceLevel": {
+      "type": "string",
+      "enum": ["high", "medium", "low"]
+    },
+    "confidence": {
+      "type": "object",
+      "required": ["level", "score", "reasons"],
+      "properties": {
+        "level": {
+          "$ref": "#/$defs/confidenceLevel"
+        },
+        "score": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "reasons": {
+          "$ref": "#/$defs/stringArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "route": {
+      "type": "object",
+      "required": ["path", "file", "hasLayout"],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "file": {
+          "type": "string"
+        },
+        "hasLayout": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "routeSignal": {
+      "type": "object",
+      "required": ["path", "file", "kind", "confidence", "taskable", "evidence"],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "file": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "confidence": {
+          "$ref": "#/$defs/confidenceLevel"
+        },
+        "taskable": {
+          "type": "boolean"
+        },
+        "evidence": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "component": {
+      "type": "object",
+      "required": ["name", "file", "kind", "confidence"],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "file": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "confidence": {
+          "$ref": "#/$defs/confidenceLevel"
+        }
+      },
+      "additionalProperties": false
+    },
+    "stringArray": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

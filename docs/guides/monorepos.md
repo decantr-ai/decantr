@@ -14,6 +14,8 @@ pnpm exec decantr doctor --project apps/web
 
 `setup` and `workspace list` are non-mutating orientation commands. Before adoption, `setup` shows app candidates and the one attach command. After at least one app is attached, `setup` becomes a workspace dashboard that points at `doctor`, `task`, `verify`, and `ci init` for the attached app instead of telling you to adopt again. `adopt --project apps/web --yes` writes the Brownfield contract, hydrates hosted packs when online, and keeps `.decantr/*` context inside the app, while `.github/workflows/*` and workspace package-manager commands remain rooted at the repository root. Use `--no-packs` or offline mode when pack hydration should be deferred.
 
+Decantr 3.7 uses the same read-only discovery substrate for scan/setup/workspace/adopt/doctor/task/verify/ci/MCP. When you pass `--project apps/web`, discovery walks upward from `apps/web` to find the workspace package manager, but framework, language, routes, components, styling, assistant rules, and limitations come from the selected app. This prevents an Angular sibling, docs app, package library, or workspace root `index.html` from contaminating a React/Vite app scan. `decantr scan --project apps/web --json` emits `scan-report.v2` with both `routeSignalCount` and `taskableRouteCount`, plus component inventory confidence.
+
 ## Root vs App
 
 The repository root is for dependency installation, workspace scripts, CI workflows, and aggregate workspace health.

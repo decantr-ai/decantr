@@ -456,6 +456,16 @@ describe('MCP tool handlers', () => {
           summary: { nodes: 9, edges: 9, findings: 1, evidence: 0 },
         });
 
+        writeJson(join(projectDir, 'package.json'), {
+          dependencies: {
+            next: '^16.0.0',
+            react: '^19.0.0',
+            'react-dom': '^19.0.0',
+            tailwindcss: '^4.0.0',
+          },
+          devDependencies: { typescript: '^6.0.0' },
+          packageManager: 'pnpm@10.33.0',
+        });
         writeJson(join(projectDir, 'decantr.essence.json'), {
           version: '4.0.0',
           dna: {
@@ -715,6 +725,10 @@ describe('MCP tool handlers', () => {
 
         const state = (await callTool('decantr_get_project_state', {})) as {
           essence?: { routes?: string[]; active_v4?: boolean };
+          discovery?: {
+            project?: { framework?: string; package_manager?: string; primary_language?: string };
+            routes?: { taskable_route_count?: number; route_signal_count?: number };
+          };
           graph?: {
             ready?: boolean;
             current?: boolean | null;
@@ -745,6 +759,11 @@ describe('MCP tool handlers', () => {
         };
         expect(state.essence?.active_v4).toBe(true);
         expect(state.essence?.routes).toEqual(['/feed']);
+        expect(state.discovery?.project?.framework).toBe('nextjs');
+        expect(state.discovery?.project?.package_manager).toBe('pnpm');
+        expect(state.discovery?.project?.primary_language).toBe('typescript');
+        expect(state.discovery?.routes?.taskable_route_count).toBeGreaterThanOrEqual(1);
+        expect(state.discovery?.routes?.route_signal_count).toBeGreaterThanOrEqual(1);
         expect(state.graph?.ready).toBe(true);
         expect(state.graph?.current).toBe(true);
         expect(state.graph?.available_routes).toEqual(['/feed']);
@@ -1212,6 +1231,22 @@ describe('MCP tool handlers', () => {
         const projectDir = join(workspaceDir, 'apps', 'web');
         mkdirSync(projectDir, { recursive: true });
         process.chdir(workspaceDir);
+        writeJson(join(workspaceDir, 'package.json'), {
+          private: true,
+          workspaces: ['apps/*'],
+          packageManager: 'pnpm@10.33.0',
+        });
+        writeFileSync(join(workspaceDir, 'pnpm-lock.yaml'), 'lockfileVersion: 9.0\n', 'utf-8');
+        writeJson(join(projectDir, 'package.json'), {
+          dependencies: { react: '^19.0.0', 'react-dom': '^19.0.0' },
+          devDependencies: { typescript: '^6.0.0', vite: '^8.0.0' },
+        });
+        mkdirSync(join(projectDir, 'src'), { recursive: true });
+        writeFileSync(
+          join(projectDir, 'src', 'App.tsx'),
+          'export function App() { return <main />; }\n',
+          'utf-8',
+        );
         writeJson(join(projectDir, 'decantr.essence.json'), {
           version: '4.0.0',
           dna: {
@@ -1255,6 +1290,10 @@ describe('MCP tool handlers', () => {
           route?: string | null;
           page_id?: string;
           section_id?: string;
+          discovery?: {
+            project_path?: string;
+            project?: { framework?: string; package_manager?: string; primary_language?: string };
+          };
           typed_graph?: unknown;
           verify_command?: string;
         };
@@ -1262,6 +1301,10 @@ describe('MCP tool handlers', () => {
         expect(result.route).toBe('/');
         expect(result.page_id).toBe('home');
         expect(result.section_id).toBe('app');
+        expect(result.discovery?.project_path).toBe('apps/web');
+        expect(result.discovery?.project?.framework).toBe('react');
+        expect(result.discovery?.project?.package_manager).toBe('pnpm');
+        expect(result.discovery?.project?.primary_language).toBe('typescript');
         expect(result.typed_graph).toBeNull();
         expect(result.verify_command).toBe(
           'decantr verify --project apps/web --brownfield --local-patterns',

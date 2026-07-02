@@ -28,6 +28,14 @@ pnpm exec decantr adopt --project apps/web --yes
 pnpm exec decantr doctor --project apps/web
 ```
 
+In mixed workspaces, keep the first scan app-scoped too:
+
+```bash
+pnpm exec decantr scan --project apps/web --json
+```
+
+The JSON output is `scan-report.v2`. It reports the selected app path, the workspace package manager discovered by walking upward from that app, framework/language evidence, route signal count, taskable route count, component inventory confidence, styling authority, assistant rule files, and limitations. If `apps/web` is React/Vite/TypeScript beside an Angular sibling, Decantr should report the React app when `--project apps/web` is selected.
+
 `scan` is look-don't-touch reconnaissance. `analyze` is the local primitive that writes Brownfield intelligence and an observed proposal. `adopt` is the paved path that explains and runs the primitive flow for you: `analyze`, `init --existing --accept-proposal` or `--merge-proposal`, hosted pack hydration when online, Project Health, a baseline, and optional CI setup. Use the primitive commands only when you need to script or debug a specific step. Pass `--no-packs` when you need a fully local/offline attach and hydrate packs later with `decantr registry compile-packs <app>/decantr.essence.json --write-context`. In contract-only mode, deferred hosted packs are optional context; missing packs should show as optional/info unless a present manifest references missing files.
 
 If the app is already running and you want Decantr to attach route screenshots to task context, add visual evidence after adoption:
@@ -64,7 +72,7 @@ npx @decantr/cli verify --project apps/web --base-url http://localhost:3000 --ev
 
 ## Scan, Analyze, Adopt
 
-Use `scan` when you want a no-risk answer to "is this a Decantr Brownfield UI target?" It reports framework, package manager, route evidence, component/style signals, Decantr presence, assistant-rule files, GitHub Pages hints, fallback warnings, and next commands. Non-web repositories, such as Python/backend projects, return a useful "not a Brownfield UI target" result instead of failing.
+Use `scan` when you want a no-risk answer to "is this a Decantr Brownfield UI target?" It reports framework, package manager, primary language, route evidence, taskable route evidence, component inventory confidence, style signals, Decantr presence, assistant-rule files, GitHub Pages hints, fallback warnings, and next commands. Component counts are advisory static inventory evidence; the terminal output labels confidence instead of pretending every reusable component was found. Non-web repositories, such as Python/backend projects, return a useful "not a Brownfield UI target" result instead of failing.
 
 Use `analyze` when you are ready for local artifacts: doctrine map, Brownfield intelligence, theme inventory, enrichment backlog, report markdown, and an observed essence proposal.
 

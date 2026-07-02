@@ -4,9 +4,9 @@ Decantr verifier report schemas are published from `packages/verifier/schema`.
 
 ## Compatibility Model
 
-- Decantr 3.5 emits v2 report contracts for Project Health, CI reports, workspace health, Evidence Bundles, runtime probe payloads, authority resolution, loop readiness, common verification findings, and proof field reports.
+- Decantr emits v2 report contracts for Project Health, CI reports, workspace health, Evidence Bundles, runtime probe payloads, authority resolution, loop readiness, common verification findings, proof field reports, and Brownfield scan reports.
 - v1 report schemas remain published as historical references for existing consumers. They are no longer the default payload for 3.5 Project Health, CI, workspace health, or Evidence Bundle commands.
-- Audit, scan, file-critique, and showcase shortlist reports remain on their v1 schemas until those contracts need a wire change.
+- Audit, file-critique, and showcase shortlist reports remain on their v1 schemas until those contracts need a wire change.
 - Consumers must branch on the payload `$schema` URL instead of guessing by package version.
 - Source inclusion stays explicit. The v2 evidence schemas reserve source payloads out of band and require `sourceIncluded: false` for the local Evidence Bundle/runtime probe contract.
 
@@ -21,6 +21,7 @@ Decantr verifier report schemas are published from `packages/verifier/schema`.
 - `authority-resolution.v2.json`
 - `loop-readiness.v2.json`
 - `proof-field-report.v2.json`
+- `scan-report.v2.json`
 
 ## Historical And Still-Active v1 Schemas
 
@@ -34,7 +35,9 @@ Decantr verifier report schemas are published from `packages/verifier/schema`.
 - `file-critique-report.v1.json`
 - `showcase-shortlist-report.v1.json`
 
-`project-audit-report.v1.json`, `scan-report.v1.json`, `file-critique-report.v1.json`, and `showcase-shortlist-report.v1.json` remain active for their specific commands. The v1 health, CI, workspace, and evidence files are retained so older integrations can validate stored artifacts.
+`scan-report.v2.json` is the active `decantr scan --json` contract. It carries the shared discovery summary: app scope, workspace package-manager evidence, framework/language, route signal count, taskable route count, component inventory confidence, source directories, styling authority, assistant-rule files, and explicit limitations. `scan-report.v1.json` remains published for stored artifact compatibility.
+
+`project-audit-report.v1.json`, `file-critique-report.v1.json`, and `showcase-shortlist-report.v1.json` remain active for their specific commands. The v1 health, CI, workspace, evidence, and scan files are retained so older integrations can validate stored artifacts.
 
 ## v2 Loop And Evidence Schemas
 

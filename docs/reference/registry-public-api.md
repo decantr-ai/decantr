@@ -385,7 +385,7 @@ Accepted input:
 Purpose:
 - power the public `/scan` page with a look-don't-touch Brownfield report
 - resolve the repository and likely GitHub Pages counterpart when possible
-- clone public GitHub source into a temporary checkout, run the shared read-only scanner, probe the published Pages site with HTTP-only HTML metadata checks, and return an ephemeral `ScanReportV1`
+- clone public GitHub source into a temporary checkout, run the shared read-only scanner, probe the published Pages site with HTTP-only HTML metadata checks, and return an ephemeral `ScanReportV2`
 
 Trust posture:
 - no dependency install, project build, script execution, browser screenshot, report persistence, or pull request/issue creation
@@ -393,8 +393,8 @@ Trust posture:
 - non-web repositories return `not_applicable` messaging rather than failing the request
 
 Response schema:
-- `scan-report.v1.json`
-- `https://decantr.ai/schemas/scan-report.v1.json`
+- `scan-report.v2.json`
+- `https://decantr.ai/schemas/scan-report.v2.json`
 - shared definitions: `verification-report.common.v1.json`
 
 ## Showcase Benchmark Surfaces

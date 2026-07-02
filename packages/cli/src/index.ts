@@ -49,7 +49,7 @@ import {
   type ProjectAuditReport,
   type ScanFindingV1,
   type ScanGraphPreviewV1,
-  type ScanReportV1,
+  type ScanReport,
   scanProject as scanProjectReadOnly,
   type VerificationFinding,
 } from '@decantr/verifier';
@@ -3764,7 +3764,7 @@ function formatWhichCommandFirst(projectArg?: string): string {
   ].join('\n');
 }
 
-function routeHintFromScanReport(report: ScanReportV1): string | null {
+function routeHintFromScanReport(report: ScanReport): string | null {
   const routes = report.routes.map((route) => route.path).filter(Boolean);
   return (
     routes.find((route) => route !== '/' && !route.includes('*') && !route.includes(':')) ??
@@ -3782,7 +3782,7 @@ function scanSeverityColor(finding: ScanFindingV1): string {
   return cyan('info');
 }
 
-function formatScanApplicability(status: ScanReportV1['applicability']['status']): string {
+function formatScanApplicability(status: ScanReport['applicability']['status']): string {
   if (status === 'strong_fit') return success('strong fit');
   if (status === 'partial_fit') return `${YELLOW}partial fit${RESET}`;
   if (status === 'not_applicable') return dim('not applicable');
@@ -3933,7 +3933,7 @@ function printScanGraphPreview(preview?: ScanGraphPreviewV1): void {
   console.log('');
 }
 
-function printScanReport(report: ScanReportV1, projectArg?: string): void {
+function printScanReport(report: ScanReport, projectArg?: string): void {
   console.log(heading('Decantr Scan'));
   console.log(dim('Read-only Brownfield reconnaissance. No files were written.'));
   console.log('');
@@ -3962,14 +3962,23 @@ function printScanReport(report: ScanReportV1, projectArg?: string): void {
   printScanGraphPreview(report.graphPreview);
 
   console.log(`${BOLD}Routes And Styling${RESET}`);
-  console.log(`  Routes:         ${report.routes.count} (${report.routes.strategy})`);
+  const routeSignalCount = report.routes.routeSignalCount ?? report.routes.count;
+  const taskableRouteCount = report.routes.taskableRouteCount ?? report.routes.count;
+  console.log(
+    `  Routes:         ${taskableRouteCount} taskable / ${routeSignalCount} signal(s) (${report.routes.strategy}, ${report.routes.confidence})`,
+  );
   for (const route of report.routes.items.slice(0, 8)) {
     console.log(`    ${cyan(route.path.padEnd(18))} ${dim(route.file)}`);
   }
   if (report.routes.items.length > 8) {
     console.log(`    ${dim(`...${report.routes.items.length - 8} more route(s)`)}`);
   }
-  console.log(`  Components:     ${report.components.componentCount}`);
+  console.log(
+    `  Components:     ${report.components.componentCount} discovered (${report.components.confidence} confidence)`,
+  );
+  if (report.components.limitations?.[0]) {
+    console.log(`                  ${dim(report.components.limitations[0])}`);
+  }
   console.log(
     `  Styling:        ${report.styling.approach}${report.styling.configFile ? ` (${report.styling.configFile})` : ''}`,
   );
@@ -4038,7 +4047,7 @@ async function cmdScanWorkflow(args: string[]): Promise<void> {
     input: { kind: 'local', value: inputValue },
   });
   const graphPreview = buildScanGraphPreview(workspaceInfo, projectArg);
-  const reportWithGraph: ScanReportV1 = { ...report, graphPreview };
+  const reportWithGraph: ScanReport = { ...report, graphPreview };
   if (jsonOutput) {
     console.log(JSON.stringify(reportWithGraph, null, 2));
     return;
@@ -5681,7 +5690,7 @@ ${BOLD}Usage:${RESET}
 
 ${BOLD}Options:${RESET}
   --project   App path inside a workspace/monorepo
-  --json      Emit the ScanReportV1 JSON to stdout
+  --json      Emit the ScanReportV2 JSON to stdout
 
 ${BOLD}Behavior:${RESET}
   Reads local project files, detects frontend framework/routes/styling/static-hosting signals,

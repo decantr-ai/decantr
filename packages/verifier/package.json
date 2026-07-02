@@ -1,6 +1,6 @@
 {
   "name": "@decantr/verifier",
-  "version": "3.6.1",
+  "version": "3.7.0",
   "description": "Shared verification, typed findings, graph anchors, Project Health, and evidence schemas for Decantr",
   "keywords": [
     "decantr",
@@ -48,6 +48,7 @@
     "./schema/proof-field-report.v2.json": "./schema/proof-field-report.v2.json",
     "./schema/runtime-probe-payload.v2.json": "./schema/runtime-probe-payload.v2.json",
     "./schema/scan-report.v1.json": "./schema/scan-report.v1.json",
+    "./schema/scan-report.v2.json": "./schema/scan-report.v2.json",
     "./schema/workspace-health-report.v1.json": "./schema/workspace-health-report.v1.json",
     "./schema/workspace-health-report.v2.json": "./schema/workspace-health-report.v2.json",
     "./schema/file-critique-report.v1.json": "./schema/file-critique-report.v1.json",

@@ -87,6 +87,21 @@ export type {
 } from './diagnostics.js';
 export { deriveVerificationDiagnostic, KNOWN_VERIFICATION_DIAGNOSTICS } from './diagnostics.js';
 export type {
+  DiscoveryComponent,
+  DiscoveryConfidenceLevel,
+  DiscoveryFramework,
+  DiscoveryPackageManager,
+  DiscoveryPrimaryLanguage,
+  DiscoveryRoute,
+  DiscoveryRouteSignal,
+  DiscoveryRouteSignalKind,
+  DiscoveryRouteStrategy,
+  DiscoveryRoutes,
+  DiscoveryStyling,
+  ProjectDiscovery,
+} from './discovery.js';
+export { discoverProject } from './discovery.js';
+export type {
   GraphAnchorEdge,
   GraphAnchorFindingInput,
   GraphAnchorNode,
@@ -118,8 +133,11 @@ export type {
   ScanInputKind,
   ScanInputV1,
   ScanProjectOptions,
+  ScanReport,
   ScanReportV1,
+  ScanReportV2,
   ScanRepositoryV1,
+  ScanRouteSignalV2,
   ScanRouteV1,
 } from './scan.js';
 export {
@@ -127,6 +145,8 @@ export {
   probePublishedSite,
   resolveGitHubScanInput,
   SCAN_REPORT_SCHEMA_URL,
+  SCAN_REPORT_V1_SCHEMA_URL,
+  SCAN_REPORT_V2_SCHEMA_URL,
   scanProject,
 } from './scan.js';
 export type {
@@ -179,7 +199,7 @@ export const VERIFICATION_SCHEMA_URLS = {
   projectHealth: PROJECT_HEALTH_REPORT_V2_SCHEMA_URL,
   decantrCi: DECANTR_CI_REPORT_V2_SCHEMA_URL,
   evidenceBundle: EVIDENCE_BUNDLE_V2_SCHEMA_URL,
-  scanReport: 'https://decantr.ai/schemas/scan-report.v1.json',
+  scanReport: 'https://decantr.ai/schemas/scan-report.v2.json',
   workspaceHealth: WORKSPACE_HEALTH_REPORT_V2_SCHEMA_URL,
   fileCritique: 'https://decantr.ai/schemas/file-critique-report.v1.json',
   showcaseShortlist: 'https://decantr.ai/schemas/showcase-shortlist-report.v1.json',

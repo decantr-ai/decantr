@@ -136,8 +136,8 @@ describe('verifier schema contracts', () => {
       );
 
       const report = await scanProject(projectRoot);
-      assertMatchesVerifierSchema('scan-report.v1.json', report);
-      expect(report.$schema).toBe('https://decantr.ai/schemas/scan-report.v1.json');
+      assertMatchesVerifierSchema('scan-report.v2.json', report);
+      expect(report.$schema).toBe('https://decantr.ai/schemas/scan-report.v2.json');
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }

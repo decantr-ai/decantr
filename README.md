@@ -89,7 +89,7 @@ Canonical shapes live in the [published schemas](https://decantr.ai/schemas/); t
 | Verifier | Shared audit, critique, Project Health, Evidence Bundle, component reuse drift, behavior-obligation drift, style bridge drift, stable diagnostic code, typed repair ID, graph-anchored finding, contract assertion, and report-schema engine |
 | Showcase apps | Audited benchmark corpus and verification targets for Decantr-generated scaffolds |
 
-Decantr 3.6 adds proof-quality hardening from real brownfield corpus runs. Monorepo project discovery now ranks product UI apps ahead of docs, Storybook, API, MCP helper, workbench, and package surfaces, while `workspace list --json` includes candidate rank, category, score, and reason metadata for automation. Runtime proof accepts semantic roots for generic static apps while keeping framework targets strict about framework mount/document evidence. The real-world corpus harness also emits v2 timing summaries, slow-command budgets, root-smoke vs app-scoped command classification, route fallback notes, and stable failure categories so compatibility reports distinguish setup friction from Decantr route/context failures.
+Decantr 3.7 adds a shared Brownfield discovery substrate across verifier, CLI, MCP, and app-scoped workflows. `scan`, `setup`, `workspace list`, `adopt`, `doctor`, `task`, `verify`, `ci`, and MCP project/task/evidence reads now agree on selected app scope, workspace package manager, framework, language, route signals, taskable routes, component inventory confidence, styling authority, assistant rules, and limitations. This is especially important in mixed monorepos: a React/Vite app beside an Angular app should scan as React/TypeScript/pnpm when `--project apps/web` targets the React app, not as the repository root or sibling framework. `scan --json` now emits `scan-report.v2` by default; `scan-report.v1` remains published as a historical schema reference.
 
 Security review starts with the installed npm surface, not the whole monorepo. The package permission matrix documents filesystem, network, process, telemetry, hosted-upload, and MCP write-tool behavior for every public package: [docs/reference/security-permissions.md](docs/reference/security-permissions.md).
 
@@ -135,7 +135,7 @@ pnpm audit:public-api
 pnpm audit:package-permissions
 pnpm audit:registry-dogfood
 pnpm showcase:verify:shortlist
-pnpm benchmark:realworld-corpus -- --config scripts/realworld-corpus.first-mile.json --cli packages/cli/dist/index.js --out /tmp/decantr-realworld-corpus-3.6
+pnpm benchmark:realworld-corpus -- --config scripts/realworld-corpus.first-mile.json --cli packages/cli/dist/index.js --out /tmp/decantr-realworld-corpus-3.7
 pnpm release:verify
 pnpm release:closeout
 ```

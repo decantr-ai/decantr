@@ -449,6 +449,155 @@ describe('scanProject', () => {
     expect(report.staticHosting.githubPagesLikely).toBe(false);
     expect(report.staticHosting.basePath).toBeNull();
   });
+
+  it('scans the selected React app in a mixed Angular/React monorepo without sibling contamination', async () => {
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      JSON.stringify({ private: true, workspaces: ['apps/*'], packageManager: 'pnpm@10.33.0' }),
+    );
+    writeFileSync(join(projectRoot, 'pnpm-lock.yaml'), 'lockfileVersion: 9.0\n');
+    mkdirSync(join(projectRoot, 'apps', 'admin-angular', 'src', 'app'), { recursive: true });
+    mkdirSync(join(projectRoot, 'apps', 'react-console', 'src', 'routes'), { recursive: true });
+    mkdirSync(join(projectRoot, 'apps', 'react-console', 'src', 'features', 'billing'), {
+      recursive: true,
+    });
+    mkdirSync(join(projectRoot, 'apps', 'react-console', 'src', 'features', 'forms'), {
+      recursive: true,
+    });
+    mkdirSync(join(projectRoot, 'apps', 'react-console', 'src', 'styles'), { recursive: true });
+    writeFileSync(
+      join(projectRoot, 'apps', 'admin-angular', 'package.json'),
+      JSON.stringify({ dependencies: { '@angular/core': '^21.0.0' } }),
+    );
+    writeFileSync(
+      join(projectRoot, 'apps', 'admin-angular', 'src', 'app', 'app.routes.ts'),
+      "export const routes = [{ path: 'angular-only', component: AdminComponent }];\n",
+    );
+    writeFileSync(
+      join(projectRoot, 'apps', 'react-console', 'package.json'),
+      JSON.stringify(
+        {
+          dependencies: {
+            '@tanstack/react-router': '^1.140.0',
+            '@vitejs/plugin-react': '^5.0.0',
+            echarts: '^6.0.0',
+            lucide: '^1.0.0',
+            react: '^19.0.0',
+            'react-dom': '^19.0.0',
+            tailwindcss: '^4.0.0',
+            zod: '^4.0.0',
+            zustand: '^6.0.0',
+          },
+          devDependencies: { typescript: '^6.0.0', vite: '^8.0.0' },
+        },
+        null,
+        2,
+      ),
+    );
+    writeFileSync(
+      join(projectRoot, 'apps', 'react-console', 'tsconfig.json'),
+      JSON.stringify({ compilerOptions: { jsx: 'react-jsx' } }),
+    );
+    writeFileSync(
+      join(projectRoot, 'apps', 'react-console', 'index.html'),
+      '<!doctype html><div id="root"></div>\n',
+    );
+    writeFileSync(
+      join(projectRoot, 'apps', 'react-console', 'vite.config.ts'),
+      "import react from '@vitejs/plugin-react'; export default { plugins: [react()] };\n",
+    );
+    writeFileSync(
+      join(projectRoot, 'apps', 'react-console', 'src', 'routes', 'index.tsx'),
+      [
+        "import { createFileRoute } from '@tanstack/react-router';",
+        "export const Route = createFileRoute('/')({ component: HomeRoute });",
+        'function HomeRoute() { return <main />; }',
+        '',
+      ].join('\n'),
+    );
+    writeFileSync(
+      join(projectRoot, 'apps', 'react-console', 'src', 'routes', 'reports.tsx'),
+      [
+        "import { createFileRoute } from '@tanstack/react-router';",
+        "import { RevenueChart } from '../features/billing/RevenueChart';",
+        "export const Route = createFileRoute('/reports')({ component: ReportsRoute });",
+        'function ReportsRoute() { return <RevenueChart />; }',
+        '',
+      ].join('\n'),
+    );
+    writeFileSync(
+      join(projectRoot, 'apps', 'react-console', 'src', 'routeTree.gen.ts'),
+      "export const routeTree = { path: '/generated-should-not-count' };\n",
+    );
+    writeFileSync(
+      join(projectRoot, 'apps', 'react-console', 'src', 'features', 'billing', 'RevenueChart.tsx'),
+      'export function RevenueChart() { return <section><svg /></section>; }\n',
+    );
+    writeFileSync(
+      join(projectRoot, 'apps', 'react-console', 'src', 'features', 'forms', 'AccountForm.tsx'),
+      'export const AccountForm = () => <form><input /></form>;\n',
+    );
+    writeFileSync(
+      join(
+        projectRoot,
+        'apps',
+        'react-console',
+        'src',
+        'features',
+        'billing',
+        'RevenueChart.test.tsx',
+      ),
+      'export function TestChart() { return <div />; }\n',
+    );
+    writeFileSync(
+      join(
+        projectRoot,
+        'apps',
+        'react-console',
+        'src',
+        'features',
+        'billing',
+        'RevenueChart.stories.tsx',
+      ),
+      'export function StoryChart() { return <div />; }\n',
+    );
+    writeFileSync(
+      join(projectRoot, 'apps', 'react-console', 'src', 'styles', 'theme.css'),
+      '@theme { --color-brand: #2563eb; --radius-card: 8px; } .dark { color-scheme: dark; }\n',
+    );
+
+    const report = await scanProject(join(projectRoot, 'apps', 'react-console'), {
+      input: { kind: 'local', value: 'apps/react-console' },
+    });
+
+    expect(report.schemaVersion).toBe('scan-report.v2');
+    expect(report.project.packageManager).toBe('pnpm');
+    expect(report.project.framework).toBe('react');
+    expect(report.project.primaryLanguage).toBe('typescript');
+    expect(report.project.projectPath).toBe('apps/react-console');
+    expect(report.project.evidence).toContain('React dependency');
+    expect(report.routes.strategy).toBe('source-declared');
+    expect(report.routes.signals.some((signal) => signal.kind === 'tanstack-router')).toBe(true);
+    expect(report.routes.taskableRouteCount).toBeGreaterThanOrEqual(2);
+    expect(report.routes.items.map((route) => route.path)).toEqual(
+      expect.arrayContaining(['/', '/reports']),
+    );
+    expect(report.routes.items.map((route) => route.path)).not.toContain('/angular-only');
+    expect(report.components.componentCount).toBeGreaterThanOrEqual(2);
+    expect(report.components.items.map((component) => component.name)).toEqual(
+      expect.arrayContaining(['RevenueChart', 'AccountForm', 'HomeRoute', 'ReportsRoute']),
+    );
+    expect(report.components.items.map((component) => component.name)).not.toEqual(
+      expect.arrayContaining(['TestChart', 'StoryChart']),
+    );
+    expect(report.components.confidence).toMatch(/medium|high/);
+    expect(report.components.evidence).toContain(
+      'feature-folder and route-local components were included',
+    );
+    expect(report.styling.approach).toBe('tailwind');
+    expect(report.styling.cssVariableCount).toBeGreaterThanOrEqual(2);
+    expect(report.styling.darkMode).toBe(true);
+  });
 });
 
 describe('resolveGitHubScanInput', () => {

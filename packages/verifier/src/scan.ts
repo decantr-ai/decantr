@@ -1,13 +1,22 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { extname, isAbsolute, join, relative } from 'node:path';
 import { decodeHTML, decodeHTMLAttribute } from 'entities';
+import {
+  type DiscoveryComponent,
+  type DiscoveryConfidenceLevel,
+  type DiscoveryRouteSignal,
+  discoverProject,
+  type ProjectDiscovery,
+} from './discovery.js';
 
 export type ScanInputKind = 'local' | 'github-repo' | 'github-pages';
 export type ScanConfidence = 'high' | 'medium' | 'low';
 export type ScanApplicabilityStatus = 'strong_fit' | 'partial_fit' | 'not_applicable' | 'unknown';
 export type ScanFindingSeverity = 'success' | 'info' | 'warn' | 'error';
 
-export const SCAN_REPORT_SCHEMA_URL = 'https://decantr.ai/schemas/scan-report.v1.json';
+export const SCAN_REPORT_V1_SCHEMA_URL = 'https://decantr.ai/schemas/scan-report.v1.json';
+export const SCAN_REPORT_V2_SCHEMA_URL = 'https://decantr.ai/schemas/scan-report.v2.json';
+export const SCAN_REPORT_SCHEMA_URL = SCAN_REPORT_V2_SCHEMA_URL;
 
 export interface ScanInputV1 {
   kind: ScanInputKind;
@@ -100,7 +109,7 @@ export interface ScanGraphPreviewV1 {
 }
 
 export interface ScanReportV1 {
-  $schema: typeof SCAN_REPORT_SCHEMA_URL;
+  $schema: typeof SCAN_REPORT_V1_SCHEMA_URL;
   schemaVersion: 'scan-report.v1';
   generatedAt: string;
   input: ScanInputV1;
@@ -166,6 +175,75 @@ export interface ScanReportV1 {
     notes: string[];
   };
 }
+
+export interface ScanRouteSignalV2 {
+  path: string;
+  file: string;
+  kind: string;
+  confidence: DiscoveryConfidenceLevel;
+  taskable: boolean;
+  evidence: string;
+}
+
+export interface ScanComponentV2 {
+  name: string;
+  file: string;
+  kind: DiscoveryComponent['kind'];
+  confidence: DiscoveryConfidenceLevel;
+}
+
+export interface ScanDiscoveryV2 {
+  schemaVersion: 'discovery.v1';
+  workspace: {
+    projectPath: string;
+    scope: 'single-app' | 'workspace-app';
+  };
+  projectEvidence: string[];
+  routeSignalCount: number;
+  taskableRouteCount: number;
+  routeConfidence: DiscoveryConfidenceLevel;
+  componentConfidence: DiscoveryConfidenceLevel;
+  componentEvidence: string[];
+  limitations: string[];
+}
+
+export interface ScanReportV2 {
+  $schema: typeof SCAN_REPORT_V2_SCHEMA_URL;
+  schemaVersion: 'scan-report.v2';
+  generatedAt: string;
+  input: ScanInputV1;
+  source: ScanReportV1['source'];
+  confidence: ScanReportV1['confidence'];
+  applicability: ScanReportV1['applicability'];
+  project: ScanReportV1['project'] & {
+    evidence: string[];
+    workspaceScope: 'single-app' | 'workspace-app';
+    projectPath: string;
+  };
+  routes: ScanReportV1['routes'] & {
+    routeSignalCount: number;
+    taskableRouteCount: number;
+    confidence: DiscoveryConfidenceLevel;
+    signals: ScanRouteSignalV2[];
+  };
+  components: ScanReportV1['components'] & {
+    confidence: DiscoveryConfidenceLevel;
+    evidence: string[];
+    items: ScanComponentV2[];
+    limitations: string[];
+  };
+  styling: ScanReportV1['styling'];
+  staticHosting: ScanReportV1['staticHosting'];
+  assistant: ScanReportV1['assistant'];
+  graphPreview?: ScanGraphPreviewV1;
+  pagesProbe: PublishedSiteProbeV1 | null;
+  discovery: ScanDiscoveryV2;
+  findings: ScanFindingV1[];
+  recommendedCommands: string[];
+  privacy: ScanReportV1['privacy'];
+}
+
+export type ScanReport = ScanReportV2;
 
 export interface ScanProjectOptions {
   input?: ScanInputV1;
@@ -1315,20 +1393,94 @@ function buildCommands(applicability: ScanReportV1['applicability']): string[] {
   return commands;
 }
 
+function routeFromDiscovery(
+  route: ProjectDiscovery['routes']['taskableRoutes'][number],
+): ScanRouteV1 {
+  return {
+    path: route.path,
+    file: route.file,
+    hasLayout: route.hasLayout,
+  };
+}
+
+function routeSignalFromDiscovery(signal: DiscoveryRouteSignal): ScanRouteSignalV2 {
+  return {
+    path: signal.path,
+    file: signal.file,
+    kind: signal.kind,
+    confidence: signal.confidence,
+    taskable: signal.taskable,
+    evidence: signal.evidence,
+  };
+}
+
+function componentFromDiscovery(component: DiscoveryComponent): ScanComponentV2 {
+  return {
+    name: component.name,
+    file: component.file,
+    kind: component.kind,
+    confidence: component.confidence,
+  };
+}
+
+function detectionFromDiscovery(discovery: ProjectDiscovery): ProjectDetection {
+  return {
+    framework: discovery.project.framework,
+    frameworkVersion: discovery.project.frameworkVersion,
+    packageManager: discovery.project.packageManager,
+    primaryLanguage: discovery.project.primaryLanguage,
+    hasTypeScript: discovery.project.hasTypeScript,
+    hasTailwind: discovery.project.hasTailwind,
+    hasDecantr: discovery.project.hasDecantr,
+    packageName: discovery.project.packageName,
+    packageJsonValid: discovery.project.packageJsonValid,
+    packageJsonPresent: discovery.project.packageJsonPresent,
+    dependencies: discovery.project.dependencies,
+  };
+}
+
+function scanDiscoverySummary(discovery: ProjectDiscovery): ScanDiscoveryV2 {
+  return {
+    schemaVersion: 'discovery.v1',
+    workspace: {
+      projectPath: discovery.workspace.projectPath,
+      scope: discovery.workspace.scope,
+    },
+    projectEvidence: discovery.project.evidence,
+    routeSignalCount: discovery.routes.routeSignalCount,
+    taskableRouteCount: discovery.routes.taskableRouteCount,
+    routeConfidence: discovery.routes.confidence,
+    componentConfidence: discovery.components.confidence,
+    componentEvidence: discovery.components.evidence,
+    limitations: discovery.limitations,
+  };
+}
+
 export async function scanProject(
   projectRoot: string,
   options: ScanProjectOptions = {},
-): Promise<ScanReportV1> {
-  const detection = detectProject(projectRoot);
-  const routes = scanRoutes(projectRoot, detection);
-  routes.routes = routes.routes.slice(0, MAX_REPORT_ROUTES);
-  const components = countComponents(projectRoot, routes);
-  const styling = scanStyling(projectRoot, detection);
-  const assistantRules = findAssistantRules(projectRoot);
+): Promise<ScanReportV2> {
+  const discovery = discoverProject(projectRoot);
+  const detection = detectionFromDiscovery(discovery);
+  const routes: RouteScan = {
+    strategy: discovery.routes.strategy,
+    routes: discovery.routes.taskableRoutes.map(routeFromDiscovery).slice(0, MAX_REPORT_ROUTES),
+  };
+  const components = {
+    pageCount: discovery.components.pageCount,
+    componentCount: discovery.components.componentCount,
+    directories: discovery.components.directories,
+    confidence: discovery.components.confidence,
+    evidence: discovery.components.evidence,
+    items: discovery.components.items.map(componentFromDiscovery),
+    limitations: discovery.components.limitations,
+  };
+  const styling = discovery.styling;
+  const assistantRules = discovery.assistant.ruleFiles;
   const staticHosting = scanStaticHosting(projectRoot, detection);
   const pagesProbe = options.pagesProbe ?? null;
   const applicability = buildApplicability(detection, routes, components);
-  const confidence = buildConfidence(applicability, detection, routes, styling);
+  const confidence = discovery.confidence;
   const rawInput = options.input ?? { kind: 'local', value: '.' };
   const input =
     rawInput.kind === 'local' && isAbsolute(rawInput.value)
@@ -1336,8 +1488,8 @@ export async function scanProject(
       : rawInput;
 
   return {
-    $schema: SCAN_REPORT_SCHEMA_URL,
-    schemaVersion: 'scan-report.v1',
+    $schema: SCAN_REPORT_V2_SCHEMA_URL,
+    schemaVersion: 'scan-report.v2',
     generatedAt: new Date().toISOString(),
     input,
     source: {
@@ -1355,11 +1507,18 @@ export async function scanProject(
       hasTailwind: detection.hasTailwind,
       hasDecantr: detection.hasDecantr,
       packageName: detection.packageName,
+      evidence: discovery.project.evidence,
+      workspaceScope: discovery.workspace.scope,
+      projectPath: discovery.workspace.projectPath,
     },
     routes: {
       strategy: routes.strategy,
       count: routes.routes.length,
       items: routes.routes,
+      routeSignalCount: discovery.routes.routeSignalCount,
+      taskableRouteCount: discovery.routes.taskableRouteCount,
+      confidence: discovery.routes.confidence,
+      signals: discovery.routes.routeSignals.map(routeSignalFromDiscovery),
     },
     components,
     styling,
@@ -1368,6 +1527,7 @@ export async function scanProject(
       ruleFiles: assistantRules,
     },
     pagesProbe,
+    discovery: scanDiscoverySummary(discovery),
     findings: buildFindings({
       detection,
       routes,
@@ -1382,7 +1542,7 @@ export async function scanProject(
       sourceUploaded: input.kind !== 'local',
       persistedByDecantr: false,
       notes: [
-        'V1 scans are read-only and do not install dependencies, build projects, execute scripts, or open pull requests.',
+        'V2 scans are read-only and do not install dependencies, build projects, execute scripts, or open pull requests.',
         'Hosted scans use temporary public-repo checkouts and return an ephemeral report.',
       ],
     },
@@ -1397,10 +1557,10 @@ export function createUnavailableScanReport(input: {
   title: string;
   message: string;
   evidence?: string[];
-}): ScanReportV1 {
+}): ScanReportV2 {
   return {
-    $schema: SCAN_REPORT_SCHEMA_URL,
-    schemaVersion: 'scan-report.v1',
+    $schema: SCAN_REPORT_V2_SCHEMA_URL,
+    schemaVersion: 'scan-report.v2',
     generatedAt: new Date().toISOString(),
     input: input.scanInput,
     source: {
@@ -1426,9 +1586,28 @@ export function createUnavailableScanReport(input: {
       hasTailwind: false,
       hasDecantr: false,
       packageName: null,
+      evidence: [],
+      workspaceScope: 'single-app',
+      projectPath: '.',
     },
-    routes: { strategy: 'none', count: 0, items: [] },
-    components: { pageCount: 0, componentCount: 0, directories: [] },
+    routes: {
+      strategy: 'none',
+      count: 0,
+      items: [],
+      routeSignalCount: 0,
+      taskableRouteCount: 0,
+      confidence: 'low',
+      signals: [],
+    },
+    components: {
+      pageCount: 0,
+      componentCount: 0,
+      directories: [],
+      confidence: 'low',
+      evidence: [],
+      items: [],
+      limitations: ['Source could not be inspected.'],
+    },
     styling: {
       approach: 'unknown',
       configFile: null,
@@ -1446,6 +1625,20 @@ export function createUnavailableScanReport(input: {
     },
     assistant: { ruleFiles: [] },
     pagesProbe: input.pagesProbe ?? null,
+    discovery: {
+      schemaVersion: 'discovery.v1',
+      workspace: {
+        projectPath: '.',
+        scope: 'single-app',
+      },
+      projectEvidence: [],
+      routeSignalCount: 0,
+      taskableRouteCount: 0,
+      routeConfidence: 'low',
+      componentConfidence: 'low',
+      componentEvidence: [],
+      limitations: ['Source could not be inspected.'],
+    },
     findings: [
       {
         id: 'source-unavailable',

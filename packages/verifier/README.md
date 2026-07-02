@@ -15,7 +15,8 @@ npm install @decantr/verifier
 
 - `auditProject()` for project-level Decantr audits
 - `auditBuiltDist()` for built-output runtime verification against emitted HTML, assets, and route hints
-- `scanProject()` for read-only Brownfield reconnaissance of framework, routes, components, styling, static-hosting hints, Decantr presence, and assistant-rule files
+- `discoverProject()` for shared read-only Brownfield discovery of workspace/app scope, package manager, framework, language, source-declared routes, taskable routes, component inventory, styling authority, Decantr presence, and assistant-rule files
+- `scanProject()` for read-only Brownfield reconnaissance that emits `scan-report.v2` by default using the shared discovery substrate
 - `auditComponentReuse()` for the first AST-derived component reuse drift slice, focused on AI reimplementing common UI primitives instead of importing project-owned components, plus local import references that the typed graph can turn into source-to-source impact edges
 - `auditStyleBridgeDrift()` for accepted style bridge drift, focused on production `className`, common class-helper values, stylesheet declarations, and hardcoded inline color styles that bypass project-owned token/class authority
 - `collectProjectSourceFiles()` for the shared production-source file selection used by Project Health, component reuse drift, style bridge drift, and typed graph source provenance
@@ -96,12 +97,13 @@ function isBlocking(report: ProjectHealthReport) {
 - `@decantr/verifier/schema/loop-readiness.v2.json`
 - `@decantr/verifier/schema/proof-field-report.v2.json`
 - `@decantr/verifier/schema/scan-report.v1.json`
+- `@decantr/verifier/schema/scan-report.v2.json`
 - `@decantr/verifier/schema/workspace-health-report.v1.json`
 - `@decantr/verifier/schema/workspace-health-report.v2.json`
 - `@decantr/verifier/schema/file-critique-report.v1.json`
 - `@decantr/verifier/schema/showcase-shortlist-report.v1.json`
 
-The v2 schema assets are the active Decantr 3.5 contracts for Project Health, CI, Workspace Health, Evidence Bundles, runtime probes, authority resolution, loop readiness, and proof field reports. v1 health/evidence schemas remain published for stored-artifact compatibility; audit, scan, file-critique, and showcase reports remain v1 until those wires need to change. See [Report Schemas](https://decantr.ai/reference/report-schemas.md).
+The v2 schema assets are the active Decantr 3 contracts for Project Health, CI, Workspace Health, Evidence Bundles, runtime probes, authority resolution, loop readiness, proof field reports, and Brownfield scan reports. v1 health/evidence/scan schemas remain published for stored-artifact compatibility; audit, file-critique, and showcase reports remain v1 until those wires need to change. See [Report Schemas](https://decantr.ai/reference/report-schemas.md).
 
 ## Security And Permissions
 

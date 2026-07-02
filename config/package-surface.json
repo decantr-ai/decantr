@@ -111,7 +111,7 @@
       "releaseChannel": "stable",
       "publishOrder": 20,
       "defaultDistTag": "latest",
-      "summary": "MCP delivery surface for Decantr Contract context, typed graph artifacts, packs, Brownfield and Hybrid task context with authority, local law, change impact, evidence bundles, workspace health, and repair prompts.",
+      "summary": "MCP delivery surface for Decantr Contract context, shared discovery metadata, typed graph artifacts, packs, Brownfield and Hybrid task context with authority, local law, change impact, evidence bundles, workspace health, and repair prompts.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,
@@ -131,7 +131,7 @@
       "releaseChannel": "stable",
       "publishOrder": 10,
       "defaultDistTag": "latest",
-      "summary": "Shared read-only Brownfield scan engine, verification, critique, source-grounded interaction evidence, contract assertions, Evidence Bundle, Project Health, Decantr CI report, Workspace Health, and report-schema engine.",
+      "summary": "Shared read-only Brownfield discovery and scan-report v2 engine, verification, critique, source-grounded interaction evidence, contract assertions, Evidence Bundle, Project Health, Decantr CI report, Workspace Health, and report-schema engine.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,
@@ -151,7 +151,7 @@
       "releaseChannel": "stable",
       "publishOrder": 30,
       "defaultDistTag": "latest",
-      "summary": "Workflow commands for setup/scan/adopt/doctor/task/verify/ci/codify/connect/content, local workflow/adoption policy resolution, adapter-backed bootstrap/attach, read-only Brownfield scan previews, Cursor activation, Brownfield intelligence, Hybrid authority lanes, monorepo app targeting, artifact ownership guidance, project-owned local law, registry sync, Evidence Bundles, visual manifests, health baselines, workspace health, pinned CI generation, Project Health, Studio, Content Health, and project governance.",
+      "summary": "Workflow commands for setup/scan/adopt/doctor/task/verify/ci/codify/connect/content, local workflow/adoption policy resolution, adapter-backed bootstrap/attach, scan-report v2 Brownfield discovery previews, Cursor activation, Brownfield intelligence, Hybrid authority lanes, monorepo app targeting, artifact ownership guidance, project-owned local law, registry sync, Evidence Bundles, visual manifests, health baselines, workspace health, pinned CI generation, Project Health, Studio, Content Health, and project governance.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,

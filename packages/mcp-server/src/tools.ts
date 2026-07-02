@@ -45,6 +45,7 @@ import {
   createEvidenceTier,
   createLoopReadiness,
   deriveVerificationDiagnostic,
+  discoverProject,
   type EvidenceBundle,
   KNOWN_VERIFICATION_DIAGNOSTICS,
   LOOP_READINESS_V2_SCHEMA_URL,
@@ -222,6 +223,66 @@ function displayProjectFile(projectRoot: string, path: string | null | undefined
   if (/^[a-z]+:\/\//i.test(path)) return path;
   if (isAbsolute(path)) return displayWorkspacePath(path);
   return displayWorkspacePath(join(projectRoot, path));
+}
+
+function mcpDiscoverySummary(projectRoot: string) {
+  const discovery = discoverProject(projectRoot);
+  return {
+    schema_version: 'discovery.v1',
+    project_path: discovery.workspace.projectPath,
+    workspace_scope: discovery.workspace.scope,
+    project: {
+      framework: discovery.project.framework,
+      framework_version: discovery.project.frameworkVersion,
+      package_manager: discovery.project.packageManager,
+      primary_language: discovery.project.primaryLanguage,
+      has_typescript: discovery.project.hasTypeScript,
+      has_tailwind: discovery.project.hasTailwind,
+      has_decantr: discovery.project.hasDecantr,
+      package_name: discovery.project.packageName,
+      evidence: discovery.project.evidence,
+    },
+    routes: {
+      strategy: discovery.routes.strategy,
+      route_signal_count: discovery.routes.routeSignalCount,
+      taskable_route_count: discovery.routes.taskableRouteCount,
+      confidence: discovery.routes.confidence,
+      taskable_routes: discovery.routes.taskableRoutes.slice(0, 20).map((route) => ({
+        path: route.path,
+        file: route.file,
+        source: route.source,
+        confidence: route.confidence,
+      })),
+      signals: discovery.routes.routeSignals.slice(0, 20).map((signal) => ({
+        path: signal.path,
+        file: signal.file,
+        kind: signal.kind,
+        taskable: signal.taskable,
+        confidence: signal.confidence,
+      })),
+    },
+    components: {
+      component_count: discovery.components.componentCount,
+      page_count: discovery.components.pageCount,
+      confidence: discovery.components.confidence,
+      directories: discovery.components.directories,
+      evidence: discovery.components.evidence,
+      limitations: discovery.components.limitations,
+    },
+    styling: {
+      approach: discovery.styling.approach,
+      config_file: discovery.styling.configFile,
+      css_variable_count: discovery.styling.cssVariableCount,
+      color_token_count: discovery.styling.colorTokenCount,
+      dark_mode: discovery.styling.darkMode,
+      theme_signals: discovery.styling.themeSignals,
+    },
+    assistant: {
+      rule_files: discovery.assistant.ruleFiles,
+    },
+    confidence: discovery.confidence,
+    limitations: discovery.limitations,
+  };
 }
 
 function graphAvailableRoutes(snapshot: GraphSnapshot): string[] {
@@ -3372,6 +3433,7 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
         return {
           source: 'local_workspace',
           project_root: displayWorkspacePath(projectRoot),
+          discovery: mcpDiscoverySummary(projectRoot),
           essence: essence
             ? {
                 present: true,
@@ -4629,6 +4691,7 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
       };
 
       return {
+        discovery: mcpDiscoverySummary(projectRoot),
         route: resolvedRoute,
         page_id: pageId,
         section_id: section.id,
@@ -5123,7 +5186,10 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
       try {
         const projectRoot = resolveMcpProjectRoot(args.project_path);
         const state = await getMcpHealthState(projectRoot);
-        return state.evidence;
+        return {
+          ...state.evidence,
+          discovery: mcpDiscoverySummary(projectRoot),
+        };
       } catch (error) {
         return { error: (error as Error).message };
       }
@@ -5167,6 +5233,7 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
         }
         return {
           project: state.evidence.project,
+          discovery: mcpDiscoverySummary(projectRoot),
           health: state.evidence.health,
           finding: {
             id: finding.id,
