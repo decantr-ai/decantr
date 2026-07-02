@@ -70,6 +70,15 @@ for (const [index, entry] of selected.entries()) {
   console.log(`## ${entry.name}`);
   console.log(`npm ${command.map(shellQuote).join(' ')}`);
 
+  if (write) {
+    const existing = readTrustConfig(entry.name);
+    if (existing.some((config) => matchesTrustConfig(config, { repository, workflowFile, environment }))) {
+      console.log('Matching trusted-publishing relationship already exists; skipping.');
+      console.log('');
+      continue;
+    }
+  }
+
   const result = spawnSync('npm', command, {
     cwd: root,
     encoding: interactive ? undefined : 'utf8',
@@ -102,6 +111,38 @@ function shellQuote(value) {
   const stringValue = String(value);
   if (/^[A-Za-z0-9_./:@,%+-]+$/.test(stringValue)) return stringValue;
   return `'${stringValue.replaceAll("'", "'\\''")}'`;
+}
+
+function readTrustConfig(packageName) {
+  const result = spawnSync('npm', ['trust', 'list', packageName, '--json'], {
+    cwd: root,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+    env: process.env,
+  });
+
+  if (result.status !== 0) {
+    if (result.stderr) process.stderr.write(result.stderr);
+    return [];
+  }
+
+  const stdout = result.stdout.trim();
+  if (!stdout) return [];
+  try {
+    const parsed = JSON.parse(stdout);
+    return Array.isArray(parsed) ? parsed : [parsed];
+  } catch {
+    return [];
+  }
+}
+
+function matchesTrustConfig(config, expected) {
+  return (
+    config?.type === 'github' &&
+    config?.repository === expected.repository &&
+    config?.file === expected.workflowFile &&
+    (expected.environment ? config?.environment === expected.environment : !config?.environment)
+  );
 }
 
 function sleep(ms) {
