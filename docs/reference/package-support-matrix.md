@@ -15,13 +15,14 @@ This matrix defines which npm packages are part of the active Decantr 3 product 
 | Package | Support status | Surface class | Maturity | Release wave | Release channel | Default npm tag | Publish default | Stable candidate | Blockers | Release lane | Summary |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `@decantr/essence-spec` | core-supported | `public-foundation` | stable | `foundation` (`10`) | `stable` | `latest` | `true` | `true` | `0` | `stable-public` | Essence schemas, validation, migration, and TypeScript types. |
-| `@decantr/registry` | core-supported | `public-foundation` | stable | `foundation` (`20`) | `stable` | `latest` | `true` | `true` | `0` | `stable-public` | Certified vocabulary contracts, schemas, Content Health report types, API client, and public content utilities. |
-| `@decantr/css` | core-supported | `public-foundation` | stable | `foundation` (`30`) | `stable` | `latest` | `true` | `true` | `0` | `stable-public` | Framework-agnostic CSS atom runtime for Decantr projects. |
-| `@decantr/core` | core-supported | `public-foundation` | stable | `foundation` (`40`) | `stable` | `latest` | `true` | `true` | `0` | `stable-public` | Execution-pack compiler primitives, typed graph builders, Contract capsule helpers, and shared Decantr core utilities for advanced package consumers. |
-| `@decantr/telemetry` | core-supported | `public-foundation` | stable | `foundation` (`50`) | `stable` | `latest` | `true` | `true` | `0` | `stable-public` | Privacy-preserving telemetry event contracts, clients, and analytics sinks. |
+| `@decantr/content` | core-supported | `public-foundation` | stable | `foundation` (`20`) | `stable` | `latest` | `true` | `true` | `0` | `stable-public` | Official Decantr content corpus, schemas, local search/resolution helpers, and content validation for AI frontend governance. |
+| `@decantr/registry` | supported-secondary | `public-foundation` | stable | `foundation` (`30`) | `stable` | `latest` | `true` | `true` | `0` | `stable-public` | 3.x compatibility package for registry-named schema exports, API clients, resolver types, and legacy content utilities. New integrations should prefer @decantr/content for the official corpus. |
+| `@decantr/css` | supported-secondary | `public-foundation` | stable | `foundation` (`40`) | `stable` | `latest` | `true` | `true` | `0` | `stable-public` | Legacy optional CSS atom runtime retained for compatibility and showcase demos; no longer the default greenfield adoption path. |
+| `@decantr/core` | core-supported | `public-foundation` | stable | `foundation` (`50`) | `stable` | `latest` | `true` | `true` | `0` | `stable-public` | Execution-pack compiler primitives, typed graph builders, Contract capsule helpers, and shared Decantr core utilities for advanced package consumers. |
+| `@decantr/telemetry` | core-supported | `public-foundation` | stable | `foundation` (`60`) | `stable` | `latest` | `true` | `true` | `0` | `stable-public` | Privacy-preserving telemetry event contracts, clients, and analytics sinks. |
 | `@decantr/verifier` | core-supported | `public-operator` | stable | `delivery` (`10`) | `stable` | `latest` | `true` | `true` | `0` | `stable-public` | Shared read-only Brownfield discovery and scan-report v2 engine, verification, critique, source-grounded interaction evidence, contract assertions, Evidence Bundle, Project Health, Decantr CI report, Workspace Health, and report-schema engine. |
 | `@decantr/mcp-server` | core-supported | `public-operator` | stable | `delivery` (`20`) | `stable` | `latest` | `true` | `true` | `0` | `stable-public` | MCP delivery surface for Decantr Contract context, shared discovery metadata, typed graph artifacts, packs, Brownfield and Hybrid task context with authority, local law, change impact, evidence bundles, workspace health, and repair prompts. |
-| `@decantr/cli` | core-supported | `public-delivery` | stable | `delivery` (`30`) | `stable` | `latest` | `true` | `true` | `0` | `stable-public` | Workflow commands for setup/scan/adopt/doctor/task/verify/ci/codify/connect/content, local workflow/adoption policy resolution, adapter-backed bootstrap/attach, scan-report v2 Brownfield discovery previews, Cursor activation, Brownfield intelligence, Hybrid authority lanes, monorepo app targeting, artifact ownership guidance, project-owned local law, registry sync, Evidence Bundles, visual manifests, health baselines, workspace health, pinned CI generation, Project Health, Studio, Content Health, and project governance. |
+| `@decantr/cli` | core-supported | `public-delivery` | stable | `delivery` (`30`) | `stable` | `latest` | `true` | `true` | `0` | `stable-public` | Workflow commands for setup/scan/adopt/doctor/task/verify/ci/codify/connect/content, local workflow/adoption policy resolution, adapter-backed bootstrap/attach, scan-report v2 Brownfield discovery previews, Cursor activation, Brownfield intelligence, Hybrid authority lanes, monorepo app targeting, artifact ownership guidance, project-owned local law, content sync, Evidence Bundles, visual manifests, health baselines, workspace health, pinned CI generation, Project Health, Studio, Content Health, and project governance. |
 | `@decantr/vite-plugin` | supported-secondary | `experimental` | experimental | `experimental` (`10`) | `stable` | `-` | `false` | `false` | `2` | `experimental-hold` | Experimental Vite-specific overlay for Decantr guard feedback during local development; remains a verification-adjacent sidecar, not a default reliability adapter. |
 
 ## Adapter Capability Matrix
@@ -65,7 +66,7 @@ Unsupported framework targets are still valid Decantr contract targets. They sho
 
 ## Surface Snapshot
 
-- Stable public: 8
+- Stable public: 9
 - Prerelease public: 0
 - Internal only: 0
 - Experimental hold: 1
@@ -73,6 +74,7 @@ Unsupported framework targets are still valid Decantr contract targets. They sho
 ### Stable Public
 
 - `@decantr/essence-spec` in `foundation` wave
+- `@decantr/content` in `foundation` wave
 - `@decantr/registry` in `foundation` wave
 - `@decantr/css` in `foundation` wave
 - `@decantr/core` in `foundation` wave
@@ -98,8 +100,7 @@ Unsupported framework targets are still valid Decantr contract targets. They sho
 The active Decantr product surface is:
 
 - `@decantr/essence-spec`
-- `@decantr/registry`
-- `@decantr/css`
+- `@decantr/content`
 - `@decantr/core`
 - `@decantr/telemetry`
 - `@decantr/verifier`
@@ -110,9 +111,9 @@ The active Decantr product surface is:
 
 These lines were removed from the active Decantr 3 product surface and should not be treated as current product surfaces:
 
-- `@decantr/ui` -> replacement: @decantr/css, @decantr/cli, and the hosted Decantr registry/API surfaces
-- `@decantr/ui-catalog` -> replacement: registry.decantr.ai and the hosted registry/API surfaces
-- `@decantr/ui-chart` -> replacement: @decantr/css, @decantr/cli, and compiled execution packs
+- `@decantr/ui` -> replacement: @decantr/cli, @decantr/core, and @decantr/content
+- `@decantr/ui-catalog` -> replacement: @decantr/content and decantr.ai documentation
+- `@decantr/ui-chart` -> replacement: @decantr/cli, @decantr/verifier, and compiled execution packs
 
 That retirement path is now executable through:
 

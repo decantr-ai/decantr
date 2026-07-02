@@ -23,6 +23,26 @@
     {
       "name": "@decantr/registry",
       "path": "packages/registry",
+      "support": "supported-secondary",
+      "surfaceClass": "public-foundation",
+      "maturity": "stable",
+      "publish": true,
+      "releaseWave": "foundation",
+      "releaseChannel": "stable",
+      "publishOrder": 30,
+      "defaultDistTag": "latest",
+      "summary": "3.x compatibility package for registry-named schema exports, API clients, resolver types, and legacy content utilities. New integrations should prefer @decantr/content for the official corpus.",
+      "releaseReadiness": {
+        "stableCandidate": true,
+        "docsAligned": true,
+        "ciCovered": true,
+        "productIntegrated": true,
+        "blockers": []
+      }
+    },
+    {
+      "name": "@decantr/content",
+      "path": "packages/content",
       "support": "core-supported",
       "surfaceClass": "public-foundation",
       "maturity": "stable",
@@ -31,7 +51,7 @@
       "releaseChannel": "stable",
       "publishOrder": 20,
       "defaultDistTag": "latest",
-      "summary": "Certified vocabulary contracts, schemas, Content Health report types, API client, and public content utilities.",
+      "summary": "Official Decantr content corpus, schemas, local search/resolution helpers, and content validation for AI frontend governance.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,
@@ -43,15 +63,15 @@
     {
       "name": "@decantr/css",
       "path": "packages/css",
-      "support": "core-supported",
+      "support": "supported-secondary",
       "surfaceClass": "public-foundation",
       "maturity": "stable",
       "publish": true,
       "releaseWave": "foundation",
       "releaseChannel": "stable",
-      "publishOrder": 30,
+      "publishOrder": 40,
       "defaultDistTag": "latest",
-      "summary": "Framework-agnostic CSS atom runtime for Decantr projects.",
+      "summary": "Legacy optional CSS atom runtime retained for compatibility and showcase demos; no longer the default greenfield adoption path.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,
@@ -69,7 +89,7 @@
       "publish": true,
       "releaseWave": "foundation",
       "releaseChannel": "stable",
-      "publishOrder": 40,
+      "publishOrder": 50,
       "defaultDistTag": "latest",
       "summary": "Execution-pack compiler primitives, typed graph builders, Contract capsule helpers, and shared Decantr core utilities for advanced package consumers.",
       "releaseReadiness": {
@@ -89,7 +109,7 @@
       "publish": true,
       "releaseWave": "foundation",
       "releaseChannel": "stable",
-      "publishOrder": 50,
+      "publishOrder": 60,
       "defaultDistTag": "latest",
       "summary": "Privacy-preserving telemetry event contracts, clients, and analytics sinks.",
       "releaseReadiness": {
@@ -151,7 +171,7 @@
       "releaseChannel": "stable",
       "publishOrder": 30,
       "defaultDistTag": "latest",
-      "summary": "Workflow commands for setup/scan/adopt/doctor/task/verify/ci/codify/connect/content, local workflow/adoption policy resolution, adapter-backed bootstrap/attach, scan-report v2 Brownfield discovery previews, Cursor activation, Brownfield intelligence, Hybrid authority lanes, monorepo app targeting, artifact ownership guidance, project-owned local law, registry sync, Evidence Bundles, visual manifests, health baselines, workspace health, pinned CI generation, Project Health, Studio, Content Health, and project governance.",
+      "summary": "Workflow commands for setup/scan/adopt/doctor/task/verify/ci/codify/connect/content, local workflow/adoption policy resolution, adapter-backed bootstrap/attach, scan-report v2 Brownfield discovery previews, Cursor activation, Brownfield intelligence, Hybrid authority lanes, monorepo app targeting, artifact ownership guidance, project-owned local law, content sync, Evidence Bundles, visual manifests, health baselines, workspace health, pinned CI generation, Project Health, Studio, Content Health, and project governance.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,

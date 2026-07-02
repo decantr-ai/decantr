@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import type { ContentType } from '../types.js';
+import type { ContentType } from '@decantr/content';
 
 export type JsonSchema = Record<string, unknown>;
 
@@ -23,30 +23,30 @@ function loadSchemaCatalog<const T extends Record<string, string>>(specs: T): { 
 }
 
 const registrySchemaSpecs: Record<ContentType, string> = {
-  pattern: '@decantr/registry/schema/pattern.v2.json',
-  theme: '@decantr/registry/schema/theme.v1.json',
-  blueprint: '@decantr/registry/schema/blueprint.v1.json',
-  archetype: '@decantr/registry/schema/archetype.v2.json',
-  shell: '@decantr/registry/schema/shell.v1.json',
+  pattern: '@decantr/content/schemas/pattern.v2.json',
+  theme: '@decantr/content/schemas/theme.v1.json',
+  blueprint: '@decantr/content/schemas/blueprint.v1.json',
+  archetype: '@decantr/content/schemas/archetype.v2.json',
+  shell: '@decantr/content/schemas/shell.v1.json',
 };
 
 const publicSchemaSpecs = {
-  'common.v1.json': '@decantr/registry/schema/common.v1.json',
-  'content-intelligence.v1.json': '@decantr/registry/schema/content-intelligence.v1.json',
-  'content-health-report.v1.json': '@decantr/registry/schema/content-health-report.v1.json',
-  'pattern.v2.json': '@decantr/registry/schema/pattern.v2.json',
-  'theme.v1.json': '@decantr/registry/schema/theme.v1.json',
-  'blueprint.v1.json': '@decantr/registry/schema/blueprint.v1.json',
-  'archetype.v2.json': '@decantr/registry/schema/archetype.v2.json',
-  'shell.v1.json': '@decantr/registry/schema/shell.v1.json',
-  'public-content-summary.v1.json': '@decantr/registry/schema/public-content-summary.v1.json',
-  'public-content-record.v1.json': '@decantr/registry/schema/public-content-record.v1.json',
-  'public-content-list.v1.json': '@decantr/registry/schema/public-content-list.v1.json',
-  'search-response.v1.json': '@decantr/registry/schema/search-response.v1.json',
-  'showcase-manifest-entry.v1.json': '@decantr/registry/schema/showcase-manifest-entry.v1.json',
-  'showcase-manifest.v1.json': '@decantr/registry/schema/showcase-manifest.v1.json',
-  'showcase-shortlist.v1.json': '@decantr/registry/schema/showcase-shortlist.v1.json',
-  'registry-intelligence-summary.v1.json': '@decantr/registry/schema/registry-intelligence-summary.v1.json',
+  'common.v1.json': '@decantr/content/schemas/common.v1.json',
+  'content-intelligence.v1.json': '@decantr/content/schemas/content-intelligence.v1.json',
+  'content-health-report.v1.json': '@decantr/content/schemas/content-health-report.v1.json',
+  'pattern.v2.json': '@decantr/content/schemas/pattern.v2.json',
+  'theme.v1.json': '@decantr/content/schemas/theme.v1.json',
+  'blueprint.v1.json': '@decantr/content/schemas/blueprint.v1.json',
+  'archetype.v2.json': '@decantr/content/schemas/archetype.v2.json',
+  'shell.v1.json': '@decantr/content/schemas/shell.v1.json',
+  'public-content-summary.v1.json': '@decantr/content/schemas/public-content-summary.v1.json',
+  'public-content-record.v1.json': '@decantr/content/schemas/public-content-record.v1.json',
+  'public-content-list.v1.json': '@decantr/content/schemas/public-content-list.v1.json',
+  'search-response.v1.json': '@decantr/content/schemas/search-response.v1.json',
+  'showcase-manifest-entry.v1.json': '@decantr/content/schemas/showcase-manifest-entry.v1.json',
+  'showcase-manifest.v1.json': '@decantr/content/schemas/showcase-manifest.v1.json',
+  'showcase-shortlist.v1.json': '@decantr/content/schemas/showcase-shortlist.v1.json',
+  'registry-intelligence-summary.v1.json': '@decantr/content/schemas/registry-intelligence-summary.v1.json',
   'essence.v4.json': '@decantr/essence-spec/schema/essence.v4.json',
   'execution-pack.common.v1.json': '@decantr/core/schema/execution-pack.common.v1.json',
   'scaffold-pack.v1.json': '@decantr/core/schema/scaffold-pack.v1.json',
@@ -65,7 +65,7 @@ const publicSchemaSpecs = {
   'showcase-shortlist-report.v1.json': '@decantr/verifier/schema/showcase-shortlist-report.v1.json',
 } as const;
 
-export const COMMON_SCHEMA = loadPackageSchema('@decantr/registry/schema/common.v1.json');
+export const COMMON_SCHEMA = loadPackageSchema('@decantr/content/schemas/common.v1.json');
 
 export const EXPECTED_REGISTRY_SCHEMA_URLS: Record<ContentType, string> = {
   pattern: 'https://decantr.ai/schemas/pattern.v2.json',

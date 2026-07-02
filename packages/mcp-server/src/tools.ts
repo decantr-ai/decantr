@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
-import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
+import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import {
   buildGraphImpactContext,
   buildGraphRouteContext,
@@ -1369,137 +1369,6 @@ async function getHostedExecutionPackManifestPayload(args: Record<string, unknow
   );
 }
 
-async function getHostedFileCritiquePayload(args: Record<string, unknown>) {
-  const client = getAPIClient();
-  const filePath = args.file_path as string;
-  const resolvedFilePath = resolveWorkspacePath(filePath);
-  const snapshotFilePath =
-    relative(process.cwd(), resolvedFilePath).replace(/\\/g, '/') || basename(resolvedFilePath);
-  const code = await readFile(resolvedFilePath, 'utf-8');
-  const { essence } = await readEssenceFile(args.path as string | undefined);
-  const treatmentsPath =
-    typeof args.treatments_path === 'string'
-      ? resolveWorkspacePath(args.treatments_path)
-      : join(process.cwd(), 'src', 'styles', 'treatments.css');
-  const treatmentsCss = existsSync(treatmentsPath)
-    ? readFileSync(treatmentsPath, 'utf-8')
-    : undefined;
-
-  return client.critiqueFile(
-    {
-      essence,
-      filePath: snapshotFilePath,
-      code,
-      treatmentsCss,
-    },
-    typeof args.namespace === 'string' ? { namespace: args.namespace } : undefined,
-  );
-}
-
-function extractHostedAssetPaths(indexHtml: string): string[] {
-  const assetPaths = new Set<string>();
-
-  for (const match of indexHtml.matchAll(/<(?:script|link)[^>]+(?:src|href)="([^"]+)"/g)) {
-    const assetPath = match[1];
-    const assetsIndex = assetPath.indexOf('/assets/');
-    if (assetsIndex === -1) continue;
-    assetPaths.add(assetPath.slice(assetsIndex));
-  }
-
-  return [...assetPaths];
-}
-
-async function captureHostedDistSnapshot(projectRoot: string, distPathArg?: string) {
-  const distRoot = distPathArg
-    ? resolveWorkspacePath(distPathArg, projectRoot)
-    : join(projectRoot, 'dist');
-  const indexPath = join(distRoot, 'index.html');
-
-  if (!existsSync(indexPath)) {
-    return undefined;
-  }
-
-  const indexHtml = readFileSync(indexPath, 'utf-8');
-  const assets: Record<string, string> = {};
-
-  for (const assetPath of extractHostedAssetPaths(indexHtml)) {
-    const snapshotAssetPath = assetPath.replace(/^[/\\]+/, '');
-    const assetFilePath = resolveWorkspacePath(snapshotAssetPath, distRoot);
-    if (existsSync(assetFilePath)) {
-      assets[snapshotAssetPath] = readFileSync(assetFilePath, 'utf-8');
-    }
-  }
-
-  return {
-    indexHtml,
-    assets,
-  };
-}
-
-function isHostedSourceSnapshotFile(path: string): boolean {
-  if (/\.d\.ts$/i.test(path)) return false;
-  return /\.(?:[cm]?[jt]sx?)$/i.test(path);
-}
-
-async function captureHostedSourceSnapshot(projectRoot: string, sourcesPathArg?: string) {
-  if (!sourcesPathArg) {
-    return undefined;
-  }
-
-  const sourcesRoot = resolveWorkspacePath(sourcesPathArg, projectRoot);
-  if (!existsSync(sourcesRoot)) {
-    return undefined;
-  }
-
-  const files: Record<string, string> = {};
-  const ignoredDirNames = new Set([
-    'node_modules',
-    '.git',
-    '.decantr',
-    'dist',
-    'build',
-    'coverage',
-  ]);
-  const rootPrefix = basename(sourcesRoot);
-
-  const walk = (absoluteDir: string, relativeDir: string) => {
-    for (const entry of readdirSync(absoluteDir, { withFileTypes: true })) {
-      if (ignoredDirNames.has(entry.name)) continue;
-      const absolutePath = join(absoluteDir, entry.name);
-      const relativePath = join(relativeDir, entry.name).replace(/\\/g, '/');
-      if (entry.isDirectory()) {
-        walk(absolutePath, relativePath);
-        continue;
-      }
-      if (!entry.isFile()) continue;
-      if (!isHostedSourceSnapshotFile(relativePath)) continue;
-      files[relativePath] = readFileSync(absolutePath, 'utf-8');
-    }
-  };
-
-  walk(sourcesRoot, rootPrefix);
-  return Object.keys(files).length > 0 ? { files } : undefined;
-}
-
-async function getHostedProjectAuditPayload(args: Record<string, unknown>) {
-  const client = getAPIClient();
-  const { essence } = await readEssenceFile(args.path as string | undefined);
-  const dist = await captureHostedDistSnapshot(process.cwd(), args.dist_path as string | undefined);
-  const sources = await captureHostedSourceSnapshot(
-    process.cwd(),
-    args.sources_path as string | undefined,
-  );
-
-  return client.auditProject(
-    {
-      essence,
-      dist,
-      sources,
-    },
-    typeof args.namespace === 'string' ? { namespace: args.namespace } : undefined,
-  );
-}
-
 type HostedExecutionPackBundle = Awaited<ReturnType<typeof getHostedExecutionPackBundlePayload>>;
 type HostedSelectedExecutionPack = Awaited<
   ReturnType<typeof getHostedSelectedExecutionPackPayload>
@@ -1560,50 +1429,11 @@ async function loadHostedSelectedExecutionPackFallback(args: Record<string, unkn
   }
 }
 
-async function loadHostedFileCritiqueFallback(args: Record<string, unknown>): Promise<{
-  report: Awaited<ReturnType<typeof getHostedFileCritiquePayload>> | null;
-  error: string | null;
-}> {
-  try {
-    return {
-      report: await getHostedFileCritiquePayload(args),
-      error: null,
-    };
-  } catch (error) {
-    return {
-      report: null,
-      error: (error as Error).message,
-    };
-  }
-}
-
-async function loadHostedProjectAuditFallback(args: Record<string, unknown>): Promise<{
-  report: Awaited<ReturnType<typeof getHostedProjectAuditPayload>> | null;
-  error: string | null;
-}> {
-  try {
-    return {
-      report: await getHostedProjectAuditPayload(args),
-      error: null,
-    };
-  } catch (error) {
-    return {
-      report: null,
-      error: (error as Error).message,
-    };
-  }
-}
-
 function hasExecutionPackPayload(payload: {
   markdown: string | null;
   json: unknown | null;
 }): boolean {
   return payload.markdown !== null || payload.json !== null;
-}
-
-function allowsHostedUpload(args: Record<string, unknown>): boolean {
-  // Hosted critique/audit upload is explicit opt-in; local MCP critique stays local by default.
-  return args.allow_hosted_upload === true;
 }
 
 function toHostedExecutionPackPayload(pack: { renderedMarkdown?: string } | null | undefined) {
@@ -1804,7 +1634,7 @@ function mcpCommandsForFinding(source: ProjectHealthFindingSource): string[] {
     case 'pack':
       return [
         'decantr refresh',
-        'decantr registry get-pack review --write-context',
+        'decantr content get-pack review --write-context',
         'decantr health',
       ];
     case 'runtime':
@@ -2653,7 +2483,7 @@ export const TOOLS = [
   consolidatedTool(
     'decantr_registry',
     'Decantr Registry',
-    'Search and resolve hosted registry content, benchmark metadata, and execution packs.',
+    'Compatibility tool for searching the official Decantr content corpus, benchmark metadata, and execution packs.',
     READ_ONLY_NETWORK,
   ),
   consolidatedTool(
@@ -4122,7 +3952,7 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
         if (!hosted.bundle) {
           return {
             error:
-              'Scaffold context not found. Run `decantr refresh` or `decantr registry compile-packs --write-context` to materialize scaffold context and execution packs.',
+              'Scaffold context not found. Run `decantr refresh` or `decantr content compile-packs --write-context` to materialize scaffold context and execution packs.',
             hosted_fallback_error: hosted.error ?? hostedScaffold.error ?? hostedReview.error,
           };
         }
@@ -4285,7 +4115,7 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
         note:
           executionPackSource === 'hosted_fallback'
             ? 'Section context file not found. Using hosted compiled execution pack fallback as the readable section context.'
-            : `Section context file not found. Run \`decantr refresh\` or \`decantr registry get-pack section ${sectionId} --write-context\` to generate it.`,
+            : `Section context file not found. Run \`decantr refresh\` or \`decantr content get-pack section ${sectionId} --write-context\` to generate it.`,
         hosted_fallback_error: executionPackSource ? undefined : hostedFallbackError,
       };
     }
@@ -4344,7 +4174,7 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
         if (!hosted) {
           return {
             error:
-              'Execution pack manifest not found. Run `decantr refresh` or `decantr registry get-pack manifest --write-context` to generate compiled packs.',
+              'Execution pack manifest not found. Run `decantr refresh` or `decantr content get-pack manifest --write-context` to generate compiled packs.',
             hosted_fallback_error: hostedFallbackError,
           };
         }
@@ -4819,7 +4649,7 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
           if (!hosted.bundle) {
             return {
               error:
-                'Execution pack manifest not found. Run `decantr refresh` or `decantr registry get-pack manifest --write-context` to generate compiled packs.',
+                'Execution pack manifest not found. Run `decantr refresh` or `decantr content get-pack manifest --write-context` to generate compiled packs.',
               hosted_fallback_error: hosted.error,
             };
           }
@@ -4842,7 +4672,7 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
         if (!hosted.selected) {
           return {
             error:
-              'Execution pack manifest not found. Run `decantr refresh` or `decantr registry get-pack manifest --write-context` to generate compiled packs.',
+              'Execution pack manifest not found. Run `decantr refresh` or `decantr content get-pack manifest --write-context` to generate compiled packs.',
             hosted_fallback_error: hosted.error,
           };
         }
@@ -5022,13 +4852,6 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
         return critiqueFile(args.file_path as string, process.cwd());
       }
 
-      if (allowsHostedUpload(args)) {
-        const hosted = await loadHostedFileCritiqueFallback(args);
-        if (hosted.report) {
-          return hosted.report;
-        }
-      }
-
       return critiqueFile(args.file_path as string, process.cwd());
     }
 
@@ -5059,13 +4882,6 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
 
       if (hasReviewPack && hasPackManifest) {
         return auditProject(projectRoot);
-      }
-
-      if (allowsHostedUpload(args)) {
-        const hosted = await loadHostedProjectAuditFallback(args);
-        if (hosted.report) {
-          return hosted.report;
-        }
       }
 
       return auditProject(projectRoot);

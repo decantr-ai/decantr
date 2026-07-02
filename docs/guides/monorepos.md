@@ -94,7 +94,7 @@ Workspace discovery favors deployable UI apps. Server-only API packages and Reac
 In contract-only Brownfield, hosted packs are optional context. If you attach with `--no-packs` or offline mode, `doctor`, `health`, and `refresh --check` should not make pack hydration the next required step. If a `pack-manifest.json` exists and references missing files, hydrate the app-scoped pack bundle from the monorepo root with the app essence path:
 
 ```bash
-pnpm exec decantr registry compile-packs apps/web/decantr.essence.json --write-context
+pnpm exec decantr content compile-packs apps/web/decantr.essence.json --write-context
 ```
 
 The generated `.decantr/context` directory is written beside `apps/web/decantr.essence.json`, not at the repository root.

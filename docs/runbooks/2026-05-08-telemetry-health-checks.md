@@ -1,7 +1,9 @@
 # Telemetry Health Checks Runbook
 
 Date: 2026-05-08
-Status: Active
+Status: Historical / retired in Decantr 3.8
+
+The PostHog-to-Supabase telemetry health loop is no longer active in the content-first product.
 
 This runbook covers the durable telemetry health loop for Decantr's PostHog to Supabase rollups.
 

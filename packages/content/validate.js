@@ -12,12 +12,10 @@ import {
   getContentCertification,
   lintDangerousScaffoldingPolicy,
 } from './scripts/content-certification.js';
-import { emitContentTelemetry } from './scripts/telemetry.js';
 
 let errors = 0;
 let warnings = 0;
 let total = 0;
-const startedAt = Date.now();
 
 function fail(msg) {
   console.error(`  FAIL ${msg}`);
@@ -433,16 +431,5 @@ for (const type of CONTENT_DIRECTORIES) {
 }
 
 console.log(`\nValidated ${total} files: ${errors} errors, ${warnings} quality warnings`);
-
-await emitContentTelemetry({
-  name: 'content.validation.completed',
-  properties: {
-    valid: errors === 0,
-    durationMs: Date.now() - startedAt,
-    errorCount: errors,
-    itemCount: total,
-    warningCount: warnings,
-  },
-});
 
 process.exit(errors > 0 ? 1 : 0);

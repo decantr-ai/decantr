@@ -1,44 +1,28 @@
 import { Hono } from 'hono';
 import {
+  getContentRecord,
   isContentIntelligenceSource,
-  type ContentIntelligenceSource,
-  CONTENT_TYPE_TO_API_CONTENT_TYPE,
-  getBlueprintPortfolioMetadata,
   isPublicBlueprintSet,
+  isPublicContentSource,
+  listContentRecords,
+  OFFICIAL_CONTENT_NAMESPACE,
+  type ContentIntelligenceSource,
   type PublicBlueprintSet,
-} from '@decantr/registry';
+  type PublicContentSource,
+} from '@decantr/content';
+import { isV4, validateEssence } from '@decantr/essence-spec';
 import type { Env } from '../types.js';
 import { API_CONTENT_TYPES, PLURAL_TO_SINGULAR, isApiContentType, parsePagination } from '../types.js';
-import { createAdminClient } from '../db/client.js';
-import { validateEssence, isV4 } from '@decantr/essence-spec';
 import { logger } from '../lib/logger.js';
-import { getContentIntelligence } from '../lib/content-intelligence.js';
-import { applyPublicContentOrdering } from '../lib/public-content-ordering.js';
-import type { AuthContext } from '../middleware/auth.js';
-import {
-  getPublicApiBaseUrl,
-  getPublicThumbnailUrl,
-  getRegistryThumbnailMetadata,
-  getSignedThumbnailUrl,
-  isPublicContentSource,
-  matchesPublicContentSource,
-  type PublicContentSource,
-  REGISTRY_THUMBNAIL_BUCKET,
-} from '../lib/content-presentation.js';
 
 export const contentRoutes = new Hono<Env>();
 const CONTENT_ROUTE_PATTERN = API_CONTENT_TYPES.join('|');
 
-function getSummaryText(
-  data: Record<string, unknown> | null | undefined,
-  key: 'name' | 'description',
-): string | undefined {
-  const value = data?.[key];
-  return typeof value === 'string' ? value : undefined;
-}
+contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}/:namespace/:slug/thumbnail`, (c) => (
+  c.json({ error: 'Thumbnail assets are not served by the content API.' }, 404)
+));
 
-// GET /v1/:type/:namespace/:slug/thumbnail - Get thumbnail asset
-contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}/:namespace/:slug/thumbnail`, async (c) => {
+contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}/:namespace/:slug`, (c) => {
   try {
     const pluralType = c.req.param('type');
     const namespace = c.req.param('namespace');
@@ -47,177 +31,29 @@ contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}/:namespace/:slug/thumbnail`,
     if (!isApiContentType(pluralType)) {
       return c.json({ error: `Unknown content type: ${pluralType}` }, 400);
     }
-    const singularType = PLURAL_TO_SINGULAR[pluralType];
-    const auth = c.get('auth') as AuthContext | undefined;
-    const client = createAdminClient();
 
-    const { data, error } = await client
-      .from('content')
-      .select('*')
-      .eq('type', singularType)
-      .eq('namespace', namespace)
-      .eq('slug', slug)
-      .single();
-
-    if (error || !data) {
-      return c.json({ error: `${singularType} "${namespace}/${slug}" not found` }, 404);
+    const record = getContentRecord(PLURAL_TO_SINGULAR[pluralType], slug, namespace);
+    if (!record) {
+      return c.json({ error: `${PLURAL_TO_SINGULAR[pluralType]} "${namespace}/${slug}" not found` }, 404);
     }
 
-    const thumbnail = getRegistryThumbnailMetadata(data.data as Record<string, unknown> | null | undefined);
-    if (!thumbnail) {
-      return c.json({ error: 'Thumbnail not found' }, 404);
-    }
-
-    const isPublicRecord = data.visibility === 'public' && data.status === 'published';
-    let allowed = isPublicRecord;
-
-    if (!allowed && auth?.isAuthenticated && auth.user) {
-      if (data.owner_id === auth.user.id) {
-        allowed = true;
-      } else if (data.org_id && auth.apiKeyOrgId && data.org_id === auth.apiKeyOrgId) {
-        allowed = true;
-      } else if (data.org_id) {
-        const { data: membership } = await client
-          .from('org_members')
-          .select('role')
-          .eq('org_id', data.org_id)
-          .eq('user_id', auth.user.id)
-          .single();
-        allowed = Boolean(membership);
-      }
-    }
-
-    if (!allowed) {
-      return c.json({ error: 'Thumbnail not found' }, 404);
-    }
-
-    const { data: file, error: storageError } = await client.storage
-      .from(REGISTRY_THUMBNAIL_BUCKET)
-      .download(thumbnail.path);
-
-    if (storageError || !file) {
-      return c.json({ error: 'Thumbnail not found' }, 404);
-    }
-
-    const bytes = await file.arrayBuffer();
-    return new Response(bytes, {
-      headers: {
-        'Content-Type': file.type || 'application/octet-stream',
-        'Cache-Control': isPublicRecord
-          ? 'public, max-age=300, stale-while-revalidate=3600'
-          : 'private, no-store',
-      },
-    });
-  } catch (e) {
-    logger.error({ err: e }, 'Thumbnail route error');
-    return c.json({ error: 'Internal server error' }, 500);
-  }
-});
-
-// GET /v1/:type/:namespace/:slug - Get single item (must be before list route)
-contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}/:namespace/:slug`, async (c) => {
-  try {
-    const pluralType = c.req.param('type');
-    const namespace = c.req.param('namespace');
-    const slug = c.req.param('slug');
-
-    if (!isApiContentType(pluralType)) {
-      return c.json({ error: `Unknown content type: ${pluralType}` }, 400);
-    }
-    const singularType = PLURAL_TO_SINGULAR[pluralType];
-    const auth = c.get('auth') as AuthContext | undefined;
-
-    const client = createAdminClient();
-
-    const { data, error } = await client
-      .from('content')
-      .select('*, owner:users!owner_id(display_name, username)')
-      .eq('type', singularType)
-      .eq('namespace', namespace)
-      .eq('slug', slug)
-      .single();
-
-    if (error || !data) {
-      return c.json({ error: `${singularType} "${namespace}/${slug}" not found` }, 404);
-    }
-
-    const isPublicRecord = data.visibility === 'public' && data.status === 'published';
-    let allowed = isPublicRecord;
-
-    if (!allowed && auth?.isAuthenticated && auth.user) {
-      if (data.owner_id === auth.user.id) {
-        allowed = true;
-      } else if (data.org_id && auth.apiKeyOrgId && data.org_id === auth.apiKeyOrgId) {
-        allowed = true;
-      } else if (data.org_id) {
-        const { data: membership } = await client
-          .from('org_members')
-          .select('role')
-          .eq('org_id', data.org_id)
-          .eq('user_id', auth.user.id)
-          .single();
-        allowed = Boolean(membership);
-      }
-    }
-
-    if (!allowed) {
-      return c.json({ error: `${singularType} "${namespace}/${slug}" not found` }, 404);
-    }
-
-    c.header(
-      'Cache-Control',
-      isPublicRecord
-        ? 'public, max-age=300, stale-while-revalidate=3600'
-        : 'private, no-store',
-    );
-    const itemData = data.data as Record<string, unknown> | null | undefined;
-    const publicApiBaseUrl = getPublicApiBaseUrl(c.req.url);
-    const thumbnailUrl = isPublicRecord
-      ? getPublicThumbnailUrl(publicApiBaseUrl, pluralType, data.namespace, data.slug, itemData)
-      : await getSignedThumbnailUrl(itemData);
-
-    return c.json({
-      id: data.id,
-      type: data.type,
-      slug: data.slug,
-      namespace: data.namespace,
-      version: data.version,
-      visibility: data.visibility,
-      status: data.status,
-      data: data.data,
-      created_at: data.created_at,
-      updated_at: data.updated_at,
-      published_at: data.published_at,
-      owner_name: (data as any).owner?.display_name || null,
-      owner_username: (data as any).owner?.username || null,
-      thumbnail_url: thumbnailUrl,
-      intelligence: getContentIntelligence(
-        singularType,
-        data.namespace,
-        data.slug,
-        itemData,
-      ),
-    });
+    c.header('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
+    return c.json(record);
   } catch (e) {
     logger.error({ err: e }, 'Content route error');
     return c.json({ error: 'Internal server error' }, 500);
   }
 });
 
-// GET /v1/:type - List content (e.g., /v1/patterns, /v1/themes)
-contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}`, async (c) => {
+contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}`, (c) => {
   try {
     const pluralType = c.req.param('type');
-
     if (!isApiContentType(pluralType)) {
       return c.json({ error: `Unknown content type: ${pluralType}` }, 400);
     }
-    const singularType = PLURAL_TO_SINGULAR[pluralType];
 
-    const namespace = c.req.query('namespace');
+    const namespace = c.req.query('namespace') || OFFICIAL_CONTENT_NAMESPACE;
     const rawSource = c.req.query('source');
-    const sort = c.req.query('sort') ?? undefined;
-    const recommendedOnly = c.req.query('recommended') === 'true';
     const rawIntelligenceSource = c.req.query('intelligence_source');
     const rawBlueprintSet = c.req.query('blueprint_set');
     const { limit, offset } = parsePagination(c.req.query('limit'), c.req.query('offset'));
@@ -225,104 +61,43 @@ contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}`, async (c) => {
     if (rawSource && !isPublicContentSource(rawSource)) {
       return c.json({ error: `Invalid source filter: ${rawSource}` }, 400);
     }
-
     if (rawIntelligenceSource && !isContentIntelligenceSource(rawIntelligenceSource)) {
       return c.json({ error: `Invalid intelligence source: ${rawIntelligenceSource}` }, 400);
     }
-
     if (rawBlueprintSet && !isPublicBlueprintSet(rawBlueprintSet)) {
       return c.json({ error: `Invalid blueprint set: ${rawBlueprintSet}` }, 400);
     }
 
     const source: PublicContentSource | undefined =
-      rawSource && isPublicContentSource(rawSource)
-        ? rawSource
-        : undefined;
+      rawSource && isPublicContentSource(rawSource) ? rawSource : undefined;
     const intelligenceSource: ContentIntelligenceSource | undefined =
       rawIntelligenceSource && isContentIntelligenceSource(rawIntelligenceSource)
         ? rawIntelligenceSource
         : undefined;
     const blueprintSet: PublicBlueprintSet =
       rawBlueprintSet && isPublicBlueprintSet(rawBlueprintSet) ? rawBlueprintSet : 'all';
-    const includeLabs = c.req.query('labs') === 'true' || blueprintSet === 'labs';
 
-    const client = createAdminClient();
-
-    let query = client
-      .from('content')
-      .select('id, type, slug, namespace, version, data, created_at, updated_at, published_at, owner:users!owner_id(display_name, username)', { count: 'exact' })
-      .eq('type', singularType)
-      .eq('visibility', 'public')
-      .eq('status', 'published')
-      .order('published_at', { ascending: false });
-
-    if (namespace) {
-      query = query.eq('namespace', namespace);
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-      return c.json({ error: 'Failed to fetch content' }, 500);
-    }
-
-    c.header('Cache-Control', 'public, max-age=60, stale-while-revalidate=3600');
-    const publicApiBaseUrl = getPublicApiBaseUrl(c.req.url);
-    const mappedItems = (data ?? []).map((item) => {
-      const itemData = item.data as Record<string, unknown> | null | undefined;
-      return {
-        id: item.id,
-        type: item.type,
-        slug: item.slug,
-        namespace: item.namespace,
-        version: item.version,
-        name: getSummaryText(itemData, 'name'),
-        description: getSummaryText(itemData, 'description'),
-        published_at: item.published_at ?? undefined,
-        owner_name: (item as any).owner?.display_name || null,
-        owner_username: (item as any).owner?.username || null,
-        thumbnail_url: getPublicThumbnailUrl(
-          publicApiBaseUrl,
-          CONTENT_TYPE_TO_API_CONTENT_TYPE[item.type as keyof typeof CONTENT_TYPE_TO_API_CONTENT_TYPE],
-          item.namespace,
-          item.slug,
-          itemData,
-        ),
-        blueprint_portfolio: getBlueprintPortfolioMetadata(itemData),
-        intelligence: getContentIntelligence(
-          singularType,
-          item.namespace,
-          item.slug,
-          itemData,
-        ),
-      };
-    });
-    const sourceFilteredItems = mappedItems.filter((item) =>
-      matchesPublicContentSource(item.namespace, source),
-    );
-    const ordered = applyPublicContentOrdering(
-      sourceFilteredItems,
-      sort,
-      recommendedOnly,
+    const result = listContentRecords({
+      type: pluralType,
+      namespace,
+      source,
+      sort: c.req.query('sort') ?? undefined,
+      recommended: c.req.query('recommended') === 'true',
       intelligenceSource,
       blueprintSet,
-      includeLabs,
+      labs: c.req.query('labs') === 'true',
       limit,
       offset,
-    );
-    return c.json({
-      total: ordered.filteredTotal,
-      limit,
-      offset,
-      items: ordered.items,
     });
+
+    c.header('Cache-Control', 'public, max-age=60, stale-while-revalidate=3600');
+    return c.json(result);
   } catch (e) {
     logger.error({ err: e }, 'Content list error');
     return c.json({ error: 'Internal server error' }, 500);
   }
 });
 
-// POST /v1/validate - Validate active Essence v4 files
 contentRoutes.post('/validate', async (c) => {
   let body: unknown;
   try {
@@ -335,8 +110,12 @@ contentRoutes.post('/validate', async (c) => {
   const version = typeof body === 'object' && body !== null && 'version' in body
     ? (body as Record<string, unknown>).version
     : undefined;
-  const isV4Doc = typeof body === 'object' && body !== null && 'version' in body && 'dna' in body && 'blueprint' in body
-    ? isV4(body as any)
+  const isV4Doc = typeof body === 'object'
+    && body !== null
+    && 'version' in body
+    && 'dna' in body
+    && 'blueprint' in body
+    ? isV4(body as never)
     : false;
 
   return c.json({

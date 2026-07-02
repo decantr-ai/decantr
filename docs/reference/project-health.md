@@ -6,7 +6,7 @@ It is local-only by default. `decantr verify` is the user-facing reliability com
 
 Projects that explicitly opt into Decantr CLI telemetry, including through `decantr new --telemetry`, `decantr init --telemetry`, or `decantr check --telemetry`, may emit aggregate Project Health usage signals such as report status, score, finding counts, CI failure outcome, Studio start/refresh activity, and remediation prompt requests. The report body, finding evidence, raw routes, local paths, source files, and prompts stay local.
 
-For registry content repositories such as `decantr-content`, use [Content Health](content-health.md) instead. Content Health checks content schemas, references, and generation guidance coverage; Project Health checks an application against its Decantr contract.
+For the official content corpus in `packages/content`, use [Content Health](content-health.md) instead. Content Health checks content schemas, references, and generation guidance coverage; Project Health checks an application against its Decantr contract.
 
 ## Commands
 
@@ -58,7 +58,7 @@ The v2 loop state tells agents and humans what to do next:
 
 When `.decantr/evidence/latest.json` exists, `decantr graph` can ingest the saved Evidence Bundle as graph nodes: findings become `Finding` nodes, evidence strings become `Evidence` nodes, repair IDs become `Repair` nodes, and graph anchors become typed edges back to the contract node that produced the finding. Evidence and repair read targets that point at existing project files become `SourceArtifact` nodes, so findings without a prior graph anchor can still attach to the file that needs repair. When `.decantr/health-baseline-diff.json` exists, changed files, changed routes, screenshot drift, and contract drift become temporal Evidence nodes linked back to SourceArtifact, Route, or Project nodes. Each graph generation also writes a content-addressed copy under `.decantr/graph/snapshots/`, which gives proof demos and local CI a replayable contract/evidence timeline without hosted storage.
 
-Project Health treats `pack-manifest.json` as a manifest, not proof by itself. If the manifest references a missing section/page/review/scaffold/mutation markdown or JSON file, health and doctor report the generated context as incomplete. In contract-only Brownfield, missing hosted packs are optional context: health reports them as info, doctor does not make hydration the next required step, and `refresh --check` does not fail solely because packs were intentionally deferred. In monorepos, hydrate missing or intentionally deferred hosted packs with `decantr registry compile-packs apps/web/decantr.essence.json --write-context` so the bundle lands beside the selected app essence. Project Health remediation prompts and CI recommendations also stay project-scoped, so root runs point at `--project apps/web`, runtime prompts use root-safe app build commands such as `pnpm --dir apps/web build`, and prompt read targets point at `apps/web/DECANTR.md`, `apps/web/decantr.essence.json`, and app-local context files instead of asking users to read root files that do not own the app contract.
+Project Health treats `pack-manifest.json` as a manifest, not proof by itself. If the manifest references a missing section/page/review/scaffold/mutation markdown or JSON file, health and doctor report the generated context as incomplete. In contract-only Brownfield, missing content packs are optional context: health reports them as info, doctor does not make hydration the next required step, and `refresh --check` does not fail solely because packs were intentionally deferred. In monorepos, hydrate missing or intentionally deferred content packs with `decantr content compile-packs apps/web/decantr.essence.json --write-context` so the bundle lands beside the selected app essence. Project Health remediation prompts and CI recommendations also stay project-scoped, so root runs point at `--project apps/web`, runtime prompts use root-safe app build commands such as `pnpm --dir apps/web build`, and prompt read targets point at `apps/web/DECANTR.md`, `apps/web/decantr.essence.json`, and app-local context files instead of asking users to read root files that do not own the app contract.
 
 Source audit ignores test, spec, story, fixture, and mock files for production drift warnings such as localhost endpoints or unsafe rendering patterns. Interaction guard evidence also ignores tests, stories, fixtures, mocks, API route handlers, and server-only `route.ts` files, so UI behavior is proven by production UI source rather than incidental strings in tests or handlers. Those files can still exist in the project, but first-adoption health should focus users on production source paths.
 
@@ -286,9 +286,9 @@ Use these options to tune CI integration:
 ```bash
 decantr ci init --force
 decantr ci init --fail-on warn
-decantr ci init --project apps/registry
+decantr ci init --project apps/web
 decantr ci init --workspace
-decantr ci init --provider generic --project apps/registry
+decantr ci init --provider generic --project apps/web
 ```
 
 For monorepos, install `@decantr/cli` at the workspace root and pass the app contract path with `--project <path>`. The generated workflow keeps dependency installation root-scoped while Decantr evaluates only the selected app contract. For Jenkins, Please, Buildkite, GitLab, Azure DevOps, or internal deploy tools, use `--provider generic` and paste the generated shell snippet into the authoritative pipeline.

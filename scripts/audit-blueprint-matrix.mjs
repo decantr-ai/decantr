@@ -9,7 +9,7 @@ const repoRoot = resolve(__dirname, '..');
 const cliBin = join(repoRoot, 'packages', 'cli', 'dist', 'bin.js');
 const defaultContentRoot = process.env.DECANTR_CONTENT_DIR
   ? resolve(process.env.DECANTR_CONTENT_DIR)
-  : resolve(repoRoot, '..', 'decantr-content');
+  : resolve(repoRoot, 'packages', 'content');
 
 const contentTypes = ['archetypes', 'blueprints', 'patterns', 'themes', 'shells'];
 
@@ -82,7 +82,7 @@ function assertPrereqs(contentRoot) {
   }
 
   if (!existsSync(contentRoot)) {
-    throw new Error(`Missing decantr-content root at ${contentRoot}. Set DECANTR_CONTENT_DIR or pass --content-root.`);
+    throw new Error(`Missing Decantr content root at ${contentRoot}. Set DECANTR_CONTENT_DIR or pass --content-root.`);
   }
 
   for (const type of contentTypes) {
@@ -215,7 +215,7 @@ function certifyBlueprint(entry, contentRoot) {
       'init',
       `--blueprint=${entry.id}`,
       '--workflow=greenfield',
-      '--adoption=decantr-css',
+      '--adoption=contract-only',
       '--offline',
       '--yes',
     ]);

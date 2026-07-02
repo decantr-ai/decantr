@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Audit live official registry content for intelligence metadata coverage.
+ * Audit live official content API records for intelligence metadata coverage.
  *
  * Usage:
  *   node scripts/audit-content-intelligence.js
@@ -13,7 +13,8 @@
  *   node scripts/audit-content-intelligence.js --fail-on-summary-mismatch
  *
  * Environment variables:
- *   REGISTRY_URL        - API base URL (default: https://api.decantr.ai/v1)
+ *   DECANTR_API_URL     - API base URL (default: https://api.decantr.ai/v1)
+ *   REGISTRY_URL        - Legacy compatibility alias for DECANTR_API_URL
  *   CONTENT_NAMESPACE   - Namespace to audit (default: @official)
  *   FAIL_ON_MISSING     - Set to "true" to fail when official blueprints have no intelligence metadata
  *   FAIL_ON_FILTER_MISMATCH - Set to "true" to fail when the hosted recommended filter disagrees with metadata counts
@@ -30,7 +31,7 @@ import {
 } from './content-contract.js';
 
 const args = process.argv.slice(2);
-const REGISTRY_URL = process.env.REGISTRY_URL || 'https://api.decantr.ai/v1';
+const DECANTR_API_URL = process.env.DECANTR_API_URL || process.env.REGISTRY_URL || 'https://api.decantr.ai/v1';
 const CONTENT_NAMESPACE = process.env.CONTENT_NAMESPACE || '@official';
 const REPORT_PATH =
   args.find((arg) => arg.startsWith('--report-json='))?.slice('--report-json='.length) || null;
@@ -98,7 +99,7 @@ async function fetchLiveItems(directory, options = {}) {
       searchParams.set('intelligence_source', intelligenceSource);
     }
 
-    const url = `${REGISTRY_URL}/${directory}?${searchParams}`;
+    const url = `${DECANTR_API_URL}/${directory}?${searchParams}`;
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -121,7 +122,7 @@ async function fetchLiveItems(directory, options = {}) {
 
 async function fetchHostedSummary() {
   const searchParams = new URLSearchParams({ namespace: CONTENT_NAMESPACE });
-  const response = await fetch(`${REGISTRY_URL}/intelligence/summary?${searchParams}`);
+  const response = await fetch(`${DECANTR_API_URL}/intelligence/summary?${searchParams}`);
 
   if (!response.ok) {
     throw new Error(`Failed to fetch intelligence summary: ${response.status} ${await response.text()}`);
@@ -187,7 +188,7 @@ function buildMarkdownSummary(report) {
     '# Content Intelligence Audit',
     '',
     `- Audited at: ${report.auditedAt}`,
-    `- Registry: ${report.registryUrl}`,
+    `- Content API: ${report.apiUrl}`,
     `- Namespace: ${report.namespace}`,
     '',
     '| Type | Repo | Live | With Intelligence | Authored | Benchmark | Hybrid | Recommended | Recommended API | Smoke Green | Build Green | High Confidence | Verified Confidence | Avg Quality | Avg Confidence |',
@@ -455,7 +456,7 @@ async function main() {
 
   const report = {
     auditedAt: new Date().toISOString(),
-    registryUrl: REGISTRY_URL,
+    apiUrl: DECANTR_API_URL,
     namespace: CONTENT_NAMESPACE,
     hostedSummary,
     byType,

@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * Certifies the official registry catalog against the Decantr V2 product
+ * Certifies the official content corpus against the Decantr product
  * boundary. This intentionally does not depend on an npm-published V2 CLI:
- * before package publishing, the content repo still needs a local gate that can
+ * before package publishing, the content package still needs a local gate that can
  * prove active blueprints compile to Essence v4-shaped contracts.
  */
 

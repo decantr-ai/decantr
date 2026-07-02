@@ -1,26 +1,25 @@
-import type { AuthContext } from './middleware/auth.js';
 import {
-  CONTENT_TYPES as REGISTRY_CONTENT_TYPES,
-  API_CONTENT_TYPES as REGISTRY_API_CONTENT_TYPES,
+  API_CONTENT_TYPES as CONTENT_API_TYPES,
   API_CONTENT_TYPE_TO_CONTENT_TYPE,
-  isContentType as isRegistryContentType,
-  isApiContentType as isRegistryApiContentType,
-} from '@decantr/registry';
-import type { ContentType, ApiContentType } from '@decantr/registry';
+  CONTENT_TYPES as CONTENT_CORPUS_TYPES,
+  isApiContentType as isContentApiType,
+  isContentType as isContentCorpusType,
+} from '@decantr/content';
+import type { ApiContentType, ContentType } from '@decantr/content';
 
 export type Env = {
-  Variables: {
-    auth: AuthContext;
-  };
+  Variables: Record<string, never>;
 };
 
 export type { ContentType, ApiContentType };
 
-export const CONTENT_TYPES: ContentType[] = [...REGISTRY_CONTENT_TYPES];
-export const API_CONTENT_TYPES: ApiContentType[] = [...REGISTRY_API_CONTENT_TYPES];
-export const PLURAL_TO_SINGULAR: Record<ApiContentType, ContentType> = { ...API_CONTENT_TYPE_TO_CONTENT_TYPE };
-export const isContentType = isRegistryContentType;
-export const isApiContentType = isRegistryApiContentType;
+export const CONTENT_TYPES: ContentType[] = [...CONTENT_CORPUS_TYPES];
+export const API_CONTENT_TYPES: ApiContentType[] = [...CONTENT_API_TYPES];
+export const PLURAL_TO_SINGULAR: Record<ApiContentType, ContentType> = {
+  ...API_CONTENT_TYPE_TO_CONTENT_TYPE,
+};
+export const isContentType = isContentCorpusType;
+export const isApiContentType = isContentApiType;
 
 export interface PaginationParams {
   limit: number;
@@ -29,7 +28,7 @@ export interface PaginationParams {
 
 export function parsePagination(
   limitParam: string | undefined,
-  offsetParam: string | undefined
+  offsetParam: string | undefined,
 ): PaginationParams {
   const limit = Math.min(Math.max(parseInt(limitParam || '20', 10), 1), 100);
   const offset = Math.max(parseInt(offsetParam || '0', 10), 0);

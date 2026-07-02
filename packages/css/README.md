@@ -1,9 +1,11 @@
 # @decantr/css
 
-Support status: `core-supported`  
+Support status: `supported-secondary`
 Release channel: `stable`
 
-Framework-agnostic CSS atoms runtime for Decantr projects.
+Legacy optional CSS atoms runtime for Decantr projects that explicitly adopt the Decantr CSS adapter.
+
+Decantr 3.8 defaults to contract-only governance. New greenfield and Brownfield projects should not install `@decantr/css` unless `--adoption=decantr-css` is explicit or an existing project already depends on this runtime.
 
 ## Installation
 
@@ -119,7 +121,7 @@ Mobile-first breakpoints: `_sm:` (640px), `_md:` (768px), `_lg:` (1024px), `_xl:
 
 ## Integration with Decantr
 
-When you scaffold a project with `@decantr/cli`, it generates:
+When you explicitly scaffold a project with `@decantr/cli --adoption=decantr-css`, it generates:
 
 - `src/styles/tokens.css` - Theme tokens (colors, spacing, radii)
 - `src/styles/treatments.css` - Visual treatment classes (interactive, surface, data, control, section, annotation)

@@ -4,8 +4,8 @@ export default defineConfig({
   test: {
     projects: [
       'apps/api/vitest.config.ts',
-      'apps/registry/vitest.config.ts',
       'packages/cli/vitest.config.ts',
+      'packages/content/vitest.config.ts',
       'packages/core/vitest.config.ts',
       'packages/css/vitest.config.ts',
       'packages/essence-spec/vitest.config.ts',

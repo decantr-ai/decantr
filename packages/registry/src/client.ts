@@ -5,6 +5,16 @@ export type {
   SearchResult,
 } from './api-client.js';
 export { createRegistryClient, RegistryAPIClient, RegistryAPIError } from './api-client.js';
+export {
+  buildContentIntelligenceSummary as buildCorpusIntelligenceSummary,
+  createContentResolver as createCorpusResolver,
+  getContentCatalog as getCorpusCatalog,
+  getContentRecord as getCorpusRecord,
+  listContentRecords as listCorpusRecords,
+  resolveContent as resolveCorpusContent,
+  searchContent as searchCorpusContent,
+  validateOfficialCorpus,
+} from '@decantr/content';
 export type { PublicContentSort } from './ranking.js';
 export { comparePublicContent, normalizePublicContentSort, sortPublicContent } from './ranking.js';
 export type {

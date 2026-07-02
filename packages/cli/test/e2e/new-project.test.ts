@@ -16,8 +16,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 function resolveContentRoot() {
   const candidates = [
     process.env.DECANTR_CONTENT_DIR,
-    join(__dirname, '..', '..', '..', '..', '..', 'decantr-content'),
-    join(__dirname, '..', '..', '..', '..', 'decantr-content'),
+    join(__dirname, '..', '..', '..', 'content'),
+    join(__dirname, '..', '..', '..', '..', 'packages', 'content'),
   ].filter((value): value is string => Boolean(value));
 
   return candidates.find((candidate) => existsSync(join(candidate, 'archetypes'))) ?? candidates[0];
@@ -36,7 +36,7 @@ describe('new command (e2e)', () => {
     rmSync(testDir, { recursive: true, force: true });
   });
 
-  it('seeds offline blueprint content and creates a runtime-aligned starter', () => {
+  it('seeds offline blueprint content and creates a runtime-aligned starter when Decantr CSS is explicit', () => {
     writeFileSync(join(testDir, 'pnpm-lock.yaml'), 'lockfileVersion: 9.0\n');
     const fakeBinDir = join(testDir, '.fake-bin');
     mkdirSync(fakeBinDir, { recursive: true });
@@ -55,15 +55,18 @@ describe('new command (e2e)', () => {
       });
     }
 
-    execSync(`node ${cliPath} new agent-smoke --blueprint=agent-marketplace --offline`, {
-      cwd: testDir,
-      env: {
-        ...process.env,
-        PATH: `${fakeBinDir}:${process.env.PATH ?? ''}`,
+    execSync(
+      `node ${cliPath} new agent-smoke --blueprint=agent-marketplace --adoption=decantr-css --offline`,
+      {
+        cwd: testDir,
+        env: {
+          ...process.env,
+          PATH: `${fakeBinDir}:${process.env.PATH ?? ''}`,
+        },
+        stdio: 'pipe',
+        timeout: 30000,
       },
-      stdio: 'pipe',
-      timeout: 30000,
-    });
+    );
 
     const projectDir = join(testDir, 'agent-smoke');
     const packageJson = JSON.parse(readFileSync(join(projectDir, 'package.json'), 'utf-8')) as {
@@ -92,7 +95,7 @@ describe('new command (e2e)', () => {
     chmodSync(fakePnpm, 0o755);
 
     const output = execSync(
-      `node ${cliPath} new next-smoke --blueprint=agent-marketplace --target=nextjs --offline`,
+      `node ${cliPath} new next-smoke --blueprint=agent-marketplace --target=nextjs --adoption=decantr-css --offline`,
       {
         cwd: testDir,
         env: {
@@ -169,7 +172,7 @@ describe('new command (e2e)', () => {
     chmodSync(fakePnpm, 0o755);
 
     execSync(
-      `node ${cliPath} new ${target}-smoke --blueprint=agent-marketplace --target=${target} --offline`,
+      `node ${cliPath} new ${target}-smoke --blueprint=agent-marketplace --target=${target} --adoption=decantr-css --offline`,
       {
         cwd: testDir,
         env: {
@@ -204,6 +207,36 @@ describe('new command (e2e)', () => {
     }
     expect(projectJson.initialized?.adapterId).toBe(adapterId);
     expect(scaffoldPack.target?.adapter).toBe(adapterId);
+  });
+
+  it('keeps blueprint-backed new projects contract-only by default', () => {
+    writeFileSync(join(testDir, 'pnpm-lock.yaml'), 'lockfileVersion: 9.0\n');
+    const fakeBinDir = join(testDir, '.fake-bin');
+    mkdirSync(fakeBinDir, { recursive: true });
+    const fakePnpm = join(fakeBinDir, 'pnpm');
+    writeFileSync(fakePnpm, '#!/bin/sh\nexit 0\n');
+    chmodSync(fakePnpm, 0o755);
+
+    execSync(`node ${cliPath} new corpus-smoke --blueprint=agent-marketplace --offline`, {
+      cwd: testDir,
+      env: {
+        ...process.env,
+        DECANTR_CONTENT_DIR: contentRoot,
+        PATH: `${fakeBinDir}:${process.env.PATH ?? ''}`,
+      },
+      stdio: 'pipe',
+      timeout: 30000,
+    });
+
+    const projectDir = join(testDir, 'corpus-smoke');
+    const projectJson = JSON.parse(
+      readFileSync(join(projectDir, '.decantr', 'project.json'), 'utf-8'),
+    ) as { initialized?: { workflowMode?: string; adoptionMode?: string } };
+
+    expect(projectJson.initialized?.workflowMode).toBe('greenfield-scaffold');
+    expect(projectJson.initialized?.adoptionMode).toBe('contract-only');
+    expect(existsSync(join(projectDir, 'package.json'))).toBe(false);
+    expect(existsSync(join(projectDir, '.decantr', 'context', 'scaffold-pack.md'))).toBe(true);
   });
 
   it('records blank greenfield new as greenfield contract-only instead of brownfield attach', () => {

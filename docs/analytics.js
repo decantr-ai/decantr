@@ -654,7 +654,7 @@
     }
 
     var host = url.hostname.replace(/^www\./, '');
-    if (host === 'registry.decantr.ai') return 'registry';
+    if (host === 'api.decantr.ai') return 'content_api';
     if (host === 'github.com') return 'github';
     if (host === 'npmjs.com') return 'npm';
     if (hostnameHasLabel(host, 'discord')) return 'discord';
@@ -669,11 +669,11 @@
   function isCta(anchor, destination) {
     var className = anchor.className || '';
     if (typeof className === 'string' && /btn-|stat-card|path-tile/.test(className)) return true;
-    return destination === 'registry' || destination === 'quickstart' || destination === 'reference';
+    return destination === 'quickstart' || destination === 'reference';
   }
 
   function isOutbound(destination) {
-    return ['github', 'npm', 'discord', 'external'].indexOf(destination) !== -1;
+    return ['github', 'npm', 'discord', 'external', 'content_api'].indexOf(destination) !== -1;
   }
 
   function classifyCommand(text) {

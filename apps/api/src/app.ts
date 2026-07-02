@@ -1,34 +1,20 @@
 import { Hono } from 'hono';
-// cors import removed — using manual CORS headers due to Hono middleware bug
 import type { Env } from './types.js';
 import { healthRoutes } from './routes/health.js';
 import { contentRoutes } from './routes/content.js';
 import { searchRoutes } from './routes/search.js';
 import { schemaRoutes } from './routes/schema.js';
 import { showcaseRoutes } from './routes/showcase.js';
-import { scanRoutes } from './routes/scan.js';
 import { intelligenceRoutes } from './routes/intelligence.js';
 import { packRoutes } from './routes/packs.js';
-import { critiqueRoutes } from './routes/critique.js';
-import { authRoutes } from './routes/auth.js';
-import { publishRoutes } from './routes/publish.js';
-import { orgRoutes } from './routes/orgs.js';
-import { adminRoutes } from './routes/admin.js';
-import { billingRoutes } from './routes/billing.js';
-import { userRoutes } from './routes/users.js';
-import { telemetryRoutes } from './routes/telemetry.js';
-import { optionalAuth } from './middleware/auth.js';
-import { rateLimiter } from './middleware/rate-limit.js';
 import { requestLogger } from './middleware/request-logger.js';
 import { logger } from './lib/logger.js';
-import { isAdminSyncRoute, isPublicReadOnlyRoute } from './lib/public-route-access.js';
-import { recordUsageEvent } from './lib/usage-metering.js';
 
 const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
-  : null; // null = allow all (public API default)
+  ? process.env.ALLOWED_ORIGINS.split(',').map((origin) => origin.trim())
+  : null;
 
-const MAX_BODY_SIZE = 10 * 1024 * 1024; // 10 MB
+const MAX_BODY_SIZE = 10 * 1024 * 1024;
 
 function getAllowedOrigin(requestOrigin: string | undefined): string {
   if (!ALLOWED_ORIGINS) return '*';
@@ -39,16 +25,13 @@ function getAllowedOrigin(requestOrigin: string | undefined): string {
 export function createApp(): Hono<Env> {
   const app = new Hono<Env>();
 
-  // Global error handler — prevents "Context is not finalized" crashes
   app.onError((err, c) => {
     logger.error({ err, path: c.req.path, method: c.req.method }, 'Unhandled error');
     return c.json({ error: 'Internal server error' }, 500);
   });
 
-  // Request logging — logs method, path, status, duration for every request
   app.use('*', requestLogger());
 
-  // Security headers + CORS origin on all responses
   app.use('*', async (c, next) => {
     await next();
     c.header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
@@ -58,103 +41,39 @@ export function createApp(): Hono<Env> {
     c.header('Access-Control-Allow-Origin', getAllowedOrigin(c.req.header('origin')));
   });
 
-  // Body size limit on all non-GET/HEAD/OPTIONS requests
   app.use('*', async (c, next) => {
     const method = c.req.method;
     if (method === 'GET' || method === 'HEAD' || method === 'OPTIONS') {
       return next();
     }
+
     const contentLength = c.req.header('content-length');
     if (contentLength && parseInt(contentLength, 10) > MAX_BODY_SIZE) {
       return c.json({ error: 'Request body too large' }, 413);
     }
+
     await next();
   });
 
-  // Preflight handler only — no response modification after next()
   app.options('*', (c) => {
     const origin = getAllowedOrigin(c.req.header('origin'));
     return new Response(null, {
       status: 204,
       headers: {
         'Access-Control-Allow-Origin': origin,
-        'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-API-Key, X-Admin-Key',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
       },
     });
   });
 
-  // Optional auth on v1 routes — preserve public access, but allow authenticated
-  // reads to flow through the same endpoints when credentials are provided.
-  app.use('/v1/*', async (c, next) => {
-    const path = c.req.path;
-    const method = c.req.method;
-
-    // Skip auth for admin sync (uses X-Admin-Key)
-    if (isAdminSyncRoute(method, path)) {
-      return next();
-    }
-
-    await optionalAuth()(c, next);
-  });
-
-  // Rate limiting (after auth so it can read the auth context)
-  // Skip for public GET endpoints and admin sync
-  app.use('/v1/*', async (c, next) => {
-    const path = c.req.path;
-    const method = c.req.method;
-    if (isAdminSyncRoute(method, path)) {
-      return next();
-    }
-    if (isPublicReadOnlyRoute(method, path)) {
-      return next();
-    }
-    return rateLimiter()(c, next);
-  });
-
-  // Durable usage metering for authenticated hosted product traffic.
-  app.use('/v1/*', async (c, next) => {
-    const path = c.req.path;
-    const method = c.req.method;
-    if (isAdminSyncRoute(method, path) || isPublicReadOnlyRoute(method, path)) {
-      return next();
-    }
-
-    await next();
-
-    const auth = c.get('auth');
-    if (!auth?.isAuthenticated || !auth.user) {
-      return;
-    }
-
-    await recordUsageEvent({
-      user_id: auth.user.id,
-      org_id: auth.apiKeyOrgId ?? null,
-      metric: 'api_request',
-      quantity: 1,
-      source: auth.authSource === 'api_key' ? 'api_key' : 'jwt',
-      path,
-      method,
-    });
-  });
-
-  // Mount route modules (admin first — its sync endpoint uses admin-key-only auth)
   app.route('/', healthRoutes);
-  app.route('/v1', adminRoutes);
   app.route('/v1', contentRoutes);
   app.route('/v1', searchRoutes);
   app.route('/v1', schemaRoutes);
   app.route('/v1', showcaseRoutes);
-  app.route('/v1', scanRoutes);
   app.route('/v1', intelligenceRoutes);
   app.route('/v1', packRoutes);
-  app.route('/v1', telemetryRoutes);
-  app.route('/v1', critiqueRoutes);
-  app.route('/v1', authRoutes);
-  app.route('/v1', publishRoutes);
-  app.route('/v1', orgRoutes);
-  app.route('/v1', billingRoutes);
-  app.route('/v1', userRoutes);
 
   return app;
 }

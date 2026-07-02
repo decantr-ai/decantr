@@ -1,7 +1,9 @@
 # Hosted Public API Rollout Runbook
 
 Date: 2026-04-09
-Status: Completed on 2026-04-09
+Status: Historical / superseded by Decantr 3.8 content API
+
+Decantr 3.8 keeps Fly for `api.decantr.ai` but narrows it to content/reference routes backed by `@decantr/content`. Hosted critique, scan, auth, publish, org, billing, users, usage-metering, Supabase, Stripe, and PostHog surfaces described below are retired.
 
 This runbook covers the safe rollout order for the Decantr vNext hosted public API surfaces now living on the `codex/decantr-vnext-reset` and `codex/decantr-vnext-resetmai` branches.
 

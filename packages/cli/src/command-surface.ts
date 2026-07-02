@@ -115,7 +115,8 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
     classification: 'content-author',
     mutates: true,
     audience: 'content-author',
-    purpose: 'Content-author namespace for registry repo check, create, and publish workflows.',
+    purpose:
+      'Content-corpus namespace for local health checks, official corpus authoring, and pack helpers.',
     consolidation: 'keep',
   },
   {
@@ -291,11 +292,12 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   },
   {
     command: 'registry',
-    classification: 'operator',
+    classification: 'deprecated-alias',
     mutates: true,
     audience: 'operator',
-    purpose: 'Vocabulary intelligence, hosted pack hydration, critique, audit, and mirroring.',
-    consolidation: 'keep',
+    purpose:
+      'Legacy compatibility alias for content-corpus summary, pack hydration, and cache mirroring.',
+    consolidation: 'soft-deprecate',
   },
   {
     command: 'search',
@@ -363,27 +365,28 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   },
   {
     command: 'publish',
-    classification: 'content-author',
+    classification: 'deprecated-alias',
     mutates: false,
     audience: 'content-author',
-    purpose: 'Publish a custom vocabulary content item to the community content service.',
-    consolidation: 'advanced-namespace',
+    purpose:
+      'Retired hosted community publishing command; official content now lands through packages/content changes.',
+    consolidation: 'soft-deprecate',
   },
   {
     command: 'login',
-    classification: 'operator',
+    classification: 'deprecated-alias',
     mutates: true,
     audience: 'operator',
-    purpose: 'Persist Decantr registry API credentials.',
-    consolidation: 'advanced-namespace',
+    purpose: 'Legacy credential helper retained for scripts that still configure DECANTR_API_KEY.',
+    consolidation: 'soft-deprecate',
   },
   {
     command: 'logout',
-    classification: 'operator',
+    classification: 'deprecated-alias',
     mutates: true,
     audience: 'operator',
-    purpose: 'Remove Decantr registry API credentials.',
-    consolidation: 'advanced-namespace',
+    purpose: 'Legacy credential cleanup helper retained for script compatibility.',
+    consolidation: 'soft-deprecate',
   },
   {
     command: 'telemetry',

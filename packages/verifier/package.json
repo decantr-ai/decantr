@@ -1,6 +1,6 @@
 {
   "name": "@decantr/verifier",
-  "version": "3.7.0",
+  "version": "3.8.0",
   "description": "Shared verification, typed findings, graph anchors, Project Health, and evidence schemas for Decantr",
   "keywords": [
     "decantr",

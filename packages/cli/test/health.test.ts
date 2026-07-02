@@ -1035,17 +1035,17 @@ exports.chromium = {
   it('renders a monorepo-aware Project Health workflow', () => {
     const workflow = renderProjectHealthCiWorkflow({
       cliVersion: '2.0.0',
-      projectPath: 'apps/registry',
+      projectPath: 'apps/web',
       reportPath: 'reports/decantr-health.md',
       jsonPath: 'reports/decantr-health.json',
     });
 
-    expect(workflow).toContain('working-directory: apps/registry');
+    expect(workflow).toContain('working-directory: apps/web');
     expect(workflow).toContain(
       'npx --yes @decantr/cli@2.0.0 health --json --output reports/decantr-health.json',
     );
-    expect(workflow).toContain('apps/registry/reports/decantr-health.json');
-    expect(workflow).toContain('apps/registry/reports/decantr-health.md');
+    expect(workflow).toContain('apps/web/reports/decantr-health.json');
+    expect(workflow).toContain('apps/web/reports/decantr-health.md');
   });
 
   it('renders a workspace Project Health workflow', () => {
@@ -1091,7 +1091,7 @@ exports.chromium = {
       '--report-path=reports/health.md',
       '--json-path=reports/health.json',
       '--project',
-      'apps/registry',
+      'apps/web',
     ]);
 
     expect(parsed.initCi).toEqual({
@@ -1101,7 +1101,7 @@ exports.chromium = {
       workflowPath: '.github/workflows/custom-health.yml',
       reportPath: 'reports/health.md',
       jsonPath: 'reports/health.json',
-      projectPath: 'apps/registry',
+      projectPath: 'apps/web',
     });
   });
 
@@ -1328,7 +1328,7 @@ exports.chromium = {
     expect(() => writeProjectHealthCiWorkflow(testDir, { workflowPath: '../ci.yml' })).toThrow(
       /Invalid --workflow-path/,
     );
-    expect(() => renderProjectHealthCiWorkflow({ projectPath: '../apps/registry' })).toThrow(
+    expect(() => renderProjectHealthCiWorkflow({ projectPath: '../apps/web' })).toThrow(
       /Invalid --project/,
     );
     expect(() => renderProjectHealthCiWorkflow({ failOn: 'always' as unknown as 'error' })).toThrow(

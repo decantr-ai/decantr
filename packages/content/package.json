@@ -1,33 +1,76 @@
 {
-  "name": "decantr-content",
-  "version": "1.0.0",
-  "private": true,
-  "type": "module",
-  "description": "Official Decantr certified vocabulary — patterns, themes, starter kits, archetypes, shells",
+  "name": "@decantr/content",
+  "version": "3.8.0",
+  "description": "Official Decantr content corpus for AI frontend governance contracts, context, examples, and validation",
+  "keywords": [
+    "decantr",
+    "decantr-ai",
+    "ai-frontend-governance",
+    "content-corpus",
+    "design-contracts",
+    "ui-patterns",
+    "archetypes",
+    "blueprints",
+    "themes",
+    "content-health"
+  ],
+  "author": "Decantr AI",
   "license": "MIT",
-  "homepage": "https://decantr.ai",
+  "bugs": {
+    "url": "https://github.com/decantr-ai/decantr/issues"
+  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/decantr-ai/decantr-content.git"
+    "url": "git+https://github.com/decantr-ai/decantr.git",
+    "directory": "packages/content"
   },
-  "author": "Decantr AI",
+  "homepage": "https://decantr.ai",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./schemas/*.json": "./schemas/*.json",
+    "./patterns/*.json": "./patterns/*.json",
+    "./themes/*.json": "./themes/*.json",
+    "./blueprints/*.json": "./blueprints/*.json",
+    "./archetypes/*.json": "./archetypes/*.json",
+    "./shells/*.json": "./shells/*.json"
+  },
+  "files": [
+    "dist",
+    "schemas",
+    "patterns",
+    "themes",
+    "blueprints",
+    "archetypes",
+    "shells",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
-    "content:health": "decantr content-health --ci --fail-on error --markdown --output content-health-summary.md",
-    "content:health:json": "decantr content-health --json --output content-health-report.json",
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "validate": "node validate.js",
+    "content:health": "node ../cli/dist/bin.js content-health --ci --fail-on error --markdown --output content-health-summary.md",
+    "content:health:json": "node ../cli/dist/bin.js content-health --json --output content-health-report.json",
     "content:health:suppressions": "node scripts/audit-content-health-suppressions.js",
-    "registry:audit": "node scripts/audit-registry-drift.js",
-    "registry:v2-certify": "node scripts/certify-registry-v2.js --report-json=registry-v2-certification-report.json --summary-markdown=registry-v2-certification-summary.md",
-    "registry:sync": "node scripts/sync-to-registry.js",
-    "release:closeout": "node scripts/audit-release-closeout.js",
-    "release:closeout:json": "node scripts/audit-release-closeout.js --json",
-    "schemas:sync": "node scripts/sync-schemas-from-monorepo.js",
-    "validate": "node validate.js"
-  },
-  "devDependencies": {
-    "@decantr/cli": "3.5.2",
-    "ajv": "^8.17.1"
+    "content:intelligence": "node scripts/audit-content-intelligence.js --report-json=content-intelligence-report.json --summary-markdown=content-intelligence-summary.md",
+    "content:certify": "node scripts/certify-registry-v2.js --report-json=content-certification-report.json --summary-markdown=content-certification-summary.md",
+    "registry:v2-certify": "pnpm run content:certify",
+    "prepublishOnly": "node ../../scripts/guard-pnpm-publish.mjs && pnpm build && pnpm validate"
   },
   "dependencies": {
-    "@decantr/telemetry": "3.4.0"
+    "ajv": "^8.20.0"
   }
 }

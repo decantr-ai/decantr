@@ -945,12 +945,12 @@ export async function createContentHealthReport(
         source: 'content',
         category: 'Content Root',
         severity: 'error',
-        message: 'No Decantr registry content was found in this directory.',
+        message: 'No Decantr content corpus files were found in this directory.',
         evidence: [
           'Expected one or more of patterns/, themes/, blueprints/, archetypes/, shells/.',
         ],
         rule: 'content-root-empty',
-        suggestedFix: 'Run this command from a decantr-content style repository.',
+        suggestedFix: 'Run this command from packages/content or another Decantr content corpus directory.',
         baseId: 'content-root-empty',
       }),
     );

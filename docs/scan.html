@@ -4,55 +4,39 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Brownfield Scan | Decantr</title>
-  <meta name="description" content="Run a read-only Decantr Brownfield scan against a public GitHub repo or GitHub Pages site before installing anything.">
+  <meta name="description" content="Run Decantr Brownfield scan locally against an existing app without uploading source.">
   <link rel="canonical" href="https://decantr.ai/scan">
   <meta property="og:title" content="Brownfield Scan | Decantr">
-  <meta property="og:description" content="Paste a public GitHub repo or GitHub Pages URL and get an ephemeral read-only Decantr scan report.">
+  <meta property="og:description" content="Local Brownfield reconnaissance for existing applications.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://decantr.ai/scan">
   <meta property="og:image" content="https://decantr.ai/logo.svg">
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Brownfield Scan | Decantr">
-  <meta name="twitter:description" content="Read-only Brownfield reconnaissance for public GitHub repos and GitHub Pages sites.">
   <link rel="icon" type="image/svg+xml" href="/logo.svg">
-  <meta http-equiv="refresh" content="4; url=https://registry.decantr.ai/scan">
   <style>
     :root {
-      --bg: #0D0D1A;
-      --fg: #FAFAFA;
-      --muted: #A7A7B8;
+      --bg: #0d0d1a;
+      --fg: #fafafa;
+      --muted: #a7a7b8;
       --panel: rgba(255, 255, 255, 0.07);
       --line: rgba(255, 255, 255, 0.14);
-      --coral: #F58882;
-      --cyan: #0AF3EB;
-      --green: #00E0AB;
-      --amber: #FDA303;
+      --cyan: #0af3eb;
+      --green: #00e0ab;
       --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
       --mono: "SF Mono", "Fira Code", "Consolas", monospace;
     }
-
     * { box-sizing: border-box; }
-
     body {
       min-height: 100vh;
       margin: 0;
       font-family: var(--sans);
       color: var(--fg);
-      background:
-        radial-gradient(circle at 18% 18%, rgba(10, 243, 235, 0.16), transparent 30%),
-        radial-gradient(circle at 82% 20%, rgba(245, 136, 130, 0.14), transparent 26%),
-        linear-gradient(135deg, #0D0D1A 0%, #121223 58%, #080811 100%);
+      background: #0d0d1a;
       display: grid;
       place-items: center;
       padding: 32px;
       -webkit-font-smoothing: antialiased;
     }
-
-    main {
-      width: min(920px, 100%);
-      position: relative;
-    }
-
+    main { width: min(880px, 100%); }
     .brand {
       display: inline-flex;
       align-items: center;
@@ -60,115 +44,52 @@
       color: var(--fg);
       text-decoration: none;
       font-weight: 700;
-      letter-spacing: 0;
       margin-bottom: 48px;
     }
-
-    .brand img {
-      width: 28px;
-      height: 28px;
-    }
-
+    .brand img { width: 28px; height: 28px; }
     .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
       color: var(--cyan);
       font-family: var(--mono);
       font-size: 0.78rem;
-      letter-spacing: 0.08em;
       text-transform: uppercase;
       margin-bottom: 18px;
     }
-
-    .eyebrow::before {
-      content: "";
-      width: 8px;
-      height: 8px;
-      background: var(--green);
-      border-radius: 50%;
-      box-shadow: 0 0 18px rgba(0, 224, 171, 0.85);
-    }
-
     h1 {
-      font-size: clamp(2.8rem, 8vw, 6.4rem);
-      line-height: 0.94;
-      letter-spacing: 0;
-      max-width: 840px;
+      font-size: clamp(2.6rem, 7vw, 5.6rem);
+      line-height: 0.98;
       margin: 0 0 24px;
+      letter-spacing: 0;
     }
-
     p {
-      max-width: 690px;
+      max-width: 700px;
       color: var(--muted);
-      font-size: 1.12rem;
-      line-height: 1.75;
+      font-size: 1.1rem;
+      line-height: 1.7;
       margin: 0;
     }
-
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-      margin-top: 36px;
+    pre {
+      margin: 36px 0 0;
+      padding: 18px;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--green);
+      font-family: var(--mono);
+      font-size: 0.95rem;
     }
-
+    .actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 28px; }
     .button {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-height: 48px;
-      border-radius: 999px;
-      padding: 0 22px;
-      font-weight: 700;
-      text-decoration: none;
+      min-height: 46px;
       border: 1px solid var(--line);
       color: var(--fg);
-      background: var(--panel);
+      text-decoration: none;
+      padding: 0 18px;
+      font-weight: 700;
     }
-
-    .button.primary {
-      color: #060610;
-      border-color: transparent;
-      background: linear-gradient(135deg, var(--cyan), var(--green));
-    }
-
-    .scan-card {
-      display: grid;
-      gap: 14px;
-      margin-top: 48px;
-      padding: 18px;
-      border: 1px solid var(--line);
-      background: rgba(8, 8, 17, 0.62);
-      box-shadow: 0 22px 80px rgba(0, 0, 0, 0.28);
-    }
-
-    .scan-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 18px;
-      min-height: 42px;
-      padding: 0 2px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      color: var(--muted);
-      font-family: var(--mono);
-      font-size: 0.86rem;
-    }
-
-    .scan-row:last-child { border-bottom: 0; }
-    .scan-row strong { color: var(--fg); font-family: var(--sans); font-size: 0.92rem; }
-    .ok { color: var(--green); }
-    .wait { color: var(--amber); }
-
-    @media (max-width: 640px) {
-      body { padding: 24px; align-items: start; }
-      .brand { margin-bottom: 72px; }
-      h1 { font-size: 3.1rem; }
-      .actions { flex-direction: column; }
-      .button { width: 100%; }
-      .scan-row { align-items: flex-start; flex-direction: column; padding: 10px 2px; gap: 6px; }
-    }
+    .button.primary { color: #060610; border-color: transparent; background: var(--cyan); }
   </style>
 </head>
 <body>
@@ -177,39 +98,17 @@
       <img src="/logo.svg" alt="" aria-hidden="true">
       <span>decantr</span>
     </a>
-
     <div class="eyebrow">Brownfield Scan</div>
-    <h1>Opening the read-only scan surface.</h1>
+    <h1>Run scan locally.</h1>
     <p>
-      Decantr Scan lives in the registry app so it can call the hosted scanner securely.
-      Query parameters are preserved while you are routed to the live experience.
+      Hosted scan upload is retired in Decantr 3.8. Use the CLI for read-only Brownfield reconnaissance; it does not upload source code, prompts, raw paths, or project files.
     </p>
-
+    <pre><code>npx @decantr/cli scan --project apps/web --json</code></pre>
     <div class="actions">
-      <a id="scan-link" class="button primary" href="https://registry.decantr.ai/scan">Open scan</a>
-      <a class="button" href="/">Back to docs</a>
-    </div>
-
-    <div class="scan-card" aria-label="Scan route status">
-      <div class="scan-row"><strong>Source</strong><span class="ok">decantr.ai/scan</span></div>
-      <div class="scan-row"><strong>Destination</strong><span>registry.decantr.ai/scan</span></div>
-      <div class="scan-row"><strong>Mode</strong><span>ephemeral, read-only</span></div>
-      <div class="scan-row"><strong>Status</strong><span class="wait">routing now</span></div>
+      <a class="button primary" href="/guides/existing-apps.md">Existing App Guide</a>
+      <a class="button" href="/">Back to Docs</a>
     </div>
   </main>
-
-  <script>
-    const destination = new URL('https://registry.decantr.ai/scan');
-    destination.search = window.location.search;
-    destination.hash = window.location.hash;
-
-    const scanLink = document.getElementById('scan-link');
-    scanLink.href = destination.toString();
-
-    window.setTimeout(() => {
-      window.location.replace(destination.toString());
-    }, 650);
-  </script>
   <script src="/analytics-config.js"></script>
   <script defer src="/analytics.js"></script>
 </body>

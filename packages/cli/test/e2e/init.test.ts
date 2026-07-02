@@ -17,8 +17,8 @@ const INIT_TIMEOUT_MS = 15_000;
 function resolveContentRoot() {
   const candidates = [
     process.env.DECANTR_CONTENT_DIR,
-    join(__dirname, '..', '..', '..', '..', '..', 'decantr-content'),
-    join(__dirname, '..', '..', '..', '..', 'decantr-content'),
+    join(__dirname, '..', '..', '..', 'content'),
+    join(__dirname, '..', '..', '..', '..', 'packages', 'content'),
   ].filter((value): value is string => Boolean(value));
 
   return candidates.find((candidate) => existsSync(join(candidate, 'archetypes'))) ?? candidates[0];
@@ -216,26 +216,20 @@ describe('init command', () => {
   );
 
   it(
-    'fails explicitly when offline blueprint init has no local content source',
+    'uses the installed content package for offline blueprint init',
     () => {
-      try {
-        execSync(`node ${cliPath} init --blueprint=agent-marketplace --offline --yes`, {
-          cwd: testDir,
-          env: {
-            ...process.env,
-            DECANTR_CONTENT_DIR: join(testDir, 'missing-content-root'),
-          },
-          stdio: 'pipe',
-        });
-        throw new Error('Expected offline init to fail without a local content source.');
-      } catch (error) {
-        const stdout = (error as { stdout?: Buffer }).stdout?.toString() ?? '';
-        const stderr = (error as { stderr?: Buffer }).stderr?.toString() ?? '';
-        const output = `${stdout}\n${stderr}`;
-        expect(output).toContain(
-          'Offline blueprint/archetype scaffolding requires a local Decantr content source.',
-        );
-      }
+      execSync(`node ${cliPath} init --blueprint=agent-marketplace --offline --yes`, {
+        cwd: testDir,
+        env: {
+          ...process.env,
+          DECANTR_CONTENT_DIR: join(testDir, 'missing-content-root'),
+        },
+        stdio: 'pipe',
+      });
+
+      expect(existsSync(join(testDir, 'decantr.essence.json'))).toBe(true);
+      const essence = JSON.parse(readFileSync(join(testDir, 'decantr.essence.json'), 'utf-8'));
+      expect(essence.version).toBe('4.0.0');
     },
     INIT_TIMEOUT_MS,
   );

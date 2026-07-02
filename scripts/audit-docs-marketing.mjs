@@ -4,10 +4,32 @@ import { readFileSync } from 'node:fs';
 
 const TOOL_SOURCE_PATH = 'packages/mcp-server/src/tools.ts';
 const DOCS_INDEX_PATH = 'docs/index.html';
+const ACTIVE_STORY_PATHS = [
+  'README.md',
+  'CLAUDE.md',
+  'docs/index.html',
+  'docs/README.md',
+  'docs/llms.txt',
+  'packages/cli/README.md',
+  'packages/mcp-server/README.md',
+  'packages/registry/README.md',
+  'packages/css/README.md',
+];
+
+const FORBIDDEN_ACTIVE_STORY_PATTERNS = [
+  { pattern: /https?:\/\/registry\.decantr\.ai/i, message: 'public registry portal URL' },
+  { pattern: /apps\/registry/i, message: 'registry portal app path' },
+  { pattern: /\bis (?:a |the )?public registry marketplace/i, message: 'public registry marketplace positioning' },
+  { pattern: /\bhosted community publishing (?:is|via|through|supports|accepts)/i, message: 'hosted community publishing positioning' },
+  { pattern: /\bopen registry (?:for|with|that|where)/i, message: 'open registry positioning' },
+  { pattern: /3\.5\.x/i, message: 'stale 3.5.x release copy' },
+  { pattern: /Decantr CSS is (?:the )?(?:default|core)/i, message: 'Decantr CSS as default/core positioning' },
+];
 
 const EXPECTED_PACKAGE_PATHS = {
   '@decantr/cli': 'packages/cli/package.json',
   '@decantr/mcp-server': 'packages/mcp-server/package.json',
+  '@decantr/content': 'packages/content/package.json',
   '@decantr/essence-spec': 'packages/essence-spec/package.json',
   '@decantr/registry': 'packages/registry/package.json',
   '@decantr/core': 'packages/core/package.json',
@@ -34,9 +56,12 @@ function extractDocsPackageNames(source) {
 }
 
 function extractDocsPackageVersions(source) {
-  return [...source.matchAll(/<div class="pkg-name">(@decantr\/[a-z-]+)<\/div>[\s\S]*?<div class="pkg-version">v([^<]+)<\/div>/g)]
+  return [...source.matchAll(/<div class="pkg-name">(@decantr\/[a-z-]+)<\/div>[\s\S]*?<div class="pkg-version">([^<]+)<\/div>/g)]
     .reduce((acc, match) => {
-      acc[match[1]] = match[2];
+      const versionMatch = match[2].match(/(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)/);
+      if (versionMatch) {
+        acc[match[1]] = versionMatch[1];
+      }
       return acc;
     }, {});
 }
@@ -59,9 +84,18 @@ const docsPackageNames = unique(extractDocsPackageNames(docsIndex));
 const docsPackageVersions = extractDocsPackageVersions(docsIndex);
 
 const toolHeadingMatch = docsIndex.match(/>(\d+)\s+tools for your AI assistant</);
-const packageHeadingMatch = docsIndex.match(/>(\w+)\s+packages, one mission/);
+const packageHeadingMatch = docsIndex.match(/>(?:(\w+)\s+|Content-first\s+)packages, one mission/);
 
 const failures = [];
+
+for (const file of ACTIVE_STORY_PATHS) {
+  const text = readFileSync(file, 'utf8');
+  for (const check of FORBIDDEN_ACTIVE_STORY_PATTERNS) {
+    if (check.pattern.test(text)) {
+      failures.push(`${file} still contains retired story copy: ${check.message}.`);
+    }
+  }
+}
 
 if (!toolHeadingMatch) {
   failures.push('docs/index.html is missing the MCP tool count heading.');
@@ -87,8 +121,8 @@ const missingPackages = difference(EXPECTED_PACKAGES, docsPackageNames);
 const extraPackages = difference(docsPackageNames, EXPECTED_PACKAGES);
 
 if (!packageHeadingMatch) {
-  failures.push('docs/index.html is missing the package count heading.');
-} else {
+  failures.push('docs/index.html is missing the package heading.');
+} else if (packageHeadingMatch[1]) {
   const numberWords = new Map([
     ['one', 1],
     ['two', 2],

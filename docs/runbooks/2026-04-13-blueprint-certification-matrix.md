@@ -36,10 +36,10 @@ Run the full blueprint corpus:
 pnpm audit:blueprint-matrix -- --all
 ```
 
-Override the sibling `decantr-content` path when needed:
+The matrix reads the monorepo corpus from `packages/content` by default. Override the content path only for a compatibility or migration check:
 
 ```bash
-DECANTR_CONTENT_DIR=/path/to/decantr-content pnpm audit:blueprint-matrix
+DECANTR_CONTENT_DIR=/path/to/content pnpm audit:blueprint-matrix
 ```
 
 ## What The Script Verifies
@@ -48,7 +48,7 @@ For each selected blueprint, the matrix:
 
 1. creates a fresh temp project
 2. copies the local curated content corpus into `.decantr/custom/`
-3. runs `decantr init --blueprint=<slug> --workflow=greenfield --adoption=decantr-css --offline --yes`
+3. runs `decantr init --blueprint=<slug> --workflow=greenfield --offline --yes`
 4. verifies these artifacts exist:
    - `decantr.essence.json`
    - `DECANTR.md`
@@ -63,13 +63,13 @@ The command exits non-zero if any blueprint fails.
 
 ## Offline Content Expectations
 
-`decantr init --offline --blueprint=<slug> --workflow=greenfield --adoption=decantr-css` expects a real local content source rather than silently degrading to the default scaffold.
+`decantr init --offline --blueprint=<slug> --workflow=greenfield` expects a real local content source rather than silently degrading to the default scaffold. Decantr CSS adapter certification should be an explicit secondary run with `--adoption=decantr-css`, not the default matrix.
 
 Resolution order:
 
 1. existing workspace `.decantr/cache` / `.decantr/custom`
 2. `DECANTR_CONTENT_DIR`
-3. sibling `../decantr-content`
+3. `packages/content`
 
 If a requested offline blueprint or archetype cannot be resolved from one of those local sources, `init` should stop with an explicit error instead of scaffolding a fallback custom project.
 

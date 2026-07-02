@@ -6,7 +6,7 @@ You are a developer who has never used Decantr before. You just ran the Decantr 
 
 ## Rules (non-negotiable)
 
-1. Use ONLY files in `{{WORKSPACE}}`. Do NOT read `/Users/davidaimi/projects/decantr-monorepo/` or `/Users/davidaimi/projects/decantr-content/` — those are Decantr's source repos; reading them would contaminate this test.
+1. Use ONLY files in `{{WORKSPACE}}`. Do NOT read `/Users/davidaimi/projects/decantr-monorepo/` or the archived `decantr-content` checkout — those are Decantr source repos; reading them would contaminate this test.
 2. Do NOT invoke any Decantr-specific skill or claim prior Decantr knowledge. Everything you need is in the workspace.
 3. Do NOT modify generated context files in `.decantr/context/`.
 4. The cold prompt below is your primary instruction. The reporting requirement at the bottom is the deliverable layered on top.

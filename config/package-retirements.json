@@ -3,20 +3,20 @@
     {
       "name": "@decantr/ui",
       "status": "retired",
-      "replacement": "@decantr/css, @decantr/cli, and the hosted Decantr registry/API surfaces",
-      "message": "@decantr/ui has been retired from the active Decantr vNext product surface. Use @decantr/css, @decantr/cli, and the hosted Decantr registry/API surfaces instead."
+      "replacement": "@decantr/cli, @decantr/core, and @decantr/content",
+      "message": "@decantr/ui has been retired from the active Decantr product surface. Use @decantr/cli for workflows, @decantr/core for Contract/Context primitives, and @decantr/content for the official corpus."
     },
     {
       "name": "@decantr/ui-chart",
       "status": "retired",
-      "replacement": "@decantr/css, @decantr/cli, and compiled execution packs",
-      "message": "@decantr/ui-chart has been retired from the active Decantr vNext product surface. Use @decantr/css, @decantr/cli, and compiled execution-pack workflows instead."
+      "replacement": "@decantr/cli, @decantr/verifier, and compiled execution packs",
+      "message": "@decantr/ui-chart has been retired from the active Decantr product surface. Use @decantr/cli, @decantr/verifier, and compiled execution-pack workflows instead."
     },
     {
       "name": "@decantr/ui-catalog",
       "status": "retired",
-      "replacement": "registry.decantr.ai and the hosted registry/API surfaces",
-      "message": "@decantr/ui-catalog has been retired from the active Decantr vNext product surface. Use registry.decantr.ai and the hosted registry/API surfaces instead."
+      "replacement": "@decantr/content and decantr.ai documentation",
+      "message": "@decantr/ui-catalog has been retired from the active Decantr product surface. Use @decantr/content for the official corpus and decantr.ai documentation for reference workflows."
     }
   ]
 }

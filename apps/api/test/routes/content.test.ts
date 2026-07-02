@@ -1,121 +1,68 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { Hono } from 'hono';
 import type { Env } from '../../src/types.js';
+import { contentRoutes } from '../../src/routes/content.js';
 import { assertMatchesSchema } from '../helpers/schema-assert.js';
-
-const { mockCreateAdminClient, mockAuthState } = vi.hoisted(() => ({
-  mockCreateAdminClient: vi.fn(),
-  mockAuthState: {
-    current: {
-      user: null,
-      isAuthenticated: false,
-      isAdmin: false,
-      apiKeyOrgId: null,
-      authSource: null,
-    },
-  },
-}));
-
-// Mock the db client before importing routes
-vi.mock('../../src/db/client.js', () => ({
-  createAdminClient: mockCreateAdminClient,
-  createUserClient: vi.fn(),
-}));
-
-// Import after mocks are set up
-const { contentRoutes } = await import('../../src/routes/content.js');
 
 function createTestApp() {
   const app = new Hono<Env>();
-  app.use('/v1/*', async (c, next) => {
-    c.set('auth', mockAuthState.current);
-    await next();
-  });
   app.route('/v1', contentRoutes);
   return app;
 }
 
-function createSingleContentClient(
-  row: Record<string, unknown> | null,
-  membership: Record<string, unknown> | null = null,
-  storageFile: { body: string; type: string } | null = null,
-) {
-  const chain = {
-    filters: {} as Record<string, unknown>,
-    table: '',
-    select: vi.fn().mockReturnThis(),
-    eq: vi.fn(function (field: string, value: unknown) {
-      this.filters[field] = value;
-      return this;
-    }),
-    single: vi.fn(async function () {
-      if (this.table === 'org_members') {
-        return { data: membership, error: membership ? null : { message: 'not found' } };
-      }
-      return {
-        data: row,
-        error: row ? null : { message: 'not found' },
-      };
-    }),
-  };
+const validEssence = {
+  version: '4.0.0',
+  dna: {
+    theme: { id: 'clean', mode: 'light', shape: 'rounded' },
+    spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '1.5rem' },
+    typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+    color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+    radius: { philosophy: 'rounded', base: 8 },
+    elevation: { system: 'layered', max_levels: 3 },
+    motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+    accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+    personality: ['professional'],
+  },
+  blueprint: {
+    shell: 'sidebar-main',
+    sections: [
+      {
+        id: 'dashboard',
+        role: 'primary',
+        shell: 'sidebar-main',
+        features: ['auth'],
+        description: 'Dashboard section',
+        pages: [{ id: 'home', route: '/', layout: ['hero'] }],
+      },
+    ],
+    features: ['auth'],
+    routes: { '/': { section: 'dashboard', page: 'home' } },
+  },
+  meta: {
+    archetype: 'dashboard',
+    target: 'next',
+    platform: { type: 'spa', routing: 'history' },
+    guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+  },
+} as const;
 
-  return {
-    from: vi.fn((table: string) => ({
-      ...chain,
-      table,
-      filters: {},
-    })),
-    storage: {
-      from: vi.fn(() => ({
-        download: vi.fn(async () => {
-          if (!storageFile) {
-            return { data: null, error: { message: 'not found' } };
-          }
+describe('content routes', () => {
+  it('validates active Essence v4 documents', async () => {
+    const app = createTestApp();
+    const res = await app.request('/v1/validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(validEssence),
+    });
 
-          return {
-            data: new Blob([storageFile.body], { type: storageFile.type }),
-            error: null,
-          };
-        }),
-      })),
-    },
-  };
-}
-
-function createListContentClient(rows: Record<string, unknown>[], count: number) {
-  const result = Promise.resolve({
-    data: rows,
-    error: null,
-    count,
-  });
-  const chain = {
-    select: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
-    order: vi.fn().mockReturnThis(),
-    then: result.then.bind(result),
-  };
-
-  return {
-    from: vi.fn(() => chain),
-  };
-}
-
-describe('POST /v1/validate', () => {
-  let app: ReturnType<typeof createTestApp>;
-
-  beforeEach(() => {
-    app = createTestApp();
-    mockCreateAdminClient.mockReset();
-    mockAuthState.current = {
-      user: null,
-      isAuthenticated: false,
-      isAdmin: false,
-      apiKeyOrgId: null,
-      authSource: null,
-    };
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.valid).toBe(true);
+    expect(json.schemaVersion).toBe('v4');
   });
 
-  it('should return error for invalid JSON body', async () => {
+  it('reports malformed JSON bodies', async () => {
+    const app = createTestApp();
     const res = await app.request('/v1/validate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -123,670 +70,46 @@ describe('POST /v1/validate', () => {
     });
 
     expect(res.status).toBe(400);
-    const json = await res.json();
-    expect(json.error).toBe('Invalid JSON body');
+    expect(await res.json()).toEqual({ error: 'Invalid JSON body' });
   });
 
-  it('should validate a minimal legacy essence document and report errors', async () => {
-    const res = await app.request('/v1/validate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        version: '2.0.0',
-        // Missing required fields
-      }),
-    });
-
-    expect(res.status).toBe(200);
-    const json = await res.json();
-    expect(json.valid).toBe(false);
-    expect(json.errors.length).toBeGreaterThan(0);
-    expect(json.schemaVersion).toBe('legacy');
-    expect(json.version).toBe('2.0.0');
-  });
-
-  it('should validate a valid V4 essence document', async () => {
-    const res = await app.request('/v1/validate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        version: '4.0.0',
-        dna: {
-          theme: { id: 'clean', mode: 'light', shape: 'rounded' },
-          spacing: {
-            base_unit: 4,
-            scale: 'linear',
-            density: 'comfortable',
-            content_gap: '1.5rem',
-          },
-          typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
-          color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
-          radius: { philosophy: 'rounded', base: 8 },
-          elevation: { system: 'layered', max_levels: 3 },
-          motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
-          accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
-          personality: ['professional'],
-        },
-        blueprint: {
-          shell: 'sidebar-main',
-          sections: [
-            {
-              id: 'dashboard',
-              role: 'primary',
-              shell: 'sidebar-main',
-              features: ['auth'],
-              description: 'Dashboard section',
-              pages: [{ id: 'home', route: '/', layout: ['hero'] }],
-            },
-          ],
-          features: ['auth'],
-          routes: { '/': { section: 'dashboard', page: 'home' } },
-        },
-        meta: {
-          archetype: 'dashboard',
-          target: 'next',
-          platform: { type: 'spa', routing: 'history' },
-          guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
-        },
-      }),
-    });
-
-    expect(res.status).toBe(200);
-    const json = await res.json();
-    expect(json.valid).toBe(true);
-    expect(json.errors).toEqual([]);
-    expect(json.schemaVersion).toBe('v4');
-  });
-
-  it('should report legacy schemaVersion for incomplete pre-V4 documents', async () => {
-    const res = await app.request('/v1/validate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        version: '3.0.0',
-        // Incomplete legacy doc -- should fail validation
-      }),
-    });
-
-    expect(res.status).toBe(200);
-    const json = await res.json();
-    expect(json.valid).toBe(false);
-    expect(json.version).toBe('3.0.0');
-    expect(json.schemaVersion).toBe('legacy');
-  });
-
-  it('should return schemaVersion legacy for pre-V4 documents', async () => {
-    const res = await app.request('/v1/validate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        version: '2.0.0',
-        platform: { type: 'spa' },
-      }),
-    });
-
-    expect(res.status).toBe(200);
-    const json = await res.json();
-    expect(json.schemaVersion).toBe('legacy');
-  });
-
-  it('should handle empty object', async () => {
-    const res = await app.request('/v1/validate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({}),
-    });
-
-    expect(res.status).toBe(200);
-    const json = await res.json();
-    expect(json.valid).toBe(false);
-    expect(json.errors.length).toBeGreaterThan(0);
-    expect(json.version).toBeNull();
-  });
-
-  it('serves public content detail responses that match the published schema', async () => {
-    mockCreateAdminClient.mockReturnValue(createSingleContentClient({
-      id: 'content-1',
-      type: 'blueprint',
-      slug: 'portfolio',
-      namespace: '@official',
-      version: '1.0.0',
-      visibility: 'public',
-      status: 'published',
-      data: {
-        name: 'Portfolio',
-        description: 'Creator portfolio',
-        registry_presentation: {
-          thumbnail: {
-            path: 'thumbs/portfolio.png',
-          },
-        },
-      },
-      created_at: '2026-04-09T00:00:00.000Z',
-      updated_at: '2026-04-09T00:00:00.000Z',
-      published_at: '2026-04-09T00:00:00.000Z',
-      owner: {
-        display_name: 'Decantr',
-        username: 'decantr',
-      },
-    }));
-
-    const res = await app.request('/v1/blueprints/%40official/portfolio');
+  it('serves public content detail responses from @decantr/content', async () => {
+    const app = createTestApp();
+    const res = await app.request('/v1/patterns/%40official/data-table');
 
     expect(res.status).toBe(200);
     const json = await res.json();
     assertMatchesSchema('public-content-record.v1.json', json);
-    expect(json.slug).toBe('portfolio');
-    expect(json.intelligence?.source).toBe('hybrid');
-    expect(json.thumbnail_url).toBe('http://localhost/v1/blueprints/%40official/portfolio/thumbnail');
+    expect(json.slug).toBe('data-table');
+    expect(json.namespace).toBe('@official');
+    expect(json.visibility).toBe('public');
   });
 
-  it('serves public thumbnail assets through the API thumbnail route', async () => {
-    mockCreateAdminClient.mockReturnValue(createSingleContentClient(
-      {
-        id: 'content-1',
-        type: 'blueprint',
-        slug: 'portfolio',
-        namespace: '@official',
-        version: '1.0.0',
-        visibility: 'public',
-        status: 'published',
-        data: {
-          name: 'Portfolio',
-          description: 'Creator portfolio',
-          registry_presentation: {
-            thumbnail: {
-              path: 'thumbs/portfolio.png',
-            },
-          },
-        },
-        created_at: '2026-04-09T00:00:00.000Z',
-        updated_at: '2026-04-09T00:00:00.000Z',
-        published_at: '2026-04-09T00:00:00.000Z',
-      },
-      null,
-      { body: 'png-bytes', type: 'image/png' },
-    ));
-
-    const res = await app.request('/v1/blueprints/%40official/portfolio/thumbnail');
-
-    expect(res.status).toBe(200);
-    expect(res.headers.get('Content-Type')).toBe('image/png');
-    expect(res.headers.get('Cache-Control')).toBe('public, max-age=300, stale-while-revalidate=3600');
-    expect(await res.text()).toBe('png-bytes');
-  });
-
-  it('allows the owner to fetch a private content record', async () => {
-    mockAuthState.current = {
-      user: {
-        id: 'user-1',
-        email: 'owner@example.com',
-        username: 'owner',
-        display_name: 'Owner',
-        tier: 'pro',
-        trusted: false,
-        reputation_score: 0,
-      },
-      isAuthenticated: true,
-      isAdmin: false,
-      apiKeyOrgId: null,
-      authSource: 'jwt',
-    };
-
-    mockCreateAdminClient.mockReturnValue(createSingleContentClient({
-      id: 'content-1',
-      owner_id: 'user-1',
-      org_id: null,
-      type: 'theme',
-      slug: 'private-theme',
-      namespace: '@owner',
-      version: '1.0.0',
-      visibility: 'private',
-      status: 'published',
-      data: {
-        name: 'Private Theme',
-        description: 'Personal private package',
-      },
-      created_at: '2026-04-09T00:00:00.000Z',
-      updated_at: '2026-04-09T00:00:00.000Z',
-      published_at: '2026-04-09T00:00:00.000Z',
-      owner: {
-        display_name: 'Owner',
-        username: 'owner',
-      },
-    }));
-
-    const res = await app.request('/v1/themes/%40owner/private-theme');
+  it('serves public content lists with blueprint portfolio filtering', async () => {
+    const app = createTestApp();
+    const res = await app.request('/v1/blueprints?blueprint_set=featured&limit=100');
 
     expect(res.status).toBe(200);
     const json = await res.json();
-    expect(json.visibility).toBe('private');
-    expect(res.headers.get('Cache-Control')).toBe('private, no-store');
+    assertMatchesSchema('public-content-list.v1.json', json);
+    expect(json.total).toBeGreaterThan(0);
+    expect(json.items.every((item: { blueprint_portfolio?: { visibility?: string } }) =>
+      item.blueprint_portfolio?.visibility === 'featured',
+    )).toBe(true);
   });
 
-  it('allows org members to fetch org-private content records', async () => {
-    mockAuthState.current = {
-      user: {
-        id: 'user-2',
-        email: 'member@example.com',
-        username: 'member',
-        display_name: 'Member',
-        tier: 'team',
-        trusted: false,
-        reputation_score: 0,
-      },
-      isAuthenticated: true,
-      isAdmin: false,
-      apiKeyOrgId: null,
-      authSource: 'jwt',
-    };
-
-    mockCreateAdminClient.mockReturnValue(createSingleContentClient({
-      id: 'content-1',
-      owner_id: 'user-1',
-      org_id: 'org-1',
-      type: 'theme',
-      slug: 'org-theme',
-      namespace: '@org:acme',
-      version: '1.0.0',
-      visibility: 'private',
-      status: 'published',
-      data: {
-        name: 'Org Theme',
-        description: 'Org private package',
-      },
-      created_at: '2026-04-09T00:00:00.000Z',
-      updated_at: '2026-04-09T00:00:00.000Z',
-      published_at: '2026-04-09T00:00:00.000Z',
-      owner: {
-        display_name: 'Owner',
-        username: 'owner',
-      },
-    }, { role: 'member' }));
-
-    const res = await app.request('/v1/themes/%40org%3Aacme/org-theme');
-
-    expect(res.status).toBe(200);
-    const json = await res.json();
-    expect(json.namespace).toBe('@org:acme');
-    expect(json.visibility).toBe('private');
-  });
-
-  it('returns 404 for unauthorized private content reads', async () => {
-    mockCreateAdminClient.mockReturnValue(createSingleContentClient({
-      id: 'content-1',
-      owner_id: 'user-1',
-      org_id: null,
-      type: 'theme',
-      slug: 'private-theme',
-      namespace: '@owner',
-      version: '1.0.0',
-      visibility: 'private',
-      status: 'published',
-      data: {
-        name: 'Private Theme',
-        description: 'Personal private package',
-      },
-      created_at: '2026-04-09T00:00:00.000Z',
-      updated_at: '2026-04-09T00:00:00.000Z',
-      published_at: '2026-04-09T00:00:00.000Z',
-      owner: {
-        display_name: 'Owner',
-        username: 'owner',
-      },
-    }));
-
+  it('does not serve private or community namespaces from the bundled corpus', async () => {
+    const app = createTestApp();
     const res = await app.request('/v1/themes/%40owner/private-theme');
 
     expect(res.status).toBe(404);
   });
 
-  it('allows org-scoped API keys to fetch org-private content records', async () => {
-    mockAuthState.current = {
-      user: {
-        id: 'user-2',
-        email: 'member@example.com',
-        username: 'member',
-        display_name: 'Member',
-        tier: 'team',
-        trusted: false,
-        reputation_score: 0,
-      },
-      isAuthenticated: true,
-      isAdmin: false,
-      apiKeyOrgId: 'org-1',
-      authSource: 'api_key',
-    };
+  it('does not serve registry thumbnail storage from the content API', async () => {
+    const app = createTestApp();
+    const res = await app.request('/v1/blueprints/%40official/agent-studio/thumbnail');
 
-    mockCreateAdminClient.mockReturnValue(createSingleContentClient({
-      id: 'content-1',
-      owner_id: 'user-1',
-      org_id: 'org-1',
-      type: 'theme',
-      slug: 'org-theme',
-      namespace: '@org:acme',
-      version: '1.0.0',
-      visibility: 'private',
-      status: 'published',
-      data: {
-        name: 'Org Theme',
-        description: 'Org private package',
-      },
-      created_at: '2026-04-09T00:00:00.000Z',
-      updated_at: '2026-04-09T00:00:00.000Z',
-      published_at: '2026-04-09T00:00:00.000Z',
-      owner: {
-        display_name: 'Owner',
-        username: 'owner',
-      },
-    }));
-
-    const res = await app.request('/v1/themes/%40org%3Aacme/org-theme');
-
-    expect(res.status).toBe(200);
-    const json = await res.json();
-    expect(json.namespace).toBe('@org:acme');
-    expect(json.visibility).toBe('private');
-  });
-
-  it('serves public content list responses that match the published schema', async () => {
-    mockCreateAdminClient.mockReturnValue(createListContentClient([
-      {
-        id: 'content-1',
-        type: 'blueprint',
-        slug: 'portfolio',
-        namespace: '@official',
-        version: '1.0.0',
-        data: {
-          name: 'Portfolio',
-          description: 'Creator portfolio',
-          registry_presentation: {
-            thumbnail: {
-              path: 'thumbs/portfolio.png',
-            },
-          },
-        },
-        published_at: '2026-04-09T00:00:00.000Z',
-        owner: {
-          display_name: 'Decantr',
-          username: 'decantr',
-        },
-      },
-    ], 1));
-
-    const res = await app.request('/v1/blueprints');
-
-    expect(res.status).toBe(200);
-    const json = await res.json();
-    assertMatchesSchema('public-content-list.v1.json', json);
-    expect(json.total).toBe(1);
-    expect(json.items[0]?.slug).toBe('portfolio');
-    expect(json.items[0]?.intelligence?.source).toBe('hybrid');
-    expect(json.items[0]?.thumbnail_url).toBe('http://localhost/v1/blueprints/%40official/portfolio/thumbnail');
-  });
-
-  it('applies shared name sorting to public content lists before pagination', async () => {
-    mockCreateAdminClient.mockReturnValue(createListContentClient([
-      {
-        id: 'content-2',
-        type: 'blueprint',
-        slug: 'zeta',
-        namespace: '@community',
-        version: '1.0.0',
-        data: {
-          name: 'Zeta',
-          description: 'Second item',
-        },
-        published_at: '2026-04-09T00:00:00.000Z',
-        owner: {
-          display_name: 'Alice',
-          username: 'alice',
-        },
-      },
-      {
-        id: 'content-1',
-        type: 'blueprint',
-        slug: 'alpha',
-        namespace: '@community',
-        version: '1.0.0',
-        data: {
-          name: 'Alpha',
-          description: 'First item',
-        },
-        published_at: '2026-04-08T00:00:00.000Z',
-        owner: {
-          display_name: 'Alice',
-          username: 'alice',
-        },
-      },
-    ], 2));
-
-    const res = await app.request('/v1/blueprints?sort=name');
-
-    expect(res.status).toBe(200);
-    const json = await res.json();
-    expect(json.items.map((item: { slug: string }) => item.slug)).toEqual(['alpha', 'zeta']);
-  });
-
-  it('applies public blueprint portfolio sets without exposing folded items', async () => {
-    const portfolio = (
-      visibility: 'featured' | 'public' | 'labs' | 'hidden',
-      status: 'candidate' | 'certified' = 'candidate',
-    ) => ({
-      visibility,
-      maturity: status === 'certified' ? 'certified-flagship' : visibility === 'labs' ? 'experimental' : 'supported-contract',
-      rationale: 'Test portfolio state',
-      artifact: { status },
-    });
-    mockCreateAdminClient.mockReturnValue(createListContentClient([
-      {
-        id: 'content-1',
-        type: 'blueprint',
-        slug: 'flagship',
-        namespace: '@official',
-        version: '1.0.0',
-        data: {
-          name: 'Flagship',
-          description: 'Certified flagship',
-          blueprint_portfolio: portfolio('featured', 'certified'),
-        },
-        published_at: '2026-04-09T00:00:00.000Z',
-        owner: { display_name: 'Decantr', username: 'decantr' },
-      },
-      {
-        id: 'content-2',
-        type: 'blueprint',
-        slug: 'supported',
-        namespace: '@official',
-        version: '1.0.0',
-        data: {
-          name: 'Supported',
-          description: 'Supported blueprint',
-          blueprint_portfolio: portfolio('public'),
-        },
-        published_at: '2026-04-08T00:00:00.000Z',
-        owner: { display_name: 'Decantr', username: 'decantr' },
-      },
-      {
-        id: 'content-3',
-        type: 'blueprint',
-        slug: 'lab',
-        namespace: '@official',
-        version: '1.0.0',
-        data: {
-          name: 'Lab',
-          description: 'Labs blueprint',
-          blueprint_portfolio: portfolio('labs'),
-        },
-        published_at: '2026-04-07T00:00:00.000Z',
-        owner: { display_name: 'Decantr', username: 'decantr' },
-      },
-      {
-        id: 'content-4',
-        type: 'blueprint',
-        slug: 'folded',
-        namespace: '@official',
-        version: '1.0.0',
-        data: {
-          name: 'Folded',
-          description: 'Folded blueprint',
-          blueprint_portfolio: {
-            ...portfolio('hidden'),
-            maturity: 'fold-candidate',
-            recommended_alternative: 'flagship',
-          },
-        },
-        published_at: '2026-04-06T00:00:00.000Z',
-        owner: { display_name: 'Decantr', username: 'decantr' },
-      },
-    ], 4));
-
-    const defaultRes = await app.request('/v1/blueprints');
-    const defaultJson = await defaultRes.json();
-    expect(defaultJson.total).toBe(2);
-    expect(defaultJson.items.map((item: { slug: string }) => item.slug)).toEqual([
-      'flagship',
-      'supported',
-    ]);
-
-    const certifiedRes = await app.request('/v1/blueprints?blueprint_set=certified');
-    const certifiedJson = await certifiedRes.json();
-    expect(certifiedJson.items.map((item: { slug: string }) => item.slug)).toEqual(['flagship']);
-
-    const labsRes = await app.request('/v1/blueprints?blueprint_set=labs');
-    const labsJson = await labsRes.json();
-    expect(labsJson.items.map((item: { slug: string }) => item.slug)).toEqual(['lab']);
-  });
-
-  it('filters public content lists down to recommended items when requested', async () => {
-    mockCreateAdminClient.mockReturnValue(createListContentClient([
-      {
-        id: 'content-1',
-        type: 'blueprint',
-        slug: 'portfolio',
-        namespace: '@official',
-        version: '1.0.0',
-        data: {
-          name: 'Portfolio',
-          description: 'Creator portfolio',
-        },
-        published_at: '2026-04-09T00:00:00.000Z',
-        owner: {
-          display_name: 'Decantr',
-          username: 'decantr',
-        },
-      },
-      {
-        id: 'content-2',
-        type: 'blueprint',
-        slug: 'zeta',
-        namespace: '@community',
-        version: '1.0.0',
-        data: {
-          name: 'Zeta',
-          description: 'Community blueprint',
-        },
-        published_at: '2026-04-08T00:00:00.000Z',
-        owner: {
-          display_name: 'Alice',
-          username: 'alice',
-        },
-      },
-    ], 2));
-
-    const res = await app.request('/v1/blueprints?recommended=true');
-
-    expect(res.status).toBe(200);
-    const json = await res.json();
-    expect(json.total).toBe(1);
-    expect(json.items.map((item: { slug: string }) => item.slug)).toEqual(['portfolio']);
-  });
-
-  it('filters public content lists by source when requested', async () => {
-    mockCreateAdminClient.mockReturnValue(createListContentClient([
-      {
-        id: 'content-1',
-        type: 'blueprint',
-        slug: 'portfolio',
-        namespace: '@official',
-        version: '1.0.0',
-        data: {
-          name: 'Portfolio',
-          description: 'Creator portfolio',
-        },
-        published_at: '2026-04-09T00:00:00.000Z',
-        owner: {
-          display_name: 'Decantr',
-          username: 'decantr',
-        },
-      },
-      {
-        id: 'content-2',
-        type: 'blueprint',
-        slug: 'zeta',
-        namespace: '@community',
-        version: '1.0.0',
-        data: {
-          name: 'Zeta',
-          description: 'Community blueprint',
-        },
-        published_at: '2026-04-08T00:00:00.000Z',
-        owner: {
-          display_name: 'Alice',
-          username: 'alice',
-        },
-      },
-    ], 2));
-
-    const res = await app.request('/v1/blueprints?source=official');
-
-    expect(res.status).toBe(200);
-    const json = await res.json();
-    expect(json.total).toBe(1);
-    expect(json.items.map((item: { slug: string }) => item.slug)).toEqual(['portfolio']);
-  });
-
-  it('filters public content lists down to a requested intelligence source', async () => {
-    mockCreateAdminClient.mockReturnValue(createListContentClient([
-      {
-        id: 'content-1',
-        type: 'blueprint',
-        slug: 'portfolio',
-        namespace: '@official',
-        version: '1.0.0',
-        data: {
-          name: 'Portfolio',
-          description: 'Creator portfolio',
-        },
-        published_at: '2026-04-09T00:00:00.000Z',
-        owner: {
-          display_name: 'Decantr',
-          username: 'decantr',
-        },
-      },
-      {
-        id: 'content-2',
-        type: 'blueprint',
-        slug: 'zeta',
-        namespace: '@community',
-        version: '1.0.0',
-        data: {
-          name: 'Zeta',
-          description: 'Community blueprint',
-        },
-        published_at: '2026-04-08T00:00:00.000Z',
-        owner: {
-          display_name: 'Alice',
-          username: 'alice',
-        },
-      },
-    ], 2));
-
-    const res = await app.request('/v1/blueprints?intelligence_source=hybrid');
-
-    expect(res.status).toBe(200);
-    const json = await res.json();
-    expect(json.total).toBe(1);
-    expect(json.items.map((item: { slug: string }) => item.slug)).toEqual(['portfolio']);
+    expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({ error: 'Thumbnail assets are not served by the content API.' });
   });
 });

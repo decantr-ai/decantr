@@ -16,7 +16,7 @@ This is the current command audit for the Decantr 3 governance line. The goal is
 | `doctor` | primary | keep | Explain project/workspace state, adoption lane, generated artifacts, typed graph readiness, local law, CI wiring, design authority signals, and the ordered next-step queue. |
 | `codify` | primary | keep | Propose and accept project-owned Brownfield/Hybrid UI law and style bridges. |
 | `studio` | primary | keep | Local Project Health and workspace triage UI. |
-| `content` | content-author | keep | Content-author namespace over check/create/publish. |
+| `content` | content-author | keep | Content-author namespace over check, create, corpus summary, and execution-pack hydration. Hosted publish is retired. |
 | `magic` | advanced | keep | Intent-first greenfield path; not the primary enterprise story. |
 | `init` | advanced | keep | Attach/setup primitive for Decantr contracts and context. |
 | `analyze` | advanced | keep | Brownfield inventory and proposal primitive used by `adopt`. |
@@ -27,9 +27,11 @@ This is the current command audit for the Decantr 3 governance line. The goal is
 | `workspace` | advanced | keep | Monorepo app candidate discovery, attached Decantr project listing, and aggregate health; `verify --workspace` is the user-facing shortcut. |
 | `heal` | deprecated-alias | soft-deprecate | Alias for `check`; retained for compatibility. |
 | `audit` | advanced | keep advanced | Lower-level verifier audit/file critique. |
-| `status`, `sync`, `upgrade`, `sync-drift`, `get`, `list`, `validate`, `rules`, `export` | advanced | keep | Useful when users need direct registry, rules, export, or diagnostic control. |
-| `registry`, `showcase`, `login`, `logout`, `telemetry` | operator | keep | Operator/registry/support workflows. |
-| `content-health`, `create`, `publish` | content-author | keep as aliases | Backward-compatible root commands; docs should prefer `decantr content ...`. |
+| `status`, `sync`, `upgrade`, `sync-drift`, `get`, `list`, `validate`, `rules`, `export` | advanced | keep | Useful when users need direct corpus, rules, export, or diagnostic control. |
+| `registry` | deprecated-alias | soft-deprecate | Compatibility alias for content-corpus and execution-pack workflows; docs should prefer `decantr content ...`. |
+| `showcase`, `telemetry` | operator | keep | Internal support workflows. |
+| `login`, `logout` | deprecated-alias | soft-deprecate | Legacy registry-account commands retained for scripts; hosted account flows are retired. |
+| `content-health`, `create`, `publish` | content-author | keep as aliases | Backward-compatible root commands; docs should prefer `decantr content ...`; hosted publish exits with a retirement message. |
 
 The typed metadata lives in `packages/cli/src/command-surface.ts` and is covered by tests against the dispatched CLI commands. Any new top-level command should update that file, command help, package docs, root docs, release notes, and relevant skills before it ships.
 
@@ -54,7 +56,7 @@ Brownfield intelligence is now exposed through workflows first:
 - `decantr check --brownfield --project <path>` validates the selected app from a monorepo root; app-scoped primitives should not silently fall back to the workspace root.
 - `decantr add page <section>/<page> --route <route> --project <path>` writes both the page and route mapping so the page is immediately usable by `decantr task <route>`.
 - App-scoped primitives that support project state (`health`, `status`, `upgrade`, `add`, `remove`, `theme`, `export`, `suggest`, `magic`, `rules`, and `telemetry`) should honor `--project <path>`. Unsupported flags should fail before writing proposal/generated files.
-- `decantr registry get-pack page --route <route>` is the CLI task-context path through the existing pack surface. `decantr registry compile-packs apps/web/decantr.essence.json --write-context` hydrates app packs beside the provided essence path.
+- `decantr content get-pack page --route <route>` is the CLI task-context path through the existing pack surface. `decantr content compile-packs apps/web/decantr.essence.json --write-context` hydrates app packs beside the provided essence path. Legacy `decantr registry ...` aliases remain compatible for Decantr 3.x scripts.
 - `decantr health --browser --base-url <url> --evidence` writes local screenshots and a visual manifest; `--save-baseline` / `--since-baseline` add continuity.
 - `decantr health --diagnostics --json` prints the stable diagnostic code and repair ID catalog without running a project audit.
 - `decantr refresh --check` is the CI-safe generated-context freshness check and fails when `pack-manifest.json` references missing files. In contract-only Brownfield it should not fail solely because hosted packs were intentionally deferred. `decantr refresh --list-changes` prints created, updated, and removed generated files after regeneration, using paths that are openable from the command's current directory.

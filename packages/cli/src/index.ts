@@ -739,14 +739,14 @@ function generateCuratedPrompt(ctx: PromptContext): string {
 
 function getAPIClient(): RegistryAPIClient {
   return new RegistryAPIClient({
-    baseUrl: process.env.DECANTR_API_URL || undefined,
+    baseUrl: process.env.DECANTR_API_URL || process.env.REGISTRY_URL || undefined,
     apiKey: process.env.DECANTR_API_KEY || undefined,
   });
 }
 
 function getPublicAPIClient(): RegistryAPIClient {
   return new RegistryAPIClient({
-    baseUrl: process.env.DECANTR_API_URL || undefined,
+    baseUrl: process.env.DECANTR_API_URL || process.env.REGISTRY_URL || undefined,
   });
 }
 
@@ -984,7 +984,7 @@ async function printRegistryIntelligenceSummary(namespace?: string, jsonOutput: 
   }
 
   const typedSummary = summary as RegistryIntelligenceSummaryResponse;
-  console.log(heading('Registry Intelligence Summary'));
+  console.log(heading('Content Intelligence Summary'));
   console.log(`  Namespace: ${typedSummary.namespace ?? 'all public content'}`);
   console.log(`  Generated: ${typedSummary.generated_at}`);
   console.log(`  Public items: ${typedSummary.totals.total_public_items}`);
@@ -3199,19 +3199,26 @@ function printFileCritiqueReport(report: FileCritiqueReport) {
   printVerificationFindings(report.findings);
 }
 
-async function cmdAudit(filePath?: string) {
+async function cmdAudit(filePath?: string, options: { json?: boolean } = {}) {
   const projectRoot = process.cwd();
+  const jsonOutput = options.json === true;
 
   try {
     if (filePath) {
       const hydration = await hydrateHostedReviewPackIfMissing(projectRoot);
-      console.log(heading(`Critiquing ${filePath}...`));
-      if (hydration.hydrated) {
+      if (!jsonOutput) {
+        console.log(heading(`Critiquing ${filePath}...`));
+      }
+      if (hydration.hydrated && !jsonOutput) {
         console.log(dim('Hydrated missing review pack from hosted registry.'));
         console.log('');
       }
       const report = await critiqueProjectFile(filePath, projectRoot);
-      printFileCritiqueReport(report);
+      if (jsonOutput) {
+        console.log(JSON.stringify(report, null, 2));
+      } else {
+        printFileCritiqueReport(report);
+      }
       if (report.findings.some((finding) => finding.severity === 'error')) {
         process.exitCode = 1;
       }
@@ -3219,8 +3226,10 @@ async function cmdAudit(filePath?: string) {
     }
 
     const hydration = await hydrateHostedExecutionPacksIfMissing(projectRoot);
-    console.log(heading('Auditing project...'));
-    if (hydration.hydrated) {
+    if (!jsonOutput) {
+      console.log(heading('Auditing project...'));
+    }
+    if (hydration.hydrated && !jsonOutput) {
       console.log(
         dim(
           hydration.scope === 'bundle'
@@ -3231,7 +3240,11 @@ async function cmdAudit(filePath?: string) {
       console.log('');
     }
     const report = await auditProject(projectRoot);
-    printProjectAuditReport(report);
+    if (jsonOutput) {
+      console.log(JSON.stringify(report, null, 2));
+    } else {
+      printProjectAuditReport(report);
+    }
 
     if (!report.valid) {
       process.exitCode = 1;
@@ -3239,8 +3252,10 @@ async function cmdAudit(filePath?: string) {
     }
 
     if (report.findings.length > 0) {
-      console.log('');
-      console.log(dim('Project audit completed with advisory findings.'));
+      if (!jsonOutput) {
+        console.log('');
+        console.log(dim('Project audit completed with advisory findings.'));
+      }
     }
   } catch (e) {
     console.log(`${RED}Error: ${(e as Error).message}${RESET}`);
@@ -5388,6 +5403,10 @@ async function cmdCodifyWorkflow(args: string[]): Promise<void> {
 
 async function cmdContentWorkflow(args: string[]): Promise<void> {
   const subcommand = args[1] ?? 'check';
+  if (subcommand === 'summary' || subcommand === 'compile-packs' || subcommand === 'get-pack') {
+    await cmdContentCorpusWorkflow(args, 'content');
+    return;
+  }
   if (subcommand === 'check' || subcommand === 'health') {
     const { cmdContentHealth, parseContentHealthArgs } = await import(
       './commands/content-health.js'
@@ -5412,19 +5431,83 @@ async function cmdContentWorkflow(args: string[]): Promise<void> {
     return;
   }
   if (subcommand === 'publish') {
-    const { flags } = parseLooseArgs(args);
-    if (!ensureAllowedFlags(flags, [], 'content publish')) return;
-    const type = args[2];
-    const name = args[3];
-    if (!type || !name) {
-      console.error(error('Usage: decantr content publish <type> <name>'));
+    console.error(
+      error(
+        'Hosted community publishing has been retired. Add official corpus changes under packages/content and run decantr content check.',
+      ),
+    );
+    process.exitCode = 1;
+    return;
+  }
+  console.error(error('Usage: decantr content <check|create|summary|compile-packs|get-pack>'));
+  process.exitCode = 1;
+}
+
+async function cmdContentCorpusWorkflow(
+  args: string[],
+  commandName: 'content' | 'registry',
+): Promise<void> {
+  const subcommand = args[1];
+  if (subcommand === 'summary') {
+    const namespaceIdx = args.indexOf('--namespace');
+    const namespace = namespaceIdx !== -1 ? args[namespaceIdx + 1] : undefined;
+    const jsonOutput = args.includes('--json');
+    await printRegistryIntelligenceSummary(namespace, jsonOutput);
+    return;
+  }
+  if (subcommand === 'compile-packs') {
+    const namespaceIdx = args.indexOf('--namespace');
+    const namespace = namespaceIdx !== -1 ? args[namespaceIdx + 1] : undefined;
+    const jsonOutput = args.includes('--json');
+    const writeContext = args.includes('--write-context');
+    const essencePath = args[2] && !args[2].startsWith('--') ? args[2] : undefined;
+    await printHostedExecutionPackBundle(essencePath, namespace, jsonOutput, writeContext);
+    return;
+  }
+  if (subcommand === 'get-pack') {
+    const namespaceIdx = args.indexOf('--namespace');
+    const namespace = namespaceIdx !== -1 ? args[namespaceIdx + 1] : undefined;
+    const jsonOutput = args.includes('--json');
+    const writeContext = args.includes('--write-context');
+    const essenceIdx = args.indexOf('--essence');
+    const essencePath = essenceIdx !== -1 ? args[essenceIdx + 1] : undefined;
+    const packType = args[2] && !args[2].startsWith('--') ? args[2] : undefined;
+    const routeIdx = args.indexOf('--route');
+    const route = routeIdx !== -1 ? args[routeIdx + 1] : undefined;
+    let id = args[3] && !args[3].startsWith('--') ? args[3] : undefined;
+    if (
+      !packType ||
+      !['manifest', 'scaffold', 'review', 'section', 'page', 'mutation'].includes(packType)
+    ) {
+      console.error(
+        `${RED}Usage: decantr ${commandName} get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] [--write-context]${RESET}`,
+      );
       process.exitCode = 1;
       return;
     }
-    await cmdPublish(type, name);
+    if (packType === 'manifest') {
+      await printHostedExecutionPackManifest(essencePath, namespace, jsonOutput, writeContext);
+      return;
+    }
+    if (packType === 'page' && route && !id) {
+      const resolvedPath = essencePath
+        ? resolveUserPath(essencePath)
+        : join(process.cwd(), 'decantr.essence.json');
+      id = resolvePagePackIdForRoute(resolvedPath, route);
+    }
+    await printHostedSelectedExecutionPack(
+      packType as 'scaffold' | 'review' | 'section' | 'page' | 'mutation',
+      id,
+      essencePath,
+      namespace,
+      jsonOutput,
+      writeContext,
+    );
     return;
   }
-  console.error(error('Usage: decantr content <check|create|publish>'));
+  console.error(
+    `${RED}Usage: decantr ${commandName} summary [--namespace <namespace>] [--json] | decantr ${commandName} compile-packs [path] [--namespace <namespace>] [--json] [--write-context] | decantr ${commandName} get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] [--write-context]${RESET}`,
+  );
   process.exitCode = 1;
 }
 
@@ -5437,7 +5520,7 @@ ${BOLD}decantr${RESET} — AI Frontend Governance for codebases touched by AI ag
 ${BOLD}Usage:${RESET}
   decantr setup [--project <path>]
   decantr scan [--project <path>] [--json]
-  decantr new <name> [--blueprint=X] [--archetype=X] [--theme=X] [--workflow=greenfield] [--adoption=decantr-css] [--telemetry]
+  decantr new <name> [--blueprint=X] [--archetype=X] [--theme=X] [--workflow=greenfield] [--adoption=contract-only|decantr-css] [--telemetry]
   decantr adopt [--project <path>] [--base-url <url>] [--evidence] [--ci] [--no-packs] [--yes]
   decantr task <route> ["task summary"] [--project <path>] [--since origin/main] [--json]
   decantr verify [--project <path>] [--brownfield] [--local-patterns] [health options]
@@ -5469,11 +5552,9 @@ ${BOLD}Advanced primitives:${RESET}
   decantr get <type> <id>
   decantr list <type> [--sort <recommended|recent|name>] [--recommended] [--source <authored|benchmark|hybrid>]
   decantr showcase [manifest|shortlist|verification] [--json]
-  decantr registry summary [--namespace <namespace>] [--json]
-  decantr registry compile-packs [path] [--namespace <namespace>] [--json] [--write-context]
-  decantr registry get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] [--write-context]
-  decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>]
-  decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>] [--sources <dir>]
+  decantr content summary [--namespace <namespace>] [--json]
+  decantr content compile-packs [path] [--namespace <namespace>] [--json] [--write-context]
+  decantr content get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] [--write-context]
   decantr health [--format text|json|markdown] [--ci] [--fail-on error|warn|none]
   decantr health --evidence [--browser] [--base-url <url>] [--design-tokens <path>]
   decantr health --diagnostics [--json|--markdown]
@@ -5517,7 +5598,7 @@ ${BOLD}Init Options:${RESET}
   --existing         Initialize in existing project
   --offline          Force offline mode
   --yes, -y          Accept defaults, skip confirmations
-  --registry         Custom registry URL
+  --registry         Custom API URL (legacy alias; prefer DECANTR_API_URL)
   --telemetry        Opt this project into privacy-filtered CLI product telemetry
 
 ${BOLD}Commands:${RESET}
@@ -5534,7 +5615,7 @@ ${BOLD}Commands:${RESET}
   ${cyan('connect')}     Connect Decantr to AI coding tools such as Cursor
   ${cyan('codify')}      Propose or accept project-owned Brownfield UI patterns, behavior obligations, and rules
   ${cyan('studio')}      Open a local Project Health dashboard backed by the same report
-  ${cyan('content')}     Content-author namespace: check, create, publish
+  ${cyan('content')}     Official content-corpus namespace: check, summary, packs, create
 
 ${BOLD}Advanced commands:${RESET}
   ${cyan('magic')}       Greenfield-first intent flow; steers existing apps into analyze + init
@@ -5550,7 +5631,7 @@ ${BOLD}Advanced commands:${RESET}
   ${cyan('sync-drift')}  Review and resolve drift log entries
   ${cyan('resolve')}     Group source-vs-contract conflicts and print exact resolution actions
   ${cyan('graph')}       Generate .decantr/graph snapshot, history, manifest, diff, and contract capsule
-  ${cyan('search')}      Search official/community vocabulary
+  ${cyan('search')}      Search official content-corpus vocabulary
   ${cyan('suggest')}     Suggest patterns or alternatives for a query
   ${cyan('get')}         Get full details of a vocabulary item
   ${cyan('list')}        List items by type
@@ -5558,9 +5639,9 @@ ${BOLD}Advanced commands:${RESET}
   ${cyan('validate')}    Validate an Essence v4 file
   ${cyan('theme')}       Manage custom themes (create, list, validate, delete, import)
   ${cyan('create')}      Create a custom content item (pattern, theme, blueprint, etc.)
-  ${cyan('publish')}     Publish a custom vocabulary item to the community content service
-  ${cyan('login')}       Authenticate with the Decantr registry
-  ${cyan('logout')}      Remove stored credentials
+  ${cyan('publish')}     Legacy retired hosted publishing command
+  ${cyan('login')}       Legacy API-key helper for compatibility scripts
+  ${cyan('logout')}      Remove stored legacy credentials
   ${cyan('analyze')}     Brownfield entrypoint: scan an existing project and emit attach guidance
   ${cyan('telemetry')}   Inspect or link this project's opted-in CLI telemetry identity
   ${cyan('export')}      Export design tokens to framework format (shadcn, tailwind, css-vars)
@@ -5575,6 +5656,7 @@ ${BOLD}Examples:${RESET}
   decantr scan
   decantr scan --json
   decantr new my-app --blueprint=carbon-ai-portal
+  decantr new my-app --blueprint=carbon-ai-portal --adoption=decantr-css
   decantr adopt --yes
   decantr adopt --project apps/web --yes
   decantr task /feed "add saved recipe actions"
@@ -5627,18 +5709,16 @@ ${BOLD}Examples:${RESET}
   decantr list patterns
   decantr showcase shortlist
   decantr showcase verification --json
-  decantr registry summary --namespace @official
-  decantr registry compile-packs decantr.essence.json --json
-  decantr registry compile-packs decantr.essence.json --write-context
-  decantr registry get-pack manifest --namespace @official --json
-  decantr registry get-pack review --namespace @official --write-context
-  decantr registry critique-file src/pages/Home.tsx --namespace @official --json
-  decantr registry audit-project --namespace @official --json
-  decantr registry audit-project --namespace @official --dist dist --sources src
+  decantr content summary --namespace @official
+  decantr content compile-packs decantr.essence.json --json
+  decantr content compile-packs decantr.essence.json --write-context
+  decantr content get-pack manifest --namespace @official --json
+  decantr content get-pack review --namespace @official --write-context
   decantr create pattern my-card
 
 ${BOLD}Workflow Model:${RESET}
-  ${cyan('Greenfield blueprint')}   decantr new my-app --blueprint=X --workflow=greenfield --adoption=decantr-css
+  ${cyan('Greenfield blueprint')}   decantr new my-app --blueprint=X --workflow=greenfield --adoption=contract-only
+  ${cyan('Legacy CSS adapter')}     decantr new my-app --blueprint=X --adoption=decantr-css
   ${cyan('Greenfield contract')}    decantr init --workflow=greenfield --adoption=contract-only
   ${cyan('Brownfield adoption')}    decantr adopt --yes
   ${cyan('Brownfield preview')}     decantr scan -> decantr adopt --yes
@@ -5648,10 +5728,10 @@ ${BOLD}Workflow Model:${RESET}
   ${cyan('Drift resolution')}        decantr resolve -> codify/init/graph/repair source explicitly
   ${cyan('Typed contract graph')}    decantr graph -> agent session loads .decantr/graph/contract-capsule.json
   ${cyan('Project-owned law')}       decantr codify --from-audit -> edit proposal -> decantr codify --accept
-  ${cyan('Hybrid composition')}     decantr add/remove, decantr theme switch, decantr registry, decantr upgrade
+  ${cyan('Hybrid composition')}     decantr add/remove, decantr theme switch, decantr content, decantr upgrade
 
 ${BOLD}Bootstrap adapters:${RESET}
-  Runnable starter adapters: ${cyan('react-vite')}, ${cyan('next-app')}, ${cyan('vanilla-vite')}, ${cyan('vue-vite')}, ${cyan('sveltekit')}, ${cyan('angular')}, ${cyan('solid-vite')}
+  Runnable starter adapters are legacy opt-in via ${cyan('--adoption=decantr-css')}: ${cyan('react-vite')}, ${cyan('next-app')}, ${cyan('vanilla-vite')}, ${cyan('vue-vite')}, ${cyan('sveltekit')}, ${cyan('angular')}, ${cyan('solid-vite')}
   Unsupported targets resolve through ${cyan('generic-web')} contract-only mode until their starter adapters land.
 `);
 }
@@ -5832,15 +5912,15 @@ ${BOLD}Examples:${RESET}
 
 function cmdRegistryHelp() {
   console.log(`
-${BOLD}decantr registry${RESET} — Read hosted execution packs and registry intelligence
+${BOLD}decantr registry${RESET} — Legacy compatibility alias for content-corpus helpers
 
 ${BOLD}Usage:${RESET}
   decantr registry summary [--namespace <namespace>] [--json]
   decantr registry compile-packs [path] [--namespace <namespace>] [--json] [--write-context]
   decantr registry get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] [--write-context]
   decantr registry get-pack page --route <route> [--namespace <namespace>] [--json] [--essence <path>]
-  decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>]
-  decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>] [--sources <dir>]
+
+Prefer the equivalent decantr content commands for new scripts.
 `);
 }
 
@@ -5991,17 +6071,20 @@ ${BOLD}Examples:${RESET}
 
 function cmdContentHelp() {
   console.log(`
-${BOLD}decantr content${RESET} — Content-author namespace for official-vocabulary repositories
+${BOLD}decantr content${RESET} — Official content-corpus namespace
 
 ${BOLD}Usage:${RESET}
   decantr content check [content-health options]
+  decantr content summary [--namespace <namespace>] [--json]
+  decantr content compile-packs [path] [--namespace <namespace>] [--json] [--write-context]
+  decantr content get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] [--write-context]
   decantr content create <type> <name>
-  decantr content publish <type> <name>
 
 ${BOLD}Examples:${RESET}
   decantr content check --ci --fail-on error
+  decantr content summary --namespace @official --json
+  decantr content compile-packs decantr.essence.json --write-context
   decantr content create pattern my-card
-  decantr content publish pattern my-card
 `);
 }
 
@@ -6440,7 +6523,8 @@ async function main() {
     }
 
     case 'audit': {
-      await cmdAudit(args[1]);
+      const filePath = args[1] && !args[1].startsWith('--') ? args[1] : undefined;
+      await cmdAudit(filePath, { json: args.includes('--json') });
       break;
     }
 
@@ -6735,64 +6819,12 @@ async function main() {
         const mirrorType = typeIdx !== -1 ? args[typeIdx + 1] : undefined;
         await cmdRegistryMirror(process.cwd(), { type: mirrorType });
       } else if (subcommand === 'summary') {
-        const namespaceIdx = args.indexOf('--namespace');
-        const namespace = namespaceIdx !== -1 ? args[namespaceIdx + 1] : undefined;
-        const jsonOutput = args.includes('--json');
-        await printRegistryIntelligenceSummary(namespace, jsonOutput);
+        await cmdContentCorpusWorkflow(args, 'registry');
       } else if (subcommand === 'compile-packs') {
-        const namespaceIdx = args.indexOf('--namespace');
-        const namespace = namespaceIdx !== -1 ? args[namespaceIdx + 1] : undefined;
-        const jsonOutput = args.includes('--json');
-        const writeContext = args.includes('--write-context');
-        const essencePath = args[2] && !args[2].startsWith('--') ? args[2] : undefined;
-        await printHostedExecutionPackBundle(essencePath, namespace, jsonOutput, writeContext);
+        await cmdContentCorpusWorkflow(args, 'registry');
       } else if (subcommand === 'get-pack') {
-        const namespaceIdx = args.indexOf('--namespace');
-        const namespace = namespaceIdx !== -1 ? args[namespaceIdx + 1] : undefined;
-        const jsonOutput = args.includes('--json');
-        const writeContext = args.includes('--write-context');
-        const essenceIdx = args.indexOf('--essence');
-        const essencePath = essenceIdx !== -1 ? args[essenceIdx + 1] : undefined;
-        const packType = args[2] && !args[2].startsWith('--') ? args[2] : undefined;
-        const routeIdx = args.indexOf('--route');
-        const route = routeIdx !== -1 ? args[routeIdx + 1] : undefined;
-        let id = args[3] && !args[3].startsWith('--') ? args[3] : undefined;
-        if (
-          !packType ||
-          !['manifest', 'scaffold', 'review', 'section', 'page', 'mutation'].includes(packType)
-        ) {
-          console.error(
-            `${RED}Usage: decantr registry get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] [--write-context]${RESET}`,
-          );
-          process.exitCode = 1;
-          break;
-        }
-        if (packType === 'manifest') {
-          await printHostedExecutionPackManifest(essencePath, namespace, jsonOutput, writeContext);
-          break;
-        }
-        if (packType === 'page' && route && !id) {
-          const resolvedPath = essencePath
-            ? resolveUserPath(essencePath)
-            : join(process.cwd(), 'decantr.essence.json');
-          id = resolvePagePackIdForRoute(resolvedPath, route);
-        }
-        await printHostedSelectedExecutionPack(
-          packType as 'scaffold' | 'review' | 'section' | 'page' | 'mutation',
-          id,
-          essencePath,
-          namespace,
-          jsonOutput,
-          writeContext,
-        );
+        await cmdContentCorpusWorkflow(args, 'registry');
       } else if (subcommand === 'critique-file') {
-        const namespaceIdx = args.indexOf('--namespace');
-        const namespace = namespaceIdx !== -1 ? args[namespaceIdx + 1] : undefined;
-        const jsonOutput = args.includes('--json');
-        const essenceIdx = args.indexOf('--essence');
-        const essencePath = essenceIdx !== -1 ? args[essenceIdx + 1] : undefined;
-        const treatmentsIdx = args.indexOf('--treatments');
-        const treatmentsPath = treatmentsIdx !== -1 ? args[treatmentsIdx + 1] : undefined;
         const sourcePath = args[2] && !args[2].startsWith('--') ? args[2] : undefined;
         if (!sourcePath) {
           console.error(
@@ -6801,27 +6833,14 @@ async function main() {
           process.exitCode = 1;
           break;
         }
-        await printHostedFileCritique(
-          sourcePath,
-          namespace,
-          jsonOutput,
-          essencePath,
-          treatmentsPath,
-        );
+        console.error(dim('Hosted registry critique is retired; running local decantr audit instead.'));
+        await cmdAudit(sourcePath, { json: args.includes('--json') });
       } else if (subcommand === 'audit-project') {
-        const namespaceIdx = args.indexOf('--namespace');
-        const namespace = namespaceIdx !== -1 ? args[namespaceIdx + 1] : undefined;
-        const jsonOutput = args.includes('--json');
-        const essenceIdx = args.indexOf('--essence');
-        const essencePath = essenceIdx !== -1 ? args[essenceIdx + 1] : undefined;
-        const distIdx = args.indexOf('--dist');
-        const distPath = distIdx !== -1 ? args[distIdx + 1] : undefined;
-        const sourcesIdx = args.indexOf('--sources');
-        const sourcesPath = sourcesIdx !== -1 ? args[sourcesIdx + 1] : undefined;
-        await printHostedProjectAudit(namespace, jsonOutput, essencePath, distPath, sourcesPath);
+        console.error(dim('Hosted registry project audit is retired; running local decantr audit instead.'));
+        await cmdAudit(undefined, { json: args.includes('--json') });
       } else {
         console.error(
-          `${RED}Usage: decantr registry mirror [--type <type>] | decantr registry summary [--namespace <namespace>] [--json] | decantr registry compile-packs [path] [--namespace <namespace>] [--json] [--write-context] | decantr registry get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] [--write-context] | decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>] | decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>] [--sources <dir>]${RESET}`,
+          `${RED}Usage: decantr registry mirror [--type <type>] | decantr registry summary [--namespace <namespace>] [--json] | decantr registry compile-packs [path] [--namespace <namespace>] [--json] [--write-context] | decantr registry get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] [--write-context]${RESET}`,
         );
         process.exitCode = 1;
       }

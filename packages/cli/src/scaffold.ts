@@ -3692,7 +3692,7 @@ export async function refreshDerivedFiles(
           `${YELLOW}   but the theme's personality may not land. Consider picking a different theme or adding`,
         );
         console.warn(
-          `${YELLOW}   "${mode}" keys to the theme's palette in decantr-content.${RESET}`,
+          `${YELLOW}   "${mode}" keys to the theme's palette in @decantr/content.${RESET}`,
         );
       }
     }

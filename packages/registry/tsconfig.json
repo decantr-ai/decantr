@@ -2,5 +2,5 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": { "outDir": "dist", "rootDir": "src", "types": ["node"] },
   "include": ["src"],
-  "references": [{ "path": "../essence-spec" }]
+  "references": [{ "path": "../content" }, { "path": "../essence-spec" }]
 }

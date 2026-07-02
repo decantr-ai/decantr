@@ -970,11 +970,11 @@ export function generateTreatmentCSS(
   ]);
 
   // ── 13.5 Additional Shell Layouts — F2 Phase 1 finding ──
-  // Audit of decantr-content registry vs treatments.css revealed 10 of 15
+  // Audit of @decantr/content vs treatments.css revealed 10 of 15
   // declared shells had no matching `[data-layout="..."]` rule. Cold AI
   // scaffolds were forced to hand-roll layouts (creating exactly the
   // inline-style violations `decantr audit` then warned about). Each
-  // shell treatment below maps to a real shell.json spec in decantr-content.
+  // shell treatment below maps to a real shell.json spec in @decantr/content.
 
   // ── Vertical column variants (header + body, no footer) ──
   // top-nav-main: 52px sticky header + scrollable body. Default for

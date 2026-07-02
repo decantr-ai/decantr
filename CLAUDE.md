@@ -4,7 +4,7 @@ Do not add Co-Authored-By lines to commits.
 
 ## Project
 
-Decantr is a Design Intelligence API. It is a structured schema (like OpenAPI for UI) and design intelligence layer that AI coding assistants use to generate consistent, production-quality web applications. Decantr does not generate code -- the AI does.
+Decantr is AI Frontend Governance. It is a contract, context, content-corpus, and evidence layer that AI coding assistants use to keep frontend changes coherent in production codebases. Decantr does not generate code -- the AI does.
 
 Current strategic program: `docs/programs/2026-04-08-decantr-vnext-master-program.md`. A forward-looking successor architecture is tracked in `docs/audit/decantr-meta-alignment.md` (`decantr-meta` project, separate from this monorepo).
 
@@ -13,20 +13,20 @@ Current strategic program: `docs/programs/2026-04-08-decantr-vnext-master-progra
 | Package | Path | Description |
 |---------|------|-------------|
 | `@decantr/essence-spec` | `packages/essence-spec/` | Essence v4 schema, validator, guard rules, migration, and TypeScript types |
-| `@decantr/registry` | `packages/registry/` | Content resolver, wiring rules, pattern preset resolution |
+| `@decantr/content` | `packages/content/` | Official corpus, schemas, validation, search, resolution, and content health helpers |
+| `@decantr/registry` | `packages/registry/` | Legacy compatibility package for content/API client naming in Decantr 3.x |
 | `@decantr/core` | `packages/core/` | Design Pipeline IR engine |
-| `@decantr/mcp-server` | `packages/mcp-server/` | MCP server exposing tools to AI assistants (20 tools) |
-| `@decantr/css` | `packages/css/` | Framework-agnostic CSS atoms runtime for layout utilities |
+| `@decantr/mcp-server` | `packages/mcp-server/` | MCP server exposing the submitted 8-tool surface to AI assistants |
+| `@decantr/css` | `packages/css/` | Legacy optional CSS atom adapter; not a default adoption path |
 | `@decantr/verifier` | `packages/verifier/` | Shared verification, critique, and report-schema engine |
 | `@decantr/vite-plugin` | `packages/vite-plugin/` | Vite plugin for real-time design drift detection |
-| `decantr` | `packages/cli/` | CLI for project initialization, registry queries, validation |
+| `decantr` | `packages/cli/` | CLI for project initialization, content queries, validation |
 
 ## Apps
 
 | App | Path | Description |
 |-----|------|-------------|
-| `decantr-api` | `apps/api/` | Registry API (Hono + Supabase + Stripe) |
-| `decantr-registry` | `apps/registry/` | Registry web app (Next.js + Supabase) |
+| `decantr-api` | `apps/api/` | Fly-hosted content API for corpus, schemas, search, intelligence, showcase metadata, and execution packs |
 | `decantr-showcase-host` | `apps/showcase-host/` | Shared Vite host for live blueprint showcase capsules. Capsule source lives in `apps/showcase-host/src/capsules/<slug>/`; metadata and reports remain in `apps/showcase/`. |
 
 ## Terminology
@@ -59,25 +59,17 @@ Wine metaphors are used in branding only. Code and schema use normalized terms.
 
 ## Content Architecture
 
-Content lives in **decantr-content** (separate repository at `/Users/davidaimi/projects/decantr-content`) and is the source of truth for all `@official` registry content.
+Content lives in `packages/content` as `@decantr/content` and is the source of truth for all `@official` corpus content.
 
-Registry content enriches blueprint/archetype/theme/pattern flows. It is not a hard dependency for brownfield attach or contract-only adoption: those paths must work from local project analysis and generated Decantr contract files, including in offline enterprise scenarios.
+Official content enriches blueprint/archetype/theme/pattern flows. It is not a hard dependency for brownfield attach or contract-only adoption: those paths must work from local project analysis and generated Decantr contract files, including in offline enterprise scenarios.
 
-**Publishing pipeline:**
-```
-decantr-content repo (JSON files)
-    → push to main triggers GitHub Actions
-    → validate.js checks all files
-    → scripts/sync-to-registry.js POSTs each item to POST /v1/admin/sync
-    → Supabase content table (namespace=@official, status=published)
-    → API serves via GET /v1/:type/:namespace/:slug
-```
+`@decantr/content` ships the official corpus with package-local schemas, validation helpers, search/resolution helpers, and content health scripts. The Fly API reads this package for public content/reference routes. There is no public registry marketplace or Supabase-backed content table in the current product model.
 
 **Content resolution fallback chains:**
-- **CLI single items** (`get`): Custom → API → Cache
-- **CLI lists** (`list`): API → Cache → merge Custom
-- **CLI `get` fallback**: API → Cache → Bundled
-- **MCP Server**: API only (via `RegistryAPIClient`)
+- **CLI single items** (`get`): Custom → content API → Cache
+- **CLI lists** (`list`): content API → Cache → merge Custom
+- **CLI `get` fallback**: content API → Cache → Bundled
+- **MCP Server**: content API/corpus reads through the compatibility `RegistryAPIClient`
 - **CLI Bundled**: Offline fallback defaults in `packages/cli/src/bundled/`
 
 ```
@@ -126,7 +118,7 @@ Patterns, blueprints, themes, and archetypes carry enriched fields for visual in
 
 ## Execution Packs
 
-Compact, compiled contracts consumed by AI agents during scaffolding. Generated into a project's `.decantr/context/` directory by `decantr init` / `decantr registry compile-packs`. Schemas live in `docs/schemas/`.
+Compact, compiled contracts consumed by AI agents during scaffolding. Generated into a project's `.decantr/context/` directory by `decantr init` / `decantr content compile-packs` (legacy `decantr registry compile-packs` remains compatible). Schemas live in `docs/schemas/`.
 
 | Pack | Schema | Purpose |
 |------|--------|---------|
@@ -234,52 +226,33 @@ All generated CSS uses `@layer` declarations:
 
 ## MCP Server Tools
 
-The MCP server (`@decantr/mcp-server`) exposes **20 tools** (authoritative list at `packages/mcp-server/src/tools.ts`).
+The MCP server (`@decantr/mcp-server`) exposes the submitted Decantr 3 **8-tool** action surface (authoritative list at `packages/mcp-server/src/tools.ts`):
 
-**Core / essence:**
-- `decantr_read_essence` -- Read the current `decantr.essence.json`
-- `decantr_validate` -- Validate an essence against schema + guard rules
-- `decantr_create_essence` -- Generate a valid Essence skeleton from a description
-- `decantr_update_essence` -- Apply structured updates to DNA or Blueprint layers
+- `decantr_project`
+- `decantr_contract`
+- `decantr_context`
+- `decantr_graph`
+- `decantr_registry` (compatibility content-corpus tool name)
+- `decantr_verify`
+- `decantr_repair`
+- `decantr_contract_write`
 
-**Registry lookup:**
-- `decantr_search_registry` -- Search patterns, archetypes, themes, shells
-- `decantr_resolve_pattern` -- Full pattern (layout, components, presets)
-- `decantr_resolve_archetype` -- Archetype pages, features, suggested theme
-- `decantr_resolve_blueprint` -- Blueprint archetype list, theme, personality, pages
-- `decantr_suggest_patterns` -- Suggest patterns for a page description
-
-**Drift / guard:**
-- `decantr_check_drift` -- Check if code violates the Essence spec
-- `decantr_accept_drift` -- Resolve drift (accept / scope / reject / defer)
-
-**Context & Execution Packs:**
-- `decantr_get_scaffold_context` -- App-level scaffold context
-- `decantr_get_section_context` -- Per-section self-contained context
-- `decantr_get_page_context` -- Per-route self-contained context
-- `decantr_get_execution_pack` -- Fetch a single compiled execution pack
-- `decantr_compile_execution_packs` -- Compile all packs for a project
-
-**Intelligence & audit:**
-- `decantr_get_showcase_benchmarks` -- Benchmark data from showcase apps
-- `decantr_get_registry_intelligence_summary` -- Registry health / content coverage
-- `decantr_audit_project` -- Run a full project audit
-- `decantr_critique` -- Evaluate generated code for visual quality
+Do not add a ninth content tool in Decantr 3.x. Route new content-corpus actions through `decantr_registry` for directory compatibility.
 
 ## CLI Commands
 
 Authoritative dispatch: `packages/cli/src/index.ts` switch statement. Groups:
 
 **Project lifecycle:** `new`, `init`, `status`, `upgrade`
-**Registry sync:** `sync`, `refresh`
+**Content sync:** `sync`, `refresh`
 **Content queries:** `search`, `suggest`, `get`, `list`, `showcase`
 **Validation / drift:** `validate`, `check`, `heal`, `migrate`, `audit`
 **Essence mutations:** `add {section|page|feature}`, `remove {section|page|feature}`, `analyze`, `magic`
-**Content authoring:** `create {pattern|theme|blueprint|archetype|shell}`, `publish`
+**Content authoring:** `content check`, `content create {pattern|theme|blueprint|archetype|shell}`, `content summary`, `content compile-packs`, `content get-pack`
 **Themes:** `theme {create|list|validate|delete|import|switch}`
 **Export:** `export {shadcn|tailwind}`
-**Registry admin (contributor-facing):** `registry {mirror|summary|compile-packs|get-pack|critique-file|audit-project}`
-**Auth:** `login`, `logout`
+**Registry compatibility:** `registry {mirror|summary|compile-packs|get-pack}`; old critique/audit aliases fall back to local `decantr audit`
+**Legacy auth helpers:** `login`, `logout`
 **Help:** `help`
 
 Run `decantr help` for current flags and sub-flags. The `check` and `heal` commands share a case (heal is check with auto-fix).
@@ -291,8 +264,8 @@ Every scaffold/init path should resolve an explicit policy before registry, adap
 | Axis | Values | Default / rule |
 |------|--------|----------------|
 | `workflowMode` | `greenfield-scaffold`, `greenfield-contract-only`, `brownfield-attach`, `hybrid-compose` | Blank greenfield tooling-only flows must stay greenfield, not brownfield. `--existing` aliases brownfield attach. |
-| `adoptionMode` | `contract-only`, `style-bridge`, `decantr-css` | Brownfield defaults to `contract-only`; Decantr CSS is opt-in outside full greenfield scaffold. |
-| `contentSource` | `none`, `official`, `custom`, `cache` | Registry is optional for brownfield and contract-only flows. |
+| `adoptionMode` | `contract-only`, `style-bridge`, `decantr-css` | Defaults to `contract-only`; Decantr CSS requires explicit `--adoption=decantr-css`. |
+| `contentSource` | `none`, `official`, `custom`, `cache` | Official corpus content is optional for brownfield and contract-only flows. |
 | `assistantBridge` | `none`, `preview`, `apply` | Preview writes `.decantr/context/assistant-bridge.md`; apply is explicit and idempotent. |
 | `projectScope` | `single-app`, `workspace-app` | Monorepos store both workspace root and app root; non-interactive root runs require `--project` when ambiguous. |
 

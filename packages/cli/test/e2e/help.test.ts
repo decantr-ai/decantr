@@ -49,7 +49,7 @@ describe('command help (e2e)', () => {
     expect(output).toContain('decantr content-health');
     expect(output).toContain('--prompt');
     expect(output).toContain('<finding-id>');
-    expect(output).not.toContain('Run this command from a decantr-content style repository');
+    expect(output).not.toContain('Run this command from packages/content');
   });
 
   it('prints studio help without starting the server', () => {
@@ -103,7 +103,7 @@ describe('command help (e2e)', () => {
 
     expect(output).toContain('decantr content');
     expect(output).toContain('content check');
-    expect(output).not.toContain('Run this command from a decantr-content style repository');
+    expect(output).not.toContain('Run this command from packages/content');
   });
 
   it('prints init help without writing project files', () => {

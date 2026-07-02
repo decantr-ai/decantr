@@ -1,7 +1,9 @@
 # Telemetry Weekly Digest Runbook
 
 Date: 2026-05-08
-Status: Active
+Status: Historical / retired in Decantr 3.8
+
+The PostHog/Supabase telemetry digest workflow is no longer active in the content-first product.
 
 This runbook covers the executive telemetry digest for durable Decantr telemetry rollups.
 
