@@ -6,6 +6,7 @@ import { getRepoRoot, loadPackageSurface, sortReleaseEntries } from './package-s
 const rawArgs = process.argv.slice(2);
 const args = new Set(rawArgs);
 const write = args.has('--write');
+const interactive = args.has('--interactive');
 const includeExperimental = args.has('--include-experimental');
 const onlyWave = readArgValue(rawArgs, 'wave');
 const repository = readArgValue(rawArgs, 'repo') ?? readArgValue(rawArgs, 'repository') ?? 'decantr-ai/decantr';
@@ -40,11 +41,11 @@ console.log('');
 console.log(`- Repository: ${repository}`);
 console.log(`- Workflow file: ${workflowFile}`);
 console.log(`- Environment: ${environment ?? '(none)'}`);
-console.log(`- Mode: ${write ? 'write' : 'dry-run'}`);
+console.log(`- Mode: ${write ? 'write' : 'dry-run'}${interactive ? ' interactive' : ''}`);
 console.log(`- Packages: ${selected.length}`);
 console.log('');
 
-for (const entry of selected) {
+for (const [index, entry] of selected.entries()) {
   const command = [
     'trust',
     'github',
@@ -54,9 +55,11 @@ for (const entry of selected) {
     '--repo',
     repository,
     '--yes',
-    '--json',
   ];
 
+  if (!interactive) {
+    command.push('--json');
+  }
   if (environment) {
     command.push('--environment', environment);
   }
@@ -69,13 +72,15 @@ for (const entry of selected) {
 
   const result = spawnSync('npm', command, {
     cwd: root,
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
+    encoding: interactive ? undefined : 'utf8',
+    stdio: interactive ? 'inherit' : ['ignore', 'pipe', 'pipe'],
     env: process.env,
   });
 
-  if (result.stdout) process.stdout.write(result.stdout);
-  if (result.stderr) process.stderr.write(result.stderr);
+  if (!interactive) {
+    if (result.stdout) process.stdout.write(result.stdout);
+    if (result.stderr) process.stderr.write(result.stderr);
+  }
 
   if (result.status !== 0) {
     console.error('');
@@ -87,10 +92,18 @@ for (const entry of selected) {
   }
 
   console.log('');
+
+  if (write && interactive && index < selected.length - 1) {
+    sleep(2000);
+  }
 }
 
 function shellQuote(value) {
   const stringValue = String(value);
   if (/^[A-Za-z0-9_./:@,%+-]+$/.test(stringValue)) return stringValue;
   return `'${stringValue.replaceAll("'", "'\\''")}'`;
+}
+
+function sleep(ms) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
 }

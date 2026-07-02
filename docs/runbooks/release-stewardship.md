@@ -56,11 +56,17 @@ pnpm npm:trust:plan
 pnpm npm:trust:configure
 ```
 
-`npm:trust:plan` uses `npm trust github ... --dry-run` and does not mutate npm package settings. `npm:trust:configure` uses the same selected package surface without `--dry-run`; npm may require a browser-based account confirmation before it can change trusted-publisher settings. If you intentionally restrict publishing to a GitHub environment, pass the same environment to both npm and the workflow:
+`npm:trust:plan` uses `npm trust github ... --dry-run` and does not mutate npm package settings. `npm:trust:configure` uses the same selected package surface without `--dry-run`; npm may require a browser-based account confirmation before it can change trusted-publisher settings. Granular access tokens with bypass 2FA are not enough for `npm trust`; use an interactive account session when npm requests browser confirmation:
+
+```bash
+pnpm npm:trust:configure -- --interactive
+```
+
+If you intentionally restrict publishing to a GitHub environment, pass the same environment to both npm and the workflow:
 
 ```bash
 pnpm npm:trust:plan -- --environment npm-production
-pnpm npm:trust:configure -- --environment npm-production
+pnpm npm:trust:configure -- --environment npm-production --interactive
 ```
 
 After publishing:
