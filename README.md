@@ -89,7 +89,7 @@ Canonical shapes live in the [published schemas](https://decantr.ai/schemas/); t
 | Verifier | Shared audit, critique, Project Health, Evidence Bundle, component reuse drift, behavior-obligation drift, style bridge drift, stable diagnostic code, typed repair ID, graph-anchored finding, contract assertion, and report-schema engine |
 | Showcase apps | Audited benchmark corpus and verification targets for Decantr-generated scaffolds |
 
-Decantr 3.7 adds a shared Brownfield discovery substrate across verifier, CLI, MCP, and app-scoped workflows. `scan`, `setup`, `workspace list`, `adopt`, `doctor`, `task`, `verify`, `ci`, and MCP project/task/evidence reads now agree on selected app scope, workspace package manager, framework, language, route signals, taskable routes, component inventory confidence, styling authority, assistant rules, and limitations. This is especially important in mixed monorepos: a React/Vite app beside an Angular app should scan as React/TypeScript/pnpm when `--project apps/web` targets the React app, not as the repository root or sibling framework. `scan --json` now emits `scan-report.v2` by default; `scan-report.v1` remains published as a historical schema reference.
+Decantr 3.7 introduced the shared Brownfield discovery substrate that Decantr 3.8 now uses across verifier, CLI, MCP, and app-scoped workflows. `scan`, `setup`, `workspace list`, `adopt`, `doctor`, `task`, `verify`, `ci`, and MCP project/task/evidence reads agree on selected app scope, workspace package manager, framework, language, route signals, taskable routes, component inventory confidence, styling authority, assistant rules, and limitations. This is especially important in mixed monorepos: a React/Vite app beside an Angular app should scan as React/TypeScript/pnpm when `--project apps/web` targets the React app, not as the repository root or sibling framework. `scan --json` emits `scan-report.v2` by default; `scan-report.v1` remains published as a historical schema reference.
 
 Security review starts with the installed npm surface, not the whole monorepo. The package permission matrix documents filesystem, network, process, telemetry, hosted-upload, and MCP write-tool behavior for every public package: [docs/reference/security-permissions.md](docs/reference/security-permissions.md).
 
@@ -135,7 +135,7 @@ pnpm audit:public-api
 pnpm audit:package-permissions
 pnpm audit:content-package
 pnpm showcase:verify:shortlist
-pnpm benchmark:realworld-corpus -- --config scripts/realworld-corpus.first-mile.json --cli packages/cli/dist/index.js --out /tmp/decantr-realworld-corpus-3.7
+pnpm benchmark:realworld-corpus -- --config scripts/realworld-corpus.first-mile.json --cli packages/cli/dist/index.js --out /tmp/decantr-realworld-corpus-3.8
 pnpm release:verify
 pnpm release:closeout
 ```

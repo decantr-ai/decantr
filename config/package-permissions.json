@@ -62,7 +62,7 @@
         "delete": []
       },
       "network": {
-        "outbound": ["Configured Decantr API base URL for 3.x compatibility content search, resolve, and hosted pack helpers"],
+        "outbound": ["Configured Decantr API base URL for 3.x compatibility content search, resolve, and content API pack helpers"],
         "inbound": false
       },
       "process": {
@@ -186,7 +186,7 @@
         "delete": []
       },
       "network": {
-        "outbound": ["Content API reads", "hosted pack compilation"],
+        "outbound": ["Content API reads", "content API pack compilation"],
         "inbound": false
       },
       "process": {
@@ -211,7 +211,7 @@
         "delete": ["Generated Decantr artifacts or explicit command targets such as removed generated context/theme outputs"]
       },
       "network": {
-        "outbound": ["Content API reads", "hosted pack hydration", "opt-in telemetry endpoints", "user-provided browser/base-url checks"],
+        "outbound": ["Content API reads", "content API pack hydration", "opt-in telemetry endpoints", "user-provided browser/base-url checks"],
         "inbound": true
       },
       "process": {
@@ -224,7 +224,7 @@
         "The CLI is intentionally a local project inspector and artifact writer.",
         "decantr scan is local read-only reconnaissance; it writes no .decantr directory or report files and does not upload source.",
         "Process execution is limited to fixed command/argv paths; shell execution is avoided in shipped workflow code.",
-        "Visual evidence screenshots remain local unless the user invokes a hosted workflow.",
+        "Visual evidence screenshots remain local in Decantr 3.8.",
         "Optional axe accessibility evidence loads only a project/workspace-local axe-core package and records local probe summaries."
       ]
     },

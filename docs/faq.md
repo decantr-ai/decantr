@@ -61,7 +61,7 @@ npx @decantr/cli verify
 npx @decantr/cli doctor
 ```
 
-`task` now includes the route's active authority: existing app, accepted local law, style bridge, Decantr CSS, hosted packs as guidance, or Greenfield context. If the prompt asks for a mismatched runtime or Decantr CSS in a contract-only app, the task context warns before the assistant starts coding.
+`task` now includes the route's active authority: existing app, accepted local law, style bridge, Decantr CSS, content packs as guidance, or Greenfield context. If the prompt asks for a mismatched runtime or Decantr CSS in a contract-only app, the task context warns before the assistant starts coding.
 
 If product intent changes, update the Decantr contract deliberately, regenerate context, then continue:
 

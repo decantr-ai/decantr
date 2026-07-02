@@ -260,7 +260,7 @@ decantr refresh
 decantr verify --markdown --output .decantr/health.md
 ```
 
-Project Health is useful immediately after a Hybrid change because it checks whether generated packs, route contracts, accepted local rules, and guard expectations still agree. `doctor` reports the adoption lane, and `task` tells the assistant which authority is active for the route before it edits: existing app, accepted local law, advisory style bridge, Decantr CSS, hosted packs as guidance, or Greenfield context. `verify` and `ci` distinguish accepted local rules, which Decantr can scan, from style-bridge mappings and hosted-pattern mappings, which remain advisory until paired with project-owned rules or the project's lint/test/visual stack.
+Project Health is useful immediately after a Hybrid change because it checks whether generated packs, route contracts, accepted local rules, and guard expectations still agree. `doctor` reports the adoption lane, and `task` tells the assistant which authority is active for the route before it edits: existing app, accepted local law, advisory style bridge, Decantr CSS, content packs as guidance, or Greenfield context. `verify` and `ci` distinguish accepted local rules, which Decantr can scan, from style-bridge mappings and content-pattern mappings, which remain advisory until paired with project-owned rules or the project's lint/test/visual stack.
 
 ## CI
 

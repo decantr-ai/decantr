@@ -54,7 +54,7 @@ The tier block records:
 - `coverage`: route counts, runtime route checks, graph-anchored findings, repair-plan coverage, runtime probe count, and visual artifact count.
 - `confidence`: a normalized score, level, and reasons that explain whether the payload is enough for repair, dashboarding, or proof-corpus use.
 
-The v2 Evidence Bundle can also embed a `runtimeProbe` payload and enumerate local artifacts such as visual manifests, screenshots, baseline diffs, repair prompts, and benchmark transcripts. Artifact paths remain local unless an explicit hosted workflow uploads a redacted report.
+The v2 Evidence Bundle can also embed a `runtimeProbe` payload and enumerate local artifacts such as visual manifests, screenshots, baseline diffs, repair prompts, and benchmark transcripts. Artifact paths remain local in Decantr 3.8; shared dashboards should consume explicitly exported redacted reports rather than raw source, prompts, screenshots, or local paths.
 
 `proof-field-report.v2.json` records benchmark corpus runs with honest pass/fail metrics, false positives, graph-anchor coverage, repair-plan coverage, and loop-verdict quality.
 

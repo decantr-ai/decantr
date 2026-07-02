@@ -56,7 +56,7 @@ decantr resolve
 
 `scan` is the read-only preview. It detects whether the app is a plausible Brownfield UI target and reports framework, route, styling, static-hosting, Decantr, assistant-rule, and GitHub Pages signals without writing files, building the app, running scripts, installing dependencies, uploading source, or saving a report.
 
-`adopt` is the user-facing workflow. It explains and runs the primitive chain: analyze the app, accept or merge the observed proposal, hydrate hosted execution packs when online, run Project Health, save a baseline, and optionally install CI. After adoption, use `decantr studio` for a local visual triage view of what Decantr found and `decantr doctor` when the next command is unclear. If the app is running and you want screenshots attached to task context, run `decantr verify --base-url <url> --evidence` after adoption. Use `--no-packs` or offline mode when the first attach must avoid network access.
+`adopt` is the user-facing workflow. It explains and runs the primitive chain: analyze the app, accept or merge the observed proposal, hydrate content API execution packs when online, run Project Health, save a baseline, and optionally install CI. After adoption, use `decantr studio` for a local visual triage view of what Decantr found and `decantr doctor` when the next command is unclear. If the app is running and you want screenshots attached to task context, run `decantr verify --base-url <url> --evidence` after adoption. Use `--no-packs` or offline mode when the first attach must avoid network access.
 
 `analyze` writes `.decantr/analysis.json`, `.decantr/init-seed.json`, `.decantr/ambient-context.json`, `.decantr/doctrine-map.json`, `.decantr/observed-essence.proposal.json`, `.decantr/brownfield-report.md`, `.decantr/brownfield-intelligence.json`, `.decantr/theme-inventory.json`, and `.decantr/enrichment-backlog.md`. The proposal is observed from routes, styling, dependencies, layout signals, features, semantic route domains, ranked doctrine sources, and ambient project context. Route observation covers Next App/Pages Router, React Router, Angular Router, SvelteKit, Vue Router, Nuxt file routes, package-managed static HTML entrypoints such as `src/index.html` and `dist/index.html`, nested static demo/example pages, custom React Router wrapper components with literal `path` props, simple optional path groups such as `/(public|contacts)?`, declarative TypeScript route specs such as `route("Name", "/path", page(Component))` declarations, and path literals from route constants or pathname branches. Decantr filters framework internals and catch-all fallbacks that are not taskable routes. Styling observation preserves existing systems such as Tailwind, Bootstrap, MUI, Chakra, plain CSS, and Decantr CSS. Theme inventory observes light, dark, and variant selectors without changing Essence V4. It is not a Decantr scaffold.
 
@@ -110,7 +110,7 @@ decantr codify --from-audit --style-bridge
 # review .decantr/local-patterns.proposal.json and .decantr/rules.proposal.json
 # review .decantr/style-bridge.proposal.json when you want token/class mapping
 decantr codify --map-pattern hero
-# review the advisory hosted-pattern mapping before accepting it as local law
+# review the advisory content-pattern mapping before accepting it as local law
 decantr codify --accept
 decantr verify --brownfield --local-patterns
 ```
@@ -124,7 +124,7 @@ Hybrid starts when an attached app moves beyond contract-only context and intent
 - **Hybrid local law**: accepted `.decantr/local-patterns.json` and `.decantr/rules.json` describe project-owned buttons, cards, shells, forms, tokens, theme variants, optional behavior obligations, and mechanical rules.
 - **Hybrid style bridge**: accepted `.decantr/style-bridge.json` maps Decantr intent through project-owned tokens/classes into the app's existing style system.
 - **Hybrid with Decantr CSS**: `@decantr/css` and generated Decantr CSS are active where explicitly adopted.
-- **Hybrid composition**: the app selectively adds sections, pages, features, themes, or hosted execution packs while preserving existing source authority.
+- **Hybrid composition**: the app selectively adds sections, pages, features, themes, or content API execution packs while preserving existing source authority.
 
 The authority order is explicit: existing production source first, accepted local patterns/rules and style bridge next, Essence V4 contract next, and official corpus patterns or execution packs as optional guidance unless the project maps them into local law. This is how Decantr helps with drift like "three different primary buttons" without pretending the corpus owns a contract-only app.
 

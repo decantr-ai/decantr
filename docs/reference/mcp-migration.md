@@ -86,7 +86,7 @@ The v2 Project Health, Evidence Bundle, runtime probe, authority resolution, and
 
 ## Security Boundary
 
-The MCP server reads Decantr contract, context, graph, and selected project files under the active workspace root. Write tools remain explicit and path-contained. Hosted critique or audit fallbacks must require `allow_hosted_upload: true`; local Project Health, graph context, and Evidence Bundle generation should remain useful without hosted upload.
+The MCP server reads Decantr contract, context, graph, and selected project files under the active workspace root. Write tools remain explicit and path-contained. Hosted critique and audit upload fallbacks are retired in Decantr 3.8; `allow_hosted_upload` remains a compatibility option but does not activate removed API routes. Local Project Health, graph context, and Evidence Bundle generation remain useful without hosted upload.
 
 ## Compatibility Policy
 

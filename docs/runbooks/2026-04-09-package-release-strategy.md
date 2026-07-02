@@ -58,34 +58,34 @@ That file currently defines:
 
 ## Current Release Waves
 
-The reset branch now treats npm releases as explicit waves instead of a flat publish list.
+Decantr 3.8 treats npm releases as explicit waves instead of a flat publish list.
 
 | Wave | Publish order | Packages | Purpose |
 | --- | --- | --- | --- |
-| `foundation` | `10`-`50` | `@decantr/essence-spec`, `@decantr/registry`, `@decantr/core`, `@decantr/css`, `@decantr/verifier` | schemas, contracts, compiler/runtime, and verification primitives |
-| `delivery` | `10`-`20` | `@decantr/mcp-server`, `@decantr/cli` | user-facing delivery surfaces that depend on the foundation layer |
+| `foundation` | `10`-`60` | `@decantr/essence-spec`, `@decantr/content`, `@decantr/registry`, `@decantr/css`, `@decantr/core`, `@decantr/telemetry` | schemas, official corpus, legacy compatibility, optional CSS atoms, compiler/runtime, and telemetry contracts |
+| `delivery` | `10`-`30` | `@decantr/verifier`, `@decantr/mcp-server`, `@decantr/cli` | verifier, MCP, and CLI delivery surfaces that depend on the foundation layer |
 | `experimental` | `10` | `@decantr/vite-plugin` | non-default experiments that should not ride normal publish waves |
 
 Release planning and publish tooling now respect this order automatically.
 
 ## Current Dist-Tag Strategy
 
-Default package release policy on this branch:
+Default package release policy in Decantr 3.8:
 
-- `@decantr/cli` -> `latest`
+- `@decantr/essence-spec` -> `latest`
+- `@decantr/content` -> `latest`
+- `@decantr/registry` -> `latest`
 - `@decantr/css` -> `latest`
-- `@decantr/essence-spec` -> `beta`
-- `@decantr/registry` -> `beta`
-- `@decantr/core` -> `beta`
-- `@decantr/mcp-server` -> `beta`
-- `@decantr/verifier` -> `beta`
+- `@decantr/core` -> `latest`
+- `@decantr/telemetry` -> `latest`
+- `@decantr/verifier` -> `latest`
+- `@decantr/mcp-server` -> `latest`
+- `@decantr/cli` -> `latest`
 - `@decantr/vite-plugin` -> excluded by default
 
 ## Why This Split Exists
 
-`@decantr/cli` and `@decantr/css` are already the clearest user-facing surfaces and have relatively stable expectations.
-
-The compiler, schema, registry, MCP, and verifier layers are public and important, but they are still being actively reshaped during the reset. They should remain public while publishing under `beta` until their contracts are intentionally graduated.
+Decantr 3.8 graduated the core package surface to stable `latest` releases. `@decantr/content` is the official corpus package, `@decantr/registry` remains a supported-secondary compatibility name, and `@decantr/css` remains a supported-secondary legacy optional adapter rather than a default adoption path.
 
 `@decantr/vite-plugin` remains experimental and should not ride the default publish wave.
 

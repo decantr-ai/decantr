@@ -12,9 +12,9 @@ pnpm exec decantr adopt --project apps/web --yes
 pnpm exec decantr doctor --project apps/web
 ```
 
-`setup` and `workspace list` are non-mutating orientation commands. Before adoption, `setup` shows app candidates and the one attach command. After at least one app is attached, `setup` becomes a workspace dashboard that points at `doctor`, `task`, `verify`, and `ci init` for the attached app instead of telling you to adopt again. `adopt --project apps/web --yes` writes the Brownfield contract, hydrates hosted packs when online, and keeps `.decantr/*` context inside the app, while `.github/workflows/*` and workspace package-manager commands remain rooted at the repository root. Use `--no-packs` or offline mode when pack hydration should be deferred.
+`setup` and `workspace list` are non-mutating orientation commands. Before adoption, `setup` shows app candidates and the one attach command. After at least one app is attached, `setup` becomes a workspace dashboard that points at `doctor`, `task`, `verify`, and `ci init` for the attached app instead of telling you to adopt again. `adopt --project apps/web --yes` writes the Brownfield contract, hydrates content API packs when online, and keeps `.decantr/*` context inside the app, while `.github/workflows/*` and workspace package-manager commands remain rooted at the repository root. Use `--no-packs` or offline mode when pack hydration should be deferred.
 
-Decantr 3.7 uses the same read-only discovery substrate for scan/setup/workspace/adopt/doctor/task/verify/ci/MCP. When you pass `--project apps/web`, discovery walks upward from `apps/web` to find the workspace package manager, but framework, language, routes, components, styling, assistant rules, and limitations come from the selected app. This prevents an Angular sibling, docs app, package library, or workspace root `index.html` from contaminating a React/Vite app scan. `decantr scan --project apps/web --json` emits `scan-report.v2` with both `routeSignalCount` and `taskableRouteCount`, plus component inventory confidence.
+Decantr 3.7 introduced the read-only discovery substrate that Decantr 3.8 uses for scan/setup/workspace/adopt/doctor/task/verify/ci/MCP. When you pass `--project apps/web`, discovery walks upward from `apps/web` to find the workspace package manager, but framework, language, routes, components, styling, assistant rules, and limitations come from the selected app. This prevents an Angular sibling, docs app, package library, or workspace root `index.html` from contaminating a React/Vite app scan. `decantr scan --project apps/web --json` emits `scan-report.v2` with both `routeSignalCount` and `taskableRouteCount`, plus component inventory confidence.
 
 ## Root vs App
 
@@ -91,7 +91,7 @@ pnpm exec decantr doctor --project apps/web
 
 Workspace discovery favors deployable UI apps. Server-only API packages and React component libraries under `packages/*` are not suggested as Brownfield app candidates unless they expose a frontend app config such as Next, Vite, SvelteKit, Angular, or Astro.
 
-In contract-only Brownfield, hosted packs are optional context. If you attach with `--no-packs` or offline mode, `doctor`, `health`, and `refresh --check` should not make pack hydration the next required step. If a `pack-manifest.json` exists and references missing files, hydrate the app-scoped pack bundle from the monorepo root with the app essence path:
+In contract-only Brownfield, content API packs are optional context. If you attach with `--no-packs` or offline mode, `doctor`, `health`, and `refresh --check` should not make pack hydration the next required step. If a `pack-manifest.json` exists and references missing files, hydrate the app-scoped pack bundle from the monorepo root with the app essence path:
 
 ```bash
 pnpm exec decantr content compile-packs apps/web/decantr.essence.json --write-context

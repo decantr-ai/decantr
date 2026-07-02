@@ -68,7 +68,7 @@ npx @decantr/cli verify --project apps/web --base-url http://localhost:3000 --ev
 - It does not take over Tailwind, Bootstrap, MUI, Chakra, plain CSS, or another existing styling system.
 - It does not mutate assistant rule files unless you explicitly use the assistant bridge apply flow.
 - It does not upload source code, prompts, or health reports.
-- It does not upload screenshots; browser evidence remains local unless you explicitly choose a hosted workflow.
+- It does not upload screenshots; browser evidence remains local in Decantr 3.8.
 
 ## Scan, Analyze, Adopt
 
@@ -76,7 +76,7 @@ Use `scan` when you want a no-risk answer to "is this a Decantr Brownfield UI ta
 
 Use `analyze` when you are ready for local artifacts: doctrine map, Brownfield intelligence, theme inventory, enrichment backlog, report markdown, and an observed essence proposal.
 
-Use `adopt` when you want the guided attach workflow. It can write the accepted contract, generated context, optional hosted packs, local evidence, and CI guidance depending on the flags you choose.
+Use `adopt` when you want the guided attach workflow. It can write the accepted contract, generated context, optional content packs, local evidence, and CI guidance depending on the flags you choose.
 
 ## When To Use This Path
 
@@ -98,7 +98,7 @@ npx @decantr/cli codify --from-audit --style-bridge
 # review .decantr/local-patterns.proposal.json and .decantr/rules.proposal.json
 # review .decantr/style-bridge.proposal.json if you want Decantr intent mapped to project tokens/classes
 npx @decantr/cli codify --map-pattern hero
-# review the advisory hosted-pattern mapping before accepting it as local law
+# review the advisory content-pattern mapping before accepting it as local law
 npx @decantr/cli codify --accept
 npx @decantr/cli verify --brownfield --local-patterns
 ```

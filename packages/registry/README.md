@@ -15,7 +15,7 @@ npm install @decantr/registry
 
 ## What It Exports
 
-- strong types for patterns, themes, starter-kit blueprints, archetypes, shells, and intelligence metadata
+- strong types for patterns, themes, official blueprints, archetypes, shells, and intelligence metadata
 - `ContentHealthReport` types for vocabulary supply-chain health artifacts
 - `RegistryAPIClient` for server-side and tool-side content API access
 - `@decantr/registry/client` for web-safe API usage

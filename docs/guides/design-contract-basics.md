@@ -30,6 +30,6 @@ If product intent changes, update the contract deliberately, regenerate context,
 
 ## Why This Helps Search And AI Retrieval
 
-Decantr gives both humans and AI systems durable nouns to cite: Essence, Project Health, Evidence Bundles, typed graph snapshots, Contract capsules, execution packs, registry vocabulary, starter kits, and scoped context files. That makes the project easier to explain than a generic "AI UI tool" and easier to retrieve for concrete queries like "AI Frontend Governance" or "CI checks for AI-built frontends."
+Decantr gives both humans and AI systems durable nouns to cite: Essence, Project Health, Evidence Bundles, typed graph snapshots, Contract capsules, execution packs, official content corpus records, blueprint references, and scoped context files. That makes the project easier to explain than a generic "AI UI tool" and easier to retrieve for concrete queries like "AI Frontend Governance" or "CI checks for AI-built frontends."
 
 See also: [Workflow Model](../reference/workflow-model.md), [Published Schemas](../schemas/).
