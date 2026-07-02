@@ -218,10 +218,11 @@ function explainPublishFailure({ entry, mode, packageVersion }) {
 function publishPackage({ entry, cwd, distTag, packageVersion }) {
   const primaryMode = getPrimaryAuthMode();
   const primaryCmd = createPublishCommand({ distTag, mode: primaryMode });
+  const tokenFallbackAvailable = hasClassicPublishToken();
 
   console.log(`Using ${describeAuthMode(primaryMode)} for ${entry.name}.`);
 
-  if (!publishDryRun && primaryMode === 'token' && ciProvenance && !hasClassicPublishToken()) {
+  if (!publishDryRun && primaryMode === 'token' && ciProvenance && !tokenFallbackAvailable) {
     throw new Error(
       [
         `Cannot publish ${entry.name} with token auth because neither NODE_AUTH_TOKEN nor NPM_TOKEN is set.`,
@@ -246,10 +247,15 @@ function publishPackage({ entry, cwd, distTag, packageVersion }) {
   const canFallbackToToken = requestedAuthStrategy === 'auto'
     && primaryMode === 'oidc'
     && ciProvenance
-    && hasClassicPublishToken();
+    && tokenFallbackAvailable;
 
   if (!canFallbackToToken) {
     explainPublishFailure({ entry, mode: primaryMode, packageVersion });
+    if (requestedAuthStrategy === 'auto' && primaryMode === 'oidc' && ciProvenance && !tokenFallbackAvailable) {
+      console.error(
+        'Token fallback was unavailable because neither NODE_AUTH_TOKEN nor NPM_TOKEN was present in the publish environment.',
+      );
+    }
     process.exit(primaryResult.status ?? 1);
   }
 

@@ -51,6 +51,10 @@ function getPackageScope(packageName) {
   return match?.[1] ?? null;
 }
 
+function getOrgNameFromScope(scope) {
+  return scope?.replace(/^@/, '') ?? null;
+}
+
 function parseAccessValue(value) {
   if (typeof value === 'string') return value;
   if (value && typeof value === 'object') {
@@ -59,6 +63,62 @@ function parseAccessValue(value) {
     }
   }
   return null;
+}
+
+function getRoleValue(value) {
+  if (typeof value === 'string') return value;
+  if (value && typeof value === 'object') {
+    for (const key of ['role', 'access', 'permission']) {
+      if (typeof value[key] === 'string') return value[key];
+    }
+  }
+  return null;
+}
+
+function readNpmOrgPackageCreationAccess(scope) {
+  const orgName = getOrgNameFromScope(scope);
+  if (!orgName) {
+    return {
+      canCreate: false,
+      role: null,
+      error: 'package is not scoped to an npm organization',
+    };
+  }
+
+  const auth = readNpmAuthState();
+  if (!auth.authenticated || !auth.username) {
+    return {
+      canCreate: false,
+      role: null,
+      error: auth.error ?? 'npm authentication is required to inspect org access',
+    };
+  }
+
+  try {
+    const stdout = execFileSync('npm', ['org', 'ls', orgName, '--json'], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    }).trim();
+    const parsed = stdout ? JSON.parse(stdout) : {};
+    const role = getRoleValue(parsed[auth.username]);
+    const canCreate = typeof role === 'string' && /^(owner|admin)$/i.test(role);
+
+    return {
+      canCreate,
+      role,
+      error: canCreate ? null : `current npm identity is ${role ?? 'not listed'} in the ${orgName} npm org`,
+    };
+  } catch (error) {
+    const stdout = normalizeNpmCliOutput(error.stdout?.toString?.() ?? '');
+    const stderr = normalizeNpmCliOutput(error.stderr?.toString?.() ?? '');
+    const combined = stdout || stderr || error.message || 'unknown npm org access failure';
+
+    return {
+      canCreate: false,
+      role: null,
+      error: combined,
+    };
+  }
 }
 
 export function readNpmPackageAccess(packageName) {
@@ -81,6 +141,19 @@ export function readNpmPackageAccess(packageName) {
     const parsed = stdout ? JSON.parse(stdout) : {};
     const access = parseAccessValue(parsed[packageName] ?? parsed);
     const canPublish = typeof access === 'string' && /\b(write|read-write)\b/i.test(access);
+
+    if (!canPublish && !parsed[packageName]) {
+      const orgCreationAccess = readNpmOrgPackageCreationAccess(scope);
+      if (orgCreationAccess.canCreate) {
+        return {
+          packageName,
+          scope,
+          canPublish: true,
+          access: `scope-${orgCreationAccess.role}-first-publish`,
+          error: null,
+        };
+      }
+    }
 
     return {
       packageName,
