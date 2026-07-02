@@ -1,0 +1,176 @@
+{
+  "$schema": "https://decantr.ai/schemas/blueprint.v1.json",
+  "id": "knowledge-base",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Knowledge Base",
+  "description": "Warm, reading-optimized public documentation platform with AI-powered search, changelog, interactive API reference, and community-friendly knowledge sharing.",
+  "blueprint_portfolio": {
+    "visibility": "public",
+    "maturity": "supported-contract",
+    "rationale": "Supported registry blueprint that remains useful in All without being promoted as a flagship default.",
+    "artifact": {
+      "status": "candidate",
+      "showcase": "knowledge-base",
+      "notes": "Showcase-backed candidate; certification requires artifact evidence beyond registry availability."
+    }
+  },
+  "tags": [
+    "docs",
+    "knowledge",
+    "documentation",
+    "search",
+    "ai",
+    "content",
+    "2026"
+  ],
+  "compose": [
+    "doc-browser",
+    "search-hub",
+    "changelog-center",
+    "api-reference",
+    "marketing-docs"
+  ],
+  "theme": {
+    "mode": "light",
+    "shape": "rounded",
+    "id": "paper"
+  },
+  "personality": "Warm, reading-optimized documentation platform. Paper-like backgrounds with comfortable typography (65-75 character measure). AI-powered search with highlighted excerpts. Navigation tree on the left, content center, table-of-contents right. Feels like a well-designed textbook. Changelog entries feel celebratory. API reference is interactive. Lucide icons. Light mode default.",
+  "voice": {
+    "tone": "Helpful and clear. Teacher energy.",
+    "cta_verbs": [
+      "Learn",
+      "Explore",
+      "Try",
+      "Read",
+      "Search",
+      "Contribute"
+    ],
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Buy now",
+      "Obviously"
+    ],
+    "empty_states": "Welcoming and educational. Empty search results suggest related topics. New sections invite contributions. Warm and encouraging.",
+    "errors": "Gentle and helpful. Suggest alternative search terms or related pages. Never blame the user.",
+    "loading": "Content skeleton with paragraph-shaped placeholders. Search results show shimmer cards. Table of contents loads progressively."
+  },
+  "features": [
+    "documentation",
+    "search",
+    "ai-search",
+    "changelog",
+    "api-reference",
+    "marketing",
+    "seo",
+    "toc",
+    "syntax-highlighting"
+  ],
+  "routes": {
+    "/": {
+      "page": "home",
+      "shell": "top-nav-footer",
+      "archetype": "marketing-docs"
+    },
+    "/docs": {
+      "page": "docs",
+      "shell": "three-column-browser",
+      "archetype": "doc-browser"
+    },
+    "/docs/:slug": {
+      "page": "doc-page",
+      "shell": "three-column-browser",
+      "archetype": "doc-browser"
+    },
+    "/search": {
+      "page": "search",
+      "shell": "sidebar-main",
+      "archetype": "search-hub"
+    },
+    "/changelog": {
+      "page": "changelog",
+      "shell": "top-nav-main",
+      "archetype": "changelog-center"
+    },
+    "/changelog/:id": {
+      "page": "changelog-entry",
+      "shell": "top-nav-main",
+      "archetype": "changelog-center"
+    },
+    "/api": {
+      "page": "api-ref",
+      "shell": "three-column-browser",
+      "archetype": "api-reference"
+    },
+    "/api/:endpoint": {
+      "page": "api-ref-endpoint",
+      "shell": "three-column-browser",
+      "archetype": "api-reference"
+    }
+  },
+  "overrides": {
+    "features_add": [
+      "theme-toggle"
+    ],
+    "features_remove": [],
+    "pages": {},
+    "pages_remove": []
+  },
+  "seo_hints": {
+    "schema_org": [
+      "Organization",
+      "WebSite",
+      "Article",
+      "TechArticle"
+    ],
+    "meta_priorities": [
+      "description",
+      "og:image",
+      "twitter:card"
+    ]
+  },
+  "navigation": {
+    "command_palette": true,
+    "hotkeys": [
+      {
+        "key": "g d",
+        "route": "/docs",
+        "label": "Go to Docs"
+      },
+      {
+        "key": "g s",
+        "route": "/search",
+        "label": "Go to Search"
+      },
+      {
+        "key": "g c",
+        "route": "/changelog",
+        "label": "Go to Changelog"
+      },
+      {
+        "key": "g a",
+        "route": "/api",
+        "label": "Go to API Reference"
+      }
+    ]
+  },
+  "dependencies": {
+    "archetypes": {
+      "doc-browser": ">=1.0.0",
+      "search-hub": ">=1.0.0",
+      "changelog-center": ">=1.0.0",
+      "api-reference": ">=1.0.0",
+      "marketing-docs": ">=1.0.0"
+    }
+  },
+  "suggested_themes": [
+    "paper",
+    "editorial",
+    "healthcare",
+    "government",
+    "clean"
+  ]
+}

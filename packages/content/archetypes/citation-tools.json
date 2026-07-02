@@ -1,0 +1,98 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "citation-tools",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Citation Tools",
+  "description": "Auxiliary citation management surface for organizing a citation library and running Shepardize-style validity checks with visual citation graphs.",
+  "tags": [
+    "legal",
+    "citations",
+    "shepardize",
+    "validity",
+    "research"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "citation manager",
+        "shepardize",
+        "citation check",
+        "citation tools",
+        "citator"
+      ],
+      "secondary": [
+        "validity check",
+        "citation library",
+        "citation graph",
+        "case treatment"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "citations",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "citation-list"
+        },
+        {
+          "pattern": "citation-graph",
+          "preset": "timeline",
+          "as": "citation-history"
+        }
+      ],
+      "default_layout": [
+        "data-table",
+        "citation-graph"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "citation-check",
+      "patterns": [
+        {
+          "pattern": "citation-graph",
+          "preset": "hierarchical",
+          "as": "validity-graph"
+        },
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "treatment-list"
+        }
+      ],
+      "default_layout": [
+        "citation-graph",
+        "data-table"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "citations": "Citation manager page. Top region renders a data-table of tracked citations with columns for case name, citation, jurisdiction, treatment signal, date added, and associated matter. Below, a timeline citation-graph visualizes how tracked authorities relate chronologically, making it easy to spot which cases dominate a body of law.",
+    "citation-check": "Shepardize validity check page. Top region shows a hierarchical citation-graph rooted at the target authority, branching out to subsequent cases that cite it with color-coded treatment signals — positive, negative, distinguished, overruled. Below, a data-table lists each citing case with columns for case, court, year, treatment, and the specific passage cited."
+  },
+  "features": [
+    "citations",
+    "shepardize"
+  ],
+  "suggested_theme": {
+    "ids": [
+      "counsel",
+      "paper",
+      "professional"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

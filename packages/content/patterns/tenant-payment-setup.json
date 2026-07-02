@@ -1,0 +1,98 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "tenant-payment-setup",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Tenant Payment Setup",
+  "description": "Tenant autopay configuration with payment method management, ACH/card setup, autopay toggle, and upcoming payment preview.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "icon",
+        "Badge",
+        "Input",
+        "Select"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "icon",
+    "Badge",
+    "Input",
+    "Select"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full payment setup view with autopay toggle, saved payment methods, and upcoming payment preview",
+      "components": [
+        "Button",
+        "icon",
+        "Badge",
+        "Input",
+        "Select"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6",
+        "slots": {
+          "header": "Title, autopay status indicator",
+          "current-method": "Current payment method summary",
+          "methods": "Saved payment methods list",
+          "add-method": "Add bank account or card form",
+          "autopay-settings": "Autopay toggle, day of month",
+          "schedule": "Upcoming payments preview"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap6",
+    "slots": {
+      "autopay": "Autopay settings",
+      "methods": "Payment methods",
+      "upcoming": "Upcoming payments"
+    }
+  },
+  "visual_brief": "Settings form for tenant autopay configuration. An autopay toggle switch at the top enables/disables automatic payments with a description of what it does. Below, a payment methods section shows saved cards/bank accounts as rows with masked account number, type icon (Visa, Mastercard, bank), and a star icon for the default method. 'Add Payment Method' button opens a card/ACH input form. An upcoming payments section shows the next payment amount, date, and property/unit in a summary card. If autopay is off, a manual 'Pay Now' button appears.",
+  "responsive": {
+    "mobile": "Full-width form. Payment method cards stack. Toggle switch prominent at top. Pay Now button full-width and sticky.",
+    "tablet": "Standard form layout. Payment methods and upcoming payments visible together.",
+    "desktop": "Comfortable form width. All sections visible. Payment methods in a clean list."
+  },
+  "layout_hints": {
+    "setup_priority": "Lead with current payment readiness first: autopay state, active method, and next charge. Deeper method management should sit just below that primary understanding.",
+    "method_clarity": "Masked account identity, default state, and next payment context should be tightly grouped so users trust what will be charged and when.",
+    "mobile_sequence": "On small screens, keep autopay state, current method, and manual pay fallback in one simple vertical sequence rather than scattering them."
+  },
+  "motion": {
+    "micro": "Autopay toggles and payment-method selection may confirm state changes with restrained visual feedback.",
+    "transitions": "Adding or switching methods should feel trustworthy and deliberate, especially around sensitive payment information."
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Tenant payment setup",
+    "keyboard": [
+      "Autopay controls, payment methods, and upcoming payment actions should proceed in a clear top-to-bottom order."
+    ],
+    "announcements": [
+      "Autopay state, default method, and next payment timing should be communicated semantically so the setup remains understandable without card or badge styling alone."
+    ]
+  },
+  "composition": {
+    "TenantPaymentSetup": "Container(d-section, flex-col, gap-6) > [PaymentMethods + AutopayToggle + UpcomingPayment]",
+    "PaymentMethods": "Section(d-surface) > [MethodCard(d-surface, selectable)[] + AddMethodButton(d-interactive)]",
+    "MethodCard": "Card(d-surface, active?: selected) > [CardBrandIcon + MaskedNumber(mono-data) + Expiry(text-muted) + DefaultBadge?(d-annotation)]",
+    "AutopayToggle": "Row(d-control) > [Label + Switch(d-control) + Description(text-muted)]",
+    "UpcomingPayment": "Card(d-surface) > [NextDueDate(d-annotation) + Amount(heading3, mono-data) + BreakdownList > LineItem[]]"
+  }
+}

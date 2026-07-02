@@ -1,0 +1,134 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "share-quest-panel",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Share Quest Panel",
+  "description": "Post-conversion referral and sharing panel that turns supporter sharing into unlock progress without leaving the campaign tone.",
+  "category": "campaign",
+  "tags": [
+    "campaign",
+    "referral",
+    "share",
+    "post-conversion",
+    "waitlist",
+    "rewards"
+  ],
+  "components": [
+    "Button",
+    "Progress",
+    "Badge",
+    "Input",
+    "icon"
+  ],
+  "contained": false,
+  "default_preset": "referral-quest",
+  "presets": {
+    "referral-quest": {
+      "description": "Quest-style share panel with referral link, unlock progress, share buttons, and next reward.",
+      "components": [
+        "Button",
+        "Progress",
+        "Badge",
+        "Input",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap5 _wfull _maxw[58rem] _mx[auto]",
+        "slots": {
+          "success-state": "Thank-you or reservation confirmation.",
+          "referral-link": "Copyable campaign referral link.",
+          "quest-progress": "Progress toward next share/backer unlock.",
+          "share-buttons": "Email, social, copy, and message actions.",
+          "next-unlock": "Reward, queue jump, sticker, bonus content, or beta wave unlocked by sharing."
+        }
+      }
+    },
+    "waitlist-rank": {
+      "description": "Waitlist rank and referral tracker with queue position, invite count, and access-wave unlock.",
+      "components": [
+        "Button",
+        "Progress",
+        "Badge",
+        "Input"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap5 _wfull _maxw[44rem] _mx[auto]",
+        "slots": {
+          "rank-counter": "Current queue rank or access wave.",
+          "referral-link": "Copyable invite link.",
+          "quest-progress": "Invites until next unlock.",
+          "share-buttons": "Share actions."
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gap5 _wfull _maxw[58rem] _mx[auto]",
+    "slots": {
+      "success-state": "Conversion success message",
+      "referral-link": "Copyable campaign link",
+      "quest-progress": "Referral unlock progress",
+      "share-buttons": "Share controls",
+      "next-unlock": "Next referral reward"
+    }
+  },
+  "visual_brief": "A post-conversion panel that feels like a reward quest. It should make the supporter feel done and give them one clear next action: share to unlock or invite. Keep the referral link copyable, progress visible, and next unlock understandable. Avoid manipulative urgency or dark-pattern sharing.",
+  "responsive": {
+    "mobile": "Stack success, referral link, progress, and share buttons. Share buttons should use recognizable icons plus labels.",
+    "tablet": "Two-column layout with success/progress beside share actions.",
+    "desktop": "Centered console with referral link and progress as the primary focus."
+  },
+  "layout_hints": {
+    "post_conversion": "Lead with confirmation before asking for sharing.",
+    "clarity": "Show exactly what sharing unlocks and how many referrals remain.",
+    "controls": "Use copy and share icons inside accessible labeled buttons."
+  },
+  "motion": {
+    "micro": {
+      "copy-success": "link field flashes success color and button label changes briefly",
+      "progress-increment": "progress track fills one segment per referral"
+    }
+  },
+  "interactions": [
+    "click-select",
+    "real-time-updates",
+    "status-pulse",
+    "keyboard-navigation"
+  ],
+  "composition": {
+    "ShareQuestPanel": "Panel > [SuccessState + ReferralLink + QuestProgress + ShareButtons + NextUnlock]",
+    "ReferralLink": "Input(readonly) + CopyButton",
+    "ShareButtons": "ButtonGroup > ShareAction[]"
+  },
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Campaign sharing and referral progress",
+    "keyboard": [
+      "Referral link copy button should be reachable immediately after the link field.",
+      "Share buttons should include text labels, not icons only."
+    ],
+    "announcements": [
+      "Copied referral link.",
+      "{count} referrals until {unlock}."
+    ]
+  },
+  "io": {
+    "consumes": [
+      "supporter-record",
+      "referral-state"
+    ],
+    "produces": [
+      "referral-share",
+      "share-conversion"
+    ],
+    "actions": [
+      "copy-referral-link",
+      "share-channel-click",
+      "invite-submit"
+    ]
+  }
+}

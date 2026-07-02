@@ -1,0 +1,559 @@
+{
+  "$schema": "https://decantr.ai/schemas/theme.v1.json",
+  "id": "estate",
+  "version": "1.0.0",
+  "name": "Estate",
+  "description": "Professional, trustworthy theme for property management. Deep navy for stability, forest green for growth, warm gold accent. Light mode default for business applications.",
+  "tags": [
+    "light",
+    "dark",
+    "professional",
+    "real-estate",
+    "business",
+    "warm",
+    "trustworthy"
+  ],
+  "personality": "professional + trustworthy + warm + premium",
+  "seed": {
+    "primary": "#1E3A5F",
+    "secondary": "#166534",
+    "accent": "#B8860B",
+    "background": "#FDFBF7"
+  },
+  "palette": {
+    "background": {
+      "light": "#FDFBF7",
+      "dark": "#1A1A1F"
+    },
+    "surface": {
+      "light": "#FFFFFF",
+      "dark": "#242428"
+    },
+    "surface-raised": {
+      "light": "#F7F5F0",
+      "dark": "#2D2D32"
+    },
+    "border": {
+      "light": "#E8E4DC",
+      "dark": "#3A3A42"
+    },
+    "text": {
+      "light": "#1A1A1F",
+      "dark": "#FDFBF7"
+    },
+    "text-muted": {
+      "light": "#6B6860",
+      "dark": "#9A9890"
+    },
+    "primary": {
+      "light": "#1E3A5F",
+      "dark": "#3B5A7F"
+    },
+    "primary-hover": {
+      "light": "#162D4A",
+      "dark": "#4A6A8F"
+    },
+    "secondary": {
+      "light": "#166534",
+      "dark": "#22803D"
+    },
+    "secondary-hover": {
+      "light": "#14532D",
+      "dark": "#2D9048"
+    },
+    "accent": {
+      "light": "#B8860B",
+      "dark": "#D4A017"
+    },
+    "accent-hover": {
+      "light": "#9A7209",
+      "dark": "#E8B41F"
+    }
+  },
+  "modes": [
+    "light",
+    "dark",
+    "auto"
+  ],
+  "shapes": [
+    "rounded",
+    "sharp"
+  ],
+  "cvd_support": [
+    "deuteranopia",
+    "protanopia"
+  ],
+  "tokens": {
+    "base": {
+      "success": "#16A34A",
+      "danger": "#DC2626",
+      "warning": "#D97706"
+    },
+    "cvd": {
+      "deuteranopia": {
+        "success": "#2196F3",
+        "danger": "#FF8F00"
+      },
+      "protanopia": {
+        "success": "#03A9F4",
+        "danger": "#FFC107"
+      }
+    },
+    "domain": {
+      "occupied": "success",
+      "vacant": "danger",
+      "paid": "success",
+      "pending": "warning",
+      "overdue": "danger",
+      "due-soon": "warning",
+      "maintenance-open": "warning",
+      "maintenance-urgent": "danger",
+      "maintenance-resolved": "success"
+    }
+  },
+  "decantr_compat": ">=2.0.0",
+  "source": "core",
+  "decorators": {
+    "estate-canvas": "Warm off-white background (#FDFBF7 light, #1A1A1F dark). Clean professional foundation for data-heavy interfaces.",
+    "estate-nav": "Sidebar navigation with subtle surface background. Professional icon + label layout.",
+    "estate-card": "Surface background with subtle warm-tinted border, 6px radius, soft shadow on hover. Professional card styling.",
+    "estate-card-metric": "Metric card with colored left border accent based on metric type. Large number, small label, optional trend indicator.",
+    "estate-input": "Clean border with warm undertone, navy focus ring. Professional form styling.",
+    "estate-table": "Striped rows with warm alternating background, sticky header, row hover highlight. Optimized for financial data.",
+    "estate-badge": "Status badge with semantic color background. Consistent status styling across patterns.",
+    "estate-divider": "Hairline separator with warm border tone (#E8E4DC light, #3A3A42 dark).",
+    "estate-fade-up": "Entrance animation: opacity 0 to 1, translateY 8px to 0, 180ms ease-out. Professional, not playful.",
+    "estate-stat": "Large number display (heading2 size) with small label underneath. Optional trend indicator (up/down arrow with percentage).",
+    "estate-progress": "Progress bar with semantic fill color. Used for occupancy rates, collection rates, etc.",
+    "estate-status-occupied": "Green status indicator for occupied units, paid rent, resolved tickets.",
+    "estate-status-vacant": "Red status indicator for vacant units, overdue payments, urgent tickets.",
+    "estate-status-pending": "Amber status indicator for pending payments, upcoming due dates, open tickets."
+  },
+  "spatial": {
+    "density_bias": 0,
+    "content_gap_shift": 0,
+    "section_padding": "4rem",
+    "card_wrapping": "subtle",
+    "surface_override": null
+  },
+  "motion": {
+    "preference": "subtle",
+    "reduce_motion": true,
+    "entrance": "estate-fade-up",
+    "micro": "smooth",
+    "timing": "cubic-bezier(0.4, 0, 0.2, 1)",
+    "durations": {
+      "hover": "120ms",
+      "entrance": "180ms",
+      "modal": "200ms",
+      "page": "250ms",
+      "instant": "80ms",
+      "fast": "150ms",
+      "base": "250ms",
+      "slow": "400ms",
+      "slower": "600ms",
+      "stagger": "60ms"
+    },
+    "easings": {
+      "ease": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "easeOut": "cubic-bezier(0, 0, 0.2, 1)",
+      "easeIn": "cubic-bezier(0.4, 0, 1, 1)",
+      "spring": "cubic-bezier(0.34, 1.56, 0.64, 1)"
+    }
+  },
+  "effects": {
+    "enabled": true,
+    "intensity": "subtle",
+    "type_mapping": {
+      "card": [
+        "estate-card"
+      ],
+      "metric": [
+        "estate-card-metric"
+      ],
+      "input": [
+        "estate-input"
+      ],
+      "table": [
+        "estate-table"
+      ],
+      "badge": [
+        "estate-badge"
+      ]
+    },
+    "component_fallback": {
+      "Card": "card",
+      "MetricCard": "metric",
+      "Input": "input",
+      "Table": "table",
+      "Badge": "badge"
+    }
+  },
+  "compositions": {
+    "owner-dashboard": {
+      "description": "Property owner dashboard with sidebar navigation. Portfolio metrics, property grid, financial summaries.",
+      "shell": "sidebar-main",
+      "effects": [
+        "estate-card",
+        "estate-card-metric"
+      ]
+    },
+    "tenant-portal": {
+      "description": "Tenant self-service portal with top navigation. Simplified interface for payments and maintenance.",
+      "shell": "top-nav-main",
+      "card_style": "estate-card"
+    },
+    "marketing": {
+      "description": "Marketing pages with top nav and footer. Professional SaaS landing page styling.",
+      "shell": "top-nav-footer"
+    },
+    "auth": {
+      "description": "Centered auth forms with professional card styling.",
+      "shell": "centered",
+      "card_style": "estate-card"
+    },
+    "financial": {
+      "description": "Financial dashboards and reports. Data-dense with tables, charts, and metrics.",
+      "shell": "sidebar-main",
+      "effects": [
+        "estate-table",
+        "estate-card-metric"
+      ]
+    }
+  },
+  "radius": {
+    "philosophy": "rounded",
+    "base": 8
+  },
+  "pattern_preferences": {
+    "prefer": [
+      "property-grid",
+      "property-card",
+      "rent-roll",
+      "pnl-dashboard",
+      "maintenance-board",
+      "tenant-directory"
+    ],
+    "avoid": [],
+    "default_presets": {
+      "property-grid": "cards",
+      "tenant-directory": "table",
+      "maintenance-board": "board"
+    }
+  },
+  "shell": {
+    "preferred": [
+      "sidebar-main",
+      "top-nav-main",
+      "top-nav-footer"
+    ],
+    "avoid": [
+      "chat-portal"
+    ],
+    "nav_style": "professional",
+    "default_nav_state": "expanded",
+    "root": "estate-canvas",
+    "nav": "estate-nav",
+    "header": "",
+    "navLabel": "",
+    "brand": "",
+    "dimensions": null
+  },
+  "typography": {
+    "scale": "modular",
+    "heading_weight": 600,
+    "body_weight": 400,
+    "display": "'Cormorant Garamond', 'Georgia', serif",
+    "body": "'Inter', ui-sans-serif, sans-serif"
+  },
+  "decorator_definitions": {
+    "estate-canvas": {
+      "description": "Warm off-white background (#FDFBF7 light, #1A1A1F dark). Clean professional foundation for data-heavy interfaces.",
+      "intent": "Use as the root page background for property management dashboards. The warm tone conveys trust and professionalism.",
+      "suggested_properties": {
+        "background-color": "var(--d-bg, #FDFBF7)",
+        "color": "var(--d-text, #1A1A1F)",
+        "min-height": "100vh"
+      },
+      "pairs_with": [
+        "estate-nav",
+        "estate-card"
+      ],
+      "usage": [
+        "Page root containers",
+        "App shell backgrounds"
+      ]
+    },
+    "estate-nav": {
+      "description": "Sidebar navigation with subtle surface background. Professional icon + label layout.",
+      "intent": "Use for the primary sidebar navigation. The subtle surface background provides gentle separation from the canvas.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #FFFFFF)",
+        "border-right": "1px solid var(--d-border, #E8E4DC)",
+        "width": "240px",
+        "padding": "16px 12px"
+      },
+      "pairs_with": [
+        "estate-canvas",
+        "estate-card"
+      ],
+      "usage": [
+        "Sidebar navigation",
+        "Main navigation panels"
+      ]
+    },
+    "estate-card": {
+      "description": "Surface background with subtle warm-tinted border, 6px radius, soft shadow on hover. Professional card styling.",
+      "intent": "Use for content containers in dashboards and listing pages. The warm border creates a professional, trustworthy appearance.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #FFFFFF)",
+        "border": "1px solid var(--d-border, #E8E4DC)",
+        "border-radius": "6px",
+        "transition": "box-shadow 120ms ease"
+      },
+      "pairs_with": [
+        "estate-canvas",
+        "estate-divider"
+      ],
+      "usage": [
+        "Property cards",
+        "Content containers",
+        "Dashboard panels",
+        "List items"
+      ]
+    },
+    "estate-card-metric": {
+      "description": "Metric card with colored left border accent based on metric type. Large number, small label, optional trend indicator.",
+      "intent": "Use for KPI and metric displays in dashboards. The colored left border categorizes the metric type at a glance.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #FFFFFF)",
+        "border": "1px solid var(--d-border, #E8E4DC)",
+        "border-left": "4px solid var(--d-primary, #1E3A5F)",
+        "border-radius": "6px",
+        "padding": "20px"
+      },
+      "pairs_with": [
+        "estate-card",
+        "estate-stat",
+        "estate-canvas"
+      ],
+      "usage": [
+        "KPI cards",
+        "Metric displays",
+        "Financial summaries",
+        "Occupancy stats"
+      ]
+    },
+    "estate-input": {
+      "description": "Clean border with warm undertone, navy focus ring. Professional form styling.",
+      "intent": "Use for all form inputs in property management interfaces. The navy focus ring maintains professionalism.",
+      "suggested_properties": {
+        "border": "1px solid var(--d-border, #E8E4DC)",
+        "border-radius": "6px",
+        "background": "var(--d-surface, #FFFFFF)",
+        "transition": "border-color 120ms ease, box-shadow 120ms ease"
+      },
+      "pairs_with": [
+        "estate-card",
+        "estate-canvas"
+      ],
+      "usage": [
+        "Text inputs",
+        "Form fields",
+        "Search bars",
+        "Select dropdowns"
+      ]
+    },
+    "estate-table": {
+      "description": "Striped rows with warm alternating background, sticky header, row hover highlight. Optimized for financial data.",
+      "intent": "Use for data-dense tables like rent rolls and payment histories. Striped rows aid scanning large datasets.",
+      "suggested_properties": {
+        "width": "100%",
+        "border-collapse": "collapse",
+        "font-variant-numeric": "tabular-nums"
+      },
+      "pairs_with": [
+        "estate-card",
+        "estate-canvas"
+      ],
+      "usage": [
+        "Rent roll tables",
+        "Payment histories",
+        "Tenant directories",
+        "Financial reports"
+      ]
+    },
+    "estate-badge": {
+      "description": "Status badge with semantic color background. Consistent status styling across patterns.",
+      "intent": "Use for status indicators throughout the application. Semantic colors ensure consistent, at-a-glance status recognition.",
+      "suggested_properties": {
+        "border-radius": "9999px",
+        "padding": "2px 10px",
+        "font-size": "12px",
+        "font-weight": "500"
+      },
+      "pairs_with": [
+        "estate-card",
+        "estate-table"
+      ],
+      "usage": [
+        "Status badges",
+        "Occupancy labels",
+        "Payment status",
+        "Maintenance priority"
+      ]
+    },
+    "estate-divider": {
+      "description": "Hairline separator with warm border tone (#E8E4DC light, #3A3A42 dark).",
+      "intent": "Use to separate content sections and list items cleanly. The warm tone maintains the professional aesthetic.",
+      "suggested_properties": {
+        "border-top": "1px solid var(--d-border, #E8E4DC)",
+        "margin": "0"
+      },
+      "pairs_with": [
+        "estate-card",
+        "estate-canvas"
+      ],
+      "usage": [
+        "Section dividers",
+        "List separators",
+        "Content breaks"
+      ]
+    },
+    "estate-fade-up": {
+      "description": "Entrance animation: opacity 0 to 1, translateY 8px to 0, 180ms ease-out. Professional, not playful.",
+      "intent": "Use as the entrance animation for dashboard content. Short distance and duration keep the motion professional.",
+      "suggested_properties": {
+        "animation": "estate-fade-up 180ms ease-out both",
+        "opacity": "0",
+        "transform": "translateY(8px)"
+      },
+      "pairs_with": [
+        "estate-card",
+        "estate-card-metric"
+      ],
+      "usage": [
+        "Page entrance animations",
+        "Dashboard widget reveals"
+      ]
+    },
+    "estate-stat": {
+      "description": "Large number display (heading2 size) with small label underneath. Optional trend indicator (up/down arrow with percentage).",
+      "intent": "Use for prominent metric values in dashboard headers and summary sections.",
+      "suggested_properties": {
+        "font-variant-numeric": "tabular-nums",
+        "line-height": "1.1"
+      },
+      "pairs_with": [
+        "estate-card-metric",
+        "estate-card"
+      ],
+      "usage": [
+        "Dashboard header stats",
+        "Portfolio summaries",
+        "Financial metrics"
+      ]
+    },
+    "estate-progress": {
+      "description": "Progress bar with semantic fill color. Used for occupancy rates, collection rates, etc.",
+      "intent": "Use for percentage-based metrics like occupancy and collection rates. Semantic fill colors communicate performance at a glance.",
+      "suggested_properties": {
+        "background": "var(--d-surface-raised, #F7F5F0)",
+        "border-radius": "4px",
+        "height": "8px",
+        "overflow": "hidden"
+      },
+      "pairs_with": [
+        "estate-card-metric",
+        "estate-stat"
+      ],
+      "usage": [
+        "Occupancy rate bars",
+        "Collection rate bars",
+        "Task completion bars"
+      ]
+    },
+    "estate-status-occupied": {
+      "description": "Green status indicator for occupied units, paid rent, resolved tickets.",
+      "intent": "Use for positive status indicators. Green signifies healthy, completed, or active states.",
+      "suggested_properties": {
+        "background": "rgba(22, 163, 74, 0.1)",
+        "color": "#16A34A",
+        "border-radius": "9999px",
+        "padding": "2px 10px"
+      },
+      "pairs_with": [
+        "estate-status-vacant",
+        "estate-status-pending",
+        "estate-badge"
+      ],
+      "usage": [
+        "Occupied unit badges",
+        "Paid rent indicators",
+        "Resolved ticket labels"
+      ]
+    },
+    "estate-status-vacant": {
+      "description": "Red status indicator for vacant units, overdue payments, urgent tickets.",
+      "intent": "Use for negative or urgent status indicators. Red signals attention needed or overdue items.",
+      "suggested_properties": {
+        "background": "rgba(220, 38, 38, 0.1)",
+        "color": "#DC2626",
+        "border-radius": "9999px",
+        "padding": "2px 10px"
+      },
+      "pairs_with": [
+        "estate-status-occupied",
+        "estate-status-pending",
+        "estate-badge"
+      ],
+      "usage": [
+        "Vacant unit badges",
+        "Overdue payment warnings",
+        "Urgent ticket labels"
+      ]
+    },
+    "estate-status-pending": {
+      "description": "Amber status indicator for pending payments, upcoming due dates, open tickets.",
+      "intent": "Use for in-progress or upcoming status indicators. Amber signals items that need monitoring but are not yet critical.",
+      "suggested_properties": {
+        "background": "rgba(217, 119, 6, 0.1)",
+        "color": "#D97706",
+        "border-radius": "9999px",
+        "padding": "2px 10px"
+      },
+      "pairs_with": [
+        "estate-status-occupied",
+        "estate-status-vacant",
+        "estate-badge"
+      ],
+      "usage": [
+        "Pending payment badges",
+        "Due soon warnings",
+        "Open ticket labels"
+      ]
+    }
+  },
+  "elevation": {
+    "1": {
+      "light": "0 1px 2px rgba(0,0,0,0.05)",
+      "dark": "0 1px 2px rgba(0,0,0,0.30)"
+    },
+    "2": {
+      "light": "0 2px 6px rgba(0,0,0,0.07)",
+      "dark": "0 2px 6px rgba(0,0,0,0.40)"
+    },
+    "3": {
+      "light": "0 6px 16px rgba(0,0,0,0.09)",
+      "dark": "0 6px 16px rgba(0,0,0,0.45)"
+    },
+    "4": {
+      "light": "0 12px 32px rgba(0,0,0,0.12)",
+      "dark": "0 12px 32px rgba(0,0,0,0.50)"
+    },
+    "5": {
+      "light": "0 24px 64px rgba(0,0,0,0.16)",
+      "dark": "0 24px 64px rgba(0,0,0,0.55)"
+    }
+  }
+}

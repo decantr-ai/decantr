@@ -1,0 +1,92 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "status-board",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Status Board",
+  "description": "Operational service status board with rows for health, uptime, incidents, and recent change signals.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Badge",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Badge",
+    "icon"
+  ],
+  "default_preset": "table",
+  "presets": {
+    "table": {
+      "description": "Dense service status table with status dot, uptime, and recent incident summary.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap3",
+        "slots": {
+          "board-header": "Optional board title and summary stats",
+          "status-row": "Single service row with status, uptime, and history",
+          "history-sparkline": "Micro history line or uptime sparkline"
+        }
+      }
+    },
+    "cards": {
+      "description": "Card-based status overview for smaller service sets.",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _md:gc2 _gap4",
+        "slots": {
+          "status-card": "Service health card with current state and short history"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap3",
+    "slots": {
+      "board-header": "Status summary",
+      "status-row": "Service row",
+      "history-sparkline": "Recent uptime history"
+    }
+  },
+  "visual_brief": "Serious operational board with immediate health legibility. Rows or cards should emphasize the current state first, then uptime and incident context. The visual language should be calm, precise, and distinctly control-plane rather than flashy. Health colors matter, but text and labels should do the explanatory work too.",
+  "responsive": {
+    "mobile": "Collapse dense rows into stacked service cards so state, uptime, and last incident remain readable.",
+    "tablet": "Row layout may remain, but secondary columns should wrap or reduce to badges as needed.",
+    "desktop": "Full status table or card grid with clear alignment across service name, state, uptime, and incident history."
+  },
+  "layout_hints": {
+    "health_priority": "Current service state should be the strongest signal, followed by uptime and recent incidents. Avoid decorative metrics that distract from health interpretation.",
+    "history_support": "Sparklines or mini-history strips are supportive context, not the primary content. Keep them compact and aligned with the service row.",
+    "incident_rhythm": "Rows should scan quickly top to bottom. Reserve longer incident copy for expandable details or a linked drill-down."
+  },
+  "motion": {
+    "micro": "Only degraded or actively incidenting services may pulse subtly. Healthy rows should remain still and readable.",
+    "transitions": "Status changes may cross-fade or animate color carefully, but avoid noisy blinking patterns."
+  },
+  "interactions": [
+    "status-pulse",
+    "real-time-updates",
+    "hover-reveal",
+    "animate-on-mount"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Service status board",
+    "keyboard": [
+      "Tab through rows or cards in reading order. Expandable incident details should expose a standard button interaction."
+    ],
+    "announcements": [
+      "Service name, state, and uptime should be announced together so health is understandable without visual color cues."
+    ]
+  },
+  "composition": {
+    "StatusBoard": "Stack(d-section, operations) > [BoardHeader?(d-label + summary) + StatusRows(d-data) > StatusRow[]]",
+    "StatusRow": "Row(d-data-row) > [ServiceName + StateBadge(d-annotation) + Uptime(mono-data) + HistorySparkline?(d-data) + IncidentSummary?]"
+  }
+}

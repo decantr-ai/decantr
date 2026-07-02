@@ -1,0 +1,77 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "transaction-history",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Transaction History",
+  "description": "Financial transaction ledger with filterable data tables, sparkline trend indicators, and transaction detail views.",
+  "tags": ["finance", "transactions", "ledger", "history", "filtering", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["transaction history", "transaction ledger", "financial transactions", "account transactions"],
+      "secondary": ["payment history", "transfer history", "transaction list", "bank statement"],
+      "negative": ["ecommerce", "admin", "social"]
+    },
+    "implies": ["filtering", "search"],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "transactions",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "transaction-table"
+        },
+        {
+          "pattern": "filter-bar",
+          "preset": "standard",
+          "as": "transaction-filters"
+        },
+        {
+          "pattern": "sparkline-cell",
+          "preset": "standard",
+          "as": "trend-sparklines"
+        }
+      ],
+      "default_layout": ["transaction-filters", "transaction-table", "trend-sparklines"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "transaction-detail",
+      "patterns": [
+        {
+          "pattern": "detail-header",
+          "preset": "standard",
+          "as": "transaction-header"
+        }
+      ],
+      "default_layout": ["transaction-header"],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "transactions": "Filter bar with date range picker, account selector, transaction type chips (income, expense, transfer), and amount range. Data table with date, description, category, amount in monospace (green for credit, red for debit), running balance, and status. Sparkline cells show spending trend per category.",
+    "transaction-detail": "Detail header with transaction amount (large monospace), date, merchant/payee name, category badge, account, and status. Below, metadata fields showing reference number, notes, receipt attachment, and related transactions."
+  },
+  "features": ["filtering", "search", "data-export"],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area"
+  },
+  "suggested_theme": {
+    "ids": ["carbon", "clean"],
+    "modes": ["dark", "auto"]
+  },
+  "dependencies": {
+    "patterns": {
+      "data-table": ">=1.0.0",
+      "filter-bar": ">=1.0.0",
+      "sparkline-cell": ">=1.0.0",
+      "detail-header": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

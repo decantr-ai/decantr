@@ -1,0 +1,106 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "log-explorer-pro",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Log Explorer Pro",
+  "description": "Advanced log search and analysis interface with streaming log viewer, structured query filters, and contextual log detail inspection.",
+  "tags": [
+    "observability",
+    "logs",
+    "search",
+    "debugging",
+    "analysis"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "log explorer",
+        "log search",
+        "log viewer",
+        "log analysis",
+        "structured logging"
+      ],
+      "secondary": [
+        "log stream",
+        "log context",
+        "json logs",
+        "log filtering",
+        "debug logs"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "logs",
+      "patterns": [
+        {
+          "pattern": "log-stream",
+          "preset": "standard",
+          "as": "log-stream"
+        },
+        {
+          "pattern": "filter-bar",
+          "preset": "standard",
+          "as": "search-filters"
+        },
+        {
+          "pattern": "data-table",
+          "preset": "compact",
+          "as": "log-table"
+        }
+      ],
+      "default_layout": [
+        "filter-bar",
+        "log-stream",
+        "data-table"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "log-detail",
+      "patterns": [
+        {
+          "pattern": "json-viewer",
+          "preset": "standard",
+          "as": "log-payload"
+        },
+        {
+          "pattern": "trace-waterfall",
+          "preset": "compact",
+          "as": "trace-context"
+        }
+      ],
+      "default_layout": [
+        "json-viewer",
+        "trace-waterfall"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "logs": "Split-view log exploration screen. A persistent filter bar at the top supports structured queries with field autocomplete, severity toggles, and time range selection. Below, a real-time log stream scrolls new entries as they arrive with color-coded severity levels. A compact data table at the bottom provides a sortable, paginated view for historical log queries.",
+    "log-detail": "Single log entry detail view. Left panel shows a collapsible JSON viewer rendering the full structured log payload with syntax highlighting and path copying. Right panel displays a compact trace waterfall linking the log entry to its parent span and surrounding trace context for correlated debugging."
+  },
+  "features": [
+    "logs",
+    "search",
+    "structured-queries",
+    "context"
+  ],
+  "suggested_theme": {
+    "ids": [
+      "fintech",
+      "carbon",
+      "neon-dark"
+    ],
+    "modes": [
+      "dark"
+    ]
+  }
+}

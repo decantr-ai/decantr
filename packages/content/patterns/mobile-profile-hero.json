@@ -1,0 +1,138 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "mobile-profile-hero",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Mobile Profile Hero",
+  "description": "Large photo header for mobile profile pages. Full-bleed cover photo (40-50vh), circular avatar overlapping the cover bottom edge, name+age+bio stack, and a row of action buttons (Edit on own profile / Message+Like+Report on other). Sticky-scroll behavior: avatar shrinks as user scrolls down. Differs from storefront-hero (desktop-leaning, wider proportions) by being mobile-optimized with portrait photo and thumb-friendly action sizing.",
+  "category": "hero",
+  "tags": [
+    "2026",
+    "hero",
+    "profile",
+    "mobile",
+    "consumer",
+    "social",
+    "photo"
+  ],
+  "components": [
+    "Hero",
+    "CoverPhoto",
+    "GradientOverlay",
+    "AvatarFrame",
+    "Avatar",
+    "BackButton",
+    "MoreMenuButton",
+    "InfoStack",
+    "NameAge",
+    "DistanceTag",
+    "Bio",
+    "ActionRow",
+    "EditButton",
+    "MessageButton",
+    "LikeButton",
+    "ReportButton"
+  ],
+  "default_preset": "own-profile",
+  "presets": {
+    "own-profile": {
+      "description": "Profile hero for the current user (own /me route). Single Edit button as the primary action. Cover photo is large, avatar overlaps bottom edge, bio sits below.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_relative _flex _flex-col _w-full"
+      }
+    },
+    "other-profile": {
+      "description": "Profile hero for another user (/u/:id route). Three action buttons: Message (primary), Like Again (secondary), Report (tertiary). Includes a back button at top-left.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_relative _flex _flex-col _w-full"
+      }
+    },
+    "compact-scrolled": {
+      "description": "Collapsed state when user has scrolled past the hero. Sticky bar at top with small avatar + name + back button. Used in conjunction with sticky-scroll behavior.",
+      "layout": {
+        "layout": "flex-row",
+        "atoms": "_sticky _top-0 _z-20 _flex _flex-row _items-center _gap-3 _px-4 _py-2 _bg-background/85 _backdrop-blur _border-b _border-border"
+      }
+    }
+  },
+  "visual_brief": "A vertical hero block at the top of the profile page. The CoverPhoto fills the full width and 45vh of viewport height (capped at 360px) — a full-bleed background image (object-fit cover, object-position center). For own-profile in absence of a cover, render a soft peach-to-coral gradient. A GradientOverlay sits on the bottom 40% of the cover: linear-gradient(180deg, transparent 0%, transparent 50%, rgba(0,0,0,0.45) 100%) — ensures any text or avatar reads cleanly. At top-left of the cover (in other-profile preset) sits the BackButton: a 36×36 circular glassy button (rgba(0,0,0,0.4) backdrop-blur 8px) with a 18px ChevronLeft Lucide icon in white. At top-right (in own-profile and other-profile both): a MoreMenuButton — same 36×36 glassy circle with a 18px MoreHorizontal icon, opens a dropdown for share/report/block actions. Overlapping the bottom edge of the CoverPhoto: AvatarFrame — a 96×96 circular avatar with the swipecircle-photo-frame decorator (coral-to-accent gradient ring, soft shadow), positioned absolute (bottom: -48px, left: 24px). The avatar overlaps so half is on the photo, half breaks below into the page surface. Below the cover (with 64px top padding to clear the overlapping avatar), an InfoStack: NameAge (font-display, text-2xl, font-bold) — 'Maya, 27'. DistanceTag inline below — 12px MapPin icon + '3 km away · Active 2h ago' (text-xs, muted). A Bio paragraph below: 1-3 sentences, font-size 15px, line-height 1.5, color var(--d-text). 16px below the bio, the ActionRow: a horizontal row of pill buttons. In own-profile: a single full-width-or-half-width 'Edit Profile' button (swipecircle-pill decorator, primary fill, with Edit icon). In other-profile: three buttons in a row — 'Message' (primary pill, ~50% width), 'Like Again' (secondary pill, white border, 25% width with Heart icon), 'Report' (tertiary, icon-only ghost button, 25% width with Flag icon). On scroll: as user scrolls down the page, the AvatarFrame shrinks from 96×96 to 56×56 over the first 200px of scroll, the CoverPhoto translates upward at 0.4× scroll speed (parallax), and at scroll > 240px, the compact-scrolled variant takes over — a sticky bar at top with the small avatar + name + back button. The hero block disappears off-screen normally.",
+  "layout_hints": {
+    "container": "vertical stack with overlapping avatar",
+    "cover_height": "45vh capped at 360px on portrait, 50vh capped at 400px on landscape",
+    "avatar_overlap": "AvatarFrame absolute-positioned with bottom: -48px so it overlaps the cover-bottom edge",
+    "info_padding_top": "64px on InfoStack to clear the overlapping avatar",
+    "sticky_scroll": "Avatar shrinks 96→56px over first 200px of scroll; cover parallaxes at 0.4×",
+    "buttons": "ActionRow uses pill shapes with icon prefix; min height 44px for tap targets"
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_relative _flex _flex-col _w-full",
+    "slots": {
+      "hero": "Outer container. Position relative (so AvatarFrame absolute-anchors here). Flex-col. Width 100%. No background — content layers do the visual work.",
+      "cover-photo": "Position relative. Width 100%. Height 45vh (capped at 360px portrait / 400px landscape). Img with object-fit cover, object-position center. Fallback: linear-gradient(135deg, var(--d-accent), var(--d-primary)). Has data-parallax attribute for scroll-driven translateY.",
+      "gradient-overlay": "Position absolute, inset 0 (or just bottom 40%). Linear-gradient(180deg, transparent 0%, transparent 50%, rgba(0,0,0,0.45) 100%). Pointer-events none.",
+      "back-button": "Conditional in other-profile preset. Position absolute, top: 16px (or 16px + safe-area-inset-top), left: 16px, z-index 5. 36×36 circular button. Background rgba(0,0,0,0.4) with backdrop-blur 8px. ChevronLeft icon 18px white. On click: navigates back via history.back() or emits 'navigate-back'.",
+      "more-menu-button": "Position absolute, top: 16px (or 16px + safe-area-inset-top), right: 16px, z-index 5. 36×36 circular glassy button. MoreHorizontal icon 18px white. On click: opens dropdown sheet with share/report/block actions.",
+      "avatar-frame": "Position absolute, bottom: -48px, left: 24px, z-index 4. 96×96. Applies swipecircle-photo-frame decorator. Gets data-scrolled attribute that shrinks the frame to 56×56 with translateY when user scrolls > 200px.",
+      "avatar": "Img inside the AvatarFrame. width 100%, height 100%, border-radius 9999px, object-fit cover. Fallback: solid surface color with a centered User icon at 36px.",
+      "info-stack": "Padding 64px 24px 16px 24px (the 64px top clears the overlapping avatar). Flex-col, gap 4px (between name and distance), gap 12px (after distance, before bio). Background var(--d-bg).",
+      "name-age": "Span: 'Name, Age'. Font-family var(--d-font-display). Font-size 24px. Font-weight 700. Color var(--d-text). Line-height 1.2.",
+      "distance-tag": "Inline span with 12px MapPin icon + location text + ' · ' + activity text. Font-size 12px. Font-weight 500. Color var(--d-text-muted). Display flex, items-center, gap 4px.",
+      "bio": "Paragraph. Font-size 15px. Font-weight 400. Color var(--d-text). Line-height 1.5. Max 3 lines (line-clamp 3 in compact contexts; uncapped on full profile view).",
+      "action-row": "Flex-row, gap 8px. Padding 16px 24px. Background var(--d-bg). In own-profile: single Edit button at 100% width. In other-profile: Message (flex-grow), Like Again (auto), Report (auto, icon only).",
+      "edit-button": "Pill button (swipecircle-pill decorator). Full width. 'Edit Profile' label with leading 16px Edit Lucide icon. Min height 44px.",
+      "message-button": "Pill button (swipecircle-pill decorator). Flex-grow, 'Message' label with leading 16px Send icon. Primary action.",
+      "like-button": "Pill button with white border + transparent fill. 'Like Again' label with leading 16px Heart icon. Auto-width.",
+      "report-button": "Icon-only ghost button, 44×44. 18px Flag icon in muted color. Tertiary action — opens report flow."
+    }
+  },
+  "accessibility": {
+    "role": "banner",
+    "aria-label": "{name}'s profile",
+    "keyboard": [
+      "Tab: cycle focus through BackButton, MoreMenuButton, action buttons",
+      "Escape (in other-profile): navigates back",
+      "Enter or Space: activate focused button"
+    ],
+    "announcements": [
+      "{name}, age {age}, {distance}",
+      "Profile of {name}",
+      "Editing your profile"
+    ],
+    "focus_management": "Initial focus on page load goes to the InfoStack heading (NameAge). When the more-menu opens, focus moves into the menu items. When the menu closes, focus returns to MoreMenuButton."
+  },
+  "responsive": {
+    "mobile": "Stack layout. Cover 45vh capped 360px. Avatar 96×96. ActionRow buttons stack as flex-row with proportional widths. Single-column layout (this is the mobile-default).",
+    "tablet": "Stack layout. Same as mobile — the mobile-tab-bar shell caps at 480px regardless of viewport. Hero proportions preserved.",
+    "desktop": "Stack layout. Same as mobile/tablet inside the 480px column. Hover states active on action buttons (lift + shadow)."
+  },
+  "motion": {
+    "micro": {
+      "avatar-shrink": "On scroll: scale 1→0.583 (96px to 56px) + translateY 0→-20px over scroll range 0-200px (scroll-linked, not time-based)",
+      "cover-parallax": "On scroll: translateY 0→-(scrollY × 0.4) — cover scrolls at 40% of body scroll speed",
+      "button-press": "scale(0.96) for 80ms then spring to scale(1) over 200ms cubic-bezier(0.34, 1.56, 0.64, 1)",
+      "back-button-hover": "scale(1.08) + bg-opacity 0.4→0.55 over 160ms ease-out"
+    },
+    "transitions": {
+      "compact-bar-fade-in": "When scroll passes 240px, the compact-scrolled bar slides in from translateY(-100%) to 0 over 200ms ease-out, with backdrop-blur smoothly engaging",
+      "stagger-entrance": "On page load: cover fades in (opacity 0→1, 320ms), avatar scales in (0.8→1 with 120ms delay), info-stack stagger (name 240ms, distance 60ms after, bio 60ms after, actions 60ms after) — total ~520ms cascade"
+    }
+  },
+  "interactions": [
+    "scroll-reveal",
+    "scale-hover",
+    "stagger-children",
+    "animate-on-mount",
+    "click-select",
+    "keyboard-navigation"
+  ],
+  "composition": {
+    "MobileProfileHero": "Hero(relative, flex-col) > [CoverContainer + InfoStack + ActionRow]",
+    "CoverContainer": "Div(relative, full-width, 45vh) > [CoverPhoto(absolute-fill) + GradientOverlay(absolute-bottom-half) + BackButton(absolute-top-left, conditional) + MoreMenuButton(absolute-top-right) + AvatarFrame(absolute-bottom-overlap)]",
+    "InfoStack": "Flex(col, gap-1, padding-16-6-4-6) > [NameAge + DistanceTag + Bio]",
+    "ActionRow": "Flex(row, gap-2, padding-4-6) > [EditButton] | [MessageButton + LikeButton + ReportButton]",
+    "AvatarFrame": "Div(absolute, bottom-12-negative, 96px-circle, swipecircle-photo-frame, scroll-shrinks)"
+  }
+}

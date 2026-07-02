@@ -1,0 +1,114 @@
+{
+  "id": "holographic-control-bar",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Holographic Control Bar",
+  "description": "A floating, detachable toolbar that follows user focus with glassmorphic depth treatment. Can dock to any viewport edge or float freely via drag-to-reposition. Semi-transparent with backdrop blur and subtle border luminance. For spatial UIs, immersive workspaces, creative tools, and any interface where persistent controls must not occlude content.",
+  "category": "spatial",
+  "tags": [
+    "2026",
+    "spatial",
+    "toolbar",
+    "floating",
+    "glassmorphic",
+    "draggable",
+    "dock"
+  ],
+  "components": [
+    "FloatingBar",
+    "ActionGroup",
+    "DragHandle",
+    "DockTarget",
+    "PositionIndicator"
+  ],
+  "default_preset": "floating",
+  "presets": {
+    "floating": {
+      "description": "Free-floating bar positioned via drag. Glassmorphic: backdrop-filter blur, semi-transparent background, 1px luminant border. Casts a subtle shadow. PositionIndicator shows current screen quadrant.",
+      "layout": {
+        "layout": "row",
+        "atoms": "_fixed _flex _row _aic _gap2 _px4 _py2 _rounded-xl"
+      }
+    },
+    "docked-bottom": {
+      "description": "Snapped to bottom viewport edge. Full-width with centered action groups. Glassmorphic backdrop with top border only. Slide-up entry animation.",
+      "layout": {
+        "layout": "row",
+        "atoms": "_fixed _bottom-0 _left-0 _right-0 _flex _row _aic _jcc _gap4 _px6 _py3"
+      }
+    },
+    "docked-side": {
+      "description": "Snapped to left or right viewport edge. Vertical action layout. Narrow width, icon-only by default with labels on hover. Glassmorphic with inward-facing border.",
+      "layout": {
+        "layout": "column",
+        "atoms": "_fixed _top-0 _flex _col _aic _gap2 _px2 _py4 _rounded-r-lg"
+      }
+    },
+    "minimal": {
+      "description": "Collapsed to a small floating pill showing only the drag handle and an expand toggle. Expands on click to reveal full action groups. Lowest visual footprint.",
+      "layout": {
+        "layout": "row",
+        "atoms": "_fixed _flex _row _aic _gap1 _px2 _py1 _rounded-full"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "row",
+    "atoms": "_fixed _flex _row _aic _gap2 _px4 _py2 _rounded-xl",
+    "slots": {
+      "toolbar-track": "The invisible boundary area where the bar can be positioned. Defines valid floating zones and dock-snap regions. DockTarget elements mark edge snap points. Typically the full viewport.",
+      "action-group": "One or more grouped sets of toolbar actions. Each ActionGroup contains related buttons or controls separated by subtle dividers. Groups should be semantically labeled for screen readers.",
+      "drag-handle": "The grab target for repositioning the bar. Renders as a subtle grip pattern (dots or lines). Must be large enough for touch (44x44px minimum). Shows grab cursor on hover, grabbing on drag.",
+      "dock-zone": "Edge regions where the bar snaps when dragged nearby. Each DockTarget defines a snap threshold (e.g., 40px from edge). Visual indicator appears when bar enters snap range. Supports top, bottom, left, right edges.",
+      "floating-indicator": "Visual feedback showing the bar's current position state: floating (no indicator), near-dock (glow at target edge), docked (subtle connection line to edge). PositionIndicator also announces position changes to screen readers."
+    }
+  },
+  "accessibility": {
+    "role": "toolbar",
+    "aria_label": "Floating control bar",
+    "announcements": [
+      "Announce dock state changes: 'Control bar docked to bottom', 'Control bar floating'",
+      "Announce when bar is dragged to a new position",
+      "Announce expand/collapse in minimal preset"
+    ],
+    "keyboard": [
+      "Tab navigates between action groups, then between actions within each group",
+      "Arrow Left/Right moves between actions within a group",
+      "G key grabs the bar for keyboard repositioning, Arrow keys move, Enter drops",
+      "D key cycles between dock positions (float, bottom, left, right)",
+      "Escape releases grab or collapses to minimal preset"
+    ],
+    "reduce_motion": "Disable slide and snap animations. Dock transitions are instant. Glassmorphic blur remains (decorative, not motion). Drag repositioning uses position jumps rather than smooth tracking."
+  },
+  "responsive": {
+    "mobile": "Default to docked-bottom preset. Drag-to-float disabled (too imprecise on touch). Swipe down to dismiss, swipe up to restore. Action groups scroll horizontally if overflow.",
+    "tablet": "All presets available. Drag handle enlarged for touch (56x56px). Dock snap threshold increased to 60px. Floating position persisted across sessions."
+  },
+  "visual_brief": "Floating glassmorphic toolbar with backdrop blur, semi-transparent background, and subtle luminant border. Contains grouped action buttons with icon-only or icon+label styles. A drag handle on one end allows repositioning anywhere in the viewport. Docks to viewport edges with a snap animation when dragged near them. Docked-bottom preset fixes the bar along the bottom edge. Docked-side preset fixes along a vertical edge. Minimal preset reduces to a small floating pill with only essential actions. A subtle glow or shimmer effect reinforces the glassmorphic treatment.",
+  "layout_hints": {
+    "overlay_discipline": "The control bar should feel like purposeful overlay chrome. Keep it compact and avoid turning it into a second navigation header.",
+    "dock_feedback": "Dock targets and floating indicators should clearly communicate state without obscuring the underlying canvas.",
+    "action_grouping": "Keep related controls grouped and visually separated so operators can scan the bar quickly."
+  },
+  "motion": {
+    "micro": "Hover, drag-handle, and dock-target states may brighten subtly to reinforce affordance.",
+    "transitions": "Docking, undocking, and expansion should animate smoothly over 180-260ms with predictable easing."
+  },
+  "interactions": [
+    "drag-nodes",
+    "pan-background",
+    "zoom-scroll",
+    "click-select",
+    "hover-tooltip",
+    "animate-on-mount",
+    "glow-hover",
+    "live-simulation"
+  ],
+  "composition": {
+    "HolographicControlBar": "Bar(d-control, glassmorphic, backdrop-blur, floating) > [DragHandle(grip-pattern) + ActionGroup[] + DockIndicator?]",
+    "ActionGroup": "Group(d-interactive, gap-2, divider) > IconButton[]",
+    "DragHandle": "Handle(d-interactive, min-44px, cursor: grab)",
+    "DockIndicator": "Indicator(d-annotation, glow: near-dock)"
+  }
+}

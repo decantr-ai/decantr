@@ -1,0 +1,123 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "log-viewer",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Log Viewer",
+  "description": "Dedicated log streaming interface with filtering, search, and real-time updates. Focus view for log analysis and monitoring.",
+  "tags": [
+    "terminal",
+    "logs",
+    "monitoring",
+    "streaming",
+    "developer"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "log viewer",
+        "log streaming",
+        "log monitor",
+        "log analysis"
+      ],
+      "secondary": [
+        "tail logs",
+        "console output",
+        "debug logs",
+        "error tracking"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 0.9,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "logs",
+      "patterns": [
+        {
+          "pattern": "status-bar",
+          "preset": "top",
+          "as": "status"
+        },
+        {
+          "pattern": "log-stream",
+          "preset": "filtered",
+          "as": "log-stream"
+        },
+        {
+          "pattern": "hotkey-bar",
+          "preset": "standard",
+          "as": "hotkeys"
+        }
+      ],
+      "default_layout": [
+        "status-bar",
+        "log-stream",
+        "hotkeys"
+      ],
+      "shell": "terminal-split"
+    },
+    {
+      "id": "grouped",
+      "patterns": [
+        {
+          "pattern": "status-bar",
+          "preset": "top",
+          "as": "status"
+        },
+        {
+          "pattern": "log-stream",
+          "preset": "grouped",
+          "as": "grouped-logs"
+        },
+        {
+          "pattern": "hotkey-bar",
+          "preset": "standard",
+          "as": "hotkeys"
+        }
+      ],
+      "default_layout": [
+        "status-bar",
+        "grouped-logs",
+        "hotkeys"
+      ],
+      "shell": "terminal-split"
+    }
+  ],
+  "page_briefs": {
+    "logs": "Terminal-style log viewer. Status bar at top showing connection state and filter summary. Scrollable monospace log stream in the center with color-coded severity levels. Hotkey bar at bottom with filter shortcuts.",
+    "grouped": "Grouped log view. Status bar at top. Logs are collapsed into groups by service or request ID, with expandable group headers showing count and latest timestamp. Hotkey bar at bottom."
+  },
+  "features": [
+    "log-streaming",
+    "log-filtering",
+    "log-search",
+    "log-levels",
+    "auto-scroll",
+    "export-logs"
+  ],
+  "shells": {
+    "terminal-split": "Terminal layout optimized for log viewing"
+  },
+  "dependencies": {
+    "patterns": {
+      "status-bar": "^1.0.0",
+      "log-stream": "^1.0.0",
+      "hotkey-bar": "^1.0.0"
+    },
+    "styles": {
+      "terminal": "^1.0.0"
+    }
+  },
+  "suggested_theme": {
+    "ids": [
+      "terminal"
+    ],
+    "modes": [
+      "dark"
+    ]
+  }
+}

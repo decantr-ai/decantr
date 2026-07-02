@@ -1,0 +1,147 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "post-list",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Post List",
+  "description": "Chronological list of posts, articles, or news items with author, date, and preview.",
+  "tags": [
+    "content",
+    "news",
+    "blog",
+    "feed",
+    "articles"
+  ],
+  "classification": {
+    "triggers": [
+      "news feed",
+      "blog posts",
+      "articles",
+      "announcements",
+      "updates"
+    ],
+    "tier": "recommended"
+  },
+  "components": ["Card", "Badge", "Avatar", "Text", "icon"],
+  "default_preset": "default",
+  "presets": {
+    "default": {
+      "description": "Standard post list with thumbnails",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "posts": "Chronological list of post rows with thumbnail, title, metadata, excerpt, and optional badge"
+        },
+        "style": "list",
+        "showThumbnail": true
+      }
+    },
+    "compact": {
+      "description": "Dense single-column list without thumbnails, showing only title, date, and category per row",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap2",
+        "slots": {
+          "posts": "Compact list rows with title, date, and category metadata only"
+        },
+        "style": "list",
+        "showThumbnail": false
+      }
+    },
+    "cards": {
+      "description": "Card-based layout for featured posts",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap4 _md:gc2",
+        "slots": {
+          "posts": "Featured post cards with thumbnail, title, excerpt, author, and metadata"
+        },
+        "style": "cards",
+        "columns": 2
+      }
+    }
+  },
+  "slots": {
+    "title": {
+      "type": "text",
+      "required": true
+    },
+    "excerpt": {
+      "type": "text",
+      "required": false
+    },
+    "author": {
+      "type": "user",
+      "required": false
+    },
+    "date": {
+      "type": "datetime",
+      "required": true
+    },
+    "thumbnail": {
+      "type": "image",
+      "required": false
+    },
+    "category": {
+      "type": "tag",
+      "required": false
+    },
+    "readTime": {
+      "type": "duration",
+      "required": false
+    }
+  },
+  "layout": {
+    "container": "section",
+    "header": [
+      "title",
+      "filter?"
+    ],
+    "body": [
+      "posts"
+    ],
+    "footer": [
+      "load-more?",
+      "pagination?"
+    ]
+  },
+  "visual_brief": "Vertical list of post items in chronological order. Each post row shows a title link in medium-weight text, an author name, publish date in muted text, and a two-line preview excerpt. Posts are separated by subtle dividers or spacing. The compact preset reduces to title and date only, one line per item. The cards preset wraps each post in a bordered card with optional thumbnail image on the left, title, excerpt, author avatar, and date. Featured posts may have a 'Featured' badge.",
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap4",
+    "slots": {
+      "posts": "Chronological list of post rows with thumbnail, title, metadata, excerpt, and optional badge"
+    }
+  },
+  "responsive": {
+    "mobile": "Full-width post items. Cards preset uses vertical card layout with image on top. Excerpts limited to one line.",
+    "tablet": "Standard list or card layout with comfortable spacing.",
+    "desktop": "Posts in a centered content column. Cards preset shows image on the left with text on the right."
+  },
+  "layout_hints": {
+    "editorial_priority": "Lead with headline, then supporting metadata, then excerpt. Category or badge treatments should support the read, not become the loudest element.",
+    "list_rhythm": "Rows should maintain a steady editorial cadence with consistent title alignment and restrained separators.",
+    "cards_variant": "When using cards, preserve the same reading order as the list view so the pattern still feels editorial rather than marketing-heavy."
+  },
+  "motion": {
+    "micro": "Headline links and featured badges may respond subtly on hover, and card variants may lift slightly when interactive.",
+    "transitions": "List filtering, pagination, or feed refresh should cross-fade or stagger items gently without disrupting scan flow."
+  },
+  "interactions": [
+    "click-select",
+    "hover-reveal",
+    "animate-on-mount",
+    "stagger-children"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Post list",
+    "keyboard": [
+      "Post titles or cards should present one clear primary interaction target in reading order."
+    ],
+    "announcements": [
+      "Title, author, date, and excerpt context should be available semantically so each post preview remains understandable without card styling."
+    ]
+  }
+}

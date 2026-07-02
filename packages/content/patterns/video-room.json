@@ -1,0 +1,142 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "video-room",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Video Room",
+  "description": "Video conferencing layout with participant grid, speaker view, screen sharing, and a floating controls bar for real-time communication.",
+  "category": "communication",
+  "tags": [
+    "2026",
+    "video",
+    "conferencing",
+    "real-time",
+    "communication",
+    "webrtc",
+    "meeting"
+  ],
+  "components": [
+    "VideoGrid",
+    "ParticipantTile",
+    "SpeakerView",
+    "ScreenShareView",
+    "ControlsBar",
+    "ParticipantList",
+    "ChatSidebar",
+    "ReactionOverlay"
+  ],
+  "default_preset": "grid",
+  "presets": {
+    "grid": {
+      "description": "Equal-sized participant tiles in a responsive grid layout — scales from 1 to 49 tiles with automatic row/column calculation for balanced distribution",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap-2 _p-2 _h-full _bg-gray-950 _auto-rows-fr"
+      }
+    },
+    "speaker": {
+      "description": "Dominant speaker occupies 70% of the view with a filmstrip of other participants along the bottom — automatically switches based on audio activity",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _h-full _bg-gray-950 _gap-2 _p-2"
+      }
+    },
+    "screen-share": {
+      "description": "Shared screen content takes the dominant area with participant thumbnails arranged in a vertical sidebar — optimized for content visibility",
+      "layout": {
+        "layout": "split",
+        "atoms": "_flex _row _h-full _bg-gray-950 _gap-2 _p-2"
+      }
+    },
+    "audio-only": {
+      "description": "Avatar circles with speaking indicators arranged in a grid — bandwidth-efficient mode showing profile images with animated audio visualization rings",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap-4 _p-8 _h-full _bg-gray-950 _place-items-center"
+      }
+    }
+  },
+  "visual_brief": "A dark-themed (always dark, background: #0a0a0f) full-viewport video conferencing interface. The grid layout arranges participant tiles as rounded rectangles (border-radius: 12px) with 8px gaps between them, automatically calculating optimal grid dimensions (e.g., 2x2 for 4 participants, 3x3 for 9). Each ParticipantTile has a subtle border (1px solid rgba(255,255,255,0.08)) that transforms into a glowing accent-colored border when the participant is speaking — the glow uses box-shadow: 0 0 0 2px var(--d-accent), 0 0 12px rgba(var(--d-accent-rgb), 0.3) with a smooth pulse animation synced to audio levels. Video fills the tile with object-fit: cover. When video is off, the tile shows the participant's avatar as a large centered circle (64px in grid, 120px in speaker view) on a slightly lighter dark background (bg-gray-900). Name labels float at the bottom-left of each tile: text rendered on a frosted glass bar (backdrop-filter: blur(12px), background: rgba(0,0,0,0.5), border-radius: 6px, padding: 4px 8px). The label shows the participant name (text-sm, text-white) and a small mute icon (12px, red microphone-off icon) if muted. In speaker view, the active speaker occupies the top 70% of the viewport as a large tile, with a horizontal filmstrip of other participants (120px tall tiles) scrolling along the bottom. The transition between active speakers cross-fades over 400ms. The ControlsBar is centered at the bottom of the viewport, floating 24px above the edge. It contains circular buttons (48px diameter) arranged horizontally with 12px gaps: microphone toggle (white icon on dark bg, red bg when muted), camera toggle (same pattern), screen share (accent highlight when active), reactions (opens an emoji picker flyout), participants list toggle, chat toggle, and leave call (always red background, white phone-down icon). Buttons have a frosted glass background (backdrop-filter: blur(16px), background: rgba(30,30,30,0.8), border: 1px solid rgba(255,255,255,0.1)). The ReactionOverlay renders floating emoji that rise from the participant's tile with a float-up + fade-out animation. Screen share mode places the shared content in 75% of the width with a vertical strip of participant thumbnails (160px wide) on the right side.",
+  "layout_hints": {
+    "container": "full-viewport-dark",
+    "note": "This pattern ALWAYS uses a dark theme regardless of the app's light/dark mode setting. Background must be near-black (#0a0a0f or similar). All text is white/light. Do not apply light theme colors.",
+    "tile_sizing": "Participant tiles must maintain 16:9 aspect ratio when possible. In grid mode, calculate rows and columns to fill the viewport: cols = ceil(sqrt(n * aspectRatio)), rows = ceil(n / cols). Use CSS aspect-ratio: 16/9 with object-fit: cover on video elements.",
+    "speaking_indicator": "The speaking border glow is the PRIMARY visual indicator of who is talking. It must be clearly visible — use at least 2px solid accent border + 12px blur box-shadow. The glow should pulse subtly (opacity 0.6→1.0→0.6) synced to audio amplitude.",
+    "controls_placement": "ControlsBar must be centered horizontally, floating above the bottom edge. It should auto-hide after 5 seconds of mouse inactivity (fade out over 300ms) and reappear on mouse movement. On touch devices, tap to toggle visibility.",
+    "name_labels": "Name labels use frosted glass (backdrop-filter: blur(12px)). They are positioned at the bottom-left of each tile with 8px margin. Keep them compact — name only with optional mute icon. Do NOT show full details in the label."
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gap-2 _p-2 _h-full _w-full _bg-gray-950",
+    "slots": {
+      "video-grid": "The main container for participant tiles. Uses CSS Grid with auto-calculated columns and rows based on participant count. Gap of 8px between tiles. The grid fills the entire viewport minus the space reserved for the controls bar. Background is the deep dark (#0a0a0f). When only 1 participant, the tile fills the entire grid. For 2 participants, side-by-side at 50% each. For 3-4, 2x2 grid. For 5-9, 3x3. For 10-16, 4x4. And so on, always preferring wider layouts. All tiles stretch to fill available space equally using auto-rows: 1fr and auto-columns: 1fr.",
+      "participant-tile": "Repeating slot — one per participant. A rounded rectangle (border-radius: 12px) with overflow: hidden. Contains the video stream element (width: 100%, height: 100%, object-fit: cover) or a fallback avatar display (centered circle, 64px diameter, showing initials or profile image, on a bg-gray-900 background with a subtle radial gradient from center). Border: 1px solid rgba(255,255,255,0.08) default, transitioning to the speaking glow state (box-shadow: 0 0 0 2px var(--d-accent), 0 0 16px rgba(var(--d-accent-rgb), 0.35)) when the participant is actively speaking. The name label bar is positioned absolute at bottom: 8px, left: 8px — a frosted glass pill (backdrop-filter: blur(12px), background: rgba(0,0,0,0.55), border-radius: 6px, padding: 4px 10px) showing the name in text-sm font-medium text-white. If the participant is muted, a small red microphone-off icon (14px) appears after the name with 6px gap. If video is off, a camera-off icon (14px, text-gray-500) appears in the top-right corner of the tile. Pin indicator (small pin icon, top-left) for manually pinned participants.",
+      "speaker-view": "Active in speaker preset. The dominant speaker tile occupies the top area (flex: 7, approximately 70% height). Below it, a horizontal scrollable filmstrip (flex: 3, approximately 30% height, max 120px) shows other participants as smaller tiles. The active speaker tile has a subtle accent border glow at all times. Transition between speakers uses a 400ms cross-fade (the outgoing speaker tile smoothly swaps into the filmstrip while the new speaker expands to the dominant position). The filmstrip scrolls horizontally with 8px gaps between tiles, each filmstrip tile is 160px wide with 16:9 aspect ratio.",
+      "screen-share-view": "Active in screen-share preset. The shared screen content occupies the left 75% of the viewport as a single large tile with object-fit: contain (showing the full shared content with letterboxing if aspect ratios differ). A thin border separates it from the participant sidebar on the right (25% width, min 160px), which stacks participant tiles vertically with 8px gaps in a scrollable column. The shared content tile has a label bar at the top showing '{name} is sharing their screen' on a frosted glass background.",
+      "controls-bar": "A floating horizontal bar centered at the bottom of the viewport, 24px above the bottom edge. Uses position: fixed with left: 50%, transform: translateX(-50%). The bar itself has a frosted glass background (backdrop-filter: blur(16px), background: rgba(20,20,25,0.85), border: 1px solid rgba(255,255,255,0.1), border-radius: 28px, padding: 8px 16px). Contains circular control buttons (48px diameter each) spaced 12px apart: Microphone (white mic icon, toggles to red background + mic-off icon when muted), Camera (white camera icon, toggles to red bg + camera-off when off), Screen Share (monitor icon, accent background when actively sharing), Reactions (smile icon, opens an upward emoji picker flyout with 6 quick reactions), Participants (users icon, toggles ParticipantList sidebar, shows count badge), Chat (message icon, toggles ChatSidebar, shows unread count badge), Leave (red background always, phone-off white icon, slightly separated from other buttons with a 16px gap). Each button has hover: brightness(1.2) and active: scale(0.95) feedback.",
+      "reaction-overlay": "A visual layer rendered above participant tiles (pointer-events: none) where emoji reactions appear. When a participant reacts, the chosen emoji (32px) spawns from the bottom-center of their tile, floats upward over 2 seconds with a slight sinusoidal horizontal drift, scaling from 1.0 to 1.3 while fading from opacity 1.0 to 0. Multiple reactions can stack. Each reaction also briefly shows as a small emoji badge (20px) in the top-right corner of the participant's tile for 3 seconds.",
+      "chat-sidebar": "A 360px-wide panel that slides in from the right edge of the viewport when toggled. Dark background (bg-gray-900) with a subtle left border (1px solid rgba(255,255,255,0.08)). Contains a scrollable message list and a bottom-anchored input field. Messages show sender name (text-xs, text-gray-400), message text (text-sm, text-white), and timestamp. The sidebar overlays the video grid (does not resize it) with a smooth 300ms slide-in animation.",
+      "participant-list": "A 300px-wide panel that slides in from the right edge. Lists all participants with their avatar (32px circle), name (text-sm, text-white), and status icons (mic muted, camera off, screen sharing). Hovering a participant shows quick actions: mute, pin, spotlight. Shows participant count at the top."
+    }
+  },
+  "accessibility": {
+    "role": "application",
+    "aria-label": "Video conference room",
+    "announcements": [
+      "{name} joined the call",
+      "{name} left the call",
+      "{name} started sharing their screen",
+      "{name} stopped sharing",
+      "{name} is now speaking",
+      "You are now muted",
+      "You are now unmuted"
+    ],
+    "keyboard": [
+      "M: toggle microphone mute",
+      "V: toggle camera on/off",
+      "S: toggle screen sharing",
+      "C: toggle chat sidebar",
+      "P: toggle participant list",
+      "R: open reactions picker",
+      "Tab: cycle through participant tiles",
+      "Enter: pin/unpin focused participant",
+      "Escape: close any open sidebar or picker",
+      "Ctrl+D / Cmd+D: leave call (with confirmation)"
+    ]
+  },
+  "responsive": {
+    "mobile": "Grid layout switches to max 2x2 tiles with the active speaker auto-promoted to the largest tile. Controls bar simplifies to 4 essential buttons (mic, camera, chat, leave) with a '...' overflow menu for additional controls. Participant tiles show only video/avatar without name labels (name appears on tap). Screen share view goes full-screen with a floating 'back to tiles' button. Chat sidebar becomes a full-screen overlay. No hover states — all interactions are tap-based.",
+    "tablet": "Grid supports up to 3x3 tiles. Controls bar shows all buttons. Speaker view maintains the 70/30 split. Screen share sidebar becomes a bottom filmstrip instead of right sidebar. Chat sidebar is a half-width overlay. Touch-friendly button sizes (min 44px tap targets). Name labels always visible.",
+    "desktop": "Full grid up to 7x7 (49 participants). All controls visible with keyboard shortcuts. Hover-to-show name labels option. Controls bar auto-hides on mouse inactivity. Screen share uses the right sidebar layout. Chat and participant list can be open simultaneously if viewport width exceeds 1400px. Drag to rearrange participant tile positions."
+  },
+  "motion": {
+    "micro": {
+      "button-press": "scale(0.95) on active/press, 80ms ease-out, return 120ms ease-out",
+      "button-hover": "brightness(1.2) filter, 100ms ease-out",
+      "mute-toggle": "Icon cross-fades with 150ms, background-color transitions 200ms"
+    },
+    "transitions": {
+      "speaker-swap": "Cross-fade between active speakers, 400ms ease-in-out. Outgoing speaker tile animates to filmstrip position while incoming speaker tile expands to dominant.",
+      "grid-reflow": "When participant joins or leaves, tiles animate to new grid positions over 300ms spring(1, 100, 12)",
+      "sidebar-toggle": "Chat/participant sidebar slides in from right over 300ms ease-out with a subtle backdrop dim",
+      "controls-hide": "Controls bar fades out (opacity 1→0) over 300ms after 5s of mouse inactivity, fades in immediately on mouse move"
+    },
+    "ambient": {
+      "speaking-glow": "Active speaker border glow pulses opacity 0.5→1.0→0.5, 1.5s ease-in-out, synchronized to voice activity detection",
+      "audio-ring": "In audio-only mode, concentric rings expand outward from avatar when speaking, 1s ease-out infinite while voice active",
+      "reaction-float": "Emoji rises from tile bottom-center, drifts upward 120px with sinusoidal X offset (amplitude 20px, period 1s), scales 1.0→1.3, opacity 1.0→0, duration 2s ease-out"
+    }
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "composition": {
+    "VideoRoom": "Room(d-section, full-viewport, dark-always) > [VideoArea + ControlsBar + ReactionOverlay + ChatSidebar? + ParticipantList?]",
+    "VideoArea": "Grid(d-surface[dark], responsive-grid) > ParticipantTile* | SpeakerView | ScreenShareView",
+    "ParticipantTile": "Tile(d-surface[dark], rounded, overflow-hidden) > [VideoStream | AvatarFallback] + NameLabel(frosted-glass) + MuteIndicator?",
+    "SpeakerView": "Split(flex-col) > [DominantTile(flex-7) + Filmstrip(flex-3, horizontal-scroll) > ParticipantTile*]",
+    "ScreenShareView": "Split(flex-row) > [SharedContent(flex-3, object-contain) + TileSidebar(flex-1, vertical-scroll) > ParticipantTile*]",
+    "ControlsBar": "Bar(floating, frosted-glass, bottom-center, auto-hide) > [MicButton + CameraButton + ShareButton + ReactionsButton + ParticipantsButton + ChatButton + LeaveButton(red)]",
+    "ReactionOverlay": "Layer(pointer-events-none, full-viewport) > FloatingEmoji*(animated, ephemeral)"
+  }
+}

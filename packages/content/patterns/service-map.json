@@ -1,0 +1,133 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "service-map",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Service Map",
+  "description": "Topology graph showing service dependencies with health indicators, animated traffic flow, and interactive detail panels for monitoring distributed service architectures.",
+  "category": "observability",
+  "tags": [
+    "2026",
+    "observability",
+    "topology",
+    "service-map",
+    "dependencies",
+    "health",
+    "monitoring"
+  ],
+  "components": [
+    "MapCanvas",
+    "ServiceNode",
+    "DependencyEdge",
+    "HealthIndicator",
+    "DetailPanel",
+    "Legend"
+  ],
+  "default_preset": "graph",
+  "presets": {
+    "graph": {
+      "description": "Force-directed graph layout where service nodes repel each other and edges act as springs — organic arrangement reveals natural clusters and heavily-connected hubs",
+      "layout": {
+        "layout": "spatial",
+        "atoms": "_relative _wfull _hfull _overflow-hidden"
+      }
+    },
+    "hierarchy": {
+      "description": "Tree layout with entry-point services at the top and downstream dependencies flowing downward — reveals request flow direction and service depth in the call chain",
+      "layout": {
+        "layout": "spatial",
+        "atoms": "_relative _wfull _hfull _overflow-auto"
+      }
+    },
+    "grid": {
+      "description": "Organized grid layout where services are arranged in a structured matrix grouped by team or domain — edges route orthogonally between nodes for a clean architectural diagram feel",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap8 _wfull _hfull _overflow-auto _p8"
+      }
+    }
+  },
+  "visual_brief": "Force-directed graph rendered on a dark canvas where each service is a rounded rectangle node (approximately 120x60px) containing a small service type icon (database cylinder, server rack, cloud function, etc.), the service name in medium-weight text below the icon, and a small circular health dot in the top-right corner glowing green (healthy), yellow (degraded), or red (down). Curved bezier edges connect dependent services with animated dot particles flowing along the edge in the direction of requests. Edge thickness scales with traffic volume — thin hairlines for low-traffic dependencies, thick 4px lines for high-traffic paths. Hovering a node highlights all its direct dependency edges in the node's health color and fades all unrelated nodes and edges to 20% opacity. A detail panel slides in from the right side showing the selected service's key metrics: p50/p95/p99 latency as a mini histogram, error rate as a percentage with trend arrow, requests per second as a sparkline, and a list of direct upstream and downstream dependencies. A legend in the bottom-left corner explains health dot colors, edge thickness meaning, and node icon types. The hierarchy preset arranges nodes top-to-bottom with straight downward edges. The grid preset places nodes in labeled group boxes.",
+  "default_layout": {
+    "layout": "spatial",
+    "atoms": "_relative _wfull _hfull _overflow-hidden",
+    "slots": {
+      "map-canvas": "The main rendering area occupying the full container. Supports pan (click-drag on background) and zoom (scroll wheel or pinch). Renders a subtle dot-grid background pattern for spatial reference. All service nodes and dependency edges are positioned within this canvas using absolute or SVG coordinates. The canvas auto-fits all nodes on initial load with padding.",
+      "service-node": "Repeating slot — one per service. A rounded rectangle (border-radius 12px) with a subtle border and semi-transparent background. Contains: a small icon representing the service type (16px), the service name (14px medium weight), and a HealthIndicator dot (8px circle) in the top-right corner. The node has a subtle drop shadow. On hover, the node elevates slightly and its border color intensifies to match its health status. Selected nodes show a ring highlight.",
+      "dependency-edge": "Repeating slot — one per service-to-service dependency. A curved SVG path connecting two service nodes. Animated dot particles (3px circles) travel along the path from caller to callee. Particle speed is proportional to request rate. Edge color defaults to a muted neutral but shifts to the caller's health color on hover. An optional small label at the midpoint shows request rate or protocol (REST, gRPC, etc.).",
+      "detail-panel": "Right-side panel (320px wide) that slides in when a service node is selected. Header shows service name, type badge, and health status with uptime percentage. Body contains: latency section with p50/p95/p99 values and a mini distribution chart, error rate with a small trend sparkline, throughput as requests/second with a sparkline, and a dependencies list showing upstream callers and downstream callees as clickable links that re-center the map on that service.",
+      "legend": "Small overlay card anchored to the bottom-left corner of the canvas. Shows: health dot color meanings (green=healthy, yellow=degraded, red=down), edge thickness scale (thin=low traffic, thick=high traffic), and node icon legend for service types."
+    }
+  },
+  "responsive": {
+    "mobile": "Map canvas fills the screen with touch-based pan and pinch-to-zoom. Service nodes render at minimum size with name only (no icon). Detail panel opens as a bottom sheet instead of a side panel. Legend hides behind an info button. Edges simplified to straight lines without particles.",
+    "tablet": "Standard force-directed layout with touch support. Detail panel slides in from the right at reduced width (280px). Service nodes show icon and name. Edge particles render at reduced density.",
+    "desktop": "Full interactive map with hover effects, animated edge particles, and side detail panel. Zoom controls in the top-right corner. Legend always visible. Generous node sizing with icons, names, and health indicators."
+  },
+  "layout_hints": {
+    "map_ownership": "This pattern owns the topology canvas, overlays, and detail-panel anchoring. Parent dashboards should frame it as one observability surface rather than wrapping it in extra competing panels.",
+    "node_priority": "Service health and dependency structure should be readable before fine-grained metrics. The detail panel is where deeper analytics belong.",
+    "overlay_rhythm": "Legend, controls, and detail panel should feel like supporting map chrome. Keep them visually lighter than the node graph itself.",
+    "node_label_overflow": "Service node labels MUST handle overflow gracefully — set `max-width: 12rem; overflow: hidden; text-overflow: ellipsis` AND attach a `data-tooltip={fullServiceName}` attribute that surfaces the complete name on hover via the hover-tooltip pattern. A truncated \"payments-...\" with no tooltip is a broken affordance — the user cannot read the truncated half.",
+    "empty_canvas_fit": "When the topology occupies less than ~70% of the canvas viewport, EITHER auto-fit-zoom the graph to fill the viewport OR add an explicit \"Fit to view\" button in the canvas controls. Empty canvas space below the graph reads as wasted real estate.",
+    "connection_line_legibility": "Service-to-service connection lines should use `stroke: var(--d-border); stroke-width: 1.5px; opacity: 0.6` MINIMUM. Lines too light/thin disappear on dark backgrounds and the dependency relationships become unreadable.",
+    "edge_anchoring": "CRITICAL: Connection lines MUST anchor to d-port elements on each node, NOT to the node's outer rectangle. Each ServiceNode renders one or more d-port[data-side=\"left|right|top|bottom\"] children. The d-port treatment positions the port dot 4px OUTSIDE the node edge — that gives SVG paths a predictable anchor coordinate that visually attaches to the node border. Get coordinates via `port.getBoundingClientRect()` (ref the port element) and translate into the canvas SVG's coordinate space (subtract canvas rect offset, divide by current zoom factor). NEVER hand-compute port positions from node bounding rects + offsets — the math always drifts and lines float disconnected.",
+    "edge_line_shape": "Edges MUST be smooth cubic-bezier curves, NOT orthogonal stair-step paths. Path data formula: `M startX,startY C (startX + dx*0.5),startY (endX - dx*0.5),endY endX,endY` where `dx = abs(endX - startX)`. Curves communicate request flow direction visually; stair-step paths look like hand-drawn diagrams. Stroke: `var(--d-border)` at 1.5px stroke-width and opacity 0.6 baseline; on hover or selection elevate to the caller's health color at full opacity.",
+    "edge_recompute_on_drag": "Edge paths MUST re-render on every pointer-move during node drag (and on canvas pan/zoom). If lines are computed once at mount and never updated, dragging a node leaves the edge anchored to its old position — appearing visually disconnected. Use the d-port refs + getBoundingClientRect inside a `requestAnimationFrame` loop during drag, or recompute on every state update if the canvas re-renders.",
+    "edge_particle_animation": "Animated dot particles travel along each edge from caller to callee at speed proportional to RPS. Implement via SVG `<circle>` with `<animateMotion path={pathData} dur=\"2s\" repeatCount=\"indefinite\" />` OR via CSS `offset-path: path(...)` with motion-distance keyframes. Particles render only on edges where the connected service is healthy — skip particles on red/down edges to reduce visual noise on degraded systems."
+  },
+  "motion": {
+    "micro": {
+      "node-hover": "scale(1→1.05) + elevation increase + border-color shift 150ms ease-out",
+      "edge-highlight": "opacity 0.4→1 + color shift 200ms ease-out"
+    },
+    "transitions": {
+      "detail-slide": "translateX(100%→0) 300ms ease-out for panel entry",
+      "focus-fade": "opacity 1→0.2 300ms ease-out on unfocused nodes/edges",
+      "layout-reflow": "node positions lerp 600ms ease-in-out when switching presets"
+    },
+    "ambient": {
+      "edge-particles": "dot particles flowing along edges at speed proportional to request rate, continuous",
+      "health-pulse": "scale(1→1.3→1) + opacity pulse 2s ease-in-out infinite on degraded/down health dots"
+    }
+  },
+  "interactions": [
+    "drag-nodes",
+    "pan-background",
+    "zoom-scroll",
+    "click-select",
+    "hover-tooltip",
+    "status-pulse",
+    "animate-on-mount",
+    "live-simulation",
+    "real-time-updates"
+  ],
+  "composition": {
+    "ServiceMap": "Container(d-section, spatial) > [MapCanvas > ServiceNode*(d-interactive) + DependencyEdge*] + DetailPanel?(d-surface) + Legend(d-annotation)",
+    "MapCanvas": "Canvas(d-data, pannable, zoomable, dot-grid-bg) > [DependencyEdge* + ServiceNode*]",
+    "ServiceNode": "Node(d-interactive, rounded-rect) > [TypeIcon + ServiceName + HealthIndicator(d-annotation, dot)]",
+    "DependencyEdge": "Edge(d-data, curved, animated-particles) > [PathLine + FlowParticles + MidpointLabel?]",
+    "DetailPanel": "Panel(d-surface, slide-right) > [Header > [ServiceName + TypeBadge + HealthStatus] + Metrics > [Latency + ErrorRate + Throughput] + DependencyList]",
+    "Legend": "Card(d-annotation, bottom-left) > [HealthColors + EdgeScale + NodeIcons]"
+  },
+  "accessibility": {
+    "role": "img",
+    "aria-label": "Service dependency map showing topology and health status",
+    "keyboard": [
+      "Tab: cycle focus between service nodes in alphabetical order",
+      "Enter: select focused node and open detail panel",
+      "Escape: close detail panel and deselect node",
+      "Arrow keys: pan the map canvas",
+      "Plus/Minus: zoom in/out",
+      "0: reset zoom to fit all nodes",
+      "L: toggle legend visibility"
+    ],
+    "announcements": [
+      "Service {name}: {healthStatus}, {requestRate} req/s, {errorRate}% error rate",
+      "Detail panel opened for {name}",
+      "{name} depends on {count} downstream services",
+      "{count} upstream services call {name}",
+      "Map zoomed to {zoomLevel}%"
+    ]
+  }
+}

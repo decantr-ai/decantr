@@ -1,0 +1,88 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "marketing-producer",
+  "role": "public",
+  "version": "2.1.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Producer Studio Marketing",
+  "description": "Public Producer Studio surface led by a real DAW cockpit preview, then concise proof sections for arrangement, mixer, collaboration, splits, and pricing.",
+  "visual_brief": "Commercial product homepage led by the actual DAW cockpit. The first viewport should feel like entering a live studio session: compact brand/nav, product-name headline, prominent cockpit preview with titlebar/status, transport, arrangement, inspector, mixer, and collaborators. Supporting copy is short and studio-literate. Marketing proof sections follow as quiet full-width bands, not a pile of generic cards. The brand/product must be obvious in the first viewport on every screen size.",
+  "responsive": {
+    "mobile": "Cockpit preview appears before long copy. It uses compact transport, scrollable arrangement preview, abbreviated inspector/status, and horizontal mixer strips. CTAs remain below the product object without covering it.",
+    "tablet": "Cockpit stacks above or beside compact copy while preserving product detail.",
+    "desktop": "Use an immersive product-first hero with the cockpit as the dominant object; keep a hint of the next proof section visible."
+  },
+  "accessibility": {
+    "landmarks": ["banner", "main", "navigation"],
+    "keyboard": ["Tab order moves from nav to primary CTA to cockpit controls without trapping focus"],
+    "notes": "Decorative waveform bars should be aria-hidden; cockpit status text should be readable outside color alone."
+  },
+  "tags": ["marketing", "landing", "music", "producer", "public", "daw"],
+  "classification": {
+    "triggers": {
+      "primary": ["music producer marketing", "producer studio landing", "daw marketing site", "browser daw"],
+      "secondary": ["music landing", "studio marketing", "production software"],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "directives": [
+    "The first viewport must be product-first: a live-looking DAW cockpit preview with transport, arrangement, mixer/meters, status, and collaborators.",
+    "Do not lead with a generic centered hero plus cards. Marketing content follows the cockpit preview.",
+    "Use concise studio-literate copy and avoid stock SaaS phrasing."
+  ],
+  "pages": [
+    {
+      "id": "home",
+      "patterns": [
+        { "pattern": "daw-transport-bar", "preset": "studio", "as": "hero-transport" },
+        { "pattern": "arrangement-canvas", "preset": "preview", "as": "hero-arrangement" },
+        { "pattern": "mixer-console", "preset": "compact", "as": "hero-mixer" },
+        { "pattern": "live-room-stage", "preset": "compact", "as": "collab-preview" },
+        { "pattern": "producer-split-workbench", "preset": "summary", "as": "split-preview" },
+        { "pattern": "features", "preset": "grid", "as": "features" },
+        { "pattern": "pricing", "preset": "standard", "as": "pricing" },
+        { "pattern": "cta-section", "preset": "standard", "as": "cta" }
+      ],
+      "default_layout": [
+        "daw-transport-bar",
+        { "cols": ["arrangement-canvas", "mixer-console"], "at": "lg", "span": { "arrangement-canvas": 8, "mixer-console": 4 } },
+        { "cols": ["live-room-stage", "producer-split-workbench"], "at": "lg" },
+        "features",
+        "pricing",
+        "cta-section"
+      ],
+      "directives": [
+        "Hero headline can support the product, but the DAW preview is the hero object.",
+        "Keep the next section visible below the first viewport on desktop and mobile."
+      ],
+      "shell": "top-nav-footer"
+    }
+  ],
+  "page_briefs": {
+    "home": "Public home opens with a premium DAW cockpit preview: top nav, compact headline, sticky-looking transport, arrangement canvas, mixer meters, active collaborators, and session/export status. Below it, concise proof sections explain arrangement, mixer, live rooms, split validation, and pricing."
+  },
+  "features": ["marketing", "public-daw-preview", "seo", "product-proof"],
+  "shells": {
+    "top-nav-footer": "Public shell with compact top navigation, cockpit-first hero, and footer"
+  },
+  "dependencies": {
+    "patterns": {
+      "daw-transport-bar": "^1.0.0",
+      "arrangement-canvas": "^1.0.0",
+      "mixer-console": "^1.0.0",
+      "live-room-stage": "^1.1.0",
+      "producer-split-workbench": "^1.0.0",
+      "features": "^1.0.0",
+      "pricing": "^1.0.0",
+      "cta-section": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": ["studio-dark", "carbon-neon"],
+    "modes": ["dark"]
+  }
+}

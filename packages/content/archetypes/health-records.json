@@ -1,0 +1,111 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "health-records",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Health Records",
+  "description": "Health records vault for browsing, viewing, and managing patient documents including lab results, imaging, and intake forms.",
+  "tags": [
+    "health",
+    "records",
+    "documents",
+    "intake",
+    "medical-records"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "health records",
+        "medical records",
+        "patient records",
+        "health vault"
+      ],
+      "secondary": [
+        "lab results",
+        "intake form",
+        "medical documents",
+        "patient history"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 0.8,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "records",
+      "patterns": [
+        {
+          "pattern": "file-browser",
+          "preset": "list",
+          "as": "records-list"
+        }
+      ],
+      "default_layout": [
+        "file-browser"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "record-detail",
+      "patterns": [
+        {
+          "pattern": "detail-header",
+          "preset": "standard",
+          "as": "record-viewer"
+        }
+      ],
+      "default_layout": [
+        "detail-header"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "intake",
+      "patterns": [
+        {
+          "pattern": "intake-form-wizard",
+          "preset": "standard",
+          "as": "intake-form"
+        }
+      ],
+      "default_layout": [
+        "intake-form-wizard"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "records": "Records browser at /records. List-view file browser organizes health documents by category (lab results, imaging, visit summaries, prescriptions). Each row shows document name, date, provider, and category tag. Filter sidebar narrows by date range, category, and provider. Upload button for adding new documents.",
+    "record-detail": "Record detail at /records/:id. Detail header shows document metadata (title, date, provider, category). Below, the document content renders inline — PDF viewer for scanned documents, structured data display for lab results with reference ranges and flags for abnormal values.",
+    "intake": "Patient intake form at /intake. Multi-step wizard collects personal information, insurance details, medical history, current medications, allergies, and consent signatures. Progress stepper at top shows completion. Each step validates before advancing. Review step at end shows all entered data before submission."
+  },
+  "features": [
+    "records",
+    "documents",
+    "intake-forms"
+  ],
+  "shells": {
+    "sidebar-main": "Persistent left sidebar with patient navigation, main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "file-browser": "^1.0.0",
+      "detail-header": "^1.0.0",
+      "intake-form-wizard": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "clean",
+      "medical"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

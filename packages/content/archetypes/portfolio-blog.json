@@ -1,0 +1,71 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "portfolio-blog",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Portfolio Blog",
+  "description": "Blog listing and post detail pages for a portfolio site. Comfortable reading typography with breadcrumb navigation.",
+  "tags": ["portfolio", "blog", "writing", "articles", "content", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["portfolio blog", "personal blog", "creative blog", "portfolio writing"],
+      "secondary": ["blog posts", "articles", "thoughts", "journal", "writing"],
+      "negative": ["dashboard", "analytics", "admin"]
+    },
+    "implies": [],
+    "weight": 0.8,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "blog",
+      "patterns": [
+        {
+          "pattern": "card-grid",
+          "preset": "content",
+          "as": "blog-grid"
+        }
+      ],
+      "default_layout": ["blog-grid"],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "blog-post",
+      "patterns": [
+        {
+          "pattern": "legal-prose",
+          "preset": "standard",
+          "as": "post-content"
+        },
+        {
+          "pattern": "breadcrumb-nav",
+          "preset": "standard",
+          "as": "breadcrumbs"
+        }
+      ],
+      "default_layout": ["breadcrumbs", "post-content"],
+      "shell": "top-nav-main"
+    }
+  ],
+  "page_briefs": {
+    "blog": "Content card grid listing blog posts. Each card shows a featured image, post title, date, and excerpt. Cards link to the full post. Responsive grid with comfortable spacing.",
+    "blog-post": "Single blog post with breadcrumb navigation at top. Comfortable reading typography with generous line height and max-width for readability. Supports rich content including images, code blocks, and pull quotes."
+  },
+  "features": ["markdown", "syntax-highlight", "reading-time"],
+  "shells": {
+    "top-nav-main": "Fixed top navigation bar with main content area below"
+  },
+  "dependencies": {
+    "patterns": {
+      "card-grid": ">=1.0.0",
+      "legal-prose": ">=1.0.0",
+      "breadcrumb-nav": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": ["auradecantism"],
+    "modes": ["dark"]
+  }
+}

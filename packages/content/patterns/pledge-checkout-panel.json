@@ -1,0 +1,145 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "pledge-checkout-panel",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Pledge Checkout Panel",
+  "description": "Focused campaign checkout or reservation flow for selected reward tier, supporter details, payment/waitlist mode, and confirmation.",
+  "category": "campaign",
+  "tags": [
+    "campaign",
+    "checkout",
+    "pledge",
+    "preorder",
+    "reservation",
+    "conversion"
+  ],
+  "components": [
+    "Form",
+    "Button",
+    "Badge",
+    "Stepper",
+    "Input",
+    "Checkbox"
+  ],
+  "contained": false,
+  "default_preset": "pledge-flow",
+  "presets": {
+    "pledge-flow": {
+      "description": "Three-step pledge checkout with reward review, supporter details, payment or reservation, and confirmation note.",
+      "components": [
+        "Form",
+        "Button",
+        "Badge",
+        "Stepper",
+        "Input",
+        "Checkbox"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap6 _wfull _maxw[64rem] _mx[auto]",
+        "slots": {
+          "checkout-stepper": "Reward, Details, Confirm step indicator.",
+          "selected-reward": "Selected tier summary with price, inventory, and delivery note.",
+          "supporter-form": "Name, email, shipping/beta access fields, consent, and referral code.",
+          "payment-or-reserve": "Payment form, preorder authorization, or waitlist reserve mode.",
+          "order-summary": "Total, estimated delivery/access, guarantees, and campaign caveat.",
+          "confirm-action": "Primary complete pledge/reserve button."
+        }
+      }
+    },
+    "waitlist-reserve": {
+      "description": "Lightweight reservation form for free beta or waitlist campaigns with referral capture.",
+      "components": [
+        "Form",
+        "Button",
+        "Badge",
+        "Input",
+        "Checkbox"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap5 _wfull _maxw[38rem] _mx[auto]",
+        "slots": {
+          "selected-access": "Access tier summary.",
+          "supporter-form": "Name, email, role, referral code, and consent.",
+          "confirm-action": "Reserve spot or join waitlist button."
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gap6 _wfull _maxw[64rem] _mx[auto]",
+    "slots": {
+      "checkout-stepper": "Checkout progress",
+      "selected-reward": "Selected tier summary",
+      "supporter-form": "Supporter details",
+      "payment-or-reserve": "Payment or reservation mode",
+      "order-summary": "Pledge summary and caveats",
+      "confirm-action": "Complete action"
+    }
+  },
+  "visual_brief": "A focused checkout surface that keeps the retro campaign tone without making forms noisy. Use a single console/manual panel, clear steps, strong form labels, visible trust and fulfillment notes, and one primary completion action. Do not hide campaign caveats or shipping/access notes.",
+  "responsive": {
+    "mobile": "Single-column checkout with sticky bottom primary action only if it does not obscure form fields.",
+    "tablet": "Reward summary above form; order summary below.",
+    "desktop": "Two-column flow with form on the left and sticky order summary console on the right."
+  },
+  "layout_hints": {
+    "trust": "Fulfillment, refund, beta access, and payment timing must be clear before confirmation.",
+    "mode_support": "Support both paid pledge/preorder and free waitlist reservation campaigns.",
+    "form_design": "Inputs should be readable and calm even inside the retro theme."
+  },
+  "motion": {
+    "micro": {
+      "step-change": "stepper advances with short snap transition",
+      "submit": "button press state then loading/progress state"
+    },
+    "transitions": {
+      "validation": "inline field errors appear without moving the whole panel abruptly"
+    }
+  },
+  "interactions": [
+    "click-select",
+    "animate-on-mount",
+    "focus-trap",
+    "keyboard-navigation"
+  ],
+  "composition": {
+    "PledgeCheckoutPanel": "CheckoutShell > [Stepper + FormRegion + OrderSummary + ConfirmAction]",
+    "FormRegion": "Form > [SelectedReward + SupporterFields + PaymentOrReserve]",
+    "OrderSummary": "Console > [LineItems + DeliveryNote + TrustCues]"
+  },
+  "accessibility": {
+    "role": "form",
+    "aria-label": "Campaign pledge checkout",
+    "keyboard": [
+      "All fields must have visible labels.",
+      "Errors should be announced and linked to fields.",
+      "Stepper navigation must not skip required fields silently."
+    ],
+    "announcements": [
+      "Reward tier selected: {tier}.",
+      "Checkout step {step} of {total}.",
+      "Pledge reserved successfully."
+    ],
+    "focus_management": "On step change, move focus to the new step heading or first invalid field."
+  },
+  "io": {
+    "consumes": [
+      "selected-reward-tier",
+      "supporter-profile",
+      "payment-state"
+    ],
+    "produces": [
+      "campaign-conversion",
+      "supporter-record"
+    ],
+    "actions": [
+      "checkout-next",
+      "checkout-submit",
+      "reservation-submit"
+    ]
+  }
+}

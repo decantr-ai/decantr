@@ -1,0 +1,58 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "kitchen-display",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Kitchen Display System",
+  "description": "Kitchen display system (KDS) for restaurant ticket routing. Horizontal ticket rail with station-specific views and fire timers.",
+  "tags": ["restaurant", "kitchen", "kds", "tickets", "bump-bar", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["kitchen display", "kds", "ticket rail", "kitchen tickets", "bump bar"],
+      "secondary": ["expo", "station view", "fire time", "order routing"],
+      "negative": ["floor", "host", "reservations", "marketing"]
+    },
+    "implies": ["kds"],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "kitchen",
+      "patterns": [
+        { "pattern": "kds-ticket-rail", "preset": "horizontal", "as": "ticket-rail" },
+        { "pattern": "kpi-grid", "preset": "compact", "as": "kitchen-kpis" }
+      ],
+      "default_layout": ["kitchen-kpis", "ticket-rail"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "stations",
+      "patterns": [
+        { "pattern": "kds-ticket-rail", "preset": "grid", "as": "station-tickets" }
+      ],
+      "default_layout": ["station-tickets"],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "kitchen": "Horizontal KDS ticket rail streaming incoming orders left-to-right with fire timers, course separators, and bump controls. Compact KPI header shows tickets-in-window, average prep time, longest ticket, and on-time percentage.",
+    "stations": "Grid of ticket cards filtered by station (grill, saute, cold, fry, pastry). Each card shows table, course, items with modifiers, elapsed time, and bump button. Color-coded by age."
+  },
+  "features": ["kds", "tickets", "station-routing"],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area for kitchen operations"
+  },
+  "suggested_theme": {
+    "ids": ["carbon", "clean"],
+    "modes": ["dark", "light"]
+  },
+  "dependencies": {
+    "patterns": {
+      "kds-ticket-rail": ">=1.0.0",
+      "kpi-grid": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

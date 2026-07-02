@@ -1,0 +1,549 @@
+{
+  "$schema": "https://decantr.ai/schemas/theme.v1.json",
+  "id": "terminal",
+  "version": "1.0.0",
+  "name": "Terminal",
+  "description": "Pure terminal aesthetic with CRT-inspired phosphor green/amber on black. Monospace only, ASCII borders, optional scanline effects. Dark mode only.",
+  "tags": [
+    "dark",
+    "terminal",
+    "retro",
+    "developer",
+    "monospace",
+    "cli"
+  ],
+  "personality": "retro + technical + focused + immersive",
+  "seed": {
+    "primary": "#00FF00",
+    "secondary": "#FFB000",
+    "accent": "#00FFFF",
+    "background": "#000000"
+  },
+  "palette": {
+    "background": {
+      "dark": "#000000"
+    },
+    "surface": {
+      "dark": "#0A0A0A"
+    },
+    "surface-raised": {
+      "dark": "#111111"
+    },
+    "border": {
+      "dark": "#333333"
+    },
+    "text": {
+      "dark": "#00FF00"
+    },
+    "text-muted": {
+      "dark": "#00AA00"
+    },
+    "primary": {
+      "dark": "#00FF00"
+    },
+    "primary-hover": {
+      "dark": "#00CC00"
+    },
+    "secondary": {
+      "dark": "#FFB000"
+    },
+    "secondary-hover": {
+      "dark": "#CC8C00"
+    },
+    "accent": {
+      "dark": "#00FFFF"
+    },
+    "accent-hover": {
+      "dark": "#00CCCC"
+    }
+  },
+  "modes": [
+    "dark"
+  ],
+  "shapes": [
+    "sharp"
+  ],
+  "cvd_support": [],
+  "tokens": {
+    "base": {
+      "success": "#00FF00",
+      "danger": "#FF0000",
+      "warning": "#FFB000",
+      "info": "#00FFFF"
+    }
+  },
+  "typography": {
+    "scale": "modular",
+    "heading_weight": 600,
+    "body_weight": 400,
+    "display": "'JetBrains Mono', 'Fira Code', ui-monospace, monospace",
+    "body": "'JetBrains Mono', 'Fira Code', ui-monospace, monospace"
+  },
+  "decantr_compat": ">=2.0.0",
+  "source": "core",
+  "decorators": {
+    "term-canvas": "Pure black background (#000000) for CRT authenticity. No gradients, no textures.",
+    "term-panel": "ASCII box-drawing border using Unicode characters. Background surface color, 1px solid border.",
+    "term-input": "Terminal prompt style with '> ' prefix and blinking cursor. Monospace input.",
+    "term-table": "Full ASCII table borders with box-drawing characters for headers, cells, and junctions.",
+    "term-glow": "Subtle phosphor bloom effect using text-shadow with current color. 5px and 10px spread.",
+    "term-scanlines": "Optional CRT scanline overlay using repeating-linear-gradient. Semi-transparent black lines.",
+    "term-blink": "Blinking cursor animation at 1s interval. Steps timing for authentic terminal feel.",
+    "term-type": "Typewriter entrance animation. Characters appear one by one, 20ms per character.",
+    "term-status": "Inverse color status bar. Background uses text color, text uses background color.",
+    "term-hotkey": "Function key button style '[F1]'. Border, padding, monospace. Inverse on active.",
+    "term-progress": "ASCII progress bar using block characters. [||||....] style with percentage.",
+    "term-tree": "Tree view using ASCII connectors. Uses ├── └── │ for hierarchy visualization.",
+    "term-diff-add": "Addition highlighting. Green background with darker green text for added lines.",
+    "term-diff-del": "Deletion highlighting. Red background with darker red text for removed lines.",
+    "term-sparkline": "Inline ASCII sparkline using braille characters for high-resolution mini charts."
+  },
+  "spatial": {
+    "density_bias": 2,
+    "content_gap_shift": -1,
+    "section_padding": "1rem",
+    "card_wrapping": "none",
+    "surface_override": null
+  },
+  "motion": {
+    "preference": "subtle",
+    "reduce_motion": true,
+    "entrance": "term-type",
+    "micro": "instant",
+    "timing": "steps(1)",
+    "durations": {
+      "hover": "0ms",
+      "entrance": "500ms",
+      "modal": "0ms",
+      "page": "0ms",
+      "instant": "40ms",
+      "fast": "80ms",
+      "base": "150ms",
+      "slow": "250ms",
+      "slower": "400ms",
+      "stagger": "30ms"
+    },
+    "easings": {
+      "ease": "linear",
+      "easeOut": "linear",
+      "easeIn": "linear",
+      "spring": "cubic-bezier(0.34, 1.4, 0.64, 1)"
+    }
+  },
+  "effects": {
+    "enabled": true,
+    "intensity": "medium",
+    "type_mapping": {
+      "panel": [
+        "term-panel",
+        "term-glow"
+      ],
+      "input": [
+        "term-input",
+        "term-blink"
+      ],
+      "table": [
+        "term-table"
+      ],
+      "code_block": [
+        "term-panel"
+      ],
+      "button": [
+        "term-hotkey"
+      ]
+    },
+    "optional_effects": {
+      "scanlines": true,
+      "glow": true,
+      "flicker": false
+    },
+    "component_fallback": {
+      "pre": "code_block",
+      "code": "code_block",
+      "Card": "panel",
+      "Input": "input",
+      "Table": "table",
+      "Button": "button"
+    }
+  },
+  "compositions": {
+    "dashboard": {
+      "description": "Terminal dashboard with split panes, status bar, and hotkey bar.",
+      "shell": "terminal-split",
+      "effects": [
+        "term-panel",
+        "term-glow"
+      ]
+    },
+    "logs": {
+      "description": "Log viewer with real-time streaming and filtering.",
+      "shell": "terminal-split",
+      "effects": [
+        "term-panel"
+      ]
+    },
+    "auth": {
+      "description": "Terminal-styled authentication forms with ASCII borders.",
+      "shell": "centered",
+      "card_style": "term-panel"
+    },
+    "marketing": {
+      "description": "Dev tool marketing page with terminal aesthetic hero.",
+      "shell": "top-nav-footer",
+      "effects": [
+        "term-panel",
+        "term-type"
+      ]
+    }
+  },
+  "radius": {
+    "philosophy": "rounded",
+    "base": 8
+  },
+  "pattern_preferences": {
+    "prefer": [
+      "terminal-emulator",
+      "log-stream",
+      "split-pane",
+      "status-bar",
+      "hotkey-bar",
+      "command-palette"
+    ],
+    "avoid": [],
+    "default_presets": {}
+  },
+  "shell": {
+    "preferred": [
+      "terminal-split",
+      "sidebar-main"
+    ],
+    "avoid": [
+      "full-bleed",
+      "centered"
+    ],
+    "nav_style": "minimal",
+    "default_nav_state": "expanded",
+    "root": "term-canvas",
+    "nav": "term-panel",
+    "header": "term-status",
+    "navLabel": "",
+    "brand": "",
+    "dimensions": null
+  },
+  "decorator_definitions": {
+    "term-canvas": {
+      "description": "Pure black background (#000000) for CRT authenticity. No gradients, no textures.",
+      "intent": "Use as the root background for the full terminal experience. Pure black is essential for the CRT phosphor contrast.",
+      "suggested_properties": {
+        "background-color": "#000000",
+        "color": "#00FF00",
+        "font-family": "ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, monospace",
+        "min-height": "100vh"
+      },
+      "pairs_with": [
+        "term-panel",
+        "term-scanlines"
+      ],
+      "usage": [
+        "Page root containers",
+        "App shell backgrounds"
+      ]
+    },
+    "term-panel": {
+      "description": "ASCII box-drawing border using Unicode characters. Background surface color, 1px solid border.",
+      "intent": "Use for all content containers instead of cards. ASCII borders create the authentic terminal window look.",
+      "suggested_properties": {
+        "background": "#0A0A0A",
+        "border": "1px solid #333333",
+        "padding": "16px",
+        "font-family": "ui-monospace, monospace"
+      },
+      "pairs_with": [
+        "term-canvas",
+        "term-glow",
+        "term-status"
+      ],
+      "usage": [
+        "Content panels",
+        "Data containers",
+        "Split panes",
+        "Dashboard sections"
+      ]
+    },
+    "term-input": {
+      "description": "Terminal prompt style with '> ' prefix and blinking cursor. Monospace input.",
+      "intent": "Use for all input fields to maintain the command-line aesthetic. The prompt prefix and blinking cursor create authenticity.",
+      "suggested_properties": {
+        "background": "transparent",
+        "border": "none",
+        "border-bottom": "1px solid #333333",
+        "color": "#00FF00",
+        "font-family": "ui-monospace, monospace",
+        "caret-color": "#00FF00"
+      },
+      "pairs_with": [
+        "term-panel",
+        "term-blink"
+      ],
+      "usage": [
+        "Command inputs",
+        "Search fields",
+        "Text inputs"
+      ]
+    },
+    "term-table": {
+      "description": "Full ASCII table borders with box-drawing characters for headers, cells, and junctions.",
+      "intent": "Use for data tables that need the classic terminal tabular format with box-drawing characters.",
+      "suggested_properties": {
+        "border-collapse": "collapse",
+        "font-family": "ui-monospace, monospace",
+        "color": "#00FF00",
+        "width": "100%"
+      },
+      "pairs_with": [
+        "term-panel",
+        "term-canvas"
+      ],
+      "usage": [
+        "Data tables",
+        "Log tables",
+        "System status tables"
+      ]
+    },
+    "term-glow": {
+      "description": "Subtle phosphor bloom effect using text-shadow with current color. 5px and 10px spread.",
+      "intent": "Use to add the classic CRT phosphor bloom to text and borders. Apply to headings and important status text for the green glow effect.",
+      "suggested_properties": {
+        "text-shadow": "0 0 5px currentColor, 0 0 10px currentColor",
+        "filter": "brightness(1.1)"
+      },
+      "pairs_with": [
+        "term-panel",
+        "term-canvas",
+        "term-status"
+      ],
+      "usage": [
+        "Headings",
+        "Status text",
+        "Active indicators",
+        "Important labels"
+      ]
+    },
+    "term-scanlines": {
+      "description": "Optional CRT scanline overlay using repeating-linear-gradient. Semi-transparent black lines.",
+      "intent": "Use as an overlay on the root container for nostalgic CRT scanline effect. Apply sparingly as it can reduce readability.",
+      "suggested_properties": {
+        "background": "repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15) 1px, transparent 1px, transparent 2px)",
+        "pointer-events": "none",
+        "position": "fixed",
+        "inset": "0",
+        "z-index": "9999"
+      },
+      "pairs_with": [
+        "term-canvas",
+        "term-glow"
+      ],
+      "usage": [
+        "Full-page CRT overlay",
+        "Panel background texture"
+      ]
+    },
+    "term-blink": {
+      "description": "Blinking cursor animation at 1s interval. Steps timing for authentic terminal feel.",
+      "intent": "Use for cursor indicators and active prompt markers. The steps timing creates a hard blink rather than a fade.",
+      "suggested_properties": {
+        "animation": "blink 1s steps(1) infinite",
+        "color": "#00FF00"
+      },
+      "pairs_with": [
+        "term-input",
+        "term-panel"
+      ],
+      "usage": [
+        "Cursor indicators",
+        "Active prompt markers",
+        "Loading indicators"
+      ]
+    },
+    "term-type": {
+      "description": "Typewriter entrance animation. Characters appear one by one, 20ms per character.",
+      "intent": "Use for text that should appear to be typed out. Creates the classic terminal output effect for hero text and status messages.",
+      "suggested_properties": {
+        "overflow": "hidden",
+        "white-space": "nowrap",
+        "border-right": "2px solid #00FF00",
+        "animation": "typing 2s steps(40) both, blink 0.8s steps(1) infinite"
+      },
+      "pairs_with": [
+        "term-canvas",
+        "term-glow"
+      ],
+      "usage": [
+        "Hero text",
+        "Status messages",
+        "Welcome banners",
+        "Command output"
+      ]
+    },
+    "term-status": {
+      "description": "Inverse color status bar. Background uses text color, text uses background color.",
+      "intent": "Use for status bars, header bars, and toolbar strips. The inverted colors create the classic terminal status line.",
+      "suggested_properties": {
+        "background": "#00FF00",
+        "color": "#000000",
+        "font-family": "ui-monospace, monospace",
+        "padding": "2px 8px",
+        "font-weight": "bold"
+      },
+      "pairs_with": [
+        "term-canvas",
+        "term-panel",
+        "term-hotkey"
+      ],
+      "usage": [
+        "Status bars",
+        "Header strips",
+        "Toolbar rows",
+        "Mode indicators"
+      ]
+    },
+    "term-hotkey": {
+      "description": "Function key button style '[F1]'. Border, padding, monospace. Inverse on active.",
+      "intent": "Use for keyboard shortcut labels and action buttons. The bracketed style mimics classic terminal function key indicators.",
+      "suggested_properties": {
+        "border": "1px solid #00FF00",
+        "padding": "2px 8px",
+        "font-family": "ui-monospace, monospace",
+        "color": "#00FF00",
+        "background": "transparent"
+      },
+      "pairs_with": [
+        "term-status",
+        "term-panel"
+      ],
+      "usage": [
+        "Keyboard shortcut labels",
+        "Action buttons",
+        "Hotkey indicators",
+        "Toolbar buttons"
+      ]
+    },
+    "term-progress": {
+      "description": "ASCII progress bar using block characters. [||||....] style with percentage.",
+      "intent": "Use for progress indicators and loading bars. The ASCII block characters maintain the terminal aesthetic.",
+      "suggested_properties": {
+        "font-family": "ui-monospace, monospace",
+        "color": "#00FF00",
+        "white-space": "pre"
+      },
+      "pairs_with": [
+        "term-panel",
+        "term-glow"
+      ],
+      "usage": [
+        "Progress bars",
+        "Loading indicators",
+        "Upload progress",
+        "Task completion"
+      ]
+    },
+    "term-tree": {
+      "description": "Tree view using ASCII connectors. Uses ├── └── │ for hierarchy visualization.",
+      "intent": "Use for hierarchical data like file trees, directory listings, or nested navigation.",
+      "suggested_properties": {
+        "font-family": "ui-monospace, monospace",
+        "color": "#00FF00",
+        "line-height": "1.5",
+        "white-space": "pre"
+      },
+      "pairs_with": [
+        "term-panel",
+        "term-canvas"
+      ],
+      "usage": [
+        "File trees",
+        "Directory listings",
+        "Nested navigation",
+        "Organizational hierarchies"
+      ]
+    },
+    "term-diff-add": {
+      "description": "Addition highlighting. Green background with darker green text for added lines.",
+      "intent": "Use in diff views and code comparison displays for added lines.",
+      "suggested_properties": {
+        "background": "rgba(0, 255, 0, 0.15)",
+        "color": "#00FF00",
+        "font-family": "ui-monospace, monospace"
+      },
+      "pairs_with": [
+        "term-diff-del",
+        "term-panel"
+      ],
+      "usage": [
+        "Diff views",
+        "Code additions",
+        "Change highlights"
+      ]
+    },
+    "term-diff-del": {
+      "description": "Deletion highlighting. Red background with darker red text for removed lines.",
+      "intent": "Use in diff views for removed lines. Red contrast against the green-dominant palette ensures visibility.",
+      "suggested_properties": {
+        "background": "rgba(255, 0, 0, 0.15)",
+        "color": "#FF0000",
+        "font-family": "ui-monospace, monospace"
+      },
+      "pairs_with": [
+        "term-diff-add",
+        "term-panel"
+      ],
+      "usage": [
+        "Diff views",
+        "Code deletions",
+        "Removed content highlights"
+      ]
+    },
+    "term-sparkline": {
+      "description": "Inline ASCII sparkline using braille characters for high-resolution mini charts.",
+      "intent": "Use for compact inline trend visualizations within data tables or status displays.",
+      "suggested_properties": {
+        "font-family": "ui-monospace, monospace",
+        "color": "#00FF00",
+        "letter-spacing": "0",
+        "font-size": "14px"
+      },
+      "pairs_with": [
+        "term-table",
+        "term-panel"
+      ],
+      "usage": [
+        "Inline trend charts",
+        "Status sparklines",
+        "Metric trends",
+        "Mini visualizations"
+      ]
+    }
+  },
+  "elevation": {
+    "1": {
+      "light": "none",
+      "dark": "none"
+    },
+    "2": {
+      "light": "0 1px 2px rgba(0,0,0,0.04)",
+      "dark": "0 1px 2px rgba(0,0,0,0.2)"
+    },
+    "3": {
+      "light": "0 2px 4px rgba(0,0,0,0.06)",
+      "dark": "0 2px 4px rgba(0,0,0,0.3)"
+    },
+    "4": {
+      "light": "0 4px 8px rgba(0,0,0,0.08)",
+      "dark": "0 4px 8px rgba(0,0,0,0.4)"
+    },
+    "5": {
+      "light": "0 8px 16px rgba(0,0,0,0.10)",
+      "dark": "0 8px 16px rgba(0,0,0,0.5)"
+    }
+  }
+}

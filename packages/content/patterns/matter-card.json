@@ -1,0 +1,113 @@
+{
+  "id": "matter-card",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Matter Card",
+  "description": "A legal matter summary card showing client, status, budget burn, key deadlines, assignees, and outstanding tasks for law firm pipeline management.",
+  "category": "legal",
+  "tags": [
+    "2026",
+    "legal",
+    "matter",
+    "pipeline",
+    "law-firm",
+    "case-management",
+    "card"
+  ],
+  "components": [
+    "MatterTitle",
+    "ClientInfo",
+    "StatusBadge",
+    "BudgetBar",
+    "DeadlineChip",
+    "AssigneeAvatars"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full-detail matter card with title, client, status, budget burn bar, deadline chip, assignees, and open task count for dashboard usage",
+      "layout": {
+        "layout": "card",
+        "atoms": "_relative _w100 _p-4 _rounded-lg _bg-surface _border"
+      }
+    },
+    "compact": {
+      "description": "Single-row compact list presentation showing matter number, client, status pill, and next deadline for high-density table views",
+      "layout": {
+        "layout": "horizontal-row",
+        "atoms": "_flex _items-center _gap-4 _w100 _p-3 _rounded _bg-surface _border-b"
+      }
+    },
+    "kanban": {
+      "description": "Vertical stackable card optimized for kanban pipeline columns with status-colored border and drag-handle affordance indicator",
+      "layout": {
+        "layout": "card-stackable",
+        "atoms": "_relative _w100 _p-3 _mb-3 _rounded-md _bg-surface _border-l-4 _cursor-grab"
+      }
+    }
+  },
+  "visual_brief": "A rectangular card with matter number shown small and monospace at top-left (e.g. 'M-2026-0147') and matter title in bold sans-serif below. Client name in smaller muted text beneath title. Top-right corner holds a status badge pill with semantic colors (Active: blue, Pending: amber, Closed: gray, Billing: purple). Middle section shows a horizontal budget bar with label 'Budget' on left, spent amount and total right-aligned in monospace (e.g. '$47,320 / $80,000'). Bar fill color transitions green to amber to red as utilization crosses 70% and 90% thresholds. Below budget bar: next deadline chip with calendar icon, deadline label, and urgency color (red if <7 days, amber if <30). Bottom-right shows stacked overlapping assignee avatar circles (up to 4 visible, +N indicator if more). Bottom-left shows outstanding task count badge (e.g. '3 open tasks'). Kanban preset adds a colored left border matching status, and a small drag-handle icon at top.",
+  "layout_hints": {
+    "container": "d-surface",
+    "note": "Card is clickable (d-interactive). Budget numbers in monospace. Status badge always includes status word text, never color-only.",
+    "deadline_urgency": "Deadline chip color escalates automatically: red <7 days, amber <30 days, neutral otherwise."
+  },
+  "default_layout": {
+    "layout": "card",
+    "atoms": "_relative _w100 _p-4 _rounded-lg _bg-surface _border",
+    "slots": {
+      "matter-title": "Top section with matter number (monospace small) above matter title (bold sans-serif).",
+      "client-info": "Muted-text line beneath title showing client name and matter type subtitle.",
+      "status-badge": "Top-right pill showing matter status with semantic color coding and text label.",
+      "budget-bar": "Horizontal progress bar showing spent/total budget with color escalation thresholds.",
+      "deadline-chip": "Chip below budget bar with calendar icon, next key date, and urgency-colored background.",
+      "assignee-avatars": "Stacked overlapping avatar circles in bottom-right showing assigned attorneys with overflow counter."
+    }
+  },
+  "accessibility": {
+    "role": "article",
+    "aria-label": "Legal matter summary card",
+    "announcements": [
+      "Matter {number}: {title} for {client}, status {status}",
+      "Budget {spent} of {total}, {percent} utilized",
+      "Next deadline {date}, {days} days remaining"
+    ],
+    "keyboard": [
+      "Tab: focus card",
+      "Enter: open matter detail",
+      "Space: toggle matter selection (in list views)"
+    ]
+  },
+  "responsive": {
+    "mobile": "Card stacks vertically with assignees moving below task count. Compact preset auto-selected.",
+    "tablet": "Standard preset retained. Assignee stack limited to 3 visible."
+  },
+  "motion": {
+    "micro": {
+      "card-hover": "elevation raise + border-highlight 150ms ease-out",
+      "avatar-hover": "avatar un-stack + name tooltip 200ms ease"
+    },
+    "transitions": {
+      "status-change": "badge color crossfade 300ms ease-in-out",
+      "budget-update": "bar fill width interpolate 600ms ease-out"
+    },
+    "ambient": {
+      "overdue-pulse": "deadline chip background pulse when overdue 2s ease-in-out infinite"
+    }
+  },
+  "interactions": [
+    "lift-hover",
+    "click-select",
+    "animate-on-mount",
+    "stagger-children"
+  ],
+  "composition": {
+    "MatterCard": "Card(d-surface, data-interactive) > [Header > [MatterTitle > [MatterNumber(mono) + MatterTitle] + StatusBadge] + ClientInfo + BudgetBar + DeadlineChip + Footer > [TaskCount + AssigneeAvatars]]",
+    "MatterTitle": "Stack > [MatterNumber(mono-xs) + TitleText(bold)]",
+    "StatusBadge": "Pill(d-annotation, data-status) > [StatusDot + StatusText]",
+    "BudgetBar": "Bar(horizontal, threshold-colored) > [Label + Fill + SpentLabel(mono) + TotalLabel(mono)]",
+    "DeadlineChip": "Chip(d-annotation, urgency-colored) > [CalendarIcon + DeadlineLabel + DaysRemaining]",
+    "AssigneeAvatars": "Stack(overlapping) > Avatar[] + OverflowCounter?"
+  }
+}

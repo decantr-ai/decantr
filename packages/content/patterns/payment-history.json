@@ -1,0 +1,130 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "payment-history",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Payment History",
+  "description": "Payment records table with date range filtering, export, and receipt generation. Supports tenant, property, and portfolio views.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "icon",
+        "Badge",
+        "Input",
+        "Select"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "icon",
+    "Badge",
+    "Input",
+    "Select"
+  ],
+  "default_preset": "portfolio",
+  "presets": {
+    "portfolio": {
+      "description": "All payments across the full property portfolio with date range filters and export controls",
+      "components": [
+        "Button",
+        "icon",
+        "Badge",
+        "Input",
+        "Select"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "header": "Title, date range picker, export",
+          "filters": "Payment type, status, property filters",
+          "summary": "Total for period",
+          "table": "Payment records"
+        }
+      }
+    },
+    "tenant": {
+      "description": "Single tenant payment history filtered to one tenant with simplified columns and receipt links",
+      "components": [
+        "Button",
+        "icon",
+        "Badge"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "header": "Title",
+          "table": "Tenant's payment records"
+        }
+      }
+    },
+    "property": {
+      "description": "Property-wide payment history aggregating all tenant payments for a single property",
+      "components": [
+        "Button",
+        "icon",
+        "Badge",
+        "Select"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "header": "Title and filters",
+          "table": "Property payment records"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap4",
+    "slots": {
+      "header": "Title and controls",
+      "filters": "Date and type filters",
+      "table": "Payment records",
+      "summary": "Totals"
+    }
+  },
+  "visual_brief": "Data table of payment records with columns: date, description, property/unit, payer, amount (green for received, red for refunded), and status badge (completed, pending, failed). A header row contains the title, date range filter (date pickers or preset buttons like 30d/90d/1y), and an export button. A summary row at the top or bottom shows total received, total outstanding, and period comparison. The portfolio preset adds a property column. The tenant preset filters to a single tenant. The property preset filters to a single property.",
+  "responsive": {
+    "mobile": "Table becomes a card list — each payment as a stacked card showing date, description, amount, and status. Filters collapse to a filter button. Export moves to a menu.",
+    "tablet": "Table with horizontal scroll for extra columns. Date range filter visible in the header.",
+    "desktop": "Full table with all columns visible. Summary row and filters always visible."
+  },
+  "layout_hints": {
+    "financial_priority": "Keep collected totals, date range, and current payment status easy to scan first. Secondary metadata like method or payer should support that read, not compete with it.",
+    "table_discipline": "The pattern owns the payments table and filter rhythm. Parent finance pages should place broader KPI framing above it rather than nesting this inside another table-like shell.",
+    "mobile_translation": "When collapsing to cards, keep date, amount, and status grouped in a way that still feels like a ledger rather than a generic feed."
+  },
+  "motion": {
+    "micro": "Summary values or status badges may brighten subtly on hover and filter interactions may clarify the active state without distracting from the ledger.",
+    "transitions": "Date-range or filter changes should cross-fade rows or update totals smoothly so the payment history still feels stable and trustworthy."
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Payment history",
+    "keyboard": [
+      "Tab through filters, export actions, and then the payment rows or cards in reading order."
+    ],
+    "announcements": [
+      "Amount, date, status, and payer/property context should be exposed semantically so payment records remain understandable without table styling alone."
+    ]
+  },
+  "composition": {
+    "PaymentHistory": "Container(d-section, flex-col, gap-4) > [Header + Filters? + SummaryRow? + PaymentTable]",
+    "Header": "Row(d-control, space-between) > [Title + DateRangePicker(d-control) + ExportButton(d-interactive)]",
+    "SummaryRow": "Row(d-data) > [TotalReceived(mono-data, color: success) + TotalOutstanding(mono-data, color: warning)]",
+    "PaymentTable": "Table(d-data) > PaymentRow[]",
+    "PaymentRow": "Row(d-data-row) > [Date + Description + Property? + Payer + Amount(mono-data, color: status) + StatusBadge(d-annotation)]"
+  }
+}

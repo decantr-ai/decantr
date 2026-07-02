@@ -1,0 +1,127 @@
+{
+  "id": "sample-tracker",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Sample Tracker",
+  "description": "A laboratory sample inventory tracker rendering biological or chemical samples with barcode identifiers, storage location tags, expiry countdowns, chain-of-custody logs, and status indicators across grid, freezer-map, or timeline views.",
+  "category": "science",
+  "tags": [
+    "2026",
+    "science",
+    "lab",
+    "inventory",
+    "samples",
+    "freezer",
+    "custody",
+    "barcode"
+  ],
+  "components": [
+    "SampleCard",
+    "LocationTag",
+    "ExpiryBadge",
+    "CustodyLog",
+    "BarcodeDisplay",
+    "StatusIcon",
+    "FreezerGrid",
+    "CustodyTimeline"
+  ],
+  "default_preset": "grid",
+  "presets": {
+    "grid": {
+      "description": "Card-grid rendering of all samples with barcode, name, location, expiry, and status visible at a glance. Responsive grid adapts from 2 columns (mobile) to 6 columns (wide). Best for inventory browsing and search.",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_w100 _grid _gap3 _p4"
+      }
+    },
+    "freezer": {
+      "description": "Physical freezer-box layout showing samples positioned in their actual storage coordinates (rack/box/row/column). Renders as a 9×9 grid mimicking cryobox positions with occupied/empty cell indicators.",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_w100 _grid _p4"
+      }
+    },
+    "timeline": {
+      "description": "Chronological chain-of-custody timeline showing every access event for each sample (who, when, what was done). Vertical timeline with custody events as nodes connecting back to the sample origin.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_w100 _grid _gap2 _p4"
+      }
+    }
+  },
+  "visual_brief": "A scientific inventory view rendered as a responsive grid of SampleCards inside a d-section container. Each SampleCard is a d-surface with subtle border, padding 12px, and hover elevation. At the top of each card, a BarcodeDisplay renders the sample's unique ID as a visible 1D barcode (Code 128) with the human-readable identifier beneath in mono-data small text (e.g., 'SMPL-2026-00342'). Below the barcode sits the sample name in semibold text-sm with an optional species/type subline in body-muted. A LocationTag renders as a pill-shaped chip with a freezer-icon prefix showing storage position in mono-data format: 'FRZ-3 / Rack B / Box 4 / A3'. Beside it, an ExpiryBadge is color-coded by days remaining: emerald (>90 days), amber (30-90 days), red (<30 days), gray (expired/used). The badge shows the expiry date and a relative countdown ('28 days'). A StatusIcon sits in the top-right corner of each card indicating current state: available (green circle), checked-out (blue arrow-right), in-use (amber pulse dot), depleted (gray X), contaminated (red warning). A CustodyLog footer shows the most recent custody event with a small user avatar, action ('Accessed by J. Chen'), and timestamp ('2h ago'). Clicking a card opens a detail drawer with full custody history, freezer-cooldown logs, QC results, and derived-samples lineage. For freezer preset, cards arrange into a physical 9×9 grid mimicking cryobox layout with position labels (A1-I9) along edges and empty cells showing dashed borders. For timeline preset, SampleCards transform into horizontal rows with a vertical CustodyTimeline rail on the left; each custody event renders as a circular node on the rail with a connector line to the next event, with event details (user, action, timestamp) flowing to the right.",
+  "layout_hints": {
+    "container": "d-section with grid layout",
+    "note": "Sample tracking is regulatory-grade lab data (GLP/GMP compliant). Every access must be logged. Expiry dates must be visible and color-coded. Chain-of-custody cannot be edited after creation.",
+    "sample_card": "SampleCard uses d-surface[data-interactive] with cursor:pointer. Minimum width 200px, maximum 280px. Internal padding 12px, gap 8px between sections.",
+    "expiry_colors": "ExpiryBadge colors MUST be consistent: emerald (>90d), amber (30-90d), red (<30d), gray (expired). Colorblind-safe with icon prefixes (clock, warning, skull).",
+    "status_icons": "StatusIcon uses d-annotation[data-status] in top-right corner 16px diameter. available=green, checked-out=blue, in-use=amber-pulse, depleted=gray, contaminated=red.",
+    "barcode_format": "BarcodeDisplay renders actual scannable Code 128 or QR barcode (not decorative). Human-readable ID always visible beneath for manual entry fallback.",
+    "custody_immutability": "CustodyLog entries are append-only. Display includes user avatar, action verb, and ISO timestamp. Never editable after creation — corrections require new custody entry."
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_w100 _grid _gap3 _p4 _grid-cols-auto",
+    "slots": {
+      "sample-grid": "Responsive grid container holding SampleCards. Adapts column count based on viewport (2 mobile → 6 wide). Each cell contains one SampleCard.",
+      "sample-card": "Repeating slot — one per sample. Contains BarcodeDisplay, sample name, LocationTag, ExpiryBadge, StatusIcon, and CustodyLog preview. Clickable to open detail drawer with full history.",
+      "barcode-display": "Top of each sample card. Renders scannable 1D Code 128 or 2D QR barcode with human-readable ID beneath in mono-data small text.",
+      "location-tag": "Pill-shaped chip showing physical storage coordinates in format 'FRZ-N / Rack X / Box Y / Position'. Clickable to open freezer-map view at that location.",
+      "expiry-badge": "Color-coded pill showing expiry date and relative countdown (days remaining). Colors map to urgency thresholds with icon prefixes.",
+      "status-icon": "Top-right corner indicator showing current sample state: available, checked-out, in-use, depleted, contaminated. 16px diameter with consistent color mapping.",
+      "custody-log-preview": "Footer of each card showing most recent custody event (user avatar, action verb, timestamp). Links to full custody timeline on click.",
+      "freezer-grid": "Freezer-preset-only slot. Physical cryobox layout 9×9 grid with position labels A1-I9 along edges. Empty cells show dashed borders; occupied cells show SampleCard at reduced size.",
+      "custody-timeline": "Timeline-preset-only slot. Vertical rail of custody events per sample, each event as circular node with connector lines. Event details flow to right (user, action, timestamp, notes)."
+    }
+  },
+  "accessibility": {
+    "role": "grid",
+    "aria-label": "Laboratory sample inventory",
+    "announcements": [
+      "Sample {id}: {name}, expires {date}, status {status}",
+      "Opened detail for sample {id}",
+      "Custody: {user} {action} at {timestamp}"
+    ],
+    "keyboard": [
+      "Arrow keys: navigate between sample cards in grid",
+      "Enter: open sample detail drawer",
+      "Escape: close drawer",
+      "/: focus search / barcode input",
+      "L: toggle layout (grid/freezer/timeline)"
+    ]
+  },
+  "responsive": {
+    "mobile": "Grid collapses to 2 columns with SampleCards stacking vertically. BarcodeDisplay remains scannable. LocationTag truncates to freezer+box only. Custody log preview hidden, available via tap.",
+    "tablet": "Grid renders 3-4 columns. All card sections visible. Freezer preset maintains 9×9 grid with horizontal scroll if needed."
+  },
+  "motion": {
+    "micro": {
+      "card-hover": "scale 1.02 + shadow-elevation 150ms ease-out",
+      "status-pulse": "in-use amber dot opacity 0.5 to 1.0 to 0.5 1.5s ease-in-out infinite",
+      "expiry-warning": "ExpiryBadge red <7 days subtle shake 300ms every 10s"
+    },
+    "transitions": {
+      "layout-swap": "grid reflow 400ms ease-in-out between grid/freezer/timeline presets",
+      "drawer-open": "right-side drawer slide-in 250ms ease-out",
+      "custody-append": "new custody event fade-in + slide-up 300ms ease-out"
+    },
+    "ambient": {
+      "expiry-countdown": "ExpiryBadge text updates live as days elapse"
+    }
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "composition": {
+    "SampleTracker": "Section(d-section) > [SampleGrid | FreezerGrid | CustodyTimeline]",
+    "SampleCard": "Surface(d-surface, data-interactive) > [BarcodeDisplay + SampleName + LocationTag + ExpiryBadge + CustodyLogPreview + StatusIcon]",
+    "BarcodeDisplay": "Element(d-annotation, data-barcode) > [BarcodeImage + HumanReadableID]",
+    "LocationTag": "Chip(d-annotation, data-location) > [FreezerIcon + LocationPath]",
+    "ExpiryBadge": "Badge(d-annotation, data-expiry-urgency) > [ExpiryIcon + DateText + CountdownText]",
+    "StatusIcon": "Indicator(d-annotation, data-status) > [StatusDot]",
+    "CustodyLog": "Footer(d-annotation, data-custody) > [UserAvatar + ActionVerb + Timestamp]",
+    "FreezerGrid": "Grid(d-section, data-freezer-layout, 9x9) > [PositionLabels + OccupiedCell[] + EmptyCell[]]",
+    "CustodyTimeline": "Timeline(d-section) > [CustodyRail + CustodyEvent[]]"
+  }
+}

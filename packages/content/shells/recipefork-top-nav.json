@@ -1,0 +1,74 @@
+{
+  "$schema": "https://decantr.ai/schemas/shell.v1.json",
+  "id": "recipefork-top-nav",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipefork Top Nav",
+  "description": "Shared Recipefork application shell with sticky top nav, compact utility actions, and a wide scrollable content region below. Mirrors the current app's persistent nav model across public and authenticated product routes.",
+  "layout": "stack",
+  "atoms": "_flex _col _minh[100vh]",
+  "config": {
+    "regions": [
+      "header",
+      "body"
+    ],
+    "grid": {
+      "areas": [
+        [
+          "header"
+        ],
+        [
+          "body"
+        ]
+      ]
+    },
+    "nav": {
+      "position": "top"
+    },
+    "header": {
+      "height": "64px",
+      "sticky": true
+    },
+    "body": {
+      "scroll": true
+    }
+  },
+  "guidance": {
+    "section_label_treatment": "d-label",
+    "section_density": "comfortable",
+    "nav_identity": "Brand mark on the left, route links in the center-left, create CTA plus utility actions on the right. Keep the overall feel product-like rather than marketing-heavy.",
+    "mobile_menu": "Collapse route links into a dropdown or menu button below md breakpoint. The create action may stay visible as an icon button or move into the menu when width is constrained.",
+    "auth_variation": "Unauthenticated states may still reuse the same shell. Swap the profile entry for a sign-in button while keeping spacing and alignment stable.",
+    "notification_behavior": "Authenticated states include a bell menu in the utility cluster. The bell should expose unread count, recent follow/comment/reaction/save/fork activity, and quick mark-as-read behavior without forcing a dedicated page route."
+  },
+  "internal_layout": {
+    "root": {
+      "display": "flex",
+      "direction": "column",
+      "min_height": "100vh",
+      "atoms": "_flex _col _minh[100vh]"
+    },
+    "header": {
+      "height": "64px",
+      "display": "flex",
+      "align": "center",
+      "justify": "space-between",
+      "padding": "0 1rem",
+      "border": "bottom",
+      "sticky": true,
+      "z_index": "20",
+      "background": "recipefork-nav",
+      "left_content": "Brand icon + Recipefork wordmark",
+      "center_content": "Home, Chat, Generate, Feed, Cookbooks navigation links",
+      "right_content": "Create Recipe CTA + theme toggle + notification bell + profile button or sign-in button + mobile menu trigger",
+      "button_sizing": "Use compact controls. Create CTA should feel prominent but still fit inside the 64px row without oversized padding."
+    },
+    "body": {
+      "flex": "1",
+      "overflow_y": "auto",
+      "padding": "0",
+      "atoms": "_flex1 _overflow[auto]",
+      "note": "Individual pages own their spacing. Preserve the wide, app-like content region used by feed, recipe detail, profile, and authoring pages."
+    }
+  }
+}

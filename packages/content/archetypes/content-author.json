@@ -1,0 +1,121 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "content-author",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Content Author",
+  "description": "Author and editor dashboard for managing drafts, editing articles, and viewing published content. Functional workspace focused on writing productivity.",
+  "tags": [
+    "content",
+    "authoring",
+    "editor",
+    "drafts",
+    "publishing",
+    "2026"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "content editor",
+        "author dashboard",
+        "article editor",
+        "drafts manager",
+        "publishing dashboard"
+      ],
+      "secondary": [
+        "cms",
+        "writing tool",
+        "draft management",
+        "content management",
+        "editorial workflow"
+      ],
+      "negative": [
+        "reader",
+        "public",
+        "landing"
+      ]
+    },
+    "implies": [
+      "editing",
+      "publishing"
+    ],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "drafts",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "drafts-table"
+        }
+      ],
+      "default_layout": [
+        "drafts-table"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "editor",
+      "patterns": [
+        {
+          "pattern": "doc-editor",
+          "preset": "standard",
+          "as": "article-editor"
+        }
+      ],
+      "default_layout": [
+        "article-editor"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "published",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "published-table"
+        }
+      ],
+      "default_layout": [
+        "published-table"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "drafts": "Data table listing draft articles with columns for title, status (draft/review/scheduled), last edited date, word count, and author. Sortable columns and quick-action buttons for edit and delete. New draft button prominent in the header.",
+    "editor": "Full-width document editor with rich text formatting toolbar, inline image upload, and metadata sidebar (tags, category, excerpt, featured image). Auto-save indicator in the top bar. Preview and publish buttons in the header.",
+    "published": "Data table of published articles with columns for title, publish date, views, category, and status. Row actions for unpublish, edit, and view live. Filter by date range and category."
+  },
+  "features": [
+    "editing",
+    "publishing",
+    "auto-save",
+    "markdown"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area for authoring"
+  },
+  "suggested_theme": {
+    "ids": [
+      "editorial",
+      "clean"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  },
+  "dependencies": {
+    "patterns": {
+      "data-table": ">=1.0.0",
+      "doc-editor": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

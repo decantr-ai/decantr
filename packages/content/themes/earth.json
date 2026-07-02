@@ -1,0 +1,453 @@
+{
+  "$schema": "https://decantr.ai/schemas/theme.v1.json",
+  "id": "earth",
+  "version": "1.0.0",
+  "name": "Earth",
+  "description": "Organic, sustainability-focused theme inspired by nature. Forest green and warm amber on cream backgrounds. Serif headings with grain texture overlay and organic shapes create an earthy, grounded aesthetic for eco-conscious brands.",
+  "tags": [
+    "light",
+    "dark",
+    "organic",
+    "sustainability",
+    "nature",
+    "warm",
+    "serif",
+    "textured"
+  ],
+  "personality": "organic + grounded + warm + sustainable",
+  "seed": {
+    "primary": "#65A30D",
+    "secondary": "#A16207",
+    "accent": "#0D9488",
+    "background": "#FEFCE8"
+  },
+  "palette": {
+    "background": {
+      "light": "#FEFCE8",
+      "dark": "#0C1A0C"
+    },
+    "surface": {
+      "light": "#FFFEF5",
+      "dark": "#162016"
+    },
+    "surface-raised": {
+      "light": "#FDF8E0",
+      "dark": "#1E2E1E"
+    },
+    "border": {
+      "light": "#E5DFC0",
+      "dark": "#2D4A2D"
+    },
+    "text": {
+      "light": "#1A2E0A",
+      "dark": "#F0F5E0"
+    },
+    "text-muted": {
+      "light": "#66744C",
+      "dark": "#9AAD82"
+    },
+    "primary": {
+      "light": "#4D7C0F",
+      "dark": "#84CC16"
+    },
+    "primary-hover": {
+      "light": "#3F6212",
+      "dark": "#A3E635"
+    },
+    "secondary": {
+      "light": "#92400E",
+      "dark": "#D97706"
+    },
+    "secondary-hover": {
+      "light": "#78350F",
+      "dark": "#F59E0B"
+    },
+    "accent": {
+      "light": "#0F766E",
+      "dark": "#14B8A6"
+    },
+    "accent-hover": {
+      "light": "#115E59",
+      "dark": "#2DD4BF"
+    }
+  },
+  "modes": [
+    "light",
+    "dark",
+    "auto"
+  ],
+  "shapes": [
+    "rounded"
+  ],
+  "cvd_support": [
+    "deuteranopia",
+    "protanopia"
+  ],
+  "tokens": {
+    "base": {
+      "success": "#16A34A",
+      "danger": "#DC2626",
+      "warning": "#D97706",
+      "info": "#0D9488"
+    },
+    "cvd": {
+      "deuteranopia": {
+        "success": "#2563EB",
+        "danger": "#EA580C"
+      },
+      "protanopia": {
+        "success": "#0EA5E9",
+        "danger": "#F59E0B"
+      }
+    }
+  },
+  "typography": {
+    "scale": "modular",
+    "heading_weight": 700,
+    "body_weight": 400,
+    "display": "'Lora', 'Georgia', serif",
+    "body": "'Inter', ui-sans-serif, sans-serif"
+  },
+  "decantr_compat": ">=2.0.0",
+  "source": "core",
+  "decorators": {
+    "earth-card": "Paper-textured card with warm shadow. Soft border and natural color palette create an organic, handcrafted feel.",
+    "earth-badge": "Muted earth tone badge with rounded corners. Soft backgrounds in greens, ambers, and teals.",
+    "earth-hero": "Hero section with organic shape dividers. Wavy or curved bottom edges for natural flow.",
+    "earth-section": "Section container with subtle grain texture overlay. Adds tactile quality to flat backgrounds.",
+    "earth-metric": "Growth-oriented metric display with nature-inspired icon. Leaf or sprout indicator for positive trends.",
+    "earth-surface": "Warm layered background with cream base. Creates depth through warm tonal variation.",
+    "earth-input": "Rounded input with warm border. Natural, inviting form styling with earthy focus ring.",
+    "earth-nav": "Spacious natural navigation with generous padding. Warm tones and organic feel."
+  },
+  "spatial": {
+    "density_bias": -1,
+    "content_gap_shift": 1,
+    "section_padding": "4rem",
+    "card_wrapping": "subtle",
+    "surface_override": null
+  },
+  "motion": {
+    "preference": "smooth",
+    "reduce_motion": true,
+    "entrance": "earth-grow-in",
+    "micro": "smooth",
+    "timing": "cubic-bezier(0.22, 1, 0.36, 1)",
+    "durations": {
+      "hover": "200ms",
+      "entrance": "400ms",
+      "modal": "350ms",
+      "page": "500ms",
+      "instant": "80ms",
+      "fast": "150ms",
+      "base": "250ms",
+      "slow": "400ms",
+      "slower": "600ms",
+      "stagger": "60ms"
+    },
+    "easings": {
+      "ease": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "easeOut": "cubic-bezier(0, 0, 0.2, 1)",
+      "easeIn": "cubic-bezier(0.4, 0, 1, 1)",
+      "spring": "cubic-bezier(0.34, 1.56, 0.64, 1)"
+    }
+  },
+  "effects": {
+    "enabled": true,
+    "intensity": "medium",
+    "type_mapping": {
+      "card": [
+        "earth-card"
+      ],
+      "badge": [
+        "earth-badge"
+      ],
+      "input": [
+        "earth-input"
+      ],
+      "hero": [
+        "earth-hero"
+      ],
+      "section": [
+        "earth-section"
+      ]
+    },
+    "optional_effects": {
+      "grain": true,
+      "organic_dividers": true,
+      "texture": true
+    },
+    "component_fallback": {
+      "Card": "card",
+      "Badge": "badge",
+      "Input": "input",
+      "Hero": "hero",
+      "Section": "section"
+    }
+  },
+  "compositions": {
+    "dashboard": {
+      "description": "Sustainability dashboard with organic cards, growth metrics, and nature-inspired data visualization.",
+      "shell": "sidebar-main",
+      "effects": [
+        "earth-card",
+        "earth-metric"
+      ]
+    },
+    "auth": {
+      "description": "Centered auth with warm cream background, paper-textured card, and organic border accents.",
+      "shell": "centered",
+      "card_style": "earth-card"
+    },
+    "marketing": {
+      "description": "Eco-conscious marketing page with organic hero shapes, grain textures, and earthy typography.",
+      "shell": "top-nav-footer",
+      "effects": [
+        "earth-hero",
+        "earth-section",
+        "earth-card"
+      ]
+    },
+    "blog": {
+      "description": "Content-focused blog layout with serif headings, generous whitespace, and paper-like reading experience.",
+      "shell": "top-nav-footer",
+      "effects": [
+        "earth-section",
+        "earth-card"
+      ]
+    }
+  },
+  "radius": {
+    "philosophy": "rounded",
+    "base": 10
+  },
+  "pattern_preferences": {
+    "prefer": [
+      "feature-grid",
+      "testimonial-cards",
+      "blog-layout",
+      "impact-metrics",
+      "timeline",
+      "gallery"
+    ],
+    "avoid": [
+      "dense-terminal",
+      "sharp-data-table"
+    ],
+    "default_presets": {
+      "feature-grid": "cards",
+      "blog-layout": "centered-prose",
+      "impact-metrics": "icon-cards"
+    }
+  },
+  "shell": {
+    "preferred": [
+      "top-nav-footer",
+      "sidebar-main",
+      "top-nav-main"
+    ],
+    "avoid": [
+      "terminal-split"
+    ],
+    "nav_style": "organic",
+    "default_nav_state": "expanded",
+    "root": "earth-surface",
+    "nav": "earth-nav",
+    "header": "",
+    "navLabel": "",
+    "brand": "",
+    "dimensions": null
+  },
+  "decorator_definitions": {
+    "earth-card": {
+      "description": "Paper-textured card with warm shadow. Soft border and natural color palette create an organic, handcrafted feel.",
+      "intent": "Use for all content containers. The warm shadow and paper-like quality evoke handcrafted, natural materials. Pairs beautifully with the grain texture section overlay.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #FFFEF5)",
+        "border": "1px solid var(--d-border, #E5DFC0)",
+        "border-radius": "10px",
+        "padding": "24px",
+        "box-shadow": "0 2px 8px rgba(101, 67, 13, 0.08), 0 1px 3px rgba(101, 67, 13, 0.06)"
+      },
+      "pairs_with": [
+        "earth-surface",
+        "earth-section",
+        "earth-badge"
+      ],
+      "usage": [
+        "Content cards",
+        "Feature cards",
+        "Blog post previews",
+        "Impact metric cards"
+      ]
+    },
+    "earth-badge": {
+      "description": "Muted earth tone badge with rounded corners. Soft backgrounds in greens, ambers, and teals.",
+      "intent": "Use for tags, labels, and status indicators. The muted earth tones blend naturally with the warm palette while remaining readable.",
+      "suggested_properties": {
+        "border-radius": "8px",
+        "padding": "4px 12px",
+        "font-size": "13px",
+        "font-weight": "500",
+        "background": "rgba(101, 163, 13, 0.12)",
+        "color": "var(--d-primary, #4D7C0F)"
+      },
+      "pairs_with": [
+        "earth-card",
+        "earth-metric"
+      ],
+      "usage": [
+        "Category tags",
+        "Status labels",
+        "Sustainability scores",
+        "Impact badges"
+      ]
+    },
+    "earth-hero": {
+      "description": "Hero section with organic shape dividers. Wavy or curved bottom edges for natural flow.",
+      "intent": "Use for page hero sections. The organic curved divider replaces hard horizontal lines with flowing, nature-inspired shapes that evoke landscapes.",
+      "suggested_properties": {
+        "background": "linear-gradient(160deg, #4D7C0F, #0D9488)",
+        "color": "#FFFFFF",
+        "padding": "80px 40px 100px",
+        "clip-path": "ellipse(120% 100% at 50% 0%)",
+        "text-align": "center"
+      },
+      "pairs_with": [
+        "earth-surface",
+        "earth-card"
+      ],
+      "usage": [
+        "Page heroes",
+        "Section headers",
+        "Campaign banners",
+        "About page headers"
+      ]
+    },
+    "earth-section": {
+      "description": "Section container with subtle grain texture overlay. Adds tactile quality to flat backgrounds.",
+      "intent": "Use to wrap page sections for added texture. The grain overlay creates a paper-like, organic quality that differentiates from sterile digital surfaces.",
+      "suggested_properties": {
+        "position": "relative",
+        "background": "var(--d-bg, #FEFCE8)",
+        "padding": "64px 0"
+      },
+      "pairs_with": [
+        "earth-card",
+        "earth-surface",
+        "earth-hero"
+      ],
+      "usage": [
+        "Page sections",
+        "Feature sections",
+        "Testimonial sections",
+        "Content wrappers"
+      ]
+    },
+    "earth-metric": {
+      "description": "Growth-oriented metric display with nature-inspired icon. Leaf or sprout indicator for positive trends.",
+      "intent": "Use for impact metrics and sustainability KPIs. The growth icon reinforces the eco-positive narrative; the large number ensures readability.",
+      "suggested_properties": {
+        "font-size": "2rem",
+        "font-weight": "700",
+        "font-variant-numeric": "tabular-nums",
+        "line-height": "1.2",
+        "display": "flex",
+        "align-items": "center",
+        "gap": "10px"
+      },
+      "pairs_with": [
+        "earth-card",
+        "earth-badge"
+      ],
+      "usage": [
+        "Carbon footprint metrics",
+        "Sustainability scores",
+        "Growth indicators",
+        "Impact numbers"
+      ]
+    },
+    "earth-surface": {
+      "description": "Warm layered background with cream base. Creates depth through warm tonal variation.",
+      "intent": "Use as the root page background. The warm cream creates a natural, paper-like foundation that evokes organic materials and reduces screen fatigue.",
+      "suggested_properties": {
+        "background-color": "var(--d-bg, #FEFCE8)",
+        "color": "var(--d-text, #1A2E0A)",
+        "min-height": "100vh"
+      },
+      "pairs_with": [
+        "earth-card",
+        "earth-nav",
+        "earth-section"
+      ],
+      "usage": [
+        "Page root backgrounds",
+        "App shell backgrounds"
+      ]
+    },
+    "earth-input": {
+      "description": "Rounded input with warm border. Natural, inviting form styling with earthy focus ring.",
+      "intent": "Use for all form inputs. The warm border and earthy focus ring maintain the organic aesthetic while providing clear interactive states.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #FFFEF5)",
+        "border": "1px solid var(--d-border, #E5DFC0)",
+        "border-radius": "10px",
+        "padding": "12px 16px",
+        "font-size": "16px",
+        "transition": "border-color 200ms ease, box-shadow 200ms ease"
+      },
+      "pairs_with": [
+        "earth-card",
+        "earth-surface"
+      ],
+      "usage": [
+        "Text inputs",
+        "Search fields",
+        "Contact forms",
+        "Newsletter signups"
+      ]
+    },
+    "earth-nav": {
+      "description": "Spacious natural navigation with generous padding. Warm tones and organic feel.",
+      "intent": "Use for primary navigation. Generous spacing and warm tones create a calm, unhurried navigation experience that matches the sustainability-focused brand.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #FFFEF5)",
+        "border-right": "1px solid var(--d-border, #E5DFC0)",
+        "padding": "24px 16px",
+        "display": "flex",
+        "flex-direction": "column",
+        "gap": "6px"
+      },
+      "pairs_with": [
+        "earth-surface",
+        "earth-card"
+      ],
+      "usage": [
+        "Sidebar navigation",
+        "Main navigation panels"
+      ]
+    }
+  },
+  "elevation": {
+    "1": {
+      "light": "0 1px 2px rgba(0,0,0,0.05)",
+      "dark": "0 1px 2px rgba(0,0,0,0.30)"
+    },
+    "2": {
+      "light": "0 2px 6px rgba(0,0,0,0.07)",
+      "dark": "0 2px 6px rgba(0,0,0,0.40)"
+    },
+    "3": {
+      "light": "0 6px 16px rgba(0,0,0,0.09)",
+      "dark": "0 6px 16px rgba(0,0,0,0.45)"
+    },
+    "4": {
+      "light": "0 12px 32px rgba(0,0,0,0.12)",
+      "dark": "0 12px 32px rgba(0,0,0,0.50)"
+    },
+    "5": {
+      "light": "0 24px 64px rgba(0,0,0,0.16)",
+      "dark": "0 24px 64px rgba(0,0,0,0.55)"
+    }
+  }
+}

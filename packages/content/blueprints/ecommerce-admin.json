@@ -1,0 +1,253 @@
+{
+  "$schema": "https://decantr.ai/schemas/blueprint.v1.json",
+  "id": "ecommerce-admin",
+  "version": "2.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "eCommerce Admin",
+  "description": "Admin dashboard for store operations with product management, order fulfillment, customer relationships, inventory tracking, and sales analytics.",
+  "blueprint_portfolio": {
+    "visibility": "public",
+    "maturity": "supported-contract",
+    "rationale": "Supported registry blueprint that remains useful in All without being promoted as a flagship default.",
+    "artifact": {
+      "status": "candidate",
+      "showcase": "ecommerce-admin",
+      "notes": "Showcase-backed candidate; certification requires artifact evidence beyond registry availability."
+    }
+  },
+  "tags": [
+    "ecommerce",
+    "admin",
+    "dashboard",
+    "products",
+    "orders",
+    "customers",
+    "analytics",
+    "2026"
+  ],
+  "compose": [
+    "admin-overview",
+    "product-management",
+    "order-fulfillment",
+    "customer-management",
+    "admin-analytics",
+    "auth-full",
+    "settings-full"
+  ],
+  "theme": {
+    "id": "auradecantism",
+    "mode": "dark",
+    "shape": "rounded"
+  },
+  "personality": "Efficient, no-nonsense admin dashboard built for store operators. Dense table-heavy layouts with inline editing. Status badges use semantic colors. Order fulfillment uses a Kanban board for visual pipeline tracking. Revenue charts update in real-time. Product management has bulk actions and inventory alerts. Customer profiles show purchase history and lifetime value. Lucide icons. Dark mode for long operational sessions.",
+  "voice": {
+    "tone": "Direct and operational. Speaks to store managers.",
+    "cta_verbs": [
+      "Fulfill",
+      "Ship",
+      "Edit",
+      "Restock",
+      "Export",
+      "Analyze"
+    ],
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Shop now",
+      "Discover"
+    ],
+    "empty_states": "Practical and forward-looking. An empty orders page should say when orders will appear and link to store setup. No whimsy.",
+    "errors": "Specific and actionable. Include affected item IDs. For inventory conflicts, show current vs. attempted values.",
+    "loading": "Table row skeletons matching column widths. Show row count estimate if available. No full-page spinners."
+  },
+  "features": [
+    "auth",
+    "mfa",
+    "oauth",
+    "search",
+    "analytics-state",
+    "bulk-actions",
+    "notifications",
+    "inline-editing"
+  ],
+  "routes": {
+    "/dashboard": {
+      "page": "dashboard",
+      "shell": "sidebar-main",
+      "archetype": "admin-overview"
+    },
+    "/dashboard/actions": {
+      "page": "quick-actions",
+      "shell": "sidebar-main",
+      "archetype": "admin-overview"
+    },
+    "/products": {
+      "page": "products",
+      "shell": "sidebar-main",
+      "archetype": "product-management"
+    },
+    "/products/:id": {
+      "page": "product-edit",
+      "shell": "sidebar-main",
+      "archetype": "product-management"
+    },
+    "/inventory": {
+      "page": "inventory",
+      "shell": "sidebar-main",
+      "archetype": "product-management"
+    },
+    "/orders": {
+      "page": "orders",
+      "shell": "sidebar-main",
+      "archetype": "order-fulfillment"
+    },
+    "/orders/:id": {
+      "page": "order-detail",
+      "shell": "sidebar-main",
+      "archetype": "order-fulfillment"
+    },
+    "/customers": {
+      "page": "customers",
+      "shell": "sidebar-main",
+      "archetype": "customer-management"
+    },
+    "/customers/:id": {
+      "page": "customer-detail",
+      "shell": "sidebar-main",
+      "archetype": "customer-management"
+    },
+    "/analytics": {
+      "page": "analytics",
+      "shell": "sidebar-main",
+      "archetype": "admin-analytics"
+    },
+    "/login": {
+      "page": "login",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/register": {
+      "page": "register",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/forgot-password": {
+      "page": "forgot-password",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/reset-password": {
+      "page": "reset-password",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/verify-email": {
+      "page": "verify-email",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/mfa-setup": {
+      "page": "mfa-setup",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/mfa-verify": {
+      "page": "mfa-verify",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/phone-verify": {
+      "page": "phone-verify",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/settings/profile": {
+      "page": "profile",
+      "shell": "sidebar-main",
+      "archetype": "settings-full"
+    },
+    "/settings/security": {
+      "page": "security",
+      "shell": "sidebar-main",
+      "archetype": "settings-full"
+    },
+    "/settings/preferences": {
+      "page": "preferences",
+      "shell": "sidebar-main",
+      "archetype": "settings-full"
+    },
+    "/settings/danger": {
+      "page": "danger",
+      "shell": "sidebar-main",
+      "archetype": "settings-full"
+    }
+  },
+  "overrides": {
+    "features_add": [
+      "theme-toggle",
+      "command-palette"
+    ],
+    "features_remove": [],
+    "pages": {},
+    "pages_remove": []
+  },
+  "navigation": {
+    "command_palette": true,
+    "hotkeys": [
+      {
+        "key": "g d",
+        "route": "/dashboard",
+        "label": "Go to Dashboard"
+      },
+      {
+        "key": "g p",
+        "route": "/products",
+        "label": "Go to Products"
+      },
+      {
+        "key": "g o",
+        "route": "/orders",
+        "label": "Go to Orders"
+      },
+      {
+        "key": "g c",
+        "route": "/customers",
+        "label": "Go to Customers"
+      },
+      {
+        "key": "g a",
+        "route": "/analytics",
+        "label": "Go to Analytics"
+      }
+    ]
+  },
+  "seo_hints": {
+    "schema_org": [
+      "WebApplication",
+      "SoftwareApplication"
+    ],
+    "meta_priorities": [
+      "description",
+      "og:title",
+      "og:description"
+    ]
+  },
+  "dependencies": {
+    "archetypes": {
+      "admin-overview": ">=1.0.0",
+      "product-management": ">=1.0.0",
+      "order-fulfillment": ">=1.0.0",
+      "customer-management": ">=1.0.0",
+      "admin-analytics": ">=1.0.0",
+      "auth-full": ">=1.0.0",
+      "settings-full": ">=1.0.0"
+    }
+  },
+  "suggested_themes": [
+    "auradecantism",
+    "carbon",
+    "fintech",
+    "clean"
+  ]
+}

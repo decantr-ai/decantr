@@ -1,0 +1,77 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "saas-overview",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "SaaS Overview",
+  "description": "KPI dashboard overview with activity feed, chart grid, and quick actions. The primary landing surface for SaaS dashboard users.",
+  "tags": ["saas", "dashboard", "kpi", "overview", "activity", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["saas overview", "dashboard overview", "kpi dashboard", "saas home", "app dashboard"],
+      "secondary": ["metrics overview", "activity feed", "quick actions", "dashboard home"],
+      "negative": ["marketing", "landing", "public"]
+    },
+    "implies": ["saas-analytics", "team-workspace"],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "dashboard",
+      "patterns": [
+        {
+          "pattern": "kpi-grid",
+          "preset": "dashboard",
+          "as": "kpis"
+        },
+        {
+          "pattern": "chart-grid",
+          "preset": "standard",
+          "as": "charts"
+        },
+        {
+          "pattern": "activity-feed",
+          "preset": "compact",
+          "as": "activity"
+        }
+      ],
+      "default_layout": ["kpis", "charts", "activity"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "quick-actions",
+      "patterns": [
+        {
+          "pattern": "card-grid",
+          "preset": "icon",
+          "as": "action-grid"
+        }
+      ],
+      "default_layout": ["action-grid"],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "dashboard": "Primary dashboard view. Top row of KPI cards with trend indicators (revenue, users, churn, MRR). Below, a chart grid with line and bar charts for key metrics over time. Right column or below-fold shows a compact activity feed with recent user and system events. Everything scannable in 3 seconds.",
+    "quick-actions": "Icon card grid of frequent actions: create report, invite member, export data, configure alerts. Each card has an icon, label, and brief description. Keyboard-accessible shortcuts."
+  },
+  "features": ["real-time", "charts", "kpi", "activity-feed"],
+  "shells": {
+    "sidebar-main": "Collapsible sidebar navigation with main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "kpi-grid": ">=1.0.0",
+      "chart-grid": ">=1.0.0",
+      "activity-feed": ">=1.0.0",
+      "card-grid": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": ["auradecantism"],
+    "modes": ["dark", "light"]
+  }
+}

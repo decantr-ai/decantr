@@ -1,0 +1,133 @@
+{
+  "id": "kds-ticket-rail",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "KDS Ticket Rail",
+  "description": "A kitchen display system ticket rail rendering active order tickets as horizontal cards with item rows, station routing tags, prep timers counting up, priority flags, and bump buttons for kitchen flow management.",
+  "category": "restaurant",
+  "tags": [
+    "2026",
+    "restaurant",
+    "kitchen",
+    "kds",
+    "orders",
+    "tickets",
+    "pos",
+    "operations"
+  ],
+  "components": [
+    "OrderTicket",
+    "ItemRow",
+    "StationTag",
+    "PrepTimer",
+    "BumpButton",
+    "PriorityFlag",
+    "OrderHeader",
+    "ModifierChip",
+    "StationHeader"
+  ],
+  "default_preset": "horizontal",
+  "presets": {
+    "horizontal": {
+      "description": "Horizontal rail of order tickets flowing left-to-right in chronological order (oldest left). New tickets slide in from right, bumped tickets animate out to left. Primary kitchen line display mode.",
+      "layout": {
+        "layout": "rail",
+        "atoms": "_w100 _flex _gap3 _overflow-x-auto _p3"
+      }
+    },
+    "grid": {
+      "description": "Station-grouped grid layout with tickets organized into columns by station (Grill/Fry/Salad/Expo). Each station header tops its column. Tickets stack vertically within their assigned station column.",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_w100 _grid _grid-cols-[repeat(auto-fit,minmax(260px,1fr))] _gap3 _p3"
+      }
+    },
+    "compact": {
+      "description": "Summary rendering showing tickets as small rows with order number, table, item count, and elapsed time only. Used on secondary kitchen displays where detail must be truncated to fit many tickets.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_w100 _grid _gap1 _p2"
+      }
+    }
+  },
+  "visual_brief": "A high-contrast kitchen-grade display rail rendered on a dark-background d-section with large, glove-friendly touch targets. OrderTickets render as d-surface cards with thick borders and generous padding (min-width 260px, max-width 320px in horizontal mode). Each ticket's OrderHeader shows the order number in text-2xl mono-data bold ('#2047'), table identifier ('T-12' or 'BAR-4' or 'T/O' for takeout) in text-lg semibold, and a server initial avatar. A PrepTimer counts up from ticket-fire time in large mono-data figures ('04:32') positioned top-right; background color shifts with elapsed time: 0-4min=emerald, 4-8min=amber, 8+min=red (visual urgency escalation). The ticket body contains a vertical stack of ItemRows; each item row shows quantity ('2x') in bold, item name in semibold text-base ('RIBEYE 12oz'), and below it a row of ModifierChips ('med-rare', 'no rosemary', 'add garlic butter') in small pill form. Allergies display in red-outlined ModifierChips with warning icons. A StationTag chip on each item row color-codes the station routing (grill=red, fry=amber, salad=green, saute=blue, expo=violet) with small icon prefix. A PriorityFlag (red flag icon + 'RUSH' label) appears in the top-left corner of urgent tickets with a subtle border glow. If the ticket is part of a course-sequenced meal, a course-indicator badge shows 'Course 2' above the item list. At the bottom of each ticket, a large BumpButton spans full width (48px height) with text 'BUMP' in bold uppercase — tapping completes the ticket and triggers an animation sliding the ticket out to the left with a subtle chime. In grid preset, StationHeaders tower above each column ('GRILL', 'FRY', 'SALAD', 'EXPO') with the current active-ticket count. Recently bumped tickets fade-out and collapse smoothly. Ticket border color reflects priority: normal=neutral, rush=red, VIP=gold. Table-is-ready indicator shows a small clock icon on each ticket when all items are complete but not yet bumped.",
+  "layout_hints": {
+    "container": "d-section dark-bg with horizontal scroll",
+    "note": "KDS displays are operated by line cooks at high speed in kitchen conditions. Touch targets MUST be 48px minimum. Text MUST be readable at arm's length (text-base minimum). Timers MUST be mono-data tabular-nums for scannable readability.",
+    "prep_timer_escalation": "PrepTimer background MUST transition through emerald (0-4min) → amber (4-8min) → red (8+min). Elapsed time visibility is safety-critical for food quality. Use d-annotation[data-timer-state].",
+    "station_tag_colors": "StationTag colors fixed across venue: grill=red, fry=amber, salad=green, saute=blue, expo=violet. Include icon prefix (flame/fryer/leaf/pan/bell) — color alone is insufficient in busy kitchen.",
+    "bump_button": "BumpButton MUST be full-width 48px minimum tap target. Bold uppercase text. Single-tap completion (no confirm dialog — speed-critical). Post-tap animation confirms action.",
+    "modifier_chips": "ModifierChip allergies MUST have red outline + warning icon + red text. Never rely on text alone. Size slightly larger than regular modifiers for emphasis.",
+    "priority_flag": "PriorityFlag renders with red border glow on entire ticket card. 'RUSH' or 'VIP' text unmissable at arm's length. Escalates further with pulsing animation if >6min elapsed."
+  },
+  "default_layout": {
+    "layout": "rail",
+    "atoms": "_w100 _flex _gap3 _overflow-x-auto _p3",
+    "slots": {
+      "ticket-rail": "Horizontal scrolling container holding all active OrderTickets in chronological order (oldest left, newest right). Tickets flow in from right on creation and out to left on bump.",
+      "order-tickets": "Repeating slot — one OrderTicket per active order. Contains OrderHeader, ItemRow stack, PriorityFlag (if urgent), and BumpButton footer. Min-width 260px for ergonomic touch.",
+      "order-header": "Top section of each ticket showing order number (large bold mono-data), table identifier, server initial, and PrepTimer (color-escalating background).",
+      "item-rows": "Vertical stack of ItemRows within ticket body. Each row shows quantity, item name, StationTag, and ModifierChips beneath.",
+      "station-tags": "Per-item chips color-coded by kitchen station (grill/fry/salad/saute/expo). Icon + label format.",
+      "modifier-chips": "Sub-slot beneath each item row. Small pills showing modifications (no onion, med-rare, add cheese, allergies). Allergies use red-outlined emphasis.",
+      "prep-timer": "Top-right of each ticket. Counts up from fire-time in mm:ss. Background color escalates with elapsed time (emerald→amber→red).",
+      "priority-flag": "Top-left corner flag indicator for RUSH or VIP tickets. Red border glow on entire ticket card. Unmissable at arm's length.",
+      "bump-button": "Full-width button at ticket bottom. Bold uppercase 'BUMP' text. Single-tap completes ticket and animates it off the rail.",
+      "station-headers": "Grid-preset-only slot. Column headers identifying each station (GRILL/FRY/SALAD/EXPO) with active ticket count. Tall and bold for visibility."
+    }
+  },
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Kitchen display system ticket rail",
+    "announcements": [
+      "New ticket #{number} for table {table}: {itemCount} items",
+      "Ticket #{number} elapsed {time} — approaching quality threshold",
+      "Ticket #{number} bumped, prep time {duration}",
+      "RUSH ticket #{number} fired for table {table}"
+    ],
+    "keyboard": [
+      "Arrow keys: navigate between tickets",
+      "B: bump focused ticket",
+      "R: mark focused ticket as rush/priority",
+      "1-9: jump to ticket by position on rail",
+      "Escape: deselect focused ticket"
+    ]
+  },
+  "responsive": {
+    "mobile": "Switches to compact preset. Tickets render as rows with order number, table, item count, elapsed time, and bump button. Suitable for expo-station tablet but not line cooks.",
+    "tablet": "Full horizontal rail with standard ticket size. Touch-optimized. BumpButton remains full-width 48px minimum."
+  },
+  "motion": {
+    "micro": {
+      "timer-tick": "digit-flip 60ms every second",
+      "ticket-fire": "scale 0.95 to 1.0 + fade-in + slide-from-right 400ms spring",
+      "bump-tap": "button scale 1.0 to 0.9 to 1.0 100ms ease-out + flash"
+    },
+    "transitions": {
+      "ticket-bump": "slide-out-left + fade + collapse 300ms ease-in",
+      "timer-escalation": "background color crossfade 600ms ease-in-out at each threshold",
+      "priority-add": "red-glow border fade-in 250ms ease-out + RUSH flag slide-in"
+    },
+    "ambient": {
+      "rush-pulse": "RUSH tickets border red-glow pulse 1.2s ease-in-out infinite",
+      "overdue-shake": "tickets >8min subtle horizontal shake every 15s",
+      "timer-seconds": "seconds digit subtle brightness pulse 1s ease-in-out infinite"
+    }
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "composition": {
+    "KdsTicketRail": "Section(d-section, rail, dark-bg) > [StationHeader[]? + OrderTicket[]]",
+    "OrderTicket": "Surface(d-surface, data-interactive, data-priority?) > [OrderHeader + ItemRow[] + PriorityFlag? + BumpButton]",
+    "OrderHeader": "Header(d-annotation) > [OrderNumber + TableIdentifier + ServerInitial + PrepTimer]",
+    "ItemRow": "Row(d-row, data-item) > [Quantity + ItemName + StationTag + ModifierChip[]]",
+    "StationTag": "Chip(d-annotation, data-station) > [StationIcon + StationLabel]",
+    "ModifierChip": "Chip(d-annotation, data-modifier, data-allergy?) > [ModifierText + WarningIcon?]",
+    "PrepTimer": "Display(d-annotation, data-timer-state, mono-data) > [ElapsedTime]",
+    "PriorityFlag": "Flag(d-annotation, data-priority, red-glow) > [FlagIcon + PriorityLabel]",
+    "BumpButton": "Button(d-control, data-bump, full-width, 48px) > [BumpLabel]",
+    "StationHeader": "Header(d-annotation, data-station-header) > [StationName + ActiveCount]"
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "pipeline-builder",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Pipeline Builder",
+  "description": "Visual data pipeline builder with drag-and-drop canvas, pipeline list, and configuration for scheduling and retry policies.",
+  "tags": [
+    "data",
+    "pipeline",
+    "etl",
+    "visual-builder",
+    "workflow",
+    "scheduling"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "pipeline builder",
+        "data pipeline",
+        "etl builder",
+        "pipeline studio"
+      ],
+      "secondary": [
+        "visual pipeline",
+        "dag builder",
+        "workflow builder",
+        "data orchestration"
+      ],
+      "negative": []
+    },
+    "implies": [
+      "source-catalog",
+      "transformation-editor",
+      "job-monitor"
+    ],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "pipelines",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "pipeline-list"
+        }
+      ],
+      "default_layout": [
+        "data-table"
+      ],
+      "shell": "terminal-split"
+    },
+    {
+      "id": "pipeline-editor",
+      "patterns": [
+        {
+          "pattern": "workflow-canvas",
+          "preset": "standard",
+          "as": "pipeline-canvas"
+        }
+      ],
+      "default_layout": [
+        "workflow-canvas"
+      ],
+      "shell": "terminal-split"
+    },
+    {
+      "id": "pipeline-config",
+      "patterns": [
+        {
+          "pattern": "form-sections",
+          "preset": "standard",
+          "as": "pipeline-settings"
+        }
+      ],
+      "default_layout": [
+        "form-sections"
+      ],
+      "shell": "terminal-split"
+    }
+  ],
+  "page_briefs": {
+    "pipelines": "Pipeline list at /pipelines. Data table shows all pipelines with columns for name, status (active, paused, failed), last run time, next scheduled run, success rate, and owner. Row actions for editing, running, pausing, and deleting. Toolbar with create-new button and filters for status and owner.",
+    "pipeline-editor": "Visual pipeline editor at /pipelines/:id. Drag-and-drop workflow canvas where nodes represent sources, transformations, and destinations. Nodes connect via directed edges showing data flow. Left panel has a node palette organized by category (sources, transforms, sinks). Right panel shows selected node configuration. Top toolbar has save, run, and validate buttons.",
+    "pipeline-config": "Pipeline configuration at /pipelines/:id/config. Form sections for schedule (cron expression builder with human-readable preview), retry policy (max retries, backoff strategy, timeout), notifications (email/Slack on failure/success), and resource allocation (compute size, parallelism). Save and deploy buttons at bottom."
+  },
+  "features": [
+    "pipelines",
+    "visual-builder",
+    "scheduling"
+  ],
+  "shells": {
+    "terminal-split": "Split layout with terminal/log panel at bottom, main canvas above"
+  },
+  "dependencies": {
+    "patterns": {
+      "data-table": "^1.0.0",
+      "workflow-canvas": "^1.0.0",
+      "form-sections": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon",
+      "technical"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  }
+}

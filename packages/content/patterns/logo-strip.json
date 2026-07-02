@@ -1,0 +1,93 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "logo-strip",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Logo Strip",
+  "description": "Scrolling or static partner logo strip used for trust-building sections on marketing pages.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Badge",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "contained": false,
+  "components": [
+    "Badge",
+    "icon"
+  ],
+  "default_preset": "marquee",
+  "presets": {
+    "marquee": {
+      "description": "Single horizontal strip of muted partner logos scrolling slowly across the viewport.",
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _aic _gap8 _overflowhidden _py4",
+        "slots": {
+          "eyebrow": "Optional trust label such as Trusted by leading teams",
+          "logo-row": "Continuous row of logo marks or wordmarks",
+          "logo-item": "Single low-contrast logo tile"
+        }
+      }
+    },
+    "static": {
+      "description": "Wrapped static grid of partner logos for lighter-weight landing pages.",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc2 _md:gc4 _lg:gc6 _gap4 _aic",
+        "slots": {
+          "eyebrow": "Optional trust label",
+          "logo-item": "Centered logo mark or wordmark tile"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "row",
+    "atoms": "_flex _aic _gap8 _overflowhidden _py4",
+    "slots": {
+      "eyebrow": "Optional trust label",
+      "logo-row": "Horizontal logo strip",
+      "logo-item": "Single logo tile"
+    }
+  },
+  "visual_brief": "Low-noise trust strip with monochrome or softly muted brand marks sitting on a clean background. Logos should read as social proof, not as primary content. Spacing is generous, alignment is precise, and the overall effect is polished and calm rather than flashy.",
+  "responsive": {
+    "mobile": "Reduce visible logo count and prefer static wrapping if marquee would feel cramped. Keep marks legible and centered.",
+    "tablet": "Marquee or static grid both work. Maintain even spacing and avoid oversized logo marks.",
+    "desktop": "Wide horizontal strip with balanced breathing room between logos and an optional understated eyebrow label."
+  },
+  "layout_hints": {
+    "trust_hierarchy": "The strip is supportive proof between primary narrative sections. It should never overwhelm the hero or compete with main CTAs.",
+    "logo_treatment": "Use consistent box alignment and normalized visual weight across logos. Avoid loud color unless the theme explicitly calls for it.",
+    "section_rhythm": "Parent marketing layout owns the space around the strip. This pattern owns the internal row or wrapped grid only."
+  },
+  "motion": {
+    "micro": "Logo opacity may lift slightly on hover or focus when the marks are interactive.",
+    "transitions": "Marquee motion should be slow, linear, and unobtrusive. Static variants may fade in gently with the rest of the page."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "stagger-children",
+    "scroll-reveal"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Partner and customer logos",
+    "keyboard": [
+      "If logos link outward, tab through them in reading order with clear focus styles."
+    ],
+    "announcements": [
+      "Expose logo names as accessible labels rather than relying on decorative images alone."
+    ]
+  },
+  "composition": {
+    "LogoStrip": "Row(d-section, trust-strip) > [Eyebrow?(d-label) + LogoRow(d-data, marquee|grid) > LogoItem[]]",
+    "LogoItem": "Tile(d-surface|minimal) > [Wordmark | LogoMark]"
+  }
+}

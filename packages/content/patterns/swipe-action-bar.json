@@ -1,0 +1,119 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "swipe-action-bar",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Swipe Action Bar",
+  "description": "Three (or four) circular icon buttons sitting above the bottom-tab-bar, providing tap-to-act alternatives to swipe gestures: X (pass), Star (super-like), Heart (like), optional Undo. Sized generously (60px) for thumb-friendly tapping. Each button bounces and emits a color burst on tap. Hotkey-bound to ←/↑/→ for desktop testing.",
+  "category": "action",
+  "tags": [
+    "2026",
+    "action",
+    "buttons",
+    "swipe",
+    "mobile",
+    "consumer",
+    "social"
+  ],
+  "components": [
+    "ActionBar",
+    "ActionButton",
+    "PassButton",
+    "LikeButton",
+    "SuperLikeButton",
+    "UndoButton",
+    "ButtonIcon",
+    "TapBurst"
+  ],
+  "default_preset": "three-button",
+  "presets": {
+    "three-button": {
+      "description": "X / Star / Heart — the classic swipe-app trio. Centered horizontally with even spacing. Heart and X are the primary 60px buttons, Star is a smaller premium 48px between them.",
+      "layout": {
+        "layout": "flex-row",
+        "atoms": "_flex _flex-row _items-center _justify-center _gap-6 _w-full _py-4"
+      }
+    },
+    "four-button": {
+      "description": "Undo / X / Star / Heart variant including an Undo button for restoring the previous swipe. Used when the app supports rewinding.",
+      "layout": {
+        "layout": "flex-row",
+        "atoms": "_flex _flex-row _items-center _justify-center _gap-5 _w-full _py-4"
+      }
+    },
+    "two-button-minimal": {
+      "description": "Minimal X / Heart only — no super-like, no undo. Used in the simplest swipe flows where dual-rating is sufficient.",
+      "layout": {
+        "layout": "flex-row",
+        "atoms": "_flex _flex-row _items-center _justify-center _gap-8 _w-full _py-4"
+      }
+    }
+  },
+  "visual_brief": "A horizontal row of circular icon buttons centered horizontally in their container. The bar typically sits above the bottom-tab-bar but below the swipe deck — visually floating in the lower portion of the screen with generous breathing room. In the three-button preset: PassButton (60×60, white background, soft shadow) on the left with a 24px X Lucide icon in muted gray; SuperLikeButton (48×48, slightly smaller — premium feel) in the center with a 20px Star Lucide icon in violet; LikeButton (60×60) on the right with a 24px Heart Lucide icon in coral. All buttons share the swipecircle-action-button decorator: rounded-full, drop shadow with coral tint, white surface, no border. On hover (desktop): translateY(-2px) lift + shadow intensification. On press: scale(0.92) for 80ms then spring-back to scale(1) over 220ms cubic-bezier(0.34, 1.56, 0.64, 1) — the satisfying button bounce. On tap completion (when the corresponding swipe action commits): a color burst emits from the button — TapBurst — a radial gradient ring expands from the button center, scaling from 0 to 1.4 over 320ms while fading from opacity 0.6 to 0; ring color matches the action (coral for like, muted for pass, violet for super). Hotkey bindings: ArrowLeft triggers PassButton, ArrowRight triggers LikeButton, ArrowUp triggers SuperLikeButton — the corresponding button gets the same press animation when the key fires, providing clear visual feedback for desktop testing. The container itself has 16px vertical padding (py-4) and the gap between buttons is 24px (gap-6) in the three-button preset, balancing reach distance with center-of-screen weight. The bar is intentionally NOT inside the bottom-tab-bar — it floats above as a sibling, separated by 16px of body content space, so the swipe deck can have visual breathing room.",
+  "layout_hints": {
+    "container": "horizontal flex bar, centered, with action buttons sized for thumb reach",
+    "primary_buttons": "60×60 for primary actions (X, Heart) — the main swipe verbs",
+    "secondary_buttons": "48×48 for premium/optional (Star, Undo) — visually smaller to signal lower frequency",
+    "spacing": "24px gap in three-button, 20px in four-button, 32px in two-button-minimal — wider gaps emphasize button independence",
+    "position": "Above bottom-tab-bar, below swipe deck. Not inside the tab-bar."
+  },
+  "default_layout": {
+    "layout": "flex-row",
+    "atoms": "_flex _flex-row _items-center _justify-center _gap-6 _w-full _py-4",
+    "slots": {
+      "action-bar": "Outer container. Flex-row, items-center, justify-center, gap 24px (preset-dependent), padding 16px 0. Width 100% of parent. Carries aria-label='Swipe actions' and role='toolbar'.",
+      "pass-button": "Circular button, 60×60, applies the swipecircle-action-button decorator. Contains a 24px X Lucide icon in var(--d-text-muted). data-action='pass'. On click: emits 'swipe-pass' event. Bound to ArrowLeft hotkey.",
+      "super-like-button": "Circular button, 48×48 (smaller than primaries), white background, soft shadow. Contains a 20px Star Lucide icon in var(--d-secondary) (violet). data-action='super-like'. Conditionally rendered (controlled by feature flag). On click: emits 'swipe-super-like'. Bound to ArrowUp hotkey.",
+      "like-button": "Circular button, 60×60, applies swipecircle-action-button decorator. Contains a 24px Heart Lucide icon in var(--d-primary) (coral). On hover: icon fills with the primary color (transition fill 200ms ease-out). data-action='like'. On click: emits 'swipe-like'. Bound to ArrowRight hotkey.",
+      "undo-button": "Circular button, 48×48, optional in four-button preset. Contains a 18px Undo2 Lucide icon in var(--d-text-muted). data-action='undo'. On click: emits 'swipe-undo'. Disabled when no previous swipe to restore.",
+      "tap-burst": "Pseudo-element overlay on each button. Position absolute, inset 0. On action commit: scales 0→1.4 over 320ms with opacity 0.6→0. Background: radial-gradient with the action's signature color (coral, violet, muted)."
+    }
+  },
+  "accessibility": {
+    "role": "toolbar",
+    "aria-label": "Swipe actions",
+    "keyboard": [
+      "ArrowLeft: trigger Pass action",
+      "ArrowRight: trigger Like action",
+      "ArrowUp: trigger Super Like action (if enabled)",
+      "Tab: focus next action button",
+      "Shift+Tab: focus previous action button",
+      "Space or Enter: activate focused button",
+      "Cmd/Ctrl+Z: trigger Undo (if undo button visible)"
+    ],
+    "announcements": [
+      "Passed on {name}.",
+      "Liked {name}.",
+      "Super-liked {name}.",
+      "Restored previous card."
+    ],
+    "focus_management": "Each button is independently tabbable (tabindex=0). Buttons announce action verb + accessible-name (e.g., 'Pass on Maya'). Hotkey listeners scoped to the page (or active swipe deck) — should respect input_guard so they don't fire while user is typing in a chat input or form field elsewhere on the page."
+  },
+  "responsive": {
+    "mobile": "Flex-row with gap 20px — slightly tighter on narrow viewports to keep the bar in thumb reach. All button sizes preserved (60px primary, 48px secondary).",
+    "tablet": "Flex-row with gap 24px. Default gaps. Comfortable spacing.",
+    "desktop": "Flex-row with gap 24px. Hover states active (lift + shadow). Hotkey indicators may render as tiny labels below the buttons (text-xs, muted) for first-time users."
+  },
+  "motion": {
+    "micro": {
+      "button-hover": "translateY(-2px) + shadow intensification over 200ms ease-out",
+      "button-press": "scale(0.92) for 80ms, spring back to scale(1) over 220ms cubic-bezier(0.34, 1.56, 0.64, 1)",
+      "icon-hover-like": "Heart icon fill transitions from stroke-only to filled coral over 240ms ease-out (Like button only)",
+      "tap-burst": "Radial ring scales 0→1.4 with opacity 0.6→0 over 320ms ease-out — emanates from button center on action commit"
+    },
+    "transitions": {
+      "hotkey-flash": "When a hotkey fires, the corresponding button gets the press animation (scale 0.92 → 1.0 spring) AND a brief outline ring (2px primary-color, scale 1→1.3 opacity 1→0 over 320ms) to confirm the keystroke registered."
+    }
+  },
+  "interactions": [
+    "click-select",
+    "scale-hover",
+    "keyboard-navigation",
+    "ripple-click"
+  ],
+  "composition": {
+    "SwipeActionBar": "ActionBar(flex-row, gap-6, justify-center) > [PassButton + SuperLikeButton(conditional) + LikeButton + UndoButton(conditional)]",
+    "ActionButton": "Button(rounded-full, swipecircle-action-button, 60px or 48px) > [Icon(lucide, 24px or 20px) + TapBurst(pseudo-overlay)]",
+    "TapBurst": "Span(absolute, inset-0, pointer-events-none, radial-gradient, scale-and-fade-on-action)"
+  }
+}

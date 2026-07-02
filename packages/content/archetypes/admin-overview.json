@@ -1,0 +1,77 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "admin-overview",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Admin Overview Dashboard",
+  "description": "Store operations dashboard with KPIs, sales charts, activity feed, and quick action cards. Central hub for e-commerce administrators.",
+  "tags": ["admin", "dashboard", "kpi", "overview", "ecommerce", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["admin dashboard", "store dashboard", "admin overview", "operations dashboard"],
+      "secondary": ["sales metrics", "store kpi", "admin home", "revenue overview"],
+      "negative": ["storefront", "checkout", "customer-facing"]
+    },
+    "implies": ["analytics", "reporting"],
+    "weight": 1,
+    "tier": "core"
+  },
+  "pages": [
+    {
+      "id": "dashboard",
+      "patterns": [
+        {
+          "pattern": "kpi-grid",
+          "preset": "dashboard",
+          "as": "store-kpis"
+        },
+        {
+          "pattern": "chart-grid",
+          "preset": "standard",
+          "as": "sales-charts"
+        },
+        {
+          "pattern": "activity-feed",
+          "preset": "compact",
+          "as": "recent-activity"
+        }
+      ],
+      "default_layout": ["store-kpis", "sales-charts", "recent-activity"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "quick-actions",
+      "patterns": [
+        {
+          "pattern": "card-grid",
+          "preset": "icon",
+          "as": "action-cards"
+        }
+      ],
+      "default_layout": ["action-cards"],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "dashboard": "KPI grid at top showing today's revenue, total orders, conversion rate, and average order value with sparkline trends. Chart grid below with sales trend line chart, top products bar chart, and order status donut chart. Compact activity feed at bottom with recent orders, low-stock alerts, and return requests.",
+    "quick-actions": "Grid of icon cards for common admin actions: Add Product, Process Returns, View Low Stock, Export Reports, Create Promotion, and Manage Shipping. Each card has an icon, label, and brief description."
+  },
+  "features": ["analytics-state", "notifications", "quick-actions"],
+  "shells": {
+    "sidebar-main": "Sidebar navigation grouped by domain with main content area"
+  },
+  "suggested_theme": {
+    "ids": ["auradecantism", "carbon"],
+    "modes": ["dark", "light"]
+  },
+  "dependencies": {
+    "patterns": {
+      "kpi-grid": ">=1.0.0",
+      "chart-grid": ">=1.0.0",
+      "activity-feed": ">=1.0.0",
+      "card-grid": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

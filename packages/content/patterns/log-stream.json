@@ -1,0 +1,150 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "log-stream",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Log Stream",
+  "description": "Real-time log streaming display with filtering, search, and auto-scroll behavior.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {
+      "terminal": "^1.0.0"
+    },
+    "requires_core": {
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Continuous log stream with auto-scroll",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _hfull _mono _bgblack _fggreen",
+        "slots": {
+          "header": "Pause/play controls and stats",
+          "stream": "Scrolling log entries",
+          "stats": "Error/warn/info counts"
+        }
+      }
+    },
+    "filtered": {
+      "description": "Log stream with level filter controls",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _hfull _mono _bgblack _fggreen",
+        "slots": {
+          "header": "Filter controls by log level",
+          "search": "Search/filter input",
+          "stream": "Filtered log entries",
+          "stats": "Count per level"
+        }
+      }
+    },
+    "grouped": {
+      "description": "Logs grouped by source or timestamp",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _hfull _mono _bgblack _fggreen",
+        "slots": {
+          "groups": "Collapsible log groups",
+          "group-header": "Group label with count",
+          "group-entries": "Log entries within group"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _hfull _mono _bgblack _fggreen",
+    "slots": {
+      "header": "Controls and stats",
+      "stream": "Log entries",
+      "search": "Search input"
+    }
+  },
+  "features": [
+    "auto-scroll",
+    "pause-on-hover",
+    "level-filtering",
+    "search-highlight",
+    "timestamp-format",
+    "source-labels",
+    "copy-entry",
+    "export-logs"
+  ],
+  "log_levels": {
+    "DEBUG": {
+      "color": "#666666",
+      "priority": 0
+    },
+    "INFO": {
+      "color": "#00FF00",
+      "priority": 1
+    },
+    "WARN": {
+      "color": "#FFB000",
+      "priority": 2
+    },
+    "ERROR": {
+      "color": "#FF0000",
+      "priority": 3
+    }
+  },
+  "visual_brief": "Terminal-style scrolling log display on a dark background with monospace text. Each log entry is a single line showing a timestamp in muted color, a log level badge (INFO in blue, WARN in yellow, ERROR in red, DEBUG in gray), and the message text. New entries append at the bottom with auto-scroll behavior. A controls header contains a search input, level filter toggles, and a pause/resume button. The filtered preset dims non-matching entries. The grouped preset collapses repeated messages with a count badge. A small stats bar shows entries/second and total count.",
+  "responsive": {
+    "mobile": "Full-width log view. Controls collapse into a top bar with a filter toggle button. Log entries use smaller font. Search is a full-width overlay.",
+    "tablet": "Standard layout with controls visible. Comfortable font size for log entries.",
+    "desktop": "Full log stream with controls bar, search, and stats visible. Wide view accommodates long log messages without wrapping."
+  },
+  "layout_hints": {
+    "terminal_frame": "The pattern owns the terminal-like frame, controls header, and scrolling stream region. Parent layouts should not wrap it in another faux-terminal shell.",
+    "signal_hierarchy": "Lead with the live stream, then controls, then secondary counters. Stats should support stream interpretation, not compete with the entries.",
+    "line_density": "Entries should align in a stable rhythm with timestamp, level, source, and message fields that scan quickly during live updates.",
+    "live_vs_indexed_separation": "When a log explorer renders BOTH a live stream AND a separate searchable historical table, they MUST be visually separated by either: (a) a section eyebrow (\"LIVE STREAM\" + \"INDEXED LOGS\") with explicit headings, OR (b) a tab toggle at the top of the region letting the user choose Live | Indexed. Rendering both views stacked without separation is confusing — users see two log lists and cannot tell why they differ. Section eyebrows + accent left-border are the canonical separator.",
+    "timestamp_continuity": "When live entries (current timestamps) sit above historical entries (older timestamps) in the SAME stream, insert a \"— now —\" or \"— latest —\" annotation row between the two epochs. Sub-second timestamps jumping from 15:25:33 to 10:42:18 with no break is jarring and reads as a bug."
+  },
+  "motion": {
+    "micro": "New entries may fade or slide in subtly at the bottom, and paused state indicators may brighten clearly when active.",
+    "transitions": "Auto-scroll should feel steady and predictable. Filter changes should dim or reveal entries without causing the whole stream frame to jump."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "real-time-updates",
+    "hover-reveal",
+    "scroll-reveal",
+    "keyboard-navigation"
+  ],
+  "accessibility": {
+    "role": "log",
+    "aria-label": "Live log stream",
+    "aria-live": "polite",
+    "keyboard": [
+      "Tab through stream controls, search, and any copy/export actions before entering the log viewport.",
+      "If the log viewport itself is focusable, arrow keys and Page Up/Page Down should preserve readable navigation through entries."
+    ],
+    "announcements": [
+      "New entries, pause state, and active filters should be exposed in a way that does not overwhelm assistive technology with every visual update."
+    ]
+  }
+}

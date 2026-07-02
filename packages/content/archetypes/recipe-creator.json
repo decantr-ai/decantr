@@ -1,0 +1,71 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "recipe-creator",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipe Creator",
+  "description": "Recipe creation editor with sectioned forms, drag-and-drop ingredient and step ordering, and a personal recipe management table.",
+  "tags": ["recipes", "creator", "editor", "form", "content-creation", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["recipe creator", "create recipe", "recipe editor", "add recipe", "recipe form"],
+      "secondary": ["ingredient editor", "step editor", "my recipes", "recipe management"],
+      "negative": ["browse", "social", "analytics"]
+    },
+    "implies": [],
+    "weight": 0.8,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "create",
+      "patterns": [
+        {
+          "pattern": "form-sections",
+          "preset": "standard",
+          "as": "recipe-form"
+        },
+        {
+          "pattern": "drag-sort-list",
+          "preset": "standard",
+          "as": "ingredient-list"
+        }
+      ],
+      "default_layout": ["recipe-form", "ingredient-list"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "my-recipes",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "recipe-table"
+        }
+      ],
+      "default_layout": ["recipe-table"],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "create": "Recipe creation form with sections for title, description, cuisine tags, and cover photo upload. Drag-sortable ingredient list with quantity, unit, and name fields. Step editor with photo upload per step. Preview panel on the side. Publish and save-as-draft actions.",
+    "my-recipes": "Data table of the user's own recipes with columns for title, status (draft/published), created date, views, and saves. Row actions for edit, duplicate, and delete. Filter by status."
+  },
+  "features": ["drag-drop", "image-upload", "autosave", "preview"],
+  "shells": {
+    "sidebar-main": "Collapsible sidebar navigation with main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "form-sections": ">=1.0.0",
+      "drag-sort-list": ">=1.0.0",
+      "data-table": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": ["auradecantism"],
+    "modes": ["light", "dark"]
+  }
+}

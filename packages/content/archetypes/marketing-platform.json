@@ -1,0 +1,129 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "marketing-platform",
+  "role": "public",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Marketing Platform",
+  "description": "Platform marketing landing page with hero, feature showcase, pricing tiers, testimonials, and documentation hub for multi-tenant SaaS products.",
+  "tags": [
+    "marketing",
+    "landing",
+    "platform",
+    "seo",
+    "documentation"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "platform marketing",
+        "saas landing page",
+        "platform homepage",
+        "product marketing",
+        "marketing site"
+      ],
+      "secondary": [
+        "feature showcase",
+        "pricing page",
+        "docs landing",
+        "platform overview",
+        "customer testimonials"
+      ],
+      "negative": [
+        "internal-only",
+        "no-marketing"
+      ]
+    },
+    "implies": [
+      "auth-flow-enterprise"
+    ],
+    "weight": 0.8,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "patterns": [
+        {
+          "pattern": "hero-split",
+          "preset": "standard",
+          "as": "hero"
+        },
+        {
+          "pattern": "features",
+          "preset": "standard",
+          "as": "features"
+        },
+        {
+          "pattern": "pricing",
+          "preset": "standard",
+          "as": "pricing"
+        },
+        {
+          "pattern": "testimonials",
+          "preset": "standard",
+          "as": "testimonials"
+        },
+        {
+          "pattern": "cta-section",
+          "preset": "standard",
+          "as": "cta"
+        }
+      ],
+      "default_layout": [
+        "hero",
+        "features",
+        "pricing",
+        "testimonials",
+        "cta"
+      ],
+      "shell": "top-nav-footer"
+    },
+    {
+      "id": "docs",
+      "patterns": [
+        {
+          "pattern": "card-grid",
+          "preset": "content",
+          "as": "doc-categories"
+        }
+      ],
+      "default_layout": [
+        "doc-categories"
+      ],
+      "shell": "top-nav-footer"
+    }
+  ],
+  "page_briefs": {
+    "home": "Platform landing page with a split hero featuring headline, subtext, and CTA button on the left with a product screenshot or illustration on the right. Feature section with icon cards highlighting key platform capabilities. Pricing tier cards with feature comparison and monthly/annual toggle. Customer testimonial cards with quotes, avatars, and company logos. Final CTA section with sign-up prompt and secondary link to documentation.",
+    "docs": "Documentation landing page with a content card grid organizing docs by category. Each card shows a category icon, title, brief description, and article count. Categories include Getting Started, API Reference, SDKs, Guides, and Changelog. Search bar at the top for full-text doc search."
+  },
+  "features": [
+    "marketing",
+    "seo"
+  ],
+  "shells": {
+    "top-nav-footer": "Top navigation with hero sections and footer for public pages"
+  },
+  "dependencies": {
+    "patterns": {
+      "hero-split": "^1.0.0",
+      "features": "^1.0.0",
+      "pricing": "^1.0.0",
+      "testimonials": "^1.0.0",
+      "cta-section": "^1.0.0",
+      "card-grid": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon",
+      "clean"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  }
+}

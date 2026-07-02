@@ -1,0 +1,151 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "content-card-grid",
+  "version": "1.3.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Content Card Grid",
+  "description": "Responsive grid of registry content cards with optional thumbnail media, strong type identity, builder-friendly descriptions, and a clean source/version/date footer. Used for browsing patterns, themes, blueprints, archetypes, and shells. This pattern owns the card grid, not outer section spacing.",
+  "dependencies": {
+    "patterns": {
+      "namespace-badge": "^1.0.0"
+    },
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Card",
+        "Badge",
+        "Button",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "contained": false,
+  "components": [
+    "Card",
+    "CardHeader",
+    "CardBody",
+    "CardFooter",
+    "Badge",
+    "Button",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Registry content cards with optional 16:9 media, one type chip, a 3-line description, and a clean source/version/date footer. Grid: 1/2/3 cols at sm/md/lg.",
+      "components": [
+        "Card",
+        "CardHeader",
+        "CardBody",
+        "CardFooter",
+        "Badge",
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _md:gc2 _lg:gc3 _gap4",
+        "slots": {
+          "card-media": "Optional full-width 16:9 thumbnail image. Only render when the content item has an uploaded registry thumbnail.",
+          "card-title-row": "Title on the left with one color-coded type chip on the right",
+          "card-description": "Short description with _bodysm _fgmuted, max 3 lines",
+          "card-meta": "Friendly source line, version, and publish date",
+          "card-cta": "One optional showcase CTA with external-link affordance"
+        }
+      }
+    },
+    "compact": {
+      "description": "Compact list-style content cards with minimal info. Grid: 1/2/4 cols. Useful for dense browsing views.",
+      "components": [
+        "Card",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _sm:gc2 _xl:gc4 _gap3",
+        "slots": {
+          "card-icon": "Content type icon on the left",
+          "card-title": "Content name with _textsm _fontmedium",
+          "card-namespace": "Namespace badge, small variant",
+          "card-version": "Version text with _textxs _fgmuted"
+        }
+      }
+    },
+    "editable": {
+      "description": "Dashboard content cards with the same visual hierarchy as public cards, plus status and edit/delete affordances.",
+      "components": [
+        "Card",
+        "CardHeader",
+        "CardBody",
+        "CardFooter",
+        "Badge",
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _md:gc2 _lg:gc3 _gap4",
+        "slots": {
+          "card-media": "Optional full-width 16:9 thumbnail image",
+          "card-status": "Status badge (published/pending/rejected) with color coding",
+          "card-title-row": "Title with one type chip",
+          "card-description": "Short description, max 3 lines",
+          "card-meta": "Friendly source line, version, and publish date",
+          "card-actions": "Edit and delete button group kept visually secondary to the main content"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gc1 _md:gc2 _lg:gc3 _gap4",
+    "slots": {
+      "card-media": "Optional full-width 16:9 thumbnail image",
+      "card-title-row": "Content name, clickable link, and one color-coded type chip",
+      "card-description": "Short description, max 3 lines",
+      "card-meta": "Friendly source line, version, and publish date",
+      "card-cta": "Optional showcase action"
+    }
+  },
+  "visual_brief": "Responsive grid of bordered cards that feel editorial, calm, and app-forward. Each card can open with an optional 16:9 screenshot-style thumbnail. The title and description should dominate, with one distinct type chip acting as the only browse-card chip. The footer should feel like a clean authored source line rather than a metadata bucket: source first, then version, then date. If a showcase exists, its CTA should feel obvious and inviting. The overall impression should be curated and useful, not operator-heavy or diagnostic.",
+  "responsive": {
+    "mobile": "Single-column card stack. Cards take full width, thumbnails remain 16:9, descriptions show up to three lines, and the footer/source line wraps naturally without overflow.",
+    "tablet": "Two-column grid. Thumbnails, title, description, and footer all remain readable without crowded chip rows.",
+    "desktop": "Three or four column grid depending on container width. Cards feel airy and selective, with one type chip, generous description room, and a clear showcase CTA when present."
+  },
+  "layout_hints": {
+    "card_treatment": "Each card uses lum-card-outlined with a type-linked accent and optional media frame. Hover should feel subtle but premium: border intensifies, card lifts slightly, and shadows deepen without turning noisy.",
+    "card_content": "Do not use browse-card trust chips. Keep only the type chip. The footer should carry the source line first, then version, then date. Showcase CTA should sit clearly below that row when present.",
+    "grid_layout": "Responsive grid: 3 columns desktop, 2 tablet, 1 mobile. Gap: 1rem. Equal-height cards per row. Avoid visual density spikes between cards with thumbnails and cards without thumbnails. Parent workspace layout owns any spacing between this grid and sibling filters, intros, or empty-state lead surfaces."
+  },
+  "motion": {
+    "micro": "Cards may lift slightly and intensify their border treatment on hover. Showcase CTAs should respond clearly on hover and focus without overwhelming the card.",
+    "transitions": "Filter and sort changes should cross-fade or stagger cards in gently over 180-260ms. Thumbnail appearance should feel polished but restrained."
+  },
+  "interactions": [
+    "lift-hover",
+    "stagger-children",
+    "animate-on-mount",
+    "click-select",
+    "scroll-reveal"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Content card grid",
+    "keyboard": [
+      "Tab should move through cards and showcase CTAs in reading order.",
+      "If the whole card is clickable, expose one clear primary interaction target."
+    ],
+    "announcements": [
+      "Card title, source line, and showcase availability should be available to assistive technology without depending on hover."
+    ],
+    "focus_management": "Focused cards should receive an obvious treatment equivalent to hover, and nested CTAs should remain distinct from the card container."
+  },
+  "composition": {
+    "ContentCardGrid": "Grid(d-data, responsive: 1/2/3-col) > ContentCard[]",
+    "ContentCard": "Card(d-surface, hoverable) > [Thumbnail(optional, 16:9) + TitleRow > [Title(heading4, clickable) + TypeChip(d-annotation, color-coded)] + Description(text-muted, line-clamp-3) + Footer > [SourceLine(mono-data) + Version + PublishDate + ShowcaseAction(optional)]]",
+    "EditableCard": "ContentCard > FooterSecondary > [StatusBadge + EditButton(d-interactive) + DeleteButton(d-interactive, variant: destructive)]"
+  }
+}

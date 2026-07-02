@@ -1,0 +1,128 @@
+{
+  "id": "protocol-step",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Protocol Step",
+  "description": "A lab-protocol step card rendering a numbered procedural step with action description, reagent list with volumes and concentrations, required equipment chips, timing controls, safety indicators, and completion confirmation checkbox.",
+  "category": "science",
+  "tags": [
+    "2026",
+    "science",
+    "lab",
+    "protocol",
+    "procedure",
+    "reagents",
+    "safety",
+    "timer"
+  ],
+  "components": [
+    "StepNumber",
+    "StepAction",
+    "ReagentList",
+    "ReagentRow",
+    "EquipmentChip",
+    "TimerDisplay",
+    "SafetyBadge",
+    "CompletionCheck",
+    "NotesBox"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Detailed protocol step showing action, full reagent list with volumes, equipment chips, safety badges, and completion checkbox. Intended as primary rendering during active bench work with all context visible.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_w100 _grid _gap3 _p4"
+      }
+    },
+    "checklist": {
+      "description": "Compact single-line rendering showing step number, abbreviated action, and completion checkbox. Reagents collapse into a popover. Used for quick-scan protocol overviews and printable bench cards.",
+      "layout": {
+        "layout": "row",
+        "atoms": "_w100 _flex _gap2 _p2"
+      }
+    },
+    "timed": {
+      "description": "Step optimized for time-critical procedures featuring a prominent countdown/count-up TimerDisplay with start/pause/reset controls. Completion auto-suggests when timer completes with audible chime.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_w100 _grid _gap3 _p4"
+      }
+    }
+  },
+  "visual_brief": "A lab-notebook-inspired step card rendered as a d-surface with a thin left border in primary accent color. At the top-left corner, a StepNumber renders as a 40px circular badge with the number in bold text ('3') against a filled primary-color background. To its right, the StepAction contains the procedural instruction in text-base semibold followed by an optional description in body-muted text (e.g., 'Add lysis buffer and vortex for 30 seconds'). Below the header, the ReagentList renders as a bordered sub-panel with a d-annotation caption 'Reagents'. Each ReagentRow contains: reagent name (semibold), volume (mono-data, e.g., '50 µL'), concentration (mono-data muted, e.g., '10 mM'), and a small source-chip indicating which stock or lot (e.g., 'Lot #A2394'). Adjacent to ReagentList, EquipmentChips render as pill-shaped tags with tiny iconography (vortex mixer, centrifuge, pipette, heat block, incubator) showing the instruments required. SafetyBadges render as a horizontal row of color-coded pills with warning icons: amber for PPE requirements (gloves, eye protection), red for hazardous materials (flammable, corrosive, toxic), blue for specialized handling (fume hood, biosafety cabinet). For timed steps, the TimerDisplay sits prominently as a large digital-style countdown card (text-3xl mono-data) with start/pause/reset icon buttons. The timer background shifts from neutral to amber when <30s remain and pulses when time expires. A NotesBox sits below as a small textarea for scientist observations. At the bottom-right, the CompletionCheck is a large 24px checkbox labeled 'Mark complete' that, when checked, locks the card in a completed state (subtle green tint, strikethrough action text) and records a timestamp chip showing who completed it and when. Completed cards show a thin success-colored left border replacing the primary border.",
+  "layout_hints": {
+    "container": "d-surface card with colored left border",
+    "note": "Protocol steps are safety-critical scientific procedures. Every reagent MUST show volume AND concentration. Every hazard MUST have a visible SafetyBadge. Completion MUST be timestamped.",
+    "step_number": "StepNumber uses d-annotation[data-step-number] as a 40px filled circle with bold number. Completed steps show checkmark instead of number. Primary color filled.",
+    "reagent_format": "ReagentRow uses mono-data tabular-nums for all volumes and concentrations. Format: 'Reagent Name | 50 µL | 10 mM | Lot #A2394'. Never abbreviate units.",
+    "safety_badges": "SafetyBadge colors MUST map consistently: amber=PPE, red=hazard, blue=specialized-handling. Each badge includes icon+label, never icon-only (unparseable without label).",
+    "timer_states": "TimerDisplay transitions through states: idle (neutral), running (primary), warning (<30s amber), expired (red pulse). Always shows mm:ss format with tabular-nums.",
+    "completion_lock": "CompletionCheck is single-direction (checking locks the step). Undoing completion requires supervisor password to maintain protocol integrity and audit trail."
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_w100 _grid _gap3 _p4",
+    "slots": {
+      "step-header": "Top row containing the circular StepNumber badge on the left and the StepAction instruction text on the right. Action uses semibold heading style with optional muted description subline.",
+      "reagent-list": "Sub-panel showing all reagents required for this step. Each ReagentRow lists name, volume, concentration, and source/lot identifier. Uses d-annotation caption 'Reagents' above the list.",
+      "equipment-chips": "Horizontal row of pill-shaped EquipmentChip tags with tiny icons identifying required instruments (vortex, centrifuge, pipette, heat block, incubator). Clickable to surface instrument details.",
+      "safety-badges": "Horizontal row of color-coded SafetyBadges (amber=PPE, red=hazard, blue=specialized). Icon + text for each. Essential for benchtop safety compliance.",
+      "timer-display": "Timed-preset-only slot. Large mono-data countdown/count-up timer with start/pause/reset icon buttons. Background shifts color as time elapses. Audible chime on completion.",
+      "notes-box": "Optional expandable textarea capturing scientist observations, deviations, or measurements at this step. Timestamped when saved.",
+      "completion-check": "Bottom-right large checkbox labeled 'Mark complete'. Locks step when checked and records who completed it with timestamp. Completed steps show success-tinted background."
+    }
+  },
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Protocol step",
+    "announcements": [
+      "Step {number}: {action}",
+      "Required safety: {badges}",
+      "Timer {started|paused|completed} at {time}",
+      "Step {number} marked complete by {user}"
+    ],
+    "keyboard": [
+      "Space: toggle timer start/pause",
+      "R: reset timer",
+      "C: mark step complete",
+      "N: focus notes box",
+      "Tab: cycle through reagents and equipment chips"
+    ]
+  },
+  "responsive": {
+    "mobile": "Step card expands to full-width. ReagentList collapses into expandable accordion. EquipmentChips wrap to multiple lines. TimerDisplay grows to hero size for visibility at the bench where scientists may be gloved and distant.",
+    "tablet": "Full standard layout. ReagentList and EquipmentChips display side-by-side in two columns if space permits."
+  },
+  "motion": {
+    "micro": {
+      "check-toggle": "checkbox fill + checkmark-draw 200ms ease-out",
+      "chip-hover": "scale 1.03 + shadow 120ms ease-out",
+      "timer-tick": "digit flip 80ms ease-in-out per second"
+    },
+    "transitions": {
+      "completion-lock": "card background tint to success + border color shift 300ms ease-out",
+      "timer-warning": "background color pulse to amber 400ms ease-in-out when <30s",
+      "notes-expand": "height auto + fade 200ms ease-out"
+    },
+    "ambient": {
+      "timer-pulse": "expired timer border red-glow 800ms ease-in-out infinite",
+      "running-shimmer": "timer digits subtle brightness pulse 2s ease-in-out infinite while running"
+    }
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "composition": {
+    "ProtocolStep": "Surface(d-surface, border-left-accent) > [StepHeader + ReagentList + EquipmentChip[] + SafetyBadge[] + TimerDisplay? + NotesBox? + CompletionCheck]",
+    "StepHeader": "Row(d-row) > [StepNumber + StepAction]",
+    "StepNumber": "Badge(d-annotation, circular, data-step) > [NumberOrCheck]",
+    "ReagentList": "Panel(d-annotation, bordered) > [ListCaption + ReagentRow[]]",
+    "ReagentRow": "Row(d-row, data-reagent) > [ReagentName + VolumeCell + ConcentrationCell + LotChip]",
+    "EquipmentChip": "Chip(d-annotation, data-equipment) > [EquipmentIcon + EquipmentLabel]",
+    "SafetyBadge": "Badge(d-annotation, data-safety-level) > [WarningIcon + HazardLabel]",
+    "TimerDisplay": "Card(d-surface, data-timer-state) > [DigitReadout + StartButton + PauseButton + ResetButton]",
+    "CompletionCheck": "Control(d-control, data-completion) > [Checkbox + CompletionLabel + TimestampChip?]"
+  }
+}

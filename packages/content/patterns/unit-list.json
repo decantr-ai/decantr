@@ -1,0 +1,106 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "unit-list",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Unit List",
+  "description": "Units within a property displayed as cards or table. Shows unit number, specs, tenant, rent, and status.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "icon",
+        "Badge"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "icon",
+    "Badge"
+  ],
+  "default_preset": "grid",
+  "presets": {
+    "grid": {
+      "description": "Responsive card grid of units showing unit number, specs, tenant, rent, and occupancy status",
+      "components": [
+        "Button",
+        "icon",
+        "Badge"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "header": "Title, add unit button",
+          "summary": "Total units, occupied, vacant, revenue",
+          "filters": "Status filter",
+          "items": "Unit cards"
+        }
+      }
+    },
+    "table": {
+      "description": "Sortable data table view of units with columns for number, specs, tenant, rent, and status",
+      "components": [
+        "Button",
+        "icon",
+        "Badge"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "header": "Title and controls",
+          "table": "Units table"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap4",
+    "slots": {
+      "header": "Title and add button",
+      "summary": "Unit counts",
+      "items": "Unit cards or rows"
+    }
+  },
+  "visual_brief": "List of units within a property. Header shows 'Units' title with a unit count and an 'Add Unit' button. A summary bar shows counts by status (occupied, vacant, maintenance). The grid preset displays units as bordered cards, each showing unit number, bedroom/bathroom count, square footage, current tenant name (or 'Vacant' in muted text), rent amount, and a status badge. The table preset renders as a data table with those same fields as columns. Cards and rows are clickable to navigate to unit detail.",
+  "responsive": {
+    "mobile": "Single-column card stack. Summary bar shows counts compactly. Add Unit button is a FAB or in the header.",
+    "tablet": "Two-column card grid or table with horizontal scroll.",
+    "desktop": "Three-column card grid or full-width table with all columns visible."
+  },
+  "layout_hints": {
+    "inventory_priority": "The user should be able to scan occupancy, rent, and tenant state for each unit quickly. Unit identity and status come first; detailed specs support that read.",
+    "grid_vs_table": "Card and table variants should preserve the same core fields so switching views does not change the mental model of the unit inventory.",
+    "summary_rhythm": "Keep the summary counts closely tied to the unit collection, not floating as a separate analytics block."
+  },
+  "motion": {
+    "micro": "Clickable cards or rows may lift or sharpen slightly on hover. Status badges may brighten subtly when filtered or selected.",
+    "transitions": "View or filter changes should maintain orientation within the unit list so users do not lose track of current inventory context."
+  },
+  "interactions": [
+    "click-select",
+    "hover-reveal",
+    "animate-on-mount",
+    "stagger-children"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Unit list",
+    "keyboard": [
+      "Header actions, summary controls, and unit items should follow a straightforward reading order."
+    ],
+    "announcements": [
+      "Unit number, occupancy state, tenant context, and rent should be exposed semantically so the inventory remains understandable in both card and table modes."
+    ]
+  },
+  "composition": {
+    "UnitList": "Grid(d-section, responsive: 1/2/3-col) > UnitCard[]",
+    "UnitCard": "Card(d-surface, hoverable) > [UnitNumber(heading4) + SpecsRow > [Beds + Baths + SqFt(mono-data)] + TenantName?(font-medium) + Rent(mono-data) + StatusBadge(d-annotation, color: occupancy)]"
+  }
+}

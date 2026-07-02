@@ -1,0 +1,115 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "footer",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Footer",
+  "description": "Page footer with link columns, social icons, and copyright notice.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Link",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Link",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Multi-column footer with link groups, social icons, and copyright",
+      "components": [
+        "Link",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap8 _px6 _py8 _borderT",
+        "slots": {
+          "columns": "Grid of link groups: _grid _gc2 _md:gc4 _gap6",
+          "column-heading": "Group heading with _textsm _fontbold _fgmuted _uppercase _tracking[wider]",
+          "column-links": "Vertical list of links with _flex _col _gap2",
+          "bottom-bar": "Horizontal bar: logo/copyright left, social icons right with _flex _jcsb _aic",
+          "social-icons": "Row of social media icon links with _flex _gap3"
+        }
+      }
+    },
+    "simple": {
+      "description": "Single-row footer with links and copyright",
+      "components": [
+        "Link"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _aic _jcsb _px6 _py4 _borderT _fgmuted",
+        "slots": {
+          "links": "Horizontal footer links",
+          "copyright": "Copyright text"
+        }
+      }
+    }
+  },
+  "visual_brief": "Full-width footer section with a top border separating it from page content. The standard preset uses a multi-column grid layout: 3-4 columns of link groups, each headed by an uppercase, small, bold, muted label (e.g. 'Product', 'Company', 'Resources'). Links beneath each heading are regular-weight, muted text that brightens on hover. Below the columns, a bottom bar contains the logo or brand name on the left with a copyright line, and social media icon links (GitHub, Twitter, LinkedIn) on the right. The simple preset is a single horizontal row with inline links on one side and copyright on the other. Background uses the page surface color or a slightly darker shade.",
+  "responsive": {
+    "mobile": "Link columns stack to 2-column grid (gc2). Bottom bar stacks vertically — copyright above, social icons below, both centered. Padding reduces to px4 py6.",
+    "tablet": "Three or four columns depending on content. Bottom bar stays horizontal. Comfortable spacing.",
+    "desktop": "Full four-column grid with generous gap6 spacing. Bottom bar horizontal with logo left, social right. Full px6 py8 padding."
+  },
+  "layout_hints": {
+    "footer_priority": "Column groupings and utility links should read clearly before social or decorative elements. The footer should feel like a calm endpoint to the page, not a second hero.",
+    "bottom_bar_role": "Brand, copyright, and social actions belong in a restrained support band beneath the primary link grid.",
+    "mobile_translation": "When stacked, preserve the same information hierarchy so the footer remains scannable rather than collapsing into a dense wall of links."
+  },
+  "motion": {
+    "micro": "Links and social icons may brighten or underline subtly on hover and focus.",
+    "transitions": "Footer interactions should feel calm and understated, reinforcing that this is a utility surface rather than a marketing flourish."
+  },
+  "interactions": [
+    "hover-reveal",
+    "keyboard-navigation"
+  ],
+  "accessibility": {
+    "role": "contentinfo",
+    "aria-label": "Site footer",
+    "keyboard": [
+      "Footer links and social actions should follow a predictable top-to-bottom, left-to-right reading order."
+    ],
+    "announcements": [
+      "Link group headings and their links should be exposed semantically so the footer remains navigable without relying on column layout alone."
+    ]
+  },
+  "layout_hints": {
+    "footer_priority": "Column groupings and utility links should read clearly before social or decorative elements. The footer should feel like a calm endpoint to the page, not a second hero.",
+    "bottom_bar_role": "Brand, copyright, and social actions belong in a restrained support band beneath the primary link grid.",
+    "mobile_translation": "When stacked, preserve the same information hierarchy so the footer remains scannable rather than collapsing into a dense wall of links."
+  },
+  "motion": {
+    "micro": "Links and social icons may brighten or underline subtly on hover and focus.",
+    "transitions": "Footer interactions should feel calm and understated, reinforcing that this is a utility surface rather than a marketing flourish."
+  },
+  "accessibility": {
+    "role": "contentinfo",
+    "aria-label": "Site footer",
+    "keyboard": [
+      "Footer links and social actions should follow a predictable top-to-bottom, left-to-right reading order."
+    ],
+    "announcements": [
+      "Link group headings and their links should be exposed semantically so the footer remains navigable without relying on column layout alone."
+    ]
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap8 _px6 _py8 _borderT",
+    "slots": {
+      "columns": "Grid of link groups",
+      "bottom-bar": "Logo/copyright and social icons",
+      "copyright": "Copyright notice"
+    }
+  }
+}

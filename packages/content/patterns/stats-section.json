@@ -1,0 +1,90 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "stats-section",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Stats Section",
+  "description": "Marketing-oriented statistics section with large headline metrics, supporting labels, and optional narrative framing.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Card",
+        "Badge"
+      ],
+      "charts": []
+    }
+  },
+  "contained": false,
+  "components": [
+    "Card",
+    "Badge"
+  ],
+  "default_preset": "hero",
+  "presets": {
+    "hero": {
+      "description": "Large featured metrics row for landing pages, with one short section intro above.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6 _py6",
+        "slots": {
+          "intro": "Headline and supporting copy for the metrics section",
+          "stat-grid": "Responsive grid of large stat cards or tiles",
+          "stat-item": "Value, label, and short supporting qualifier"
+        }
+      }
+    },
+    "compact": {
+      "description": "Denser summary row for product proof or pricing sections.",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc2 _lg:gc4 _gap4",
+        "slots": {
+          "stat-item": "Compact value and label pair"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap6 _py6",
+    "slots": {
+      "intro": "Section framing copy",
+      "stat-grid": "Responsive metric grid",
+      "stat-item": "Metric tile"
+    }
+  },
+  "visual_brief": "Confident marketing stats section with oversized values, restrained labels, and enough spacing to let each number breathe. The values should feel like proof points in a narrative rather than dashboard telemetry. Supporting copy stays concise and compositional.",
+  "responsive": {
+    "mobile": "Single-column or two-column stack with reduced headline scale so values remain readable without crowding.",
+    "tablet": "Two to four metrics per row depending on count, with clear separation between intro copy and the metrics themselves.",
+    "desktop": "Wide balanced stat grid with one intro band above and evenly weighted proof points below."
+  },
+  "layout_hints": {
+    "narrative_role": "This pattern is for public proof and trust, not operations dashboards. Values should lead, labels should support, and qualifiers should stay brief.",
+    "grid_balance": "All stat tiles should feel rhythmically aligned even when one value is much longer than the others.",
+    "surface_choice": "Cards are optional. The pattern may use simple tiles or low-chrome blocks depending on theme, but the values should always dominate the visual hierarchy."
+  },
+  "motion": {
+    "micro": "Counters may animate in gently on reveal, and dividers or accents may fade into place.",
+    "transitions": "Entry should feel polished and confidence-building, not playful or hyperactive."
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Key platform statistics",
+    "keyboard": [
+      "If stat items are interactive, keep tab order linear and expose one clear target per tile."
+    ],
+    "announcements": [
+      "Metric labels and values should be announced together so the meaning of each number is preserved."
+    ]
+  },
+  "composition": {
+    "StatsSection": "Stack(d-section, proof) > [Intro?(d-label + heading + body) + StatGrid(d-data, responsive) > StatItem[]]",
+    "StatItem": "Tile(d-surface|minimal) > [Value(heading1|heading2, mono-data) + Label(text-muted) + Qualifier?(d-annotation)]"
+  }
+}

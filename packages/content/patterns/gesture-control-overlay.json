@@ -1,0 +1,134 @@
+{
+  "id": "gesture-control-overlay",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Gesture Control Overlay",
+  "description": "Visual guide showing available touch and gesture controls as an animated overlay — supports step-by-step tutorial, subtle contextual hints, and full gesture reference grid.",
+  "category": "spatial",
+  "tags": [
+    "2027",
+    "frontier",
+    "spatial",
+    "gesture",
+    "touch",
+    "tutorial",
+    "onboarding",
+    "overlay",
+    "accessibility"
+  ],
+  "components": [
+    "GestureOverlay",
+    "GestureIcon",
+    "GestureLabel",
+    "HandAnimation",
+    "DismissButton",
+    "ProgressDots"
+  ],
+  "default_preset": "tutorial",
+  "presets": {
+    "tutorial": {
+      "description": "Step-by-step guided walkthrough showing one gesture at a time with animated hand demonstration, description text, and Next/Skip navigation for onboarding flows",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_fixed _inset-0 _flex _items-center _justify-center _bg-black/60 _backdrop-blur-sm _z-50"
+      }
+    },
+    "hint": {
+      "description": "Subtle ghost icons positioned near interactive elements that demonstrate the available gesture — auto-fades after 3 seconds, reappears on long-press or idle, minimal visual disruption",
+      "layout": {
+        "layout": "spatial",
+        "atoms": "_absolute _inset-0 _pointer-events-none _z-40"
+      }
+    },
+    "full": {
+      "description": "Complete gesture reference grid showing all available gestures simultaneously in a card layout — useful as a help screen or settings reference accessible via a help button",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_fixed _inset-0 _flex _items-center _justify-center _bg-black/60 _backdrop-blur-sm _z-50"
+      }
+    }
+  },
+  "visual_brief": "In tutorial mode: a full-screen dark overlay (bg-black/60%, backdrop-blur-sm) with a centered content card (max-w-sm, bg-surface, rounded-2xl, shadow-2xl, overflow-hidden). The card is vertically stacked. At the top (60% of card height, bg-muted/5%): a large animated hand SVG (120px) demonstrating the current gesture. The hand is a simplified line-art illustration (stroke-width: 2, stroke: var(--d-foreground), fill: none) showing fingers in the appropriate position. The animation loops continuously: for a pinch gesture, two fingers come together over 1s then separate over 0.5s then pause 0.5s before repeating; for a swipe, a single finger moves horizontally 80px over 0.8s, pauses, then resets; for rotate, two fingers rotate 45deg clockwise over 1s then back; for tap, a finger presses down (scale 0.9) and releases (scale 1) with a ripple circle expanding from the tap point. Below the animation area: a title (text-lg, font-semibold, text-center, px-4, pt-3) like 'Pinch to Zoom', a description (text-sm, text-muted, text-center, px-4, pb-4) like 'Use two fingers to zoom in and out of the canvas'. At the bottom of the card: a footer bar (px-4, py-3, border-t, flex, justify-between, items-center). Left side: a 'Skip' text button (text-sm, text-muted). Center: ProgressDots showing tutorial position. Right side: a 'Next' button (bg-accent, text-accent-foreground, rounded-lg, px-4, py-2, text-sm, font-medium). On the last step, 'Next' changes to 'Done'. Navigating between steps crossfades the hand animation and text (200ms). In hint mode: small ghost icons (32px, opacity 0.4) appear positioned near relevant interactive elements. Each icon shows a simplified gesture symbol (e.g., two-finger spread icon near zoomable areas, swipe arrow near scrollable areas). Icons fade in over 300ms, hold for 3 seconds, then fade out over 500ms. They reappear when the user is idle for 5s or long-presses the area. Icons are pointer-events: none so they don't interfere with actual gestures. In full mode: a centered panel (max-w-lg, max-h-[80vh], bg-surface, rounded-2xl, shadow-2xl, overflow-y-auto) containing a grid (2 columns, gap-4, p-6) of gesture cards. Each card (rounded-lg, border, p-4) contains: the hand animation (64px, centered), the gesture name (text-sm, font-semibold, text-center, mt-2), and the description (text-xs, text-muted, text-center). A header bar at the top of the panel reads 'Gesture Controls' (text-lg, font-semibold) with a close X button on the right. A DismissButton (absolute, top-right of overlay, or inside panel header) closes the overlay.",
+  "layout_hints": {
+    "container": "fixed overlay (tutorial/full) or absolute overlay within a spatial container (hint)",
+    "note": "Tutorial and full presets use fixed positioning and should trap focus. Hint preset uses absolute positioning relative to a parent container and should NOT trap focus or block interactions.",
+    "gesture_library": "Common gestures to support: tap, double-tap, long-press, swipe (4 directions), pinch-to-zoom, two-finger-rotate, two-finger-scroll, three-finger-swipe. Each gesture has a unique hand animation SVG.",
+    "auto_dismiss": "Hint mode gestures auto-dismiss after 3s. Tutorial mode stays until user explicitly navigates. Full mode stays until dismissed.",
+    "first_use": "Track gesture tutorial completion in localStorage. Show tutorial automatically on first use, then only via explicit trigger (help button or keyboard shortcut)."
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_fixed _inset-0 _flex _items-center _justify-center _bg-black/60 _backdrop-blur-sm _z-50",
+    "slots": {
+      "gesture-overlay": "The full-screen backdrop layer for tutorial and full modes. Position: fixed, inset: 0. Background: black at 60% opacity with backdrop-filter: blur(4px). Z-index: 50. Clicking the backdrop area (outside the content card) dismisses the overlay in full mode but NOT in tutorial mode (to prevent accidental dismissal during onboarding). The overlay fades in (opacity 0→1 over 200ms) on open. In hint mode, the overlay is position: absolute, inset: 0, bg: transparent, pointer-events: none — it merely serves as a positioning context for hint icons.",
+      "gesture-icon": "Repeating slot — one per gesture to be demonstrated. In tutorial mode: a large (120px) area at the top of the content card reserved for the animated hand SVG. The area has a subtle muted background (bg-muted/5%, rounded-t-2xl) to frame the animation. Only one gesture-icon is visible at a time; transitions between gestures use a crossfade (old fades out 150ms, new fades in 150ms, 50ms overlap). In hint mode: small 32px icons positioned absolutely near the relevant interactive element. Each icon is a simplified gesture symbol (not a full hand animation — just iconographic: two chevrons for pinch, arrow for swipe, tap circle for tap). Opacity: 0.4, color: var(--d-foreground). In full mode: 64px animated hand SVGs centered within each gesture grid card.",
+      "gesture-label": "The text content describing each gesture. Two parts: (1) Title — the gesture name in concise imperative form ('Pinch to Zoom', 'Swipe to Navigate', 'Tap to Select'). Text-lg, font-semibold in tutorial mode; text-sm, font-semibold in full mode grid. (2) Description — a brief explanation of what the gesture does and where it applies ('Use two fingers to zoom in and out of the canvas. Works in all spatial views.'). Text-sm, text-muted in tutorial mode; text-xs, text-muted in full mode grid. Both are text-center. In hint mode, labels are hidden — only the icon is shown (the gesture name is available as a tooltip on long-press).",
+      "hand-animation": "The core animated SVG element demonstrating each gesture. The SVG uses a viewBox of '0 0 120 120' and contains path elements forming a simplified hand outline (line-art style: stroke: var(--d-foreground), stroke-width: 2, stroke-linecap: round, fill: none). Different gesture animations: PINCH — two fingers (index + thumb) start 40px apart and move to 8px apart over 800ms ease-in-out, pause 400ms, then separate back over 600ms, pause 400ms, loop. A small circle appears at the pinch point when fingers meet. SWIPE — single finger starts at x:20 and moves to x:100 over 600ms ease-out, leaves a motion trail (5 circles of decreasing opacity behind the finger), then resets instantly to start position after 500ms pause. ROTATE — two fingers positioned 30px apart rotate 45deg clockwise around their midpoint over 1s ease-in-out, pause 400ms, rotate back, pause 400ms, loop. A curved arrow appears between the fingers indicating rotation direction. TAP — single finger in resting position, quickly scales to 0.9 (press) over 100ms then back to 1.0 over 100ms, accompanied by a ripple circle (expanding ring from tap point, 0→40px radius, opacity 1→0, 400ms). Long-press: same as tap but the press holds for 800ms with a circular progress ring filling around the finger. All animations use CSS animations or SMIL for smooth 60fps playback.",
+      "dismiss-button": "A close button to dismiss the overlay. In tutorial mode: positioned as a 'Skip' text button in the card footer (text-sm, text-muted, hover: text-foreground, cursor: pointer). Also a small X icon button (24px, absolute top-3 right-3 of the card, text-muted, hover: text-foreground) for quick dismissal. In full mode: the X button in the panel header (right-aligned, 24px, same styling) plus clicking the backdrop. In hint mode: no dismiss button — hints auto-dismiss after 3s. All dismiss actions trigger the overlay-close transition.",
+      "progress-dots": "Tutorial step indicator centered in the card footer. A horizontal row of dots (8px circles, gap-2). Current step dot: bg-accent, scale(1). Completed step dots: bg-accent at 40% opacity. Upcoming step dots: bg-muted, border 1.5px solid var(--d-border). Dots transition between states with background-color 200ms and transform 200ms. If there are more than 7 steps, dots collapse to show current + 2 on each side with ellipsis. Clicking a dot in full mode jumps to that gesture (in tutorial mode, only forward navigation via Next is allowed to ensure sequential learning)."
+    }
+  },
+  "accessibility": {
+    "role": "dialog",
+    "aria-label": "Gesture controls guide",
+    "aria-modal": "true",
+    "announcements": [
+      "Gesture tutorial opened — step {current} of {total}",
+      "Gesture: {name} — {description}",
+      "Navigated to gesture {current} of {total}: {name}",
+      "Gesture tutorial completed",
+      "Gesture guide closed"
+    ],
+    "keyboard": [
+      "Arrow Right / Enter: next gesture (tutorial mode)",
+      "Arrow Left: previous gesture (tutorial mode)",
+      "Escape: dismiss overlay",
+      "Tab: cycle through gesture cards (full mode)",
+      "Space: replay current gesture animation",
+      "?: open gesture guide from anywhere in the app"
+    ]
+  },
+  "responsive": {
+    "mobile": "Tutorial card expands to full-width (inset-x: 16px). Hand animation area remains 120px. Full mode switches from 2-column grid to single column scrollable list. Hint icons increase to 40px for visibility on touch screens. All touch targets minimum 44px. Progress dots remain at 8px.",
+    "tablet": "Tutorial card at max-w-sm centered. Full mode at 2-column grid. Hand animations at full size. Standard touch targets."
+  },
+  "motion": {
+    "micro": {
+      "next-button-hover": "bg-accent brightness increase + scale(1.02), 150ms ease-out",
+      "skip-hover": "color muted→foreground 150ms",
+      "dot-hover": "scale(1.15) 150ms"
+    },
+    "transitions": {
+      "overlay-open": "backdrop opacity 0→1 200ms, card scale(0.9)→scale(1) + opacity 0→1 250ms spring",
+      "overlay-close": "card scale(1)→scale(0.95) + opacity 1→0 150ms ease-in, backdrop opacity 1→0 200ms",
+      "step-change": "current content fade-out 150ms, new content fade-in 150ms with 50ms overlap — crossfade effect",
+      "hint-appear": "opacity 0→0.4 + scale(0.8→1) 300ms ease-out",
+      "hint-disappear": "opacity 0.4→0 500ms ease-in"
+    },
+    "ambient": {
+      "pinch-loop": "fingers approach 800ms → pause 400ms → separate 600ms → pause 400ms, infinite",
+      "swipe-loop": "finger translate 80px 600ms ease-out → pause 500ms → reset instant → pause 300ms, infinite",
+      "rotate-loop": "fingers rotate ±45deg 1s ease-in-out → pause 400ms, infinite",
+      "tap-ripple": "circle expand 0→40px + opacity 1→0 400ms ease-out per tap cycle",
+      "hint-idle-reappear": "after 5s user idle, hints fade back in at 0.3 opacity"
+    }
+  },
+  "interactions": [
+    "animate-on-mount",
+    "focus-trap",
+    "keyboard-navigation",
+    "glow-hover",
+    "live-simulation"
+  ],
+  "composition": {
+    "GestureControlOverlay": "Overlay(fixed|absolute, backdrop, z-50) > [ContentCard(d-surface, centered) + DismissButton]",
+    "ContentCard": "Surface(rounded-2xl, shadow-2xl, max-w-sm, overflow-hidden) > [AnimationArea + LabelArea + FooterBar]",
+    "AnimationArea": "Div(bg-muted/5%, flex, items-center, justify-center, h-60%) > HandAnimation(svg, animated, 120px)",
+    "LabelArea": "Div(px-4, py-3, text-center) > [GestureLabel.title(text-lg, font-semibold) + GestureLabel.description(text-sm, text-muted)]",
+    "FooterBar": "Div(flex, justify-between, items-center, px-4, py-3, border-t) > [SkipButton + ProgressDots + NextButton(d-interactive)]",
+    "HandAnimation": "SVG(viewBox: 0 0 120 120, line-art) > [FingerPaths*(stroke-animated) + EffectElements(ripple|trail|arrow)]",
+    "GestureIcon": "Div(positioned-absolute|inline, 32px|64px|120px) > SVG(gesture-symbol|hand-animation)",
+    "ProgressDots": "Flex(gap-2, items-center) > Dot*(8px, circle, state: current|completed|upcoming)"
+  }
+}

@@ -1,0 +1,194 @@
+{
+  "$schema": "https://decantr.ai/schemas/blueprint.v1.json",
+  "id": "recipefork",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipefork",
+  "description": "Full Recipefork product blueprint for a Vercel-hosted recipe platform with Supabase-backed auth, social feed, public and private recipes, cookbooks, AI kitchen utilities, dynamic cooking tips, and a hard-blocker Chef Mode authoring workflow with optional plating presentation.",
+  "blueprint_portfolio": {
+    "visibility": "public",
+    "maturity": "supported-contract",
+    "rationale": "Supported registry blueprint that remains useful in All without being promoted as a flagship default.",
+    "artifact": {
+      "status": "candidate",
+      "showcase": "recipefork",
+      "notes": "Showcase-backed candidate; certification requires artifact evidence beyond registry availability."
+    }
+  },
+  "tags": [
+    "recipes",
+    "supabase",
+    "vercel",
+    "chef-mode",
+    "social",
+    "2026"
+  ],
+  "compose": [
+    "recipefork-landing",
+    "recipefork-recipe-detail",
+    "recipefork-social",
+    "recipefork-ai-kitchen",
+    "recipefork-cookbooks",
+    "recipefork-recipe-authoring",
+    "recipefork-profile",
+    "recipefork-auth"
+  ],
+  "theme": {
+    "id": "recipefork",
+    "mode": "light",
+    "shape": "rounded"
+  },
+  "personality": "Recipefork is a neutral, production-grade recipe product that lets food photography and authoring depth carry the experience. Public browsing feels clean and modern; Chef Mode is the critical differentiator, with structured ingredients, nested instruction groups, optional plating presentation, dynamic cooking tips, explicit recipe visibility controls, draft workflows, and no-loss hydrated editing.",
+  "voice": {
+    "tone": "Encouraging, practical, and food-aware without becoming gimmicky.",
+    "cta_verbs": [
+      "Create",
+      "Save",
+      "Cook",
+      "Follow",
+      "Generate",
+      "Edit"
+    ],
+    "avoid": [
+      "Execute",
+      "Deploy",
+      "Submit",
+      "Synergize"
+    ],
+    "empty_states": "Calm and motivating. Empty cookbook and empty recipe states should encourage creation rather than feel like errors.",
+    "errors": "Plainspoken and actionable. Tell the user what failed and how to recover.",
+    "loading": "Product-style skeletons and calm motion rather than decorative animation."
+  },
+  "features": [
+    "recipes",
+    "chef-mode",
+    "drafts",
+    "recipe-visibility",
+    "hydrated-editing",
+    "simple-mode",
+    "chat-history",
+    "photo-generation",
+    "presentation",
+    "cooking-tips",
+    "collections",
+    "social",
+    "comments",
+    "reactions",
+    "follows",
+    "notifications",
+    "forking",
+    "lineage",
+    "branch-analytics",
+    "engagement-ranking",
+    "auth",
+    "seo"
+  ],
+  "routes": {
+    "/": {
+      "shell": "recipefork-top-nav",
+      "archetype": "recipefork-landing",
+      "page": "home"
+    },
+    "/feed": {
+      "shell": "recipefork-top-nav",
+      "archetype": "recipefork-social",
+      "page": "feed"
+    },
+    "/profile": {
+      "shell": "recipefork-top-nav",
+      "archetype": "recipefork-profile",
+      "page": "me"
+    },
+    "/recipes": {
+      "shell": "recipefork-top-nav",
+      "archetype": "recipefork-profile",
+      "page": "my-recipes"
+    },
+    "/profile/:id": {
+      "shell": "recipefork-top-nav",
+      "archetype": "recipefork-profile",
+      "page": "public-profile"
+    },
+    "/recipe/:id": {
+      "shell": "recipefork-top-nav",
+      "archetype": "recipefork-recipe-detail",
+      "page": "recipe-detail"
+    },
+    "/chat": {
+      "shell": "recipefork-top-nav",
+      "archetype": "recipefork-ai-kitchen",
+      "page": "chat"
+    },
+    "/generate": {
+      "shell": "recipefork-top-nav",
+      "archetype": "recipefork-ai-kitchen",
+      "page": "generate"
+    },
+    "/cookbooks": {
+      "shell": "recipefork-top-nav",
+      "archetype": "recipefork-cookbooks",
+      "page": "cookbooks"
+    },
+    "/cookbooks/:id": {
+      "shell": "recipefork-top-nav",
+      "archetype": "recipefork-cookbooks",
+      "page": "cookbook-detail"
+    },
+    "/recipe/new": {
+      "shell": "recipefork-top-nav",
+      "archetype": "recipefork-recipe-authoring",
+      "page": "create"
+    },
+    "/recipe/edit/:id": {
+      "shell": "recipefork-top-nav",
+      "archetype": "recipefork-recipe-authoring",
+      "page": "edit"
+    },
+    "/auth": {
+      "shell": "recipefork-top-nav",
+      "archetype": "recipefork-auth",
+      "page": "login"
+    }
+  },
+  "overrides": {
+    "features_add": [
+      "supabase-auth",
+      "supabase-storage",
+      "supabase-realtime",
+      "public-browse",
+      "gated-actions"
+    ],
+    "features_remove": [],
+    "pages": {},
+    "pages_remove": []
+  },
+  "dependencies": {
+    "archetypes": {
+      "recipefork-landing": ">=1.0.0",
+      "recipefork-recipe-detail": ">=1.0.0",
+      "recipefork-social": ">=1.0.0",
+      "recipefork-ai-kitchen": ">=1.0.0",
+      "recipefork-cookbooks": ">=1.0.0",
+      "recipefork-recipe-authoring": ">=1.0.0",
+      "recipefork-profile": ">=1.0.0",
+      "recipefork-auth": ">=1.0.0"
+    }
+  },
+  "seo_hints": {
+    "schema_org": [
+      "WebApplication",
+      "Recipe",
+      "CollectionPage",
+      "ProfilePage"
+    ],
+    "meta_priorities": [
+      "description",
+      "og:title",
+      "og:image"
+    ]
+  },
+  "suggested_themes": [
+    "recipefork",
+    "clean"
+  ]
+}

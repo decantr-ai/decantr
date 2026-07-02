@@ -1,0 +1,139 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "team-member-row",
+  "version": "1.1.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Team Member Row",
+  "description": "Team collaboration surface row with member identity, role controls, join date, responsive management actions, and an invite flow that can collapse cleanly on narrower widths.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Avatar",
+        "Badge",
+        "Button",
+        "Select",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "contained": false,
+  "components": [
+    "Avatar",
+    "Badge",
+    "Button",
+    "Select",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full team member row with avatar, name, email, role badge, joined date, and role-change/remove actions. The row can wrap into a stacked card-like composition when horizontal space gets tight.",
+      "components": [
+        "Avatar",
+        "Badge",
+        "Button",
+        "Select",
+        "icon"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _aic _gap4 _px4 _py4 _borderb _bordermuted/10",
+        "slots": {
+          "avatar": "Team member Avatar, medium size",
+          "identity": "Name (_textsm _fontmedium) and email (_textxs _fgmuted) stacked",
+          "role": "Role Badge (owner=primary, admin=secondary, member=outline)",
+          "joined": "Join date with _textxs _fgmuted",
+          "actions": "Role Select dropdown and Remove Button"
+        }
+      }
+    },
+    "card": {
+      "description": "Card-style team member for grid layouts. Avatar centered, name below, role badge, and actions.",
+      "components": [
+        "Avatar",
+        "Badge",
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _aic _gap3 _p4 _border _bordermuted/20 _r3 _tc",
+        "slots": {
+          "avatar": "Large centered Avatar",
+          "name": "Member name with _textsm _fontmedium",
+          "email": "Email with _textxs _fgmuted",
+          "role": "Role Badge centered",
+          "actions": "Action buttons row"
+        }
+      }
+    },
+    "invite": {
+      "description": "Pending invitation row showing email, invited-by, expiry, and resend/cancel actions.",
+      "components": [
+        "Badge",
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _aic _gap4 _px4 _py3 _borderb _bordermuted/10 _bgmuted/5",
+        "slots": {
+          "icon": "Mail icon for pending invite",
+          "email": "Invitee email with _textsm",
+          "status": "Pending Badge with expiry date",
+          "actions": "Resend and cancel Buttons"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "row",
+    "atoms": "_flex _aic _gap4 _px4 _py4 _borderb _bordermuted/10",
+    "slots": {
+      "avatar": "Member Avatar",
+      "identity": "Name and email",
+      "role": "Role badge",
+      "joined": "Join date",
+      "actions": "Management actions"
+    }
+  },
+  "visual_brief": "Horizontal row displaying a team member with a circular avatar on the left, followed by name (medium weight) and email (muted, smaller text) stacked vertically, a role badge (Owner, Admin, Member) color-coded in the middle, join date in muted text, and action controls on the right (role change dropdown, remove button). Rows are separated by bottom borders. The card preset wraps each member in a bordered card with a vertical layout. The invite preset shows a pending invite row with email, role, and resend/cancel actions.",
+  "responsive": {
+    "mobile": "Use a stacked card or wrapped row composition. Avatar and identity stay together, role/date/actions drop beneath, and invite/member controls stack instead of compressing.",
+    "tablet": "Standard row layout with wrapped secondary metadata when needed. Actions can remain inline, but should break onto a second line before overflowing.",
+    "desktop": "Full row with generous spacing. All information and actions visible inline without relying on a single non-wrapping strip."
+  },
+  "motion": {
+    "micro": "Role pills and row actions may animate subtly on hover and focus, but the row should still read like calm administrative data.",
+    "transitions": "Invite, resend, and member-update states should fade or expand gently over 150-220ms without disrupting the list rhythm."
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "layout_hints": {
+    "row_layout": "Avatar (32px circle) + identity block + role/date/actions trail. On narrow widths, let the trail wrap below the identity instead of squeezing the email or control cluster.",
+    "invite_form": "Invite form uses a responsive row: email input + role dropdown + Invite button. Collapse to a stacked form on small screens.",
+    "cta_treatment": "Supporting workspace navigation such as governance links should appear as contextual action bands or compact cards, not as detached button rows."
+  },
+  "accessibility": {
+    "role": "row",
+    "aria-label": "Team member row",
+    "keyboard": [
+      "Tab moves through role controls, invite actions, and remove controls in row order."
+    ],
+    "announcements": [
+      "Role changes, invite sends, and removals should be announced clearly.",
+      "Pending-invite state should be distinguishable from active-member state semantically, not just visually."
+    ],
+    "focus_management": "After member actions, preserve focus on the affected row or the next logical row-level action."
+  },
+  "composition": {
+    "TeamMemberRow": "Row(d-data-row, hoverable) > [Avatar + MemberInfo + RoleBadge(d-annotation) + JoinDate(text-muted) + Actions]",
+    "MemberInfo": "Stack(flex-col) > [Name(font-medium) + Email(text-muted, text-sm)]",
+    "Actions": "Row(d-interactive) > [RoleSelect(d-control) + RemoveButton(variant: destructive, icon-only)]",
+    "InviteMemberForm": "ResponsiveRow > [InviteeField + RoleSelect + InviteButton]"
+  }
+}

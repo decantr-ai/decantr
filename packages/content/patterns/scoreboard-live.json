@@ -1,0 +1,116 @@
+{
+  "id": "scoreboard-live",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Scoreboard Live",
+  "description": "A live match scoreboard with team logos, real-time score, game timer, event ticker, momentum streak indicator, and viewer count for broadcast surfaces.",
+  "category": "esports",
+  "tags": [
+    "2026",
+    "esports",
+    "scoreboard",
+    "live",
+    "broadcast",
+    "match",
+    "realtime"
+  ],
+  "components": [
+    "TeamLogo",
+    "TeamScore",
+    "GameTimer",
+    "EventTicker",
+    "StreakIndicator",
+    "ViewerCount"
+  ],
+  "default_preset": "detail",
+  "presets": {
+    "compact": {
+      "description": "Slim top-bar scoreboard strip showing only logos, scores, and timer for embedding in streaming overlays or persistent site headers",
+      "layout": {
+        "layout": "horizontal-bar",
+        "atoms": "_flex _items-center _justify-between _w100 _px-4 _py-2 _bg-surface _border-b"
+      }
+    },
+    "detail": {
+      "description": "Full scoreboard panel with logos, large scores, timer, streak indicators, rolling event ticker, and live viewer counter in one cohesive block",
+      "layout": {
+        "layout": "panel",
+        "atoms": "_flex _flex-col _gap-3 _w100 _p-4 _rounded-lg _bg-surface _border"
+      }
+    },
+    "broadcast": {
+      "description": "Widescreen broadcast overlay format with oversized team sections, center timer, and ticker optimized for 1920x1080 streaming compositions",
+      "layout": {
+        "layout": "widescreen-overlay",
+        "atoms": "_grid _grid-cols-[1fr_auto_1fr] _items-center _w100 _h-24 _px-8 _bg-surface _backdrop-blur"
+      }
+    }
+  },
+  "visual_brief": "A horizontal scoreboard bar dominated by two team sections flanking a center timer block. Left section: Team A logo (48-72px, team-branded background tint), team tricode below logo (e.g. 'FNC' in bold monospace), large team score in very large monospace (72px broadcast, 36px detail, 24px compact). Center block: game timer counting down or up in prominent monospace, above/below it the map or round indicator (e.g. 'MAP 2 - ASCENT' or 'ROUND 14'). Right section: mirrors left with Team B. A streak indicator (small fire icon with count or momentum arrow) appears under whichever team has a winning streak, glowing in their team color. Below the main bar, a horizontal auto-scrolling event ticker shows recent plays with icons and text ('16:42 Aspas ACE' 'Derke 3K' 'Plant B'). Top-right corner has viewer count pill with live red dot and count in monospace (e.g. '142K viewers'). Team colors provide accent trim. Live indicator (pulsing red dot + 'LIVE' text) near viewer count.",
+  "layout_hints": {
+    "container": "d-section",
+    "note": "Timer must be prominent monospace, center-aligned. Team tricodes always visible as text, never logo-only.",
+    "live_indicator": "Live state uses text 'LIVE' with pulsing dot, never just color. Viewer count formatted with K/M suffixes."
+  },
+  "default_layout": {
+    "layout": "panel",
+    "atoms": "_flex _flex-col _gap-3 _w100 _p-4 _rounded-lg _bg-surface _border",
+    "slots": {
+      "team-logo": "Team emblem with tricode label beneath. Appears twice mirrored on left and right.",
+      "team-score": "Large monospace score number, sized per preset (largest in broadcast).",
+      "game-timer": "Center-block monospace timer with map/round label line above or below.",
+      "event-ticker": "Auto-scrolling horizontal strip of recent play events with timestamps and icons.",
+      "streak-indicator": "Small momentum badge appearing under the leading team showing consecutive round wins.",
+      "viewer-count": "Live pill with pulsing red dot, 'LIVE' text, and formatted viewer count."
+    }
+  },
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Live match scoreboard",
+    "announcements": [
+      "Score update: {teamA} {scoreA}, {teamB} {scoreB}",
+      "Event: {event} at {time}",
+      "Viewer count {count}"
+    ],
+    "keyboard": [
+      "Tab: cycle through team sections and ticker",
+      "Enter: open team detail",
+      "T: pause ticker scroll"
+    ]
+  },
+  "responsive": {
+    "mobile": "Broadcast preset falls back to compact. Ticker scroll speed reduced. Tricodes stay visible; logos shrink.",
+    "tablet": "Detail preset retained with slightly smaller scores. Ticker single-line truncation."
+  },
+  "motion": {
+    "micro": {
+      "score-change": "scale(1.2) + color flash team-color 400ms spring",
+      "ticker-event-in": "new event slide-in from right 300ms ease-out"
+    },
+    "transitions": {
+      "map-change": "full scoreboard fade-out and fade-in 500ms ease-in-out",
+      "timer-tick": "monospace digit flip 100ms ease"
+    },
+    "ambient": {
+      "live-dot-pulse": "red dot opacity 0.4 to 1.0 1s ease-in-out infinite",
+      "ticker-scroll": "marquee translate-x continuous 30s linear infinite",
+      "streak-glow": "streak indicator team-color glow pulse 2s ease-in-out infinite"
+    }
+  },
+  "interactions": [
+    "drag-reorder",
+    "click-select",
+    "animate-on-mount",
+    "stagger-children",
+    "scroll-reveal"
+  ],
+  "composition": {
+    "ScoreboardLive": "Section(d-section) > [MainBar > [TeamSection(left) > [TeamLogo + TeamTricode + TeamScore(mono-xl) + StreakIndicator?] + CenterBlock > [MapLabel + GameTimer(mono-xl) + RoundLabel] + TeamSection(right) > [TeamScore(mono-xl) + TeamTricode + TeamLogo + StreakIndicator?]] + EventTicker(marquee) + ViewerCount(top-right, d-annotation) > [LiveDot + ViewerLabel(mono)]]",
+    "TeamLogo": "Image(team-branded, tricode-adjacent) > [LogoImg + TeamTricode(mono)]",
+    "TeamScore": "Text(mono, size-varies-by-preset)",
+    "GameTimer": "Block(centered) > [MapLabel(small) + TimerDigits(mono-xl) + RoundLabel(small)]",
+    "EventTicker": "Marquee(horizontal, auto-scroll) > EventEntry[] > [Timestamp + EventIcon + EventText]",
+    "ViewerCount": "Pill(d-annotation) > [LiveDot(pulsing) + LiveText + ViewerCount(mono)]"
+  }
+}

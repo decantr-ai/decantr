@@ -1,0 +1,103 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "audit-center",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Audit Center",
+  "description": "Compliance audit trail with searchable event log, retention policies, export capabilities, and notification configuration for enterprise governance.",
+  "tags": [
+    "audit",
+    "compliance",
+    "security",
+    "governance",
+    "trail"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "audit log",
+        "audit trail",
+        "compliance center",
+        "activity audit",
+        "security log"
+      ],
+      "secondary": [
+        "event history",
+        "compliance export",
+        "retention policy",
+        "audit report",
+        "governance"
+      ],
+      "negative": [
+        "no-audit",
+        "personal-app"
+      ]
+    },
+    "implies": [
+      "tenant-switcher-dashboard"
+    ],
+    "weight": 0.6,
+    "tier": "optional"
+  },
+  "pages": [
+    {
+      "id": "audit-log",
+      "patterns": [
+        {
+          "pattern": "audit-trail",
+          "preset": "standard",
+          "as": "trail"
+        }
+      ],
+      "default_layout": [
+        "trail"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "audit-settings",
+      "patterns": [
+        {
+          "pattern": "form-sections",
+          "preset": "standard",
+          "as": "settings-form"
+        }
+      ],
+      "default_layout": [
+        "settings-form"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "audit-log": "Full audit trail view with a search bar and filter controls for date range, actor, action type, and resource. Scrollable event list showing timestamp, actor avatar and name, action description, affected resource, and IP address. Each entry is expandable to reveal full event payload diff. Export button in the header for CSV and JSON download.",
+    "audit-settings": "Audit configuration page with sectioned forms. Retention policy section with duration selector and auto-archive toggle. Export settings section for scheduled report delivery with format and frequency options. Notification section for configuring alerts on sensitive actions like role changes, data deletion, and API key creation."
+  },
+  "features": [
+    "audit-trail",
+    "compliance",
+    "export",
+    "retention"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "audit-trail": "^1.0.0",
+      "form-sections": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon",
+      "clean"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  }
+}

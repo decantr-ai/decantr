@@ -1,0 +1,103 @@
+{
+  "id": "minimal-header",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Minimal Header",
+  "description": "Slim header with centered content below. Used for checkout flows, focused task pages.",
+  "layout": "stack",
+  "atoms": "_flex _col _h[100vh]",
+  "config": {
+    "regions": [
+      "header",
+      "body"
+    ],
+    "grid": {
+      "areas": [
+        [
+          "header"
+        ],
+        [
+          "body"
+        ]
+      ]
+    },
+    "nav": {
+      "position": "top",
+      "defaultState": "hidden"
+    },
+    "header": {
+      "height": "44px",
+      "sticky": true
+    },
+    "body": {
+      "scroll": true
+    }
+  },
+  "configurable": {
+    "nav": {
+      "positions": [
+        "top"
+      ],
+      "modes": [
+        "hidden"
+      ]
+    },
+    "header": {
+      "toggleable": true
+    },
+    "sizing": {
+      "headerHeight": {
+        "min": 36,
+        "max": 80,
+        "default": 44
+      }
+    }
+  },
+  "internal_layout": {
+    "root": {
+      "display": "flex",
+      "direction": "column",
+      "height": "100vh",
+      "atoms": "_flex _col _h[100vh]"
+    },
+    "header": {
+      "height": "44px",
+      "display": "flex",
+      "align": "center",
+      "justify": "center",
+      "padding": "0.75rem 0",
+      "border": "bottom",
+      "sticky": true,
+      "content": "Back arrow icon + brand link, centered",
+      "note": "Slim header with centered brand. Minimal \u2014 no nav links.",
+      "button_sizing": "Buttons in the header use compact sizing: py-1.5 px-3 text-sm (~32px tall). The header is a tight 52px bar \u2014 default d-interactive padding is too large here."
+    },
+    "body": {
+      "flex": "1",
+      "direction": "column",
+      "align": "center",
+      "overflow_y": "auto",
+      "padding": "2rem 0",
+      "atoms": "_flex _col _aic _overflow[auto] _flex1 _py8",
+      "content_wrapper": {
+        "width": "720px",
+        "max_width": "100%",
+        "padding": "0 1rem",
+        "direction": "column",
+        "gap": "1.5rem",
+        "atoms": "_w[720px] _mw[100%] _px4 _flex _col _gap6",
+        "note": "Centered column for focused content. Checkout forms, task pages."
+      }
+    }
+  },
+  "guidance": {
+    "section_label_treatment": "d-label",
+    "section_density": "comfortable",
+    "shell_spacing": "Minimal-header owns the narrow work-column rhythm and the body inset. Route content should fill the provided centered column rather than layering an extra max-width wrapper on top."
+  },
+  "code": {
+    "imports": "Target-specific imports vary. Translate the internal_layout contract into your framework's compact header bar and single scrollable body region.",
+    "example": "MinimalHeaderShell(root) -> Header(title, minimal actions) + Body(shared insets, sole scroll container)"
+  },
+  "$schema": "https://decantr.ai/schemas/shell.v1.json"
+}

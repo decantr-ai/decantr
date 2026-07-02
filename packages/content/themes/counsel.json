@@ -1,0 +1,431 @@
+{
+  "$schema": "https://decantr.ai/schemas/theme.v1.json",
+  "id": "counsel",
+  "version": "1.0.0",
+  "name": "Counsel",
+  "description": "Legal and professional services theme with warm cream backgrounds, deep navy authority, and muted oxblood accents. Georgia serif body type and document-inspired layouts for trustworthy advisory interfaces.",
+  "tags": [
+    "light",
+    "legal",
+    "professional",
+    "serif",
+    "document",
+    "advisory"
+  ],
+  "personality": "authoritative + trustworthy + serif-formal + professional",
+  "seed": {
+    "primary": "#1E3A5F",
+    "secondary": "#7F1D1D",
+    "accent": "#991B1B",
+    "background": "#FAF7F2"
+  },
+  "palette": {
+    "background": {
+      "light": "#FAF7F2"
+    },
+    "surface": {
+      "light": "#FFFFFF"
+    },
+    "surface-raised": {
+      "light": "#F4F0E8"
+    },
+    "border": {
+      "light": "#D6CFC0"
+    },
+    "text": {
+      "light": "#1C1917"
+    },
+    "text-muted": {
+      "light": "#6B6054"
+    },
+    "primary": {
+      "light": "#1E3A5F"
+    },
+    "primary-hover": {
+      "light": "#14284A"
+    },
+    "secondary": {
+      "light": "#7F1D1D"
+    },
+    "secondary-hover": {
+      "light": "#991B1B"
+    },
+    "accent": {
+      "light": "#991B1B"
+    },
+    "accent-hover": {
+      "light": "#7F1D1D"
+    }
+  },
+  "modes": [
+    "light"
+  ],
+  "shapes": [
+    "sharp",
+    "rounded"
+  ],
+  "cvd_support": [],
+  "tokens": {
+    "base": {
+      "success": "#15803D",
+      "danger": "#991B1B",
+      "warning": "#B45309",
+      "info": "#1E3A5F"
+    },
+    "domain": {
+      "case-open": "info",
+      "case-active": "warning",
+      "case-closed": "success",
+      "case-escalated": "danger",
+      "case-on-hold": "text-muted",
+      "filing-pending": "warning",
+      "filing-approved": "success",
+      "filing-rejected": "danger"
+    }
+  },
+  "typography": {
+    "scale": "traditional",
+    "heading_weight": 700,
+    "body_weight": 400,
+    "display": "'Merriweather', 'Georgia', serif",
+    "body": "'Source Sans Pro', ui-sans-serif, sans-serif"
+  },
+  "decantr_compat": ">=2.0.0",
+  "source": "core",
+  "decorators": {
+    "counsel-page": "Warm cream document page (#FAF7F2) with generous margins and serif body text. Document-inspired foundation.",
+    "counsel-header": "Georgia or Garamond serif heading with deep navy color. Formal section and page headers.",
+    "counsel-citation": "Indented citation blocks with left border accent and italic serif type. Legal reference styling.",
+    "counsel-seal": "Official seal with ribbon embellishment in navy and oxblood. Authority and certification mark.",
+    "counsel-highlight": "Subtle highlight on key text using warm cream background tint. Marks important passages.",
+    "counsel-margin": "Annotation margin area with dashed divider for notes and references. Legal pad aesthetic.",
+    "counsel-oxblood": "Deep oxblood red accent elements for emphasis, warnings, and critical status indicators.",
+    "counsel-divider": "Thin horizontal rule with warm border tone for clean section separation."
+  },
+  "spatial": {
+    "density_bias": 0,
+    "content_gap_shift": 1,
+    "section_padding": "4.5rem",
+    "card_wrapping": "subtle",
+    "surface_override": null
+  },
+  "motion": {
+    "preference": "minimal",
+    "reduce_motion": true,
+    "entrance": "counsel-fade",
+    "micro": "smooth",
+    "timing": "cubic-bezier(0.4, 0, 0.2, 1)",
+    "durations": {
+      "hover": "120ms",
+      "entrance": "200ms",
+      "modal": "250ms",
+      "page": "250ms",
+      "instant": "80ms",
+      "fast": "150ms",
+      "base": "250ms",
+      "slow": "400ms",
+      "slower": "600ms",
+      "stagger": "60ms"
+    },
+    "easings": {
+      "ease": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "easeOut": "cubic-bezier(0, 0, 0.2, 1)",
+      "easeIn": "cubic-bezier(0.4, 0, 1, 1)",
+      "spring": "cubic-bezier(0.34, 1.56, 0.64, 1)"
+    }
+  },
+  "effects": {
+    "enabled": true,
+    "intensity": "subtle",
+    "type_mapping": {
+      "root": [
+        "counsel-page"
+      ],
+      "heading": [
+        "counsel-header"
+      ],
+      "quote": [
+        "counsel-citation"
+      ],
+      "badge": [
+        "counsel-seal"
+      ],
+      "divider": [
+        "counsel-divider"
+      ]
+    },
+    "component_fallback": {
+      "Heading": "heading",
+      "Blockquote": "quote",
+      "Badge": "badge",
+      "Divider": "divider"
+    }
+  },
+  "compositions": {
+    "case-dashboard": {
+      "description": "Legal case dashboard with matter listings, docket calendar, and client directory.",
+      "shell": "sidebar-main",
+      "effects": [
+        "counsel-header",
+        "counsel-divider"
+      ]
+    },
+    "document": {
+      "description": "Legal document viewer with serif body, citation styling, and annotation margins.",
+      "shell": "top-nav-main",
+      "effects": [
+        "counsel-page",
+        "counsel-citation",
+        "counsel-margin"
+      ]
+    },
+    "marketing": {
+      "description": "Law firm marketing page with authoritative serif headlines and seal branding.",
+      "shell": "top-nav-footer",
+      "effects": [
+        "counsel-header",
+        "counsel-seal"
+      ]
+    },
+    "client-portal": {
+      "description": "Client portal with case status, document access, and secure messaging.",
+      "shell": "sidebar-main",
+      "effects": [
+        "counsel-header",
+        "counsel-divider"
+      ]
+    }
+  },
+  "radius": {
+    "philosophy": "sharp",
+    "base": 4
+  },
+  "pattern_preferences": {
+    "prefer": [
+      "case-list",
+      "docket-calendar",
+      "document-viewer",
+      "client-directory",
+      "citation-list"
+    ],
+    "avoid": [
+      "chat-portal"
+    ],
+    "default_presets": {
+      "case-list": "table",
+      "client-directory": "table"
+    }
+  },
+  "shell": {
+    "preferred": [
+      "sidebar-main",
+      "top-nav-main",
+      "top-nav-footer"
+    ],
+    "avoid": [
+      "chat-portal"
+    ],
+    "nav_style": "professional",
+    "default_nav_state": "expanded",
+    "root": "counsel-page",
+    "nav": "counsel-divider",
+    "header": "counsel-header",
+    "navLabel": "",
+    "brand": "counsel-seal",
+    "dimensions": null
+  },
+  "decorator_definitions": {
+    "counsel-page": {
+      "description": "Warm cream document page (#FAF7F2) with generous margins and serif body text. Document-inspired foundation.",
+      "intent": "Use as the root background for all counsel pages. The warm cream evokes traditional legal documents and bond paper.",
+      "suggested_properties": {
+        "background-color": "#FAF7F2",
+        "color": "#1C1917",
+        "font-family": "Georgia, 'Times New Roman', 'Cormorant Garamond', serif",
+        "min-height": "100vh",
+        "line-height": "1.6"
+      },
+      "pairs_with": [
+        "counsel-header",
+        "counsel-citation",
+        "counsel-margin"
+      ],
+      "usage": [
+        "Page root containers",
+        "Document viewports",
+        "App shell backgrounds"
+      ]
+    },
+    "counsel-header": {
+      "description": "Georgia or Garamond serif heading with deep navy color. Formal section and page headers.",
+      "intent": "Use for all headings to maintain formal, authoritative tone. Navy communicates trust and professionalism.",
+      "suggested_properties": {
+        "font-family": "Georgia, 'Cormorant Garamond', 'Times New Roman', serif",
+        "color": "#1E3A5F",
+        "font-weight": "700",
+        "letter-spacing": "-0.01em",
+        "line-height": "1.3"
+      },
+      "pairs_with": [
+        "counsel-page",
+        "counsel-divider",
+        "counsel-citation"
+      ],
+      "usage": [
+        "Page headings",
+        "Section titles",
+        "Document headers",
+        "Chapter titles"
+      ]
+    },
+    "counsel-citation": {
+      "description": "Indented citation blocks with left border accent and italic serif type. Legal reference styling.",
+      "intent": "Use for legal citations, case references, and quoted authorities. Traditional legal document styling.",
+      "suggested_properties": {
+        "padding-left": "24px",
+        "border-left": "3px solid #1E3A5F",
+        "font-style": "italic",
+        "color": "#6B6054",
+        "font-family": "Georgia, serif",
+        "margin": "16px 0"
+      },
+      "pairs_with": [
+        "counsel-page",
+        "counsel-header",
+        "counsel-margin"
+      ],
+      "usage": [
+        "Legal citations",
+        "Case references",
+        "Quoted passages",
+        "Statutory excerpts"
+      ]
+    },
+    "counsel-seal": {
+      "description": "Official seal with ribbon embellishment in navy and oxblood. Authority and certification mark.",
+      "intent": "Use for brand marks, certifications, and authority indicators. Evokes notary and bar association seals.",
+      "suggested_properties": {
+        "width": "56px",
+        "height": "56px",
+        "border-radius": "50%",
+        "background": "#1E3A5F",
+        "border": "3px double #991B1B",
+        "color": "#FAF7F2",
+        "font-family": "Georgia, serif",
+        "font-weight": "700",
+        "display": "inline-flex",
+        "align-items": "center",
+        "justify-content": "center"
+      },
+      "pairs_with": [
+        "counsel-header",
+        "counsel-page"
+      ],
+      "usage": [
+        "Firm brand marks",
+        "Certification seals",
+        "Notarization indicators",
+        "Bar association badges"
+      ]
+    },
+    "counsel-highlight": {
+      "description": "Subtle highlight on key text using warm cream background tint. Marks important passages.",
+      "intent": "Use to emphasize critical text passages without the harshness of yellow highlighter. Restrained emphasis.",
+      "suggested_properties": {
+        "background": "rgba(212, 175, 55, 0.15)",
+        "padding": "2px 4px",
+        "border-radius": "2px"
+      },
+      "pairs_with": [
+        "counsel-citation",
+        "counsel-page"
+      ],
+      "usage": [
+        "Key terms",
+        "Important passages",
+        "Statutory emphasis",
+        "Defined terms"
+      ]
+    },
+    "counsel-margin": {
+      "description": "Annotation margin area with dashed divider for notes and references. Legal pad aesthetic.",
+      "intent": "Use for annotation margins where reviewers add notes. Echoes yellow legal pad margins.",
+      "suggested_properties": {
+        "border-left": "1px dashed #D6CFC0",
+        "padding-left": "16px",
+        "color": "#6B6054",
+        "font-size": "13px",
+        "font-style": "italic",
+        "font-family": "Georgia, serif"
+      },
+      "pairs_with": [
+        "counsel-page",
+        "counsel-citation"
+      ],
+      "usage": [
+        "Annotation margins",
+        "Reviewer notes",
+        "Cross-references",
+        "Marginal comments"
+      ]
+    },
+    "counsel-oxblood": {
+      "description": "Deep oxblood red accent elements for emphasis, warnings, and critical status indicators.",
+      "intent": "Use for emphasis and critical indicators. The muted oxblood avoids alarm while signaling importance.",
+      "suggested_properties": {
+        "color": "#991B1B",
+        "border-color": "#991B1B"
+      },
+      "pairs_with": [
+        "counsel-header",
+        "counsel-seal"
+      ],
+      "usage": [
+        "Critical warnings",
+        "Deadline indicators",
+        "Urgent case flags",
+        "Accent text"
+      ]
+    },
+    "counsel-divider": {
+      "description": "Thin horizontal rule with warm border tone for clean section separation.",
+      "intent": "Use to separate document sections with restraint. The warm tone harmonizes with the cream page.",
+      "suggested_properties": {
+        "border": "none",
+        "border-top": "1px solid #D6CFC0",
+        "margin": "24px 0"
+      },
+      "pairs_with": [
+        "counsel-header",
+        "counsel-page"
+      ],
+      "usage": [
+        "Section separators",
+        "Document breaks",
+        "List dividers"
+      ]
+    }
+  },
+  "elevation": {
+    "1": {
+      "light": "0 1px 2px rgba(0,0,0,0.05)",
+      "dark": "0 1px 2px rgba(0,0,0,0.30)"
+    },
+    "2": {
+      "light": "0 2px 6px rgba(0,0,0,0.07)",
+      "dark": "0 2px 6px rgba(0,0,0,0.40)"
+    },
+    "3": {
+      "light": "0 6px 16px rgba(0,0,0,0.09)",
+      "dark": "0 6px 16px rgba(0,0,0,0.45)"
+    },
+    "4": {
+      "light": "0 12px 32px rgba(0,0,0,0.12)",
+      "dark": "0 12px 32px rgba(0,0,0,0.50)"
+    },
+    "5": {
+      "light": "0 24px 64px rgba(0,0,0,0.16)",
+      "dark": "0 24px 64px rgba(0,0,0,0.55)"
+    }
+  }
+}

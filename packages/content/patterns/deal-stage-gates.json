@@ -1,0 +1,102 @@
+{
+  "id": "deal-stage-gates",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Deal Stage Gates",
+  "description": "Horizontal stage gate tracker for deal and project progression with approval checkpoints, approver avatars, and milestone date tracking.",
+  "category": "workflow",
+  "tags": ["2026", "workflow", "deal", "stages", "approval", "progression", "pipeline"],
+  "components": ["StageGate", "GateIcon", "ApprovalBadge", "StageName", "ProgressConnector", "ApproverAvatar"],
+  "default_preset": "horizontal",
+  "presets": {
+    "horizontal": {
+      "description": "Horizontal row of stage gates connected by progress bars for standard pipeline tracking across sales, legal, and operations workflows",
+      "layout": {
+        "layout": "flex",
+        "atoms": "_flex _flex-row _items-center _gap-0 _p-6 _w-full _bg-surface"
+      }
+    },
+    "vertical": {
+      "description": "Vertical sidebar layout for deal pages where stage progression appears alongside primary content with compact stage indicators",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _gap-0 _p-4 _w-full _max-w-xs _bg-surface"
+      }
+    },
+    "milestone": {
+      "description": "Milestone variant with date labels, SLA indicators, and elapsed-time tracking for time-bound deal progression and reporting",
+      "layout": {
+        "layout": "flex",
+        "atoms": "_flex _flex-row _items-center _gap-0 _p-6 _w-full _bg-surface"
+      }
+    }
+  },
+  "visual_brief": "A horizontal row of rounded rectangle stage gates (approximately 180x88px each) connected by horizontal progress bars. Each gate has a gate icon at top (32px), stage name in semibold 13px (e.g. 'Qualification', 'Negotiation', 'Signed'), completion percentage in smaller muted text, and 2-3 approver avatars (24px overlapping circles) at the bottom. Passed gates have a filled green background with a large white check icon, and avatars display a subtle verified-ring. The current active gate has a pulsing primary-color outline with a glow animation and the gate icon rendered in primary color. Future gates are dimmed to 50% opacity with muted borders. Progress connectors between gates are 4px tall horizontal bars: fully filled between passed gates, half-filled into current gate, empty from current forward. Approval badges appear as small corner pills on passed gates ('Approved' in green). In milestone preset, date labels appear below each gate showing expected and actual completion dates with delta chips.",
+  "default_layout": {
+    "layout": "flex",
+    "atoms": "_flex _flex-row _items-center _gap-0 _p-6 _w-full _bg-surface",
+    "slots": {
+      "stage-gate": "Individual gate card (d-surface, data-interactive) representing one stage. Contains gate icon, stage name, completion percentage, approver avatars, and approval badge.",
+      "gate-icon": "Icon representing the stage type (document, handshake, signature, etc.). 32px, rendered in state-appropriate color: success green for passed, primary for active, muted for future.",
+      "stage-name": "Stage label in semibold 13px type. Truncates with ellipsis if too long.",
+      "approval-badge": "Small pill at top-right of passed gates showing 'Approved' in success styling with check icon.",
+      "progress-connector": "Horizontal bar (4px tall) between adjacent gates visualizing progression. Fill width indicates transition state: 0% empty, 50% half (active transition), 100% complete.",
+      "approver-avatars": "Stacked overlapping avatars (24px, 8px overlap) at bottom of gate showing users who have approved or must approve. Verified ring on approved users.",
+      "date-label": "Milestone-variant-only: date text below gate showing expected/actual completion with color-coded delta (ahead/on-time/late)."
+    }
+  },
+  "responsive": {
+    "mobile": "Stages reflow to vertical stack. Progress connectors rotate 90 degrees. Gate width expands to container width. Avatar count reduces to show count-only indicator.",
+    "tablet": "Horizontal layout maintained but gates compress to 140px wide with abbreviated stage names.",
+    "desktop": "Full horizontal layout with all stages visible, hover interactions, and full stage names."
+  },
+  "layout_hints": {
+    "stage_priority": "Stage progression should be the first read, with approvals and milestone dates supporting that path rather than competing with it.",
+    "connector_role": "Progress connectors must reinforce how far a deal has advanced without becoming louder than the gates themselves.",
+    "mobile_translation": "When stacked vertically, preserve the same stage-by-stage progression so the flow still reads as one gated process."
+  },
+  "layout_hints": {
+    "stage_priority": "Stage progression should be the first read, with approvals and milestone dates supporting that path rather than competing with it.",
+    "connector_role": "Progress connectors must reinforce how far a deal has advanced without becoming louder than the gates themselves.",
+    "mobile_translation": "When stacked vertically, preserve the same stage-by-stage progression so the flow still reads as one gated process."
+  },
+  "motion": {
+    "micro": {
+      "active-gate-pulse": "outline glow 2s ease-in-out infinite on current gate",
+      "gate-hover": "translateY(-1px) + shadow-lift 150ms ease-out"
+    },
+    "transitions": {
+      "stage-advance": "progress-connector fill-sweep 600ms ease-in-out + check-icon draw on new passed gate",
+      "approval-add": "avatar fade-in + ring-pulse 300ms ease-out"
+    },
+    "ambient": {
+      "current-gate-glow": "border-shadow pulse matching primary color 2s ease-in-out infinite"
+    }
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "composition": {
+    "DealStageGates": "Root(d-section, flex-row) > [StageGate + ProgressConnector]*",
+    "StageGate": "Card(d-surface, data-interactive, data-state) > [GateIcon + StageName + PercentageLabel + ApproverAvatars + ApprovalBadge?]",
+    "ProgressConnector": "Bar(absolute-between, fill-by-state)",
+    "MilestoneVariant": "Extended > [StageGate + DateLabel + DeltaChip]"
+  },
+  "accessibility": {
+    "role": "progressbar",
+    "aria-label": "Deal stage progression",
+    "announcements": [
+      "Stage {name} reached",
+      "Approval received from {approver}",
+      "Deal advanced to {stage}",
+      "{days} days in current stage"
+    ],
+    "keyboard": [
+      "Tab: cycle through stages",
+      "Enter: open stage detail",
+      "Arrow keys: navigate between stages",
+      "A: view approvers for focused stage"
+    ]
+  }
+}

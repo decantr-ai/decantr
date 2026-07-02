@@ -1,0 +1,143 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "page-tree",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Page Tree",
+  "description": "Hierarchical page navigation with drag-and-drop reordering, inline rename, and nested page support. Used in workspace sidebars.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Input",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Input",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full tree with icons, expand/collapse, and context menus",
+      "components": [
+        "Button",
+        "Input",
+        "icon"
+      ],
+      "layout": {
+        "layout": "column",
+        "atoms": "_flex _col _gap0.5",
+        "slots": {
+          "search": "Filter pages by name",
+          "favorites": "Pinned pages section",
+          "tree": "Nested page items",
+          "new-button": "Create new page button"
+        }
+      }
+    },
+    "compact": {
+      "description": "Dense tree with smaller text and tighter row spacing for narrow sidebar containers",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "column",
+        "atoms": "_flex _col _gap0",
+        "slots": {
+          "tree": "Dense nested page items"
+        }
+      }
+    },
+    "flat": {
+      "description": "Single-level page list without hierarchy",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "column",
+        "atoms": "_flex _col _gap1",
+        "slots": {
+          "search": "Filter input",
+          "pages": "Flat page list"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "column",
+    "atoms": "_flex _col _gap0.5",
+    "slots": {
+      "search": "Filter pages by name",
+      "favorites": "Pinned/favorite pages section",
+      "tree": "Nested page items with expand/collapse",
+      "item-actions": "Per-item context menu (rename, delete, duplicate)",
+      "new-button": "Create new page button"
+    }
+  },
+  "io": {
+    "consumes": [
+      "pages",
+      "currentPageId",
+      "favorites"
+    ],
+    "produces": [
+      "page-select",
+      "page-reorder"
+    ],
+    "actions": [
+      "new-page",
+      "rename-page",
+      "delete-page",
+      "duplicate-page",
+      "reorder",
+      "toggle-favorite"
+    ]
+  },
+  "visual_brief": "Sidebar navigation tree with nested page items. Each item shows a document icon, page title, and an expand/collapse chevron for nested children. Indentation increases per nesting level with a thin vertical guide line. Hovering a page reveals action icons (three-dot menu for rename, duplicate, delete). A 'Favorites' section at the top shows pinned pages with a star icon. A search input at the very top filters pages by name. A 'New Page' button at the bottom (or a plus icon at the top) creates new pages. The compact preset reduces row height and font size. The flat preset removes nesting and shows all pages in a flat alphabetical list.",
+  "layout_hints": {
+    "tree_hierarchy": "Nested structure should remain obvious through indentation, guide lines, and expand/collapse affordances. Do not flatten the mental model just to save horizontal space.",
+    "action_reveal": "Row actions should feel contextual and low-noise. They may reveal on hover or focus, but must remain reachable for keyboard users.",
+    "editor_context": "The tree is a navigation and structure surface, not a content card list. Keep row density operational and calm."
+  },
+  "responsive": {
+    "mobile": "Page tree renders as a full-screen drawer or sheet. Larger touch targets for tree items. Drag-to-reorder uses long-press. Actions in swipe menus.",
+    "tablet": "Sidebar at 260px width. Standard row heights. Drag-to-reorder functional.",
+    "desktop": "Sidebar at 280px width with comfortable spacing. Full keyboard navigation. Drag-and-drop reordering."
+  },
+  "motion": {
+    "micro": "Expand/collapse chevrons, hover states, and pinned/favorite toggles may animate subtly over 120-180ms.",
+    "transitions": "Nested branch expansion, drag-reorder previews, and drawer transitions should feel smooth and structured rather than flashy."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "click-select"
+  ],
+  "accessibility": {
+    "role": "tree",
+    "aria-label": "Page tree",
+    "keyboard": [
+      "Arrow keys expand, collapse, and move between tree items.",
+      "Enter activates the focused page."
+    ],
+    "announcements": [
+      "Expanded and collapsed branch states should be announced clearly.",
+      "Pinned or favorite state changes should be announced semantically."
+    ],
+    "focus_management": "When a branch expands or collapses, keep focus on the controlling tree item rather than jumping to a different depth unexpectedly."
+  },
+  "composition": {
+    "PageTree": "Panel(d-section, flex-col) > [SearchInput(d-control) + FavoritesSection? + TreeList + NewPageButton(d-interactive)]",
+    "FavoritesSection": "Section > [SectionLabel(d-annotation) + PageItem(icon: star)[]]",
+    "TreeList": "List(flex-col) > TreeItem(d-data-row)[]",
+    "TreeItem": "Row(hoverable, indent: level) > [ExpandChevron? + DocIcon + PageTitle(ellipsis) + ActionsMenu?(d-interactive, show-on-hover)]"
+  }
+}

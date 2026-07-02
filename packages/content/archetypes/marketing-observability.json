@@ -1,0 +1,95 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "marketing-observability",
+  "role": "public",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Observability Platform Marketing",
+  "description": "Public marketing landing page for the observability platform. Showcases product vision, feature highlights, pricing tiers, testimonials, and call-to-action sections.",
+  "tags": [
+    "marketing",
+    "landing",
+    "observability",
+    "seo",
+    "public"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "observability landing page",
+        "monitoring marketing",
+        "observability marketing",
+        "platform landing",
+        "observability homepage"
+      ],
+      "secondary": [
+        "product page",
+        "feature showcase",
+        "pricing page",
+        "sign up",
+        "get started"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "vision",
+          "as": "hero"
+        },
+        {
+          "pattern": "features",
+          "preset": "standard",
+          "as": "features"
+        },
+        {
+          "pattern": "pricing",
+          "preset": "standard",
+          "as": "pricing"
+        },
+        {
+          "pattern": "testimonials",
+          "preset": "standard",
+          "as": "testimonials"
+        },
+        {
+          "pattern": "cta-section",
+          "preset": "standard",
+          "as": "cta"
+        }
+      ],
+      "default_layout": [
+        "hero",
+        "features",
+        "pricing",
+        "testimonials",
+        "cta-section"
+      ],
+      "shell": "top-nav-footer"
+    }
+  ],
+  "page_briefs": {
+    "home": "Full-bleed marketing landing page. Opens with a vision hero section featuring a bold headline, animated product screenshot, and primary CTA button. Scrolls into a feature grid highlighting metrics, logs, traces, and alerting capabilities with icons and short descriptions. Pricing section presents three tiers in side-by-side cards. Testimonials carousel shows quotes from engineering leaders. Closes with a full-width CTA section driving sign-up and demo booking."
+  },
+  "features": [
+    "marketing",
+    "seo"
+  ],
+  "suggested_theme": {
+    "ids": [
+      "fintech",
+      "carbon",
+      "neon-dark"
+    ],
+    "modes": [
+      "dark"
+    ]
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "auth-gateway",
+  "role": "gateway",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Authentication Gateway",
+  "description": "Single-route authentication entry for products that consolidate sign-in, registration, and recovery into one adaptable gateway screen.",
+  "tags": [
+    "auth",
+    "login",
+    "gateway",
+    "oauth",
+    "session"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "login gateway",
+        "single auth route",
+        "sign in",
+        "authentication"
+      ],
+      "secondary": [
+        "oauth",
+        "password reset",
+        "account access",
+        "session"
+      ],
+      "negative": [
+        "public-only",
+        "no-auth",
+        "multi-step onboarding"
+      ]
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "core"
+  },
+  "pages": [
+    {
+      "id": "login",
+      "default_layout": [
+        "auth-form"
+      ],
+      "shell": "centered"
+    }
+  ],
+  "page_briefs": {
+    "login": "Single centered authentication card that can switch between sign-in, registration, and recovery modes without leaving the route. Support OAuth providers, clear state transitions, and concise recovery/help affordances inside one focused gateway surface."
+  },
+  "features": [
+    "auth"
+  ],
+  "shells": {
+    "centered": "Centered gateway card on a minimal background for focused authentication entry."
+  },
+  "dependencies": {
+    "patterns": {
+      "auth-form": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "clean",
+      "luminarum",
+      "auradecantism"
+    ],
+    "modes": [
+      "dark",
+      "light",
+      "auto"
+    ]
+  }
+}

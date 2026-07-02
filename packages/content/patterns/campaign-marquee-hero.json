@@ -1,0 +1,167 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "campaign-marquee-hero",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Campaign Marquee Hero",
+  "description": "Retro product-launch hero with a cabinet marquee, product reveal, campaign countdown, progress snapshot, and primary pledge or waitlist action.",
+  "category": "campaign",
+  "tags": [
+    "campaign",
+    "launch",
+    "hero",
+    "retro",
+    "conversion",
+    "preorder"
+  ],
+  "components": [
+    "Button",
+    "Badge",
+    "Progress",
+    "KPI",
+    "Media",
+    "Countdown"
+  ],
+  "contained": false,
+  "default_preset": "product-kickstarter-cabinet",
+  "presets": {
+    "product-kickstarter-cabinet": {
+      "description": "Premium Kickstarter-style first viewport with a physical product box, cartridge or controller deck, marquee headline, proof counters, and raised rectangular CTAs.",
+      "components": [
+        "Button",
+        "Badge",
+        "Progress",
+        "KPI",
+        "Media",
+        "Countdown"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap8 _items[center] _minh[88vh] _px6 _py10 _maxw[86rem] _mx[auto]",
+        "slots": {
+          "marquee": "Oversized product-launch headline. Name the literal product, kit, drop, or category in the first viewport.",
+          "supporting-copy": "Specific campaign promise with what exists now, what support unlocks, and why the launch matters.",
+          "product-theater": "Physical product scene: boxed kit, cartridge, controller, hardware deck, packaging, or inspectable product render. Do not use a generic abstract mockup.",
+          "scoreboard": "Funding, backer, countdown, inventory, and goal counters styled like a live arcade scoreboard.",
+          "action-row": "Primary pledge/preorder/waitlist CTA and secondary demo/story CTA. Use raised rectangular controller buttons, not pill buttons. Give labels and icons generous x-padding so actions feel like hardware controls, not cramped tags.",
+          "proof-row": "Prototype, delivery, maker, press, or fulfillment proof cues close to the CTA."
+        }
+      }
+    },
+    "coin-op": {
+      "description": "First-viewport hero staged like an arcade cabinet: marquee headline, product screen, live counter strip, and dual CTAs.",
+      "components": [
+        "Button",
+        "Badge",
+        "Progress",
+        "KPI",
+        "Media",
+        "Countdown"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap8 _items[center] _minh[92vh] _px6 _py10 _maxw[82rem] _mx[auto]",
+        "slots": {
+          "marquee": "Oversized campaign title band. Literal product or offer name, not an eyebrow-only brand mention.",
+          "supporting-copy": "Short launch promise, 2-3 lines max, with one concrete product outcome.",
+          "product-screen": "Large visual slot framed as an arcade bezel. Show product render, prototype UI, or packaging visual.",
+          "status-strip": "Campaign counters: raised amount, target, backers, days left, early-bird inventory.",
+          "action-row": "Primary pledge/preorder/waitlist CTA plus secondary demo/story CTA.",
+          "trust-row": "Tiny proof cues such as prototype ready, shipping window, press quote, or maker credibility."
+        }
+      }
+    },
+    "catalog-drop": {
+      "description": "Mail-order catalog inspired launch hero with product box, issue label, price callout, and pledge action.",
+      "components": [
+        "Button",
+        "Badge",
+        "KPI",
+        "Media"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap7 _items[center] _minh[84vh] _px6 _py12 _maxw[78rem] _mx[auto]",
+        "slots": {
+          "drop-label": "Small issue/date label, styled like a catalog sticker.",
+          "headline": "Large product-drop headline.",
+          "product-box": "Packaging or mockup visual with hard border and shadow.",
+          "spec-strip": "Compact feature/spec row.",
+          "cta-stack": "Primary and secondary actions with campaign note."
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gap8 _items[center] _minh[92vh] _px6 _py10 _maxw[82rem] _mx[auto]",
+    "slots": {
+      "marquee": "Pixel-style product launch title",
+      "supporting-copy": "Campaign promise and launch context",
+      "product-screen": "Product render or prototype framed in a bezel",
+      "status-strip": "Funding, backer, and countdown counters",
+      "action-row": "Primary pledge/preorder/waitlist CTA and secondary demo CTA",
+      "trust-row": "Compact campaign proof cues"
+    }
+  },
+  "visual_brief": "A first-viewport launch surface, not a generic SaaS hero. The page should immediately feel like a premium retro Kickstarter campaign: a bold marquee headline names the product or campaign, a physical product box/cartridge/controller scene acts as the hero object, and the funding or waitlist momentum is visible before scrolling. Use full-bleed atmosphere, but keep all content inside a clear centered cabinet safe area. CTAs should be raised rectangular controller buttons with enough horizontal padding that text and icons do not clash with the button walls. Avoid floating cards, decorative blobs, split-hero stock mockups, vague tag-chip clutter, and pill-shaped CTAs.",
+  "responsive": {
+    "mobile": "Stack marquee, product screen, counters, then actions. Product screen remains visible in the first viewport but may crop to a square or 4:3 frame. CTAs become full-width arcade buttons.",
+    "tablet": "Two-zone layout with marquee/copy above and product screen below or beside counters.",
+    "desktop": "Two-column cabinet stage: copy and marquee on the left, product screen and status console on the right. Keep the next campaign module slightly visible below the fold."
+  },
+  "layout_hints": {
+    "first_viewport": "The campaign identity, product visual, and conversion action must all appear before the first scroll.",
+    "safe_area": "Full-bleed background is allowed, but content should live inside a max-width campaign cabinet zone.",
+    "cta_language": "Use verbs like Back, Reserve, Join, Unlock, Watch Demo, or See Rewards. Avoid generic Submit or Learn More as the primary action.",
+    "button_spacing": "Primary and secondary hero actions need hardware-like interior breathing room: icon and label separated, no text hugging the border, and enough min-width for short labels."
+  },
+  "motion": {
+    "micro": {
+      "button-press": "translate(3px, 3px) with shadow collapse over 90ms",
+      "counter-update": "single-frame LED flip or count-up over 300ms"
+    },
+    "transitions": {
+      "hero-load": "Marquee snaps in first, product screen follows, counters stagger last over 260ms.",
+      "reduced-motion": "Use opacity and color changes only; no scanline movement."
+    }
+  },
+  "interactions": [
+    "animate-on-mount",
+    "stagger-children",
+    "click-select",
+    "keyboard-navigation"
+  ],
+  "composition": {
+    "CampaignMarqueeHero": "Hero(banner, arcade-canvas) > [Marquee + CopyStack + ProductScreen + StatusStrip + ActionRow + TrustRow]",
+    "StatusStrip": "GridOrRail > [RaisedCounter + BackerCounter + DaysLeft + InventoryState]",
+    "ActionRow": "Flex(wrap) > [PrimaryCampaignAction + SecondaryDemoAction]"
+  },
+  "accessibility": {
+    "role": "banner",
+    "aria-label": "Product launch campaign introduction",
+    "keyboard": [
+      "Primary and secondary actions should be the first focusable controls after navigation.",
+      "Counters must be readable as text, not only visual LED styling."
+    ],
+    "announcements": [
+      "Campaign status values should include labels such as amount raised, goal, backers, and days left."
+    ],
+    "focus_management": "Arcade button focus rings should be at least 3px and visible on saturated fills."
+  },
+  "io": {
+    "consumes": [
+      "campaign-summary",
+      "product-media",
+      "campaign-countdown"
+    ],
+    "produces": [
+      "conversion-intent"
+    ],
+    "actions": [
+      "pledge-click",
+      "waitlist-click",
+      "demo-click"
+    ]
+  }
+}

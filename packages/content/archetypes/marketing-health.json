@@ -1,0 +1,100 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "marketing-health",
+  "role": "public",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Health & Wellness Landing",
+  "description": "Public marketing landing page for a health and wellness portal. Split hero, feature highlights, patient testimonials, and call-to-action sections.",
+  "tags": [
+    "health",
+    "marketing",
+    "landing",
+    "wellness",
+    "seo"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "health landing page",
+        "wellness marketing",
+        "health portal landing",
+        "medical marketing"
+      ],
+      "secondary": [
+        "patient portal marketing",
+        "telehealth landing",
+        "healthcare website",
+        "wellness site"
+      ],
+      "negative": []
+    },
+    "implies": [
+      "patient-dashboard"
+    ],
+    "weight": 0.6,
+    "tier": "optional"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "patterns": [
+        {
+          "pattern": "hero-split",
+          "preset": "standard",
+          "as": "hero"
+        },
+        {
+          "pattern": "features",
+          "preset": "standard",
+          "as": "features"
+        },
+        {
+          "pattern": "testimonials",
+          "preset": "standard",
+          "as": "testimonials"
+        },
+        {
+          "pattern": "cta-section",
+          "preset": "standard",
+          "as": "cta"
+        }
+      ],
+      "default_layout": [
+        "hero-split",
+        "features",
+        "testimonials",
+        "cta-section"
+      ],
+      "shell": "top-nav-footer"
+    }
+  ],
+  "page_briefs": {
+    "home": "Health portal landing at /. Split hero with headline on left ('Your health, in your hands') and illustration or app screenshot on right, with primary CTA button to sign up. Features section highlights key capabilities: appointment booking, vitals tracking, telehealth, and secure records. Testimonials carousel shows patient quotes with photos. Final CTA section with sign-up form and trust badges (HIPAA compliant, SOC 2)."
+  },
+  "features": [
+    "marketing",
+    "seo"
+  ],
+  "shells": {
+    "top-nav-footer": "Top navigation bar with logo and links, footer with sitemap and legal links"
+  },
+  "dependencies": {
+    "patterns": {
+      "hero-split": "^1.0.0",
+      "features": "^1.0.0",
+      "testimonials": "^1.0.0",
+      "cta-section": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "clean",
+      "medical"
+    ],
+    "modes": [
+      "light"
+    ]
+  }
+}

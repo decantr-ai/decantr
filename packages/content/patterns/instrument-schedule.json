@@ -1,0 +1,131 @@
+{
+  "id": "instrument-schedule",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Instrument Schedule",
+  "description": "A laboratory instrument booking calendar displaying reservations across multiple instruments over time, with user attribution, maintenance windows, availability status, and quick-book interactions on free slots.",
+  "category": "science",
+  "tags": [
+    "2026",
+    "science",
+    "lab",
+    "scheduling",
+    "calendar",
+    "booking",
+    "instruments",
+    "reservation"
+  ],
+  "components": [
+    "InstrumentRow",
+    "TimeBlock",
+    "UserAvatar",
+    "MaintenanceSlot",
+    "BookingDialog",
+    "InstrumentStatus",
+    "TimeAxis",
+    "NowIndicator"
+  ],
+  "default_preset": "week",
+  "presets": {
+    "week": {
+      "description": "Week-grid calendar with instruments on the vertical axis and days/hours on the horizontal axis. Each cell represents a bookable time slot. Renders all bookings as colored blocks with user avatars and sample IDs.",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_w100 _overflow-x-auto _p2"
+      }
+    },
+    "day": {
+      "description": "Detailed single-day view with hours on the vertical axis and instruments as horizontal columns. Bookings render taller with more detail (duration, sample count, user, protocol). Ideal for bench-scheduling huddles.",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_w100 _overflow-x-auto _p2"
+      }
+    },
+    "list": {
+      "description": "Chronological agenda listing upcoming bookings as rows with instrument, user, time window, and sample details. Sorted by start time. Best for mobile viewing and printable schedules.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_w100 _grid _gap2 _p3"
+      }
+    }
+  },
+  "visual_brief": "A lab-scheduling grid rendered as a d-section inside a scrollable container. The grid has InstrumentRows stacked vertically on the left axis and a horizontal TimeAxis along the top showing day/hour labels. The left column shows instrument names in semibold text with their InstrumentStatus indicator beside them: a colored 8px dot (green=online, amber=busy, red=offline, blue=maintenance) and the instrument's short-id in mono-data muted ('Thermo-Q Exactive HF' with 'THRM-01' beneath). Each InstrumentRow has a horizontal rail that spans the week, divided into hourly columns (or 30-min in day preset). TimeBlocks render as colored rectangles positioned over their reserved time range; block color is assigned per-user (stable hash to pastel palette) so multiple bookings by the same researcher share color identity. Each block contains a UserAvatar circle (20px) on the left, user name initial, and sample IDs in mono-data small text centered or truncated. Block height fills the row completely. Hovering a block surfaces a BookingDialog tooltip with full booking details: user, protocol name, sample count, start/end times, and buttons to extend, release, or message the user. MaintenanceSlots render with a distinctive hatched diagonal-stripe pattern and blue background with a wrench icon, labeled 'Maintenance'. Free slots are clickable (cursor:pointer) and hover-highlight in a subtle primary tint inviting new bookings; clicking opens the BookingDialog in creation mode. A vertical NowIndicator line with a small clock-icon pill at top crosses the grid at the current time, updating live. Weekends and after-hours cells show a subtle disabled gray tint. Color-coding by user group (badge-color) can override per-user colors when enabled. A legend anchors to the bottom-right summarizing colors and status indicators.",
+  "layout_hints": {
+    "container": "d-section with horizontal scroll overflow",
+    "note": "Lab scheduling is shared-resource allocation. Conflicts must be visually obvious. Maintenance windows cannot be double-booked. Always show instrument status alongside schedule.",
+    "instrument_row_height": "InstrumentRow minimum height 48px, maximum 80px. Row header column fixed at 200px width (sticky left on scroll).",
+    "time_block_color": "TimeBlock colors assigned by stable-hash of user-id to pastel palette — consistent across sessions. Alternative: override with user-group color when configured.",
+    "status_indicator": "InstrumentStatus dot MUST be 8px circle with icon companion (sun/moon/wrench/x). Never rely on color alone.",
+    "maintenance_pattern": "MaintenanceSlot MUST use visually distinct diagonal-stripe hatching + blue tint + wrench icon. Not just solid color — must be unmistakable as non-bookable.",
+    "now_indicator": "NowIndicator vertical line spans full grid height with z-index above time blocks. Updates position every 60s. Includes clock pill at top with current time label."
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_w100 _overflow-x-auto _p2",
+    "slots": {
+      "time-axis": "Top horizontal axis showing day/date labels (week preset) or hour labels (day preset). Sticky on scroll. Uses d-annotation small-caps muted. Weekend columns subtly tinted.",
+      "instrument-rows": "Repeating slot — one row per instrument. Left column (sticky) shows instrument name, InstrumentStatus dot, and short-id. Right rail contains TimeBlocks for that instrument.",
+      "time-blocks": "Repeating sub-slot — one per booking. Positioned absolutely within instrument row based on start/end times. Colored by user/group. Contains UserAvatar, name initial, sample IDs.",
+      "maintenance-slots": "Sub-slot for scheduled instrument maintenance windows. Renders with diagonal-stripe pattern, blue tint, and wrench icon. Non-bookable and visually distinct.",
+      "instrument-status": "Indicator dot + icon combination beside each instrument name showing current state: online (green), busy (amber), offline (red), maintenance (blue).",
+      "now-indicator": "Vertical line crossing the grid at the current time. Updates live every 60 seconds. Includes clock pill at top showing current time.",
+      "booking-dialog": "Modal/popover that opens on TimeBlock hover or free-slot click. Create mode has form for new booking (user, protocol, duration, samples). View mode shows booking details with extend/release/message actions.",
+      "legend": "Bottom-right corner legend summarizing color coding for users/groups, status indicators, and maintenance pattern."
+    }
+  },
+  "accessibility": {
+    "role": "grid",
+    "aria-label": "Instrument booking schedule",
+    "announcements": [
+      "Instrument {name} status: {status}",
+      "Booking: {user} from {start} to {end} on {instrument}",
+      "Free slot on {instrument} at {time}",
+      "New booking created for {instrument} by {user}"
+    ],
+    "keyboard": [
+      "Arrow keys: navigate between grid cells",
+      "Enter: open booking dialog on focused cell",
+      "Escape: close booking dialog",
+      "N: jump to now-indicator position",
+      "T: toggle between week/day/list preset"
+    ]
+  },
+  "responsive": {
+    "mobile": "Switches automatically to list preset. TimeBlocks render as rows with instrument name, time window, user, and samples. BookingDialog opens as full-screen sheet.",
+    "tablet": "Week grid at reduced column width. InstrumentStatus collapses to icon-only. Booking detail tooltip becomes tap-to-open rather than hover."
+  },
+  "motion": {
+    "micro": {
+      "block-hover": "brightness(1.08) + subtle shadow 150ms ease-out",
+      "free-slot-hover": "primary-tint fade-in 120ms ease-out",
+      "status-dot-pulse": "busy amber dot 1s ease-in-out infinite"
+    },
+    "transitions": {
+      "dialog-open": "popover scale 0.96 to 1.0 + fade 200ms ease-out",
+      "booking-create": "new block fade-in + height grow 300ms ease-out",
+      "booking-release": "block fade + scale 0.95 + slide-up 250ms ease-in",
+      "now-indicator-move": "line transform translate 500ms ease-in-out on minute tick"
+    },
+    "ambient": {
+      "now-pulse": "now-indicator clock pill subtle pulse 2s ease-in-out infinite",
+      "maintenance-shimmer": "hatching pattern subtle diagonal-sweep 4s linear infinite"
+    }
+  },
+  "interactions": [
+    "click-select",
+    "drag-reorder",
+    "keyboard-navigation",
+    "animate-on-mount"
+  ],
+  "composition": {
+    "InstrumentSchedule": "Section(d-section, overflow-x-auto) > [TimeAxis + InstrumentRow[] + NowIndicator + Legend]",
+    "InstrumentRow": "Row(d-row, data-instrument) > [InstrumentHeader + TimeRail > [TimeBlock[] + MaintenanceSlot[] + FreeSlot[]]]",
+    "InstrumentHeader": "Cell(d-annotation, sticky-left) > [InstrumentName + InstrumentStatus + ShortId]",
+    "TimeBlock": "Block(d-surface, data-interactive, data-user-color, positioned) > [UserAvatar + UserInitial + SampleIDs]",
+    "MaintenanceSlot": "Block(d-annotation, data-maintenance, hatched) > [WrenchIcon + MaintenanceLabel]",
+    "InstrumentStatus": "Indicator(d-annotation, data-status) > [StatusDot + StatusIcon]",
+    "NowIndicator": "Line(d-annotation, data-now, vertical) > [ClockPill + VerticalRule]",
+    "BookingDialog": "Popover(d-surface) > [BookingForm | BookingDetails + ActionButtons]"
+  }
+}

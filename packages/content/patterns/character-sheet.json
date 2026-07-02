@@ -1,0 +1,102 @@
+{
+  "id": "character-sheet",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Character Sheet",
+  "description": "Character consistency tracker for AI video production with reference images, trait tags, appearance log, and consistency scoring across generated frames.",
+  "category": "media",
+  "tags": ["2026", "media", "character", "ai-video", "consistency", "reference"],
+  "components": ["CharacterAvatar", "TraitChip", "ReferenceGallery", "AppearanceLog", "ConsistencyScore"],
+  "default_preset": "detail",
+  "presets": {
+    "card": {
+      "description": "Compact character card with avatar, name, top traits, and small consistency score for list views and sidebars",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _gap-3 _p-4 _bg-surface _rounded-lg _border _w-full _max-w-sm"
+      }
+    },
+    "detail": {
+      "description": "Expanded detail view with large avatar, reference gallery strip, trait chips, consistency ring, and scene appearance log for deep review",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _gap-6 _p-6 _bg-surface _rounded-xl _border _w-full"
+      }
+    },
+    "grid": {
+      "description": "Grid overview rendering all characters as equal-sized cards for cast overview and selection across a production",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _grid-cols-3 _gap-4 _p-4 _w-full"
+      }
+    }
+  },
+  "visual_brief": "A large circular character avatar (120px diameter in detail preset, 64px in card) rendered with 2px ring border and subtle glow. Character name displayed prominently below in semibold 18px type. Trait chips arranged as a wrapping flex row below the name, each chip being a small pill (outfit: denim jacket, hair: dark curly, age: mid-30s, style: cinematic) with category-specific accent colors. Reference gallery shows 4-6 alternate angle images in a horizontal strip of 80x80px rounded squares with hover lift. Appearance log renders as a vertical scrollable list of scene cards, each showing a 48x27px thumbnail, scene number, and timestamp when the character appears. Consistency score is a circular progress ring (80px diameter) with stroke-width 8px, showing percentage numerically in center (e.g. '94%'), color-graded green>80, amber 60-80, red<60. Score indicates how well AI-generated frames match the original reference.",
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _flex-col _gap-6 _p-6 _bg-surface _rounded-xl _border _w-full",
+    "slots": {
+      "character-avatar": "Large circular avatar at the top displaying the primary reference image. 120px diameter with 2px ring border. Optional upload/change affordance on hover.",
+      "character-header": "Name and role block directly below avatar. Name in large semibold type, role label beneath in muted text.",
+      "trait-chips": "Wrapping flex row of trait pills grouped by category. Each chip shows category:value format with category-specific accent coloring. Editable: clicking a chip opens inline edit.",
+      "reference-gallery": "Horizontal strip of 4-6 alternate reference images as rounded 80x80px thumbnails. Add-reference affordance at end of strip. Clicking a thumbnail previews full-size.",
+      "consistency-score": "Circular progress ring rendering percentage score with color grading. Positioned alongside header in detail preset. Tooltip explains calculation on hover.",
+      "appearance-log": "Vertical scrollable list of scenes where the character appears. Each row has a small thumbnail, scene number, timestamp, and consistency delta for that specific appearance."
+    }
+  },
+  "responsive": {
+    "mobile": "Avatar reduces to 80px. Reference gallery becomes horizontal scroll. Appearance log limits to 5 items with 'view all' link. Trait chips wrap freely.",
+    "tablet": "Standard detail layout with slightly reduced spacing. Grid preset shows 2 columns.",
+    "desktop": "Full detail layout with all sections visible. Grid preset shows 3-4 columns."
+  },
+  "layout_hints": {
+    "identity_priority": "The character avatar, name, and consistency score should establish identity first. Traits, references, and appearance history deepen that read rather than competing with it.",
+    "reference_role": "Reference imagery should feel like authoritative source material attached to the character, not a separate gallery detached from the core sheet.",
+    "consistency_signal": "Consistency score should read as a focused quality indicator beside the identity cluster, not as a generic KPI widget."
+  },
+  "layout_hints": {
+    "identity_priority": "The character avatar, name, and consistency score should establish identity first. Traits, references, and appearance history deepen that read rather than competing with it.",
+    "reference_role": "Reference imagery should feel like authoritative source material attached to the character, not a separate gallery detached from the core sheet.",
+    "consistency_signal": "Consistency score should read as a focused quality indicator beside the identity cluster, not as a generic KPI widget."
+  },
+  "motion": {
+    "micro": {
+      "avatar-hover": "ring-glow intensify 200ms ease-out",
+      "trait-chip-hover": "scale(1.05) + bg-tint 150ms ease-out"
+    },
+    "transitions": {
+      "consistency-score-update": "stroke-dashoffset lerp 600ms ease-out with number counter",
+      "reference-add": "scale(0) to scale(1) 250ms spring"
+    },
+    "ambient": {
+      "score-low-warning": "pulse red glow 2s ease-in-out infinite when score < 60"
+    }
+  },
+  "interactions": [
+    "animate-on-mount",
+    "inline-edit",
+    "click-select"
+  ],
+  "composition": {
+    "CharacterSheet": "Root(d-surface, stack) > [CharacterAvatar + CharacterHeader + ConsistencyScore + TraitChip* + ReferenceGallery + AppearanceLog]",
+    "TraitChips": "FlexRow(wrap) > TraitChip*(d-annotation, data-category)",
+    "ReferenceGallery": "Strip(flex-row, scroll-x) > ReferenceThumbnail* + AddReferenceButton",
+    "AppearanceLog": "List(d-data) > AppearanceEntry*(d-row) > [Thumbnail + SceneInfo + DeltaBadge]"
+  },
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Character reference sheet",
+    "announcements": [
+      "Consistency score updated to {score}%",
+      "Reference image {index} added",
+      "Trait {name} updated to {value}"
+    ],
+    "keyboard": [
+      "Tab: cycle through traits and references",
+      "Enter: edit selected trait or open reference",
+      "Delete: remove selected reference",
+      "Arrow keys: navigate reference gallery"
+    ]
+  }
+}

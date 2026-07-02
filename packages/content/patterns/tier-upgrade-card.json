@@ -1,0 +1,144 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "tier-upgrade-card",
+  "version": "1.1.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Tier Upgrade Card",
+  "description": "Pricing tier card with plan name, price, feature list, upgrade CTA, and current-plan/recommended emphasis. Used in billing portal and landing page pricing sections.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Card",
+        "Badge",
+        "Button",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "contained": false,
+  "components": [
+    "Card",
+    "CardHeader",
+    "CardBody",
+    "CardFooter",
+    "Badge",
+    "Button",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Pricing card with plan name, monthly price, feature checklist, and upgrade button. Vertical stack layout.",
+      "components": [
+        "Card",
+        "CardHeader",
+        "CardBody",
+        "CardFooter",
+        "Badge",
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap0 _border _bordermuted/20 _r4 _overflow[hidden]",
+        "slots": {
+          "header": "Plan name with _heading4 and optional 'Popular' Badge",
+          "price": "Monthly price with large _heading2 number and /mo suffix",
+          "description": "One-line plan description with _bodysm _fgmuted",
+          "features": "Checklist of included features, each with check icon",
+          "cta": "Upgrade/downgrade Button, full-width in CardFooter"
+        }
+      }
+    },
+    "highlighted": {
+      "description": "Featured/recommended tier card with primary border, gradient background accent, and prominent CTA.",
+      "components": [
+        "Card",
+        "Badge",
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap0 _border2 _borderprimary _r4 _overflow[hidden] _relative",
+        "slots": {
+          "highlight-bar": "Top gradient accent bar",
+          "badge": "Recommended/Popular Badge at top",
+          "header": "Plan name and price",
+          "features": "Feature checklist with check icons",
+          "cta": "Primary CTA with aura-glow effect"
+        }
+      }
+    },
+    "horizontal": {
+      "description": "Horizontal tier comparison row for compact billing views. Plan info on left, features in middle, CTA on right.",
+      "components": [
+        "Badge",
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _aic _gap6 _px6 _py4 _borderb _bordermuted/10",
+        "slots": {
+          "plan-info": "Plan name, price, and description stacked on left",
+          "features": "Key features as horizontal Badge list",
+          "cta": "Upgrade Button on right"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap0 _border _bordermuted/20 _r4",
+    "slots": {
+      "header": "Plan name and badge",
+      "price": "Monthly price",
+      "description": "Plan description",
+      "features": "Feature checklist",
+      "cta": "Upgrade button"
+    }
+  },
+  "visual_brief": "Pricing card for upgrade flows with a header showing the plan name and an optional 'Current Plan' or 'Recommended' badge. Price displayed prominently with monthly billing amount. A short plan description below the price. A feature checklist with checkmark icons lists included features. The CTA button reads 'Upgrade' (or 'Current Plan' in disabled state for the current plan). The highlighted preset adds a primary-color border and a 'Most Popular' ribbon. The horizontal preset arranges plans side by side in a comparison table layout instead of separate cards.",
+  "responsive": {
+    "mobile": "Cards stack vertically with full-width CTAs and intact feature lists.",
+    "tablet": "Two-column or auto-fit comparison. Cards should never shrink below comfortable reading width.",
+    "desktop": "Auto-fit comparison layout with generous feature spacing. Avoid hardcoded column counts when more plans are present."
+  },
+  "motion": {
+    "micro": "Highlighted or recommended plans may use subtle border and shadow emphasis on hover, while current-plan states remain calm and stable.",
+    "transitions": "Billing-state and current-plan changes should animate softly over 150-220ms without causing the comparison grid to shift."
+  },
+  "interactions": [
+    "lift-hover",
+    "click-select",
+    "animate-on-mount",
+    "stagger-children"
+  ],
+  "layout_hints": {
+    "card_treatment": "Current plan highlighted with a distinct active treatment and a clear 'Current' badge. Recommended upgrade options should feel stronger than generic cards and should not rely on generic ghost-button treatment for their main CTA.",
+    "comparison": "Feature comparison as checklist — checkmarks for included, dashes for excluded. Premium features in accent color. Use staged or auto-fit columns, never a rigid four-up grid.",
+    "cta_treatment": "The upgrade/manage action should always read as a decisive billing action. Current-plan state should still preserve a stable button/action slot so the card rhythm does not collapse."
+  },
+  "accessibility": {
+    "role": "article",
+    "aria-label": "Upgrade tier card",
+    "keyboard": [
+      "Tab moves through the plan CTA and any supporting links in card order."
+    ],
+    "announcements": [
+      "Current plan and recommended-plan states should be announced semantically rather than through color alone.",
+      "Feature availability should be conveyed in text, not only in checkmark icons."
+    ],
+    "focus_management": "Keep focus on the active plan CTA or selected comparison state when billing controls update."
+  },
+  "composition": {
+    "TierUpgradeCard": "Card(d-surface, bordered) > [CardHeader > [PlanName(heading4) + PopularBadge?(d-annotation)] + Price(mono-data, heading2) + Description(text-muted) + FeatureList + CTAButton]",
+    "FeatureList": "List > FeatureItem(d-data-row) > [CheckIcon(color: success) + FeatureText][]",
+    "CTAButton": "Button(d-interactive, full-width, variant: highlighted ? primary : secondary-strong)",
+    "HighlightedCard": "TierUpgradeCard(border-primary, accent-bar-top) > PopularBadge(d-annotation)"
+  }
+}

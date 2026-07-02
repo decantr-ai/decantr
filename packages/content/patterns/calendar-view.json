@@ -1,0 +1,143 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "calendar-view",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Calendar View",
+  "description": "Multi-mode calendar with day, week, and month views, event creation via click-and-drag, and drag-to-reschedule functionality.",
+  "category": "scheduling",
+  "tags": [
+    "2026",
+    "calendar",
+    "scheduling",
+    "events",
+    "date-picker",
+    "drag-and-drop",
+    "time-management"
+  ],
+  "components": [
+    "CalendarGrid",
+    "DayCell",
+    "WeekColumn",
+    "TimeSlot",
+    "EventChip",
+    "EventPopover",
+    "ViewSwitcher",
+    "NavigationBar",
+    "MiniCalendar"
+  ],
+  "default_preset": "month",
+  "presets": {
+    "month": {
+      "description": "Full month grid overview showing up to 3 events per day cell with overflow count — best for high-level schedule overview and planning",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _grid-cols-7 _gap-px _bg-border _rounded _overflow-hidden"
+      }
+    },
+    "week": {
+      "description": "Seven-day column layout with 15-minute time slots, events positioned absolutely by start/end time — ideal for detailed daily scheduling",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _grid-cols-8 _h-full _overflow-y-auto _bg-surface"
+      }
+    },
+    "day": {
+      "description": "Single day detail view with full time-slot granularity and expanded event cards showing descriptions and attendees",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _h-full _overflow-y-auto _bg-surface"
+      }
+    },
+    "agenda": {
+      "description": "Chronological list view of upcoming events grouped by day — compact, scannable, accessible format without spatial positioning",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap-2 _p-4 _overflow-y-auto _bg-surface"
+      }
+    }
+  },
+  "visual_brief": "A clean, structured calendar interface built on hairline borders (1px, var(--d-border-subtle)) forming a precise grid. The NavigationBar spans the full width at the top: a left-aligned row with back/forward chevron buttons, a bold month+year title (e.g., 'April 2026' in text-lg font-semibold), and a 'Today' pill button that jumps to the current date. Right-aligned is the ViewSwitcher — a segmented control with four options (Month, Week, Day, Agenda) rendered as connected pill buttons with the active one filled with accent color and white text. Below the nav bar in month view, a day-of-week header row shows abbreviated day names (Mon, Tue, ...) in text-xs uppercase tracking-wide text-muted. The month grid itself has 5-6 rows of 7 cells each. Each DayCell has the date number in the top-left corner (text-sm), with today's date rendered inside a filled accent-color circle (24px diameter) with white text, creating a distinctive marker. Days outside the current month show muted text at 40% opacity. Events within each cell are rendered as small rounded pill chips (border-radius: 4px, height 20px) with a category-specific left color stripe (4px wide): blue for meetings, green for personal, purple for external, amber for deadlines. Event chip text is truncated with ellipsis at the cell boundary. When more than 3 events exist in a day, a '+N more' text link in text-xs text-muted appears below the visible chips, clickable to expand. In week view, time columns show alternating subtle background stripes (transparent and var(--d-bg-muted) at 30% opacity) for each hour block, with 15-minute subdivisions marked by dotted hairlines. Events are absolutely positioned rectangles spanning their time range, with rounded corners (6px), category-colored left border (3px), white/surface background, and a subtle left-edge shadow. Overlapping events are laid out side-by-side at reduced width. The current time is indicated by a horizontal red line (2px) with a small red circle (8px) on the left edge, extending across all columns. Click-and-drag event creation renders a translucent preview chip (40% opacity, accent-colored) that snaps to 15-minute increments. The EventPopover appears on click as a 320px-wide floating card with event title, time range, location, description, attendee avatars, and edit/delete actions. The optional MiniCalendar is a small (200px wide) month grid in the sidebar showing dots beneath days that have events.",
+  "layout_hints": {
+    "container": "bordered-grid",
+    "note": "Month view uses CSS Grid with 7 columns. Week view uses 8 columns (1 for time labels + 7 for days). Day cells in month view should have min-height of 100px to accommodate event chips.",
+    "today_marker": "Today's date number MUST be rendered inside a filled circle. Use a 24px width/height circle with background var(--d-accent), color white, border-radius 50%, display flex align-items-center justify-center. This is the most recognizable calendar convention — do not omit it.",
+    "event_chips": "Event chips use a compact pill style. Height 20px in month view, dynamic height in week/day view based on duration. Category colors are communicated via a left border strip, NOT full background fill — the chip background stays var(--d-bg-surface) or very light tint of the category color.",
+    "time_grid": "In week/day views, the time gutter on the left shows hour labels (text-xs, text-muted) aligned to the top of each hour row. The grid lines are hairline (1px solid var(--d-border-subtle)). Alternate hour blocks use a barely-visible background tint for scanability.",
+    "current_time_line": "A 2px-tall horizontal line in var(--d-error) red spanning the full width of the time grid, positioned at the exact current time. A small 8px filled circle sits at the left edge. This line updates its position every minute."
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_flex _col _h-full _bg-surface _rounded _border",
+    "slots": {
+      "navigation-bar": "Full-width top bar with 48px height, horizontal flex layout, items centered vertically. Left section: previous month/week chevron button (icon-only, 32px square, ghost style, rounded), next chevron button. Center or left-of-center: current period label (e.g., 'April 2026') in text-lg font-semibold. A 'Today' button as a small outlined pill (text-xs, border 1px solid var(--d-border), rounded-full, padding 4px 12px) appears beside the label and is only visible when the view is not showing the current period. Right section: the ViewSwitcher segmented control.",
+      "view-switcher": "A segmented button group with 4 options: Month, Week, Day, Agenda. Rendered as connected buttons with shared border (1px solid var(--d-border)), border-radius on the outer edges only. The active segment has background var(--d-accent) with white text. Inactive segments have transparent background with text-muted that strengthens on hover. Transition between active states animates a background slide (200ms ease-out).",
+      "day-header-row": "A row of 7 day-name labels positioned above the month grid. Each label shows the abbreviated day name (Mon, Tue, Wed, Thu, Fri, Sat, Sun) in text-xs uppercase tracking-widest text-muted font-medium. Weekend days (Sat, Sun) may use a slightly different muted tone. Height 32px, border-bottom 1px solid var(--d-border-subtle).",
+      "day-cell": "Repeating slot — one per day in the visible grid. Each cell is a rectangular area within the CSS grid. Padding 4px 8px. The date number sits in the top-left corner as text-sm. Today's date gets the filled accent circle treatment (24px, centered number, white text on accent background). Days outside the current month render with opacity 0.4. Below the date number, events stack vertically with 2px gaps. Each event is an EventChip. After the 3rd event, remaining events collapse into a '+N more' link (text-xs, text-accent, cursor pointer) that on click shows all events in a popover or expands the cell. Cells have a hover state: background tint with var(--d-bg-muted). Clicking an empty area of a cell initiates event creation for that date.",
+      "event-chip": "Repeating slot within day cells or time columns. In month view: a compact pill (height 20px, border-radius 4px, padding 0 6px, display flex align-items-center). Left edge has a 4px-wide color strip indicating category (blue=#3b82f6 meetings, green=#22c55e personal, purple=#8b5cf6 external, amber=#f59e0b deadlines). Text is the event title in text-xs, single line with text-ellipsis overflow-hidden whitespace-nowrap. In week/day view: a positioned rectangle spanning the event's time range. Min-height 20px. Shows title (text-xs font-medium) and time (text-xs text-muted) stacked vertically. Background is a very light tint of the category color (5% opacity). Draggable for rescheduling. Click opens EventPopover.",
+      "event-popover": "A 320px-wide floating card (d-surface, border-radius 12px, box-shadow: 0 8px 24px rgba(0,0,0,0.12)) that appears anchored to the clicked event chip. Contains: event title (text-base font-semibold), colored category dot (8px circle) beside the title, date and time range on the next line (text-sm text-muted, icon-prefixed with a clock icon), location (text-sm, icon-prefixed with a map-pin icon, if set), description paragraph (text-sm, max 3 lines, text-muted), attendee avatar row (overlapping 24px circles, max 5 visible with +N overflow), and a bottom action row with Edit (ghost button) and Delete (ghost button, text-error) options. Popover has a small caret/arrow pointing to the source chip.",
+      "mini-calendar": "An optional compact month grid (200px wide) for sidebar placement. Shows a small month grid with single-letter day headers (M, T, W, T, F, S, S) in text-xs. Each date is a small clickable circle (28px). Today is accent-filled. Selected date has an accent ring. Days with events show a small dot (4px) beneath the date number in accent color. Navigation arrows at the top cycle months. Used for quick date jumping."
+    }
+  },
+  "accessibility": {
+    "role": "application",
+    "aria-label": "Calendar view",
+    "announcements": [
+      "View changed to {month|week|day|agenda}",
+      "Navigated to {month year}",
+      "Event {title} on {date} at {time}",
+      "Event {title} moved to {new date/time}",
+      "New event created on {date}"
+    ],
+    "keyboard": [
+      "Tab: move focus between navigation, view switcher, and calendar grid",
+      "Arrow keys: navigate between days in month view, time slots in week/day view",
+      "Enter: open event detail popover or create event on empty day",
+      "Escape: close popover or cancel event creation",
+      "T: jump to today",
+      "M/W/D/A: switch to month/week/day/agenda view",
+      "Page Up/Down: navigate to previous/next month or week",
+      "Space: select/deselect date for multi-date operations"
+    ]
+  },
+  "responsive": {
+    "mobile": "Defaults to agenda view (list). Month view simplifies to a scrollable list of weeks with horizontal swipe between weeks. Week view shows 3 days at a time with horizontal scroll. Event chips show only the color dot and truncated title. EventPopover becomes a bottom sheet. Drag-to-create is replaced with a tap-to-create flow. MiniCalendar is hidden. Navigation bar stacks: period label on top, view switcher below as icon-only tabs.",
+    "tablet": "Month view shows full grid with event chips. Week view shows all 7 days with horizontal scroll if needed. Touch drag for event creation and rescheduling with haptic feedback. EventPopover is a centered modal on smaller tablets, anchored popover on larger ones. MiniCalendar available in a collapsible sidebar.",
+    "desktop": "Full month grid with generous cell heights (120px+). Week view shows all 7 day columns with scrollable time grid. Click-and-drag event creation. Hover previews on event chips showing time and first line of description. Keyboard shortcuts fully enabled. MiniCalendar in persistent sidebar when space allows. EventPopover anchored to click position."
+  },
+  "motion": {
+    "micro": {
+      "chip-hover": "translateY(-1px) + subtle shadow elevation, 100ms ease-out",
+      "today-pulse": "Today's accent circle has a single subtle scale pulse (1.0→1.05→1.0) on initial render, 400ms ease-out",
+      "view-switch": "Active segment background slides to new position, 200ms ease-out"
+    },
+    "transitions": {
+      "view-change": "Cross-fade between views with 250ms ease-in-out, content scales from 0.98 to 1.0",
+      "month-navigate": "Grid slides left/right (depending on direction) with 300ms ease-out, new month content fades in",
+      "event-create": "New event chip scales from 0.9 to 1.0 + fade in, 200ms ease-out",
+      "popover-open": "Popover scales from 0.95 to 1.0 + fade from 0 to 1, 200ms ease-out with origin at anchor point"
+    },
+    "ambient": {
+      "current-time-line": "The red current-time indicator line smoothly translates its Y position every minute (transition: top 60s linear)",
+      "drag-preview": "Translucent event preview chip during drag creation pulses opacity 0.3→0.5→0.3, 1.5s ease-in-out infinite"
+    }
+  },
+  "interactions": [
+    "click-select",
+    "drag-reorder",
+    "hover-tooltip",
+    "keyboard-navigation",
+    "animate-on-mount",
+    "real-time-updates"
+  ],
+  "composition": {
+    "CalendarView": "Container(d-section, flex-col, full-height) > [NavigationBar + ViewContent]",
+    "NavigationBar": "Bar(d-surface, flex-row, sticky-top) > [PrevButton + PeriodLabel + TodayButton + NextButton + ViewSwitcher]",
+    "ViewSwitcher": "SegmentedControl(d-interactive) > Segment[](Month|Week|Day|Agenda)",
+    "MonthGrid": "Grid(d-surface, 7-col) > [DayHeaderRow + DayCell*]",
+    "DayCell": "Cell(d-surface, clickable) > [DateNumber(today?: accent-circle) + EventChip*(max-3) + OverflowLink?]",
+    "WeekView": "Grid(d-surface, 8-col) > [TimeGutter + WeekColumn* > TimeSlot* > EventChip*]",
+    "EventChip": "Chip(d-interactive, draggable, category-colored) > [ColorStrip + Title + Time?]",
+    "EventPopover": "Popover(d-surface, floating, anchored) > [Title + CategoryDot + DateTime + Location? + Description? + Attendees? + Actions]"
+  }
+}

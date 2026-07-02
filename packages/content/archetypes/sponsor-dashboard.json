@@ -1,0 +1,103 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "sponsor-dashboard",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Sponsor Dashboard",
+  "description": "Auxiliary esports sponsor surface for managing brand partnerships, tracking deal value, impressions, and activation metrics across sponsors.",
+  "tags": [
+    "esports",
+    "sponsors",
+    "deals",
+    "partnerships",
+    "revenue"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "sponsor dashboard",
+        "esports sponsors",
+        "brand partnerships",
+        "sponsor management",
+        "deal tracking"
+      ],
+      "secondary": [
+        "sponsor roi",
+        "partnership tracker",
+        "sponsor profile"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "sponsors",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "sponsor-list"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "content",
+          "as": "sponsor-cards"
+        }
+      ],
+      "default_layout": [
+        "data-table",
+        "card-grid"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "sponsor-detail",
+      "patterns": [
+        {
+          "pattern": "detail-header",
+          "preset": "standard",
+          "as": "sponsor-header"
+        },
+        {
+          "pattern": "kpi-grid",
+          "preset": "dashboard",
+          "as": "sponsor-kpis"
+        },
+        {
+          "pattern": "chart-grid",
+          "preset": "standard",
+          "as": "sponsor-charts"
+        }
+      ],
+      "default_layout": [
+        "detail-header",
+        "kpi-grid",
+        "chart-grid"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "sponsors": "Sponsor list page. Top region renders a data-table listing all partners with columns for brand, tier, contract start, contract end, deal value, activation count, and account owner. Below, a content card-grid shows sponsor logos with tier badges and active-deal counts, giving brand-forward access to the roster for exec reviews.",
+    "sponsor-detail": "Single sponsor profile page. Detail-header at top shows the brand logo, tier, contract term, primary contact, and contract value. Below, a dashboard kpi-grid tracks impressions delivered, social reach, activation count, and contractual obligations met. Bottom region renders a chart-grid with trend lines for impressions over time, deliverable completion rate, and engagement by activation type."
+  },
+  "features": [
+    "sponsors",
+    "deals"
+  ],
+  "suggested_theme": {
+    "ids": [
+      "carbon",
+      "luminarum",
+      "clean"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  }
+}

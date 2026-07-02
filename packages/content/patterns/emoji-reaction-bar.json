@@ -1,0 +1,115 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "emoji-reaction-bar",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Emoji Reaction Bar",
+  "description": "A social reaction picker displaying emoji chips with counts and animated additions. Users can react with emojis, see aggregated counts, and open a popover picker to add new reactions. Supports inline, floating, and compact display modes.",
+  "category": "social",
+  "tags": [
+    "2026",
+    "social",
+    "emoji",
+    "reaction",
+    "interactive",
+    "engagement",
+    "feedback"
+  ],
+  "components": [
+    "ReactionBar",
+    "ReactionChip",
+    "ReactionPicker",
+    "AddButton"
+  ],
+  "default_preset": "inline",
+  "presets": {
+    "inline": {
+      "description": "Horizontal row of reaction chips rendered directly beneath content, with add button at the end — standard placement for posts and comments",
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _row _wrap _gap2 _aic _py1"
+      }
+    },
+    "floating": {
+      "description": "Reaction bar rendered as a floating toolbar that appears on hover above the target content, with rounded pill shape and subtle shadow",
+      "layout": {
+        "layout": "row",
+        "atoms": "_absolute _top-[-40px] _left0 _flex _row _gap1 _px2 _py1 _rounded-full _shadow-md"
+      }
+    },
+    "compact": {
+      "description": "Icon-only mode showing just emoji symbols without counts — suitable for tight spaces like table cells or message actions",
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _row _gap1 _aic"
+      }
+    }
+  },
+  "visual_brief": "A horizontal row of small pill-shaped chips, each 28px tall with 8px horizontal padding and border-radius 14px (full pill). Each chip contains an emoji character (16px) on the left and a count number (12px, medium weight, tabular-nums) on the right, separated by 4px gap. Chip background is a muted surface color. When the current user has reacted with a particular emoji, that chip gets an accent-colored border (2px) and a faint accent background tint to indicate ownership. Chips are ordered by count descending, then by time of first reaction. At the end of the row sits an AddButton: a 28px circle with a '+' icon (14px, muted color) that opens the ReactionPicker popover on click. The ReactionPicker is a popover panel (240px wide) positioned above the add button, with a 6-column grid of emoji buttons (36px each, with hover highlight). The picker has a search input at the top (with a small magnifying glass icon) for filtering emojis, and category tabs (Smileys, Gestures, Hearts, Objects, Flags) below the search. The popover has border-radius 12px, subtle shadow, and a small arrow pointing down to the add button. Adding a new reaction causes the corresponding chip to bounce (scale 1 to 1.3 to 1 over 300ms with spring easing). If the emoji chip is new, it slides in from the right edge of the bar with a 200ms ease-out animation. Count numbers animate with a rolling digit effect (old number slides up and fades out while new number slides up from below and fades in, 150ms). Removing a reaction (clicking an owned chip) reverses the bounce (scale 1 to 0.8 to 1) and decrements the count with the same rolling animation. If count reaches 0, the chip shrinks width to 0 and fades out over 200ms.",
+  "default_layout": {
+    "layout": "row",
+    "atoms": "_flex _row _wrap _gap2 _aic _py1",
+    "slots": {
+      "reaction-bar": "Horizontal flex container wrapping all ReactionChip elements and the trailing AddButton. Supports wrapping to multiple rows when many reactions are present. Gap of 6px between chips. Inline preset renders directly in document flow; floating preset uses absolute positioning with shadow and pill background.",
+      "reaction-chip": "Repeating slot — one per unique emoji reaction. A small pill (28px height, full border-radius) containing the emoji character and the reaction count. Background: muted surface. User's own reactions: accent border (2px) and faint accent background tint. Hover: slightly elevated shadow and background lighten. Click toggles the user's reaction on/off. Count uses tabular-nums font-feature for stable width.",
+      "add-button": "A circular button (28px diameter) at the end of the reaction row. Displays a '+' icon in muted color. On click, opens the ReactionPicker popover. Hover: background lightens, icon color becomes accent. Focus ring visible on keyboard focus.",
+      "reaction-picker": "Popover panel (240px wide, border-radius 12px, shadow-lg) positioned above the AddButton with a downward-pointing arrow. Contains a search input at the top for filtering emojis by name, category tab bar below, and a 6-column grid of emoji buttons (36px touch targets). Each emoji button highlights on hover. Selecting an emoji adds the reaction and closes the picker. Picker dismisses on click outside or Escape."
+    }
+  },
+  "accessibility": {
+    "role": "toolbar",
+    "aria-label": "Emoji reactions",
+    "announcements": [
+      "Reaction added: {emoji} — total {count}",
+      "Reaction removed: {emoji} — total {count}",
+      "Reaction picker opened with {total} emojis available",
+      "Reaction picker closed",
+      "{emoji}: {count} reactions, {user_reacted ? 'you reacted' : 'not reacted'}"
+    ],
+    "keyboard": [
+      "Arrow Left/Right: navigate between reaction chips and add button",
+      "Enter or Space: toggle reaction on focused chip, or open picker on add button",
+      "Escape: close the reaction picker popover",
+      "Arrow keys inside picker: navigate the emoji grid",
+      "Type to search: when picker is open, typing filters emojis"
+    ]
+  },
+  "responsive": {
+    "mobile": "Reaction chips use 32px height for touch targets. Picker opens as a bottom sheet (full width, 50vh height) instead of a popover. Emoji grid uses 5 columns. Long-press on a chip shows who reacted in a tooltip. Chips wrap to multiple rows freely.",
+    "tablet": "Standard inline layout. Picker opens as a popover positioned above. 6-column emoji grid. Tap to toggle reactions.",
+    "desktop": "Full layout with hover states on chips. Picker opens as a popover. Hovering a chip shows a tooltip listing the first 5 users who reacted. Keyboard navigation fully supported."
+  },
+  "layout_hints": {
+    "bar_role": "The reaction bar is a lightweight engagement affordance that should sit close to the content it belongs to without overshadowing the main thread or post body.",
+    "chip_density": "Keep chips compact and readable. Ownership state, count, and add affordance should all remain scannable even when many reactions accumulate.",
+    "picker_anchor": "The picker should feel physically attached to the add button or reaction rail. On mobile, the bottom-sheet translation should preserve that same semantic relationship."
+  },
+  "motion": {
+    "micro": {
+      "chip-hover": "background lighten + translateY(-1px) 120ms ease-out",
+      "chip-press": "scale(0.95) 60ms ease-in",
+      "add-button-hover": "background lighten + rotate(90deg) on '+' icon 200ms ease-out"
+    },
+    "transitions": {
+      "reaction-add": "scale(1→1.3→1) 300ms cubic-bezier(0.34, 1.56, 0.64, 1) spring bounce on chip",
+      "reaction-remove": "scale(1→0.8→1) 200ms ease-out on chip",
+      "chip-enter": "translateX(20px)→translateX(0) + opacity 0→1 200ms ease-out for new chips",
+      "chip-exit": "width→0 + opacity 1→0 200ms ease-in for removed chips",
+      "count-roll": "old digit translateY(0→-100%) + opacity 1→0, new digit translateY(100%→0) + opacity 0→1, 150ms ease-out",
+      "picker-open": "scale(0.9→1) + opacity 0→1 200ms cubic-bezier(0.16, 1, 0.3, 1)",
+      "picker-close": "scale(1→0.9) + opacity 1→0 150ms ease-in"
+    },
+    "ambient": {}
+  },
+  "interactions": [
+    "click-select",
+    "animate-on-mount",
+    "scale-hover"
+  ],
+  "composition": {
+    "ReactionBar": "Row(d-interactive, flex, wrap, gap-2) > ReactionChip*(d-interactive) + AddButton(d-interactive)",
+    "ReactionChip": "Pill(d-surface, border: accent-if-owned, rounded-full, h-28) > [Emoji(text-base) + Count(mono-data, tabular-nums, text-xs)]",
+    "AddButton": "Circle(d-interactive, rounded-full, h-28, w-28) > PlusIcon(muted)",
+    "ReactionPicker": "Popover(d-surface, shadow-lg, rounded-xl, w-240) > [SearchInput + CategoryTabs + EmojiGrid(6-col) > EmojiButton*]"
+  }
+}

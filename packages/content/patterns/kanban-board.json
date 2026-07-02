@@ -1,0 +1,133 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "kanban-board",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Kanban Board",
+  "description": "Drag-and-drop column board with swimlanes, card previews, and column limits for visual project workflow management.",
+  "category": "project-management",
+  "tags": [
+    "2026",
+    "kanban",
+    "project-management",
+    "drag-and-drop",
+    "board",
+    "workflow",
+    "cards"
+  ],
+  "components": [
+    "Board",
+    "Column",
+    "ColumnHeader",
+    "Card",
+    "CardPreview",
+    "DragOverlay",
+    "AddCardButton",
+    "ColumnLimit"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Standard kanban board with 3-5 columns, full-size cards with previews, and visible WIP limits — ideal as a primary project view",
+      "layout": {
+        "layout": "horizontal-scroll",
+        "atoms": "_flex _row _gap-4 _overflow-x-auto _h-full _p-4 _bg-muted"
+      }
+    },
+    "compact": {
+      "description": "Dense kanban layout with mini cards showing only title and status accent — optimized for high card counts and quick scanning across many columns",
+      "layout": {
+        "layout": "horizontal-scroll",
+        "atoms": "_flex _row _gap-2 _overflow-x-auto _h-full _p-2 _bg-muted"
+      }
+    },
+    "grouped": {
+      "description": "Swimlane-based kanban board with horizontal rows grouping cards by assignee, priority, or category — columns repeat within each swimlane row",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _overflow-auto _h-full _p-4 _bg-muted _gap-4"
+      }
+    }
+  },
+  "visual_brief": "A horizontally scrollable board surface set against a muted recessed background (subtle inset shadow conveying depth). Each column is a tall, narrow d-surface card (280px wide, full height minus padding) with a slightly rounded top edge and a thin top-border accent matching the column's status color (e.g., blue for In Progress, amber for Review, green for Done). Column headers sit at the top of each column: bold title text left-aligned, a count badge (pill-shaped, muted background) showing the number of cards, and beneath the title a thin 2px-tall progress bar representing WIP limit usage — the bar fills with accent color and turns red when the limit is exceeded. Cards within each column are compact surface tiles (full column width minus 16px padding) stacked vertically with 8px gaps. Each card has a 4px left-edge color accent strip indicating priority or status (red for urgent, amber for medium, green for low, gray for none). Card content shows a bold title (14px, single line, truncated), a muted description preview (12px, 2 lines max, text-muted), and a bottom row with assignee avatar (20px circle), due date chip, and tag pills. When dragging, the DragOverlay renders the card with a 2-degree clockwise rotation, an elevated box-shadow (0 12px 24px rgba(0,0,0,0.15)), and 85% opacity, clearly communicating the 'in flight' state. Drop targets highlight with a dashed border (2px, accent color) and a subtle pulsing background tint. Empty columns display a centered dashed-border rectangle (border-radius 8px) with muted instructional text ('Drag a card here or click + to add') and a plus icon. The AddCardButton sits at the bottom of each column as a ghost-style button with a plus icon, full column width, with a hover state that shows a subtle background fill.",
+  "layout_hints": {
+    "container": "full-bleed-scroll",
+    "note": "The board scrolls horizontally. Each column is a fixed-width vertical container. Cards within columns scroll vertically when they overflow the column height.",
+    "column_width": "Columns should be 280px wide in standard preset, 220px in compact. Use flex-shrink-0 to prevent columns from collapsing.",
+    "card_interaction": "Cards MUST have cursor: grab (cursor: grabbing when dragging). Each card uses d-surface with data-interactive for hover elevation change.",
+    "wip_limit_bar": "The thin progress bar beneath column headers uses a 2px height. Fill color matches column accent when under limit, switches to var(--d-error) when at or over limit. Include a title attribute showing 'N / M' count.",
+    "drag_overlay": "During drag, the original card position shows a placeholder (dashed border, same dimensions, muted background). The floating drag overlay follows the cursor with transform: rotate(2deg) and elevated shadow.",
+    "swimlane_rows": "In grouped preset, swimlane rows are separated by a 1px hairline divider with a row header on the left showing the group label (assignee name, priority level, etc.)."
+  },
+  "default_layout": {
+    "layout": "horizontal-scroll",
+    "atoms": "_flex _row _gap-4 _overflow-x-auto _h-full _p-4 _bg-muted",
+    "slots": {
+      "board-container": "The outermost scrollable container. Uses horizontal flex layout with overflow-x-auto. Background is a muted recessed surface (var(--d-bg-muted) with a subtle inset box-shadow: inset 0 2px 4px rgba(0,0,0,0.05)). Padding of 16px on all sides. The container stretches to fill the available viewport height. Scroll behavior is smooth with snap points at each column edge (scroll-snap-type: x proximity). A subtle horizontal scrollbar is styled to match the theme (thin, rounded, semi-transparent).",
+      "column": "Repeating slot — one per workflow stage. Each column is a vertical d-surface card, 280px wide (flex-shrink: 0), full height of the board minus container padding. Background is var(--d-bg-surface) with border-radius 12px and a subtle box-shadow (0 1px 3px rgba(0,0,0,0.08)). A 3px top-border in the column's designated status color (configurable per column). Internal layout is flex-col with the header pinned at top, cards in a scrollable middle section (flex: 1, overflow-y: auto with masked top/bottom fade), and the AddCardButton anchored at the bottom. Column spacing between cards is 8px with 12px horizontal padding.",
+      "column-header": "Pinned at the top of each column. Contains: the column title (font-weight 600, text-sm, left-aligned), a count badge (inline pill, background var(--d-bg-muted), text-xs, min-width 24px, text-center showing the card count), and an optional overflow menu (three-dot icon, appears on hover). Below the title row is the WIP limit indicator — a thin 2px-tall bar spanning the full column width. The bar fills proportionally (cards / limit) with the column's accent color, and turns var(--d-error) red with a subtle pulse animation when the limit is reached or exceeded. If no WIP limit is set, the bar is hidden.",
+      "card": "Repeating slot within each column — one per task/item. Each card is a d-surface tile with border-radius 8px, padding 12px, and a 4px left-border accent strip indicating priority (red=#ef4444 urgent, amber=#f59e0b medium, green=#22c55e low, gray=#94a3b8 none). Card layout is vertical stack: Row 1 is the title (font-weight 500, text-sm, single line with text-ellipsis overflow-hidden whitespace-nowrap). Row 2 is the description preview (text-xs, text-muted, max 2 lines with line-clamp-2). Row 3 is a horizontal flex row with: assignee avatar (20px circle, border: 2px solid var(--d-bg-surface)), due date as a small chip (text-xs, if overdue then text-error with a subtle red background tint), and tag pills (text-xs, rounded-full, muted colored backgrounds, max 2 visible then +N). Hover state lifts the card slightly (translateY(-1px), box-shadow increase). The entire card is draggable.",
+      "drag-overlay": "A floating clone of the dragged card rendered in a portal layer above all other content. The overlay follows the cursor position with a 2-degree clockwise rotation (transform: rotate(2deg)) and an elevated shadow (box-shadow: 0 16px 32px rgba(0,0,0,0.18), 0 4px 8px rgba(0,0,0,0.1)). Opacity is set to 0.9. The overlay has pointer-events: none. Beneath it, the original card position shows a placeholder — a dashed border rectangle (2px dashed var(--d-border-muted)) with the same dimensions and a faint background (var(--d-bg-muted) at 50% opacity).",
+      "add-card-button": "Anchored at the bottom of each column, below the scrollable card area. A full-width ghost button with a centered plus icon and 'Add card' text (text-sm, text-muted). Border: 1px dashed var(--d-border-muted), border-radius 8px, padding 8px. On hover: background fills with var(--d-bg-muted), border becomes solid, text color strengthens. On click: transforms into an inline text input with auto-focus for quick card title entry, with Enter to confirm and Escape to cancel."
+    }
+  },
+  "accessibility": {
+    "role": "application",
+    "aria-label": "Kanban project board",
+    "announcements": [
+      "Card {title} moved from {source column} to {target column}",
+      "Card {title} created in {column}",
+      "Column {name} has reached its work-in-progress limit"
+    ],
+    "keyboard": [
+      "Tab: cycle through columns and cards in reading order",
+      "Arrow Left/Right: move focus between columns",
+      "Arrow Up/Down: move focus between cards within a column",
+      "Space: pick up focused card for keyboard drag",
+      "Arrow keys (while dragging): move card between columns or positions",
+      "Enter: drop card at current position / open card detail",
+      "Escape: cancel drag operation",
+      "N: create new card in focused column",
+      "Delete: archive focused card (with confirmation)"
+    ]
+  },
+  "responsive": {
+    "mobile": "Board collapses to a single-column stack view. Each column becomes a collapsible accordion section with the column header as the trigger. Cards render full-width. Drag-and-drop is replaced with a 'Move to...' action menu accessible via long-press or card overflow menu. AddCardButton becomes a floating action button (FAB) anchored to bottom-right.",
+    "tablet": "Board scrolls horizontally with columns at 260px width. Touch drag-and-drop enabled with a long-press (300ms) to initiate. Two columns visible at a time with smooth horizontal scroll snap. Column headers become sticky at the top during vertical card scroll.",
+    "desktop": "Full horizontal board with 280px columns. Mouse drag-and-drop with immediate grab. 3-5 columns visible depending on viewport width. Keyboard shortcuts fully enabled. Hover states on all interactive elements. Optional column collapse/expand via double-click on header."
+  },
+  "motion": {
+    "micro": {
+      "card-hover": "translateY(-1px) + box-shadow elevation increase, 150ms ease-out",
+      "card-grab": "scale(1.02) + cursor change, 100ms ease-out",
+      "badge-update": "count badge scales 1.0→1.2→1.0, 200ms ease-out on count change"
+    },
+    "transitions": {
+      "card-move": "Card animates from source position to target position, 250ms spring(1, 80, 10)",
+      "card-add": "New card scales from 0.95 to 1.0 + fade in, 200ms ease-out",
+      "card-remove": "Card scales to 0.95 + fade out, 150ms ease-in, then gap closes with 200ms ease-out",
+      "column-reorder": "Columns slide to new positions with 300ms ease-in-out"
+    },
+    "ambient": {
+      "wip-limit-pulse": "When column is at WIP limit, the progress bar pulses opacity 0.7→1.0→0.7, 2s ease-in-out infinite",
+      "drop-zone-pulse": "Active drop target background pulses between transparent and accent-tinted, 1s ease-in-out infinite"
+    }
+  },
+  "interactions": [
+    "drag-reorder",
+    "click-select",
+    "lift-hover",
+    "stagger-children",
+    "animate-on-mount",
+    "status-pulse",
+    "keyboard-navigation"
+  ],
+  "composition": {
+    "KanbanBoard": "Board(d-section, horizontal-scroll, full-height) > Column*",
+    "Column": "Column(d-surface, flex-col, fixed-width) > [ColumnHeader + CardList(scrollable) + AddCardButton]",
+    "ColumnHeader": "Header(d-annotation) > [Title + CountBadge + WIPLimitBar?]",
+    "Card": "Card(d-surface, d-interactive, draggable) > [PriorityAccent + Title + Description? + MetaRow(Avatar + DueDate? + Tags?)]",
+    "DragOverlay": "Portal(floating) > Card(rotated, elevated, ghost)",
+    "AddCardButton": "Button(d-interactive, ghost, full-width) > [PlusIcon + Label]"
+  }
+}

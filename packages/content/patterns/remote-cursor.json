@@ -1,0 +1,103 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "remote-cursor",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Remote Cursor",
+  "description": "Real-time cursor indicator for collaborators with name label and smooth interpolation. Shows where other users are editing.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [],
+      "charts": []
+    }
+  },
+  "components": ["Avatar", "Text", "Container"],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Cursor with name label positioned below",
+      "components": [],
+      "layout": {
+        "layout": "absolute",
+        "atoms": "_absolute _pointer[none] _z[100]",
+        "slots": {
+          "cursor": "SVG cursor icon in user's presence color",
+          "label": "Name tag with colored background"
+        }
+      }
+    },
+    "minimal": {
+      "description": "Cursor only without name label",
+      "components": [],
+      "layout": {
+        "layout": "absolute",
+        "atoms": "_absolute _pointer[none] _z[100]",
+        "slots": {
+          "cursor": "SVG cursor icon only"
+        }
+      }
+    },
+    "extended": {
+      "description": "Extended cursor with small avatar thumbnail beside the name tag for richer collaborator presence",
+      "components": [
+        "Avatar"
+      ],
+      "layout": {
+        "layout": "absolute",
+        "atoms": "_absolute _pointer[none] _z[100]",
+        "slots": {
+          "cursor": "SVG cursor icon",
+          "avatar": "Small avatar image",
+          "label": "Name on hover"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "absolute",
+    "atoms": "_absolute _pointer[none] _z[100]",
+    "slots": {
+      "cursor": "SVG cursor icon in user's presence color",
+      "label": "Name tag with colored background",
+      "caret": "Optional text caret for typing position"
+    }
+  },
+  "io": {
+    "consumes": [
+      "user",
+      "position"
+    ],
+    "produces": [],
+    "actions": []
+  },
+  "visual_brief": "Small SVG cursor icon colored in the collaborator's assigned presence color, positioned absolutely over the document at the collaborator's cursor location. A name tag label extends from the cursor top-right, styled as a small rounded badge with the user's name in white text on a colored background matching the cursor color. The cursor animates smoothly between positions using CSS transitions. The minimal preset shows only the colored caret line without the name tag. The extended preset adds a small avatar thumbnail beside the name tag. Multiple cursors coexist independently on the same document.",
+  "responsive": {
+    "mobile": "Cursors render smaller. Name tags use abbreviated first names. Extended preset falls back to minimal to save space.",
+    "tablet": "Standard cursor size and name tags.",
+    "desktop": "Full cursor visualization with smooth interpolation, name tags, and optional avatar in extended preset."
+  },
+  "layout_hints": {
+    "cursor_priority": "Location comes first, identity second. The cursor itself should remain the primary anchor, with labels supporting it without obscuring the document.",
+    "multi_cursor_readability": "When multiple cursors are present, keep labels compact and offset enough that collaborators do not visually collide into an unreadable cluster.",
+    "mobile_fallback": "On smaller screens, favor positional clarity over rich identity chrome so collaborative awareness remains useful without taking over the document."
+  },
+  "motion": {
+    "micro": "Cursor movement and label emphasis should remain smooth and subtle, reinforcing presence rather than drawing theatrical attention.",
+    "transitions": "Position interpolation should preserve locality and document context; avoid laggy or overshooting motion that makes collaboration feel imprecise."
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "accessibility": {
+    "role": "status",
+    "aria-label": "Remote collaborator cursor",
+    "keyboard": [
+      "If collaborator presence is inspectable, keyboard access should move through presence summaries rather than attempting to focus every cursor overlay directly."
+    ],
+    "announcements": [
+      "Collaborator name and active editing position should be exposed semantically so remote presence remains understandable without the visual cursor overlay alone."
+    ]
+  }
+}

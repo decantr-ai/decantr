@@ -1,0 +1,113 @@
+{
+  "id": "emissions-sankey",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Emissions Sankey",
+  "description": "A left-to-right Sankey diagram visualising the flow of greenhouse gas emissions from sources, through scope categories, to a final total footprint with target markers.",
+  "category": "climate",
+  "tags": [
+    "2026",
+    "climate",
+    "sankey",
+    "emissions",
+    "ghg",
+    "flow-diagram",
+    "sustainability"
+  ],
+  "components": [
+    "SankeyCanvas",
+    "SourceNode",
+    "FlowPath",
+    "CategoryNode",
+    "TargetMarker",
+    "LegendBox"
+  ],
+  "default_preset": "scope-view",
+  "presets": {
+    "scope-view": {
+      "description": "Flows grouped by GHG Protocol scopes (Scope 1/2/3) feeding into a single total tCO2e node with target reduction marker overlay",
+      "layout": {
+        "layout": "horizontal-flow",
+        "atoms": "_relative _w100 _h100 _bg-surface _p-6 _overflow-visible"
+      }
+    },
+    "supply-chain": {
+      "description": "Source-to-product-to-customer flow showing emissions moving through suppliers, manufacturing processes, and into finished goods delivered to customers",
+      "layout": {
+        "layout": "horizontal-flow",
+        "atoms": "_relative _w100 _h100 _bg-surface _p-6 _overflow-visible"
+      }
+    },
+    "reduction": {
+      "description": "Emphasises reduction outflows rendered in green against baseline red flows, visualising abatement levers and residual emissions against net-zero target",
+      "layout": {
+        "layout": "horizontal-flow",
+        "atoms": "_relative _w100 _h100 _bg-surface _p-6 _overflow-visible"
+      }
+    }
+  },
+  "visual_brief": "A wide, left-to-right Sankey diagram rendered on a light-neutral canvas. On the far left, a stack of source nodes (Suppliers, Operations, Travel, Energy, Waste) appear as rounded rectangles labelled with monospace tCO2e values. Curved bezier flow paths fan rightward into a central column of emission category nodes (Scope 1 deep red #B22222, Scope 2 burnt orange #D97706, Scope 3 amber yellow #F59E0B) where flow width is proportional to tonnage. Reduction flows appear as inward green (#16A34A) ribbons pointing backwards. A horizontal dashed target marker line crosses the total node on the right indicating the net-zero goal with a small flag label. Hovering any flow path reveals a tooltip with absolute tCO2e, percentage of total, and source-to-category pair. Legend box in the bottom-right lists scope colors with descriptions. Subtle grid lines in the background provide scale reference.",
+  "layout_hints": {
+    "container": "d-section",
+    "note": "Full-width horizontal Sankey. Min-height 480px. Flow paths must use SVG with bezier curves and animated dash-offset on hover.",
+    "data_labels": "All tonnage values MUST appear with units (tCO2e) in monospace. Percentages shown to 1 decimal place.",
+    "color_semantics": "Scope 1 = deep red, Scope 2 = orange, Scope 3 = yellow, reductions = green. Never reverse these semantics."
+  },
+  "default_layout": {
+    "layout": "horizontal-flow",
+    "atoms": "_relative _w100 _h100 _bg-surface _p-6 _overflow-visible",
+    "slots": {
+      "sankey-canvas": "The full SVG viewport rendering source nodes, flow paths, and category nodes. Uses a responsive viewBox that scales path widths proportionally to tonnage values. Background is subtle neutral with optional grid.",
+      "source-node": "Repeating slot for each emission source on the left edge. Rounded rectangle (width 140px, variable height based on emission magnitude) with source name in sans-serif and tCO2e in monospace below.",
+      "flow-path": "SVG cubic bezier path connecting a source-node to a category-node. Path width encodes tCO2e volume. Fill uses gradient from source color to category color. Hover state raises opacity and shows tooltip.",
+      "category-node": "Center-column scope category rectangles (Scope 1/2/3). Colored according to scope semantics. Display category name, total tonnage, and percent of company total.",
+      "target-marker": "Dashed horizontal line overlaid on the rightmost total node. Includes a small flag label with target year and reduction percentage (e.g. '2030 -50%').",
+      "legend-box": "Bottom-right anchored panel listing scope colors, reduction color, and unit definitions. Uses backdrop-blur with thin border."
+    }
+  },
+  "accessibility": {
+    "role": "img",
+    "aria-label": "Greenhouse gas emissions Sankey diagram showing flows from sources through scopes to total footprint",
+    "announcements": [
+      "Flow from {source} to {category}: {value} tCO2e ({percent} of total)",
+      "Target marker: {year} reduction goal of {percent}"
+    ],
+    "keyboard": [
+      "Tab: cycle through source nodes, then flow paths, then category nodes",
+      "Enter: open detail tooltip for focused element",
+      "Escape: dismiss tooltip"
+    ]
+  },
+  "responsive": {
+    "mobile": "Sankey rotates to vertical top-to-bottom flow. Flow labels hidden by default, accessible on tap. Legend collapses to expandable disclosure.",
+    "tablet": "Horizontal Sankey retained but reduces source node count (merges smaller sources into 'Other'). Legend docks to bottom edge."
+  },
+  "motion": {
+    "micro": {
+      "flow-hover": "opacity 0.6 to 1.0 + stroke-width +2px 180ms ease-out",
+      "node-hover": "scale(1.02) + shadow-elevate 200ms ease-out"
+    },
+    "transitions": {
+      "data-update": "flow-path width interpolate 600ms ease-in-out",
+      "preset-switch": "cross-fade 400ms ease"
+    },
+    "ambient": {
+      "flow-pulse": "subtle dash-offset drift 8s linear infinite on active flows"
+    }
+  },
+  "interactions": [
+    "animate-on-mount",
+    "hover-tooltip",
+    "real-time-updates"
+  ],
+  "composition": {
+    "EmissionsSankey": "Section(d-section) > SankeyCanvas > [SourceNode[] + FlowPath[](animated) + CategoryNode[] + TargetMarker] + LegendBox",
+    "SankeyCanvas": "SVG(viewBox-responsive) > [Background(grid) + NodeLayer + FlowLayer + OverlayLayer]",
+    "SourceNode": "Rect(rounded, positioned) > [SourceName + TonnageLabel(mono)]",
+    "FlowPath": "Path(bezier, gradient-fill) > Tooltip(tonnage + percent)",
+    "CategoryNode": "Rect(scope-colored) > [CategoryName + TotalTonnage + PercentShare]",
+    "TargetMarker": "Line(dashed) + Flag(year + reduction-target)",
+    "LegendBox": "Panel(d-annotation, backdrop-blur) > LegendItem[]"
+  }
+}

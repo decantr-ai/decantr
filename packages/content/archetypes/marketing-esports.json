@@ -1,0 +1,89 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "marketing-esports",
+  "role": "public",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Esports Marketing",
+  "description": "Public esports homepage surface for a live matchday command product with a full-bleed broadcast hero, roster proof, telemetry, and cinematic conversion path.",
+  "tags": [
+    "esports",
+    "marketing",
+    "landing",
+    "saas",
+    "public"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "esports marketing",
+        "esports saas landing",
+        "team management landing",
+        "esports product site"
+      ],
+      "secondary": [
+        "esports tech landing",
+        "team ops marketing",
+        "gaming team site",
+        "matchday command",
+        "live match homepage"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "patterns": [
+        {
+          "pattern": "esports-matchday-command",
+          "preset": "broadcast-home",
+          "as": "matchday-command"
+        }
+      ],
+      "default_layout": [
+        {
+          "pattern": "esports-matchday-command",
+          "preset": "broadcast-home",
+          "as": "matchday-command"
+        }
+      ],
+      "shell": "immersive-stage",
+      "directives": [
+        "Render the public home page as a cinematic live matchday surface, not a generic SaaS marketing page.",
+        "Use the roster panel, telemetry strip, vertical update reel, and angular CTAs from esports-matchday-command/broadcast-home.",
+        "Keep the first viewport full-bleed and avoid nested cards, chip-heavy hero badges, mascot graphics, and bottom horizontal marquees."
+      ]
+    }
+  ],
+  "page_briefs": {
+    "home": "Cinematic esports matchday command homepage. The first viewport is a full-bleed live broadcast stage, not a standard marketing hero. The headline should name a live matchup such as Team Vitality vs. r3Fraction, with a small VS tag integrated into the line flow and a white title gleam animation. Supporting copy explains live score, map control, player form, and coaching cues in one command view. Beneath it, a compact telemetry strip shows score, map, map-ban timer, comms, form, and momentum. The right third of desktop contains a liquid-glass 5v5 roster panel with circular avatars, a score row, and a vertical rolling update reel in the lower space. CTAs use angular cut/parallelogram buttons with live beacon iconography. Follow with free-form command-layer sections for pressure, replay evidence, and partner control rather than generic feature cards."
+  },
+  "features": [
+    "marketing"
+  ],
+  "shells": {
+    "immersive-stage": "Flush top public shell with compact nav and a full-viewport gradient accent line. The route body is full-bleed and owns its first-viewport stage."
+  },
+  "dependencies": {
+    "patterns": {
+      "esports-matchday-command": ">=1.0.0"
+    },
+    "shells": {
+      "immersive-stage": ">=1.0.0"
+    }
+  },
+  "suggested_theme": {
+    "ids": [
+      "gaming-guild",
+      "neon-cyber",
+      "carbon-neon"
+    ],
+    "modes": [
+      "dark"
+    ]
+  }
+}

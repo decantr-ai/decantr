@@ -1,0 +1,145 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "landing-hero",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Landing Hero",
+  "description": "High-impact product landing page with split hero, feature sections, how-it-works flow, pricing, testimonials, and conversion-optimized CTAs. Full-bleed scroll experience designed to convert visitors.",
+  "tags": [
+    "landing",
+    "marketing",
+    "hero",
+    "conversion",
+    "product",
+    "saas",
+    "2026"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "product landing",
+        "saas landing page",
+        "conversion page",
+        "product hero",
+        "marketing homepage"
+      ],
+      "secondary": [
+        "split hero",
+        "product showcase",
+        "feature landing",
+        "pricing page",
+        "launch page"
+      ],
+      "negative": [
+        "dashboard",
+        "admin",
+        "editor"
+      ]
+    },
+    "implies": [
+      "seo",
+      "conversion"
+    ],
+    "weight": 1,
+    "tier": "core"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "split",
+          "as": "split-hero"
+        },
+        {
+          "pattern": "features",
+          "preset": "standard",
+          "as": "feature-showcase"
+        },
+        {
+          "pattern": "how-it-works",
+          "preset": "standard",
+          "as": "workflow-steps"
+        },
+        {
+          "pattern": "pricing",
+          "preset": "standard",
+          "as": "pricing-tiers"
+        },
+        {
+          "pattern": "testimonials",
+          "preset": "standard",
+          "as": "social-proof"
+        },
+        {
+          "pattern": "cta-section",
+          "preset": "standard",
+          "as": "bottom-cta"
+        }
+      ],
+      "default_layout": [
+        "split-hero",
+        "feature-showcase",
+        "workflow-steps",
+        "pricing-tiers",
+        "social-proof",
+        "bottom-cta"
+      ],
+      "shell": "full-bleed"
+    },
+    {
+      "id": "demo",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "vision",
+          "as": "demo-hero"
+        },
+        {
+          "pattern": "features",
+          "preset": "standard",
+          "as": "demo-features"
+        }
+      ],
+      "default_layout": [
+        "demo-hero",
+        "demo-features"
+      ],
+      "shell": "full-bleed"
+    }
+  ],
+  "page_briefs": {
+    "home": "Full-length scrolling landing page. Split hero with confident headline on the left and product visualization on the right, prominent CTA button. Features section with icon cards alternating full-bleed and contained layouts. How-it-works with numbered steps and connecting flow. Pricing tier cards with feature checklists and highlighted recommended plan. Testimonials carousel with attribution. Bottom CTA with dark background and sign-up prompt.",
+    "demo": "Vision hero with immersive product demonstration, animated or interactive product preview. Features section below highlighting key capabilities shown in the demo. CTA to start trial."
+  },
+  "features": [
+    "marketing",
+    "seo",
+    "analytics"
+  ],
+  "shells": {
+    "full-bleed": "Edge-to-edge layout with floating navigation overlay"
+  },
+  "suggested_theme": {
+    "ids": [
+      "luminarum",
+      "gradient-mesh"
+    ],
+    "modes": [
+      "dark"
+    ]
+  },
+  "dependencies": {
+    "patterns": {
+      "hero": ">=1.0.0",
+      "features": ">=1.0.0",
+      "how-it-works": ">=1.0.0",
+      "pricing": ">=1.0.0",
+      "testimonials": ">=1.0.0",
+      "cta-section": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

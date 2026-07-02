@@ -1,0 +1,135 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "prompt-library",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Prompt Library",
+  "description": "Version-controlled prompt library for authoring, searching, comparing, and testing prompts with full diff history and evaluation results.",
+  "tags": [
+    "prompts",
+    "versioning",
+    "library",
+    "ai",
+    "diff",
+    "testing",
+    "2026"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "prompt library",
+        "prompt management",
+        "prompt versioning",
+        "prompt catalog",
+        "prompt repository"
+      ],
+      "secondary": [
+        "prompt diff",
+        "prompt history",
+        "prompt search",
+        "template library",
+        "prompt testing"
+      ],
+      "negative": [
+        "chatbot",
+        "agent builder"
+      ]
+    },
+    "implies": [
+      "versioning",
+      "search"
+    ],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "prompts",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "prompt-table"
+        }
+      ],
+      "default_layout": [
+        "prompt-table"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "prompt-detail",
+      "patterns": [
+        {
+          "pattern": "prompt-playground",
+          "preset": "standard",
+          "as": "prompt-editor"
+        },
+        {
+          "pattern": "version-history",
+          "preset": "standard",
+          "as": "version-timeline"
+        }
+      ],
+      "default_layout": [
+        "prompt-editor",
+        "version-timeline"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "prompt-compare",
+      "patterns": [
+        {
+          "pattern": "diff-view",
+          "preset": "split",
+          "as": "prompt-diff"
+        },
+        {
+          "pattern": "eval-dashboard",
+          "preset": "comparison",
+          "as": "test-results"
+        }
+      ],
+      "default_layout": [
+        "prompt-diff",
+        "test-results"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "prompts": "Data table listing all prompts with columns for name, tags (colored pills), latest version number, last-modified date, and author avatar. Search bar and tag filter chips above the table. Bulk actions toolbar appears on row selection.",
+    "prompt-detail": "Split layout with a rich-text prompt editor on the left featuring variable placeholders highlighted inline and a test-run button. Right panel shows version history as a vertical timeline with commit-style messages, version numbers, and restore buttons per entry.",
+    "prompt-compare": "Side-by-side diff view at top with red/green line highlighting showing changes between two prompt versions. Below, an eval dashboard displays comparative test results: pass/fail counts, latency deltas, and quality score bar charts for each version."
+  },
+  "features": [
+    "versioning",
+    "diff",
+    "search",
+    "tags"
+  ],
+  "shells": {
+    "sidebar-main": "Collapsible sidebar with prompt folder tree and main content area"
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  },
+  "dependencies": {
+    "patterns": {
+      "data-table": ">=1.0.0",
+      "prompt-playground": ">=1.0.0",
+      "version-history": ">=1.0.0",
+      "diff-view": ">=1.0.0",
+      "eval-dashboard": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

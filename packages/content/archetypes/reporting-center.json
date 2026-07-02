@@ -1,0 +1,107 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "reporting-center",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Reporting Center",
+  "description": "Climate disclosure reporting workspace for CSRD and compliance reports with list browsing and guided report building.",
+  "tags": [
+    "reporting",
+    "csrd",
+    "compliance",
+    "disclosure",
+    "climate"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "reporting center",
+        "csrd reports",
+        "climate disclosure",
+        "compliance reporting"
+      ],
+      "secondary": [
+        "esrs",
+        "tcfd",
+        "sustainability reports"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "reports",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "table"
+        },
+        {
+          "pattern": "filter-bar",
+          "preset": "standard",
+          "as": "filters"
+        }
+      ],
+      "default_layout": [
+        "filter-bar",
+        "data-table"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "report-builder",
+      "patterns": [
+        {
+          "pattern": "form-sections",
+          "preset": "structured",
+          "as": "form"
+        },
+        {
+          "pattern": "chart-grid",
+          "preset": "dashboard",
+          "as": "preview"
+        }
+      ],
+      "default_layout": [
+        "form-sections",
+        "chart-grid"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "reports": "Reports library. A filter bar across the top narrows by framework (CSRD, TCFD, CDP), period, status, and owner. A data table lists each report with title, framework, reporting period, last updated, owner, status badge, and download action.",
+    "report-builder": "Guided report builder. Structured form sections walk through framework selection, scope definition, disclosure topics, data sources, and narrative inputs. A live chart grid previews the generated figures and disclosures alongside the form so editors can validate numbers as they fill in sections."
+  },
+  "features": [
+    "reporting",
+    "csrd",
+    "compliance"
+  ],
+  "shells": {
+    "sidebar-main": "Left navigation sidebar with primary content column"
+  },
+  "dependencies": {
+    "patterns": {
+      "data-table": "^1.0.0",
+      "filter-bar": "^1.0.0",
+      "form-sections": "^1.0.0",
+      "chart-grid": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

@@ -1,0 +1,219 @@
+{
+  "$schema": "https://decantr.ai/schemas/blueprint.v1.json",
+  "id": "cloud-platform",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Cloud Platform",
+  "description": "Full cloud infrastructure platform with marketing landing, app management, team collaboration, service catalog, deploy logs, usage monitoring, billing, and auth",
+  "blueprint_portfolio": {
+    "visibility": "hidden",
+    "maturity": "fold-candidate",
+    "rationale": "Kept addressable by slug for compatibility, but folded out of public browsing because a newer blueprint carries the same job-to-be-done more clearly.",
+    "recommended_alternative": "multi-tenant-platform",
+    "artifact": {
+      "status": "candidate",
+      "showcase": "cloud-platform",
+      "notes": "Prefer multi-tenant-platform in public discovery unless this slug is requested directly."
+    }
+  },
+  "tags": [
+    "cloud",
+    "infrastructure",
+    "devops",
+    "enterprise",
+    "platform"
+  ],
+  "compose": [
+    "cloud-marketing",
+    "cloud-infrastructure",
+    "billing",
+    "auth-flow",
+    "settings"
+  ],
+  "theme": {
+    "id": "launchpad"
+  },
+  "personality": "Enterprise-grade cloud console built for reliability and scale. Clean, systematic layout with a left sidebar for service navigation. Status indicators use semantic colors — green healthy, amber degraded, red incident. Deploy logs stream in monospace with ANSI color support. Usage charts are functional, not decorative. Dense data tables with sort, filter, and bulk actions. Think AWS Console meets Vercel — powerful but approachable. Every view should feel like a control plane.",
+  "voice": {
+    "tone": "Technical and trustworthy. Speaks to infrastructure engineers and DevOps teams. Precise about states and operations.",
+    "cta_verbs": [
+      "Deploy",
+      "Create",
+      "Scale",
+      "Monitor",
+      "Configure",
+      "Migrate"
+    ],
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Buy",
+      "Amazing"
+    ],
+    "empty_states": "Helpful and onboarding-oriented. An empty project list should walk users through creating their first app with clear steps.",
+    "errors": "Precise and diagnostic. Include request IDs, timestamps, and affected resources. Link to status page for platform issues.",
+    "loading": "Resource list skeletons with status dot placeholders. Deploy logs show a blinking cursor. Metrics charts show axis labels while data loads."
+  },
+  "overrides": {
+    "pages": {
+      "billing": {
+        "default_layout": [
+          "kpi-grid",
+          "pricing-table"
+        ]
+      },
+      "settings": {
+        "default_layout": [
+          {
+            "pattern": "form-sections",
+            "preset": "settings",
+            "as": "org-settings"
+          }
+        ]
+      }
+    },
+    "pages_remove": [
+      "forgot-password"
+    ],
+    "features_add": [
+      "search"
+    ],
+    "features_remove": []
+  },
+  "dependencies": {
+    "archetypes": {
+      "cloud-marketing": "^1.0.0",
+      "cloud-infrastructure": "^1.0.0",
+      "billing": "^1.0.0",
+      "auth-flow": "^1.0.0",
+      "settings": "^1.0.0"
+    }
+  },
+  "features": [
+    "realtime-data",
+    "team-management",
+    "billing",
+    "auth",
+    "search"
+  ],
+  "routes": {
+    "/": {
+      "shell": "full-bleed",
+      "archetype": "cloud-marketing",
+      "page": "home"
+    },
+    "/login": {
+      "shell": "centered",
+      "archetype": "auth-flow",
+      "page": "login"
+    },
+    "/register": {
+      "shell": "centered",
+      "archetype": "auth-flow",
+      "page": "register"
+    },
+    "/forgot-password": {
+      "shell": "centered",
+      "archetype": "auth-flow",
+      "page": "forgot-password"
+    },
+    "/apps": {
+      "shell": "sidebar-main",
+      "archetype": "cloud-infrastructure",
+      "page": "apps"
+    },
+    "/apps/:id": {
+      "shell": "sidebar-main",
+      "archetype": "cloud-infrastructure",
+      "page": "app-detail"
+    },
+    "/team": {
+      "shell": "sidebar-main",
+      "archetype": "cloud-infrastructure",
+      "page": "team"
+    },
+    "/activity": {
+      "shell": "sidebar-main",
+      "archetype": "cloud-infrastructure",
+      "page": "activity"
+    },
+    "/services": {
+      "shell": "sidebar-main",
+      "archetype": "cloud-infrastructure",
+      "page": "services"
+    },
+    "/tokens": {
+      "shell": "sidebar-main",
+      "archetype": "cloud-infrastructure",
+      "page": "tokens"
+    },
+    "/usage": {
+      "shell": "sidebar-main",
+      "archetype": "cloud-infrastructure",
+      "page": "usage"
+    },
+    "/status": {
+      "shell": "sidebar-main",
+      "archetype": "cloud-infrastructure",
+      "page": "status"
+    },
+    "/compliance": {
+      "shell": "sidebar-main",
+      "archetype": "cloud-infrastructure",
+      "page": "compliance"
+    },
+    "/billing": {
+      "shell": "sidebar-main",
+      "archetype": "billing",
+      "page": "billing"
+    },
+    "/settings": {
+      "shell": "sidebar-main",
+      "archetype": "settings",
+      "page": "settings"
+    }
+  },
+  "navigation": {
+    "command_palette": true,
+    "hotkeys": [
+      {
+        "key": "g h",
+        "route": "/",
+        "label": "Go to Home"
+      },
+      {
+        "key": "g a",
+        "route": "/apps",
+        "label": "Go to Apps"
+      },
+      {
+        "key": "g u",
+        "route": "/usage",
+        "label": "Go to Usage"
+      },
+      {
+        "key": "g s",
+        "route": "/status",
+        "label": "Go to Status"
+      }
+    ]
+  },
+  "seo_hints": {
+    "schema_org": [
+      "WebApplication",
+      "SoftwareApplication"
+    ],
+    "meta_priorities": [
+      "description",
+      "og:title",
+      "og:description"
+    ]
+  },
+  "suggested_themes": [
+    "launchpad",
+    "carbon",
+    "fintech",
+    "government"
+  ]
+}

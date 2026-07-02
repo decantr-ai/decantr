@@ -1,0 +1,68 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "notifications",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Notifications",
+  "description": "Notification inbox and alert management",
+  "tags": [
+    "notifications",
+    "inbox",
+    "alerts",
+    "messages",
+    "updates"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "notifications",
+        "inbox",
+        "alerts"
+      ],
+      "secondary": [
+        "messages",
+        "updates",
+        "notification center"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 0.6,
+    "tier": "optional"
+  },
+  "pages": [
+    {
+      "id": "notifications",
+      "default_layout": [
+        "activity-feed"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "notifications": "Scrollable notification inbox. Each notification row shows icon, title, message preview, timestamp, and read/unread indicator. Mark-all-read button at top. Rows are grouped by date."
+  },
+  "features": [
+    "notifications"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "activity-feed": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "auradecantism",
+      "clean"
+    ],
+    "modes": [
+      "dark",
+      "auto"
+    ]
+  }
+}

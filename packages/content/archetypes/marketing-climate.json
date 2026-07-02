@@ -1,0 +1,94 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "marketing-climate",
+  "role": "public",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Climate Dashboard Marketing",
+  "description": "Public marketing landing page for a climate dashboard product with vision hero, feature highlights, testimonials, and primary CTA.",
+  "tags": [
+    "marketing",
+    "landing",
+    "climate",
+    "sustainability",
+    "public"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "climate marketing",
+        "sustainability landing",
+        "carbon dashboard marketing"
+      ],
+      "secondary": [
+        "esg landing",
+        "climate site"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "vision",
+          "as": "hero"
+        },
+        {
+          "pattern": "features",
+          "preset": "grid",
+          "as": "features"
+        },
+        {
+          "pattern": "testimonials",
+          "preset": "grid",
+          "as": "testimonials"
+        },
+        {
+          "pattern": "cta-section",
+          "preset": "standard",
+          "as": "cta"
+        }
+      ],
+      "default_layout": [
+        "hero",
+        "features",
+        "testimonials",
+        "cta-section"
+      ],
+      "shell": "top-nav-footer"
+    }
+  ],
+  "page_briefs": {
+    "home": "Climate dashboard marketing landing. Vision hero opens with a confident, mission-forward statement about decarbonization and measurement. A feature grid highlights scope 1/2/3 tracking, supply chain insight, target management, and CSRD reporting. Testimonial grid gathers quotes from sustainability leads. A standard CTA section closes the page with a trial/demo call to action."
+  },
+  "features": [
+    "marketing"
+  ],
+  "shells": {
+    "top-nav-footer": "Public marketing shell with top navigation and footer"
+  },
+  "dependencies": {
+    "patterns": {
+      "hero": "^1.0.0",
+      "features": "^1.0.0",
+      "testimonials": "^1.0.0",
+      "cta-section": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

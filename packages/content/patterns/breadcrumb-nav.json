@@ -1,0 +1,111 @@
+{
+  "id": "breadcrumb-nav",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Breadcrumb Nav",
+  "description": "A hierarchical path navigation component with text links, chevron separators, and smart overflow handling that collapses middle segments into a dropdown menu.",
+  "category": "navigation",
+  "tags": [
+    "2026",
+    "navigation",
+    "breadcrumb",
+    "hierarchy",
+    "wayfinding",
+    "overflow"
+  ],
+  "components": [
+    "BreadcrumbList",
+    "BreadcrumbItem",
+    "Separator",
+    "OverflowMenu"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Text-only breadcrumb links separated by chevron icons, with the current page displayed as bold non-interactive text — the most common navigation breadcrumb style",
+      "layout": {
+        "layout": "inline",
+        "atoms": "_flex _align-center _gap-1 _flex-wrap-nowrap _overflow-hidden"
+      }
+    },
+    "icon": {
+      "description": "Breadcrumb items with small folder or category icons preceding each label, adding visual context for file-system or content-hierarchy navigation",
+      "layout": {
+        "layout": "inline",
+        "atoms": "_flex _align-center _gap-1 _flex-wrap-nowrap _overflow-hidden"
+      }
+    },
+    "dropdown": {
+      "description": "Breadcrumb with overflow handling that collapses middle path segments into an ellipsis button which opens a dropdown listing the hidden segments — essential for deep hierarchies",
+      "layout": {
+        "layout": "inline",
+        "atoms": "_flex _align-center _gap-1 _flex-wrap-nowrap _overflow-hidden"
+      }
+    }
+  },
+  "visual_brief": "A single horizontal line of text links representing the navigation hierarchy, rendered as an ordered list (ol) with inline-flex items. Each breadcrumb item is a text link in text-sm (14px) with text-muted color that transitions to text-default on hover with a subtle underline (text-decoration: underline with underline-offset: 2px). Between each item sits a chevron separator: a small right-pointing angle bracket (›) rendered as a 12px SVG icon in text-muted color with 4px horizontal margin on each side. The current (last) breadcrumb item is rendered as plain text (not a link) in text-default color with font-semibold weight and no hover interaction — it represents the active page. The first item is typically 'Home' and can optionally display a home icon (16px) instead of text. When the path exceeds the available width (measured on mount and resize), the component enters overflow mode: the first item and the last two items remain visible, and all middle items collapse into a single overflow button displayed as '...' (three dots) styled as a small pill button (24px height, 32px width, bg-surface-subtle, border-radius-md, text-muted, hover: bg-surface-hover). Clicking the overflow button opens a dropdown menu (d-surface card with elevation, border-radius-md, min-width: 160px) positioned below the button, listing the hidden segments as menu items (text-sm, padding: 8px 12px, hover: bg-surface-subtle). Each menu item is a link that navigates to that hierarchy level. The dropdown closes on outside click, Escape, or selecting an item. In the icon preset, each breadcrumb item has a small 14px icon to the left of the label: a home icon for the root, a folder icon for intermediate levels, and a document/page icon for the current page. Icons are text-muted color, matching the link color behavior on hover. The entire breadcrumb component has 0 vertical padding (it inherits line-height from the parent) and sits naturally inline within a page header or toolbar.",
+  "layout_hints": {
+    "container": "inline or header",
+    "note": "Breadcrumbs are typically placed at the top of a page content area, below the main navigation but above the page title. They should not be wrapped in a card — render inline. The component has a max-width of 100% and uses overflow: hidden with text-overflow on individual items if a single label is too long.",
+    "overflow_threshold": "The overflow collapse triggers when the total rendered width of all items exceeds the container width. Measure on mount and on window resize. Always keep the first item and the last 2 items visible; collapse everything in between into the overflow menu.",
+    "separator_style": "Use a chevron (›) SVG icon, not a text character. The icon is 12px × 12px, color: text-muted, with 4px margin-left and 4px margin-right. Do not use slashes (/) or greater-than signs (>) as separators."
+  },
+  "default_layout": {
+    "layout": "inline",
+    "atoms": "_flex _align-center _gap-1 _overflow-hidden _text-sm",
+    "slots": {
+      "breadcrumb-list": "The outer container, rendered as an <ol> element with list-style: none and display: flex, align-items: center, gap: 4px. flex-wrap: nowrap to keep all items on a single line. overflow: hidden to clip content that exceeds the container width. The list has role='navigation' and aria-label='Breadcrumb'. Padding: 0, margin: 0. The component measures its own width on mount and on resize to determine if overflow collapse is needed. If the combined width of all items plus separators exceeds the container width, it enters overflow mode.",
+      "breadcrumb-item": "Repeating slot — one per hierarchy level. Each item is an <li> with display: inline-flex, align-items: center, white-space: nowrap. Non-current items render as <a> links with text-sm (14px), color: text-muted, text-decoration: none. Hover: color transitions to text-default (150ms ease), text-decoration: underline with underline-offset: 2px. Focus-visible: 2px accent outline with 2px offset, border-radius-sm. The current item (last in the list) renders as a <span> (not a link) with font-semibold, color: text-default, aria-current='page'. Max-width per item: 200px with text-overflow: ellipsis and overflow: hidden for long labels. In the icon preset, each item also contains a 14px icon (home, folder, or document) to the left of the label with a 4px gap.",
+      "separator": "Repeating slot — one between each pair of breadcrumb items. Renders as a 12px × 12px right-pointing chevron SVG icon (a simple > shape with 1.5px stroke, stroke-linecap: round). Color: text-muted. aria-hidden='true' since it is decorative. Flex-shrink: 0 to prevent the separator from collapsing. Margin: 0 4px. The separator is an <li> with role='presentation' to exclude it from the list semantics.",
+      "overflow-menu": "Conditionally rendered when the breadcrumb path is too long for the container. Replaces the collapsed middle items with a single button displaying '...' (or an ellipsis icon). The button is 24px tall, 32px wide, bg-surface-subtle, border-radius-md, border: 1px solid border-muted, text-muted color, font-semibold. Hover: bg-surface-hover. Focus-visible: 2px accent outline. Clicking opens a dropdown menu absolutely positioned below the button (top: calc(100% + 4px), left: 0). The dropdown is a d-surface card with border-radius-md, box-shadow: 0 4px 12px rgba(0,0,0,0.1), padding: 4px 0, min-width: 160px, max-height: 240px, overflow-y: auto. Each hidden segment is a menu item: an <a> link with display: block, padding: 8px 12px, text-sm, text-default, hover: bg-surface-subtle. Items are listed in hierarchy order (top = shallowest). The menu has role='menu' and each item has role='menuitem'. Closes on outside click, Escape, or item selection. Opening animation: opacity 0→1 + translateY(-4px)→0, 150ms ease-out."
+    }
+  },
+  "accessibility": {
+    "role": "navigation",
+    "aria-label": "Breadcrumb navigation",
+    "announcements": [
+      "You are here: {currentPage}",
+      "Breadcrumb path: {path segments joined by comma}",
+      "Overflow menu opened with {count} hidden segments",
+      "Navigated to {page}"
+    ],
+    "keyboard": [
+      "Tab: move focus between breadcrumb links and overflow button",
+      "Enter: activate focused breadcrumb link or open overflow menu",
+      "Escape: close overflow dropdown menu",
+      "Arrow Down: move focus to next item in overflow dropdown",
+      "Arrow Up: move focus to previous item in overflow dropdown",
+      "Home: move focus to first item in overflow dropdown",
+      "End: move focus to last item in overflow dropdown"
+    ]
+  },
+  "responsive": {
+    "mobile": "Breadcrumbs aggressively collapse — only the parent (one level up) and current page are shown, with all earlier levels in the overflow menu. Max item width reduces to 120px. The overflow dropdown renders full-width at the bottom of the breadcrumb row. Touch targets are 44px minimum height.",
+    "tablet": "Breadcrumbs show the first item, overflow, and last 2 items. Max item width 160px. Touch targets are 40px. Dropdown renders normally below the overflow button.",
+    "desktop": "Full breadcrumb path shown if it fits. Overflow only triggers when the path exceeds container width. Max item width 200px. Hover states active on links. Dropdown has max-height 240px with scroll for very deep hierarchies."
+  },
+  "motion": {
+    "micro": {
+      "link-hover": "color transition 150ms ease",
+      "overflow-button-hover": "background-color transition 120ms ease"
+    },
+    "transitions": {
+      "dropdown-open": "opacity 0→1 + translateY(-4px)→0, 150ms ease-out",
+      "dropdown-close": "opacity 1→0 + translateY(0)→(-4px), 100ms ease-in",
+      "overflow-collapse": "items fade out 150ms as they collapse into the overflow button on resize"
+    },
+    "ambient": {}
+  },
+  "interactions": [
+    "hover-reveal",
+    "keyboard-navigation"
+  ],
+  "composition": {
+    "BreadcrumbNav": "Nav(role=navigation, aria-label=Breadcrumb) > BreadcrumbList(ol)",
+    "BreadcrumbList": "List(ol, inline-flex, nowrap) > [BreadcrumbItem + Separator]* + BreadcrumbItem(current)",
+    "BreadcrumbItem": "ListItem(li) > Link(a, text-muted, hover:text-default) | Span(current, font-semibold)",
+    "Separator": "ListItem(li, role=presentation, aria-hidden) > ChevronIcon(12px, text-muted)",
+    "OverflowMenu": "Button('...', pill) + Dropdown(d-surface, elevated) > MenuItem*(a, role=menuitem)"
+  }
+}

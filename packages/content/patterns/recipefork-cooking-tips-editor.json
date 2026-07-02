@@ -1,0 +1,46 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "recipefork-cooking-tips-editor",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipefork Cooking Tips Editor",
+  "description": "Reusable cooking tips editor for both Simple Mode and Chef Mode recipes, supporting optional bullet-style tips with ordering and removal controls.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Card",
+        "Button",
+        "Label",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Card",
+    "Button",
+    "Label",
+    "icon"
+  ],
+  "default_preset": "bullet-editor",
+  "presets": {
+    "bullet-editor": {
+      "description": "Optional bullet-note editor with add, reorder, and remove controls.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap3",
+        "slots": {
+          "tips-header": "Section title and description",
+          "tips-list": "List of bullet-style textarea rows",
+          "empty-state": "Prompt that explains there are no tips yet"
+        }
+      }
+    }
+  },
+  "visual_brief": "This should feel lighter than the main recipe instructions: quick, practical, and easy to scan, like the author's final notes to another cook.",
+  "composition": {
+    "RecipeforkCookingTipsEditor": "Card(recipefork-cooking-tips-editor) > [TipsHeader + TipsList + EmptyState?]"
+  }
+}

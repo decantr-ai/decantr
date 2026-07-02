@@ -1,0 +1,106 @@
+{
+  "id": "petition-card",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Petition Card",
+  "description": "Petition signature card with progress toward goal, share actions, trust signals, and countdown for civic engagement platforms.",
+  "category": "civic",
+  "tags": ["2026", "civic", "petition", "engagement", "signatures", "progress"],
+  "components": ["PetitionTitle", "SignatureProgress", "SignButton", "ShareBar", "TrustBadge", "AuthorInfo"],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full petition card with title, description, signature progress, sign CTA, share bar, and trust badges for main petition pages",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _gap-4 _p-6 _bg-surface _rounded-xl _border _w-full _max-w-xl"
+      }
+    },
+    "compact": {
+      "description": "List-item compact card showing title, progress, and sign button for browse pages and search results with minimum friction",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _gap-2 _p-4 _bg-surface _rounded-lg _border _w-full"
+      }
+    },
+    "featured": {
+      "description": "Hero-sized featured petition with large title, prominent progress bar, and expanded trust signals for homepage and campaign launches",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _gap-6 _p-8 _bg-surface _rounded-2xl _border _w-full _max-w-3xl"
+      }
+    }
+  },
+  "visual_brief": "A rectangular card (rounded 12px, subtle border and shadow) with petition content vertically stacked. Author info at top shows small 32px avatar with author name and organization label in muted text. Petition title renders in large semibold type (20px standard, 28px featured) with 1-3 lines. Brief description follows in regular 14px body text with 3-line clamp. Signature counter displays prominently below as large numeric text (e.g. '3,247 signatures' in 24px bold) with goal suffix in muted ('of 5,000 goal'). Horizontal progress bar sits directly below at 8px tall with accent-color fill and subtle pulse when active. Sign button is a prominent primary CTA button (full-width) labeled 'Sign this petition' with an optional count-up animation on click. Share bar shows a horizontal row of social icons (email, twitter, facebook, link-copy) each as 36px circular buttons. Trust badges appear as a footer row of small pill badges (e.g. 'Verified Author', 'Fact-checked', '501(c)(3) Sponsor') with trust-icon prefixes. Time-bound petitions show a countdown chip at top-right with days remaining.",
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _flex-col _gap-4 _p-6 _bg-surface _rounded-xl _border _w-full _max-w-xl",
+    "slots": {
+      "author-info": "Header row with author avatar (32px), author name, organization, and optional verified check. Small muted metadata.",
+      "petition-title": "Primary heading displaying petition name in large semibold type. 2-3 line clamp.",
+      "description": "Body text paragraph with brief petition summary. 3-line clamp, muted secondary color.",
+      "signature-progress": "Visual progress module combining numeric counter (current + goal) and horizontal progress bar. Numbers count up on increment.",
+      "sign-button": "Primary CTA button spanning full card width. Label 'Sign this petition' with optional disabled state once signed.",
+      "share-bar": "Horizontal row of share action icons (email, twitter, facebook, copy-link). Each is a 36px circular icon button.",
+      "trust-badges": "Footer row of small trust pill badges indicating verification, fact-check status, sponsor credentials.",
+      "countdown-chip": "Optional pill at top-right showing days remaining for time-bound petitions."
+    }
+  },
+  "responsive": {
+    "mobile": "Full-width card with reduced padding. Share bar wraps to 2 rows if needed. Trust badges stack vertically. Featured variant scales title down to 22px.",
+    "tablet": "Standard card width up to container. All elements inline.",
+    "desktop": "Max-width constrained card with full layout and hover interactions on share icons."
+  },
+  "layout_hints": {
+    "petition_priority": "Lead with the cause, then signature momentum, then the action to sign. Trust and sharing cues support that primary conversion path.",
+    "progress_role": "The signature counter and progress bar should feel like social proof attached to the petition, not a generic campaign widget.",
+    "featured_variant": "Featured mode may scale the headline and progress treatment up, but it should still preserve the same sign-and-share hierarchy as the standard card."
+  },
+  "layout_hints": {
+    "petition_priority": "Lead with the cause, then signature momentum, then the action to sign. Trust and sharing cues support that primary conversion path.",
+    "progress_role": "The signature counter and progress bar should feel like social proof attached to the petition, not a generic campaign widget.",
+    "featured_variant": "Featured mode may scale the headline and progress treatment up, but it should still preserve the same sign-and-share hierarchy as the standard card."
+  },
+  "motion": {
+    "micro": {
+      "sign-button-hover": "scale(1.02) + shadow-lift 150ms ease-out",
+      "share-icon-hover": "bg-tint + scale(1.1) 150ms ease-out"
+    },
+    "transitions": {
+      "signature-increment": "number count-up 500ms ease-out + progress-bar fill animation 600ms ease-in-out",
+      "sign-success": "button pulse green + check-icon draw 400ms spring"
+    },
+    "ambient": {
+      "progress-bar-shimmer": "subtle gradient sweep 3s linear infinite when progress > 0 and < 100"
+    }
+  },
+  "interactions": [
+    "lift-hover",
+    "click-select",
+    "animate-on-mount",
+    "stagger-children",
+    "scale-hover"
+  ],
+  "composition": {
+    "PetitionCard": "Card(d-surface, stack) > [AuthorInfo + CountdownChip? + PetitionTitle + Description + SignatureProgress + SignButton + ShareBar + TrustBadge*]",
+    "SignatureProgress": "Module > [CounterText + ProgressBar(animated-fill)]",
+    "ShareBar": "FlexRow > ShareIcon*(d-interactive, circular)",
+    "TrustBadges": "FlexRow(wrap) > TrustBadge*(d-annotation, pill)"
+  },
+  "accessibility": {
+    "role": "article",
+    "aria-label": "Petition signature card",
+    "announcements": [
+      "Signature added: {count} of {goal}",
+      "Petition shared via {channel}",
+      "{days} days remaining"
+    ],
+    "keyboard": [
+      "Tab: cycle through interactive elements",
+      "Enter: sign petition or activate focused action",
+      "S: quick-sign from any focused state",
+      "C: copy share link"
+    ]
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "marketing-saas-v2",
+  "role": "public",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "SaaS Marketing Landing",
+  "description": "Public marketing landing page for SaaS products with hero, features, pricing, testimonials, and conversion CTAs.",
+  "tags": ["marketing", "landing", "saas", "public", "seo", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["saas landing", "saas marketing", "saas homepage", "product landing", "saas website"],
+      "secondary": ["pricing page", "features page", "saas conversion", "product marketing"],
+      "negative": ["dashboard", "admin", "analytics"]
+    },
+    "implies": ["seo", "conversion"],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "landing",
+          "as": "landing-hero"
+        },
+        {
+          "pattern": "features",
+          "preset": "standard",
+          "as": "feature-grid"
+        },
+        {
+          "pattern": "pricing",
+          "preset": "standard",
+          "as": "pricing-tiers"
+        },
+        {
+          "pattern": "testimonials",
+          "preset": "standard",
+          "as": "social-proof"
+        },
+        {
+          "pattern": "cta-section",
+          "preset": "standard",
+          "as": "bottom-cta"
+        }
+      ],
+      "default_layout": ["landing-hero", "feature-grid", "pricing-tiers", "social-proof", "bottom-cta"],
+      "shell": "top-nav-footer"
+    }
+  ],
+  "page_briefs": {
+    "home": "Full-length SaaS marketing landing page. Hero section with bold headline, subtitle, product screenshot or illustration, and primary CTA. Features section with icon cards highlighting key capabilities. Pricing tier cards with feature checklists and highlighted recommended plan. Testimonials carousel with customer logos and quotes. Bottom CTA section with dark background and sign-up button."
+  },
+  "features": ["marketing", "seo", "conversion"],
+  "shells": {
+    "top-nav-footer": "Fixed top navigation bar with logo and links, sticky footer with legal and social links"
+  },
+  "dependencies": {
+    "patterns": {
+      "hero": ">=1.0.0",
+      "features": ">=1.0.0",
+      "pricing": ">=1.0.0",
+      "testimonials": ">=1.0.0",
+      "cta-section": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": ["auradecantism"],
+    "modes": ["dark", "light"]
+  }
+}

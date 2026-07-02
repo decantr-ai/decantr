@@ -1,0 +1,69 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "marketing-finance",
+  "role": "public",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Finance Marketing Landing",
+  "description": "Public marketing landing page for a financial dashboard product with hero, feature highlights, social proof, and conversion CTAs.",
+  "tags": ["marketing", "landing", "finance", "public", "seo", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["finance landing", "financial dashboard landing", "wealth management landing", "finance marketing"],
+      "secondary": ["investment platform marketing", "finance product page", "portfolio landing"],
+      "negative": ["admin", "dashboard", "checkout"]
+    },
+    "implies": ["seo", "conversion"],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "split",
+          "as": "landing-hero"
+        },
+        {
+          "pattern": "features",
+          "preset": "standard",
+          "as": "feature-highlights"
+        },
+        {
+          "pattern": "testimonials",
+          "preset": "standard",
+          "as": "social-proof"
+        },
+        {
+          "pattern": "cta-section",
+          "preset": "standard",
+          "as": "bottom-cta"
+        }
+      ],
+      "default_layout": ["landing-hero", "feature-highlights", "social-proof", "bottom-cta"],
+      "shell": "top-nav-footer"
+    }
+  ],
+  "page_briefs": {
+    "home": "Split hero with headline and value proposition on the left, dashboard screenshot or portfolio chart illustration on the right, and primary CTA button. Features section with icon cards for portfolio tracking, budget planning, investment analysis, and transaction management. Testimonials section with investor quotes and profile photos. Bottom CTA with dark background and sign-up prompt."
+  },
+  "features": ["marketing", "seo"],
+  "shells": {
+    "top-nav-footer": "Fixed top navigation with logo and nav links. Footer with legal links and social icons"
+  },
+  "suggested_theme": {
+    "ids": ["carbon", "clean"],
+    "modes": ["dark", "light"]
+  },
+  "dependencies": {
+    "patterns": {
+      "hero": ">=1.0.0",
+      "features": ">=1.0.0",
+      "testimonials": ">=1.0.0",
+      "cta-section": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

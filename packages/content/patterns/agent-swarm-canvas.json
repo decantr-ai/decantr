@@ -1,0 +1,136 @@
+{
+  "id": "agent-swarm-canvas",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Agent Swarm Canvas",
+  "description": "A spatial node-graph canvas where AI agents appear as interactive nodes with real-time status, drag-to-connect edges, zoom/pan navigation, and a minimap for orchestration overview.",
+  "category": "agentic",
+  "tags": [
+    "2026",
+    "agentic",
+    "spatial",
+    "orchestration",
+    "node-graph",
+    "real-time"
+  ],
+  "components": [
+    "AgentNode",
+    "ConnectionPath",
+    "StatusBadge",
+    "CanvasControls",
+    "Minimap",
+    "TaskTooltip"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full spatial canvas with minimap, control bar, and status overlay — intended as a primary view for agent orchestration dashboards",
+      "layout": {
+        "layout": "spatial",
+        "atoms": "_rel _w100 _h100 _overhidden _bgbg"
+      }
+    },
+    "compact": {
+      "description": "Reduced canvas without minimap or control bar, suitable for embedding in sidebars or secondary panels — agents render as smaller nodes with abbreviated labels",
+      "layout": {
+        "layout": "spatial",
+        "atoms": "_rel _w100 _overhidden _bgbg"
+      }
+    },
+    "readonly": {
+      "description": "Non-interactive snapshot of the agent graph — no drag, no connect, no zoom controls — used for monitoring dashboards and historical playback",
+      "layout": {
+        "layout": "spatial",
+        "atoms": "_rel _w100 _h100 _overhidden _bgbg _ptrnone"
+      }
+    }
+  },
+  "visual_brief": "A dark, full-bleed spatial canvas with floating agent-node cards connected by animated bezier paths. Nodes show colored status rings (idle/running/error). Minimap in bottom-right, control bar bottom-center. Dot-grid background scales with zoom.",
+  "layout_hints": {
+    "container": "borderless",
+    "note": "This is a full-bleed visualization. Do NOT wrap in a d-surface card. Agent nodes float freely within the canvas area.",
+    "node_interaction": "Each agent node card MUST have cursor: pointer. Use d-surface[data-interactive] for clickable nodes. Clicking navigates to agent detail.",
+    "shared_geometry": "Connection paths and agent nodes MUST render in the same transformed coordinate space. Do not scale the SVG and cards separately or the lines will drift away from their nodes during pan and zoom.",
+    "metrics": "Display agent metrics with LABELED text, not icon-only. Good: 'Requests: 142 | Latency: 120ms'. Bad: '⚡ 142 ⬇ 120ms'. Icons without labels are unparseable.",
+    "status_consistency": "All status badges MUST use d-annotation[data-status]. Every status includes a colored dot (8px circle) prefix for visual scanning. Consistent across all agents.",
+    "error_escalation": "Agents with error status should have a subtle red border glow on their card: box-shadow: 0 0 12px color-mix(in srgb, var(--d-error) 25%, transparent).",
+    "directional_start_layout": "Default authored layouts should begin in a readable orchestration flow rather than a random scatter. Favor a left-to-right or top-down pipeline with ingress and routing upstream, synthesis and quality in the middle, and dispatch or guard nodes downstream. Operators can then reposition nodes if needed.",
+    "drag_behavior": "Nodes should be draggable after the initial authored layout loads. Dragging should move the node itself and update connection paths live without breaking the shared canvas transform model.",
+    "node_card": "Agent node cards: min-width 200px, max-width 260px. Layout must be: Row 1: avatar (40px circle) + column(name + agent-id). Row 2: status badge (FULL WIDTH, not beside the name). Row 3+: metrics stacked vertically. The status badge must NEVER share a row with the agent name — it goes on its own row below the name/id, spanning the full card width. Use d-annotation for the badge.",
+    "node_card_sizing": "The name text uses text-sm font-semibold with text-ellipsis overflow-hidden whitespace-nowrap. The agent-id uses text-xs text-muted. Status badge row: flex with gap-2, badge pill-shaped. Metrics: mono-data text-xs, one line per metric. Card padding: 12px. Gap between rows: 8px.",
+    "connection_ports": "Paths should anchor to meaningful node ports rather than guessed center offsets. Choose left/right anchors when the target is primarily horizontal, and top/bottom anchors when the target is primarily vertical. Curves should leave the node orthogonally before bending toward the destination.",
+    "zoom_behavior": "Zoom should feel smooth and continuous, not discrete or jumpy. Prefer cursor-aware scaling on wheel gestures so the point under the cursor stays visually stable while zooming.",
+    "overlay_compactness": "Status overlays should behave like compact floating summaries, not wide banners. Cap overlay width, keep copy terse, and avoid large explanatory paragraphs that compete with the graph."
+  },
+  "default_layout": {
+    "layout": "spatial",
+    "atoms": "_rel _w100 _h100 _overhidden _bgbg",
+    "slots": {
+      "canvas-viewport": "The main infinite-scroll canvas area. Uses CSS transform for zoom/pan. Contains all agent nodes and connection paths positioned absolutely via x/y coordinates. Must handle pointer events for drag-to-connect, pan (middle-click or space+drag), and pinch-to-zoom. Background should render a subtle dot-grid pattern that scales with zoom level.",
+      "agent-node": "Repeating slot — one per agent. Each node is a rounded card (80–120px wide) positioned absolutely on the canvas. Shows agent name, avatar/icon, and a colored status ring: idle (gray/neutral), running (blue/primary with pulse animation), error (red/destructive with shake), complete (green/success with checkmark). Nodes have connection ports (small circles) on left and right edges for drag-to-connect wiring. Clicking a node expands it inline to show current task description and elapsed time. Nodes support drag repositioning.",
+      "connection-line": "SVG path elements drawn between agent-node connection ports. Uses bezier curves (cubic) with a slight droop. Animated dash pattern flows in the direction of data transfer. Line color reflects connection status: active (primary color, animated flow), idle (muted/dashed), error (destructive, static). Hovering a line shows a tooltip with the data payload summary being transferred.",
+      "status-overlay": "A translucent overlay panel anchored to the top-right of the canvas viewport. Shows aggregate swarm stats: total agents, running count, error count, completed count, and overall progress as a thin horizontal bar. Collapses to a single summary badge on compact viewports. Uses backdrop-blur for depth.",
+      "control-bar": "Horizontal toolbar anchored to the bottom-center of the canvas. Contains zoom-in, zoom-out, fit-to-view, and toggle-minimap icon buttons. Also includes a play/pause button for swarm execution and a reset-layout button that auto-arranges nodes using a force-directed algorithm. Buttons use icon-only rendering with tooltips on hover.",
+      "minimap": "A small (160×120px) overview panel anchored to the bottom-right corner. Renders a simplified, zoomed-out view of the entire node graph with colored dots for agents and thin lines for connections. Shows a draggable viewport rectangle indicating the current visible area. Semi-transparent background with subtle border."
+    }
+  },
+  "accessibility": {
+    "role": "application",
+    "aria-label": "Agent orchestration canvas",
+    "announcements": [
+      "Agent {name} status changed to {status}",
+      "Connection established between {source} and {target}",
+      "Swarm execution {started|paused|completed}"
+    ],
+    "keyboard": [
+      "Tab: cycle through agent nodes in DOM order",
+      "Enter: expand selected agent node details",
+      "Space: toggle swarm play/pause",
+      "Arrow keys: pan canvas viewport",
+      "+/-: zoom in/out",
+      "0: fit all agents in view",
+      "Delete: remove selected connection",
+      "Escape: deselect current node or cancel drag"
+    ]
+  },
+  "responsive": {
+    "mobile": "Below 768px the spatial swarm canvas is too cramped to render usefully. Stack agent nodes vertically as a simple status list with one card per node. Hide decorative SVG connection lines, the minimap, and the zoom control bar. No drag-to-connect; a tap opens a detail sheet.",
+    "tablet": "Two-column card grid at tablet viewports. Minimap hidden by default but available from the control bar. Touch gestures: tap-to-select; long-press-then-tap-target to create a connection.",
+    "desktop": "Full spatial canvas with absolute-positioned agent nodes, SVG connection lines, pan+zoom, minimap, and drag-to-connect. This is the canonical layout that delivers the mission-control personality directive."
+  },
+  "motion": {
+    "micro": {
+      "node-hover": "scale(1.05) + glow-intensity 200ms ease-out",
+      "connection-pulse": "opacity 0.3→1→0.3 along path 2s linear infinite"
+    },
+    "transitions": {
+      "node-add": "scale(0) to scale(1) + fade 300ms spring",
+      "node-remove": "scale(1) to scale(0) + fade 200ms ease-in",
+      "layout-shift": "position lerp 500ms ease-in-out"
+    },
+    "ambient": {
+      "connection-flow": "dash-offset animate along path 3s linear infinite",
+      "status-glow": "border-color pulse matching status 2s ease-in-out infinite"
+    }
+  },
+  "interactions": [
+    "drag-nodes",
+    "pan-background",
+    "zoom-scroll",
+    "click-select",
+    "click-connect",
+    "hover-tooltip",
+    "status-pulse",
+    "animate-on-mount",
+    "live-simulation"
+  ],
+  "composition": {
+    "AgentSwarmCanvas": "Viewport(d-section, spatial, full-bleed) > [CanvasLayer + StatusOverlay + ControlBar + Minimap?]",
+    "CanvasLayer": "Canvas(zoomable, pannable) > [AgentNode[] + ConnectionPath[]]",
+    "AgentNode": "Card(d-surface, data-interactive, positioned) > [Name + Avatar + StatusRing(pulse?: running) + TaskTooltip?]",
+    "ConnectionPath": "SVG(bezier, animated-dash) > Path(color: status)",
+    "StatusOverlay": "Panel(d-annotation, backdrop-blur, top-right) > [AgentCount + RunningCount + ErrorCount + ProgressBar]",
+    "ControlBar": "Bar(d-control, bottom-center) > [ZoomIn + ZoomOut + FitView + ToggleMinimap + PlayPause + ResetLayout]"
+  }
+}

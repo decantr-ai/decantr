@@ -1,0 +1,282 @@
+{
+  "$schema": "https://decantr.ai/schemas/blueprint.v1.json",
+  "id": "terminal-dashboard",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Terminal Dashboard",
+  "description": "CLI-style terminal dashboard for developer tools. Retro-modern terminal aesthetic with phosphor green/amber, ASCII borders, split panes, and optional CRT effects. Dark mode only.",
+  "blueprint_portfolio": {
+    "visibility": "labs",
+    "maturity": "experimental",
+    "rationale": "Interesting direction for advanced users, but not yet a default recommendation because the public positioning or scaffold proof needs more tightening.",
+    "artifact": {
+      "status": "candidate",
+      "showcase": "terminal-dashboard",
+      "notes": "Visible through Labs; promote after clearer product positioning and evidence-backed scaffold quality."
+    }
+  },
+  "tags": [
+    "terminal",
+    "cli",
+    "developer",
+    "dashboard",
+    "monitoring",
+    "retro"
+  ],
+  "compose": [
+    "terminal-home",
+    "log-viewer",
+    "metrics-monitor",
+    "config-editor",
+    "marketing-devtool",
+    "auth-full",
+    "legal"
+  ],
+  "theme": {
+    "mode": "dark",
+    "shape": "sharp",
+    "id": "terminal"
+  },
+  "personality": "Retro-modern terminal aesthetic with phosphor green or amber text on pure black backgrounds. All typography is monospace. Borders use ASCII box-drawing characters. Split-pane layout mimics tmux/screen sessions. Log streams auto-scroll with ANSI color rendering. Metrics display as ASCII sparklines and bar charts. Configuration files show with syntax highlighting. Optional CRT scanline effect for full immersion. Dark mode only — no light theme. Think htop meets Datadog in a terminal emulator.",
+  "voice": {
+    "tone": "Terse and command-line native. Uses Unix conventions. Status messages read like stdout. No marketing language.",
+    "cta_verbs": [
+      "Run",
+      "Tail",
+      "Filter",
+      "Grep",
+      "Export",
+      "Connect"
+    ],
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Welcome",
+      "Amazing"
+    ],
+    "empty_states": "Command-line style. An empty log view should show a prompt-like message: 'No logs matching filter. Try adjusting --level or --source flags.'",
+    "errors": "stderr-style. Show exit codes, timestamps, and affected services. Format as log lines, not modal dialogs.",
+    "loading": "Blinking cursor on empty panes. Streaming log lines appear one by one. Metrics counters increment from zero. No skeleton screens — terminals do not have skeletons."
+  },
+  "overrides": {
+    "pages": {},
+    "pages_remove": [],
+    "features_add": [
+      "keyboard-shortcuts",
+      "command-palette"
+    ],
+    "features_remove": [
+      "theme-toggle"
+    ]
+  },
+  "dependencies": {
+    "archetypes": {
+      "terminal-home": "^1.0.0",
+      "log-viewer": "^1.0.0",
+      "metrics-monitor": "^1.0.0",
+      "config-editor": "^1.0.0",
+      "marketing-devtool": "^1.0.0",
+      "auth-full": "^1.0.0",
+      "legal": "^1.0.0"
+    }
+  },
+  "features": [
+    "split-panes",
+    "log-streaming",
+    "metrics",
+    "command-input",
+    "keyboard-shortcuts",
+    "command-palette",
+    "log-filtering",
+    "log-search",
+    "log-levels",
+    "auto-scroll",
+    "export-logs",
+    "realtime-metrics",
+    "ascii-charts",
+    "sparklines",
+    "threshold-alerts",
+    "historical-data",
+    "file-tree",
+    "syntax-highlight",
+    "diff-view",
+    "search-replace",
+    "undo-redo",
+    "auto-save",
+    "terminal-hero",
+    "ascii-demo",
+    "code-examples",
+    "installation-guide",
+    "auth",
+    "mfa",
+    "oauth",
+    "email-verification",
+    "password-reset",
+    "toc-navigation",
+    "print-friendly",
+    "smooth-scroll"
+  ],
+  "routes": {
+    "/": {
+      "shell": "top-nav-footer",
+      "archetype": "marketing-devtool",
+      "page": "home"
+    },
+    "/docs": {
+      "shell": "top-nav-footer",
+      "archetype": "marketing-devtool",
+      "page": "docs"
+    },
+    "/privacy": {
+      "shell": "top-nav-footer",
+      "archetype": "legal",
+      "page": "privacy"
+    },
+    "/terms": {
+      "shell": "top-nav-footer",
+      "archetype": "legal",
+      "page": "terms"
+    },
+    "/cookies": {
+      "shell": "top-nav-footer",
+      "archetype": "legal",
+      "page": "cookies"
+    },
+    "/login": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "login"
+    },
+    "/register": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "register"
+    },
+    "/forgot-password": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "forgot-password"
+    },
+    "/reset-password": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "reset-password"
+    },
+    "/verify-email": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "verify-email"
+    },
+    "/mfa-setup": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "mfa-setup"
+    },
+    "/mfa-verify": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "mfa-verify"
+    },
+    "/phone-verify": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "phone-verify"
+    },
+    "/app": {
+      "shell": "terminal-split",
+      "archetype": "terminal-home",
+      "page": "home"
+    },
+    "/app/logs": {
+      "shell": "terminal-split",
+      "archetype": "log-viewer",
+      "page": "logs"
+    },
+    "/app/logs/grouped": {
+      "shell": "terminal-split",
+      "archetype": "log-viewer",
+      "page": "grouped"
+    },
+    "/app/metrics": {
+      "shell": "terminal-split",
+      "archetype": "metrics-monitor",
+      "page": "metrics"
+    },
+    "/app/metrics/:id": {
+      "shell": "terminal-split",
+      "archetype": "metrics-monitor",
+      "page": "detail"
+    },
+    "/app/config": {
+      "shell": "terminal-split",
+      "archetype": "config-editor",
+      "page": "config"
+    },
+    "/app/config/diff": {
+      "shell": "terminal-split",
+      "archetype": "config-editor",
+      "page": "diff"
+    }
+  },
+  "navigation": {
+    "hotkeys": [
+      {
+        "key": "F1",
+        "route": "/app",
+        "label": "Home"
+      },
+      {
+        "key": "F2",
+        "route": "/app/config",
+        "label": "Config"
+      },
+      {
+        "key": "F3",
+        "route": "/app/logs",
+        "label": "Logs"
+      },
+      {
+        "key": "F4",
+        "route": "/app/metrics",
+        "label": "Metrics"
+      },
+      {
+        "key": "F10",
+        "action": "logout",
+        "label": "Quit"
+      }
+    ],
+    "command_palette": true
+  },
+  "seo_hints": {
+    "schema_org": [
+      "Organization",
+      "WebApplication",
+      "SoftwareApplication"
+    ],
+    "meta_priorities": [
+      "description",
+      "og:image",
+      "twitter:card"
+    ]
+  },
+  "design_constraints": {
+    "mode": "dark_only",
+    "typography": "monospace_only",
+    "borders": "ascii_box_drawing",
+    "corners": "sharp_only",
+    "shadows": "none",
+    "effects": {
+      "glow": "optional",
+      "scanlines": "optional",
+      "flicker": "disabled"
+    }
+  },
+  "suggested_themes": [
+    "terminal",
+    "carbon-neon",
+    "fintech",
+    "neon-cyber"
+  ]
+}

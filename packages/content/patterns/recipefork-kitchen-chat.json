@@ -1,0 +1,103 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "recipefork-kitchen-chat",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipefork Kitchen Chat",
+  "description": "AI cooking assistant chat for RecipeFork-style apps. Covers persistent conversation history, recipe-aware responses, ingredient constraints, image references, and save/fork actions from assistant output.",
+  "tags": [
+    "recipe",
+    "food",
+    "ai",
+    "chat",
+    "assistant",
+    "claude",
+    "cooking",
+    "ingredients",
+    "conversation",
+    "brownfield",
+    "ai-food"
+  ],
+  "components": [
+    "Card",
+    "Avatar",
+    "Button",
+    "Textarea",
+    "Badge",
+    "ScrollArea",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Threaded AI kitchen chat with history rail, message list, citations/recipe chips, and composer.",
+      "components": [
+        "Card",
+        "Avatar",
+        "Button",
+        "Textarea",
+        "Badge",
+        "ScrollArea",
+        "icon"
+      ],
+      "layout": {
+        "layout": "chat",
+        "atoms": "_grid _gc1 _lg:grid-cols-[280px_1fr] _gap4",
+        "slots": {
+          "history": "Conversation history and saved generations",
+          "thread": "User/assistant cooking messages",
+          "composer": "Prompt input with image or ingredient context controls",
+          "recipe-actions": "Save, fork, assign to cookbook, or regenerate actions"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "chat",
+    "atoms": "_flex _col _gap4",
+    "slots": {
+      "thread": "Cooking conversation",
+      "composer": "Message input"
+    }
+  },
+  "visual_brief": "A focused product chat, not a standalone chatbot demo. The conversation should inherit RecipeFork navigation, cards, and typography; assistant outputs should turn into recipe-aware blocks with ingredients, steps, tips, and save/fork controls.",
+  "composition": {
+    "KitchenChat": "Shell > [HistoryRail? + ChatThread + Composer]",
+    "AssistantRecipeMessage": "MessageCard > [Summary + Ingredients? + Instructions? + Tips? + RecipeActions]",
+    "Composer": "Textarea + OptionalContextChips + SendButton"
+  },
+  "layout_hints": {
+    "brownfield_fit": "Preserve existing chat persistence, Claude/Vision integration, and auth boundaries. Do not replace working app behavior with static demo messages.",
+    "output_structure": "Assistant recipe responses should be structured enough for save/fork flows, not just markdown blobs.",
+    "history": "History is a product surface: show useful titles, dates, generated/saved states, and empty states."
+  },
+  "motion": {
+    "micro": {
+      "stream": "Streaming text may reveal linearly while preserving layout stability.",
+      "send": "Send button may show a compact pending state during request dispatch."
+    },
+    "transitions": {
+      "message": "New messages may enter with a subtle fade/slide; avoid large motion inside long threads."
+    }
+  },
+  "interactions": [
+    "animate-on-mount",
+    "shimmer-skeleton",
+    "keyboard-navigation"
+  ],
+  "responsive": {
+    "mobile": "History collapses behind a drawer or segmented view. Composer remains reachable at the bottom.",
+    "tablet": "Thread first; history can be a narrow rail.",
+    "desktop": "History rail plus main conversation area."
+  },
+  "accessibility": {
+    "role": "log",
+    "aria-label": "AI kitchen conversation",
+    "keyboard": [
+      "Composer submit, history navigation, and recipe action buttons must be keyboard reachable."
+    ],
+    "announcements": [
+      "Announce new assistant messages and generation errors without interrupting typing."
+    ]
+  }
+}

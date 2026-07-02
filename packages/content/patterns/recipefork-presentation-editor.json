@@ -1,0 +1,52 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "recipefork-presentation-editor",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipefork Presentation Editor",
+  "description": "Optional Chef Mode plating presentation editor for Recipefork with three intent states: AI-generated plating steps, manual plating steps, or no plating instructions, plus a readiness checklist that gates AI generation until the recipe has enough context to plate.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Card",
+        "Button",
+        "Badge",
+        "Label",
+        "Input",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Card",
+    "Button",
+    "Badge",
+    "Label",
+    "Input",
+    "icon"
+  ],
+  "default_preset": "ai-assisted",
+  "presets": {
+    "ai-assisted": {
+      "description": "Chef Mode presentation section with segmented AI/manual/none controls, an AI generation call-to-action that is disabled until the recipe passes a plating-readiness checklist, and a numbered plating-step editor that supports images and ordering.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "mode-switch": "Three-way selection for AI-generated plating guidance, manual plating guidance, or no presentation",
+          "ai-callout": "Context block explaining that Recipefork can generate plating instructions from the final recipe",
+          "readiness-checklist": "Checklist showing the minimum context needed before AI plating generation is enabled",
+          "presentation-steps": "Ordered plating steps with description and image upload only",
+          "empty-state": "Guidance when the user has not added or generated presentation steps yet"
+        }
+      }
+    }
+  },
+  "visual_brief": "This should feel like the final polish layer of Chef Mode authoring. It is optional, but when used it should read like the finishing pass of a serious recipe workflow rather than a novelty toggle. The AI path should feel responsibly gated, not mysteriously disabled.",
+  "composition": {
+    "RecipeforkPresentationEditor": "Card(recipefork-presentation) > [ModeSwitch + AICallout? + PresentationSteps + EmptyState?]"
+  }
+}

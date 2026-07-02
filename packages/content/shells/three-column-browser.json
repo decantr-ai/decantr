@@ -1,0 +1,215 @@
+{
+  "id": "three-column-browser",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Three-Column Browser",
+  "description": "Three-column browse layout with navigation tree, item list, and detail preview. Classic mail/file-browser pattern. Used for email clients, file managers, documentation browsers, and any master-detail-detail interface.",
+  "layout": "grid",
+  "atoms": "_grid _h[100vh]",
+  "config": {
+    "regions": [
+      "header",
+      "nav",
+      "list",
+      "detail"
+    ],
+    "grid": {
+      "areas": [
+        [
+          "header",
+          "header",
+          "header"
+        ],
+        [
+          "nav",
+          "list",
+          "detail"
+        ]
+      ]
+    },
+    "header": {
+      "height": "52px",
+      "sticky": true
+    },
+    "nav": {
+      "position": "left",
+      "width": "220px",
+      "collapseTo": "56px",
+      "collapseBelow": "lg"
+    },
+    "list": {
+      "width": "320px",
+      "scroll": true
+    },
+    "detail": {
+      "scroll": true
+    }
+  },
+  "configurable": {
+    "nav": {
+      "positions": [
+        "left"
+      ],
+      "modes": [
+        "full",
+        "rail",
+        "hidden"
+      ]
+    },
+    "header": {
+      "toggleable": true
+    },
+    "sizing": {
+      "navWidth": {
+        "min": 180,
+        "max": 300,
+        "default": 220
+      },
+      "listWidth": {
+        "min": 240,
+        "max": 400,
+        "default": 320
+      },
+      "headerHeight": {
+        "min": 44,
+        "max": 64,
+        "default": 52
+      }
+    }
+  },
+  "internal_layout": {
+    "root": {
+      "display": "grid",
+      "height": "100vh",
+      "grid_template": "columns: nav list 1fr; rows: 52px 1fr",
+      "atoms": "_grid _h[100vh]"
+    },
+    "header": {
+      "height": "52px",
+      "display": "flex",
+      "align": "center",
+      "justify": "space-between",
+      "padding": "0 1rem",
+      "border": "bottom",
+      "background": "var(--d-bg)",
+      "grid_span": "column 1/4",
+      "left_content": "App logo/title + search bar",
+      "right_content": "Filter controls + settings + user avatar"
+    },
+    "nav": {
+      "width": "220px",
+      "min_width": "180px",
+      "collapsed_width": "56px",
+      "collapse_breakpoint": "lg",
+      "direction": "column",
+      "border": "right",
+      "background": "var(--d-surface)",
+      "overflow_y": "auto",
+      "padding": "0.5rem",
+      "atoms": "_flex _col _borderR _bgmuted _overflow[auto] _p2",
+      "header": {
+        "display": "flex",
+        "align": "center",
+        "justify": "space-between",
+        "padding": "0.75rem",
+        "border": "bottom",
+        "content": "Folders heading + collapse toggle"
+      },
+      "tree": {
+        "flex": "1",
+        "overflow_y": "auto",
+        "padding": "0.5rem",
+        "item_gap": "2px",
+        "item_padding": "0.375rem 0.75rem",
+        "item_content": "Folder/category icon + label. Supports nested tree with expand/collapse chevrons. Collapsed nav: icon only.",
+        "item_treatment": "d-interactive[ghost]"
+      },
+      "footer": {
+        "border": "top",
+        "padding": "0.5rem",
+        "content": "Add folder/category button"
+      },
+      "note": "Left navigation tree. Holds folder/category structure. Selecting an item populates the list column. Collapses to icon rail on tablet."
+    },
+    "list": {
+      "width": "320px",
+      "min_width": "240px",
+      "direction": "column",
+      "border": "right",
+      "overflow_y": "auto",
+      "atoms": "_flex _col _borderR _overflow[auto]",
+      "header": {
+        "display": "flex",
+        "align": "center",
+        "justify": "space-between",
+        "padding": "0.75rem 1rem",
+        "border": "bottom",
+        "content": "Selected folder name + item count + sort control"
+      },
+      "items": {
+        "flex": "1",
+        "overflow_y": "auto",
+        "item_gap": "0",
+        "item_padding": "0.75rem 1rem",
+        "item_border": "bottom",
+        "item_content": "Item title (bold) + subtitle/preview (truncated, muted) + metadata (date, badge). Selected item has active background.",
+        "item_treatment": "d-interactive[ghost] with active state highlight"
+      },
+      "note": "Middle item list. Shows items for the selected nav folder. Selecting an item populates the detail column. Items highlight on selection."
+    },
+    "detail": {
+      "flex": "1",
+      "direction": "column",
+      "overflow_y": "auto",
+      "padding": "1.5rem",
+      "background": "var(--d-bg)",
+      "atoms": "_flex _col _flex1 _overflow[auto] _p6",
+      "header": {
+        "display": "flex",
+        "align": "center",
+        "justify": "space-between",
+        "padding": "0 0 1.5rem 0",
+        "border": "bottom",
+        "content": "Item title + action buttons (reply, archive, delete, etc.)"
+      },
+      "body": {
+        "flex": "1",
+        "overflow_y": "auto",
+        "padding": "1.5rem 0",
+        "note": "Full content of the selected item."
+      },
+      "empty_state": {
+        "display": "flex",
+        "align": "center",
+        "justify": "center",
+        "content": "Placeholder illustration + 'Select an item to view' message",
+        "note": "Shown when no item is selected in the list."
+      },
+      "note": "Right detail preview. Shows full content of the selected list item. Scrolls independently."
+    },
+    "responsive": {
+      "desktop": "Three columns visible simultaneously, all scroll independently",
+      "tablet": "Nav collapses to icon rail (56px), list and detail remain visible",
+      "mobile": "Single column with back navigation. Nav as overlay drawer, list as primary view, detail as pushed view with back button"
+    }
+  },
+  "guidance": {
+    "nav_purpose": "Holds tree/folder structure for top-level navigation categories",
+    "list_purpose": "Shows items belonging to the selected nav folder, acts as a scannable index",
+    "detail_purpose": "Shows full content of the selected list item with actions",
+    "selection_flow": "Nav folder -> List populates -> List item -> Detail populates",
+    "independent_scroll": "All three columns scroll independently to maintain context across panels",
+    "list_highlight": "Selected list item should have a visually distinct active/selected state",
+    "empty_detail": "When no list item is selected, detail shows a centered empty-state placeholder",
+    "keyboard_nav": "Arrow keys navigate list items, Enter opens in detail, Escape goes back to list on mobile",
+    "mobile_pattern": "On mobile, columns become stacked views with back-navigation between them",
+    "shell_spacing": "The shell owns panel sizing and inter-column rhythm. Route content should fill the declared columns rather than wrapping itself in additional max-width containers.",
+    "section_label_treatment": "d-label[data-anchor]",
+    "section_density": "compact"
+  },
+  "code": {
+    "imports": "Target-specific imports vary. Translate the internal_layout contract into your framework's left tree nav, middle item list, right detail panel, and shared browser header.",
+    "example": "ThreeColumnBrowserShell(root) -> Header(search, sort, user actions) + TreeNav(folder hierarchy) + ItemList(selected collection) + DetailPane(selected document or API entry)"
+  },
+  "$schema": "https://decantr.ai/schemas/shell.v1.json"
+}

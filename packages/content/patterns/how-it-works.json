@@ -1,0 +1,118 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "how-it-works",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "How It Works",
+  "description": "Step-by-step process section with numbered steps, descriptions, and optional connecting lines",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "icon"
+  ],
+  "default_preset": "horizontal",
+  "presets": {
+    "horizontal": {
+      "description": "Horizontal row of 3-4 steps connected by lines/arrows",
+      "components": [
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _md:gc3 _gap8 _py12 _px6 _textCenter",
+        "slots": {
+          "heading": "Section heading with _heading2 _textCenter and optional subtext",
+          "step": "Individual step block: number circle + title + description",
+          "step-number": "Circled number (48px) with primary background and white text, or bordered circle with primary text",
+          "step-title": "Step heading with _heading4 _fontmedium",
+          "step-description": "Step explanation with _bodysm _fgmuted",
+          "connector": "Horizontal line or arrow connecting step circles, rendered via CSS pseudo-elements or a border"
+        }
+      }
+    },
+    "vertical": {
+      "description": "Vertical timeline-style steps with a connecting vertical line",
+      "components": [
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap8 _py12 _px6 _mw[640px] _mx[auto]",
+        "slots": {
+          "step": "Row with number on left, text on right: _flex _row _gap4",
+          "step-number": "Number circle on the vertical line",
+          "step-content": "Title + description stacked: _flex _col _gap1",
+          "connector": "Vertical line connecting number circles via left-border or pseudo-element"
+        }
+      }
+    },
+    "icon-steps": {
+      "description": "Steps with feature icons instead of numbers",
+      "components": [
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _md:gc3 _gap8 _py12 _px6 _textCenter",
+        "slots": {
+          "step": "Block with icon + title + description",
+          "step-icon": "Feature icon in rounded circle (56px) with muted background",
+          "step-title": "Step heading",
+          "step-description": "Step explanation",
+          "connector": "Arrow or dashed line between icons"
+        }
+      }
+    }
+  },
+  "visual_brief": "Step-by-step process section with numbered steps arranged horizontally. Each step features a prominent circular number badge (48px diameter) with primary-color background and white bold text, a step title in heading4 weight below the circle, and a 2-3 line description in muted small text. Steps are connected by thin horizontal lines or subtle arrows running between the number circles at their vertical center, creating a visual flow from left to right. Typically 3-4 steps in a row. A centered section heading and subtext sit above the steps. The vertical preset arranges steps in a timeline format with a continuous vertical line on the left, number circles overlapping the line, and step content (title + description) to the right. The icon-steps preset replaces numbers with feature icons in larger rounded background circles.",
+  "responsive": {
+    "mobile": "Steps stack vertically regardless of preset. Number circles align left with content to the right (timeline style). Connecting lines become vertical. Horizontal connectors hidden. Text left-aligned. Gap reduces to gap6.",
+    "tablet": "Horizontal preset shows 3 columns. Connectors visible. Vertical preset centered at comfortable width. Standard spacing.",
+    "desktop": "Full horizontal row with visible connecting lines between step circles. Generous gap8 spacing. Section centered with py12 padding."
+  },
+  "motion": {
+    "micro": "Step connector lines draw in from left to right with 400ms ease as each step enters viewport.",
+    "transitions": "Steps stagger in on section enter with fade-up (translateY(12px) to 0) at 300ms ease, 120ms stagger delay per step."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "stagger-children",
+    "scroll-reveal"
+  ],
+  "accessibility": {
+    "role": "list",
+    "aria-label": "How it works",
+    "keyboard": [
+      "Tab navigates between steps",
+      "Shift+Tab navigates backwards between steps"
+    ],
+    "announcements": [
+      "Step {number} of {total}: {title}",
+      "Process overview with {total} steps"
+    ]
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gc1 _md:gc3 _gap8 _py12 _px6 _textCenter",
+    "slots": {
+      "step": "Numbered step block",
+      "step-number": "Circled number badge",
+      "step-title": "Step heading",
+      "step-description": "Step explanation",
+      "connector": "Visual connector between steps"
+    }
+  },
+  "layout_hints": {
+    "connector_line": "Draw a horizontal connecting line (2px, var(--d-border)) between the step circles. On mobile (stacked), use a vertical line on the left side. The line should be dashed or use a gradient fade at the ends.",
+    "step_numbers": "Step number circles should use background: var(--d-primary) with white text (or accent bg with dark text for neon themes). Size: 48px diameter, font-weight: bold. Active/current step should pulse subtly.",
+    "section_background": "Use var(--d-bg) background (same as hero) to create a visual pairing with the hero section. This groups hero + how-it-works as the \"above the fold\" narrative."
+  }
+}

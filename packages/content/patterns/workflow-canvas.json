@@ -1,0 +1,147 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "workflow-canvas",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Workflow Canvas",
+  "description": "Visual node-graph editor for business logic, ETL pipelines, or automation flows. Provides an infinite pannable canvas with draggable nodes, bezier-curve edges, a minimap, toolbar, node palette sidebar, and property panel for configuring selected elements.",
+  "category": "builder",
+  "tags": [
+    "2026",
+    "builder",
+    "workflow",
+    "node-graph",
+    "automation",
+    "visual-editor",
+    "ETL",
+    "canvas",
+    "drag-and-drop"
+  ],
+  "components": [
+    "Canvas",
+    "Node",
+    "NodePort",
+    "Edge",
+    "Minimap",
+    "Toolbar",
+    "PropertyPanel",
+    "NodePalette"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full node-graph editor with draggable nodes, bezier edges, toolbar, node palette sidebar, minimap, and property panel",
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _row _h-full _w-full _overflow-hidden"
+      }
+    },
+    "compact": {
+      "description": "Compact mode with smaller mini-nodes (icon + label only, no body), hidden palette, and minimal toolbar — suited for embedded or preview contexts",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_relative _h-full _w-full _overflow-hidden"
+      }
+    },
+    "readonly": {
+      "description": "Presentation mode with all editing disabled — nodes and edges render normally but cannot be moved, connected, or deleted; ideal for sharing or documentation",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_relative _h-full _w-full _overflow-hidden _pointer-events-auto"
+      }
+    }
+  },
+  "visual_brief": "Full-viewport canvas area with a subtle dot-grid background (dots are 1px circles at 20px intervals, color muted at 15% opacity). The canvas supports infinite pan (click-drag on background) and zoom (scroll wheel, range 25%-400%). Nodes are rounded-rectangle cards (min 160px wide, 80px tall) with a 4px colored top stripe indicating node type: blue for triggers, green for actions, yellow for conditions, gray for transforms. Each node has a white/surface background, 8px border-radius, and subtle shadow (0 2px 8px rgba(0,0,0,0.1)). Node interior shows an icon and type label in the colored header area, and a body area with the node's configured name or a brief description. Input ports sit on the left edge and output ports on the right edge of each node — they are 10px diameter circles with a 2px border in the node's type color, filled white by default. On hover, ports glow with the type color and scale to 12px. Dragging from a port draws a temporary bezier curve following the cursor. Edges are smooth cubic bezier curves connecting output ports to input ports. Edge stroke is 2px in muted gray, with animated dashes (4px dash, 4px gap) flowing in the data direction at a steady speed. Selected edges turn accent color. Selected nodes gain a 2px accent border glow and slight elevation increase. Multi-select by shift-click or rubber-band drag. The Toolbar sits at the top of the canvas as a horizontal bar with icon buttons: zoom in, zoom out, fit-to-view, undo, redo, delete selected, and a toggle for snap-to-grid. The NodePalette is a 240px wide left sidebar listing available node types grouped by category (Triggers, Actions, Conditions, Transforms), each showing icon + label. Nodes are added by dragging from the palette onto the canvas. The PropertyPanel is a 280px right sidebar that appears when a node is selected, showing editable fields for the node's configuration (name, parameters, description). The Minimap sits in the bottom-right corner as a 160x100px translucent panel showing a zoomed-out view of the entire graph with a viewport indicator rectangle. Clicking the minimap pans the canvas to that location.",
+  "default_layout": {
+    "layout": "row",
+    "atoms": "_flex _row _h-full _w-full _overflow-hidden",
+    "slots": {
+      "node-palette": "Left sidebar (240px wide) listing draggable node types grouped by category (Triggers, Actions, Conditions, Transforms). Each entry is a small card with the type icon, label, and a brief description. Dragging an entry onto the canvas creates a new node of that type at the drop position. The palette has a search input at the top for filtering node types. Collapsible category sections with chevron toggles.",
+      "toolbar": "Horizontal bar spanning the top of the canvas area. Contains icon buttons: zoom in (+), zoom out (-), fit-to-view (frame icon), undo (arrow-left), redo (arrow-right), delete selected (trash), snap-to-grid toggle, and a zoom percentage display. Buttons are 32px square with ghost styling. Separator lines between button groups.",
+      "canvas-area": "The main infinite-scroll pannable area with dot-grid background. Contains all Node and Edge elements. Supports pan (drag background), zoom (scroll wheel), rubber-band selection (shift+drag), and node placement (drop from palette). Coordinate system is world-space; the viewport transforms via CSS translate/scale.",
+      "node": "Repeating slot — one per workflow step. A rounded card (min 160x80px) with colored top stripe (4px, color by type). Header row: type icon + type label. Body: node name or configured description. Left edge: input NodePort circles. Right edge: output NodePort circles. Selected state: accent border glow + elevated shadow. Draggable to reposition.",
+      "edge": "Repeating slot — one per connection. A cubic bezier SVG path connecting an output port to an input port. Stroke: 2px muted gray with animated dashes flowing in data direction. Selected: accent color. Hover: stroke widens to 3px. Click to select. Delete key removes selected edge.",
+      "minimap": "Bottom-right corner panel (160x100px, rounded-lg, semi-transparent background). Shows a scaled-down view of the entire graph with all nodes as tiny colored rectangles and edges as thin lines. A translucent rectangle indicates the current viewport bounds. Click or drag within the minimap to pan the main canvas.",
+      "property-panel": "Right sidebar (280px wide) that slides in when a node is selected. Shows the node's type, icon, and editable configuration fields (name text input, parameter key-value pairs, description textarea, port configuration). Save/apply changes in real time. Close button or deselect to hide."
+    }
+  },
+  "accessibility": {
+    "role": "application",
+    "aria-label": "Workflow canvas editor",
+    "announcements": [
+      "Node {name} added at position {x}, {y}",
+      "Node {name} selected — {input_count} inputs, {output_count} outputs",
+      "Edge connected: {source_node} to {target_node}",
+      "Edge removed between {source_node} and {target_node}",
+      "Canvas zoomed to {zoom_percent}%",
+      "Undo: {action_description}",
+      "Redo: {action_description}",
+      "{count} nodes selected"
+    ],
+    "keyboard": [
+      "Tab: cycle focus between toolbar, palette, canvas nodes, and property panel",
+      "Arrow keys: move selected node by grid increment (or pan canvas if no selection)",
+      "Delete/Backspace: remove selected nodes or edges",
+      "Ctrl+Z / Cmd+Z: undo last action",
+      "Ctrl+Shift+Z / Cmd+Shift+Z: redo",
+      "Ctrl+A / Cmd+A: select all nodes",
+      "Escape: deselect all and close property panel",
+      "Space+drag: pan canvas regardless of pointer location",
+      "+/-: zoom in/out",
+      "Ctrl+0: fit to view"
+    ]
+  },
+  "responsive": {
+    "mobile": "Canvas is touch-pannable with two-finger scroll and pinch-to-zoom. Node palette hidden behind a floating '+' button that opens a bottom sheet. Toolbar collapses to a floating action menu. Property panel opens as a bottom sheet. Minimap hidden. Nodes use minimum 44px touch targets for ports.",
+    "tablet": "Canvas supports touch pan and pinch zoom. Node palette as a collapsible left drawer (swipe from left edge). Toolbar remains at top. Property panel as a right drawer. Minimap visible in bottom-right. Port touch targets 36px minimum.",
+    "desktop": "Full layout with persistent palette sidebar (collapsible), toolbar, minimap, and property panel. Mouse drag to pan, scroll to zoom. Hover states on ports and edges. Keyboard shortcuts fully active. Rubber-band multi-select with click-drag on empty canvas."
+  },
+  "layout_hints": {
+    "canvas_priority": "The graph itself is the primary surface. Palette, toolbar, minimap, and property panel should support composition and inspection without competing with node readability.",
+    "node_hierarchy": "Node identity and connection points should be readable before configuration details. The property panel is where deeper editing belongs.",
+    "panel_rhythm": "Palette and property panel should feel like contextual side tools around one shared canvas, not like two separate applications framing it."
+  },
+  "layout_hints": {
+    "canvas_priority": "The graph itself is the primary surface. Palette, toolbar, minimap, and property panel should support composition and inspection without competing with node readability.",
+    "node_hierarchy": "Node identity and connection points should be readable before configuration details. The property panel is where deeper editing belongs.",
+    "panel_rhythm": "Palette and property panel should feel like contextual side tools around one shared canvas, not like two separate applications framing it."
+  },
+  "motion": {
+    "micro": {
+      "port-hover": "scale(1→1.2) + glow(type-color) 150ms ease-out on port hover",
+      "node-hover": "shadow elevation increase 150ms ease-out",
+      "toolbar-button-press": "scale(0.92) 80ms ease-in"
+    },
+    "transitions": {
+      "node-drop": "scale(0.8→1) + opacity 0→1 250ms cubic-bezier(0.34, 1.56, 0.64, 1) when dropped from palette",
+      "node-delete": "scale(1→0.8) + opacity 1→0 200ms ease-in",
+      "edge-draw": "bezier path animates in real-time following cursor during connection drag",
+      "palette-toggle": "width 240px↔0 + opacity 300ms ease-in-out",
+      "property-panel-enter": "translateX(280px)→translateX(0) 250ms ease-out",
+      "property-panel-exit": "translateX(0)→translateX(280px) 200ms ease-in",
+      "fit-to-view": "viewport transform (translate + scale) 500ms ease-in-out"
+    },
+    "ambient": {
+      "edge-flow": "stroke-dashoffset animation creating flowing dashes in data direction, 1s linear infinite per edge",
+      "dot-grid-breathe": "subtle opacity oscillation 0.1→0.15 on dot grid, 4s ease-in-out infinite"
+    }
+  },
+  "interactions": [
+    "drag-nodes",
+    "pan-background",
+    "zoom-scroll",
+    "click-select",
+    "hover-tooltip",
+    "animate-on-mount"
+  ],
+  "composition": {
+    "Canvas": "Section(d-section, infinite-pan, dot-grid-bg) > [Toolbar(d-surface, sticky-top) + NodePalette?(d-surface, left-sidebar)] + Node*(d-interactive) > [NodeHeader(color-stripe: type) + NodeBody? + NodePort*(left|right)] + Edge*(svg-bezier, animated-dash) + Minimap(d-surface, bottom-right)",
+    "Node": "Card(d-interactive, draggable, rounded-lg, shadow, border-top: type-color) > [Header(icon + label) + Body?(name + description) + InputPorts(left-edge) + OutputPorts(right-edge)]",
+    "NodePort": "Circle(d-interactive, 10px, border: type-color, glow-on-hover, connectable)",
+    "Edge": "BezierPath(svg, stroke: 2px, dash-animated, direction: source→target)",
+    "Toolbar": "Row(d-surface, sticky, gap-2) > IconButton(ghost, 32px)[]",
+    "NodePalette": "Sidebar(d-surface, w-240, collapsible) > [SearchInput + CategoryGroup* > DraggableNodeType*]",
+    "PropertyPanel": "Sidebar(d-surface, w-280, slide-in-right) > [NodeTypeHeader + ConfigFields + PortConfig]",
+    "Minimap": "Panel(d-surface, fixed-bottom-right, 160x100, semi-transparent) > [ScaledGraph + ViewportRect]"
+  }
+}

@@ -1,0 +1,209 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "auth-form",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Auth Form",
+  "description": "Unified authentication form with multiple modes: login, register, forgot-password, reset-password, verify-email, mfa-setup, mfa-verify, phone-verify.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "icon"
+  ],
+  "default_preset": "login",
+  "presets": {
+    "login": {
+      "description": "Email/password login with OAuth options",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6 _p8 _mw[400px] _wfull",
+        "slots": {
+          "header": "Logo and welcome title",
+          "form": "Email and password inputs",
+          "oauth": "Social login buttons (Google, GitHub, etc.)",
+          "divider": "'or continue with' separator",
+          "footer": "Register and forgot password links",
+          "error": "Inline error message area"
+        }
+      }
+    },
+    "register": {
+      "description": "Registration form with password strength indicator",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6 _p8 _mw[400px] _wfull",
+        "slots": {
+          "header": "Logo and create account title",
+          "form": "Name, email, password inputs with strength indicator",
+          "oauth": "Social signup buttons",
+          "divider": "Separator",
+          "footer": "Login link",
+          "error": "Inline error message"
+        }
+      }
+    },
+    "forgot-password": {
+      "description": "Password reset request form with email input and success confirmation message",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6 _p8 _mw[400px] _wfull",
+        "slots": {
+          "header": "Title and instructions",
+          "form": "Email input",
+          "footer": "Back to login link",
+          "success": "Success message after submission"
+        }
+      }
+    },
+    "reset-password": {
+      "description": "Set new password form with confirmation",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6 _p8 _mw[400px] _wfull",
+        "slots": {
+          "header": "Title",
+          "form": "New password and confirm password inputs",
+          "error": "Validation errors"
+        }
+      }
+    },
+    "verify-email": {
+      "description": "Email verification pending screen",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _aic _gap6 _p8 _textc",
+        "slots": {
+          "icon": "Mail icon",
+          "message": "Verification instructions",
+          "resend": "Resend verification button"
+        }
+      }
+    },
+    "mfa-setup": {
+      "description": "Multi-factor authentication setup with QR code",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6 _p8 _mw[400px] _wfull",
+        "slots": {
+          "header": "Setup instructions",
+          "qr": "QR code image for authenticator app",
+          "secret": "Manual entry secret key",
+          "verify": "Verification code input"
+        }
+      }
+    },
+    "mfa-verify": {
+      "description": "Multi-factor authentication code entry during login with six-digit input and backup code fallback",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6 _p8 _mw[400px] _wfull",
+        "slots": {
+          "header": "Enter code prompt",
+          "form": "6-digit code input",
+          "backup": "Use backup code link"
+        }
+      }
+    },
+    "phone-verify": {
+      "description": "Phone number verification with SMS code",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6 _p8 _mw[400px] _wfull",
+        "slots": {
+          "header": "Verification prompt",
+          "form": "SMS code input",
+          "resend": "Resend code button"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap6 _p8 _mw[400px] _wfull",
+    "slots": {
+      "header": "Logo, title, subtitle",
+      "form": "Form inputs",
+      "oauth": "OAuth provider buttons",
+      "divider": "'or continue with' separator",
+      "footer": "Navigation links",
+      "error": "Inline error messages"
+    }
+  },
+  "visual_brief": "Centered single-column form card constrained to 400px max-width. Header area shows logo and a welcome title. Form fields stack vertically with labeled inputs for email and password. A horizontal divider with 'or continue with' text separates the form from OAuth provider buttons (Google, GitHub icons in bordered pill buttons). Footer contains muted text links for Register and Forgot Password. Error messages appear inline below inputs in destructive color. MFA presets show a 6-digit code input with large separated character boxes. Verify-email preset centers a large mail icon with instructional text.",
+  "layout_hints": {
+    "shell_ownership": "The centered shell owns viewport centering and the outer card frame. Route components should render auth content inside that card rhythm, not add another full-height centering wrapper.",
+    "field_stack": "Fields, CTA, OAuth buttons, and footer links should align to one stable column width. OAuth rows should feel like part of the form, not a detached widget.",
+    "verification_states": "Pending-email, MFA, and reset-success states should feel like transitions of the same auth surface rather than unrelated page layouts."
+  },
+  "responsive": {
+    "mobile": "Form takes full width with horizontal padding. OAuth buttons stack vertically. MFA code inputs remain large for touch targets. Footer links stack.",
+    "tablet": "Centered 400px form. Standard spacing. OAuth buttons render in a row.",
+    "desktop": "Centered form with generous padding. All elements comfortably spaced in their standard layout."
+  },
+  "motion": {
+    "micro": "Buttons and OAuth rows use calm hover and focus transitions. Code-entry boxes may softly highlight the active digit slot.",
+    "transitions": "State changes between login, register, reset, and MFA should cross-fade or slide minimally over 180-250ms.",
+    "ambient": "Do not add decorative ambient motion inside auth forms beyond a gentle entrance treatment."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "keyboard-navigation",
+    "inline-edit"
+  ],
+  "accessibility": {
+    "role": "form",
+    "aria-label": "Authentication form",
+    "keyboard": [
+      "Tab moves through fields, provider buttons, and footer links in a logical order.",
+      "Enter submits the current form when focus is inside the primary auth field group.",
+      "OTP and MFA inputs should support sequential typing and backspace navigation between code slots."
+    ],
+    "announcements": [
+      "Announce inline validation errors with field-specific guidance.",
+      "Announce verification-success and reset-email-sent states explicitly."
+    ],
+    "focus_management": "Move focus to the first invalid field after validation failure. When auth mode changes, move focus to the heading or first interactive field in the new mode."
+  }
+}

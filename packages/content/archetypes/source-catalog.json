@@ -1,0 +1,116 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "source-catalog",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Source Catalog",
+  "description": "Data source management with browsable connector catalog, setup wizards, and active connection monitoring.",
+  "tags": [
+    "data",
+    "sources",
+    "connectors",
+    "catalog",
+    "integrations"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "data source catalog",
+        "connector catalog",
+        "source management",
+        "data connectors"
+      ],
+      "secondary": [
+        "database connections",
+        "integration catalog",
+        "data sources",
+        "connector setup"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 0.8,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "sources",
+      "patterns": [
+        {
+          "pattern": "data-source-connector",
+          "preset": "catalog",
+          "as": "source-catalog"
+        }
+      ],
+      "default_layout": [
+        "data-source-connector"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "source-detail",
+      "patterns": [
+        {
+          "pattern": "data-source-connector",
+          "preset": "setup",
+          "as": "source-config"
+        },
+        {
+          "pattern": "json-viewer",
+          "preset": "standard",
+          "as": "schema-viewer"
+        }
+      ],
+      "default_layout": [
+        "data-source-connector",
+        "json-viewer"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "connections",
+      "patterns": [
+        {
+          "pattern": "data-source-connector",
+          "preset": "connected",
+          "as": "active-connections"
+        }
+      ],
+      "default_layout": [
+        "data-source-connector"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "sources": "Source catalog at /sources. Grid of available connector cards organized by category (databases, APIs, file systems, SaaS apps). Each card shows connector icon, name, description, and popularity badge. Search bar and category filter tabs at top. Cards link to setup flow.",
+    "source-detail": "Source configuration at /sources/:id. Setup wizard for the selected connector with credential fields, connection string builder, and test-connection button. Below the config form, a JSON schema viewer shows the discovered schema with tables/collections, column names, and data types after successful connection.",
+    "connections": "Active connections at /connections. Connected-state view shows all configured data sources with health status (connected, degraded, disconnected), last sync time, row count, and latency. Action buttons for editing, re-syncing, and disconnecting. Alert badges on unhealthy connections."
+  },
+  "features": [
+    "sources",
+    "connectors",
+    "schemas"
+  ],
+  "shells": {
+    "sidebar-main": "Persistent left sidebar with navigation, main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "data-source-connector": "^1.0.0",
+      "json-viewer": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon",
+      "technical"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  }
+}

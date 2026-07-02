@@ -1,0 +1,137 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "content-uploader",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Content Uploader",
+  "description": "Drag-drop media upload component with file preview, progress tracking, and multi-file support. Handles images, videos, audio, and documents.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Card",
+        "Progress",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Card",
+    "Progress",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Multi-file upload with preview grid and progress tracking",
+      "components": [
+        "Button",
+        "Card",
+        "Progress",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "dropzone": "Drag-drop target area with visual feedback",
+          "file-list": "Uploaded files with progress bars",
+          "preview": "Media preview thumbnails grid",
+          "actions": "Upload, cancel, clear buttons"
+        }
+      }
+    },
+    "single": {
+      "description": "Single file upload with large preview area",
+      "components": [
+        "Button",
+        "Card",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "dropzone": "Large drag-drop target",
+          "preview": "Full-size media preview",
+          "actions": "Replace, remove buttons"
+        }
+      }
+    },
+    "audio": {
+      "description": "Audio upload with waveform preview",
+      "components": [
+        "Button",
+        "Card",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "dropzone": "Audio file drop area",
+          "waveform": "Audio waveform visualization",
+          "player": "Audio player controls",
+          "actions": "Upload actions"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap4",
+    "slots": {
+      "dropzone": "Drag-drop target area",
+      "file-list": "Uploaded files list",
+      "preview": "Media preview",
+      "actions": "Action buttons"
+    }
+  },
+  "io": {
+    "produces": [
+      "uploaded-files",
+      "upload-progress"
+    ],
+    "consumes": []
+  },
+  "visual_brief": "Large dashed-border drop zone with a cloud upload icon centered above 'Drag and drop files here or click to browse' text. Active drag-over state highlights the zone with a primary color border. Below the drop zone, an uploaded files list shows each file as a row with thumbnail preview, filename, file size, a progress bar during upload, and a remove button. The progress bar fills with primary color. The single preset shows one file at a time with a larger preview. Audio preset includes waveform visualization for audio files.",
+  "responsive": {
+    "mobile": "Drop zone reduces in height. File list shows smaller thumbnails. Upload uses native file picker on tap. Progress bars are full-width.",
+    "tablet": "Standard drop zone size. File list shows medium thumbnails with inline progress.",
+    "desktop": "Large drop zone with generous padding. File list shows large thumbnails and detailed file info."
+  },
+  "layout_hints": {
+    "dropzone_priority": "The primary affordance is the upload target itself. Supporting file previews and action rows should reinforce confidence in what has been selected, not compete with the dropzone.",
+    "progress_clarity": "Upload state, file identity, and error or retry status should stay tightly grouped for each file so the user can resolve issues without scanning the whole surface.",
+    "single_vs_multi": "Single-file flows should emphasize preview and replacement, while multi-file flows should emphasize queue state and per-file progress."
+  },
+  "motion": {
+    "micro": "Drop targets may brighten on drag-over, and upload rows may sharpen or pulse subtly while active.",
+    "transitions": "File entry, progress updates, and completion states should feel confidence-building and calm, especially during longer uploads."
+  },
+  "interactions": [
+    "drag-reorder",
+    "animate-on-mount",
+    "click-select"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Content uploader",
+    "keyboard": [
+      "Browse, remove, retry, and upload actions should remain reachable in a straightforward order after the dropzone."
+    ],
+    "announcements": [
+      "Selected files, upload progress, completion, and error states should be exposed semantically so the workflow remains understandable without drag feedback alone."
+    ]
+  },
+  "composition": {
+    "ContentUploader": "Container(d-section, flex-col, gap-4) > [Dropzone + FileList + Actions]",
+    "Dropzone": "Zone(d-surface, dashed-border, drop-target) > [CloudIcon + InstructionText + BrowseButton?(d-interactive)]",
+    "FileList": "List(flex-col, gap-2) > FileRow[]",
+    "FileRow": "Row(d-data-row) > [Thumbnail + FileName + FileSize(text-muted) + Progress(d-data) + RemoveButton(d-interactive)]"
+  }
+}

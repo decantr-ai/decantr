@@ -1,0 +1,109 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "conversation-list",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Conversation List",
+  "description": "Sidebar conversation history with search, new chat button, and conversation items showing unread indicators and actions.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Avatar",
+        "Badge",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Avatar",
+    "Badge",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full conversation list with search and details",
+      "components": [
+        "Button",
+        "Avatar",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _hfull",
+        "slots": {
+          "search": "Filter/search conversations input",
+          "new-button": "Create new conversation button",
+          "items": "List of conversation rows"
+        }
+      }
+    },
+    "compact": {
+      "description": "Icon-only list for collapsed sidebar rail",
+      "components": [
+        "Button",
+        "Avatar",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _aic _gap2 _py2",
+        "slots": {
+          "new-button": "Icon-only new chat button",
+          "items": "Avatar/icon-only conversation items"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _hfull",
+    "slots": {
+      "search": "Filter conversations input",
+      "new-button": "Create new conversation",
+      "items": "Conversation rows with icon, title, date, unread-indicator, actions"
+    }
+  },
+  "visual_brief": "Vertical sidebar panel with a search input at the top (magnifying glass icon, 'Search conversations' placeholder), a 'New Chat' button below it, and a scrollable list of conversation items. Each item shows a chat icon or model avatar, the conversation title (truncating with ellipsis), a last-message date in small muted text, and an unread count badge (colored circle with number) when applicable. The active conversation has a highlighted surface background. Hovering reveals a three-dot menu for rename and delete actions. Compact preset reduces row height and hides dates.",
+  "responsive": {
+    "mobile": "Conversation list takes full screen as a page. Selecting an item navigates to the chat view. New Chat button is a floating action button.",
+    "tablet": "Sidebar panel at 280px width. Standard row heights.",
+    "desktop": "Sidebar panel at 300px width with comfortable spacing. Full dates visible. Hover actions on each row."
+  },
+  "layout_hints": {
+    "list_priority": "The active conversation and unread state should be immediately legible. Search and new-chat actions support the list but should not compete with it visually.",
+    "row_density": "Keep row metadata concise so titles remain dominant and the sidebar does not become noisy. Compact mode should still preserve active-state clarity.",
+    "mobile_translation": "On small screens, treat the list as its own route-level selection surface rather than a cramped embedded sidebar."
+  },
+  "motion": {
+    "micro": "Active rows may sharpen or lift slightly, and unread indicators may pulse gently only when newly changed.",
+    "transitions": "Search filtering and conversation switching should feel immediate and stable, with no heavy motion that disrupts scan flow."
+  },
+  "interactions": [
+    "click-select",
+    "hover-reveal",
+    "real-time-updates",
+    "animate-on-mount"
+  ],
+  "accessibility": {
+    "role": "navigation",
+    "aria-label": "Conversation list",
+    "keyboard": [
+      "Conversation rows and their overflow actions should follow a predictable top-to-bottom order."
+    ],
+    "announcements": [
+      "Unread state, active conversation, title, and recency should be exposed semantically so the list remains understandable without hover or color cues."
+    ]
+  },
+  "composition": {
+    "ConversationList": "Panel(d-surface, flex-col, full-height) > [SearchInput(d-control, icon: search) + NewChatButton(d-interactive, variant: primary) + ItemList]",
+    "ItemList": "List(flex-col, scrollable) > ConversationItem[]",
+    "ConversationItem": "Row(d-data-row, hoverable, active?: highlighted) > [ChatIcon + Title(ellipsis) + Date(text-muted, text-xs) + UnreadBadge?(d-annotation, accent)]"
+  }
+}

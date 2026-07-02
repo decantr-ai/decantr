@@ -1,0 +1,62 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "daily-operations",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Daily Operations",
+  "description": "Daily operations dashboard and reporting for restaurant managers. Covers, sales, labor, and P&L at a glance.",
+  "tags": ["restaurant", "operations", "dashboard", "reports", "pnl", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["daily operations", "manager dashboard", "operating reports", "daily sales"],
+      "secondary": ["covers", "labor cost", "pnl", "daily summary"],
+      "negative": ["marketing", "public"]
+    },
+    "implies": ["operations"],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "dashboard",
+      "patterns": [
+        { "pattern": "kpi-grid", "preset": "dashboard", "as": "daily-kpis" },
+        { "pattern": "chart-grid", "preset": "standard", "as": "daily-charts" },
+        { "pattern": "activity-feed", "preset": "standard", "as": "ops-activity" }
+      ],
+      "default_layout": ["daily-kpis", "daily-charts", "ops-activity"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "reports",
+      "patterns": [
+        { "pattern": "data-table", "preset": "standard", "as": "report-list" },
+        { "pattern": "chart-grid", "preset": "standard", "as": "report-charts" }
+      ],
+      "default_layout": ["report-charts", "report-list"],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "dashboard": "Dashboard KPI grid showing today's covers, sales, average check, labor cost percentage, food cost percentage, and margin. Chart grid visualizes hourly sales, labor vs sales, and week-over-week trends. Activity feed surfaces comps, voids, and manager overrides.",
+    "reports": "Chart grid for period P&L, sales mix, daypart performance, and labor trends. Data table below lists generated reports (daily sales, labor, food cost, tax) with date range, status, and download action."
+  },
+  "features": ["operations", "reports", "pnl"],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area for operations reporting"
+  },
+  "suggested_theme": {
+    "ids": ["clean", "auradecantism"],
+    "modes": ["light", "auto"]
+  },
+  "dependencies": {
+    "patterns": {
+      "kpi-grid": ">=1.0.0",
+      "chart-grid": ">=1.0.0",
+      "activity-feed": ">=1.0.0",
+      "data-table": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

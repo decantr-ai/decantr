@@ -1,0 +1,73 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "menu-management",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Menu Management",
+  "description": "Menu editor and engineering workspace. Manages menus, sections, items, pricing, modifiers, and profitability analysis.",
+  "tags": ["restaurant", "menu", "pricing", "engineering", "profitability", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["menu management", "menu editor", "menu engineering", "item pricing"],
+      "secondary": ["menu sections", "modifiers", "food cost", "profitability"],
+      "negative": ["kitchen", "floor", "marketing"]
+    },
+    "implies": ["menu-editing"],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "menus",
+      "patterns": [
+        { "pattern": "data-table", "preset": "standard", "as": "menu-list" },
+        { "pattern": "card-grid", "preset": "content", "as": "menu-cards" }
+      ],
+      "default_layout": ["menu-list", "menu-cards"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "menu-detail",
+      "patterns": [
+        { "pattern": "form-sections", "preset": "standard", "as": "menu-editor" },
+        { "pattern": "drag-sort-list", "preset": "standard", "as": "item-order" }
+      ],
+      "default_layout": ["menu-editor", "item-order"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "menu-engineering",
+      "patterns": [
+        { "pattern": "comparison-table", "preset": "standard", "as": "item-matrix" },
+        { "pattern": "chart-grid", "preset": "standard", "as": "profit-charts" }
+      ],
+      "default_layout": ["profit-charts", "item-matrix"],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "menus": "Data table listing all menus (lunch, dinner, brunch, happy hour) with active status, sections count, item count, and last-updated timestamp. Below, a card grid showing each menu's visual preview with cover image and quick stats.",
+    "menu-detail": "Form sections for menu metadata (name, description, availability, schedule) at top. Below, a drag-sort list of sections and items to reorder the menu structure, with inline price and modifier editing.",
+    "menu-engineering": "Profitability dashboard with chart grid showing item contribution margin, popularity quadrants (stars, plowhorses, puzzles, dogs), and cost trends. Comparison table ranks each item by food cost percentage, gross profit, and sales volume."
+  },
+  "features": ["menu-editing", "engineering"],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area for menu operations"
+  },
+  "suggested_theme": {
+    "ids": ["clean", "auradecantism"],
+    "modes": ["light", "auto"]
+  },
+  "dependencies": {
+    "patterns": {
+      "data-table": ">=1.0.0",
+      "card-grid": ">=1.0.0",
+      "form-sections": ">=1.0.0",
+      "drag-sort-list": ">=1.0.0",
+      "comparison-table": ">=1.0.0",
+      "chart-grid": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

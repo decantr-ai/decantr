@@ -1,0 +1,109 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "marketing-content",
+  "role": "public",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Content Marketing Landing",
+  "description": "Marketing landing page for a content site with hero, feature highlights, testimonials, and call-to-action sections. Public-facing entry point designed to attract readers and subscribers.",
+  "tags": [
+    "marketing",
+    "landing",
+    "content",
+    "editorial",
+    "public",
+    "2026"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "content site landing",
+        "blog landing page",
+        "editorial marketing",
+        "content marketing",
+        "publication landing"
+      ],
+      "secondary": [
+        "reader acquisition",
+        "content homepage",
+        "magazine landing",
+        "editorial homepage",
+        "publication homepage"
+      ],
+      "negative": [
+        "dashboard",
+        "admin",
+        "checkout"
+      ]
+    },
+    "implies": [
+      "seo",
+      "conversion"
+    ],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "landing",
+          "as": "landing-hero"
+        },
+        {
+          "pattern": "features",
+          "preset": "standard",
+          "as": "content-features"
+        },
+        {
+          "pattern": "testimonials",
+          "preset": "standard",
+          "as": "reader-testimonials"
+        },
+        {
+          "pattern": "cta-section",
+          "preset": "standard",
+          "as": "subscribe-cta"
+        }
+      ],
+      "default_layout": [
+        "landing-hero",
+        "content-features",
+        "reader-testimonials",
+        "subscribe-cta"
+      ],
+      "shell": "top-nav-footer"
+    }
+  ],
+  "page_briefs": {
+    "home": "Full-length landing page. Hero section with bold headline about the publication, tagline, and primary CTA to start reading or subscribe. Features section highlighting content categories, editorial quality, and reading experience. Testimonials from readers or notable contributors. Bottom CTA section with subscribe prompt and email input."
+  },
+  "features": [
+    "marketing",
+    "seo"
+  ],
+  "shells": {
+    "top-nav-footer": "Fixed top navigation bar with logo and links, footer with legal and social links"
+  },
+  "suggested_theme": {
+    "ids": [
+      "editorial",
+      "clean"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  },
+  "dependencies": {
+    "patterns": {
+      "hero": ">=1.0.0",
+      "features": ">=1.0.0",
+      "testimonials": ">=1.0.0",
+      "cta-section": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

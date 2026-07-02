@@ -1,0 +1,129 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "launch-update-log",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Launch Update Log",
+  "description": "Campaign update feed for maker notes, prototype milestones, shipping updates, stretch-goal unlocks, and backer announcements.",
+  "category": "campaign",
+  "tags": [
+    "campaign",
+    "updates",
+    "changelog",
+    "launch",
+    "backers",
+    "trust"
+  ],
+  "components": [
+    "Badge",
+    "Accordion",
+    "Media",
+    "Button",
+    "Timeline"
+  ],
+  "contained": false,
+  "default_preset": "update-console",
+  "presets": {
+    "update-console": {
+      "description": "Console-like update feed with pinned latest update, category filters, and expandable entries.",
+      "components": [
+        "Badge",
+        "Accordion",
+        "Media",
+        "Button",
+        "Timeline"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap5 _wfull _maxw[72rem] _mx[auto]",
+        "slots": {
+          "pinned-update": "Latest or critical campaign update highlighted at top.",
+          "filter-strip": "All, prototype, funding, shipping, stretch goals, press, and backer notes.",
+          "update-entry": "Date, category, title, summary, media, and expandable body.",
+          "subscribe-action": "Follow updates, email, RSS, or share action."
+        }
+      }
+    },
+    "shipping-log": {
+      "description": "Fulfillment-focused update log with manufacturing stages, shipping windows, risks, and resolved issues.",
+      "components": [
+        "Badge",
+        "Accordion",
+        "Timeline"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4 _wfull _maxw[58rem] _mx[auto]",
+        "slots": {
+          "status-summary": "Current fulfillment status.",
+          "update-entry": "Shipping or production update entry.",
+          "risk-note": "Known risks and mitigation notes."
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gap5 _wfull _maxw[72rem] _mx[auto]",
+    "slots": {
+      "pinned-update": "Latest campaign update",
+      "filter-strip": "Update category controls",
+      "update-entry": "Expandable campaign update",
+      "subscribe-action": "Follow or share updates"
+    }
+  },
+  "visual_brief": "A trustworthy campaign update log with retro console styling. It should make progress, blockers, and decisions easy to scan. Pinned updates and shipping/production notes should be factual and visible. Avoid turning updates into anonymous blog cards.",
+  "responsive": {
+    "mobile": "Single-column update feed with category filter as segmented scroll row.",
+    "tablet": "Pinned update plus feed below.",
+    "desktop": "Pinned latest update alongside filter/status rail, with feed entries below or beside."
+  },
+  "layout_hints": {
+    "trust": "Updates should distinguish shipped, in-progress, delayed, and unlocked states.",
+    "filtering": "Categories should support campaign-specific concerns like prototype, funding, shipping, and stretch goals.",
+    "media": "Use photos/screenshots for evidence where available."
+  },
+  "motion": {
+    "micro": {
+      "filter": "selected filter snaps into active state",
+      "expand": "update body expands with short height transition"
+    }
+  },
+  "interactions": [
+    "click-select",
+    "hover-reveal",
+    "animate-on-mount",
+    "keyboard-navigation"
+  ],
+  "composition": {
+    "LaunchUpdateLog": "Section > [PinnedUpdate + FilterStrip + UpdateEntry[] + SubscribeAction?]",
+    "UpdateEntry": "Entry > [Date + CategoryBadge + Title + Summary + Media? + BodyToggle]",
+    "FilterStrip": "SegmentedControl > CategoryButton[]"
+  },
+  "accessibility": {
+    "role": "feed",
+    "aria-label": "Campaign updates",
+    "keyboard": [
+      "Filter buttons should be reachable and expose selected state.",
+      "Expandable updates should use button semantics."
+    ],
+    "announcements": [
+      "Filtered updates by {category}.",
+      "Expanded update {title}."
+    ]
+  },
+  "io": {
+    "consumes": [
+      "campaign-updates",
+      "fulfillment-status"
+    ],
+    "produces": [
+      "update-engagement"
+    ],
+    "actions": [
+      "filter-updates",
+      "expand-update",
+      "subscribe-updates"
+    ]
+  }
+}

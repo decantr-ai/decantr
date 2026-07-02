@@ -1,0 +1,81 @@
+name: Publish to Registry
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Report sync/prune actions without mutating the registry"
+        required: false
+        default: true
+        type: boolean
+      prune_missing:
+        description: "Include stale official content pruning in the sync plan"
+        required: false
+        default: false
+        type: boolean
+      confirm_prune:
+        description: "Confirm non-dry-run pruning after reviewing a dry-run report"
+        required: false
+        default: false
+        type: boolean
+      content_certification_tier:
+        description: "Content tier to sync: enterprise, demo, experimental, or all"
+        required: false
+        default: "enterprise"
+        type: choice
+        options:
+          - enterprise
+          - demo
+          - experimental
+          - all
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run validate
+      - run: npm run content:health:json
+      - run: npm run content:health:suppressions
+      - run: npm run registry:v2-certify
+      - name: Audit content health
+        run: npm run content:health
+
+  publish:
+    needs: validate
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - run: npm ci
+      - name: Sync content to registry
+        env:
+          DECANTR_CONTENT_SYNC_TOKEN: ${{ secrets.DECANTR_CONTENT_SYNC_TOKEN }}
+          DECANTR_CONTENT_PRUNE_TOKEN: ${{ secrets.DECANTR_CONTENT_PRUNE_TOKEN }}
+          DECANTR_ADMIN_KEY: ${{ secrets.DECANTR_ADMIN_KEY }}
+          REGISTRY_URL: ${{ vars.REGISTRY_URL || 'https://api.decantr.ai/v1' }}
+          CONTENT_CERTIFICATION_TIER: ${{ inputs.content_certification_tier }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          PRUNE_MISSING: ${{ inputs.prune_missing }}
+          CONFIRM_PRUNE: ${{ inputs.confirm_prune }}
+          SYNC_REPORT_PATH: ${{ github.workspace }}/sync-report.json
+        run: node scripts/sync-to-registry.js
+
+      - name: Upload sync report
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: registry-sync-report
+          path: sync-report.json
+          if-no-files-found: ignore

@@ -1,0 +1,140 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "ai-transparency",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "AI Transparency",
+  "description": "AI model observability and transparency dashboard for inspecting inference logs, confidence distributions, and neural feedback cycles across deployed models.",
+  "tags": [
+    "ai",
+    "transparency",
+    "observability",
+    "monitoring",
+    "analytics",
+    "explainability",
+    "2026"
+  ],
+  "role": "auxiliary",
+  "classification": {
+    "triggers": {
+      "primary": [
+        "ai-transparency",
+        "model-observability",
+        "explainability",
+        "inference-monitor"
+      ],
+      "secondary": [
+        "confidence",
+        "model-metrics",
+        "ai-audit",
+        "bias-detection",
+        "interpretability"
+      ],
+      "negative": [
+        "chatbot",
+        "code-generation"
+      ]
+    },
+    "implies": [
+      "monitoring",
+      "analytics"
+    ],
+    "weight": 0.8,
+    "tier": "core"
+  },
+  "pages": [
+    {
+      "id": "model-overview",
+      "default_layout": [
+        {
+          "pattern": "stats-overview",
+          "as": "model-kpis"
+        },
+        {
+          "pattern": "neural-feedback-loop",
+          "as": "feedback-summary"
+        }
+      ],
+      "shell": "sidebar-main",
+      "notes": "High-level model health: stats-overview shows latency, throughput, error rates; neural-feedback-loop shows aggregate decision cycle patterns"
+    },
+    {
+      "id": "inference-log",
+      "default_layout": [
+        {
+          "pattern": "agent-timeline",
+          "as": "inference-trace"
+        }
+      ],
+      "shell": "sidebar-main",
+      "notes": "Chronological inference trace: each entry shows input, output, confidence, latency, and token usage with expandable reasoning chains"
+    },
+    {
+      "id": "confidence-explorer",
+      "default_layout": [
+        {
+          "pattern": "intent-radar",
+          "as": "confidence-distribution"
+        },
+        {
+          "pattern": "stats-overview",
+          "as": "metric-breakdown"
+        }
+      ],
+      "shell": "sidebar-main",
+      "notes": "Intent-radar visualizes confidence spread across categories; stats-detail breaks down per-model and per-endpoint metrics"
+    }
+  ],
+  "page_briefs": {
+    "model-overview": "High-level health dashboard. KPI stat cards across the top showing latency, throughput, and error rates. Below, a neural feedback loop summary visualization showing aggregate decision cycle patterns as a flow diagram.",
+    "inference-log": "Chronological scrollable timeline of inference entries. Each row shows timestamp, input snippet, output snippet, confidence score badge, latency, and token count. Rows are expandable to reveal full reasoning chains.",
+    "confidence-explorer": "Data exploration view. Radar chart visualization showing confidence spread across categories dominates the upper area. Below, a detailed stats breakdown table with per-model and per-endpoint metric rows."
+  },
+  "features": [
+    "monitoring",
+    "analytics",
+    "observability"
+  ],
+  "navigation_items": [
+    {
+      "label": "Model Overview",
+      "route": "/transparency",
+      "icon": "cpu",
+      "hotkey": "g t",
+      "active_match": "^/transparency$"
+    },
+    {
+      "label": "Inference Log",
+      "route": "/transparency/inference",
+      "icon": "activity",
+      "active_match": "^/transparency/inference"
+    },
+    {
+      "label": "Confidence",
+      "route": "/transparency/confidence",
+      "icon": "gauge",
+      "active_match": "^/transparency/confidence"
+    }
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area for data exploration"
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon",
+      "neon-dark"
+    ],
+    "modes": [
+      "dark"
+    ]
+  },
+  "dependencies": {
+    "patterns": {
+      "stats-overview": ">=1.0.0",
+      "neural-feedback-loop": ">=1.0.0",
+      "agent-timeline": ">=1.0.0",
+      "intent-radar": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

@@ -1,0 +1,127 @@
+{
+  "id": "dataset-card",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Dataset Card",
+  "description": "A scientific dataset metadata card surfacing schema structure, quality indicators, size statistics, licensing, version, and a sample preview for discoverability in data catalogs and research data management systems.",
+  "category": "science",
+  "tags": [
+    "2026",
+    "science",
+    "data",
+    "dataset",
+    "metadata",
+    "catalog",
+    "fair",
+    "schema"
+  ],
+  "components": [
+    "DatasetTitle",
+    "SchemaTree",
+    "StatsBadge",
+    "QualityIndicator",
+    "LicenseChip",
+    "DownloadButton",
+    "SamplePreview",
+    "VersionTag",
+    "AuthorBlock"
+  ],
+  "default_preset": "summary",
+  "presets": {
+    "summary": {
+      "description": "Compact card showing title, description, size stats, license, and download button. Ideal for dataset discovery grids where many datasets are browsed at once without overwhelming detail.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_w100 _grid _gap3 _p4 _max-w-420"
+      }
+    },
+    "detailed": {
+      "description": "Full metadata rendering with schema tree, per-column statistics, quality indicators, version history, citation guidance, and DOI reference. Intended for the dataset landing page in a data repository.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_w100 _grid _gap4 _p5 _max-w-720"
+      }
+    },
+    "preview": {
+      "description": "Detail card with an embedded tabular sample preview showing first 10 rows of data beneath the schema tree. Helps researchers assess fit-for-purpose before downloading large files.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_w100 _grid _gap4 _p5 _max-w-720"
+      }
+    }
+  },
+  "visual_brief": "A data-catalog card rendered as a d-surface with a prominent header, schema tree body, and action footer. The top section shows DatasetTitle in text-xl semibold with VersionTag pill ('v2.3.1') beside it and a QualityIndicator badge (verified=emerald-check, pending=amber-dot, flagged=red-warning, deprecated=gray-archive) in the top-right. Beneath the title, a one-line description in body-muted text. A meta row of StatsBadges shows: Rows ('124,532'), Columns ('18'), Size ('42 MB'), Last updated ('2 days ago'), Format ('CSV/Parquet'). Each badge uses mono-data for the numeric value with a small glyph icon. An AuthorBlock shows institution logo, author names (or ORCID), and publication/DOI citation with a copy icon. The SchemaTree renders as an indented tree of columns with type annotations: 'patient_id : string', 'measurement_value : float64', 'timestamp : datetime'. Each column row includes a type chip (color-coded: string=slate, numeric=blue, datetime=violet, boolean=teal, geo=green) and optional stats preview (min/max for numeric, cardinality for string, date-range for datetime). Columns with null-constraint or primary-key show small key/asterisk icons. A LicenseChip ('CC BY 4.0' or 'MIT' or 'Restricted Access') sits beneath the schema with a link-out to the full license text. Expandable tags chips for subject keywords. Preview preset adds a SamplePreview table showing first 10 rows of the dataset with column headers matching schema types and cells in mono-data; scrollable horizontally. At the footer, a DownloadButton spans full-width or primary-aligned with a format selector dropdown (CSV / Parquet / JSON / RDF) and file-size indicator beside it. Secondary actions ('View Docs', 'Cite', 'Share') appear as ghost buttons in a row.",
+  "layout_hints": {
+    "container": "d-surface card",
+    "note": "Dataset cards are discovery surfaces in data catalogs. FAIR-principle compliance requires: findable (title+DOI), accessible (license+download), interoperable (format+schema), reusable (license+citation).",
+    "quality_indicator": "QualityIndicator MUST be top-right of card. Colors consistent: verified=emerald, pending=amber, flagged=red, deprecated=gray. Always pair with icon (check/dot/warning/archive).",
+    "schema_tree": "SchemaTree columns use indentation for nesting (JSON/nested structs). Type chips color-coded: string=slate, numeric=blue, datetime=violet, boolean=teal, geo=green. Mono-data for column names.",
+    "stats_badges": "StatsBadge uses mono-data tabular-nums for all figures. Include unit indicators (rows, MB, GB). Format human-readable (124,532 not 124532).",
+    "license_chip": "LicenseChip MUST link to SPDX-identifier or full license text. Restricted-access datasets show lock-icon prefix and access-request flow."
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_w100 _grid _gap3 _p4 _max-w-420",
+    "slots": {
+      "dataset-header": "Top section with DatasetTitle, VersionTag pill, QualityIndicator badge, and one-line description. Title is text-xl semibold.",
+      "stats-row": "Horizontal row of StatsBadges showing Rows, Columns, Size, Last-updated, and Format. Each badge has icon glyph + mono-data value.",
+      "author-block": "Institution logo, author names or ORCID links, and citation/DOI with copy-to-clipboard icon. Essential for attribution and reproducibility.",
+      "schema-tree": "Indented tree rendering of dataset columns with type chips, null/primary-key icons, and optional per-column stats preview (min/max/cardinality/date-range).",
+      "license-chip": "Pill chip showing license identifier (CC BY 4.0, MIT, Restricted) with link-out to full license text. Locked chip for restricted-access.",
+      "tags-chips": "Expandable row of keyword/subject tag chips for discovery (e.g., 'genomics', 'time-series', 'clinical').",
+      "sample-preview": "Preview-preset-only slot. Tabular sample of first 10 rows with column headers matching schema. Horizontally scrollable with mono-data cells.",
+      "actions-footer": "Bottom row with DownloadButton (+ format selector dropdown + file-size) and secondary ghost-button actions: View Docs, Cite, Share."
+    }
+  },
+  "accessibility": {
+    "role": "article",
+    "aria-label": "Dataset metadata card",
+    "announcements": [
+      "Dataset {title} version {version}, quality {status}",
+      "Schema contains {count} columns",
+      "Download started in {format} format, {size}"
+    ],
+    "keyboard": [
+      "Tab: cycle through actions and interactive elements",
+      "Enter: trigger download or open selected action",
+      "S: expand/collapse schema tree",
+      "P: toggle sample preview visibility",
+      "C: copy DOI citation to clipboard"
+    ]
+  },
+  "responsive": {
+    "mobile": "Card expands to full width. StatsBadges wrap to multiple rows. SchemaTree renders in accordion mode (columns collapsed behind expand arrow). DownloadButton remains full-width prominent.",
+    "tablet": "Standard card layout at max-w-720px. SchemaTree always expanded. SamplePreview shows 5 columns with horizontal scroll."
+  },
+  "motion": {
+    "micro": {
+      "badge-hover": "subtle scale 1.03 + shadow 120ms ease-out",
+      "copy-citation": "checkmark confirmation 400ms ease-out after copy",
+      "chip-focus": "ring-glow primary 150ms ease-out"
+    },
+    "transitions": {
+      "schema-expand": "tree height auto + fade 250ms ease-out",
+      "preview-reveal": "sample-preview slide-down + fade 300ms ease-out",
+      "download-progress": "button transforms to progress-bar 200ms ease-out during download"
+    },
+    "ambient": {
+      "quality-pending-pulse": "pending QualityIndicator dot pulse 1.5s ease-in-out infinite"
+    }
+  },
+  "interactions": [
+    "lift-hover",
+    "click-select",
+    "animate-on-mount"
+  ],
+  "composition": {
+    "DatasetCard": "Surface(d-surface, article) > [DatasetHeader + StatsRow + AuthorBlock + SchemaTree + LicenseChip + TagsChips + SamplePreview? + ActionsFooter]",
+    "DatasetHeader": "Header(d-annotation) > [DatasetTitle + VersionTag + QualityIndicator + Description]",
+    "StatsRow": "Row(d-row) > [StatsBadge(Rows) + StatsBadge(Columns) + StatsBadge(Size) + StatsBadge(Updated) + StatsBadge(Format)]",
+    "AuthorBlock": "Block(d-annotation) > [InstitutionLogo + AuthorList + CitationDOI + CopyButton]",
+    "SchemaTree": "Tree(d-annotation, data-schema) > [ColumnRow[] > [ColumnName + TypeChip + ConstraintIcon? + StatsPreview?]]",
+    "LicenseChip": "Chip(d-annotation, data-license) > [LicenseIcon + LicenseText + LinkOut]",
+    "SamplePreview": "Table(d-data, scrollable) > [HeaderRow + DataRow[]]",
+    "DownloadButton": "Button(d-control, data-primary) > [DownloadIcon + ButtonLabel + FormatSelector + SizeText]"
+  }
+}

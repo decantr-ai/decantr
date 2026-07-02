@@ -1,0 +1,106 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "settings-nav",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Settings Nav",
+  "description": "Vertical navigation list for settings and preferences pages with grouped sections, active state highlighting, icons, and badges. Collapses to horizontal tabs on mobile.",
+  "category": "navigation",
+  "tags": [
+    "settings",
+    "navigation",
+    "sidebar",
+    "tabs",
+    "preferences"
+  ],
+  "components": [
+    "NavItem",
+    "NavGroup",
+    "Icon",
+    "Badge",
+    "Text"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Vertical sidebar navigation with grouped sections and icon-prefixed items — used as a settings page sidebar alongside a content panel",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap1 _py2"
+      }
+    },
+    "compact": {
+      "description": "Condensed vertical list without group headings — suitable for narrow sidebars or drawers with limited items",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap0 _py1"
+      }
+    },
+    "tabs": {
+      "description": "Horizontal tab bar variant for top-of-page navigation — items render as underlined tabs rather than a sidebar list",
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _row _gap0 _border-b"
+      }
+    }
+  },
+  "visual_brief": "A vertical navigation list on the left side of a settings page. Items are grouped under small uppercase section headings (d-label). Each item is a row with a 16-20px icon on the left, label text in the middle, and an optional badge or count on the right. Active item has a primary-color left border (3px), primary-tinted background, and primary text color. Hover state shows a subtle surface background tint. Items have 8-10px vertical padding and 12px horizontal padding. Groups are separated by 16px spacing and a muted horizontal divider. On mobile the entire nav collapses to a horizontal scrollable tab bar at the top, with icon-only items and the active tab underlined.",
+  "layout_hints": {
+    "active_indicator": "Active item uses a 3px left border in var(--d-primary) color plus a light primary background tint: background: color-mix(in srgb, var(--d-primary) 10%, transparent).",
+    "group_headings": "Section group headings use the d-label class. They are not clickable, just visual separators.",
+    "icon_alignment": "Icons are 16-20px, vertically centered with the label text. Use flex + align-items: center.",
+    "mobile_tabs": "On mobile (<640px), render as a horizontal scrollable row of tab items. Show icon + short label. Active tab has a bottom border instead of left border."
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap1 _py2",
+    "slots": {
+      "group-heading": "Uppercase section label (d-label) separating navigation groups. Not interactive.",
+      "nav-item": "Repeating slot — one per settings page. Renders as a flex row with icon (left), label (center), and optional badge/count (right). Active state indicated by left border + background tint. Hover shows surface background.",
+      "divider": "Thin horizontal line (1px border-top, var(--d-border)) between groups."
+    }
+  },
+  "accessibility": {
+    "role": "navigation",
+    "aria-label": "Settings navigation",
+    "keyboard": [
+      "Arrow Up/Down navigates between items",
+      "Enter activates the focused item",
+      "Home jumps to first item",
+      "End jumps to last item"
+    ],
+    "announcements": [
+      "Navigated to {section} settings",
+      "{item} selected, {badge_count} notifications"
+    ],
+    "focus_management": "Focus remains on the activated item after navigation. On mobile tab switch, focus moves to the content panel."
+  },
+  "responsive": {
+    "mobile": "Collapses to a horizontal scrollable tab bar at the top of the page. Items show icon + abbreviated label. Active tab has a 2px bottom border in primary color. Group headings are hidden. Horizontal scroll with momentum enabled.",
+    "tablet": "Standard vertical sidebar at 200-240px width. All items and group headings visible. Badge counts shown.",
+    "desktop": "Full vertical sidebar at 240-280px width. All items, group headings, badges, and descriptions visible. Sticky positioning within scroll container."
+  },
+  "composition": {
+    "SettingsNav": "Nav(d-section, flex-col, gap-1, sticky) > [NavGroup[]]",
+    "NavGroup": "Stack(flex-col, gap-0) > [GroupHeading(d-label)? + NavItem[] + Divider?]",
+    "NavItem": "Link(d-interactive, flex, align-center, gap-3, px-3, py-2) > [Icon(16px) + Label(text-sm) + Badge?(d-annotation, ml-auto)]"
+  },
+  "motion": {
+    "micro": {
+      "hover": "background-color 0.15s ease",
+      "active": "border-color 0.1s ease, background-color 0.1s ease"
+    },
+    "transitions": {
+      "page_switch": "Content panel cross-fades on nav item selection (0.15s ease)"
+    }
+  },
+  "interactions": [
+    "hover-reveal",
+    "keyboard-navigation"
+  ],
+  "io": {
+    "consumes": ["active-route", "nav-items", "badge-counts"],
+    "produces": ["navigation-event"],
+    "actions": ["navigate"]
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "creator-dashboard",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Creator Dashboard",
+  "description": "Creator admin dashboard home with earnings summary, recent activity, and quick actions.",
+  "tags": [
+    "creator",
+    "dashboard",
+    "analytics",
+    "monetization"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "creator dashboard",
+        "creator home",
+        "creator admin"
+      ],
+      "secondary": [
+        "earnings overview",
+        "subscriber activity"
+      ],
+      "negative": []
+    },
+    "implies": [
+      "creator-earnings",
+      "creator-content"
+    ],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "patterns": [
+        {
+          "pattern": "kpi-grid",
+          "preset": "compact",
+          "as": "stats"
+        },
+        {
+          "pattern": "earnings-dashboard",
+          "preset": "summary",
+          "as": "earnings-summary"
+        },
+        {
+          "pattern": "activity-feed",
+          "preset": "compact",
+          "as": "recent-activity"
+        },
+        {
+          "pattern": "calendar-view",
+          "preset": "month",
+          "as": "content-calendar"
+        },
+        {
+          "pattern": "notification-center",
+          "preset": "dropdown",
+          "as": "notifications"
+        }
+      ],
+      "default_layout": [
+        "notifications",
+        "stats-overview",
+        "earnings-dashboard",
+        "content-calendar",
+        "activity-feed"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "home": "At-a-glance dashboard. Compact KPI cards across the top showing subscriber count, monthly earnings, and view stats. Earnings summary chart in the middle showing revenue trend. Recent activity feed at the bottom with timestamped subscriber actions."
+  },
+  "features": [
+    "earnings-kpis",
+    "activity-feed",
+    "quick-actions"
+  ],
+  "shells": {
+    "sidebar-main": "Creator dashboard with collapsible sidebar navigation"
+  },
+  "dependencies": {
+    "patterns": {
+      "kpi-grid": "^1.0.0",
+      "earnings-dashboard": "^1.0.0",
+      "activity-feed": "^1.0.0",
+      "calendar-view": "^1.0.0",
+      "notification-center": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "studio"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

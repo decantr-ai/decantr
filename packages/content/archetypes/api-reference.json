@@ -1,0 +1,95 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "api-reference",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "API Reference",
+  "description": "Interactive API reference with endpoint browser, try-it-out console, and multi-language code snippets. Built for developer-facing knowledge bases.",
+  "tags": [
+    "api",
+    "reference",
+    "developer",
+    "rest",
+    "knowledge-base"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "api reference",
+        "api docs",
+        "api documentation",
+        "endpoint browser",
+        "api explorer"
+      ],
+      "secondary": [
+        "swagger",
+        "openapi",
+        "rest api",
+        "try it out",
+        "code snippets"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 0.8,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "api-ref",
+      "patterns": [
+        {
+          "pattern": "api-explorer",
+          "preset": "grouped",
+          "as": "endpoint-browser"
+        }
+      ],
+      "default_layout": [
+        "api-explorer"
+      ],
+      "shell": "three-column-browser"
+    },
+    {
+      "id": "api-ref-endpoint",
+      "patterns": [
+        {
+          "pattern": "api-explorer",
+          "preset": "standard",
+          "as": "endpoint-detail"
+        }
+      ],
+      "default_layout": [
+        "api-explorer"
+      ],
+      "shell": "three-column-browser"
+    }
+  ],
+  "page_briefs": {
+    "api-ref": "Grouped API endpoint browser in a three-column layout. Left sidebar lists API resources organized by domain (e.g., Users, Projects, Billing) with method badges (GET, POST, PUT, DELETE). Center column shows the selected resource group with endpoint summaries, required auth, and rate limits. Right column displays a live request/response preview panel.",
+    "api-ref-endpoint": "Single endpoint detail view. Left sidebar retains the resource tree for navigation. Center column shows the endpoint path, method, description, request parameters (path, query, body) with type annotations, and response schema with example payloads. Right column provides an interactive try-it-out console with editable request fields, auth token input, and live response output with syntax-highlighted JSON."
+  },
+  "features": [
+    "api-docs",
+    "try-it-out",
+    "code-snippets"
+  ],
+  "shells": {
+    "three-column-browser": "Resource tree sidebar, endpoint content, and try-it-out panel for three-column API browsing"
+  },
+  "dependencies": {
+    "patterns": {
+      "api-explorer": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  }
+}

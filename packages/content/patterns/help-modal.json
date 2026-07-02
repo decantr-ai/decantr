@@ -1,0 +1,155 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "help-modal",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Help Modal",
+  "description": "Keyboard shortcuts help overlay with categorized shortcuts and search.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {
+      "terminal": "^1.0.0"
+    },
+    "requires_core": {
+      "components": [
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full categorized keyboard shortcuts modal",
+      "components": [
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_fixed _inset0 _flex _center _z[100] _bg[rgba(0,0,0,0.9)]",
+        "slots": {
+          "header": "Title and close button",
+          "search": "Filter shortcuts",
+          "categories": "Shortcut categories",
+          "shortcuts": "Key + description pairs"
+        }
+      }
+    },
+    "minimal": {
+      "description": "Compact quick reference card showing a flat shortcut list without categories or search",
+      "components": [],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_fixed _inset0 _flex _center _z[100] _bg[rgba(0,0,0,0.8)]",
+        "slots": {
+          "shortcuts": "Compact shortcut list"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_fixed _inset0 _flex _center _z[100]",
+    "slots": {
+      "header": "Title",
+      "categories": "Shortcut categories",
+      "shortcuts": "Key bindings"
+    }
+  },
+  "features": [
+    "keyboard-searchable",
+    "categorized",
+    "toggle-shortcut"
+  ],
+  "default_shortcuts": [
+    {
+      "name": "Navigation",
+      "items": [
+        {
+          "key": "?",
+          "description": "Toggle help"
+        },
+        {
+          "key": "Ctrl+K",
+          "description": "Command palette"
+        },
+        {
+          "key": "F1",
+          "description": "Help"
+        },
+        {
+          "key": "F4",
+          "description": "Quit"
+        }
+      ]
+    },
+    {
+      "name": "Panes",
+      "items": [
+        {
+          "key": "Ctrl+\\",
+          "description": "Toggle pane focus"
+        },
+        {
+          "key": "Ctrl+Shift+Left",
+          "description": "Resize pane left"
+        },
+        {
+          "key": "Ctrl+Shift+Right",
+          "description": "Resize pane right"
+        }
+      ]
+    },
+    {
+      "name": "Terminal",
+      "items": [
+        {
+          "key": "Ctrl+L",
+          "description": "Clear screen"
+        },
+        {
+          "key": "Ctrl+R",
+          "description": "Search history"
+        },
+        {
+          "key": "Up/Down",
+          "description": "History navigation"
+        }
+      ]
+    }
+  ],
+  "visual_brief": "Centered modal overlay with a title ('Keyboard Shortcuts') and an optional search input. The body is organized into categorized sections (General, Navigation, Editing, etc.) with muted category headers. Each shortcut row shows the action description on the left and the key combination on the right rendered as styled key cap badges (bordered rounded boxes with monospace text, e.g., [Cmd] + [K]). Sections are separated by subtle dividers. Minimal preset removes categories and shows a flat list.",
+  "responsive": {
+    "mobile": "Modal takes near-full screen. Shortcuts list scrolls vertically. Key badges remain readable. Search input at top for quick filtering.",
+    "tablet": "Centered modal at 520px width. Standard layout with categories.",
+    "desktop": "Centered modal at 600px width. Optional two-column layout for dense shortcut lists."
+  },
+  "layout_hints": {
+    "modal_priority": "Lead with the title and search first, then shortcut categories, then individual bindings. The user should find a shortcut quickly rather than admire the modal.",
+    "category_rhythm": "Categories should visually separate shortcut families without overwhelming the key/action pairs themselves.",
+    "terminal_tone": "Even in a terminal theme, the modal should feel readable and instructional before it feels atmospheric."
+  },
+  "motion": {
+    "micro": "Focused key rows and search affordances may sharpen subtly, and the overlay may confirm category filtering without heavy movement.",
+    "transitions": "Modal open and close should feel quick and utility-driven, preserving the sense of an ephemeral help overlay."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "focus-trap",
+    "keyboard-navigation",
+    "click-select"
+  ],
+  "accessibility": {
+    "role": "dialog",
+    "aria-label": "Keyboard shortcuts help",
+    "keyboard": [
+      "Focus should move into the search field or first shortcut row on open, and Escape should reliably close the dialog."
+    ],
+    "announcements": [
+      "Shortcut category, key combination, and action should be announced together so the help content is meaningful beyond visual keycap styling."
+    ]
+  }
+}

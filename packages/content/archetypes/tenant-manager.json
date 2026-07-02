@@ -1,0 +1,129 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "tenant-manager",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Tenant Manager",
+  "description": "Tenant management screens including directory, detail view with lease and payment history, and tenant onboarding.",
+  "tags": [
+    "property-management",
+    "tenants",
+    "real-estate",
+    "leases",
+    "crm"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "tenant management",
+        "tenant list",
+        "tenant directory",
+        "lease management"
+      ],
+      "secondary": [
+        "add tenant",
+        "tenant profile",
+        "tenant crm"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "core"
+  },
+  "pages": [
+    {
+      "id": "list",
+      "patterns": [
+        {
+          "pattern": "tenant-directory",
+          "preset": "table",
+          "as": "directory"
+        }
+      ],
+      "default_layout": [
+        "tenant-directory"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "detail",
+      "patterns": [
+        {
+          "pattern": "tenant-card",
+          "preset": "standard",
+          "as": "profile"
+        },
+        {
+          "pattern": "lease-manager",
+          "preset": "overview",
+          "as": "lease"
+        },
+        {
+          "pattern": "payment-history",
+          "preset": "tenant",
+          "as": "payments"
+        }
+      ],
+      "default_layout": [
+        "creator-profile",
+        "lease-manager",
+        "payments"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "create",
+      "patterns": [
+        {
+          "pattern": "tenant-card",
+          "preset": "standard",
+          "as": "form"
+        },
+        {
+          "pattern": "lease-manager",
+          "preset": "edit",
+          "as": "lease-form"
+        }
+      ],
+      "default_layout": [
+        "form",
+        "form"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "list": "Tenant directory table with columns for avatar, name, property/unit, lease status badge, monthly rent, and balance. Search bar and status filter above the table.",
+    "detail": "Tenant profile view. Profile card at top with name, contact info, and photo. Lease overview section below showing lease dates, rent amount, and terms. Payment history table at the bottom with date, amount, and status columns.",
+    "create": "Tenant onboarding form. Personal info fields at top (name, email, phone). Lease configuration form below with property/unit selector, lease dates, rent amount, and deposit. Document upload area."
+  },
+  "features": [
+    "crud",
+    "search",
+    "filters",
+    "communication"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation for tenant management"
+  },
+  "dependencies": {
+    "patterns": {
+      "tenant-directory": "^1.0.0",
+      "tenant-card": "^1.0.0",
+      "lease-manager": "^1.0.0",
+      "payment-history": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "estate"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

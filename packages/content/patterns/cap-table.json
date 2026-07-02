@@ -1,0 +1,121 @@
+{
+  "id": "cap-table",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Cap Table",
+  "description": "An ownership capitalization table that surfaces shareholders, share classes, fully-diluted percentages, vesting status, and dilution events across funding rounds with an inset pie summary for at-a-glance ownership distribution.",
+  "category": "finance",
+  "tags": [
+    "2026",
+    "finance",
+    "ownership",
+    "equity",
+    "cap-table",
+    "dilution",
+    "shareholders",
+    "dataviz"
+  ],
+  "components": [
+    "ShareholderRow",
+    "ShareClassBadge",
+    "PercentageBar",
+    "VestingChip",
+    "PieSummary",
+    "TotalsFooter",
+    "DilutionEventMarker"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full cap table rendering every shareholder with share class, shares owned, fully-diluted percentage bar, and vesting chip. Includes totals footer and inset pie summary on the right for quick distribution scanning.",
+      "layout": {
+        "layout": "data-table",
+        "atoms": "_w100 _grid _gap4"
+      }
+    },
+    "summary": {
+      "description": "Condensed view showing only an ownership pie chart with aggregated share-class totals and top shareholders. Optimized for executive dashboards and investor update decks where detail is unnecessary.",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_w100 _grid _grid-cols-2 _gap6"
+      }
+    },
+    "waterfall": {
+      "description": "Dilution-event waterfall that lists funding rounds chronologically with before/after percentages per shareholder, highlighting dilution deltas with colored badges and connecting arrows between rounds.",
+      "layout": {
+        "layout": "data-table",
+        "atoms": "_w100 _overflow-x-auto"
+      }
+    }
+  },
+  "visual_brief": "A clean, investor-grade table rendered inside a d-surface card with a soft border and subtle zebra-striped rows. The header row uses d-annotation small-caps labels: Shareholder, Class, Shares, % Fully Diluted, Vesting. Each ShareholderRow shows the shareholder name in semibold text with a secondary line for entity type (individual/fund/employee-pool). A ShareClassBadge sits beside the name, color-coded: Common = neutral gray, Preferred Series A/B/C = ascending blue shades, Options/ISOs = amber, SAFE/Convertible = violet. The shares column uses mono-data tabular figures, right-aligned. The PercentageBar fills horizontally within its cell, width proportional to ownership, using a primary-accent fill with a thin track behind it; the numeric percentage overlays the bar in semibold. VestingChip shows 'Fully vested', '4y / 1y cliff — 37% vested', or 'Unvested' with a small progress ring. Rows are clickable and expand inline to reveal grant date, strike price, and acceleration clauses. A sticky TotalsFooter at the bottom shows total shares issued, total fully-diluted shares, and 100% summed percentage. A PieSummary inset (180px circle) floats to the right of the table on wide viewports, with color-coded wedges matching share-class badge colors and a legend below. Waterfall preset replaces the percentage bar with a two-column before/after layout and red/green delta chips showing dilution impact from each funding round, with thin connector lines between adjacent rounds.",
+  "layout_hints": {
+    "container": "d-surface card",
+    "note": "Cap tables are dense financial data. Use mono-data figures for all share counts and percentages. Right-align all numeric columns. Preserve tabular-nums so digits line up vertically.",
+    "row_interaction": "ShareholderRow uses d-row[data-interactive] with cursor:pointer. Expanded state reveals grant metadata in a sub-row with a subtle inset background.",
+    "percentage_bar": "PercentageBar track is 100% of cell width, fill proportional. Use d-annotation[data-bar] with height 8px, border-radius 4px. Percentage text sits centered above or inside the bar depending on fill width.",
+    "share_class_colors": "ShareClassBadge MUST be consistent across all instances: Common=neutral, Preferred=blue scale, Options=amber, SAFE=violet. Never use red/green for share classes (reserved for deltas).",
+    "totals_footer": "TotalsFooter uses sticky positioning at bottom of table container. Background: color-mix(in srgb, var(--d-surface) 95%, var(--d-primary) 5%). Font-weight: 600. Always sums to 100% fully diluted."
+  },
+  "default_layout": {
+    "layout": "data-table",
+    "atoms": "_w100 _grid _gap4 _p4",
+    "slots": {
+      "table-header": "Sticky top row with column labels rendered as d-annotation small-caps. Columns: Shareholder, Class, Shares, % Fully Diluted, Vesting. Header has a subtle bottom border and slightly elevated background to distinguish from data rows during scroll.",
+      "shareholder-rows": "Repeating slot — one ShareholderRow per cap-table entry. Each row uses d-row[data-interactive] containing: Name cell (semibold with entity-type subline), ShareClassBadge, Shares cell (mono-data right-aligned), PercentageBar cell (fills proportionally), VestingChip cell. Rows alternate subtle background tint for readability. Click expands inline detail sub-row showing grant date, strike price, acceleration clauses, and notes.",
+      "totals-footer": "Sticky footer row aggregating totals: total shares issued, total fully-diluted shares, and 100% sum verification. Uses bold mono-data figures. If percentages do not sum to 100% (floating-point drift), shows warning chip.",
+      "pie-summary": "Optional inset circular chart (180px) anchored to the right of the table on wide viewports. Wedges colored by share class matching badge colors. Legend below shows class name + aggregated percentage. Hovering a wedge highlights matching rows in the table.",
+      "dilution-markers": "Waterfall-preset-only slot. Horizontal dilution-event markers appear between round columns as vertical connector lines with round-name labels (e.g., 'Series B — $12M @ $48M pre'). Each shareholder row shows before/after percentages with red (diluted) or green (purchased) delta chips."
+    }
+  },
+  "accessibility": {
+    "role": "table",
+    "aria-label": "Capitalization table",
+    "announcements": [
+      "Shareholder {name} owns {percent}% fully diluted",
+      "Expanded {name} row showing grant details",
+      "Total fully-diluted shares: {count}"
+    ],
+    "keyboard": [
+      "Tab: cycle through shareholder rows",
+      "Enter: expand selected row to show grant details",
+      "Escape: collapse expanded row",
+      "Arrow Down/Up: navigate between rows",
+      "Home/End: jump to first/last row"
+    ]
+  },
+  "responsive": {
+    "mobile": "Table reflows to a card-stack layout. Each shareholder becomes a vertical card showing name, class badge, and percentage prominently with shares and vesting in a secondary row. PieSummary hidden. Totals footer remains sticky.",
+    "tablet": "Standard table layout with PieSummary collapsed into a toggle button that expands the chart as an overlay. Vesting column truncates to chip-only."
+  },
+  "motion": {
+    "micro": {
+      "row-hover": "background-color shift 150ms ease-out",
+      "bar-fill": "width 0 to target 600ms ease-out on mount",
+      "chip-progress": "vesting ring stroke-dashoffset 400ms ease-in-out"
+    },
+    "transitions": {
+      "row-expand": "height auto + fade 250ms ease-out",
+      "row-collapse": "height 0 + fade 200ms ease-in",
+      "pie-wedge-highlight": "scale(1.03) + brightness(1.1) 200ms ease-out"
+    },
+    "ambient": {
+      "totals-pulse": "subtle background shimmer on totals-footer when values update 400ms ease-out"
+    }
+  },
+  "interactions": [
+    "animate-on-mount",
+    "inline-edit",
+    "click-select"
+  ],
+  "composition": {
+    "CapTable": "Surface(d-surface, card) > [TableHeader + ShareholderRow[] + TotalsFooter + PieSummary?]",
+    "ShareholderRow": "Row(d-row, data-interactive) > [Name + ShareClassBadge + SharesCell + PercentageBar + VestingChip]",
+    "ShareClassBadge": "Chip(d-annotation, data-class) > [ClassLabel]",
+    "PercentageBar": "Bar(d-annotation, data-bar) > [Track + Fill + PercentLabel]",
+    "VestingChip": "Chip(d-annotation, data-vesting) > [ProgressRing + VestingLabel]",
+    "PieSummary": "Chart(d-surface, inset) > [PieCanvas + Legend]",
+    "TotalsFooter": "Footer(d-row, sticky) > [TotalShares + TotalPercent + VerificationChip?]"
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "metric-gauge",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Metric Gauge",
+  "description": "CLI-style metric displays with value, trend indicators, and optional sparklines.",
+  "dependencies": {
+    "patterns": {
+      "ascii-chart": "^1.0.0"
+    },
+    "styles": {
+      "terminal": "^1.0.0"
+    },
+    "requires_core": {
+      "components": [
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "icon"
+  ],
+  "default_preset": "single",
+  "presets": {
+    "single": {
+      "description": "Single large metric value display",
+      "components": [
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _aic _mono _fggreen",
+        "slots": {
+          "label": "Metric name",
+          "value": "Current value",
+          "unit": "Unit suffix",
+          "trend": "Up/down trend arrow"
+        }
+      }
+    },
+    "inline": {
+      "description": "Inline key: value metric display",
+      "components": [],
+      "layout": {
+        "layout": "flex",
+        "atoms": "_flex _aic _gap2 _mono _fggreen",
+        "slots": {
+          "label": "Metric name",
+          "value": "Current value"
+        }
+      }
+    },
+    "block": {
+      "description": "Boxed metric with border and sparkline",
+      "components": [],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _mono _fggreen",
+        "slots": {
+          "label": "Metric name",
+          "value": "Current value",
+          "sparkline": "Mini trend chart"
+        }
+      }
+    },
+    "grid": {
+      "description": "Responsive grid arranging multiple metric gauges with configurable column count and thresholds",
+      "components": [],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap2 _mono _fggreen",
+        "slots": {
+          "metrics": "Array of metric displays"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "flex",
+    "atoms": "_flex _aic _gap2 _mono _fggreen",
+    "slots": {
+      "label": "Metric name",
+      "value": "Current value",
+      "unit": "Unit suffix",
+      "trend": "Trend indicator"
+    }
+  },
+  "features": [
+    "color-thresholds",
+    "trend-indicators",
+    "historical-sparkline",
+    "click-detail"
+  ],
+  "thresholds": {
+    "success": {
+      "color": "#00FF00",
+      "description": "Normal/good state"
+    },
+    "warning": {
+      "color": "#FFB000",
+      "description": "Warning threshold"
+    },
+    "critical": {
+      "color": "#FF0000",
+      "description": "Critical threshold"
+    }
+  },
+  "visual_brief": "CLI-style metric display with the metric label in muted uppercase small text, the current value in large bold monospace type, and an optional unit suffix. A trend indicator arrow (up/down) with green/red coloring appears beside the value with a percentage change. The inline preset renders as a compact single-line display: label, value, and trend on one row. The block preset wraps the metric in a bordered card with optional sparkline underneath. The grid preset arranges multiple gauges in a responsive grid. Sparklines use ASCII braille characters or thin SVG lines.",
+  "responsive": {
+    "mobile": "Grid preset uses 2 columns. Block cards take full width if single. Values remain large for readability.",
+    "tablet": "Grid uses 3 columns. Standard card sizes.",
+    "desktop": "Grid uses 4 columns. Block preset shows full sparkline width. Comfortable spacing."
+  },
+  "layout_hints": {
+    "value_priority": "The metric value is the first read, then trend, then label context. Keep that hierarchy stable across inline, block, and grid variants.",
+    "threshold_clarity": "Color thresholds should support interpretation, but labels and trend indicators must still carry the meaning when color cannot.",
+    "grid_use": "Grid mode should present a family of metrics that still feel related and aligned, not a noisy dashboard of mixed instruments."
+  },
+  "motion": {
+    "micro": "Trend changes and threshold shifts may pulse or brighten subtly to acknowledge important state changes.",
+    "transitions": "Value updates should feel crisp and instrumentation-like rather than decorative or bouncy."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "status-pulse",
+    "real-time-updates",
+    "hover-tooltip"
+  ],
+  "accessibility": {
+    "role": "status",
+    "aria-label": "Metric gauge",
+    "keyboard": [
+      "If metrics are actionable, focus should move metric by metric in reading order without trapping users in decorative sparkline details."
+    ],
+    "announcements": [
+      "Metric label, current value, unit, and trend should be announced together so the gauge is meaningful beyond color or positioning."
+    ]
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "recipefork-cooking-tips-display",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipefork Cooking Tips Display",
+  "description": "Display card for recipe-specific cooking tips on Recipefork detail pages, replacing generic static tips with author-provided notes.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Card",
+        "Label",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Card",
+    "Label",
+    "icon"
+  ],
+  "default_preset": "bullet-list",
+  "presets": {
+    "bullet-list": {
+      "description": "Sidebar or support-surface bullet list of recipe-specific cooking tips.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap2",
+        "slots": {
+          "tips-header": "Cooking tips section title",
+          "tip-items": "Bullet list of concise author-provided tips"
+        }
+      }
+    }
+  },
+  "visual_brief": "This should feel practical and low-friction. It replaces generic filler with real creator knowledge, so it should read like trusted notes rather than a decorative sidebar.",
+  "composition": {
+    "RecipeforkCookingTipsDisplay": "Card(recipefork-cooking-tips-display) > [TipsHeader + TipItems]"
+  }
+}

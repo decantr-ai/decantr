@@ -1,0 +1,275 @@
+{
+  "$schema": "https://decantr.ai/schemas/blueprint.v1.json",
+  "id": "observability-platform",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Observability Platform",
+  "description": "Data-dense monitoring command center with metrics dashboards, log exploration, distributed tracing, alert management, and full auth. Built for SREs and platform engineers.",
+  "blueprint_portfolio": {
+    "visibility": "featured",
+    "maturity": "certified-flagship",
+    "rationale": "Flagship blueprint with a maintained showcase capsule, thumbnail asset, and smoke-green shortlist verification suitable for first-run discovery.",
+    "artifact": {
+      "status": "certified",
+      "showcase": "observability-platform",
+      "notes": "Certified Artifact Contract V0: showcase capsule plus shortlist verification report are available in the Decantr monorepo."
+    }
+  },
+  "tags": [
+    "observability",
+    "monitoring",
+    "traces",
+    "logs",
+    "alerts",
+    "metrics",
+    "sre",
+    "2026"
+  ],
+  "compose": [
+    "metrics-overview-dashboard",
+    "log-explorer-pro",
+    "trace-explorer",
+    "alert-manager-pro",
+    "marketing-observability",
+    "auth-full",
+    "settings-full"
+  ],
+  "theme": {
+    "mode": "dark",
+    "shape": "sharp",
+    "id": "fintech"
+  },
+  "personality": "Data-dense monitoring command center. Dark backgrounds with accent-colored metric highlights. Multiple visualization types per screen — line charts, heatmaps, sparklines, gauge rings. Monospace for all metric values, timestamps, and trace IDs. Universal green/yellow/red status. Think Datadog meets Grafana. Alert system feels urgent but not panic-inducing. Lucide icons. Every millisecond matters.",
+  "voice": {
+    "tone": "Operational and direct. Speaks to SREs and platform engineers.",
+    "cta_verbs": [
+      "Investigate",
+      "Filter",
+      "Drill Down",
+      "Acknowledge",
+      "Resolve",
+      "Silence"
+    ],
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Buy now",
+      "Exciting"
+    ],
+    "empty_states": "Operational calm. No data means no incidents — show a green status indicator and guide users to configure their first data source.",
+    "errors": "Diagnostic and precise. Include timestamps, request IDs, and suggested remediation. Link to runbooks.",
+    "loading": "Chart skeleton placeholders with axis lines. Metric cards show pulsing number placeholders. Log lines stream in progressively."
+  },
+  "features": [
+    "metrics",
+    "logs",
+    "traces",
+    "alerts",
+    "incidents",
+    "dashboards",
+    "auth",
+    "mfa",
+    "oauth",
+    "marketing",
+    "seo",
+    "real-time",
+    "charts"
+  ],
+  "routes": {
+    "/": {
+      "page": "home",
+      "shell": "top-nav-footer",
+      "archetype": "marketing-observability"
+    },
+    "/login": {
+      "page": "login",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/register": {
+      "page": "register",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/forgot-password": {
+      "page": "forgot-password",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/reset-password": {
+      "page": "reset-password",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/verify-email": {
+      "page": "verify-email",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/mfa-setup": {
+      "page": "mfa-setup",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/mfa-verify": {
+      "page": "mfa-verify",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/phone-verify": {
+      "page": "phone-verify",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/metrics": {
+      "page": "overview",
+      "shell": "sidebar-main",
+      "archetype": "metrics-overview-dashboard"
+    },
+    "/metrics/:service": {
+      "page": "service-detail",
+      "shell": "sidebar-main",
+      "archetype": "metrics-overview-dashboard"
+    },
+    "/logs": {
+      "page": "logs",
+      "shell": "sidebar-main",
+      "archetype": "log-explorer-pro"
+    },
+    "/logs/:id": {
+      "page": "log-detail",
+      "shell": "sidebar-main",
+      "archetype": "log-explorer-pro"
+    },
+    "/traces": {
+      "page": "traces",
+      "shell": "sidebar-main",
+      "archetype": "trace-explorer"
+    },
+    "/traces/:id": {
+      "page": "trace-detail",
+      "shell": "sidebar-main",
+      "archetype": "trace-explorer"
+    },
+    "/traces/topology": {
+      "page": "service-topology",
+      "shell": "sidebar-main",
+      "archetype": "trace-explorer"
+    },
+    "/alerts": {
+      "page": "alerts",
+      "shell": "sidebar-main",
+      "archetype": "alert-manager-pro"
+    },
+    "/alerts/rules": {
+      "page": "alert-rules",
+      "shell": "sidebar-main",
+      "archetype": "alert-manager-pro"
+    },
+    "/incidents": {
+      "page": "incidents",
+      "shell": "sidebar-main",
+      "archetype": "alert-manager-pro"
+    },
+    "/incidents/:id": {
+      "page": "incident-detail",
+      "shell": "sidebar-main",
+      "archetype": "alert-manager-pro"
+    },
+    "/settings/profile": {
+      "page": "profile",
+      "shell": "sidebar-main",
+      "archetype": "settings-full"
+    },
+    "/settings/security": {
+      "page": "security",
+      "shell": "sidebar-main",
+      "archetype": "settings-full"
+    },
+    "/settings/preferences": {
+      "page": "preferences",
+      "shell": "sidebar-main",
+      "archetype": "settings-full"
+    },
+    "/settings/danger": {
+      "page": "danger",
+      "shell": "sidebar-main",
+      "archetype": "settings-full"
+    }
+  },
+  "overrides": {
+    "features_add": [
+      "theme-toggle",
+      "command-palette"
+    ],
+    "features_remove": [],
+    "pages": {},
+    "pages_remove": []
+  },
+  "seo_hints": {
+    "schema_org": [
+      "Organization",
+      "WebApplication",
+      "SoftwareApplication"
+    ],
+    "meta_priorities": [
+      "description",
+      "og:image",
+      "twitter:card"
+    ]
+  },
+  "navigation": {
+    "command_palette": true,
+    "hotkey_semantics": {
+      "chord_window_ms": 900,
+      "input_guard": true,
+      "modifier_suppression": true,
+      "match_case": false
+    },
+    "hotkeys": [
+      {
+        "key": "g m",
+        "route": "/metrics",
+        "label": "Go to Metrics"
+      },
+      {
+        "key": "g l",
+        "route": "/logs",
+        "label": "Go to Logs"
+      },
+      {
+        "key": "g t",
+        "route": "/traces",
+        "label": "Go to Traces"
+      },
+      {
+        "key": "g a",
+        "route": "/alerts",
+        "label": "Go to Alerts"
+      },
+      {
+        "key": "?",
+        "action": "openShortcutsHelp",
+        "label": "Show keyboard shortcuts"
+      }
+    ]
+  },
+  "dependencies": {
+    "archetypes": {
+      "metrics-overview-dashboard": ">=1.0.0",
+      "log-explorer-pro": ">=1.0.0",
+      "trace-explorer": ">=1.0.0",
+      "alert-manager-pro": ">=1.0.0",
+      "marketing-observability": ">=1.0.0",
+      "auth-full": ">=1.0.0",
+      "settings-full": ">=1.0.0"
+    }
+  },
+  "suggested_themes": [
+    "fintech",
+    "carbon-neon",
+    "terminal",
+    "carbon"
+  ]
+}

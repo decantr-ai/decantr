@@ -1,0 +1,99 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "fan-library",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Fan Library",
+  "description": "Fan's purchased and subscribed content library. View all unlocked content and manage subscriptions.",
+  "tags": [
+    "fan",
+    "library",
+    "purchases",
+    "subscriptions",
+    "content"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "fan library",
+        "my purchases",
+        "my subscriptions"
+      ],
+      "secondary": [
+        "purchased content",
+        "unlocked content"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "library",
+      "patterns": [
+        {
+          "pattern": "filter-bar",
+          "preset": "standard",
+          "as": "filters"
+        },
+        {
+          "pattern": "product-grid",
+          "preset": "standard",
+          "as": "content-grid"
+        }
+      ],
+      "default_layout": [
+        "filters",
+        "content-card-grid"
+      ],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "subscriptions",
+      "patterns": [
+        {
+          "pattern": "card-grid",
+          "preset": "subscription",
+          "as": "subscription-cards"
+        }
+      ],
+      "default_layout": [
+        "card-grid"
+      ],
+      "shell": "top-nav-main"
+    }
+  ],
+  "page_briefs": {
+    "library": "Filter bar at top with content type filters and search. Below, a product grid of unlocked content items showing thumbnails, titles, creator names, and download buttons.",
+    "subscriptions": "Card grid of active subscription cards showing creator avatar, name, tier badge, renewal date, and manage/cancel links on each card."
+  },
+  "features": [
+    "content-library",
+    "subscription-management",
+    "download-content",
+    "creator-links"
+  ],
+  "shells": {
+    "top-nav-main": "Top navigation for fan browsing"
+  },
+  "dependencies": {
+    "patterns": {
+      "filter-bar": "^1.0.0",
+      "product-grid": "^1.0.0",
+      "card-grid": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "studio"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

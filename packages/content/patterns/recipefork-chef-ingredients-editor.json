@@ -1,0 +1,52 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "recipefork-chef-ingredients-editor",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipefork Chef Ingredients Editor",
+  "description": "Structured ingredient editor for Recipefork recipes with quantity, unit, ingredient, preparation, autosuggest helpers, and recipe scaling behavior. This is the canonical ingredient authoring surface used by Chef Mode and the standardized simple-mode ingredient flow.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Input",
+        "Card",
+        "Badge",
+        "Label",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Input",
+    "Card",
+    "Badge",
+    "Label",
+    "icon"
+  ],
+  "default_preset": "structured",
+  "presets": {
+    "structured": {
+      "description": "Row-based structured ingredient editor with autosuggest, scaling controls, and stable ingredient IDs for downstream instruction linking. Although originally introduced for Chef Mode, Recipefork now uses this as the shared ingredient authoring surface across recipe modes.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "header": "Section heading with add button",
+          "scale-controls": "Recipe scaling controls and servings summary",
+          "ingredient-row": "Quantity, unit, ingredient, preparation, remove",
+          "suggestions": "Autocomplete panels for units and preparation terms",
+          "preview": "Compact ingredient preview string"
+        }
+      }
+    }
+  },
+  "visual_brief": "A structured ingredient editor rendered as a vertical stack of bordered rows. Each row exposes quantity, unit, ingredient name, and preparation, with autosuggest panels for unit abbreviations and kitchen prep language. Above the rows sits a scaling strip that changes displayed quantities while preserving structured ingredient identity for step linking. The same editor should feel approachable enough for simple recipes while still supporting advanced Chef Mode workflows.",
+  "composition": {
+    "ChefIngredientsEditor": "Card(recipefork-card) > [Header + ScaleControls + IngredientRow* + AddButton]"
+  }
+}

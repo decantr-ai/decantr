@@ -1,0 +1,123 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "recipefork-recipe-card",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipefork Recipe Card",
+  "description": "Food-forward recipe card for Brownfield RecipeFork-style feeds, cookbooks, and profile grids. Covers recipe photo, title, author avatar/name, fork lineage, save/like/comment counts, tags, prep/cook time, and cookbook assignment cues.",
+  "tags": [
+    "recipe",
+    "recipes",
+    "food",
+    "feed",
+    "cookbook",
+    "social",
+    "avatar",
+    "like",
+    "fork",
+    "photo",
+    "brownfield",
+    "ai-food"
+  ],
+  "components": [
+    "Card",
+    "Image",
+    "Avatar",
+    "Badge",
+    "Button",
+    "icon"
+  ],
+  "default_preset": "feed",
+  "presets": {
+    "feed": {
+      "description": "Responsive recipe feed card with photo, author row, engagement bar, and fork provenance.",
+      "components": [
+        "Card",
+        "Image",
+        "Avatar",
+        "Badge",
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "card",
+        "atoms": "_flex _col _gap3",
+        "slots": {
+          "photo": "Recipe photo with aspect-ratio crop and fallback gradient",
+          "author": "Avatar, author name, and timestamp",
+          "title": "Recipe title and optional short description",
+          "metadata": "Prep time, cook time, servings, tags, and fork lineage",
+          "engagement": "Like, comment, save, and fork counts"
+        }
+      }
+    },
+    "cookbook": {
+      "description": "Compact cookbook-grid recipe card emphasizing cover image, title, and assignment state.",
+      "components": [
+        "Card",
+        "Image",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "card",
+        "atoms": "_flex _col _gap2",
+        "slots": {
+          "cover": "Recipe/cookbook image",
+          "summary": "Title, tags, and cookbook assignment",
+          "status": "Saved, private, forked, or generated badges"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "card",
+    "atoms": "_flex _col _gap3",
+    "slots": {
+      "photo": "Recipe image",
+      "author": "Author identity",
+      "summary": "Recipe summary",
+      "engagement": "Social counts"
+    }
+  },
+  "visual_brief": "A clean food-photo card that feels native to a modern cookbook app, not a generic SaaS card. The photo should be the first read; author identity and social counts should be immediately scannable without stealing focus from the dish. Dark mode may use glassy or elevated surfaces, but Brownfield implementations should preserve the app's existing component library and token system.",
+  "composition": {
+    "RecipeCard": "Card(recipefork-card) > [Photo(recipefork-photo) + AuthorRow(Avatar + Name + Timestamp) + RecipeSummary + MetadataBadges + EngagementBar]",
+    "EngagementBar": "Row > [LikeCount + CommentCount + SaveButton + ForkCount]",
+    "ForkCue": "Badge or inline trail showing root recipe or fork depth when available"
+  },
+  "layout_hints": {
+    "feed_grid": "Use a 1-column mobile, 2-column tablet, and 3-column desktop grid when the containing route is a discovery/feed page.",
+    "author_identity": "Avatar and name are not decorative; preserve them on feed/profile cards.",
+    "image_priority": "Reserve stable aspect-ratio space before the image loads to avoid feed jumps.",
+    "brownfield_styling": "Map this card to existing shadcn/Tailwind/CSS primitives before adding Decantr CSS."
+  },
+  "motion": {
+    "micro": {
+      "hover": "Cards may lift by 1-2px with a slightly stronger shadow over 150-200ms.",
+      "engagement": "Like/save actions may pulse or swap icon fill without shifting surrounding text."
+    },
+    "transitions": {
+      "entry": "Feed cards may fade up with short stagger when entering viewport."
+    }
+  },
+  "interactions": [
+    "lift-hover",
+    "scroll-reveal"
+  ],
+  "responsive": {
+    "mobile": "Single-column cards with image first and engagement controls wrapping under metadata.",
+    "tablet": "Two-column grid or roomy list depending on route density.",
+    "desktop": "Three-column feed grid or compact cookbook grid."
+  },
+  "accessibility": {
+    "role": "article",
+    "aria-label": "Recipe card",
+    "keyboard": [
+      "Primary card navigation and engagement actions must be separately focusable."
+    ],
+    "announcements": [
+      "Expose author, recipe title, forked/generated state, and engagement counts as text, not image-only badges."
+    ]
+  }
+}

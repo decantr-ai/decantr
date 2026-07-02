@@ -1,0 +1,598 @@
+{
+  "$schema": "https://decantr.ai/schemas/theme.v1.json",
+  "id": "luminarum",
+  "version": "1.0.0",
+  "name": "Luminarum",
+  "description": "Geometric canvas with vibrant faceted color accents. Breathing gradient orbs, outlined cards with colored strokes, particle network details. Tech-forward meets visual candy. Dual dark/light modes: warm charcoal dark, warm off-white light.",
+  "tags": [
+    "dark",
+    "light",
+    "vibrant",
+    "geometric",
+    "technical",
+    "premium",
+    "colorful"
+  ],
+  "personality": "sharp + bold elevation + breathing motion + colored strokes + geometric gradients",
+  "seed": {
+    "primary": "#FE4474",
+    "secondary": "#0AF3EB",
+    "accent": "#FDA303",
+    "background": "#141414"
+  },
+  "palette": {
+    "background": {
+      "dark": "#141414",
+      "light": "#FAFAF9"
+    },
+    "surface": {
+      "dark": "#1E1E1E",
+      "light": "#FFFFFF"
+    },
+    "surface-raised": {
+      "dark": "#262626",
+      "light": "#F5F5F4"
+    },
+    "border": {
+      "dark": "#2E2E2E",
+      "light": "#E7E5E4"
+    },
+    "text": {
+      "dark": "#FAFAFA",
+      "light": "#1C1917"
+    },
+    "text-muted": {
+      "dark": "#A1A1AA",
+      "light": "#78716C"
+    },
+    "primary": {
+      "dark": "#FE4474",
+      "light": "#E11D48"
+    },
+    "primary-hover": {
+      "dark": "#FF5C8A",
+      "light": "#BE123C"
+    },
+    "coral": {
+      "dark": "#F58882",
+      "light": "#F58882"
+    },
+    "pink": {
+      "dark": "#FE4474",
+      "light": "#FE4474"
+    },
+    "crimson": {
+      "dark": "#D80F4A",
+      "light": "#D80F4A"
+    },
+    "cyan": {
+      "dark": "#0AF3EB",
+      "light": "#0AF3EB"
+    },
+    "green": {
+      "dark": "#00E0AB",
+      "light": "#00E0AB"
+    },
+    "amber": {
+      "dark": "#FDA303",
+      "light": "#FDA303"
+    },
+    "yellow": {
+      "dark": "#FCD021",
+      "light": "#FCD021"
+    },
+    "orange": {
+      "dark": "#FC8D0D",
+      "light": "#FC8D0D"
+    },
+    "purple": {
+      "dark": "#6500C6",
+      "light": "#6500C6"
+    }
+  },
+  "modes": [
+    "dark",
+    "light"
+  ],
+  "shapes": [
+    "rounded",
+    "pill"
+  ],
+  "cvd_support": [
+    "deuteranopia",
+    "protanopia"
+  ],
+  "tokens": {
+    "base": {
+      "danger": "#EF4444",
+      "success": "#22C55E",
+      "warning": "#F59E0B"
+    },
+    "cvd": {
+      "deuteranopia": {
+        "danger": "#FF8F00",
+        "success": "#2196F3"
+      },
+      "protanopia": {
+        "danger": "#FFC107",
+        "success": "#03A9F4"
+      }
+    }
+  },
+  "decantr_compat": ">=2.0.0",
+  "source": "core",
+  "decorators": {
+    "lum-canvas": "Particle network background (dark: #141414, light: #FAFAF9). Scattered small dots and thin connecting lines in brand colors at low opacity. Apply to page root.",
+    "lum-glass": "Subtle glass panel (dark: rgba(255,255,255,0.03), light: rgba(0,0,0,0.02)) with soft border. No heavy blur — clean transparency.",
+    "lum-orbs": "Breathing gradient orbs behind hero/feature sections. Large radial gradients in primary/secondary/accent at 15-22% opacity, slowly pulsing and drifting.",
+    "lum-particles": "Fixed-position small dots (2-8px) in brand colors scattered across the viewport at 15% opacity with subtle pulse animation.",
+    "lum-card-outlined": "Outlined card with colored border stroke, transparent bg, colored heading. The stroke color comes from the section's accent.",
+    "lum-card-vibrant": "Filled card with vibrant gradient background, white text, corner accent brackets.",
+    "lum-code-block": "Code block (dark: #111113, light: #F5F5F4) with colored top border (2px) matching section accent. Monospace font, syntax highlighting.",
+    "lum-stat-glow": "Number badge with filled circle in accent color, contrasting text inside.",
+    "lum-brand": "Brand text with accent color on punctuation (e.g. 'decantr.ai' with coral period and 'i').",
+    "lum-fade-up": "Scroll-reveal animation: fade in + translate up 24px over 0.6s.",
+    "lum-divider": "Section divider: thin horizontal line with centered colored dot. Dot color matches the next section's accent."
+  },
+  "spatial": {
+    "density_bias": 0,
+    "content_gap_shift": 0,
+    "section_padding": "7.5rem",
+    "card_wrapping": "minimal",
+    "surface_override": null
+  },
+  "motion": {
+    "preference": "subtle",
+    "reduce_motion": true,
+    "entrance": "lum-fade-up",
+    "micro": "smooth",
+    "durations": {
+      "instant": "80ms",
+      "fast": "150ms",
+      "base": "250ms",
+      "slow": "400ms",
+      "slower": "600ms",
+      "stagger": "60ms"
+    },
+    "easings": {
+      "ease": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "easeOut": "cubic-bezier(0, 0, 0.2, 1)",
+      "easeIn": "cubic-bezier(0.4, 0, 1, 1)",
+      "spring": "cubic-bezier(0.34, 1.56, 0.64, 1)"
+    }
+  },
+  "effects": {
+    "enabled": true,
+    "intensity": "medium",
+    "type_mapping": {
+      "code_preview": [
+        "lum-code-block"
+      ],
+      "stat_display": [
+        "lum-stat-glow"
+      ],
+      "feature_card": [
+        "lum-card-vibrant"
+      ],
+      "outline_card": [
+        "lum-card-outlined"
+      ],
+      "hero_section": [
+        "lum-orbs"
+      ],
+      "background": [
+        "lum-particles"
+      ]
+    },
+    "component_fallback": {
+      "pre": "code_preview",
+      "code": "code_preview",
+      "Statistic": "stat_display",
+      "Card": "outline_card"
+    },
+    "intensity_values": {
+      "subtle": {
+        "--lum-orb-opacity": "0.08",
+        "--lum-stroke-width": "2px",
+        "--lum-glow-radius": "15px"
+      },
+      "medium": {
+        "--lum-orb-opacity": "0.15",
+        "--lum-stroke-width": "3px",
+        "--lum-glow-radius": "30px"
+      },
+      "strong": {
+        "--lum-orb-opacity": "0.22",
+        "--lum-stroke-width": "4px",
+        "--lum-glow-radius": "50px"
+      }
+    }
+  },
+  "compositions": {
+    "hero": {
+      "description": "Split hero with large logo (1/3) and content (2/3). Canvas bg with breathing gradient orbs behind. Logo floats gently.",
+      "layout": "split-1-3",
+      "effects": [
+        "lum-orbs"
+      ]
+    },
+    "feature-grid": {
+      "description": "Grid of vibrant filled cards with corner brackets. Each card a different brand color.",
+      "card_style": "vibrant"
+    },
+    "pipeline": {
+      "description": "Grid of outlined cards showing process steps. Each card has a different accent color stroke with numbered badge.",
+      "card_style": "outlined"
+    },
+    "tool-list": {
+      "description": "Two-column list with colored dot bullets and colored left border stripes on hover.",
+      "card_style": "none"
+    }
+  },
+  "radius": {
+    "philosophy": "rounded",
+    "base": 8
+  },
+  "pattern_preferences": {
+    "prefer": [
+      "kpi-grid",
+      "chart-grid",
+      "data-table",
+      "card-grid"
+    ],
+    "avoid": [],
+    "default_presets": {}
+  },
+  "shell": {
+    "preferred": [
+      "sidebar-main",
+      "top-nav-main"
+    ],
+    "avoid": [],
+    "nav_style": "filled",
+    "default_nav_state": "expanded",
+    "root": "lum-canvas",
+    "nav": "lum-glass",
+    "header": "",
+    "navLabel": "",
+    "brand": "lum-brand",
+    "dimensions": null
+  },
+  "card_styles": {
+    "outlined": {
+      "description": "Transparent background with colored border stroke. Heading uses the stroke color. Content uses muted white. Hover fills with 5% of stroke color.",
+      "properties": {
+        "background": "transparent",
+        "border": "var(--lum-stroke-width, 3px) solid var(--lum-card-color)",
+        "border-radius": "16px",
+        "color": "var(--d-text-muted, rgba(255,255,255,0.75))"
+      },
+      "heading_color": "var(--lum-card-color)",
+      "hover": {
+        "background": "rgba(var(--lum-card-color-rgb), 0.05)",
+        "box-shadow": "0 12px 40px rgba(var(--lum-card-color-rgb), 0.2)",
+        "transform": "translateY(-4px)"
+      }
+    },
+    "vibrant": {
+      "description": "Fully filled card with vibrant gradient background and white text. Corner accent brackets for geometric detail.",
+      "properties": {
+        "background": "linear-gradient(135deg, var(--lum-card-color), var(--lum-card-color-alt))",
+        "border-radius": "16px",
+        "color": "#fff"
+      },
+      "corner_brackets": true,
+      "hover": {
+        "transform": "translateY(-4px)",
+        "box-shadow": "0 16px 48px rgba(var(--lum-card-color-rgb), 0.3)"
+      }
+    }
+  },
+  "typography": {
+    "scale": "modular",
+    "heading_weight": 600,
+    "body_weight": 400,
+    "display": "'Inter Display', 'Inter', ui-sans-serif, sans-serif",
+    "body": "'Inter', ui-sans-serif, sans-serif"
+  },
+  "decorator_definitions": {
+    "lum-canvas": {
+      "description": "Particle network background. Scattered small dots and thin connecting lines in brand colors at low opacity. Apply to page root. Dark: #141414, Light: #FAFAF9.",
+      "intent": "Use as the foundational page background to create the geometric canvas. The particle network adds depth and tech-forward energy.",
+      "suggested_properties": {
+        "background-color": "var(--d-bg, #141414)",
+        "color": "var(--d-text, rgba(255, 255, 255, 0.85))",
+        "min-height": "100vh",
+        "position": "relative"
+      },
+      "mode_overrides": {
+        "dark": {
+          "background-color": "#141414",
+          "color": "rgba(255, 255, 255, 0.85)"
+        },
+        "light": {
+          "background-color": "#FAFAF9",
+          "color": "rgba(28, 25, 23, 0.85)"
+        }
+      },
+      "pairs_with": [
+        "lum-particles",
+        "lum-glass",
+        "lum-orbs"
+      ],
+      "usage": [
+        "Page root containers",
+        "App shell backgrounds"
+      ]
+    },
+    "lum-glass": {
+      "description": "Subtle glass panel. No heavy blur — clean transparency. Dark: rgba(255,255,255,0.03) bg. Light: rgba(0,0,0,0.02) bg.",
+      "intent": "Use for navigation and panel surfaces that need subtle elevation without competing with the vibrant card accents.",
+      "suggested_properties": {
+        "background": "var(--d-glass-bg, rgba(255, 255, 255, 0.03))",
+        "border": "1px solid var(--d-glass-border, rgba(255, 255, 255, 0.08))",
+        "border-radius": "var(--d-radius, 12px)"
+      },
+      "mode_overrides": {
+        "dark": {
+          "background": "rgba(255, 255, 255, 0.03)",
+          "border-color": "rgba(255, 255, 255, 0.08)"
+        },
+        "light": {
+          "background": "rgba(0, 0, 0, 0.02)",
+          "border-color": "rgba(0, 0, 0, 0.06)"
+        }
+      },
+      "pairs_with": [
+        "lum-canvas",
+        "lum-card-outlined"
+      ],
+      "usage": [
+        "Navigation bars",
+        "Sidebar panels",
+        "Section containers"
+      ]
+    },
+    "lum-orbs": {
+      "description": "Breathing gradient orbs behind hero/feature sections. Large radial gradients in primary/secondary/accent at 15-22% opacity, slowly pulsing and drifting.",
+      "intent": "Use behind hero and feature sections to create living, breathing visual energy. Position as background decoration behind content.",
+      "suggested_properties": {
+        "background": "radial-gradient(ellipse at 30% 40%, rgba(254, 68, 116, var(--lum-orb-opacity, 0.15)), transparent 60%), radial-gradient(ellipse at 70% 60%, rgba(10, 243, 235, var(--lum-orb-opacity, 0.15)), transparent 60%)",
+        "position": "absolute",
+        "inset": "0",
+        "pointer-events": "none",
+        "animation": "breathe 8s ease-in-out infinite"
+      },
+      "pairs_with": [
+        "lum-canvas",
+        "lum-card-vibrant"
+      ],
+      "usage": [
+        "Hero section backgrounds",
+        "Feature section accents",
+        "Landing page backdrops"
+      ]
+    },
+    "lum-particles": {
+      "description": "Fixed-position small dots (2-8px) in brand colors scattered across the viewport at 15% opacity with subtle pulse animation.",
+      "intent": "Use as a viewport-level decorative layer to add ambient visual interest. Fixed positioning keeps particles stable during scroll.",
+      "suggested_properties": {
+        "position": "fixed",
+        "inset": "0",
+        "pointer-events": "none",
+        "opacity": "0.15",
+        "z-index": "0"
+      },
+      "pairs_with": [
+        "lum-canvas",
+        "lum-orbs"
+      ],
+      "usage": [
+        "Viewport background layer",
+        "Ambient decoration"
+      ]
+    },
+    "lum-card-outlined": {
+      "description": "Outlined card with colored border stroke, transparent bg, colored heading. The stroke color comes from the section's accent.",
+      "intent": "Use for content cards in grids where each card should have a distinct accent color stroke. Ideal for process steps and feature lists.",
+      "suggested_properties": {
+        "background": "transparent",
+        "border": "var(--lum-stroke-width, 3px) solid var(--lum-card-color, #FE4474)",
+        "border-radius": "16px",
+        "color": "var(--d-text-muted, rgba(255, 255, 255, 0.75))",
+        "transition": "transform 300ms ease, box-shadow 300ms ease"
+      },
+      "mode_overrides": {
+        "dark": {
+          "color": "rgba(255, 255, 255, 0.75)"
+        },
+        "light": {
+          "color": "rgba(28, 25, 23, 0.75)"
+        }
+      },
+      "pairs_with": [
+        "lum-canvas",
+        "lum-stat-glow",
+        "lum-card-vibrant"
+      ],
+      "usage": [
+        "Process step cards",
+        "Feature list items",
+        "Pipeline stages",
+        "Info cards"
+      ]
+    },
+    "lum-card-vibrant": {
+      "description": "Filled card with vibrant gradient background, white text, corner accent brackets.",
+      "intent": "Use for high-impact feature cards that need maximum visual energy. Each card uses a different brand color gradient.",
+      "suggested_properties": {
+        "background": "linear-gradient(135deg, var(--lum-card-color, #FE4474), var(--lum-card-color-alt, #FDA303))",
+        "border-radius": "16px",
+        "color": "#FFFFFF",
+        "transition": "transform 300ms ease, box-shadow 300ms ease"
+      },
+      "pairs_with": [
+        "lum-canvas",
+        "lum-card-outlined"
+      ],
+      "usage": [
+        "Feature highlight cards",
+        "Product cards",
+        "Pricing tiers",
+        "Call-to-action cards"
+      ]
+    },
+    "lum-code-block": {
+      "description": "Code block with colored top border (2px) matching section accent. Monospace font, syntax highlighting. Dark: #111113 bg, Light: #F5F5F4 bg.",
+      "intent": "Use for code examples and syntax-highlighted blocks. The colored top border ties the code block to its section's accent color.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #111113)",
+        "border-top": "2px solid var(--lum-card-color, #0AF3EB)",
+        "border-radius": "12px",
+        "font-family": "ui-monospace, monospace",
+        "padding": "20px"
+      },
+      "mode_overrides": {
+        "dark": {
+          "background": "#111113"
+        },
+        "light": {
+          "background": "#F5F5F4"
+        }
+      },
+      "pairs_with": [
+        "lum-canvas",
+        "lum-card-outlined"
+      ],
+      "usage": [
+        "Code blocks",
+        "API examples",
+        "Configuration snippets"
+      ]
+    },
+    "lum-stat-glow": {
+      "description": "Number badge with filled circle in accent color, contrasting text inside.",
+      "intent": "Use for numbered badges and step indicators. The filled circle with contrasting text creates a bold, readable counter.",
+      "suggested_properties": {
+        "background": "var(--lum-card-color, #FDA303)",
+        "color": "var(--d-bg, #141414)",
+        "border-radius": "50%",
+        "width": "40px",
+        "height": "40px",
+        "display": "flex",
+        "align-items": "center",
+        "justify-content": "center",
+        "font-weight": "700"
+      },
+      "mode_overrides": {
+        "dark": {
+          "color": "#141414"
+        },
+        "light": {
+          "color": "#FFFFFF"
+        }
+      },
+      "pairs_with": [
+        "lum-card-outlined",
+        "lum-card-vibrant"
+      ],
+      "usage": [
+        "Step numbers",
+        "Stat badges",
+        "Counter indicators",
+        "Ranking badges"
+      ]
+    },
+    "lum-brand": {
+      "description": "Brand text with accent color on punctuation (e.g. 'decantr.ai' with coral period and 'i').",
+      "intent": "Use for the brand name in navigation and headers. Colored punctuation creates a distinctive, memorable brand mark.",
+      "suggested_properties": {
+        "color": "var(--d-text, rgba(255, 255, 255, 0.9))",
+        "font-weight": "700"
+      },
+      "mode_overrides": {
+        "dark": {
+          "color": "rgba(255, 255, 255, 0.9)"
+        },
+        "light": {
+          "color": "rgba(28, 25, 23, 0.9)"
+        }
+      },
+      "pairs_with": [
+        "lum-glass",
+        "lum-canvas"
+      ],
+      "usage": [
+        "Brand logos",
+        "Navigation brand text",
+        "Footer brand marks"
+      ]
+    },
+    "lum-fade-up": {
+      "description": "Scroll-reveal animation: fade in + translate up 24px over 0.6s.",
+      "intent": "Use as the entrance animation for sections appearing on scroll. The larger translate creates a more dramatic reveal.",
+      "suggested_properties": {
+        "animation": "lum-fade-up 0.6s ease-out both",
+        "opacity": "0",
+        "transform": "translateY(24px)"
+      },
+      "pairs_with": [
+        "lum-card-outlined",
+        "lum-card-vibrant"
+      ],
+      "usage": [
+        "Section reveals",
+        "Card entrance animations",
+        "Scroll-triggered content"
+      ]
+    },
+    "lum-divider": {
+      "description": "Section divider: thin horizontal line with centered colored dot. Dot color matches the next section's accent.",
+      "intent": "Use between major page sections to create visual breathing room. The colored dot transitions the eye to the next section's accent.",
+      "suggested_properties": {
+        "border-top": "1px solid var(--d-border, rgba(255, 255, 255, 0.1))",
+        "position": "relative",
+        "margin": "80px 0"
+      },
+      "mode_overrides": {
+        "dark": {
+          "border-top-color": "rgba(255, 255, 255, 0.1)"
+        },
+        "light": {
+          "border-top-color": "rgba(0, 0, 0, 0.08)"
+        }
+      },
+      "pairs_with": [
+        "lum-canvas",
+        "lum-card-outlined"
+      ],
+      "usage": [
+        "Section dividers",
+        "Content breaks",
+        "Page section transitions"
+      ]
+    }
+  },
+  "elevation": {
+    "1": {
+      "light": "0 1px 2px rgba(0,0,0,0.06)",
+      "dark": "0 1px 2px rgba(0,0,0,0.4)"
+    },
+    "2": {
+      "light": "0 2px 6px rgba(0,0,0,0.08)",
+      "dark": "0 2px 8px rgba(255, 255, 255, 0.06)"
+    },
+    "3": {
+      "light": "0 6px 16px rgba(0,0,0,0.10)",
+      "dark": "0 4px 16px rgba(255, 255, 255, 0.08)"
+    },
+    "4": {
+      "light": "0 12px 32px rgba(0,0,0,0.14)",
+      "dark": "0 8px 28px rgba(255, 255, 255, 0.12)"
+    },
+    "5": {
+      "light": "0 24px 64px rgba(0,0,0,0.18)",
+      "dark": "0 16px 48px rgba(255, 255, 255, 0.16)"
+    }
+  }
+}

@@ -1,0 +1,156 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "maintenance-ticket",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Maintenance Ticket",
+  "description": "Repair request form and display. Supports create (tenant-facing), view, and edit modes with photo upload and status tracking.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "icon",
+        "Badge",
+        "Input",
+        "Select",
+        "Textarea"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "icon",
+    "Badge",
+    "Input",
+    "Select",
+    "Textarea"
+  ],
+  "default_preset": "view",
+  "presets": {
+    "create": {
+      "description": "New ticket form (tenant-facing)",
+      "components": [
+        "Button",
+        "icon",
+        "Select",
+        "Textarea"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "header": "Title",
+          "property-unit": "Auto-filled for tenant",
+          "category": "Issue category dropdown",
+          "priority": "Priority level",
+          "description": "Issue description textarea",
+          "photos": "Photo upload",
+          "availability": "Preferred access times",
+          "submit": "Submit button"
+        }
+      }
+    },
+    "view": {
+      "description": "Read-only ticket details view with status timeline, photo gallery, and assignment info",
+      "components": [
+        "Button",
+        "icon",
+        "Badge"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "header": "Ticket ID, status badge",
+          "details": "Category, priority, description",
+          "photos": "Attached images",
+          "timeline": "Status updates, comments",
+          "assignment": "Assigned vendor/staff",
+          "resolution": "Resolution notes, completion date",
+          "actions": "Update status, assign, close"
+        }
+      }
+    },
+    "edit": {
+      "description": "Owner-facing ticket edit form with vendor assignment, internal notes, and status controls",
+      "components": [
+        "Button",
+        "icon",
+        "Select",
+        "Textarea"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "form": "Edit fields",
+          "assignment": "Assign to vendor",
+          "notes": "Internal notes",
+          "actions": "Save/cancel"
+        }
+      }
+    },
+    "recent": {
+      "description": "Recent tickets list for dashboard",
+      "components": [
+        "Badge"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap2",
+        "slots": {
+          "items": "Recent ticket rows"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap4",
+    "slots": {
+      "header": "Ticket header",
+      "details": "Ticket details",
+      "timeline": "Status timeline",
+      "actions": "Actions"
+    }
+  },
+  "visual_brief": "Ticket detail view with a header showing ticket ID, title, status badge (color-coded), and priority badge. The details section displays property, unit, category (plumbing, electrical, etc.), reporter name, and description text. A photo section shows uploaded images in a small gallery grid. A status timeline tracks the ticket lifecycle with timestamped entries (submitted, assigned, in-progress, completed). The create preset shows a form with title, category select, priority select, description textarea, and photo upload area. Action buttons include Assign, Update Status, and Close.",
+  "responsive": {
+    "mobile": "Single-column stacked layout. Photo gallery uses horizontal scroll. Timeline is vertical. Action buttons are full-width at the bottom.",
+    "tablet": "Standard layout with comfortable spacing. Photo gallery shows 2-3 thumbnails per row.",
+    "desktop": "Full layout with details and timeline side by side. Photo gallery in a grid. All actions visible in a toolbar."
+  },
+  "layout_hints": {
+    "ticket_priority": "Lead with the current state of the issue first: status, priority, property context, and the reported problem. Timeline, photos, and internal actions should deepen that understanding rather than compete with it.",
+    "create_vs_view": "Creation mode should emphasize clarity and reassurance for the reporter, while view/edit modes should emphasize operational tracking and ownership.",
+    "timeline_role": "Status history is supporting evidence of progress. Keep it structurally attached to the ticket rather than letting it feel like a separate activity feed."
+  },
+  "motion": {
+    "micro": "Status actions, attachments, and timeline states may sharpen slightly on hover or focus to clarify available controls.",
+    "transitions": "State changes and timeline expansion should feel direct and service-oriented rather than lively or decorative."
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Maintenance ticket",
+    "keyboard": [
+      "Header actions, ticket fields, attachments, and timeline items should be reachable in a logical top-to-bottom order."
+    ],
+    "announcements": [
+      "Ticket title, status, priority, and property context should be exposed semantically so the repair state remains understandable without badge color alone."
+    ]
+  },
+  "composition": {
+    "MaintenanceTicket": "Container(d-section, flex-col, gap-4) > [Header + Details + PhotoGallery? + StatusTimeline + Assignment? + Actions]",
+    "Header": "Row(d-surface) > [TicketID(mono-data) + Title + StatusBadge(d-annotation, color-coded) + PriorityBadge(d-annotation)]",
+    "Details": "Section(d-data) > [Category + Property + Reporter + Description]",
+    "PhotoGallery": "Grid(d-data) > Thumbnail(clickable)[]",
+    "StatusTimeline": "Track(d-data, vertical) > TimelineEntry(timestamped)[]",
+    "Actions": "Row(d-interactive) > [AssignButton + UpdateStatusButton + CloseButton(variant: ghost)]"
+  }
+}

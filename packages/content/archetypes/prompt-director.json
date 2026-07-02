@@ -1,0 +1,118 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "prompt-director",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Prompt Director",
+  "description": "Organize, version, and iterate on scene prompts. Provides a prompt library, full-fidelity editor with live playground, and inline storyboard strip for visual reference.",
+  "tags": [
+    "prompts",
+    "director",
+    "scenes",
+    "library",
+    "versioning",
+    "ai",
+    "video",
+    "2026"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "prompt director",
+        "prompt library",
+        "scene prompts",
+        "prompt editor",
+        "prompt versioning"
+      ],
+      "secondary": [
+        "prompt playground",
+        "scene writer",
+        "ai prompts"
+      ],
+      "negative": [
+        "chat"
+      ]
+    },
+    "implies": [
+      "prompts",
+      "version-control"
+    ],
+    "weight": 0.7,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "prompts",
+      "path": "/prompts",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "prompt-table"
+        },
+        {
+          "pattern": "search-filter-bar",
+          "preset": "standard",
+          "as": "filters"
+        }
+      ],
+      "default_layout": [
+        "filters",
+        "prompt-table"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "prompt-detail",
+      "path": "/prompts/:id",
+      "patterns": [
+        {
+          "pattern": "prompt-playground",
+          "preset": "standard",
+          "as": "editor"
+        },
+        {
+          "pattern": "scene-storyboard",
+          "preset": "strip",
+          "as": "reference-strip"
+        }
+      ],
+      "default_layout": [
+        "editor",
+        "reference-strip"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "prompts": "Scene prompt library with a filter bar at top providing text search, tag multi-select, scene-type chips, and version filter. Below, a dense sortable data table lists prompts with columns: title, tag chips, scene-type badge, token count, version number, last-edited relative time, and author avatar. Row click opens detail; hover reveals quick-duplicate and archive actions.",
+    "prompt-detail": "Focused prompt editor view. Top region is a full-width prompt playground with large textarea featuring syntax-highlighted variables, parameter sidebar (model, temperature, seed), and a live preview panel streaming generated output with token count and latency. Below the editor, a horizontal scrollable storyboard strip displays reference scene thumbnails connected by thin narrative lines, letting the author see exactly which frames the prompt will drive."
+  },
+  "features": [
+    "prompt-management",
+    "version-control"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area"
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon",
+      "neon-dark"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  },
+  "dependencies": {
+    "patterns": {
+      "data-table": ">=1.0.0",
+      "search-filter-bar": ">=1.0.0",
+      "prompt-playground": ">=1.0.0",
+      "scene-storyboard": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

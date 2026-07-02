@@ -1,0 +1,76 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "portfolio-overview",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Portfolio Overview",
+  "description": "Financial portfolio dashboard with net worth KPIs, allocation charts, and asset data tables. Primary view for wealth management and investment tracking.",
+  "tags": ["finance", "portfolio", "dashboard", "kpi", "allocations", "investments", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["portfolio overview", "net worth dashboard", "wealth dashboard", "portfolio dashboard"],
+      "secondary": ["asset allocation", "portfolio summary", "investment overview", "financial summary"],
+      "negative": ["ecommerce", "admin", "social"]
+    },
+    "implies": ["analytics", "reporting"],
+    "weight": 1,
+    "tier": "core"
+  },
+  "pages": [
+    {
+      "id": "overview",
+      "patterns": [
+        {
+          "pattern": "kpi-grid",
+          "preset": "dashboard",
+          "as": "portfolio-kpis"
+        },
+        {
+          "pattern": "chart-grid",
+          "preset": "standard",
+          "as": "performance-charts"
+        }
+      ],
+      "default_layout": ["portfolio-kpis", "performance-charts"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "allocations",
+      "patterns": [
+        {
+          "pattern": "chart-grid",
+          "preset": "standard",
+          "as": "allocation-charts"
+        },
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "allocation-table"
+        }
+      ],
+      "default_layout": ["allocation-charts", "allocation-table"],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "overview": "KPI grid showing total net worth, portfolio return (percentage with green/red coloring), monthly cash flow, and total assets. Below, chart grid with portfolio performance line chart over time, income vs expense bar chart, and asset class allocation donut chart.",
+    "allocations": "Chart grid with asset allocation donut, sector allocation treemap, and geographic distribution map. Below, data table listing each asset class with name, current value (monospace), percentage of portfolio, gain/loss amount and percentage, and target vs actual allocation bars."
+  },
+  "features": ["analytics-state", "data-export"],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with account switcher and main content area"
+  },
+  "suggested_theme": {
+    "ids": ["carbon", "clean"],
+    "modes": ["dark", "auto"]
+  },
+  "dependencies": {
+    "patterns": {
+      "kpi-grid": ">=1.0.0",
+      "chart-grid": ">=1.0.0",
+      "data-table": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

@@ -1,0 +1,154 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "agent-studio",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "AI Agent Studio",
+  "description": "Core agent building workspace for designing, configuring, and testing AI agents with a three-panel editor, tool management, and live preview.",
+  "tags": [
+    "ai",
+    "agents",
+    "studio",
+    "builder",
+    "tools",
+    "prompts",
+    "llm",
+    "2026"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "agent studio",
+        "agent builder",
+        "build agents",
+        "agent workspace",
+        "agent editor"
+      ],
+      "secondary": [
+        "prompt editor",
+        "tool config",
+        "agent design",
+        "agent ide",
+        "agent playground"
+      ],
+      "negative": [
+        "chatbot",
+        "orchestrator",
+        "monitoring"
+      ]
+    },
+    "implies": [
+      "tools",
+      "prompts"
+    ],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "agents",
+      "patterns": [
+        {
+          "pattern": "card-grid",
+          "preset": "content",
+          "as": "agent-cards"
+        }
+      ],
+      "default_layout": [
+        "agent-cards"
+      ],
+      "shell": "sidebar-aside"
+    },
+    {
+      "id": "agent-detail",
+      "patterns": [
+        {
+          "pattern": "split-pane",
+          "preset": "standard",
+          "as": "editor-layout"
+        },
+        {
+          "pattern": "prompt-playground",
+          "preset": "standard",
+          "as": "live-preview"
+        }
+      ],
+      "default_layout": [
+        "editor-layout",
+        "live-preview"
+      ],
+      "shell": "sidebar-aside"
+    },
+    {
+      "id": "agent-config",
+      "patterns": [
+        {
+          "pattern": "form-sections",
+          "preset": "structured",
+          "as": "config-form"
+        }
+      ],
+      "default_layout": [
+        "config-form"
+      ],
+      "shell": "sidebar-aside"
+    },
+    {
+      "id": "agent-tools",
+      "patterns": [
+        {
+          "pattern": "tool-list",
+          "preset": "standard",
+          "as": "tool-manager"
+        },
+        {
+          "pattern": "form-sections",
+          "preset": "structured",
+          "as": "tool-schema-editor"
+        }
+      ],
+      "default_layout": [
+        "tool-manager",
+        "tool-schema-editor"
+      ],
+      "shell": "sidebar-aside"
+    }
+  ],
+  "page_briefs": {
+    "agents": "Grid of agent cards showing name, model badge, tool count pill, and status indicator (active/draft/archived). Top bar with search input and prominent 'Create Agent' button. Sidebar lists recently edited agents for quick access.",
+    "agent-detail": "Three-panel layout. Left panel shows a collapsible tool tree with drag-to-reorder. Center panel is a full-height prompt editor with syntax highlighting and variable interpolation. Right panel streams a live preview of agent responses with token count and latency metrics.",
+    "agent-config": "Grouped form sections for agent parameters: model selector dropdown, temperature slider with numeric readout, max-tokens input, system prompt textarea with character count, and toggle switches for streaming, tool-use, and memory. Save and reset buttons anchored at bottom.",
+    "agent-tools": "Split view with tool list on the left showing tool name, type icon, and validation status badge. Selecting a tool opens a JSON schema editor on the right with inline validation errors and a 'Test Tool' button that runs a dry invocation."
+  },
+  "features": [
+    "agents",
+    "tools",
+    "prompts",
+    "real-time-preview",
+    "keyboard-shortcuts"
+  ],
+  "shells": {
+    "sidebar-aside": "Collapsible sidebar for agent navigation with main content area and optional right aside panel"
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon",
+      "neon-dark"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  },
+  "dependencies": {
+    "patterns": {
+      "card-grid": ">=1.0.0",
+      "split-pane": ">=1.0.0",
+      "prompt-playground": ">=1.0.0",
+      "form-sections": ">=1.0.0",
+      "tool-list": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

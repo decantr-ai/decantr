@@ -1,0 +1,119 @@
+{
+  "$schema": "https://decantr.ai/schemas/shell.v1.json",
+  "id": "mobile-tab-bar",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Mobile Tab Bar",
+  "description": "Mobile-first app shell with sticky compact header, single-scroll body, and fixed bottom tab-bar. The first shell in Decantr's catalog optimized for mobile-portrait consumer apps. Desktop scales gracefully to a 480px-wide centered column. Use for: dating apps, social discovery, swipe feeds, anywhere a bottom tab navigator is the primary navigation affordance.",
+  "root": "_relative _flex _flex-col _w-full _min-h-dvh _max-w-screen-md _mx-auto _bg-background _text-text",
+  "nav": "tab-bar",
+  "header": "_sticky _top-0 _z-30",
+  "nav_style": "bottom-fixed-tabs",
+  "layout": "stacked-vertical",
+  "atoms": "_flex _flex-col _w-full _min-h-dvh",
+  "dimensions": {
+    "max_width_app": "480px",
+    "header_height": "52px",
+    "tab_bar_height": "64px",
+    "body_padding_x": "16px",
+    "body_padding_top": "16px",
+    "body_padding_bottom": "80px"
+  },
+  "internal_layout": {
+    "regions": ["root", "header", "body", "tab-bar"],
+    "root": {
+      "purpose": "App container. Centers the column on desktop, full-width on mobile. Owns the dvh-based viewport sizing and global background color.",
+      "min-height": "100dvh",
+      "max-width": "480px",
+      "margin": "0 auto",
+      "position": "relative",
+      "background": "var(--d-bg)",
+      "color": "var(--d-fg)",
+      "display": "flex",
+      "flex-direction": "column",
+      "atoms": "_relative _flex _flex-col _w-full _min-h-dvh _max-w-screen-md _mx-auto _bg-background _text-text"
+    },
+    "header": {
+      "purpose": "Sticky top header. Hosts the brand mark (left), optional filter or page title (center), and avatar/profile control (right). Compact at 52px to maximize body space.",
+      "height": "52px",
+      "padding": "0 16px",
+      "display": "flex",
+      "align-items": "center",
+      "justify-content": "space-between",
+      "gap": "12px",
+      "position": "sticky",
+      "top": "0",
+      "z-index": "30",
+      "background": "rgba(255, 245, 242, 0.85)",
+      "backdrop-filter": "blur(16px)",
+      "border-bottom": "1px solid var(--d-border)",
+      "atoms": "_sticky _top-0 _z-30 _flex _items-center _justify-between _gap-3 _px-4 _h-[52px] _bg-background/85 _backdrop-blur _border-b _border-border"
+    },
+    "body": {
+      "purpose": "Single scroll region for page content. The ONLY scroll container in this shell — never nest scroll inside. Bottom padding clears the fixed tab-bar so content isn't hidden behind it.",
+      "flex": "1 1 auto",
+      "overflow-y": "auto",
+      "overflow-x": "hidden",
+      "padding": "16px 16px 80px 16px",
+      "scroll-container": true,
+      "atoms": "_flex-1 _overflow-y-auto _overflow-x-hidden _px-4 _pt-4 _pb-20"
+    },
+    "tab-bar": {
+      "purpose": "Bottom navigator with 4-5 icon+label tabs. Sticky on desktop / fixed-translate on iOS to handle safe-area-inset-bottom. Always visible across primary app pages.",
+      "height": "calc(64px + env(safe-area-inset-bottom))",
+      "padding": "8px 12px calc(8px + env(safe-area-inset-bottom))",
+      "position": "sticky",
+      "bottom": "0",
+      "z-index": "40",
+      "display": "flex",
+      "align-items": "center",
+      "justify-content": "space-around",
+      "background": "rgba(255, 245, 242, 0.85)",
+      "backdrop-filter": "blur(16px)",
+      "border-top": "1px solid var(--d-border)",
+      "tab-target-min-size": "56px",
+      "atoms": "_sticky _bottom-0 _z-40 _flex _items-center _justify-around _bg-background/85 _backdrop-blur _border-t _border-border",
+      "responsive": {
+        "mobile": "Tab bar uses sticky positioning with safe-area inset. Tap targets 56×56 minimum.",
+        "desktop": "Sticky bottom inside the 480px column. Same height. Becomes part of the centered column visual."
+      }
+    },
+    "anti_patterns": [
+      "Never nest a scroll container inside body — body owns the only scroll axis. Inner scroll causes momentum-scroll conflicts on iOS.",
+      "Never absolute-position elements outside the body region — they will overflow the 480px column on desktop and disrupt the centered layout.",
+      "Tab bar must NOT consume body height via flex — body's padding-bottom (80px) clears it. Mixing flex-shrink and fixed/sticky causes scroll jump.",
+      "Never apply viewport units (vh/vw) to body children — use dvh on root only. iOS Safari miscalculates vh with dynamic toolbars.",
+      "Header and tab-bar must NOT both grow flexibly — they have fixed heights (52px / 64px). Body alone flexes.",
+      "Do not place the tab-bar inside the body region — it must be a sibling so it remains fixed during body scroll."
+    ],
+    "responsive": {
+      "mobile": {
+        "max_width": "100vw",
+        "padding": "0",
+        "tab_bar_position": "sticky bottom with safe-area inset",
+        "notes": "Full-width portrait optimized. Header and tab-bar sticky, body scrolls."
+      },
+      "desktop": {
+        "max_width": "480px",
+        "centered": true,
+        "side_treatment": "Optional quiet off-column background tint or neutral gutter treatment handled by the page or theme background, NOT the shell. Avoid decorative orb/blob layers.",
+        "notes": "Column floats centered with 480px max-width. The shell does not add side rails — the surrounding page background fills the gutters."
+      }
+    }
+  },
+  "guidance": {
+    "primary_use_cases": "Mobile-first consumer apps with bottom-tab navigation: swipe-based dating/discovery apps, social feeds, mobile-first messaging, photo-share apps, fitness/habit trackers, food/recipe browsing.",
+    "avoid_for": "Desktop-first SaaS (use sidebar-main), data-dense dashboards (use top-nav-sidebar), document/spreadsheet UI (use three-column-browser), terminal/CLI tools (use terminal-split).",
+    "tab_bar_contract": "Tab bar should host 4-5 items maximum. Each item is a route+icon+label. The active tab is signaled via the swipecircle-tab-active decorator (or theme equivalent). Tap targets are 56×56 minimum for thumb-friendliness.",
+    "header_contract": "Header is intentionally compact (52px). Use brand mark, optional filter dropdown or page title, and a single profile/action control. Do NOT cram multiple actions into the header — push secondary actions into the body or a sheet.",
+    "body_contract": "Body is the only scroll axis. Use padding-bottom of at least 80px to clear the tab-bar. Do not rely on flex-grow alone — explicit overflow-y: auto is required.",
+    "thread_pages": "When entering a focused state (e.g., a chat thread), keep the tab-bar visible by default for navigation consistency. Hide it only on input focus to maximize keyboard-aware compose space, restoring on blur."
+  },
+  "config": {
+    "default_tab_count": 4,
+    "max_tab_count": 5,
+    "tab_label_visible": true,
+    "header_translucency": "blur(16px) with 85% bg-tint",
+    "tab_bar_translucency": "blur(16px) with 85% bg-tint"
+  }
+}

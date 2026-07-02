@@ -1,0 +1,112 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "owner-dashboard",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Owner Dashboard",
+  "description": "Property owner/investor portfolio dashboard with financial overview, property grid, rent collection status, maintenance summary, and vacancy tracking.",
+  "tags": [
+    "property-management",
+    "dashboard",
+    "real-estate",
+    "portfolio",
+    "investor"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "property owner dashboard",
+        "landlord dashboard",
+        "portfolio overview",
+        "property management home"
+      ],
+      "secondary": [
+        "real estate investor",
+        "rental portfolio"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "core"
+  },
+  "pages": [
+    {
+      "id": "dashboard",
+      "patterns": [
+        {
+          "pattern": "pnl-dashboard",
+          "preset": "summary",
+          "as": "financials"
+        },
+        {
+          "pattern": "property-grid",
+          "preset": "compact",
+          "as": "properties"
+        },
+        {
+          "pattern": "rent-roll",
+          "preset": "summary",
+          "as": "rent-collection"
+        },
+        {
+          "pattern": "maintenance-board",
+          "preset": "mini",
+          "as": "maintenance"
+        },
+        {
+          "pattern": "vacancy-tracker",
+          "preset": "mini",
+          "as": "vacancies"
+        },
+        {
+          "pattern": "notification-center",
+          "preset": "dropdown",
+          "as": "alerts"
+        }
+      ],
+      "default_layout": [
+        "alerts",
+        "financials",
+        "rent-roll",
+        "vacancies",
+        "maintenance-board",
+        "properties"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "dashboard": "Portfolio overview dashboard. P&L summary cards at top showing revenue, expenses, NOI, and occupancy rate. Rent collection status bar below. Vacancy tracker mini cards. Maintenance summary showing open ticket count. Property card grid at the bottom with thumbnail, address, unit count, and occupancy per card."
+  },
+  "features": [
+    "dashboard",
+    "analytics",
+    "notifications"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with portfolio-focused main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "pnl-dashboard": "^1.0.0",
+      "property-grid": "^1.0.0",
+      "rent-roll": "^1.0.0",
+      "maintenance-board": "^1.0.0",
+      "vacancy-tracker": "^1.0.0",
+      "notification-center": "^1.0.0",
+      "sparkline-cell": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "estate"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "diff-view",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Diff View",
+  "description": "Side-by-side or unified diff display for code and text comparison.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {
+      "terminal": "^1.0.0"
+    },
+    "requires_core": {
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "icon"
+  ],
+  "default_preset": "split",
+  "presets": {
+    "split": {
+      "description": "Side-by-side split diff view with original and modified panels, line numbers, and change markers",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _hfull _mono _bgblack _fggreen",
+        "slots": {
+          "header": "File names, stats",
+          "left": "Original content",
+          "right": "Modified content",
+          "gutter": "Line numbers, change markers"
+        }
+      }
+    },
+    "unified": {
+      "description": "Unified diff format with interleaved additions and deletions in a single scrollable column",
+      "components": [
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _mono _bgblack _fggreen",
+        "slots": {
+          "header": "Diff header with stats",
+          "hunks": "Diff hunks with context"
+        }
+      }
+    },
+    "inline": {
+      "description": "Inline word-level diff highlighting character changes within individual lines",
+      "components": [],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _mono _bgblack _fggreen",
+        "slots": {
+          "content": "Mixed inline additions and deletions"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _hfull _mono _bgblack _fggreen",
+    "slots": {
+      "header": "File names and stats",
+      "left": "Original",
+      "right": "Modified"
+    }
+  },
+  "features": [
+    "syntax-highlighting",
+    "line-navigation",
+    "copy-hunks",
+    "expand-collapse",
+    "jump-to-change"
+  ],
+  "keyboard_shortcuts": {
+    "n": "Next change",
+    "p": "Previous change",
+    "e": "Expand all",
+    "c": "Collapse all"
+  },
+  "visual_brief": "Code comparison display with two side-by-side panels (split preset) or a single merged panel (unified preset). Each panel shows line numbers in a narrow gutter column with a monospace font. Added lines have a green-tinted background with a '+' marker. Removed lines have a red-tinted background with a '-' marker. Unchanged lines render with no background tint. A header bar above each panel shows the file name and change statistics (additions/deletions count). The inline preset highlights changed characters within a line with a stronger color accent.",
+  "responsive": {
+    "mobile": "Defaults to unified diff view — single column with added/removed lines interleaved. Horizontal scroll for long lines. Line numbers use minimal width.",
+    "tablet": "Split view available with narrower panes. Synchronized scrolling between panels.",
+    "desktop": "Full split view with generous panel widths. Character-level diff highlighting. Expandable context lines."
+  },
+  "layout_hints": {
+    "comparison_role": "The pattern should preserve a clear comparison between original and changed states. Headers, gutters, and hunk boundaries should all reinforce that reading model rather than acting like generic code panes.",
+    "hunk_focus": "Changed lines and inline highlights should dominate visually, while unchanged context remains supportive and easy to collapse or skim past.",
+    "mobile_fallback": "Unified mode is the canonical narrow-screen fallback. Do not try to force split panes into cramped widths where comparison becomes unreadable."
+  },
+  "motion": {
+    "micro": "Active hunks or focused lines may brighten subtly, and copied or expanded hunks may acknowledge interaction with restrained feedback.",
+    "transitions": "Expanding context, switching between split and unified views, and jumping between hunks should preserve orientation without flashy animation."
+  },
+  "interactions": [
+    "hover-reveal",
+    "click-select",
+    "scroll-reveal"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Diff view",
+    "keyboard": [
+      "Keyboard navigation between hunks should keep the currently focused change obvious in both split and unified modes."
+    ],
+    "announcements": [
+      "Added, removed, and unchanged lines should be distinguishable semantically and not rely only on color or gutter markers."
+    ]
+  }
+}

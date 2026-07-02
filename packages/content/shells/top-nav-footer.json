@@ -1,0 +1,114 @@
+{
+  "id": "top-nav-footer",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Top Nav + Footer",
+  "description": "Horizontal nav with main content and a persistent footer. Used for marketing sites, documentation with ToC footer.",
+  "layout": "stack",
+  "atoms": "_flex _col _h[100vh]",
+  "config": {
+    "regions": [
+      "header",
+      "body",
+      "footer"
+    ],
+    "grid": {
+      "areas": [
+        [
+          "header"
+        ],
+        [
+          "body"
+        ],
+        [
+          "footer"
+        ]
+      ]
+    },
+    "nav": {
+      "position": "top"
+    },
+    "header": {
+      "height": "52px",
+      "sticky": true
+    },
+    "body": {
+      "scroll": true
+    },
+    "footer": {
+      "height": "auto",
+      "sticky": false
+    }
+  },
+  "configurable": {
+    "nav": {
+      "positions": [
+        "top",
+        "left"
+      ],
+      "modes": [
+        "full"
+      ]
+    },
+    "header": {
+      "toggleable": true
+    },
+    "footer": {
+      "toggleable": true
+    },
+    "sizing": {
+      "headerHeight": {
+        "min": 36,
+        "max": 80,
+        "default": 52
+      }
+    }
+  },
+  "guidance": {
+    "section_spacing": "Marketing sections use spacious density. Each d-section uses full --d-section-py padding.",
+    "section_labels": "Section overline labels use d-label for uppercase, accent-colored headers with density-responsive spacing.",
+    "section_label_treatment": "d-label",
+    "section_density": "comfortable",
+    "cta_sections": "CTA sections at the bottom of marketing pages should stand out visually \u2014 subtle background gradient or glass effect, not just a plain card.",
+    "shell_spacing": "Header, body sections, and footer should feel like one coherent public shell. Let the shell own horizontal inset rhythm and footer spacing instead of layering extra page-local wrappers."
+  },
+  "internal_layout": {
+    "root": {
+      "display": "flex",
+      "direction": "column",
+      "min_height": "100vh",
+      "atoms": "_flex _col _minh[100vh]"
+    },
+    "header": {
+      "height": "52px",
+      "display": "flex",
+      "align": "center",
+      "justify": "space-between",
+      "padding": "0 1.5rem",
+      "border": "bottom",
+      "sticky": true,
+      "z_index": "10",
+      "background": "var(--d-bg)",
+      "left_content": "Brand/logo",
+      "center_content": "Nav links \u2014 flex with gap 1.5rem. Hidden below md, visible above.",
+      "right_content": "CTA button + mobile hamburger. Hamburger ONLY below md breakpoint.",
+      "button_sizing": "Buttons in the header use compact sizing: py-1.5 px-3 text-sm (~32px tall). The header is a tight 52px bar \u2014 default d-interactive padding is too large here."
+    },
+    "body": {
+      "flex": "1",
+      "padding": "none",
+      "note": "Full-width sections stack vertically. Each section uses d-section with --d-section-py. Body has NO padding \u2014 sections own their spacing. Natural document scroll."
+    },
+    "footer": {
+      "border": "top",
+      "padding": "2rem 1.5rem",
+      "position_within": "bottom (mt-auto for short pages)",
+      "note": "Multi-column footer with link groups and legal."
+    }
+  },
+  "code": {
+    "imports": "import { Shell } from 'decantr/components';",
+    "example": "Shell({ config: 'top-nav-footer' },\n  Shell.Header({}, headerContent),\n  Shell.Nav({}, navItems),\n  Shell.Body({}, mainContent),\n  Shell.Footer({}, footerContent)\n)"
+  },
+  "$schema": "https://decantr.ai/schemas/shell.v1.json"
+}

@@ -1,0 +1,33 @@
+{
+  "name": "decantr-content",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Official Decantr certified vocabulary — patterns, themes, starter kits, archetypes, shells",
+  "license": "MIT",
+  "homepage": "https://decantr.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/decantr-ai/decantr-content.git"
+  },
+  "author": "Decantr AI",
+  "scripts": {
+    "content:health": "decantr content-health --ci --fail-on error --markdown --output content-health-summary.md",
+    "content:health:json": "decantr content-health --json --output content-health-report.json",
+    "content:health:suppressions": "node scripts/audit-content-health-suppressions.js",
+    "registry:audit": "node scripts/audit-registry-drift.js",
+    "registry:v2-certify": "node scripts/certify-registry-v2.js --report-json=registry-v2-certification-report.json --summary-markdown=registry-v2-certification-summary.md",
+    "registry:sync": "node scripts/sync-to-registry.js",
+    "release:closeout": "node scripts/audit-release-closeout.js",
+    "release:closeout:json": "node scripts/audit-release-closeout.js --json",
+    "schemas:sync": "node scripts/sync-schemas-from-monorepo.js",
+    "validate": "node validate.js"
+  },
+  "devDependencies": {
+    "@decantr/cli": "3.5.2",
+    "ajv": "^8.17.1"
+  },
+  "dependencies": {
+    "@decantr/telemetry": "3.4.0"
+  }
+}

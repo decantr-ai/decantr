@@ -1,0 +1,72 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "marketing-research",
+  "role": "public",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Marketing — Research Lab",
+  "description": "Public marketing home page for a scientific research lab. Introduces the lab, its research focus, and drives visitors toward publications and collaboration.",
+  "tags": [
+    "marketing",
+    "landing",
+    "research",
+    "lab",
+    "public"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "research marketing",
+        "lab home",
+        "lab landing"
+      ],
+      "secondary": [
+        "marketing",
+        "landing page",
+        "home"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "path": "/",
+      "patterns": [
+        { "pattern": "hero", "preset": "brand", "as": "hero" },
+        { "pattern": "features", "preset": "standard", "as": "focus" },
+        { "pattern": "testimonials", "preset": "standard", "as": "social-proof" },
+        { "pattern": "cta-section", "preset": "standard", "as": "cta" }
+      ],
+      "default_layout": ["hero", "features", "testimonials", "cta-section"],
+      "shell": "top-nav-footer"
+    }
+  ],
+  "page_briefs": {
+    "home": "Scientific lab homepage. Brand hero anchors the top with the lab name, tagline, principal investigator, and primary CTA linking to publications or contact. Features block outlines the lab's research pillars with icon, title, and short description per area. Testimonials surface collaborator and alumni quotes with affiliations. A final CTA section invites prospective researchers and partners to get in touch."
+  },
+  "features": [
+    "marketing",
+    "landing",
+    "about"
+  ],
+  "shells": {
+    "top-nav-footer": "Public marketing shell with top navigation and full footer"
+  },
+  "dependencies": {
+    "patterns": {
+      "hero": "^1.0.0",
+      "features": "^1.0.0",
+      "testimonials": "^1.0.0",
+      "cta-section": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": ["editorial"],
+    "modes": ["light", "dark"]
+  }
+}

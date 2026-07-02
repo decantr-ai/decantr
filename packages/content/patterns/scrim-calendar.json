@@ -1,0 +1,114 @@
+{
+  "id": "scrim-calendar",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Scrim Calendar",
+  "description": "A team scrimmage scheduling calendar showing opponent matchups, map plans, time slots, player availability, and confirmation status across weeks or months.",
+  "category": "esports",
+  "tags": [
+    "2026",
+    "esports",
+    "calendar",
+    "scrim",
+    "scheduling",
+    "team-management",
+    "availability"
+  ],
+  "components": [
+    "CalendarGrid",
+    "ScrimBlock",
+    "TeamLogo",
+    "MapChip",
+    "TimeSlot",
+    "AvailabilityStatus"
+  ],
+  "default_preset": "week",
+  "presets": {
+    "week": {
+      "description": "Seven-column weekly grid with hourly time rows and scrim blocks spanning their duration for tactical weekly planning workflows",
+      "layout": {
+        "layout": "grid-week",
+        "atoms": "_grid _grid-cols-[64px_repeat(7,1fr)] _w100 _h-full _overflow-auto"
+      }
+    },
+    "month": {
+      "description": "Standard monthly calendar grid with condensed scrim pills inside each day cell for long-horizon season schedule planning overviews",
+      "layout": {
+        "layout": "grid-month",
+        "atoms": "_grid _grid-cols-7 _w100 _gap-px _bg-border"
+      }
+    },
+    "list": {
+      "description": "Agenda list view grouped by date with detailed scrim entries showing opponent, map pool, roster, and confirmation status per entry",
+      "layout": {
+        "layout": "agenda-list",
+        "atoms": "_flex _flex-col _gap-4 _w100 _max-w-3xl _mx-auto _p-4"
+      }
+    }
+  },
+  "visual_brief": "A week grid with days as columns and hourly time slots as rows. Each scrim appears as a colored block spanning its duration (e.g. 7pm-9pm slot). Block contains: opponent team logo in top-left, opponent name in bold, map chips row (e.g. 'Haven' 'Ascent' 'Pearl') with small map thumbnails, and an availability status indicator (Confirmed: green filled, Pending: amber striped, Cancelled: gray strikethrough). Time-slot backgrounds faintly shaded to show standard practice hours. Block color encodes importance: Official match red, Tournament orange, Practice scrim teal, Coaching session purple. Player availability dots appear along the left edge of each block showing which 5 players are confirmed (green), tentative (amber), or unavailable (red). 'Now' horizontal line overlays the current time. Month preset shows condensed event pills inside day cells.",
+  "layout_hints": {
+    "container": "d-section",
+    "note": "Calendar must support drag-to-reschedule. Scrim blocks clickable (d-interactive) for edit modal.",
+    "status_labels": "Availability status uses text labels not color-only (Confirmed/Pending/Cancelled)."
+  },
+  "default_layout": {
+    "layout": "grid-week",
+    "atoms": "_grid _grid-cols-[64px_repeat(7,1fr)] _w100 _h-full _overflow-auto",
+    "slots": {
+      "calendar-grid": "Main grid container with time-axis column on left and day columns across. Hosts scrim blocks absolutely positioned.",
+      "scrim-block": "Repeating colored block positioned by start/end time and day. Contains opponent, maps, status, and availability dots.",
+      "team-logo": "Opponent team emblem image shown in top-left of each scrim block.",
+      "map-chip": "Small labeled pill with map name and thumbnail, grouped in a row inside each block.",
+      "time-slot": "Repeating hour row in the time-axis column with HH:MM label.",
+      "availability-status": "Text indicator (Confirmed/Pending/Cancelled) with semantic color."
+    }
+  },
+  "accessibility": {
+    "role": "grid",
+    "aria-label": "Team scrimmage calendar",
+    "announcements": [
+      "Scrim against {opponent} on {date} at {time}, status {status}",
+      "Scrim moved to {newDate} {newTime}"
+    ],
+    "keyboard": [
+      "Arrow keys: navigate grid cells",
+      "Enter: open scrim block detail",
+      "N: create new scrim on focused cell",
+      "Delete: remove scrim",
+      "[/]: previous/next week"
+    ]
+  },
+  "responsive": {
+    "mobile": "Week view shrinks to single-day scrollable column. Month view becomes list preset automatically.",
+    "tablet": "Week view retained with narrower day columns. Map chips collapse to count badge."
+  },
+  "motion": {
+    "micro": {
+      "block-hover": "elevation raise + border-highlight 150ms ease-out",
+      "drag-handle": "cursor grab + block scale(1.02) on drag 120ms"
+    },
+    "transitions": {
+      "block-create": "scale(0) to scale(1) + fade 300ms spring",
+      "block-move": "position lerp 200ms ease-out",
+      "status-change": "block color transition 300ms ease-in-out"
+    },
+    "ambient": {
+      "now-line": "current time horizontal line subtle pulse 3s ease-in-out infinite"
+    }
+  },
+  "interactions": [
+    "click-select",
+    "drag-reorder",
+    "keyboard-navigation",
+    "animate-on-mount"
+  ],
+  "composition": {
+    "ScrimCalendar": "Section(d-section) > [Toolbar(week-nav + view-switcher) + CalendarGrid > [TimeAxis > TimeSlot[] + DayColumns > ScrimBlock[](d-interactive) > [TeamLogo + OpponentName + MapChip[] + AvailabilityStatus + PlayerAvailabilityDots]] + NowLine]",
+    "CalendarGrid": "Grid(time-x-day) > [TimeColumn + DayColumn[]]",
+    "ScrimBlock": "Block(positioned, importance-colored, d-interactive) > [Header + Maps + Status]",
+    "MapChip": "Chip(d-annotation) > [MapThumbnail + MapName]",
+    "AvailabilityStatus": "Label(data-status) > [StatusDot + StatusText]"
+  }
+}

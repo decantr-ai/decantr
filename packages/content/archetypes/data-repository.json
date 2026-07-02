@@ -1,0 +1,81 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "data-repository",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Data Repository",
+  "description": "Research dataset library for a scientific lab. Scientists publish, browse, and inspect structured datasets produced by experiments.",
+  "tags": [
+    "datasets",
+    "repository",
+    "research",
+    "data",
+    "lab"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "data repository",
+        "dataset library",
+        "research data"
+      ],
+      "secondary": [
+        "datasets",
+        "data catalog",
+        "repository"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "datasets",
+      "path": "/data",
+      "patterns": [
+        { "pattern": "search-filter-bar", "preset": "standard", "as": "filters" },
+        { "pattern": "card-grid", "preset": "content", "as": "datasets" }
+      ],
+      "default_layout": ["search-filter-bar", "card-grid"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "dataset-detail",
+      "path": "/data/:id",
+      "patterns": [
+        { "pattern": "dataset-card", "preset": "detailed", "as": "metadata" },
+        { "pattern": "data-table", "preset": "standard", "as": "preview" }
+      ],
+      "default_layout": ["dataset-card", "data-table"],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "datasets": "Dataset browse surface. Search-filter bar across the top supports keyword search with facets for modality, project, size, and license. Content card grid below lists each dataset with title, description snippet, owner, tags, and record count for fast scanning.",
+    "dataset-detail": "Dataset landing page. Detailed dataset card anchors the top with title, citation, DOI, license, schema summary, download, and API snippets. Standard data table underneath previews the first rows of the dataset with sortable columns and type indicators."
+  },
+  "features": [
+    "datasets",
+    "repository",
+    "data-catalog"
+  ],
+  "shells": {
+    "sidebar-main": "Authenticated app shell with sidebar navigation and main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "search-filter-bar": "^1.0.0",
+      "card-grid": "^1.0.0",
+      "dataset-card": "^1.0.0",
+      "data-table": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": ["swiss"],
+    "modes": ["light", "dark"]
+  }
+}

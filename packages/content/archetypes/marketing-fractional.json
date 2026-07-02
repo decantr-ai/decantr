@@ -1,0 +1,74 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "marketing-fractional",
+  "role": "public",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Marketing — Fractional Ownership",
+  "description": "Public marketing landing page for a fractional ownership platform. Explains tokenized investing, trust signals, and drives visitors to sign up and browse assets.",
+  "tags": [
+    "marketing",
+    "landing",
+    "fractional",
+    "ownership",
+    "public"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "fractional marketing",
+        "fractional landing",
+        "fractional home"
+      ],
+      "secondary": [
+        "marketing",
+        "landing page",
+        "home"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "path": "/",
+      "patterns": [
+        { "pattern": "hero", "preset": "split", "as": "hero" },
+        { "pattern": "features", "preset": "standard", "as": "features" },
+        { "pattern": "how-it-works", "preset": "standard", "as": "steps" },
+        { "pattern": "testimonials", "preset": "standard", "as": "social-proof" },
+        { "pattern": "cta-section", "preset": "standard", "as": "cta" }
+      ],
+      "default_layout": ["hero", "features", "how-it-works", "testimonials", "cta-section"],
+      "shell": "top-nav-footer"
+    }
+  ],
+  "page_briefs": {
+    "home": "Conversion-focused marketing home. Split hero combines headline, subheadline, and primary sign-up CTA with a product visual of the asset browser. Features block highlights pillars like fractional access, liquid markets, and governance. How-it-works walks through three to four numbered steps from browsing to owning. Testimonials carry investor quotes and trust logos, and a final CTA section closes with a full-width sign-up band."
+  },
+  "features": [
+    "marketing",
+    "landing",
+    "conversion"
+  ],
+  "shells": {
+    "top-nav-footer": "Public marketing shell with top navigation and full footer"
+  },
+  "dependencies": {
+    "patterns": {
+      "hero": "^1.0.0",
+      "features": "^1.0.0",
+      "how-it-works": "^1.0.0",
+      "testimonials": "^1.0.0",
+      "cta-section": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": ["swiss"],
+    "modes": ["light", "dark"]
+  }
+}

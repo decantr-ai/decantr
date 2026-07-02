@@ -1,0 +1,55 @@
+name: Audit Content Health
+
+on:
+  pull_request:
+  schedule:
+    - cron: '0 15 * * 1'
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate content
+        run: npm run validate
+
+      - name: Generate content health JSON
+        run: npm run content:health:json
+
+      - name: Audit intentional warning suppressions
+        run: npm run content:health:suppressions
+
+      - name: Certify registry V2 readiness
+        run: npm run registry:v2-certify
+
+      - name: Audit content health
+        run: npm run content:health
+
+      - name: Publish health summary
+        if: always()
+        run: |
+          if [ -f content-health-summary.md ]; then
+            cat content-health-summary.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload health artifacts
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: content-health-audit
+          path: |
+            content-health-report.json
+            content-health-summary.md
+            registry-v2-certification-report.json
+            registry-v2-certification-summary.md
+          if-no-files-found: ignore

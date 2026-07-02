@@ -1,0 +1,132 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "stats-overview",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Stats Overview",
+  "description": "Summary row of key statistics with labels, values, and optional trend indicators",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Card",
+        "Badge",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Card",
+    "Badge",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Horizontal row of stat items with label, value, and trend indicator",
+      "components": [
+        "Card",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc2 _lg:gc4 _gap4",
+        "slots": {
+          "stat-card": "Card containing label, value, and optional trend",
+          "label": "Metric label with _textsm _fgmuted",
+          "value": "Primary value with _heading2 _fontbold",
+          "trend": "Badge with percentage change and directional icon"
+        }
+      }
+    },
+    "compact": {
+      "description": "Inline horizontal bar with dividers between stat items",
+      "components": [
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _aic _jcsb _gap4 _px4 _py3 _bb[1px_solid_var(--d-border)]",
+        "slots": {
+          "stat-item": "Inline stat: _flex _col _aic",
+          "value": "Metric value with _heading4",
+          "label": "Short label with _textxs _fgmuted"
+        }
+      }
+    },
+    "highlighted": {
+      "description": "First stat card is larger and emphasized, remaining are secondary",
+      "components": [
+        "Card",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _lg:gc4 _gap4",
+        "slots": {
+          "primary-stat": "Large featured Card with bigger value text and sparkline area",
+          "secondary-stats": "Smaller stat Cards in a row"
+        }
+      }
+    }
+  },
+  "visual_brief": "Horizontal row of 3-5 stat summary items, each showing a muted small-text label above a large bold numeric value. Optional trend badges appear to the right of or below the value — green with up-arrow for positive changes, red with down-arrow for negative. In the standard preset, each stat lives in its own card surface with consistent padding (p4) and rounded corners. The compact preset renders stats inline in a single bar separated by vertical dividers, without individual card surfaces. The highlighted preset makes the first stat larger (spanning more grid space) with a sparkline visualization, while remaining stats are secondary size.",
+  "responsive": {
+    "mobile": "Two-column grid (2x2 or 2x3). Compact preset wraps to two rows. Value text reduces to heading3 scale. Trend badges stack below values instead of inline.",
+    "tablet": "Three or four columns depending on stat count. Compact preset stays single row if 4 or fewer items. Standard padding.",
+    "desktop": "Full single-row layout with all stats visible. Four columns standard. Highlighted preset shows featured stat at 2x width. Generous gap4 spacing."
+  },
+  "layout_hints": {
+    "grid_ownership": "The pattern owns the internal stat grid only. Parent workspace or section patterns should provide the intro copy, surrounding card frame, and larger vertical rhythm.",
+    "card_balance": "Each stat card should keep label, value, and trend tightly grouped so the row scans left-to-right without extra decorative chrome. Trend indicators should support the value, not become a second headline.",
+    "highlighted_variant": "When using the highlighted preset, the featured stat may grow in prominence, but secondary stats should remain aligned as one coherent summary system rather than turning into unrelated cards."
+  },
+  "motion": {
+    "micro": "Stat values animate with counter effect (number rolls up from 0) over 800ms ease-out on viewport enter. Trend badges fade in after value completes.",
+    "transitions": "Value text transitions smoothly on data change with 300ms ease. Trend arrow rotates on direction change."
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Key statistics",
+    "aria-live": "polite",
+    "keyboard": [
+      "Tab navigates between stat cards",
+      "Shift+Tab navigates backwards"
+    ],
+    "announcements": [
+      "{label}: {value}, {trend_direction} {trend_percent}",
+      "Statistics updated"
+    ]
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gc2 _lg:gc4 _gap4",
+    "slots": {
+      "stat-card": "Card with label, value, and trend",
+      "label": "Metric label",
+      "value": "Primary value",
+      "trend": "Change indicator"
+    }
+  },
+  "io": {
+    "consumes": [
+      "date-range",
+      "filters"
+    ],
+    "produces": [
+      "stat-data"
+    ]
+  },
+  "composition": {
+    "StatsOverview": "Row(d-section, responsive: wrap) > StatItem[]",
+    "StatItem": "Card(d-surface) > [Icon?(d-annotation, rounded-bg) + Label(text-muted, text-sm) + Value(heading3, mono-data) + TrendBadge?(d-annotation, variant: positive|negative)]"
+  }
+}

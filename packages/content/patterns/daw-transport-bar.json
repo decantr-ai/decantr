@@ -1,0 +1,66 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "daw-transport-bar",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "DAW Transport Bar",
+  "description": "Studio-grade transport control strip for browser DAWs with playback controls, tempo, key, loop state, metronome, latency, collaborators, and bounce status.",
+  "category": "music",
+  "tags": ["2026", "music", "daw", "transport", "playback", "recording", "collaboration"],
+  "components": ["TransportControls", "TimeDisplay", "TempoKeyDisplay", "LoopToggle", "MetronomeToggle", "LatencyMeter", "PresenceStack", "BounceStatus"],
+  "default_preset": "studio",
+  "presets": {
+    "studio": {
+      "description": "Full DAW transport with record, playback, tempo/key, loop, metronome, latency, collaborators, and bounce progress",
+      "layout": { "layout": "flex", "atoms": "_flex _items-center _justify-between _w-full _bg-surface _border _p-3" }
+    },
+    "compact": {
+      "description": "Mobile transport with play/record, current time, and a secondary sheet for advanced controls",
+      "layout": { "layout": "flex", "atoms": "_flex _items-center _justify-between _w-full _bg-surface _p-2" }
+    }
+  },
+  "visual_brief": "Commercial-grade horizontal command strip that reads like studio hardware and a premium shadcn toolbar, not a web navbar. Left cluster has icon-only rewind, play/pause, stop, record, loop, and metronome controls with 40-44px hit targets, clear pressed/armed states, and restrained borders. Center cluster uses tabular monospace timecode, bar/beat position, tempo, key, and a slim progress rail with a precise playhead. Right cluster shows latency, render/bounce readiness, and collaborator avatars. Use cyan for playback/sync, amber for playhead/readiness, red for record, and neutral chrome everywhere else.",
+  "default_layout": {
+    "layout": "flex",
+    "atoms": "_flex _items-center _justify-between _w-full _bg-surface _border _p-3",
+    "slots": {
+      "controls": "Icon-only transport controls. Primary play button is visually dominant; record is red and pulses only when armed.",
+      "timeline-status": "Current timecode, bar/beat, BPM, key, loop range, and a slim progress rail.",
+      "session-status": "Latency, render state, sync state, and active collaborators."
+    }
+  },
+  "composition": {
+    "TransportBar": "Root(studio-rack, flex-row) > [Controls + TimelineStatus + SessionStatus]",
+    "Controls": "Cluster > [Rewind + PlayPause + Stop + Record + Loop + Metronome]",
+    "SessionStatus": "Cluster > [LatencyMeter + BounceStatus + PresenceStack]"
+  },
+  "motion": {
+    "micro": {
+      "button-press": "button compresses 2px and emits 120ms ripple-click",
+      "record-armed": "record dot pulses red once per second"
+    },
+    "ambient": {
+      "playhead": "progress rail advances continuously during playback",
+      "sync-status": "latency meter breathes cyan while connected"
+    }
+  },
+  "interactions": ["ripple-click", "status-pulse", "real-time-updates", "keyboard-navigation"],
+  "responsive": {
+    "mobile": {
+      "layout": "stack",
+      "hide_components": ["latency-detail", "advanced-loop-controls"],
+        "notes": "Keep play, record, current time, BPM, and collaborators visible. Move secondary toggles into an overflow sheet. Never wrap into a cluttered two-line toolbar unless the layout is intentionally stacked."
+      },
+    "desktop": "Full transport remains one row, with status and collaborators visible at all times."
+  },
+  "accessibility": {
+    "role": "toolbar",
+    "aria-label": "DAW transport controls",
+    "keyboard": ["Space: play or pause", "R: arm recording", "L: toggle loop", "M: toggle metronome", "B: bounce current session"],
+    "announcements": ["Playback {playing|paused}", "Recording {armed|stopped}", "Tempo set to {bpm} BPM"]
+  },
+  "layout_hints": {
+    "hardware_feel": "Transport controls should feel dense and tactile, not like generic text buttons.",
+    "status_priority": "Timecode and playback state are the primary read targets; collaborator and bounce status are secondary."
+  }
+}

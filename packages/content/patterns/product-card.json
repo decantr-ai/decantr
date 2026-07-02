@@ -1,0 +1,120 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "product-card",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Product Card",
+  "description": "Single product/post display card with thumbnail, price, type indicator, and actions. Used within product grids.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Card",
+        "Badge",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Card",
+    "Badge",
+    "icon"
+  ],
+  "default_preset": "grid",
+  "presets": {
+    "grid": {
+      "description": "Square thumbnail card for grids",
+      "components": [
+        "Card",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "card",
+        "atoms": "studio-card _overflow[hidden]",
+        "slots": {
+          "thumbnail": "Preview image/video",
+          "title": "Product name",
+          "price": "Price or tier indicator",
+          "meta": "Date, type, likes",
+          "lock-indicator": "Locked badge for gated content"
+        }
+      }
+    },
+    "list": {
+      "description": "Horizontal list row item with small thumbnail on the left and title, description, and price on the right",
+      "components": [
+        "Card",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "inline",
+        "atoms": "studio-card _p4 _flex _gap4",
+        "slots": {
+          "thumbnail": "Small thumbnail",
+          "content": "Title, description",
+          "meta": "Price, actions"
+        }
+      }
+    },
+    "featured": {
+      "description": "Large featured card with more details",
+      "components": [
+        "Button",
+        "Card",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "card",
+        "atoms": "studio-card _overflow[hidden] _lg:flex _lg:row",
+        "slots": {
+          "media": "Large preview area",
+          "content": "Full title, description, meta",
+          "actions": "Buy, like, share buttons"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "card",
+    "atoms": "studio-card _overflow[hidden]",
+    "slots": {
+      "thumbnail": "Preview image",
+      "title": "Product name",
+      "price": "Price display",
+      "actions": "Card actions"
+    }
+  },
+  "io": {
+    "produces": [
+      "product-click",
+      "buy-click"
+    ],
+    "consumes": [
+      "product-data"
+    ]
+  },
+  "visual_brief": "Bordered card displaying a single product or content item. A thumbnail image fills the top portion of the card. Below the image, the product title in medium-weight text, a price displayed prominently (or 'Free' badge), and a type indicator badge (video, audio, image, document). Action buttons in the card footer allow quick purchase or preview. The list preset renders as a horizontal row with a small thumbnail on the left. The featured preset enlarges the card with a gradient overlay on the image and a 'Featured' badge. Hover state lifts the card with a subtle shadow increase.",
+  "responsive": {
+    "mobile": "Cards take full width in single column. Thumbnail height reduces. Price and title prominent. Action buttons full-width.",
+    "tablet": "Two-column card grid. Standard card proportions.",
+    "desktop": "Three or four column grid. Cards at comfortable size with hover effects."
+  },
+  "interactions": [
+    "lift-hover",
+    "click-select",
+    "animate-on-mount",
+    "stagger-children"
+  ],
+  "composition": {
+    "ProductCard": "Card(d-surface, hoverable, lift-on-hover) > [Thumbnail(aspect-ratio) + Title(font-medium) + Price(heading4) | FreeBadge(d-annotation) + TypeBadge(d-annotation) + ActionButtons?(d-interactive)]",
+    "FeaturedCard": "Card(d-surface, large, gradient-overlay) > [Media + Content > [Title + Description + Meta] + Actions(d-interactive)]",
+    "ListItem": "Row(d-surface) > [SmallThumbnail + Content > [Title + Description] + Meta > [Price + Actions(d-interactive)]]"
+  }
+}

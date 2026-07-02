@@ -1,0 +1,451 @@
+{
+  "$schema": "https://decantr.ai/schemas/theme.v1.json",
+  "id": "neo-tokyo",
+  "version": "1.0.0",
+  "name": "Neo Tokyo",
+  "description": "Anime/manga-inspired theme with vibrant gradients, sakura pink, and energetic motion. Bouncy spring animations, pill shapes, and gradient borders create an expressive, youthful aesthetic. Supports both dark midnight and warm cream modes.",
+  "tags": [
+    "light",
+    "dark",
+    "anime",
+    "vibrant",
+    "gradient",
+    "energetic",
+    "creative",
+    "youthful"
+  ],
+  "personality": "vibrant + energetic + expressive + playful",
+  "seed": {
+    "primary": "#FF6B9D",
+    "secondary": "#C084FC",
+    "accent": "#38BDF8",
+    "background": "#0F0B1E"
+  },
+  "palette": {
+    "background": {
+      "light": "#FFF8F0",
+      "dark": "#0F0B1E"
+    },
+    "surface": {
+      "light": "#FFFFFF",
+      "dark": "#1A1530"
+    },
+    "surface-raised": {
+      "light": "#FFF0E8",
+      "dark": "#241E40"
+    },
+    "border": {
+      "light": "#F0D4E8",
+      "dark": "#3D2E60"
+    },
+    "text": {
+      "light": "#1A0E2E",
+      "dark": "#F8F0FF"
+    },
+    "text-muted": {
+      "light": "#7C6994",
+      "dark": "#A894C2"
+    },
+    "primary": {
+      "light": "#E8457A",
+      "dark": "#FF6B9D"
+    },
+    "primary-hover": {
+      "light": "#D63068",
+      "dark": "#FF8DB5"
+    },
+    "secondary": {
+      "light": "#A855F7",
+      "dark": "#C084FC"
+    },
+    "secondary-hover": {
+      "light": "#9333EA",
+      "dark": "#D4A5FD"
+    },
+    "accent": {
+      "light": "#0EA5E9",
+      "dark": "#38BDF8"
+    },
+    "accent-hover": {
+      "light": "#0284C7",
+      "dark": "#7DD3FC"
+    }
+  },
+  "modes": [
+    "light",
+    "dark",
+    "auto"
+  ],
+  "shapes": [
+    "pill",
+    "rounded"
+  ],
+  "cvd_support": [],
+  "tokens": {
+    "base": {
+      "success": "#22C55E",
+      "danger": "#F43F5E",
+      "warning": "#F59E0B",
+      "info": "#38BDF8"
+    }
+  },
+  "typography": {
+    "scale": "modular",
+    "heading_weight": 800,
+    "body_weight": 400,
+    "display": "'Orbitron', 'Inter', ui-sans-serif, sans-serif",
+    "body": "'Inter', ui-sans-serif, system-ui, sans-serif"
+  },
+  "decantr_compat": ">=2.0.0",
+  "source": "core",
+  "decorators": {
+    "neo-card": "Gradient border card with inner glow effect. Vibrant pink-to-purple border, subtle radial inner glow on hover.",
+    "neo-badge": "Pill-shaped badge with gradient fill. Pink-to-purple or blue gradient background with white text.",
+    "neo-hero": "Hero section with angled clip-path bottom edge and gradient background. Bold, dramatic entrance.",
+    "neo-button": "Pill-shaped button with gradient background and hover scale transform. Energetic and tactile.",
+    "neo-panel": "Content panel with top gradient stripe accent. Clean body with vibrant colored top edge.",
+    "neo-surface": "Subtle radial gradient background. Adds depth and warmth to page sections.",
+    "neo-input": "Rounded input with subtle glow on focus. Gradient focus ring animation.",
+    "neo-divider": "Gradient horizontal line divider. Pink-to-purple-to-blue gradient for visual flair."
+  },
+  "spatial": {
+    "density_bias": -1,
+    "content_gap_shift": 1,
+    "section_padding": "4rem",
+    "card_wrapping": "gradient",
+    "surface_override": null
+  },
+  "motion": {
+    "preference": "energetic",
+    "reduce_motion": true,
+    "entrance": "neo-bounce-in",
+    "micro": "spring",
+    "timing": "cubic-bezier(0.34, 1.56, 0.64, 1)",
+    "durations": {
+      "hover": "200ms",
+      "entrance": "500ms",
+      "modal": "400ms",
+      "page": "600ms",
+      "instant": "80ms",
+      "fast": "150ms",
+      "base": "300ms",
+      "slow": "500ms",
+      "slower": "750ms",
+      "stagger": "70ms"
+    },
+    "easings": {
+      "ease": "cubic-bezier(0.65, 0, 0.35, 1)",
+      "easeOut": "cubic-bezier(0.16, 1, 0.3, 1)",
+      "easeIn": "cubic-bezier(0.7, 0, 0.84, 0)",
+      "spring": "cubic-bezier(0.34, 1.56, 0.64, 1)"
+    }
+  },
+  "effects": {
+    "enabled": true,
+    "intensity": "high",
+    "type_mapping": {
+      "card": [
+        "neo-card"
+      ],
+      "badge": [
+        "neo-badge"
+      ],
+      "button": [
+        "neo-button"
+      ],
+      "hero": [
+        "neo-hero"
+      ],
+      "input": [
+        "neo-input"
+      ]
+    },
+    "optional_effects": {
+      "glow": true,
+      "gradient_border": true,
+      "clip_path": true,
+      "scale_hover": true
+    },
+    "component_fallback": {
+      "Card": "card",
+      "Badge": "badge",
+      "Button": "button",
+      "Input": "input",
+      "Hero": "hero"
+    }
+  },
+  "compositions": {
+    "dashboard": {
+      "description": "Creative dashboard with gradient accents, animated metric cards, and vibrant data visualization.",
+      "shell": "sidebar-main",
+      "effects": [
+        "neo-card",
+        "neo-panel"
+      ]
+    },
+    "auth": {
+      "description": "Centered auth with gradient background, floating card with inner glow, and animated entrance.",
+      "shell": "centered",
+      "card_style": "neo-card"
+    },
+    "marketing": {
+      "description": "Bold marketing page with angled hero, gradient CTAs, and energetic scroll animations.",
+      "shell": "top-nav-footer",
+      "effects": [
+        "neo-hero",
+        "neo-button",
+        "neo-card"
+      ]
+    },
+    "profile": {
+      "description": "User profile with gradient header banner, avatar with glow ring, and pill-shaped action buttons.",
+      "shell": "top-nav-main",
+      "effects": [
+        "neo-card",
+        "neo-badge",
+        "neo-button"
+      ]
+    }
+  },
+  "radius": {
+    "philosophy": "pill",
+    "base": 16
+  },
+  "pattern_preferences": {
+    "prefer": [
+      "gradient-hero",
+      "card-grid",
+      "profile-header",
+      "feature-showcase",
+      "gallery-grid"
+    ],
+    "avoid": [
+      "dense-terminal",
+      "data-table",
+      "conservative-form"
+    ],
+    "default_presets": {
+      "card-grid": "masonry",
+      "gallery-grid": "pinterest",
+      "feature-showcase": "alternating"
+    }
+  },
+  "shell": {
+    "preferred": [
+      "top-nav-footer",
+      "top-nav-main",
+      "sidebar-main"
+    ],
+    "avoid": [
+      "terminal-split"
+    ],
+    "nav_style": "vibrant",
+    "default_nav_state": "expanded",
+    "root": "neo-surface",
+    "nav": "neo-panel",
+    "header": "",
+    "navLabel": "",
+    "brand": "",
+    "dimensions": null
+  },
+  "decorator_definitions": {
+    "neo-card": {
+      "description": "Gradient border card with inner glow effect. Vibrant pink-to-purple border, subtle radial inner glow on hover.",
+      "intent": "Use for all content containers. The gradient border creates a vibrant, anime-inspired frame; the inner glow on hover adds tactile feedback and depth.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #1A1530)",
+        "border": "2px solid transparent",
+        "border-image": "linear-gradient(135deg, #FF6B9D, #C084FC, #38BDF8) 1",
+        "border-radius": "16px",
+        "padding": "24px",
+        "box-shadow": "inset 0 0 20px rgba(192, 132, 252, 0.05)",
+        "transition": "box-shadow 300ms cubic-bezier(0.34, 1.56, 0.64, 1)"
+      },
+      "pairs_with": [
+        "neo-surface",
+        "neo-badge",
+        "neo-button"
+      ],
+      "usage": [
+        "Content cards",
+        "Feature cards",
+        "Profile cards",
+        "Dashboard panels"
+      ]
+    },
+    "neo-badge": {
+      "description": "Pill-shaped badge with gradient fill. Pink-to-purple or blue gradient background with white text.",
+      "intent": "Use for tags, labels, and status indicators. The gradient pill shape is eye-catching and fits the energetic aesthetic.",
+      "suggested_properties": {
+        "background": "linear-gradient(135deg, #FF6B9D, #C084FC)",
+        "color": "#FFFFFF",
+        "border-radius": "9999px",
+        "padding": "4px 14px",
+        "font-size": "13px",
+        "font-weight": "600"
+      },
+      "pairs_with": [
+        "neo-card",
+        "neo-button"
+      ],
+      "usage": [
+        "Tags",
+        "Status labels",
+        "Category badges",
+        "Notification counts"
+      ]
+    },
+    "neo-hero": {
+      "description": "Hero section with angled clip-path bottom edge and gradient background. Bold, dramatic entrance.",
+      "intent": "Use for page hero sections and feature banners. The angled clip-path creates dynamic visual energy; the gradient background sets the vibrant tone.",
+      "suggested_properties": {
+        "background": "linear-gradient(135deg, #FF6B9D, #C084FC, #38BDF8)",
+        "clip-path": "polygon(0 0, 100% 0, 100% 85%, 0 100%)",
+        "padding": "80px 40px 120px",
+        "color": "#FFFFFF",
+        "text-align": "center"
+      },
+      "pairs_with": [
+        "neo-surface",
+        "neo-button",
+        "neo-card"
+      ],
+      "usage": [
+        "Page heroes",
+        "Feature banners",
+        "Landing page headers",
+        "Profile cover sections"
+      ]
+    },
+    "neo-button": {
+      "description": "Pill-shaped button with gradient background and hover scale transform. Energetic and tactile.",
+      "intent": "Use for primary actions and CTAs. The pill shape and gradient create visual weight; the scale transform on hover provides satisfying tactile feedback.",
+      "suggested_properties": {
+        "background": "linear-gradient(135deg, #FF6B9D, #C084FC)",
+        "color": "#FFFFFF",
+        "border": "none",
+        "border-radius": "9999px",
+        "padding": "12px 28px",
+        "font-weight": "700",
+        "transform": "scale(1)",
+        "transition": "transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1)"
+      },
+      "pairs_with": [
+        "neo-card",
+        "neo-hero",
+        "neo-surface"
+      ],
+      "usage": [
+        "Primary CTAs",
+        "Submit buttons",
+        "Action buttons",
+        "Navigation links"
+      ]
+    },
+    "neo-panel": {
+      "description": "Content panel with top gradient stripe accent. Clean body with vibrant colored top edge.",
+      "intent": "Use for secondary content containers and sidebar panels. The gradient stripe provides a touch of color without overwhelming the content area.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #1A1530)",
+        "border-top": "3px solid transparent",
+        "border-image": "linear-gradient(90deg, #FF6B9D, #C084FC, #38BDF8) 1",
+        "border-radius": "0 0 16px 16px",
+        "padding": "20px"
+      },
+      "pairs_with": [
+        "neo-surface",
+        "neo-card",
+        "neo-badge"
+      ],
+      "usage": [
+        "Sidebar panels",
+        "Section containers",
+        "Navigation panels",
+        "Feature sections"
+      ]
+    },
+    "neo-surface": {
+      "description": "Subtle radial gradient background. Adds depth and warmth to page sections.",
+      "intent": "Use as the root background for the full page. The radial gradient creates a subtle spotlight effect that draws focus to the center content.",
+      "suggested_properties": {
+        "background": "radial-gradient(ellipse at 50% 30%, rgba(192, 132, 252, 0.08), var(--d-bg, #0F0B1E) 70%)",
+        "color": "var(--d-text, #F8F0FF)",
+        "min-height": "100vh"
+      },
+      "pairs_with": [
+        "neo-card",
+        "neo-panel",
+        "neo-hero"
+      ],
+      "usage": [
+        "Page root backgrounds",
+        "App shell backgrounds",
+        "Section backgrounds"
+      ]
+    },
+    "neo-input": {
+      "description": "Rounded input with subtle glow on focus. Gradient focus ring animation.",
+      "intent": "Use for all form inputs. The rounded shape matches the pill aesthetic; the gradient focus glow provides clear, on-brand focus indication.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #1A1530)",
+        "border": "2px solid var(--d-border, #3D2E60)",
+        "border-radius": "12px",
+        "padding": "12px 16px",
+        "color": "var(--d-text, #F8F0FF)",
+        "transition": "border-color 200ms ease, box-shadow 200ms ease"
+      },
+      "pairs_with": [
+        "neo-card",
+        "neo-surface"
+      ],
+      "usage": [
+        "Text inputs",
+        "Search fields",
+        "Form fields",
+        "Comment inputs"
+      ]
+    },
+    "neo-divider": {
+      "description": "Gradient horizontal line divider. Pink-to-purple-to-blue gradient for visual flair.",
+      "intent": "Use to separate content sections with style. The gradient line adds visual interest while clearly delineating content areas.",
+      "suggested_properties": {
+        "height": "2px",
+        "background": "linear-gradient(90deg, #FF6B9D, #C084FC, #38BDF8)",
+        "border": "none",
+        "margin": "32px 0",
+        "border-radius": "1px"
+      },
+      "pairs_with": [
+        "neo-surface",
+        "neo-card"
+      ],
+      "usage": [
+        "Section dividers",
+        "Content separators",
+        "Footer separators"
+      ]
+    }
+  },
+  "elevation": {
+    "1": {
+      "light": "0 1px 2px rgba(0,0,0,0.06)",
+      "dark": "0 1px 2px rgba(0,0,0,0.4)"
+    },
+    "2": {
+      "light": "0 2px 6px rgba(0,0,0,0.08)",
+      "dark": "0 2px 8px rgba(255, 255, 255, 0.06)"
+    },
+    "3": {
+      "light": "0 6px 16px rgba(0,0,0,0.10)",
+      "dark": "0 4px 16px rgba(255, 255, 255, 0.08)"
+    },
+    "4": {
+      "light": "0 12px 32px rgba(0,0,0,0.14)",
+      "dark": "0 8px 28px rgba(255, 255, 255, 0.12)"
+    },
+    "5": {
+      "light": "0 24px 64px rgba(0,0,0,0.18)",
+      "dark": "0 16px 48px rgba(255, 255, 255, 0.16)"
+    }
+  }
+}

@@ -1,0 +1,155 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "user-dashboard",
+  "role": "primary",
+  "version": "1.1.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "User Dashboard",
+  "description": "Authenticated user area with content management, billing, API key management, team governance, account settings, and activity overview. The shell and page surfaces should all read from one coherent workspace state for identity, entitlements, and active organization.",
+  "tags": [
+    "dashboard",
+    "user",
+    "account",
+    "settings",
+    "api-keys"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "dashboard",
+        "account",
+        "user-area",
+        "my-content"
+      ],
+      "secondary": [
+        "api-keys",
+        "settings",
+        "profile",
+        "activity"
+      ],
+      "negative": []
+    },
+    "implies": [
+      "auth"
+    ],
+    "weight": 0.9,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "overview",
+      "path": "/dashboard",
+      "default_layout": [
+        "kpi-grid",
+        "reputation-badge",
+        "activity-feed"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "content",
+      "path": "/dashboard/content",
+      "default_layout": [
+        "content-card-grid"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "content-new",
+      "path": "/dashboard/content/new",
+      "default_layout": [
+        "form",
+        "json-viewer"
+      ],
+      "shell": "sidebar-main",
+      "notes": "Create new content item. Form with metadata fields + JSON editor."
+    },
+    {
+      "id": "api-keys",
+      "path": "/dashboard/api-keys",
+      "default_layout": [
+        "api-key-row"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "settings",
+      "path": "/dashboard/settings",
+      "default_layout": [
+        "account-settings"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "billing",
+      "path": "/dashboard/billing",
+      "default_layout": [
+        "tier-upgrade-card",
+        "kpi-grid"
+      ],
+      "shell": "sidebar-main",
+      "notes": "Billing and subscription management."
+    },
+    {
+      "id": "team",
+      "path": "/dashboard/team",
+      "default_layout": [
+        "kpi-grid",
+        "team-member-row"
+      ],
+      "shell": "sidebar-main",
+      "notes": "Team overview and member management."
+    },
+    {
+      "id": "governance",
+      "path": "/dashboard/governance",
+      "default_layout": [
+        "org-governance-panel"
+      ],
+      "shell": "sidebar-main",
+      "notes": "Organization governance workspace for approval policy, pending reviews, and audit history."
+    }
+  ],
+  "page_briefs": {
+    "overview": "User home dashboard. KPI cards at top showing published items, downloads, and reputation score. Reputation badge below. Activity feed at the bottom. The page should remain readable inside the sidebar shell across desktop, tablet, and drawer-based mobile layouts. KPI and reputation surfaces should agree with the same workspace identity and entitlement state used by billing, settings, and the shell.",
+    "content": "Content management workspace. When a single section contains both a discovery/filter panel and results, they should be grouped through a workspace-region-stack so the search surface and the result grid never visually collide. Private/org package visibility and registry actions should respect the active organization and entitlement state instead of recomputing them page-locally.",
+    "content-new": "Content creation page. Form and live contract preview sit side-by-side when space allows, then stack vertically below tablet widths without either pane feeling artificially cramped. Target options, organization selection, and private visibility rules must all flow from the same workspace entitlement model used by the shell and billing surface.",
+    "api-keys": "API key management page. Prefer responsive key cards or rows that can collapse into stacked surfaces on smaller widths instead of holding a rigid multi-column table. Personal vs organization key creation should use the shared workspace entitlement and active-organization state rather than separate profile fetches.",
+    "settings": "Account settings workspace with responsive navigation. Vertical tabs on larger widths, horizontal scrollable tabs or segmented navigation on smaller widths. Forms stay aligned to the shell spacing rhythm. Profile fields should hydrate from the same workspace identity summary shown in the shell.",
+    "billing": "Billing overview with current plan summary, usage stats, and responsive plan comparison cards. KPI regions, entitlement summaries, and plan comparison regions should stack through a workspace-region-stack inside labeled sections. Pricing cards should use staged or auto-fit columns, never a fixed four-up comparison grid. Current-plan state must come from the same normalized commercial model used by shell and route gating.",
+    "team": "Team dashboard with member and seat KPIs at top. When a members section contains both an invite/control surface and a results list or empty state, those children must flow through a workspace-region-stack. Member management rows degrade into stacked or card-like compositions on narrow widths. Invite and organization controls stack instead of compressing, and only appear when the shared workspace state says organization collaboration is actually available.",
+    "governance": "Organization governance workspace with one strong intro/action panel, policy controls, pending approval review, and a compact audit log. CTA language should feel like purposeful workspace navigation rather than generic button rows. Organization selection, permission to manage policy, and approval visibility should all be grounded in the active workspace organization state."
+  },
+  "features": [
+    "auth",
+    "api-keys"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "kpi-grid": "^1.1.0",
+      "reputation-badge": "^1.0.0",
+      "activity-feed": "^1.1.0",
+      "content-card-grid": "^1.3.0",
+      "workspace-region-stack": "^1.0.0",
+      "api-key-row": "^1.1.0",
+      "account-settings": "^1.1.0",
+      "form": "^1.0.0",
+      "json-viewer": "^1.0.0",
+      "tier-upgrade-card": "^1.1.0",
+      "team-member-row": "^1.1.0",
+      "org-governance-panel": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "luminarum"
+    ],
+    "modes": [
+      "dark"
+    ]
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "workspace-home",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Workspace Home",
+  "description": "Dashboard for collaborative workspace with recent documents, shared items, and activity feed. Landing page after login.",
+  "tags": [
+    "workspace",
+    "dashboard",
+    "collaboration",
+    "productivity"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "workspace dashboard",
+        "home dashboard",
+        "recent documents",
+        "collaboration home"
+      ],
+      "secondary": [
+        "activity feed",
+        "shared with me",
+        "recent files"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "dashboard",
+      "patterns": [
+        {
+          "pattern": "activity-feed",
+          "preset": "collaboration",
+          "as": "activity"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "docs",
+          "as": "recent-docs"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "docs",
+          "as": "shared-docs"
+        },
+        {
+          "pattern": "notification-center",
+          "preset": "dropdown",
+          "as": "notifications"
+        },
+        {
+          "pattern": "kanban-board",
+          "preset": "standard",
+          "as": "task-board"
+        }
+      ],
+      "default_layout": [
+        "notifications",
+        "activity-feed",
+        "recent-docs",
+        "shared-docs",
+        "task-board"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "dashboard": "Workspace landing page. Collaboration activity feed at the top showing recent edits and comments from team members. Below, a recent documents card grid with doc thumbnails, titles, and last-edited timestamps. Shared documents section at the bottom with similar card layout."
+  },
+  "features": [
+    "realtime",
+    "search",
+    "favorites",
+    "recent-history"
+  ],
+  "shells": {
+    "sidebar-main": "Left sidebar with page navigation, main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "activity-feed": "^1.0.0",
+      "card-grid": "^1.0.0",
+      "page-tree": "^1.0.0",
+      "notification-center": "^1.0.0",
+      "kanban-board": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "paper"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

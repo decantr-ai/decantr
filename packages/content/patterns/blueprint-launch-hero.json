@@ -1,0 +1,113 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "blueprint-launch-hero",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Blueprint Launch Hero",
+  "description": "First-viewport registry hero for blueprint discovery pages. It introduces Decantr's blueprint catalog with a strong product signal, concise positioning, search or browse actions, and a compact proof row for counts, freshness, or workflow coverage.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Badge",
+        "Search",
+        "KPI",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Badge",
+    "Search",
+    "KPI",
+    "icon"
+  ],
+  "contained": false,
+  "default_preset": "registry",
+  "presets": {
+    "registry": {
+      "description": "Product-forward registry hero with eyebrow, headline, concise value copy, primary browse/search action, secondary CLI action, and a proof row of compact metrics.",
+      "components": [
+        "Button",
+        "Badge",
+        "Search",
+        "KPI",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6 _wfull _maxw[76rem] _mx[auto]",
+        "slots": {
+          "eyebrow": "Small d-label marker for the registry surface or selected namespace.",
+          "headline": "Literal offer or catalog name. Keep it concrete: Blueprint Registry, Launch With Decantr, or Official Blueprints.",
+          "supporting-copy": "Two-to-three sentence value prop that explains what the blueprint helps a builder ship.",
+          "action-row": "Primary browse/search CTA plus a secondary command or docs CTA.",
+          "proof-row": "Compact stat chips for blueprint count, supported workflows, update recency, or official/community split."
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap6 _wfull _maxw[76rem] _mx[auto]",
+    "slots": {
+      "eyebrow": "Registry namespace or catalog label",
+      "headline": "Blueprint launch headline",
+      "supporting-copy": "Concise product explanation",
+      "action-row": "Search, browse, or CLI actions",
+      "proof-row": "Compact registry proof metrics"
+    }
+  },
+  "visual_brief": "A confident first-viewport registry hero that feels like an enterprise product surface rather than a marketing splash. The Decantr registry and blueprint catalog should be immediately legible. Use crisp type, restrained proof metrics, and a search or command action that feels operational. Avoid decorative hero cards or vague atmospheric art; this hero should help builders decide what to inspect next.",
+  "responsive": {
+    "mobile": "Single-column stack with headline first, supporting copy second, actions wrapping into full-width buttons, and proof metrics in a two-column or horizontally scrollable strip.",
+    "tablet": "Hero copy and actions remain stacked with a wider proof row. Search can expand to full width.",
+    "desktop": "Wide editorial hero with actions and proof row aligned below the copy. Keep enough vertical restraint that the next registry section is visible."
+  },
+  "layout_hints": {
+    "first_viewport": "The catalog identity must be visible in the first viewport. Do not bury the blueprint signal in an eyebrow only.",
+    "action_priority": "Primary action should move to browse/search. Secondary action can expose a CLI command or docs link.",
+    "proof_density": "Use three to five proof metrics maximum. Metrics should validate catalog usefulness, not become dashboard chrome."
+  },
+  "motion": {
+    "micro": "Actions and proof chips may brighten on hover or focus. Keep motion short and functional.",
+    "transitions": "Hero content can fade in with a subtle stagger, but search and command affordances should be instantly usable."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "stagger-children",
+    "click-select",
+    "keyboard-navigation"
+  ],
+  "accessibility": {
+    "role": "banner",
+    "aria-label": "Blueprint registry introduction",
+    "keyboard": [
+      "Search and action controls should be reachable immediately after the skip link or primary navigation."
+    ],
+    "announcements": [
+      "Headline, supporting copy, and proof metrics should remain meaningful without visual-only badges."
+    ],
+    "focus_management": "Focus styles on search and CTAs should match hover intensity and remain visible on dark surfaces."
+  },
+  "composition": {
+    "BlueprintLaunchHero": "Hero(banner) > [Eyebrow + Headline + SupportingCopy + ActionRow + ProofRow]",
+    "ActionRow": "Flex(wrap) > [PrimaryBrowseOrSearch + SecondaryCommandOrDocs]",
+    "ProofRow": "GridOrRail(compact) > MetricChip[]"
+  },
+  "io": {
+    "consumes": [],
+    "produces": [
+      "catalog-intent"
+    ],
+    "actions": [
+      "search",
+      "browse-click",
+      "command-copy"
+    ]
+  }
+}

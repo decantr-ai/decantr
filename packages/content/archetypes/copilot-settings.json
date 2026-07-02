@@ -1,0 +1,87 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "copilot-settings",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Copilot Settings",
+  "description": "Configuration interface for AI copilot preferences, model selection, permissions, and behavior tuning. Auxiliary archetype for copilot-powered applications.",
+  "tags": [
+    "settings",
+    "copilot",
+    "configuration",
+    "preferences",
+    "ai"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "copilot settings",
+        "copilot configuration",
+        "ai assistant settings",
+        "copilot preferences",
+        "model settings"
+      ],
+      "secondary": [
+        "ai config",
+        "copilot permissions",
+        "model selection",
+        "assistant preferences",
+        "copilot tuning"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 0.6,
+    "tier": "optional"
+  },
+  "pages": [
+    {
+      "id": "copilot-config",
+      "patterns": [
+        {
+          "pattern": "form-sections",
+          "preset": "standard",
+          "as": "config-form"
+        },
+        {
+          "pattern": "account-settings",
+          "preset": "standard",
+          "as": "account-prefs"
+        }
+      ],
+      "default_layout": [
+        "form-sections",
+        "account-settings"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "copilot-config": "Copilot configuration page with a settings sidebar on the left listing sections: General, Model, Permissions, and Advanced. The main area displays grouped form sections. General settings include copilot toggle, default behavior (proactive vs on-demand), and response style. Model configuration offers model provider selection, temperature slider, and token limits. Permissions control which workspace areas the copilot can access and whether it can execute actions. Advanced settings include custom system prompts and API key management."
+  },
+  "features": [
+    "settings",
+    "model-config",
+    "permissions"
+  ],
+  "shells": {
+    "sidebar-main": "Settings sidebar navigation with main content area for configuration forms"
+  },
+  "dependencies": {
+    "patterns": {
+      "form-sections": "^1.0.0",
+      "account-settings": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  }
+}

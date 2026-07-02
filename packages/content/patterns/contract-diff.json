@@ -1,0 +1,110 @@
+{
+  "id": "contract-diff",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Contract Diff",
+  "description": "A side-by-side contract comparison view with synchronized scrolling, inline change markers, addition and deletion highlighting, and a clause navigation sidebar.",
+  "category": "legal",
+  "tags": [
+    "2026",
+    "legal",
+    "contract",
+    "diff",
+    "comparison",
+    "redline",
+    "review"
+  ],
+  "components": [
+    "DiffPane",
+    "ChangeMarker",
+    "AdditionText",
+    "DeletionText",
+    "ClauseNav",
+    "ChangeCount"
+  ],
+  "default_preset": "split",
+  "presets": {
+    "split": {
+      "description": "Two document panes arranged side by side with synchronized scrolling and corresponding change markers aligned horizontally across both panes",
+      "layout": {
+        "layout": "split-horizontal",
+        "atoms": "_grid _grid-cols-2 _gap-4 _w100 _h-full _p-4"
+      }
+    },
+    "inline": {
+      "description": "Single unified column showing deletions struck through and additions highlighted inline for a continuous reading-flow comparison",
+      "layout": {
+        "layout": "single-column",
+        "atoms": "_flex _flex-col _w100 _max-w-3xl _mx-auto _p-6"
+      }
+    },
+    "summary": {
+      "description": "Changes-only list view enumerating every insertion, deletion, and modification as a compact review checklist without full document context",
+      "layout": {
+        "layout": "list",
+        "atoms": "_flex _flex-col _gap-2 _w100 _p-6"
+      }
+    }
+  },
+  "visual_brief": "Two document panes rendered as scrollable text surfaces positioned side by side. Left pane shows the original version, right pane shows the revised. Both use a serif document font at comfortable reading size with generous line-height. Addition text appears with a pale green (#DCFCE7) background and green underline. Deletion text shows with pale red (#FEE2E2) background and strikethrough. Both panes share a synchronized vertical scroll — scrolling one scrolls the other. A gutter between the panes contains connecting lines and change markers (small colored chevrons: green for add, red for delete, amber for modify) linking related changes across panes. A left-docked clause navigation sidebar lists all changed sections by clause number with change-type icons, clickable for jump-to navigation. Top header shows aggregate change count ('37 changes: 18 additions, 12 deletions, 7 modifications').",
+  "layout_hints": {
+    "container": "d-section",
+    "note": "Document panes must use serif font-family. Preserve legal document whitespace/indentation. Sync scroll is mandatory in split preset.",
+    "change_semantics": "Additions always green, deletions always red, modifications always amber. Do not invert."
+  },
+  "default_layout": {
+    "layout": "split-horizontal",
+    "atoms": "_grid _grid-cols-2 _gap-4 _w100 _h-full _p-4",
+    "slots": {
+      "diff-pane": "Scrollable document pane rendering contract text with inline change highlights. Repeats twice in split preset.",
+      "change-marker": "Small colored chevron or bar in the pane gutter indicating a change at that line position.",
+      "addition-text": "Inline text span with green background and underline decoration wrapping added content.",
+      "deletion-text": "Inline text span with red background and strikethrough wrapping removed content.",
+      "clause-nav": "Left-docked sidebar list of clauses containing changes, with type icons and jump links.",
+      "change-count": "Top header badge showing aggregate counts of additions, deletions, and modifications."
+    }
+  },
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Contract version comparison",
+    "announcements": [
+      "Change {n} of {total}: {type} at clause {clause}",
+      "Navigated to clause {clause}"
+    ],
+    "keyboard": [
+      "J / K: next / previous change",
+      "G: jump to clause navigator",
+      "A: accept focused change (if editable)",
+      "R: reject focused change (if editable)",
+      "Escape: close clause nav"
+    ]
+  },
+  "responsive": {
+    "mobile": "Split preset collapses to inline preset automatically. Clause nav becomes slide-out drawer.",
+    "tablet": "Split retained with narrower panes. Clause nav collapses to icon strip."
+  },
+  "motion": {
+    "micro": {
+      "marker-hover": "chevron scale(1.2) + brightness 150ms ease-out"
+    },
+    "transitions": {
+      "jump-to-change": "smooth scroll to target 400ms ease-in-out",
+      "preset-switch": "cross-fade 300ms"
+    },
+    "ambient": {
+      "sync-indicator": "subtle gutter-line glow pulse 2s ease-in-out infinite"
+    }
+  },
+  "interactions": [
+    "hover-reveal",
+    "click-select",
+    "scroll-reveal"
+  ],
+  "composition": {
+    "ContractDiff": "Section(d-section) > [ChangeCount(header) + ClauseNav(sidebar) + DiffPane[](d-surface) > [LineNumber + ChangeMarker + [AdditionText | DeletionText | NormalText]]]",
+    "DiffPane": "ScrollContainer(sync-scroll) > DocumentText(serif) > Line[] > [Gutter + ChangeMarker? + TextContent]",
+    "ClauseNav": "Panel(d-surface) > ClauseItem[] > [ClauseNumber + ChangeTypeIcon + ClauseLabel]",
+    "ChangeCount": "Header(d-annotation) > [TotalBadge + AdditionsBadge + DeletionsBadge + ModificationsBadge]"
+  }
+}

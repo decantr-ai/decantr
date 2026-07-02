@@ -1,0 +1,111 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "tool-registry",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Tool Registry",
+  "description": "Centralized registry of agent tools with JSON schema editing, interactive test playground, and usage analytics.",
+  "tags": [
+    "tools",
+    "registry",
+    "schemas",
+    "ai",
+    "analytics",
+    "catalog",
+    "2026"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "tool registry",
+        "tool catalog",
+        "tool management",
+        "function registry",
+        "tool library"
+      ],
+      "secondary": [
+        "tool schema",
+        "tool testing",
+        "api tools",
+        "function calling",
+        "tool marketplace"
+      ],
+      "negative": [
+        "chatbot",
+        "prompt library"
+      ]
+    },
+    "implies": [
+      "schemas",
+      "analytics"
+    ],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "tools",
+      "patterns": [
+        {
+          "pattern": "card-grid",
+          "preset": "icon",
+          "as": "tool-catalog"
+        }
+      ],
+      "default_layout": [
+        "tool-catalog"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "tool-detail",
+      "patterns": [
+        {
+          "pattern": "json-viewer",
+          "preset": "standard",
+          "as": "schema-editor"
+        },
+        {
+          "pattern": "prompt-playground",
+          "preset": "stacked",
+          "as": "test-playground"
+        }
+      ],
+      "default_layout": [
+        "schema-editor",
+        "test-playground"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "tools": "Grid of tool cards, each showing a category icon, tool name, short description, and usage count badge. Search bar and category filter tabs at top. Cards highlight on hover with a subtle border glow.",
+    "tool-detail": "Top section displays a JSON schema viewer/editor with collapsible nodes, syntax highlighting, and inline validation markers. Below, a stacked test playground with input fields auto-generated from the schema, a 'Run' button, and a response pane showing raw output and formatted result."
+  },
+  "features": [
+    "tools",
+    "schemas",
+    "analytics"
+  ],
+  "shells": {
+    "sidebar-main": "Collapsible sidebar with tool category tree and main content area"
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  },
+  "dependencies": {
+    "patterns": {
+      "card-grid": ">=1.0.0",
+      "json-viewer": ">=1.0.0",
+      "prompt-playground": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

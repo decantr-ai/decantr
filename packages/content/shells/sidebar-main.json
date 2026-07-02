@@ -1,0 +1,175 @@
+{
+  "id": "sidebar-main",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Sidebar + Main",
+  "description": "Responsive sidebar shell with a desktop split layout, a compact sticky header, and an overlay drawer below the md breakpoint. Used by dashboards, account workspaces, and admin operations surfaces.",
+  "layout": "grid",
+  "atoms": "_grid _h[100vh]",
+  "config": {
+    "regions": [
+      "header",
+      "nav",
+      "body"
+    ],
+    "grid": {
+      "areas": [
+        [
+          "nav",
+          "header"
+        ],
+        [
+          "nav",
+          "body"
+        ]
+      ]
+    },
+    "nav": {
+      "position": "left",
+      "width": "240px",
+      "collapseTo": "64px",
+      "collapseBelow": "md"
+    },
+    "header": {
+      "height": "52px",
+      "sticky": true
+    },
+    "body": {
+      "scroll": true
+    }
+  },
+  "configurable": {
+    "nav": {
+      "positions": [
+        "left",
+        "right",
+        "top"
+      ],
+      "modes": [
+        "full",
+        "rail",
+        "hidden"
+      ]
+    },
+    "header": {
+      "toggleable": true,
+      "positions": [
+        "viewport",
+        "body"
+      ]
+    },
+    "footer": {
+      "toggleable": true
+    },
+    "aside": {
+      "toggleable": true
+    },
+    "sizing": {
+      "sidebarWidth": {
+        "min": 48,
+        "max": 400,
+        "default": 240
+      },
+      "headerHeight": {
+        "min": 36,
+        "max": 80,
+        "default": 52
+      },
+      "asideWidth": {
+        "min": 200,
+        "max": 480,
+        "default": 280
+      }
+    }
+  },
+  "guidance": {
+    "hotkeys": "Navigation hotkeys defined in the essence are keyboard shortcuts. Implement as useEffect keydown event listeners \u2014 do NOT render hotkey text in the sidebar UI.",
+    "collapse": "Sidebar collapse toggle should be integrated into the sidebar header area (next to the brand/logo), not floating at the bottom of the sidebar.",
+    "collapsed_brand": "When the sidebar collapses to a rail, the header should behave like a compact rail control state, not like a cramped mini brand lockup. Prefer centering the collapse/expand control and omitting extra brand copy or stray decorative marks if they do not fit cleanly.",
+    "mobile_drawer": "Below the md breakpoint, the sidebar leaves the permanent split layout and becomes an overlay drawer. Use a scrim, Escape handling, and a header toggle. The closed drawer must not consume layout width.",
+    "workspace_state": "Authenticated shells should derive identity, tier, entitlements, active organization, and admin capability from one shared workspace state. Do not let sidebar navigation, footer identity, billing state, and page-level access drift through separate fetches or local fallbacks.",
+    "nav_visibility": "Sidebar navigation visibility should reflect actual capabilities, not generic route presence. Team, governance, private-registry, and admin groups appear only when the active workspace state says the user can reach them.",
+    "shell_spacing": "Header, body, sidebar, and footer all share one inset rhythm. Use a tighter shell inset on mobile and the full comfortable inset on tablet/desktop instead of page-local padding overrides.",
+    "viewport_lock": "The authenticated shell should stay locked to the viewport height. The main body region owns page scrolling, while the sidebar keeps its footer and account controls pinned within the shell instead of letting them drift to the bottom of the full document.",
+    "breadcrumbs": "For nested routes (e.g., /resource/:id), show a breadcrumb trail above the page heading inside the main content area. On narrow widths, truncate gracefully rather than wrapping into a second shell row.",
+    "section_labels": "Dashboard section labels use d-label[data-anchor] for accent-bordered headers with density-responsive spacing.",
+    "section_label_treatment": "d-label[data-anchor]",
+    "section_density": "compact",
+    "empty_states": "When a section has zero data, show a centered empty state: 48px muted icon + descriptive message + optional CTA button.",
+    "page_transitions": "Apply the entrance-fade class (if generated) to the main content area for smooth page transitions."
+  },
+  "internal_layout": {
+    "root": {
+      "display": "flex",
+      "direction": "row",
+      "height": "100vh",
+      "atoms": "_flex _h[100vh] _overhidden"
+    },
+    "sidebar": {
+      "width": "240px",
+      "collapsed_width": "64px",
+      "collapse_breakpoint": "md",
+      "mobile_behavior": "Overlay drawer below md. Closed state occupies no layout width. Open state uses a fixed panel + scrim.",
+      "position": "left",
+      "direction": "column",
+      "border": "right",
+      "background": "var(--d-surface)",
+      "atoms": "_flex _col _br[1px_solid_var(--d-border)] _minh0",
+      "brand": {
+        "height": "52px",
+        "display": "flex",
+        "align": "center",
+        "padding": "0 1rem",
+        "border": "bottom",
+        "content": "Logo/brand + collapse toggle. Collapsed rail: center the toggle and omit extra brand copy if it no longer fits cleanly."
+      },
+      "nav": {
+        "flex": "1",
+        "overflow_y": "auto",
+        "padding": "0.5rem",
+        "group_gap": "0.5rem",
+        "group_header_treatment": "d-label",
+        "item_treatment": "d-interactive[ghost]",
+        "item_padding": "0.375rem 0.75rem",
+        "item_gap": "2px",
+        "item_content": "icon (16px) + label text. Collapsed: icon only, text hidden.",
+        "note": "This is the sidebar's only scroll region. The footer remains pinned below it."
+      },
+      "footer": {
+        "border": "top",
+        "padding": "0.5rem",
+        "position_within": "bottom (mt-auto)",
+        "content": "Workspace identity summary + sign-out control. The label should reuse the shared workspace identity and tier presentation rather than recomputing a separate fallback string inside the sidebar."
+      }
+    },
+    "main_wrapper": {
+      "flex": "1",
+      "direction": "column",
+      "overflow": "hidden",
+      "atoms": "_flex _col _flex1 _minh0 _overhidden"
+    },
+    "header": {
+      "height": "52px",
+      "display": "flex",
+      "align": "center",
+      "justify": "space-between",
+      "padding": "0 clamp(1rem, 2vw, 1.5rem)",
+      "border": "bottom",
+      "left_content": "Breadcrumb \u2014 omit segment when it equals page title",
+      "right_content": "Theme toggle (sun/moon icon) + Search/command trigger + mobile navigation toggle when the sidebar is in drawer mode. Theme toggle toggles light/dark class on html element.",
+      "button_sizing": "Buttons in the header use compact sizing: py-1.5 px-3 text-sm (~32px tall). The header is a tight 52px bar \u2014 default d-interactive padding is too large here."
+    },
+    "body": {
+      "flex": "1",
+      "overflow_y": "auto",
+      "padding": "clamp(1rem, 2vw, 1.5rem)",
+      "atoms": "_flex1 _minh0 _overauto _p6",
+      "note": "Sole scroll container. Page content renders directly here. No wrapper div around outlet. Inner sections should inherit the shell rhythm rather than redefining page padding."
+    }
+  },
+  "code": {
+    "imports": "Target-specific imports vary. Translate the internal_layout contract into your framework's sidebar state, compact header controls, drawer behavior, and sole-scroll body region.",
+    "example": "SidebarMainShell(root) -> Sidebar(brand, nav groups, footer, collapse or drawer state) + Header(breadcrumbs, compact actions, mobile toggle) + Body(route outlet as sole scroll container)"
+  },
+  "$schema": "https://decantr.ai/schemas/shell.v1.json"
+}

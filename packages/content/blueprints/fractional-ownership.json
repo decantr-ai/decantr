@@ -1,0 +1,89 @@
+{
+  "$schema": "https://decantr.ai/schemas/blueprint.v1.json",
+  "id": "fractional-ownership",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Fractional Ownership",
+  "description": "Fractional asset ownership platform with browsable asset listings, cap tables, secondary market order books, governance voting, and full auth with marketing landing.",
+  "blueprint_portfolio": {
+    "visibility": "public",
+    "maturity": "supported-contract",
+    "rationale": "Supported registry blueprint that remains useful in All without being promoted as a flagship default.",
+    "artifact": {
+      "status": "candidate",
+      "showcase": "fractional-ownership",
+      "notes": "Showcase-backed candidate; certification requires artifact evidence beyond registry availability."
+    }
+  },
+  "tags": ["fractional", "ownership", "rwa", "tokenization", "finance", "2026"],
+  "compose": [
+    "asset-browser",
+    "ownership-dashboard",
+    "secondary-market",
+    "governance-center",
+    "marketing-fractional",
+    "auth-full",
+    "settings-full"
+  ],
+  "theme": {
+    "mode": "dark",
+    "shape": "sharp",
+    "id": "fintech"
+  },
+  "personality": "Fractional asset ownership platform with institutional-grade financial visualizations. Cap tables display share classes with vesting chips and fully-diluted percentages. Valuation charts project with confidence bands. Secondary market shows order books with live spreads. Governance ballots let token holders vote on major decisions with weighted voting. Dividend ledgers track distributions with tax treatments. Think Carta meets Rally. Lucide icons. Sharp.",
+  "voice": {
+    "tone": "Financial and precise. Speaks to investors and token holders.",
+    "cta_verbs": ["Invest", "Trade", "Vote", "Distribute", "Allocate", "Verify"],
+    "avoid": ["Buy now", "Click"],
+    "empty_states": "No assets in your portfolio. Browse featured listings to begin.",
+    "errors": "Trade rejected — insufficient funds. Deposit required: ${amount}",
+    "loading": "Settling transaction on-chain..."
+  },
+  "features": ["assets", "cap-table", "trading", "governance", "auth", "mfa", "oauth", "marketing", "seo"],
+  "routes": {
+    "/": { "page": "home", "shell": "top-nav-footer", "archetype": "marketing-fractional" },
+    "/login": { "page": "login", "shell": "centered", "archetype": "auth-full" },
+    "/register": { "page": "register", "shell": "centered", "archetype": "auth-full" },
+    "/forgot-password": { "page": "forgot-password", "shell": "centered", "archetype": "auth-full" },
+    "/reset-password": { "page": "reset-password", "shell": "centered", "archetype": "auth-full" },
+    "/verify-email": { "page": "verify-email", "shell": "centered", "archetype": "auth-full" },
+    "/mfa-setup": { "page": "mfa-setup", "shell": "centered", "archetype": "auth-full" },
+    "/mfa-verify": { "page": "mfa-verify", "shell": "centered", "archetype": "auth-full" },
+    "/phone-verify": { "page": "phone-verify", "shell": "centered", "archetype": "auth-full" },
+    "/browse": { "page": "browse", "shell": "top-nav-main", "archetype": "asset-browser" },
+    "/browse/:id": { "page": "asset-detail", "shell": "top-nav-main", "archetype": "asset-browser" },
+    "/portfolio": { "page": "portfolio", "shell": "sidebar-main", "archetype": "ownership-dashboard" },
+    "/portfolio/cap-table": { "page": "cap-table", "shell": "sidebar-main", "archetype": "ownership-dashboard" },
+    "/portfolio/distributions": { "page": "distributions", "shell": "sidebar-main", "archetype": "ownership-dashboard" },
+    "/market": { "page": "market", "shell": "sidebar-main", "archetype": "secondary-market" },
+    "/market/trade": { "page": "trade", "shell": "sidebar-main", "archetype": "secondary-market" },
+    "/governance": { "page": "proposals", "shell": "sidebar-main", "archetype": "governance-center" },
+    "/governance/:id": { "page": "proposal-detail", "shell": "sidebar-main", "archetype": "governance-center" },
+    "/settings/profile": { "page": "profile", "shell": "sidebar-aside", "archetype": "settings-full" },
+    "/settings/security": { "page": "security", "shell": "sidebar-aside", "archetype": "settings-full" },
+    "/settings/preferences": { "page": "preferences", "shell": "sidebar-aside", "archetype": "settings-full" },
+    "/settings/danger": { "page": "danger", "shell": "sidebar-aside", "archetype": "settings-full" }
+  },
+  "overrides": { "features_add": [], "features_remove": [], "pages": {}, "pages_remove": [] },
+  "seo_hints": { "schema_org": ["Organization", "FinancialProduct"], "meta_priorities": ["description", "og:image"] },
+  "navigation": {
+    "command_palette": true,
+    "hotkeys": [
+      { "key": "g b", "route": "/browse", "label": "Go to Browse" },
+      { "key": "g p", "route": "/portfolio", "label": "Go to Portfolio" },
+      { "key": "g m", "route": "/market", "label": "Go to Market" }
+    ]
+  },
+  "dependencies": {
+    "archetypes": {
+      "asset-browser": ">=1.0.0",
+      "ownership-dashboard": ">=1.0.0",
+      "secondary-market": ">=1.0.0",
+      "governance-center": ">=1.0.0",
+      "marketing-fractional": ">=1.0.0",
+      "auth-full": ">=1.0.0",
+      "settings-full": ">=1.0.0"
+    }
+  },
+  "suggested_themes": ["fintech", "bespoke", "carbon", "launchpad"]
+}

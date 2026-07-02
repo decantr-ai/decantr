@@ -1,0 +1,121 @@
+{
+  "id": "comparison-table",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Comparison Table",
+  "description": "A feature comparison grid for products, plans, or options with sticky headers, category grouping, check/cross indicators, and optional recommended-column highlighting.",
+  "category": "decision-support",
+  "tags": [
+    "2026",
+    "decision-support",
+    "comparison",
+    "table",
+    "pricing",
+    "features",
+    "grid"
+  ],
+  "components": [
+    "ComparisonGrid",
+    "ColumnHeader",
+    "FeatureRow",
+    "CategoryHeader",
+    "CheckIcon",
+    "CrossIcon",
+    "ValueCell",
+    "RecommendedBadge"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full comparison grid with all feature rows visible, sticky headers, and even row striping — the default view for pricing and feature comparison pages",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_w100 _overflow-x-auto"
+      }
+    },
+    "highlight": {
+      "description": "Comparison grid with one recommended column visually emphasized via accent background tint and a badge above the header — draws user attention to the preferred option",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_w100 _overflow-x-auto"
+      }
+    },
+    "toggle": {
+      "description": "Comparison grid with collapsible category sections that expand and collapse on click — reduces visual clutter for tables with many feature categories",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_w100 _overflow-x-auto"
+      }
+    }
+  },
+  "visual_brief": "A structured data grid rendered as an HTML table with clean lines and generous whitespace. The top row contains column headers: the first column is blank or labeled 'Features' (160px min-width, sticky on horizontal scroll), and subsequent columns show product/plan names (text-base font-semibold) with a price beneath (text-lg font-bold for the amount, text-sm text-muted for the billing period). Headers have a white background, a 1px bottom border in border-strong, and are sticky (position: sticky, top: 0, z-index: 10) so they remain visible during vertical scroll. The first column (feature names) is also sticky (position: sticky, left: 0, z-index: 5) with a white background and a 1px right border, so it stays visible during horizontal scroll on mobile. The recommended column has a subtle accent background tint (accent color at 5% opacity) applied to its entire column — header cell, all value cells, and the bottom row. Above the recommended column header sits a RecommendedBadge: a small pill (accent background, white text, text-xs font-semibold, border-radius-full, padding 4px 12px) reading 'Recommended', centered above the column name. Feature rows alternate backgrounds: odd rows transparent, even rows surface-subtle (a faint gray tint). Each feature row is 48px tall with vertical centering. CategoryHeader rows span the full table width (colspan=all), have a bold text-sm label in text-default color, surface-muted background, 40px height, and 16px left padding. They act as section dividers grouping related features. Value cells can contain: a CheckIcon (a 20px accent-colored circle with a white 2px-stroke checkmark SVG centered inside), a CrossIcon (a 20px muted-gray circle with a white 2px-stroke X SVG centered inside), or a text/number value (text-sm, centered in the cell). Cells are centered both horizontally and vertically. The overall table has border-collapse: separate, border-spacing: 0, and a subtle outer border (1px solid border-muted) with border-radius-lg on the wrapping container. The container clips overflow with border-radius and allows horizontal scroll on narrow viewports.",
+  "layout_hints": {
+    "container": "card or section",
+    "note": "Wrap in a d-surface card with overflow-x auto for horizontal scrolling on mobile. The table element itself should have width: 100% with min-width based on column count. Columns should be evenly distributed after the sticky first column.",
+    "sticky_behavior": "Column headers: position sticky top 0 z-10 with bg-white. First column: position sticky left 0 z-5 with bg-white and right border. The intersection cell (top-left) needs z-15 to layer above both sticky axes.",
+    "recommended_column": "In the highlight preset, the recommended column cells get a background tint of color-mix(in srgb, var(--d-accent) 5%, transparent). This tint stacks with the alternating row color.",
+    "check_cross_icons": "Check: 20px circle, accent fill, white checkmark SVG (2px stroke). Cross: 20px circle, muted fill, white X SVG (2px stroke). Both centered in cell. Do NOT use emoji or text characters for these."
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_w100 _overflow-x-auto _border _border-muted _rounded-lg",
+    "slots": {
+      "comparison-grid": "The outer scrollable container wrapping the HTML table. Has overflow-x: auto for horizontal scroll on narrow viewports. Border: 1px solid border-muted, border-radius-lg with overflow: hidden to clip the table corners. The inner table has width: 100%, border-collapse: separate, border-spacing: 0. Columns are sized: first column 160px min-width (feature names), remaining columns equal-width (min 140px each). The table supports 2–6 comparison columns comfortably.",
+      "column-header": "Repeating slot — one per product/plan column, plus one for the feature-name column. Each header cell has padding: 16px, vertical-align: bottom, background: white, border-bottom: 2px solid border-strong. The feature-name header (first column) shows 'Features' in text-sm font-semibold text-muted, or is left blank. Product/plan headers show: product name (text-base font-semibold text-default), price amount on next line (text-lg font-bold text-default), billing period below price (text-sm text-muted, e.g., '/month'). Optional CTA button at the bottom of the header cell (small, primary variant for recommended, secondary for others). Sticky: position sticky, top: 0, z-index: 10. For the recommended column in highlight preset, the header cell gets the accent background tint and the RecommendedBadge above.",
+      "recommended-badge": "A small pill-shaped badge rendered above (or at the top of) the recommended column header cell. Background: accent color. Text: 'Recommended' in white, text-xs, font-semibold. Padding: 4px 12px. border-radius-full. Centered horizontally within the column. Only rendered in the highlight preset. The badge sits in a dedicated row above the main header row or is absolutely positioned -24px above the header cell.",
+      "category-header": "A full-width row that spans all columns (using colspan equal to total column count). Background: surface-muted. Height: 40px. Padding-left: 16px. Text: text-sm font-semibold text-default. Acts as a visual section divider (e.g., 'Core Features', 'Integrations', 'Support'). In the toggle preset, the category header has a chevron icon (12px, right-pointing when collapsed, down-pointing when expanded) to the left of the label, and clicking the row toggles visibility of all feature rows in that category. Transition: chevron rotation 200ms ease.",
+      "feature-row": "Repeating slot — one per feature being compared. A table row with 48px height, vertical-align: center. The first cell (feature name) has padding: 12px 16px, text-sm text-default, sticky left: 0, bg-white, border-right: 1px solid border-muted. Remaining cells are ValueCells, centered. Alternating row backgrounds: odd rows transparent, even rows surface-subtle (bg color-mix(in srgb, var(--d-surface) 50%, transparent)). Hover: entire row gets a subtle surface-hover tint. In the toggle preset, rows within a collapsed category have display: none with a height collapse transition.",
+      "value-cell": "A single comparison cell within a feature row. Padding: 12px. Text-align: center, vertical-align: middle. Content can be: (1) CheckIcon — a 20px-diameter circle with accent fill containing a white 2px-stroke checkmark SVG, (2) CrossIcon — a 20px-diameter circle with muted-gray fill containing a white 2px-stroke X SVG, (3) a text value (text-sm, text-default, e.g., '10 GB', 'Unlimited'), or (4) a dash '—' in text-muted for not-applicable. In the highlight preset, cells in the recommended column receive the accent background tint."
+    }
+  },
+  "accessibility": {
+    "role": "table",
+    "aria-label": "Feature comparison table",
+    "announcements": [
+      "Comparing {count} options across {featureCount} features",
+      "{feature}: {product} has {value}",
+      "Category {name} expanded",
+      "Category {name} collapsed"
+    ],
+    "keyboard": [
+      "Tab: move focus between interactive cells and CTA buttons",
+      "Arrow keys: navigate between cells in the grid",
+      "Enter: activate CTA button or toggle category section",
+      "Space: toggle category section in toggle preset",
+      "Home: jump to first cell in current row",
+      "End: jump to last cell in current row"
+    ]
+  },
+  "responsive": {
+    "mobile": "Table scrolls horizontally with the first column (feature names) sticky at left. Column headers remain sticky at top. A subtle horizontal scroll indicator (fade gradient on the right edge) hints at additional columns. Column width reduces to 120px minimum. CTA buttons in headers stack below the price. Recommended badge shrinks to icon-only or smaller text.",
+    "tablet": "Full table visible for up to 3 columns without horizontal scroll. 4+ columns enable horizontal scroll. Sticky behavior on both axes. Touch-friendly row height increases to 52px. Category toggle targets enlarge to 44px height.",
+    "desktop": "Full grid displayed without horizontal scroll for up to 5 columns. Hover states on rows. Sticky headers on both axes. Smooth scroll behavior for long tables. Optional column highlight follows mouse for comparison assistance."
+  },
+  "motion": {
+    "micro": {
+      "row-hover": "background-color fade 120ms ease",
+      "check-appear": "scale 0→1 + opacity 0→1, 200ms ease-out (on initial render)",
+      "badge-hover": "translateY(-1px) 150ms ease"
+    },
+    "transitions": {
+      "category-toggle": "max-height 0↔auto + opacity 0↔1, 250ms ease-in-out for contained rows",
+      "chevron-rotate": "rotate 0→90deg (or reverse), 200ms ease",
+      "scroll-snap": "scroll-behavior smooth for programmatic column focus"
+    },
+    "ambient": {}
+  },
+  "interactions": [
+    "hover-reveal",
+    "animate-on-mount",
+    "keyboard-navigation"
+  ],
+  "composition": {
+    "ComparisonGrid": "Container(d-data, overflow-x-auto, rounded-lg) > Table(full-width)",
+    "ColumnHeader": "HeaderRow(d-header, sticky-top) > [FeatureLabel + ProductHeader*(plan-name, price, CTA?)]",
+    "CategoryHeader": "FullWidthRow(d-header, colspan-all, surface-muted) > [ChevronIcon? + CategoryLabel]",
+    "FeatureRow": "Row(d-row, alternating-bg) > [FeatureNameCell(sticky-left) + ValueCell*(d-cell)]",
+    "ValueCell": "Cell(d-cell, centered) > [CheckIcon | CrossIcon | TextValue | Dash]",
+    "RecommendedBadge": "Pill(accent-bg, white-text, rounded-full) > 'Recommended'"
+  }
+}

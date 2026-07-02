@@ -1,0 +1,103 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "scrim-scheduler",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Scrim Scheduler",
+  "description": "Auxiliary esports scheduling surface for managing scrim calendars and inspecting match detail with live scoreboards and timelines.",
+  "tags": [
+    "esports",
+    "scheduling",
+    "scrims",
+    "matches",
+    "calendar"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "scrim scheduler",
+        "esports calendar",
+        "match schedule",
+        "scrim calendar",
+        "practice scheduling"
+      ],
+      "secondary": [
+        "match detail",
+        "scrim booking",
+        "esports scheduling"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "scrims",
+      "patterns": [
+        {
+          "pattern": "scrim-calendar",
+          "preset": "week",
+          "as": "scrim-week"
+        },
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "scrim-list"
+        }
+      ],
+      "default_layout": [
+        "scrim-calendar",
+        "data-table"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "match-detail",
+      "patterns": [
+        {
+          "pattern": "detail-header",
+          "preset": "standard",
+          "as": "match-header"
+        },
+        {
+          "pattern": "scoreboard-live",
+          "preset": "detail",
+          "as": "match-scoreboard"
+        },
+        {
+          "pattern": "timeline",
+          "preset": "standard",
+          "as": "match-timeline"
+        }
+      ],
+      "default_layout": [
+        "detail-header",
+        "scoreboard-live",
+        "timeline"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "scrims": "Scrim scheduling page. Top region renders a week-view scrim-calendar with time slots, opponent blocks, and map selections color-coded by confirmation status. Below, a data-table lists upcoming scrims with columns for date, opponent, format, maps, confirmation status, and contact — supporting quick reschedule and cancellation actions.",
+    "match-detail": "Single match detail page. Detail-header spans the top with match title, teams, date, tournament, and best-of format. Below, a detail scoreboard-live tracks round-by-round scoring with player kills, objectives, and economy. Bottom region shows a timeline marking significant in-match events — first blood, objective takes, team fights, and match-deciding moments."
+  },
+  "features": [
+    "scheduling",
+    "calendars"
+  ],
+  "suggested_theme": {
+    "ids": [
+      "carbon",
+      "luminarum",
+      "clean"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  }
+}

@@ -1,0 +1,124 @@
+{
+  "id": "neural-feedback-loop",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Neural Feedback Loop",
+  "description": "A bio-mimetic visualization that renders AI processing state through organic pulsing, color shifts, and flow animations. Displays model confidence, token consumption rate, processing stage, or any continuous metric as a living, breathing visual element. PulseCore radiates outward with intensity mapped to metric values. FlowTrack shows directional particle flow representing throughput. IntensityRing provides a clean circular gauge. For AI transparency UIs, model monitoring dashboards, and any interface that needs to make invisible AI processes tangible and legible.",
+  "category": "generative",
+  "tags": [
+    "2026",
+    "generative",
+    "AI",
+    "visualization",
+    "feedback",
+    "bio-mimetic",
+    "confidence",
+    "transparency"
+  ],
+  "components": [
+    "PulseCore",
+    "FlowTrack",
+    "MetricDisplay",
+    "IntensityRing",
+    "FeedbackTooltip"
+  ],
+  "default_preset": "radial",
+  "presets": {
+    "radial": {
+      "description": "Centered PulseCore with IntensityRing surrounding it. Core pulses with CSS animation using custom cubic-bezier timing that mimics organic breathing. IntensityRing fill represents 0-100% metric value using conic-gradient. MetricDisplay shows numeric value below. Color shifts from cool (low) to warm (high) using color-mix().",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _aic _jcc _gap4"
+      }
+    },
+    "inline-flow": {
+      "description": "Horizontal FlowTrack with directional particle animation showing throughput left-to-right. MetricDisplay inline at the end. Compact enough to embed in a toolbar or status bar. Particle speed maps to processing rate; particle density maps to load.",
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _row _aic _gap3"
+      }
+    },
+    "ambient": {
+      "description": "Full-container background treatment. PulseCore is the entire container background with subtle radial-gradient pulsing. Color shifts across the background surface. No explicit ring or track — the entire area breathes. Metric values shown via FeedbackTooltip on hover only. Designed for ambient awareness without demanding attention.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_rel _wfull _hfull"
+      }
+    },
+    "static-gauge": {
+      "description": "Non-animated fallback. IntensityRing rendered as a static arc gauge with solid fill. MetricDisplay shows current value and label. No pulsing, particles, or color transitions. Clean data visualization with no motion.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _aic _jcc _gap2"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _aic _jcc _gap4",
+    "slots": {
+      "pulse-core": "The central animated element. Renders as a radial gradient that expands and contracts with CSS animation. Pulse frequency: idle (2s cycle), processing (0.8s cycle), high-load (0.4s cycle). Pulse amplitude maps to metric intensity. Uses @keyframes with custom cubic-bezier(0.4, 0, 0.2, 1) for organic feel. Core color is the base metric color.",
+      "flow-track": "A directional flow visualization showing throughput or progress. Renders animated particles (small circles or dots) moving along a track path. Particle speed represents processing rate. Particle count represents queue depth or load. Track can be linear (inline-flow preset) or circular (following IntensityRing). Uses CSS animation with translateX/rotate transforms.",
+      "metric-label": "MetricDisplay showing the current numeric value, unit, and descriptive label. Examples: '94% confidence', '1.2k tok/s', 'Stage 3/7'. Typography should use tabular-nums for stable width during value changes. Color matches the current intensity color. Supports trend arrow (up/down/stable) suffix.",
+      "intensity-ring": "IntensityRing renders a circular or arc gauge showing metric fill from 0% to 100%. Implemented with CSS conic-gradient: from transparent to the intensity color, with a smooth gradient edge. Ring thickness and diameter are configurable. The unfilled portion uses a muted background track color. Optional tick marks at 25% intervals.",
+      "detail-tooltip": "FeedbackTooltip providing expanded context on hover or focus. Shows: current value, min/max range, trend over last N seconds, and a plain-language interpretation (e.g., 'Model is highly confident', 'Processing is slower than usual'). Tooltip positioned above the core element. Includes a small sparkline if trend data is available."
+    }
+  },
+  "accessibility": {
+    "role": "status",
+    "aria_live": "polite",
+    "aria_label": "AI processing feedback",
+    "announcements": [
+      "Announce significant metric changes: 'Confidence increased to 94%'",
+      "Announce state transitions: 'Processing started', 'Processing complete'",
+      "Announce threshold crossings: 'Token rate exceeded limit'",
+      "Provide metric summary on focus: '[Metric name]: [value], [trend]'"
+    ],
+    "keyboard": [
+      "Tab focuses the feedback element, announcing current metric value",
+      "Enter or Space opens the detail tooltip",
+      "Escape closes the detail tooltip"
+    ],
+    "reduce_motion": "Switch to static-gauge preset. All pulsing, particle flow, and color transitions disabled. IntensityRing renders as a static filled arc. MetricDisplay updates values without animation. Color changes are instant rather than transitioned."
+  },
+  "responsive": {
+    "mobile": "Use inline-flow or static-gauge preset. Radial preset requires minimum 160px container. FlowTrack particle count reduced for performance. FeedbackTooltip appears as a bottom sheet on tap rather than hover tooltip.",
+    "tablet": "All presets available. Radial preset scales to container. Touch targets for tooltip activation are 44px minimum. Ambient preset works well as a page background on tablet."
+  },
+  "layout_hints": {
+    "containment": "This pattern should read as one feedback instrument, not a general dashboard section. Parent layouts own outer spacing; the pattern owns the core/ring/track stack and any tooltip anchoring immediately around it.",
+    "signal_priority": "PulseCore establishes live state first, IntensityRing carries the stable metric read, and MetricDisplay confirms the exact value. FlowTrack should support the interpretation rather than competing with the primary metric.",
+    "ambient_usage": "Ambient preset is a surface treatment, not a layout wrapper. If used behind other content, keep foreground cards and labels on a separate readable layer so the feedback motion never becomes the structural container."
+  },
+  "visual_brief": "Bio-mimetic circular visualization with a central PulseCore element that expands and contracts with breathing animation, its frequency mapped to processing state (slow idle pulse, rapid active pulse). Surrounding the core, an IntensityRing provides a clean circular gauge with fill level indicating the current metric value. FlowTrack renders directional particle animations flowing along arc paths to represent throughput. A MetricDisplay overlay shows the numeric value and label. The inline-flow preset linearizes the visualization as a horizontal pulsing bar. The ambient preset uses large subtle background pulses. Static-gauge renders as a simple circular progress ring without animation.",
+  "motion": {
+    "micro": {
+      "gauge-update": "value transition 500ms ease-out with number counter",
+      "threshold-cross": "flash border-color 300ms + scale(1.02) on threshold breach"
+    },
+    "transitions": {
+      "metric-refresh": "cross-fade 200ms ease-in-out",
+      "panel-toggle": "height 0→auto + fade 300ms ease-out"
+    },
+    "ambient": {
+      "confidence-pulse": "opacity oscillate 0.7→1 3s ease-in-out infinite",
+      "data-stream": "translateY scroll-like 1s linear infinite on live data"
+    }
+  },
+  "interactions": [
+    "animate-on-mount",
+    "status-pulse",
+    "live-simulation",
+    "hover-tooltip",
+    "real-time-updates"
+  ],
+  "composition": {
+    "NeuralFeedbackLoop": "Container(d-section, centered) > [PulseCore + IntensityRing + MetricDisplay + DetailTooltip?]",
+    "PulseCore": "Core(d-data, radial-gradient, pulsing: frequency-mapped, color-shift: metric)",
+    "IntensityRing": "Ring(d-data, conic-gradient, fill: 0-100%)",
+    "FlowTrack": "Track(d-data, particle-animation, speed: rate) > Particle[]",
+    "MetricDisplay": "Label(d-annotation, mono-data, tabular-nums) > [Value + Unit + TrendArrow?]",
+    "DetailTooltip": "Tooltip(d-surface, on-hover) > [CurrentValue + Range + Trend + Interpretation]"
+  }
+}

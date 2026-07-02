@@ -1,0 +1,135 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "tenant-portal",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Tenant Portal",
+  "description": "Tenant self-service portal home with lease summary, rent reminders, recent maintenance tickets, and quick actions.",
+  "tags": [
+    "property-management",
+    "tenant",
+    "self-service",
+    "portal",
+    "real-estate"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "tenant portal",
+        "tenant self-service",
+        "renter portal",
+        "tenant home"
+      ],
+      "secondary": [
+        "tenant dashboard",
+        "renter dashboard"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "core"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "patterns": [
+        {
+          "pattern": "tenant-card",
+          "preset": "self",
+          "as": "profile"
+        },
+        {
+          "pattern": "rent-reminder",
+          "preset": "upcoming",
+          "as": "rent-reminder"
+        },
+        {
+          "pattern": "lease-manager",
+          "preset": "summary",
+          "as": "lease"
+        },
+        {
+          "pattern": "maintenance-ticket",
+          "preset": "recent",
+          "as": "maintenance"
+        },
+        {
+          "pattern": "calendar-view",
+          "preset": "month",
+          "as": "rent-calendar"
+        }
+      ],
+      "default_layout": [
+        "rent-reminder",
+        "rent-calendar",
+        "creator-profile",
+        "lease-manager",
+        "maintenance-board"
+      ],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "maintenance",
+      "patterns": [
+        {
+          "pattern": "maintenance-ticket",
+          "preset": "create",
+          "as": "form"
+        }
+      ],
+      "default_layout": [
+        "form"
+      ],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "documents",
+      "patterns": [
+        {
+          "pattern": "document-vault",
+          "preset": "tenant",
+          "as": "documents"
+        }
+      ],
+      "default_layout": [
+        "documents"
+      ],
+      "shell": "top-nav-main"
+    }
+  ],
+  "page_briefs": {
+    "home": "Tenant home dashboard. Rent reminder card at top with due date and pay button. Profile summary card with address and lease info. Lease summary section below. Recent maintenance tickets list at the bottom with status badges.",
+    "maintenance": "Maintenance request form. Fields for issue category dropdown, description textarea, urgency selector, and photo upload area with drag-and-drop. Submit button at the bottom.",
+    "documents": "Document vault view. Grid or list of tenant documents (lease, receipts, notices) with file type icon, name, upload date, and download button per item. Upload button in the header."
+  },
+  "features": [
+    "self-service",
+    "file-upload",
+    "notifications"
+  ],
+  "shells": {
+    "top-nav-main": "Simple top navigation for tenant self-service"
+  },
+  "dependencies": {
+    "patterns": {
+      "tenant-card": "^1.0.0",
+      "rent-reminder": "^1.0.0",
+      "lease-manager": "^1.0.0",
+      "maintenance-ticket": "^1.0.0",
+      "document-vault": "^1.0.0",
+      "calendar-view": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "estate"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

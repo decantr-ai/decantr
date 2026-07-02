@@ -1,0 +1,114 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "render-monitor",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Render Monitor",
+  "description": "Observe every render job in flight: queue, progress, GPU utilization, and live log streaming for diagnosing failed or slow video generations.",
+  "tags": [
+    "render",
+    "monitor",
+    "jobs",
+    "logs",
+    "queue",
+    "gpu",
+    "2026"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "render monitor",
+        "render jobs",
+        "render queue",
+        "job monitor",
+        "video renders"
+      ],
+      "secondary": [
+        "render logs",
+        "gpu jobs",
+        "render status",
+        "job observability"
+      ],
+      "negative": []
+    },
+    "implies": [
+      "logs"
+    ],
+    "weight": 0.6,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "renders",
+      "path": "/renders",
+      "patterns": [
+        {
+          "pattern": "render-queue",
+          "preset": "list",
+          "as": "queue-list"
+        },
+        {
+          "pattern": "filter-bar",
+          "preset": "standard",
+          "as": "filters"
+        }
+      ],
+      "default_layout": [
+        "filters",
+        "queue-list"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "render-detail",
+      "path": "/renders/:id",
+      "patterns": [
+        {
+          "pattern": "detail-header",
+          "preset": "standard",
+          "as": "job-header"
+        },
+        {
+          "pattern": "log-stream",
+          "preset": "standard",
+          "as": "live-logs"
+        }
+      ],
+      "default_layout": [
+        "job-header",
+        "live-logs"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "renders": "All-jobs dashboard. A horizontal filter bar at the top exposes status chips (queued, running, completed, failed), project selector, time range picker, and GPU-tier filter. Below, a render queue rendered as a full list shows each job row with thumbnail preview, project name, scene badge, progress bar with percentage, ETA, elapsed time, GPU label, and contextual actions (cancel, retry, download) aligned right.",
+    "render-detail": "Single render job focus view. Top region is a detail header with large preview thumbnail, job title, status badge, progress ring, key metrics (frames rendered, elapsed, ETA, GPU model), and action buttons (cancel, retry, download artifact). Below, a full-height live log stream component displays streaming stdout with timestamp gutters, severity color coding, auto-scroll lock, filter input, and copy/download controls."
+  },
+  "features": [
+    "render-monitoring",
+    "logs"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area"
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon",
+      "neon-dark"
+    ],
+    "modes": [
+      "dark"
+    ]
+  },
+  "dependencies": {
+    "patterns": {
+      "render-queue": ">=1.0.0",
+      "filter-bar": ">=1.0.0",
+      "detail-header": ">=1.0.0",
+      "log-stream": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

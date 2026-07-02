@@ -1,0 +1,82 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "contact",
+  "role": "public",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Contact",
+  "description": "Contact page with hero header and working contact form with validation and spam protection.",
+  "tags": [
+    "contact",
+    "form",
+    "support",
+    "help"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "contact us",
+        "contact page",
+        "get in touch"
+      ],
+      "secondary": [
+        "contact form",
+        "support",
+        "reach out"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "contact",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "landing",
+          "as": "hero"
+        },
+        {
+          "pattern": "contact-form",
+          "preset": "standard",
+          "as": "form"
+        }
+      ],
+      "default_layout": [
+        "hero",
+        "form"
+      ],
+      "shell": "top-nav-footer"
+    }
+  ],
+  "page_briefs": {
+    "contact": "Hero header with page title and brief intro text. Below, a centered contact form with name, email, subject, and message textarea fields. Submit button and optional file attachment area. Clean, focused layout."
+  },
+  "features": [
+    "form-validation",
+    "spam-protection",
+    "file-attachment"
+  ],
+  "shells": {
+    "top-nav-footer": "Standard page layout with navigation and footer"
+  },
+  "dependencies": {
+    "patterns": {
+      "hero": "^1.0.0",
+      "contact-form": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  }
+}

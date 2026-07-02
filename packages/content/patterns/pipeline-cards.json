@@ -1,0 +1,99 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "pipeline-cards",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Pipeline Cards",
+  "description": "Grid of numbered step cards showing a sequential process or pipeline. Each card features a colored numbered badge, step name, description, and optional visual content area. Cards rotate through a color palette (coral, amber, cyan, green, yellow, orange, purple) with colored border strokes and matching heading colors. Ideal for process visualization, methodology breakdowns, and feature walkthroughs.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Card",
+        "Badge"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Card",
+    "Badge"
+  ],
+  "contained": false,
+  "default_preset": "outlined",
+  "presets": {
+    "outlined": {
+      "description": "Cards with colored border stroke (3px solid), transparent background, and accent top bar. Each card gets a unique color from a rotating palette. Number badge is a filled circle with the step number in monospace. Step name uses the card's accent color. Description is muted white. Optional visual content area inside the card has a subtle tinted background. On hover, card lifts with translateY(-4px) and gains a colored box-shadow. Last card centers if odd count. 2-column grid layout.",
+      "components": [
+        "Card",
+        "Badge"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc2 _gap6 _mw[920px] _mx[auto]",
+        "slots": {
+          "step-number": "Badge circle: _inline-flex _items[center] _justify[center] _w8 _h8 _rounded[50%] _mono _fs[0.8rem] _fw700 _mb3. Background uses the card's accent color, text is dark. Displays the step number (1, 2, 3...).",
+          "step-name": "Step heading with _fs[1.15rem] _fw700 _mb2. Color matches the card's accent color from the rotation palette.",
+          "step-description": "Step body text with _fs[0.85rem] _lh[1.6] _mb4 _fgwhite/75. Brief description of what happens in this step.",
+          "step-visual": "Optional inner content area with _rounded[10px] _p3 and subtle tinted background matching the card's accent color at ~7% opacity. Can contain: chat bubbles, tag lists, code snippets, layer stacks, pattern compositions, mini code blocks, or check results."
+        }
+      }
+    },
+    "filled": {
+      "description": "Cards with vibrant gradient backgrounds instead of border strokes. Each card has a rich gradient (135deg) using the accent color. Text is white or dark depending on the gradient. Number badge has a dark semi-transparent background. Same grid layout and slot structure as outlined.",
+      "components": [
+        "Card",
+        "Badge"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc2 _gap6 _mw[920px] _mx[auto]",
+        "slots": {
+          "step-number": "Badge circle with _rounded[50%] _w8 _h8 _bgblack/20 _fgwhite _fw700 _mono _mb3",
+          "step-name": "Step heading with _fs[1.15rem] _fw700 _mb2 _fgwhite",
+          "step-description": "Step body with _fs[0.85rem] _lh[1.6] _mb4 _fgwhite/85",
+          "step-visual": "Optional content area with _rounded[10px] _p3 _bgblack/20"
+        }
+      }
+    },
+    "horizontal": {
+      "description": "Horizontal scrolling row of pipeline cards instead of a grid. Cards are fixed-width and scroll horizontally with snap points. Useful for longer pipelines that would otherwise require too many grid rows. Uses outlined card style with colored borders.",
+      "components": [
+        "Card",
+        "Badge"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_flex _row _gap6 _overflow[auto] _snap[x_mandatory] _pb4 _px4",
+        "slots": {
+          "step-number": "Badge circle with accent-colored background, monospace number, _rounded[50%] _w8 _h8",
+          "step-name": "Step heading colored to match card accent",
+          "step-description": "Step body text, muted white",
+          "step-visual": "Optional inner content block with tinted background"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gc2 _gap6 _mw[920px] _mx[auto]",
+    "slots": {
+      "step-number": "Numbered badge circle with accent color",
+      "step-name": "Step heading with accent color",
+      "step-description": "Step description text",
+      "step-visual": "Optional visual content inside the card"
+    }
+  },
+  "io": {
+    "consumes": [],
+    "produces": [],
+    "actions": []
+  },
+  "visual_brief": "Grid of numbered step cards, each with a colored circular badge showing the step number, a step name heading in the matching accent color, a description paragraph, and an optional visual content area. Cards cycle through a color palette (coral, amber, cyan, green, yellow, orange, purple) with the badge background, heading color, and a left or top border stroke all matching. The outlined preset uses bordered cards with white/transparent backgrounds. The filled preset gives cards a light tinted background of their accent color. The horizontal preset arranges cards in a single scrollable row.",
+  "responsive": {
+    "mobile": "Single-column stack of cards. Numbered badges remain prominent. Visual content areas scale to full width.",
+    "tablet": "Two-column grid. Cards at comfortable reading width.",
+    "desktop": "Three-column grid or horizontal scroll row. Cards show full visual content. Generous inter-card spacing."
+  }
+}

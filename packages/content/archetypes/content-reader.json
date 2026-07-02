@@ -1,0 +1,135 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "content-reader",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Content Reader",
+  "description": "Article reading experience with browsable article listings, full article detail view, and category navigation. Optimized for long-form consumption with generous typography and effortless scanning.",
+  "tags": [
+    "content",
+    "reading",
+    "articles",
+    "editorial",
+    "blog",
+    "2026"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "article reader",
+        "blog reader",
+        "content browser",
+        "reading experience",
+        "article listing"
+      ],
+      "secondary": [
+        "editorial",
+        "magazine",
+        "long-form",
+        "article cards",
+        "category browsing"
+      ],
+      "negative": [
+        "dashboard",
+        "admin",
+        "editor"
+      ]
+    },
+    "implies": [
+      "search",
+      "reading"
+    ],
+    "weight": 1,
+    "tier": "core"
+  },
+  "pages": [
+    {
+      "id": "articles",
+      "patterns": [
+        {
+          "pattern": "search-filter-bar",
+          "preset": "standard",
+          "as": "article-search"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "content",
+          "as": "article-cards"
+        }
+      ],
+      "default_layout": [
+        "article-search",
+        "article-cards"
+      ],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "article-detail",
+      "patterns": [
+        {
+          "pattern": "legal-prose",
+          "preset": "standard",
+          "as": "article-body"
+        },
+        {
+          "pattern": "breadcrumb-nav",
+          "preset": "standard",
+          "as": "breadcrumbs"
+        }
+      ],
+      "default_layout": [
+        "breadcrumbs",
+        "article-body"
+      ],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "categories",
+      "patterns": [
+        {
+          "pattern": "card-grid",
+          "preset": "collection",
+          "as": "category-grid"
+        }
+      ],
+      "default_layout": [
+        "category-grid"
+      ],
+      "shell": "top-nav-main"
+    }
+  ],
+  "page_briefs": {
+    "articles": "Search-filter bar at top with category chips and keyword input. Below, a card grid of article cards featuring bold headlines, subtle metadata (date, read time, author), and short excerpts. Cards emphasize text over imagery. Pagination or infinite scroll at bottom.",
+    "article-detail": "Breadcrumb navigation at top linking back to articles and category. Clean long-form reading view with generous line-height (1.7+), comfortable measure (65-75 characters), and clear typographic hierarchy. Article title, author, date, and reading time above the body. Distraction-free — just well-set text.",
+    "categories": "Grid of category cards showing category name, article count, and brief description. Each card links to filtered article listing. Clean layout with consistent spacing."
+  },
+  "features": [
+    "search",
+    "reading",
+    "rss",
+    "bookmarks"
+  ],
+  "shells": {
+    "top-nav-main": "Top navigation bar with main content area for reading"
+  },
+  "suggested_theme": {
+    "ids": [
+      "editorial",
+      "clean"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  },
+  "dependencies": {
+    "patterns": {
+      "search-filter-bar": ">=1.0.0",
+      "card-grid": ">=1.0.0",
+      "legal-prose": ">=1.0.0",
+      "breadcrumb-nav": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

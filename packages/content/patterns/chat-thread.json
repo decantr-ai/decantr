@@ -1,0 +1,120 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "chat-thread",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Chat Thread",
+  "description": "Full message thread container with scrollable messages, typing indicator, pagination, and auto-scroll behavior.",
+  "dependencies": {
+    "patterns": {
+      "chat-message": "^1.0.0",
+      "chat-input": "^1.0.0"
+    },
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Avatar",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Avatar",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Standard chat thread with messages and anchored input",
+      "components": [
+        "Button",
+        "Avatar",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _hfull _overflow[hidden]",
+        "slots": {
+          "messages": "Scrollable message list",
+          "typing-indicator": "AI is thinking... indicator",
+          "load-more": "History pagination button",
+          "scroll-to-bottom": "Floating button when scrolled up"
+        }
+      }
+    },
+    "branched": {
+      "description": "Thread with branch indicator for conversation forks",
+      "components": [
+        "Button",
+        "Avatar",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _hfull _overflow[hidden]",
+        "slots": {
+          "branch-indicator": "Visual marker showing conversation branch point",
+          "messages": "Scrollable message list",
+          "typing-indicator": "AI is thinking... indicator"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _hfull _overflow[hidden]",
+    "slots": {
+      "messages": "Scrollable message list with ChatMessage components",
+      "typing-indicator": "AI is thinking... animated indicator",
+      "load-more": "History pagination trigger",
+      "branch-indicator": "Branched conversation marker",
+      "scroll-to-bottom": "Floating FAB when scrolled up"
+    }
+  },
+  "visual_brief": "Vertically scrolling message thread with alternating alignment for user and AI messages. User bubbles align right with accent background; AI responses align left with surface background and wider max-width. A pulsing dot-trio typing indicator appears at the bottom when the AI is generating. A floating scroll-to-bottom FAB fades in when the user scrolls up past a threshold.",
+  "layout_hints": {
+    "scroll_ownership": "The message list is the primary scrollable region and should not fight with outer page wrappers for scroll ownership.",
+    "bubble_measure": "Message bubbles should keep a readable max-width rather than stretching to the container edge, especially for long AI responses.",
+    "typing_state": "Typing indicators and load-more controls should feel like part of the thread rhythm instead of detached widgets."
+  },
+  "responsive": {
+    "mobile": "Messages span full width with minimal horizontal padding (12px). Avatars shrink to 28px or hide entirely. Typing indicator anchors to bottom of viewport. Scroll-to-bottom FAB shifts to bottom-right corner with 16px inset. Load-more button becomes a pull-to-refresh gesture at the top.",
+    "tablet": "Standard layout with comfortable padding. Avatars visible at 36px. Message bubbles max-width at 75% of container. Typing indicator and scroll-to-bottom FAB remain in default positions.",
+    "desktop": "Message bubbles cap at 640px max-width for readability. Full avatars at 40px with timestamp on hover. Branch indicators show as a vertical sidebar gutter. Keyboard shortcuts enabled for navigation between messages."
+  },
+  "motion": {
+    "message-entrance": "New messages slide in from the bottom with a 200ms ease-out and 50ms stagger between sequential messages. AI messages additionally fade from 0 to 1 opacity.",
+    "typing-indicator": "Three dots animate in a 1.2s infinite loop — each dot scales from 0.4 to 1.0 with 150ms offset per dot, creating a wave pulse effect.",
+    "scroll-to-bottom": "FAB fades in (opacity 0 to 1, 150ms) and translates up 8px when scroll position exceeds one viewport height from bottom. Reverse on dismiss.",
+    "auto-scroll": "When a new message arrives and the user is within 100px of the bottom, smooth-scroll to the new message over 300ms ease-in-out."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "stagger-children",
+    "real-time-updates",
+    "scroll-reveal",
+    "keyboard-navigation"
+  ],
+  "accessibility": {
+    "role": "log",
+    "aria-label": "Chat conversation",
+    "keyboard": [
+      "Tab moves between message actions and the composer in reading order.",
+      "Keyboard users should be able to reach the scroll-to-bottom control when it appears."
+    ],
+    "announcements": [
+      "New assistant and user messages should be announced appropriately without rereading the entire thread.",
+      "Typing indicator state changes should be announced sparingly."
+    ],
+    "focus_management": "Do not steal focus when new messages arrive. Preserve the reader's current position unless they explicitly choose to jump to the latest message."
+  },
+  "composition": {
+    "ChatThread": "Container(d-surface, flex-col, full-height) > [MessageList + TypingIndicator? + ScrollAnchor]",
+    "MessageList": "List(flex-col, gap-3, scrollable) > Message[]",
+    "TypingIndicator": "Bubble(d-annotation, opacity-70) > PulseDots(3, animated)",
+    "ScrollAnchor": "FAB(d-interactive, floating, show-on-scroll-up)"
+  }
+}

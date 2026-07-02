@@ -1,0 +1,117 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "budget-transparency",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Budget Transparency",
+  "description": "Public budget transparency dashboard with sankey visualizations, category drill-down, and expenditure tables. Exposes municipal budget flows to citizens in navigable detail.",
+  "tags": [
+    "budget",
+    "transparency",
+    "government",
+    "civic",
+    "finance",
+    "public-spending"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "budget transparency",
+        "public budget",
+        "municipal budget",
+        "government spending",
+        "budget dashboard"
+      ],
+      "secondary": [
+        "expenditure tracking",
+        "spending visualization",
+        "fiscal transparency"
+      ],
+      "negative": [
+        "enterprise finance",
+        "personal finance"
+      ]
+    },
+    "implies": [
+      "budget-transparency",
+      "drill-down"
+    ],
+    "weight": 0.8,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "budget",
+      "path": "/budget",
+      "patterns": [
+        {
+          "pattern": "budget-sankey",
+          "preset": "standard",
+          "as": "budget-flow"
+        },
+        {
+          "pattern": "kpi-grid",
+          "preset": "dashboard",
+          "as": "budget-kpis"
+        }
+      ],
+      "default_layout": [
+        "budget-kpis",
+        "budget-flow"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "budget-category",
+      "path": "/budget/:category",
+      "patterns": [
+        {
+          "pattern": "chart-grid",
+          "preset": "standard",
+          "as": "category-charts"
+        },
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "expenditure-table"
+        }
+      ],
+      "default_layout": [
+        "category-charts",
+        "expenditure-table"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "budget": "Budget overview opens with a KPI grid summarizing total revenue, total expenditure, surplus or deficit, and per-capita spending for the current fiscal year. A large sankey diagram dominates the page, flowing revenue sources on the left through department allocations to spending categories on the right, with hover tooltips showing exact dollar amounts and percentages.",
+    "budget-category": "Category detail page shows a chart grid with time-series spending trend, year-over-year comparison, and breakdown donut for the selected category. Below, a data table lists every line-item expenditure within the category with columns for vendor, description, amount, date, and approving department, with sorting and CSV export."
+  },
+  "features": [
+    "budget-transparency",
+    "drill-down"
+  ],
+  "shells": {
+    "sidebar-main": "Left sidebar with budget category navigation and main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "budget-sankey": ">=1.0.0",
+      "kpi-grid": ">=1.0.0",
+      "chart-grid": ">=1.0.0",
+      "data-table": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "civic",
+      "professional"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "marketing-deal-room",
+  "role": "public",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Marketing Deal Room",
+  "description": "Public marketing landing page for deal-room software positioning trust, security, and workflow velocity. Primary acquisition surface for enterprise sales.",
+  "tags": [
+    "marketing",
+    "landing",
+    "deal-room",
+    "enterprise",
+    "public"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "deal room marketing",
+        "deal room landing",
+        "vdr marketing site",
+        "enterprise landing"
+      ],
+      "secondary": [
+        "marketing page",
+        "homepage",
+        "landing page"
+      ],
+      "negative": []
+    },
+    "implies": [
+      "marketing"
+    ],
+    "weight": 0.7,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "path": "/",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "brand",
+          "as": "marketing-hero"
+        },
+        {
+          "pattern": "features",
+          "preset": "standard",
+          "as": "feature-grid"
+        },
+        {
+          "pattern": "testimonials",
+          "preset": "standard",
+          "as": "customer-quotes"
+        },
+        {
+          "pattern": "cta-section",
+          "preset": "standard",
+          "as": "request-demo"
+        }
+      ],
+      "default_layout": [
+        "marketing-hero",
+        "feature-grid",
+        "customer-quotes",
+        "request-demo"
+      ],
+      "shell": "top-nav-footer"
+    }
+  ],
+  "page_briefs": {
+    "home": "Brand-variant hero anchors the page with bold headline on institutional trust and transaction velocity, supporting subhead, primary CTA for demo request, and a secondary CTA for security whitepaper. Below the hero, a features grid surfaces differentiators like granular permissions, watermarking, and audit trail. A testimonials band shows logos and quotes from PE and investment banking customers. The closing CTA section drives toward booking an enterprise demo."
+  },
+  "features": [
+    "marketing"
+  ],
+  "shells": {
+    "top-nav-footer": "Top navigation with marketing links and footer with company info"
+  },
+  "dependencies": {
+    "patterns": {
+      "hero": ">=1.0.0",
+      "features": ">=1.0.0",
+      "testimonials": ">=1.0.0",
+      "cta-section": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "professional",
+      "carbon"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

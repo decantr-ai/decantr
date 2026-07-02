@@ -1,0 +1,237 @@
+{
+  "$schema": "https://decantr.ai/schemas/blueprint.v1.json",
+  "id": "financial-dashboard",
+  "version": "2.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Financial Dashboard",
+  "description": "Personal finance dashboard with portfolio overview, transaction history, budget planning, investment tracking, marketing landing, and full auth and settings.",
+  "blueprint_portfolio": {
+    "visibility": "public",
+    "maturity": "supported-contract",
+    "rationale": "Supported registry blueprint that remains useful in All without being promoted as a flagship default.",
+    "artifact": {
+      "status": "candidate",
+      "showcase": "financial-dashboard",
+      "notes": "Showcase-backed candidate; certification requires artifact evidence beyond registry availability."
+    }
+  },
+  "tags": [
+    "finance",
+    "dashboard",
+    "portfolio",
+    "investments",
+    "budget",
+    "transactions",
+    "2026"
+  ],
+  "compose": [
+    "portfolio-overview",
+    "transaction-history",
+    "budget-planner",
+    "investment-tracker",
+    "marketing-finance",
+    "auth-full",
+    "settings-full"
+  ],
+  "theme": {
+    "id": "auradecantism",
+    "mode": "dark",
+    "shape": "rounded"
+  },
+  "personality": "Authoritative financial dashboard built for trust and precision. Conservative color palette with green for gains, red for losses, neutral grays for context. Large numbers in monospace font dominate the viewport. Charts are clean with minimal gridlines. Sparklines inline in tables show trends at a glance. Budget views use clear bar comparisons. Transaction history is filterable and fast. Lucide icons. Every number precise to two decimal places.",
+  "voice": {
+    "tone": "Precise and trustworthy. Speaks to investors and financial planners.",
+    "cta_verbs": [
+      "Invest",
+      "Track",
+      "Analyze",
+      "Budget",
+      "Compare",
+      "Export"
+    ],
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Exciting opportunity"
+    ],
+    "empty_states": "Matter-of-fact. Explain what data will appear and how to configure the data source. No playful language.",
+    "errors": "Clear and specific. Include error codes where applicable. For data sync failures, show last-known-good timestamp.",
+    "loading": "Skeleton rows in tables and chart outlines. Show stale data with a subtle 'Updating...' badge rather than blank screens."
+  },
+  "features": [
+    "auth",
+    "mfa",
+    "oauth",
+    "analytics-state",
+    "data-export",
+    "notifications",
+    "marketing",
+    "seo"
+  ],
+  "routes": {
+    "/": {
+      "page": "home",
+      "shell": "top-nav-footer",
+      "archetype": "marketing-finance"
+    },
+    "/dashboard": {
+      "page": "overview",
+      "shell": "sidebar-main",
+      "archetype": "portfolio-overview"
+    },
+    "/allocations": {
+      "page": "allocations",
+      "shell": "sidebar-main",
+      "archetype": "portfolio-overview"
+    },
+    "/transactions": {
+      "page": "transactions",
+      "shell": "sidebar-main",
+      "archetype": "transaction-history"
+    },
+    "/transactions/:id": {
+      "page": "transaction-detail",
+      "shell": "sidebar-main",
+      "archetype": "transaction-history"
+    },
+    "/budgets": {
+      "page": "budgets",
+      "shell": "sidebar-main",
+      "archetype": "budget-planner"
+    },
+    "/investments": {
+      "page": "investments",
+      "shell": "sidebar-main",
+      "archetype": "investment-tracker"
+    },
+    "/investments/:id": {
+      "page": "holding-detail",
+      "shell": "sidebar-main",
+      "archetype": "investment-tracker"
+    },
+    "/login": {
+      "page": "login",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/register": {
+      "page": "register",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/forgot-password": {
+      "page": "forgot-password",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/reset-password": {
+      "page": "reset-password",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/verify-email": {
+      "page": "verify-email",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/mfa-setup": {
+      "page": "mfa-setup",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/mfa-verify": {
+      "page": "mfa-verify",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/phone-verify": {
+      "page": "phone-verify",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/settings/profile": {
+      "page": "profile",
+      "shell": "sidebar-main",
+      "archetype": "settings-full"
+    },
+    "/settings/security": {
+      "page": "security",
+      "shell": "sidebar-main",
+      "archetype": "settings-full"
+    },
+    "/settings/preferences": {
+      "page": "preferences",
+      "shell": "sidebar-main",
+      "archetype": "settings-full"
+    },
+    "/settings/danger": {
+      "page": "danger",
+      "shell": "sidebar-main",
+      "archetype": "settings-full"
+    }
+  },
+  "overrides": {
+    "features_add": [
+      "theme-toggle",
+      "command-palette"
+    ],
+    "features_remove": [],
+    "pages": {},
+    "pages_remove": []
+  },
+  "navigation": {
+    "command_palette": true,
+    "hotkeys": [
+      {
+        "key": "g d",
+        "route": "/dashboard",
+        "label": "Go to Dashboard"
+      },
+      {
+        "key": "g t",
+        "route": "/transactions",
+        "label": "Go to Transactions"
+      },
+      {
+        "key": "g b",
+        "route": "/budgets",
+        "label": "Go to Budgets"
+      },
+      {
+        "key": "g i",
+        "route": "/investments",
+        "label": "Go to Investments"
+      }
+    ]
+  },
+  "seo_hints": {
+    "schema_org": [
+      "WebApplication",
+      "FinancialProduct"
+    ],
+    "meta_priorities": [
+      "description",
+      "og:title",
+      "og:description",
+      "og:image"
+    ]
+  },
+  "dependencies": {
+    "archetypes": {
+      "portfolio-overview": ">=1.0.0",
+      "transaction-history": ">=1.0.0",
+      "budget-planner": ">=1.0.0",
+      "investment-tracker": ">=1.0.0",
+      "marketing-finance": ">=1.0.0",
+      "auth-full": ">=1.0.0",
+      "settings-full": ">=1.0.0"
+    }
+  },
+  "suggested_themes": [
+    "auradecantism",
+    "fintech",
+    "carbon",
+    "terminal"
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "maintenance-center",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Maintenance Center",
+  "description": "Maintenance ticket management with Kanban board view, ticket details, and ticket creation for property repairs.",
+  "tags": [
+    "property-management",
+    "maintenance",
+    "tickets",
+    "kanban",
+    "repairs"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "maintenance management",
+        "repair tickets",
+        "work orders",
+        "maintenance board"
+      ],
+      "secondary": [
+        "property repairs",
+        "vendor management",
+        "maintenance requests"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "core"
+  },
+  "pages": [
+    {
+      "id": "board",
+      "patterns": [
+        {
+          "pattern": "maintenance-board",
+          "preset": "board",
+          "as": "board"
+        },
+        {
+          "pattern": "kanban-board",
+          "preset": "standard",
+          "as": "maintenance-board"
+        }
+      ],
+      "default_layout": [
+        "board",
+        "maintenance-board"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "ticket",
+      "patterns": [
+        {
+          "pattern": "maintenance-ticket",
+          "preset": "view",
+          "as": "ticket"
+        }
+      ],
+      "default_layout": [
+        "maintenance-ticket"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "create",
+      "patterns": [
+        {
+          "pattern": "maintenance-ticket",
+          "preset": "edit",
+          "as": "form"
+        }
+      ],
+      "default_layout": [
+        "form"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "board": "Kanban board layout with columns for Open, In Progress, Scheduled, and Complete. Each column contains draggable ticket cards showing property address, issue summary, priority badge, and assigned vendor.",
+    "ticket": "Ticket detail view. Header with ticket ID, status badge, and priority indicator. Body shows issue description, photo attachments, property/unit info, vendor assignment, and a comment thread for updates.",
+    "create": "Ticket creation form. Fields for property/unit selector, issue category dropdown, description textarea, priority selector, photo upload area, and preferred schedule date picker."
+  },
+  "features": [
+    "kanban",
+    "drag-drop",
+    "file-upload",
+    "notifications"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation for maintenance management"
+  },
+  "dependencies": {
+    "patterns": {
+      "maintenance-board": "^1.0.0",
+      "maintenance-ticket": "^1.0.0",
+      "kanban-board": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "estate"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "investment-tracker",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Investment Tracker",
+  "description": "Investment holdings tracker with position tables, sparkline price trends, performance charts, and individual holding detail views.",
+  "tags": ["finance", "investments", "holdings", "stocks", "portfolio", "tracking", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["investment tracker", "holdings tracker", "stock tracker", "investment portfolio"],
+      "secondary": ["stock positions", "fund tracker", "asset tracker", "investment performance"],
+      "negative": ["ecommerce", "admin", "social"]
+    },
+    "implies": ["analytics"],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "investments",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "holdings-table"
+        },
+        {
+          "pattern": "sparkline-cell",
+          "preset": "standard",
+          "as": "price-sparklines"
+        },
+        {
+          "pattern": "chart-grid",
+          "preset": "standard",
+          "as": "portfolio-charts"
+        }
+      ],
+      "default_layout": ["holdings-table", "price-sparklines", "portfolio-charts"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "holding-detail",
+      "patterns": [
+        {
+          "pattern": "detail-header",
+          "preset": "standard",
+          "as": "holding-header"
+        },
+        {
+          "pattern": "chart-grid",
+          "preset": "standard",
+          "as": "holding-charts"
+        }
+      ],
+      "default_layout": ["holding-header", "holding-charts"],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "investments": "Data table listing holdings with ticker/name, shares, average cost, current price, market value (monospace), gain/loss amount and percentage (green/red), and inline sparkline showing 30-day price trend. Chart grid below with sector allocation donut, performance comparison line chart, and dividend income bar chart.",
+    "holding-detail": "Detail header with ticker symbol, company name, current price (large monospace), daily change with percentage, and key stats (market cap, P/E, dividend yield). Chart grid below with interactive price chart (1D/1W/1M/1Y/5Y toggles), volume bar chart, and earnings history comparison."
+  },
+  "features": ["analytics-state", "data-export", "real-time-data"],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area"
+  },
+  "suggested_theme": {
+    "ids": ["carbon", "clean"],
+    "modes": ["dark", "auto"]
+  },
+  "dependencies": {
+    "patterns": {
+      "data-table": ">=1.0.0",
+      "sparkline-cell": ">=1.0.0",
+      "chart-grid": ">=1.0.0",
+      "detail-header": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

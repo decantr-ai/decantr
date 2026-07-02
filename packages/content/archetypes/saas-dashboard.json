@@ -1,0 +1,127 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "saas-dashboard",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "SaaS Dashboard",
+  "description": "Analytics and admin dashboard for SaaS products with KPIs, data tables, charts, customer management, and application settings.",
+  "tags": [
+    "saas",
+    "dashboard",
+    "analytics",
+    "admin",
+    "kpi",
+    "data-table",
+    "charts"
+  ],
+  "role": "primary",
+  "classification": {
+    "triggers": {
+      "primary": [
+        "saas-dashboard",
+        "saas-admin",
+        "saas-analytics",
+        "app-dashboard"
+      ],
+      "secondary": [
+        "admin-panel",
+        "user-management",
+        "subscription-dashboard",
+        "tenant-dashboard"
+      ],
+      "negative": [
+        "ecommerce",
+        "financial",
+        "banking"
+      ]
+    },
+    "implies": [
+      "analytics",
+      "admin"
+    ],
+    "weight": 1,
+    "tier": "core"
+  },
+  "pages": [
+    {
+      "id": "overview",
+      "default_layout": [
+        "kpi-grid",
+        "chart-grid",
+        "activity-feed"
+      ],
+      "shell": "sidebar-main",
+      "notes": "Primary dashboard: KPI cards at top, chart grid in the middle, activity feed at the bottom"
+    },
+    {
+      "id": "analytics",
+      "default_layout": [
+        "filter-bar",
+        "data-table",
+        "chart-grid"
+      ],
+      "shell": "sidebar-main",
+      "notes": "Analytics deep-dive: filter bar for date ranges and dimensions, data table with drill-down, supporting charts below"
+    },
+    {
+      "id": "customers",
+      "default_layout": [
+        "search-filter-bar",
+        "data-table"
+      ],
+      "shell": "sidebar-main",
+      "notes": "Customer list with search and filtering, sortable data table with subscription status and actions"
+    },
+    {
+      "id": "settings",
+      "default_layout": [
+        "account-settings",
+        {
+          "pattern": "form-sections",
+          "preset": "structured",
+          "as": "app-settings"
+        }
+      ],
+      "shell": "sidebar-main",
+      "notes": "Application settings: account settings at top, structured form sections for app configuration"
+    }
+  ],
+  "page_briefs": {
+    "overview": "KPI stat cards in a row at the top showing MRR, active users, churn rate, and NPS. Below, a chart grid with revenue trend line, signup funnel bar chart, and usage heatmap. Activity feed at the bottom with recent user signups, plan changes, and system events.",
+    "analytics": "Filter bar at top with date range picker, plan tier selector, and search. Data table below with sortable columns for user metrics. Chart grid at bottom with cohort retention, feature usage, and conversion charts.",
+    "customers": "Search and filter bar with plan tier chips, status toggles, and text search. Full-width data table with customer name, email, plan, MRR, last active date, and action dropdown per row.",
+    "settings": "Account settings section with profile, team, and billing tabs. Below, structured form sections for notification preferences, API keys, integrations, and workspace configuration."
+  },
+  "features": [
+    "auth",
+    "analytics-state",
+    "search",
+    "notifications"
+  ],
+  "shells": {
+    "sidebar-main": "Collapsible sidebar with section-grouped navigation and main content area"
+  },
+  "suggested_theme": {
+    "ids": [
+      "clean",
+      "auradecantism"
+    ],
+    "modes": [
+      "light",
+      "auto"
+    ]
+  },
+  "dependencies": {
+    "patterns": {
+      "kpi-grid": "^1.0.0",
+      "chart-grid": "^1.0.0",
+      "activity-feed": "^1.0.0",
+      "filter-bar": "^1.0.0",
+      "data-table": "^1.0.0",
+      "search-filter-bar": "^1.0.0",
+      "account-settings": "^1.0.0",
+      "form-sections": "^1.0.0"
+    },
+    "styles": {}
+  }
+}

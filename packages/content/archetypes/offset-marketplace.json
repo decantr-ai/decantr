@@ -1,0 +1,134 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "offset-marketplace",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Offset Marketplace",
+  "description": "Carbon offset marketplace for browsing verified projects, reviewing details, and completing offset purchases with cart-based checkout.",
+  "tags": [
+    "offsets",
+    "carbon-credits",
+    "marketplace",
+    "climate",
+    "checkout"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "offset marketplace",
+        "carbon offsets",
+        "carbon credits",
+        "buy offsets"
+      ],
+      "secondary": [
+        "verified projects",
+        "retire credits"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "marketplace",
+      "patterns": [
+        {
+          "pattern": "offset-cart",
+          "preset": "standard",
+          "as": "cart"
+        },
+        {
+          "pattern": "search-filter-bar",
+          "preset": "standard",
+          "as": "filters"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "product",
+          "as": "projects"
+        }
+      ],
+      "default_layout": [
+        "search-filter-bar",
+        "card-grid",
+        "offset-cart"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "project-detail",
+      "patterns": [
+        {
+          "pattern": "detail-header",
+          "preset": "standard",
+          "as": "header"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "content",
+          "as": "content"
+        }
+      ],
+      "default_layout": [
+        "detail-header",
+        "card-grid"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "checkout",
+      "patterns": [
+        {
+          "pattern": "checkout-flow",
+          "preset": "purchase",
+          "as": "checkout"
+        },
+        {
+          "pattern": "offset-cart",
+          "preset": "minimal",
+          "as": "cart"
+        }
+      ],
+      "default_layout": [
+        "checkout-flow",
+        "offset-cart"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "marketplace": "Browse surface for verified carbon offset projects. A search and filter bar lets buyers narrow by project type, geography, registry, price, and vintage. Below, a product card grid renders each project with cover image, tCO2e price, registry badge, and an add-to-cart action. Persistent offset cart sits on the right with running totals and retirement summary.",
+    "project-detail": "Single offset project profile. Detail header shows project name, type, location, registry, vintage, and price with a prominent add-to-cart action. Below, a content card grid surfaces methodology, co-benefits, verification docs, photos, and monitoring reports.",
+    "checkout": "Purchase flow for retiring carbon offsets. Multi-step checkout flow walks through review, beneficiary, payment, and confirmation. A minimal cart summary pins the line items, total tCO2e, total cost, and retirement serial numbers throughout the flow."
+  },
+  "features": [
+    "offsets",
+    "marketplace",
+    "purchasing"
+  ],
+  "shells": {
+    "sidebar-main": "Left navigation sidebar with primary content column"
+  },
+  "dependencies": {
+    "patterns": {
+      "offset-cart": "^1.0.0",
+      "search-filter-bar": "^1.0.0",
+      "card-grid": "^1.0.0",
+      "detail-header": "^1.0.0",
+      "checkout-flow": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

@@ -1,0 +1,163 @@
+{
+  "$schema": "https://decantr.ai/schemas/blueprint.v1.json",
+  "id": "ai-copilot-shell",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "AI Copilot Shell",
+  "description": "Minimal, unobtrusive AI assistant shell that enhances any workflow with a sleek side-panel copilot, smart suggestions, and configurable AI settings.",
+  "blueprint_portfolio": {
+    "visibility": "public",
+    "maturity": "supported-contract",
+    "rationale": "Supported registry blueprint that remains useful in All without being promoted as a flagship default.",
+    "artifact": {
+      "status": "candidate",
+      "showcase": "ai-copilot-shell",
+      "notes": "Showcase-backed candidate; certification requires artifact evidence beyond registry availability."
+    }
+  },
+  "tags": [
+    "ai",
+    "copilot",
+    "assistant",
+    "embedded",
+    "side-panel",
+    "suggestions",
+    "2026"
+  ],
+  "compose": [
+    "copilot-workspace",
+    "copilot-settings",
+    "marketing-copilot",
+    "auth-flow",
+    "settings"
+  ],
+  "theme": {
+    "mode": "dark",
+    "shape": "rounded",
+    "id": "carbon"
+  },
+  "personality": "Minimal, unobtrusive AI assistant that enhances without overwhelming. The copilot panel is a sleek right-side drawer — dark carbon surface with soft shadows. Suggestions appear as ghost text or subtle card overlays near the user's focus. Main app takes center stage; AI is always available but never demands attention. Actions have clear accept/reject affordances. Context breadcrumbs show what the AI sees. Think GitHub Copilot meets Linear's command palette. Lucide icons. Geist Mono for AI outputs.",
+  "voice": {
+    "tone": "Concise and helpful. Like a knowledgeable colleague.",
+    "cta_verbs": [
+      "Apply",
+      "Accept",
+      "Dismiss",
+      "Refine",
+      "Ask",
+      "Explain"
+    ],
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Buy now",
+      "Magic"
+    ],
+    "empty_states": "Quiet and inviting. An empty copilot panel shows a subtle prompt to ask a question or start a task. No clutter.",
+    "errors": "Brief and actionable. Show what went wrong and how to retry. Never verbose.",
+    "loading": "Ghost text shimmer for suggestions. Subtle pulse animation on the copilot icon. Typing indicator dots for AI responses."
+  },
+  "features": [
+    "ai-copilot",
+    "suggestions",
+    "side-panel",
+    "context-awareness",
+    "auth",
+    "marketing",
+    "seo",
+    "keyboard-shortcuts"
+  ],
+  "routes": {
+    "/": {
+      "page": "home",
+      "shell": "top-nav-footer",
+      "archetype": "marketing-copilot"
+    },
+    "/login": {
+      "page": "login",
+      "shell": "centered",
+      "archetype": "auth-flow"
+    },
+    "/register": {
+      "page": "register",
+      "shell": "centered",
+      "archetype": "auth-flow"
+    },
+    "/forgot-password": {
+      "page": "forgot-password",
+      "shell": "centered",
+      "archetype": "auth-flow"
+    },
+    "/workspace": {
+      "page": "workspace",
+      "shell": "copilot-overlay",
+      "archetype": "copilot-workspace"
+    },
+    "/workspace/:id": {
+      "page": "workspace-detail",
+      "shell": "copilot-overlay",
+      "archetype": "copilot-workspace"
+    },
+    "/copilot/config": {
+      "page": "copilot-config",
+      "shell": "sidebar-main",
+      "archetype": "copilot-settings"
+    },
+    "/settings": {
+      "page": "settings",
+      "shell": "sidebar-main",
+      "archetype": "settings"
+    }
+  },
+  "overrides": {
+    "features_add": [
+      "command-palette"
+    ],
+    "features_remove": [],
+    "pages": {},
+    "pages_remove": []
+  },
+  "seo_hints": {
+    "schema_org": [
+      "Organization",
+      "WebApplication",
+      "SoftwareApplication"
+    ],
+    "meta_priorities": [
+      "description",
+      "og:image",
+      "twitter:card"
+    ]
+  },
+  "navigation": {
+    "command_palette": true,
+    "hotkeys": [
+      {
+        "key": "g w",
+        "route": "/workspace",
+        "label": "Go to Workspace"
+      },
+      {
+        "key": "g c",
+        "route": "/copilot/config",
+        "label": "Go to Copilot Config"
+      }
+    ]
+  },
+  "dependencies": {
+    "archetypes": {
+      "copilot-workspace": ">=1.0.0",
+      "copilot-settings": ">=1.0.0",
+      "marketing-copilot": ">=1.0.0",
+      "auth-flow": ">=1.0.0",
+      "settings": ">=1.0.0"
+    }
+  },
+  "suggested_themes": [
+    "carbon",
+    "clean",
+    "glassmorphism",
+    "paper"
+  ]
+}

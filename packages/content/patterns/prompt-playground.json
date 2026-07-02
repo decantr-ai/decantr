@@ -1,0 +1,129 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "prompt-playground",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Prompt Playground",
+  "description": "Split-pane prompt editor with model selector, parameter controls, token counter, and response panel for iterating on AI prompts. Supports side-by-side, stacked, and multi-model comparison layouts.",
+  "category": "ai-tools",
+  "tags": [
+    "2026",
+    "ai-tools",
+    "prompt",
+    "playground",
+    "LLM",
+    "editor",
+    "comparison",
+    "model-selector"
+  ],
+  "components": [
+    "PromptEditor",
+    "ResponsePanel",
+    "ModelSelector",
+    "ParameterSliders",
+    "TokenCounter",
+    "HistoryList",
+    "SaveButton",
+    "ComparisonView"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Side-by-side layout with prompt editor on the left and response panel on the right, top bar with model and parameter controls",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _h-full _w-full"
+      }
+    },
+    "stacked": {
+      "description": "Vertical layout with prompt editor on top and response panel below, suitable for narrower viewports or focused editing",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _h-full _w-full"
+      }
+    },
+    "comparison": {
+      "description": "Multi-model comparison with shared prompt editor above and 2-3 response panels side-by-side below, each using a different model",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _h-full _w-full"
+      }
+    }
+  },
+  "visual_brief": "Full-height layout divided into distinct zones. The top bar (48px height, surface background, bottom border) contains: a ModelSelector dropdown on the left showing the current model name with a chevron (e.g., 'Claude 3.5 Sonnet'), followed by ParameterSliders — horizontal slider controls for temperature (0-2, default 1, step 0.1) and max tokens (1-4096, default 1024) each with a numeric input box showing the exact value to the right of the slider. After the sliders, a TokenCounter displays three compact values: input tokens, output tokens, and total tokens as 'In: 245 | Out: 512 | Total: 757' using tabular-nums monospace, with a tiny horizontal stacked bar below the numbers showing input (muted) and output (accent) proportions. A SaveButton (outlined, icon: bookmark) sits at the far right of the top bar. Below the top bar, the main area splits into two equal panes separated by a 4px draggable divider. Left pane: the PromptEditor, a monospace text editor (14px, line-height 1.6) with a dark surface background, line numbers in a 40px gutter on the left (muted color), and syntax highlighting for template variables — any text matching {{variable_name}} renders in accent color with a subtle accent background. The editor supports multi-line input with vertical scrolling. A 'System prompt' collapsible section sits above the main input area for system-level instructions. Right pane: the ResponsePanel with a lighter surface background, rendering the AI response with full markdown formatting (headings, bold, italic, code blocks with syntax highlighting, lists, links). At the top of the response panel, a small status bar shows generation time, model name, and a copy-all button. A prominent 'Run' button (accent filled, 40px height, centered between the two panes or in the top bar) triggers generation with a loading spinner replacing its label during processing. In the comparison preset, the prompt editor spans full width at the top (40% height), and below it 2-3 ResponsePanels sit side-by-side, each with its own model label header and independent scroll. The HistoryList is an optional collapsible left sidebar (200px) showing past prompt-response pairs as compact cards (truncated prompt text, timestamp, model used), clickable to restore.",
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _h-full _w-full",
+    "slots": {
+      "top-bar": "Horizontal bar (48px height) with surface background and bottom border. Contains ModelSelector dropdown, ParameterSliders (temperature and max-tokens each with slider + numeric input), TokenCounter (input/output/total with stacked bar), and SaveButton. Items spaced with gap-4 and vertically centered.",
+      "prompt-editor": "Left pane (or top pane in stacked). Monospace text editor with dark surface background. Line numbers in left gutter. Syntax highlighting for {{template_variables}} in accent color. Collapsible system prompt section above main input. Vertical scrolling. Supports paste, undo/redo, find/replace. Min-height 200px.",
+      "response-panel": "Right pane (or bottom pane in stacked). Lighter surface background. Renders AI response as formatted markdown with headings, lists, code blocks (syntax highlighted with copy button), and inline formatting. Status bar at top shows generation time, tokens used, model name, and copy-all button. Loading state shows a pulsing cursor animation. Empty state shows muted placeholder text 'Run a prompt to see the response'.",
+      "run-button": "Prominent accent-filled button labeled 'Run' (or play icon + 'Run'). Positioned in the divider between editor and response, or in the top bar. During generation: label changes to a spinner + 'Running...', button becomes disabled. Keyboard shortcut: Cmd+Enter / Ctrl+Enter.",
+      "history-list": "Optional collapsible left sidebar (200px wide). Lists past prompt-response pairs as compact cards showing truncated prompt text (first 60 chars), model name badge, timestamp, and token count. Click to restore prompt and response. Search input at top for filtering history. Most recent at top.",
+      "comparison-view": "Comparison preset only. 2-3 ResponsePanels side-by-side below a shared full-width PromptEditor. Each panel has a model selector header, independent scroll, and its own status bar. Differences between responses can be highlighted with a diff toggle."
+    }
+  },
+  "accessibility": {
+    "role": "application",
+    "aria-label": "Prompt playground editor",
+    "announcements": [
+      "Model changed to {model_name}",
+      "Temperature set to {value}",
+      "Max tokens set to {value}",
+      "Generation started with {input_tokens} input tokens",
+      "Generation complete: {output_tokens} output tokens in {duration}",
+      "Generation failed: {error_message}",
+      "Prompt saved to history",
+      "History item loaded: {truncated_prompt}"
+    ],
+    "keyboard": [
+      "Cmd+Enter / Ctrl+Enter: run the current prompt",
+      "Cmd+S / Ctrl+S: save current prompt to history",
+      "Cmd+L / Ctrl+L: focus model selector",
+      "Cmd+H / Ctrl+H: toggle history sidebar",
+      "Tab: cycle between prompt editor, run button, and response panel",
+      "Escape: cancel running generation",
+      "Cmd+/ : toggle system prompt section"
+    ]
+  },
+  "responsive": {
+    "mobile": "Stacked layout forced: prompt editor on top, response below. Top bar wraps to two rows (model selector + run button on first row, sliders on second). History list hidden behind a hamburger menu. Token counter shows only total. Sliders replaced by compact numeric-only inputs. Full-width panes with no draggable divider.",
+    "tablet": "Stacked layout default with option to switch to side-by-side. Top bar in single row with compressed sliders. History as a slide-over drawer from left. Comparison mode shows 2 response panels (not 3).",
+    "desktop": "Full side-by-side layout with draggable divider. Top bar in single row with full slider controls. History sidebar collapsible. Comparison mode supports 2-3 response panels. Keyboard shortcuts fully active. Hover tooltips on all controls."
+  },
+  "layout_hints": {
+    "editor_priority": "The prompt editor and run loop are the primary focus. Token counters, sliders, and history should support iteration without crowding the act of writing and evaluating prompts.",
+    "comparison_mode": "When multiple response panels are visible, keep the shared prompt context obvious so the user reads the comparison as one experiment rather than separate chats.",
+    "control_rhythm": "Top-bar controls should feel compact and tool-like. Preserve a clear separation between experiment controls, editor canvas, and response surfaces."
+  },
+  "motion": {
+    "micro": {
+      "run-button-hover": "shadow elevation increase + slight scale(1.02) 120ms ease-out",
+      "slider-thumb-drag": "thumb scales to 1.2 during drag 100ms ease-out",
+      "token-counter-update": "number cross-fade 200ms ease-out on value change"
+    },
+    "transitions": {
+      "generation-start": "response panel clears with fade 150ms, then pulsing cursor appears",
+      "generation-stream": "text appends character-by-character or chunk-by-chunk with no animation (instant append)",
+      "history-toggle": "sidebar width 0→200px + opacity 300ms ease-in-out",
+      "pane-resize": "divider drag updates pane widths in real-time with no transition delay",
+      "comparison-add": "new response panel slides in from right 300ms ease-out"
+    },
+    "ambient": {
+      "generating-indicator": "run button has a subtle pulse glow during generation, 1.5s ease-in-out infinite"
+    }
+  },
+  "interactions": [
+    "animate-on-mount",
+    "inline-edit",
+    "keyboard-navigation"
+  ],
+  "composition": {
+    "Playground": "Section(d-section, flex-col, h-full) > [TopBar > [ModelSelector(d-control) + ParameterSliders(d-control) + TokenCounter(d-data, mono-data) + SaveButton(d-interactive)] + MainArea]",
+    "MainArea": "Row(d-section, flex, h-full) > [HistoryList?(d-surface, collapsible) + PromptEditor(d-surface, monospace) + RunButton(d-interactive, accent) + ResponsePanel(d-surface, markdown)]",
+    "PromptEditor": "Editor(d-surface, dark, monospace, line-numbers) > [SystemPrompt?(collapsible) + MainInput(highlight: {{vars}})]",
+    "ResponsePanel": "Panel(d-surface) > [StatusBar(d-annotation, mono-data) + ResponseContent(markdown, scrollable)]",
+    "ComparisonView": "Stack(d-section) > [PromptEditor(full-width) + Row > ResponsePanel*(d-surface, model-labeled)[]]",
+    "HistoryList": "Sidebar(d-surface, w-200, collapsible) > [SearchInput + HistoryCard*(d-interactive, truncated)[]]"
+  }
+}

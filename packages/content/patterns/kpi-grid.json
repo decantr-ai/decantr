@@ -1,0 +1,123 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "kpi-grid",
+  "version": "1.1.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "KPI Grid",
+  "description": "A grid of key performance indicator cards showing metrics with labels, values, and trend indicators",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Card",
+        "Badge",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "contained": false,
+  "components": [
+    "Card",
+    "icon",
+    "Badge"
+  ],
+  "default_preset": "dashboard",
+  "presets": {
+    "dashboard": {
+      "description": "4-column grid of stat cards with icon, label, value, and change percentage. This pattern owns the grid and cards, not the surrounding section rhythm.",
+      "components": [
+        "Card",
+        "icon",
+        "Badge"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc2 _lg:gc4 _gap4",
+        "slots": {
+          "kpi-card": "Repeated Card with icon, label, value, and trend Badge",
+          "icon": "Abstract icon placeholder for each KPI category",
+          "value": "Primary metric value with _heading2 styling",
+          "trend": "Change percentage Badge with positive/negative variant"
+        }
+      },
+      "slots": {
+        "kpi-card": "Repeated Card with icon, label, value+unit (gap: 0.25em), trend Badge. Each KPI card data shape: `{ label, value, unit, delta_pct, lower_is_better, sparkline_data }`. Trend badge color is derived from `lower_is_better XOR delta_sign` — never from delta direction alone."
+      }
+    },
+    "compact": {
+      "description": "Denser 2-row layout with smaller cards, no icons, just label + value + sparkline placeholder. Outer region spacing still belongs to the parent workspace layout.",
+      "components": [
+        "Card"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc2 _lg:gc4 _gap2",
+        "slots": {
+          "kpi-card": "Compact Card with label, value, and sparkline area",
+          "value": "Primary metric value with _heading4 styling",
+          "sparkline": "Placeholder area for inline sparkline chart"
+        }
+      }
+    }
+  },
+  "visual_brief": "Row of KPI cards in a responsive grid. Each card is a compact surface with an icon in a rounded muted-background circle at top-left, a small muted label below describing the metric, the primary value in large heading2-scale bold text, and a trend badge showing percentage change — green with an up-arrow for positive, red with a down-arrow for negative. Cards have equal height and consistent internal padding. The compact preset removes icons and replaces the trend badge with an inline sparkline chart placeholder. Cards use subtle border or shadow to delineate from the background. The grid itself should sit inside a parent workspace region stack rather than pretending to be a full section.",
+  "responsive": {
+    "mobile": "Two columns (2x2 grid). Card padding reduces to p3. Value text drops to heading3 scale. Icons shrink to 20px. Sparklines in compact preset maintain aspect ratio.",
+    "tablet": "Two columns at default, four columns if space allows. Standard padding. Full heading2 values.",
+    "desktop": "Four-column single row. Full layout with icons, values, and trend badges. Comfortable gap4 spacing between cards."
+  },
+  "motion": {
+    "micro": "Cards may softly elevate on hover, and trend indicators may brighten or pulse subtly when values improve.",
+    "transitions": "Counter animations and KPI entry reveals should remain short and restrained so the grid still reads like instrumentation, not spectacle."
+  },
+  "interactions": [
+    "lift-hover",
+    "click-select",
+    "animate-on-mount",
+    "stagger-children",
+    "real-time-updates",
+    "hover-tooltip"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "KPI grid",
+    "keyboard": [
+      "Tab moves through interactive KPI cards and any embedded actions in reading order."
+    ],
+    "announcements": [
+      "Metric label, value, and trend should be conveyed semantically and not rely on color alone."
+    ],
+    "focus_management": "If KPI cards are actionable, focused cards should receive a clear outline or selected treatment equivalent to hover."
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gc2 _lg:gc4 _gap4 _p4",
+    "slots": {
+      "kpi-card": "Repeated Card with icon, label, value, and trend Badge",
+      "icon": "Abstract icon placeholder for each KPI category",
+      "value": "Primary metric value with _heading2 styling",
+      "trend": "Change percentage Badge with positive/negative variant"
+    }
+  },
+  "io": {
+    "produces": [
+      "kpi-data"
+    ],
+    "consumes": [
+      "date-range"
+    ]
+  },
+  "layout_hints": {
+    "stat_treatment": "Each KPI uses lum-stat-glow: filled circle in accent/primary color with number inside (dark text). Label below in text-muted. Sparkline trend to the right.",
+    "animation": "Counter animation on mount — numbers count from 0 to value over 500ms.",
+    "grid": "4 columns desktop, 2 tablet, 1 mobile. Cards should breathe, but the parent workspace layout owns any gap before or after the KPI grid.",
+    "semantic_direction": "Each KPI has both a delta (numeric change) AND a semantic direction. Lower-is-better metrics (latency, error-rate, MTTR, SLO-budget-burn) should color the trend badge GREEN when value drops, RED when it rises. Higher-is-better metrics (throughput, requests/sec, uptime%, SLO-budget-remaining) get the inverse mapping. Direction-only coloring is wrong: latency dropping is a WIN, not a neutral change. Pass `lower_is_better: true` per KPI in the data shape and route the trend badge color from that flag, not from the delta sign alone.",
+    "kpi_value_unit_spacing": "Value + unit pair (e.g., \"82ms\", \"31.2k\", \"0.42%\") should use `gap: 0.25em` between number and unit — NOT the inherited container content_gap. Larger gaps make the value read as detached from its unit."
+  },
+  "composition": {
+    "KPIGrid": "Grid(d-data, responsive: 2/4-col) > KPICard[]",
+    "KPICard": "Card(d-surface, padding) > [Icon(d-annotation, rounded-bg) + Label(text-muted, text-sm) + Value(heading2, mono-data) + TrendBadge(d-annotation, variant: positive|negative)]"
+  }
+}

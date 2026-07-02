@@ -1,0 +1,127 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "relationship-graph",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Relationship Graph",
+  "description": "Network graph visualizing entity relationships such as contacts, companies, and deals with force-directed, radial, and timeline layout presets, labeled edges, and interactive exploration.",
+  "category": "data-visualization",
+  "tags": [
+    "2026",
+    "data-visualization",
+    "graph",
+    "network",
+    "relationships",
+    "entities",
+    "crm"
+  ],
+  "components": [
+    "GraphCanvas",
+    "EntityNode",
+    "RelationshipEdge",
+    "DetailCard",
+    "SearchOverlay",
+    "FilterPanel"
+  ],
+  "default_preset": "network",
+  "presets": {
+    "network": {
+      "description": "Force-directed network layout where entities cluster organically based on relationship strength — highly connected entities gravitate toward the center, peripheral entities drift outward",
+      "layout": {
+        "layout": "spatial",
+        "atoms": "_relative _wfull _hfull _overflow-hidden"
+      }
+    },
+    "radial": {
+      "description": "Radial layout placing the selected focus entity at the center with concentric rings for first-degree, second-degree, and third-degree connections radiating outward",
+      "layout": {
+        "layout": "spatial",
+        "atoms": "_relative _wfull _hfull _overflow-hidden"
+      }
+    },
+    "timeline": {
+      "description": "Horizontal timeline layout where relationships are plotted along a time axis showing when connections were established — entities appear as nodes above and below the axis connected by vertical lines to their creation date",
+      "layout": {
+        "layout": "spatial",
+        "atoms": "_relative _wfull _hfull _overflow-x-auto"
+      }
+    }
+  },
+  "visual_brief": "Force-directed network graph on a clean canvas where entities appear as distinct node shapes: people are circular avatars (48px diameter) showing initials or a photo with a colored ring indicating entity type (blue for contacts, teal for team members), companies are rounded squares (48px) with a building icon or logo and a gray border, and deals are diamond-shaped nodes (40px) with a dollar icon colored by deal stage (green for won, amber for active, red for lost). Edges connecting entities are thin curved lines with a small text label at the midpoint describing the relationship type ('reports to', 'invested in', 'closed deal', 'referred by'). Edge thickness scales with relationship strength or recency — thicker lines for stronger or more recent connections. Selecting an entity smoothly animates it to the visual center and fans out its direct connections in a radial arrangement while fading distant unrelated nodes to 15% opacity. The radial preset places the focus entity at an exact center point with concentric dashed rings at equal intervals for 1st, 2nd, and 3rd degree connections. Colors consistently encode entity type across all presets. A search overlay in the top-left provides type-ahead entity search. An optional filter panel on the left edge allows filtering by entity type, relationship type, and date range. A detail card appears on the right when an entity is selected, showing the entity's full profile info, a list of relationships, and recent activity.",
+  "default_layout": {
+    "layout": "spatial",
+    "atoms": "_relative _wfull _hfull _overflow-hidden",
+    "slots": {
+      "search-overlay": "Top-left floating search input (280px wide) with type-ahead suggestions. As the user types, matching entity nodes highlight on the canvas and suggestions appear in a dropdown list. Selecting a suggestion centers and selects that entity. The search input has a subtle frosted-glass background.",
+      "filter-panel": "Optional collapsible left-side panel (240px wide) with filter controls: entity type checkboxes (People, Companies, Deals), relationship type multi-select, date range picker for filtering by relationship creation date, and a relationship strength minimum slider. Applied filters dim non-matching nodes and edges rather than removing them entirely.",
+      "graph-canvas": "Main rendering area filling the container. Supports pan (drag background), zoom (scroll/pinch), and node dragging (click-drag a node to reposition it within the force simulation). Renders a subtle dot-grid background. All entity nodes and relationship edges are positioned within this canvas.",
+      "entity-node": "Repeating slot — one per entity. Shape depends on entity type: circle for people (with avatar/initials), rounded square for companies (with icon/logo), diamond for deals (with stage icon). Each node shows the entity name below it in 12px text. A colored ring or border indicates type. Hovering shows a tooltip with key info (title, company, deal value). Double-clicking opens the detail card.",
+      "relationship-edge": "Repeating slot — one per relationship. Curved SVG path connecting two entity nodes. A small rotated text label at the path midpoint describes the relationship. Edge color is a muted neutral by default but shifts to the source entity's type color on hover. Thickness scales from 1px (weak) to 4px (strong). Hovering an edge highlights both connected nodes.",
+      "detail-card": "Right-side card (320px wide) that appears when an entity is selected. Header shows entity avatar/icon, name, and type badge. Body contains: key details section (title, email, phone for contacts; industry, size for companies; value, stage, probability for deals), a relationships list showing all connected entities as clickable rows, and a recent activity feed with timestamped events."
+    }
+  },
+  "responsive": {
+    "mobile": "Graph canvas fills the viewport with touch pan and pinch zoom. Entity nodes render at reduced size (36px). Edge labels hidden by default (shown on tap). Search overlay is a floating action button that expands to full-width search. Filter panel opens as a bottom sheet. Detail card opens as a full-screen overlay.",
+    "tablet": "Standard graph layout with touch support. Entity nodes at full size. Search overlay visible. Filter panel as a collapsible sidebar. Detail card slides in from the right at 300px width.",
+    "desktop": "Full interactive graph with hover tooltips, drag-to-reposition nodes, and smooth force simulation. Search overlay and filter panel visible simultaneously. Detail card opens as a side panel without obscuring the graph. Zoom controls in the corner."
+  },
+  "layout_hints": {
+    "graph_priority": "Entity relationships should be readable before peripheral controls. Search, filters, and detail panels support the network read but should not dominate it.",
+    "focus_logic": "When one entity is selected, the graph should clearly pivot around that entity so the user understands why other nodes are being emphasized or dimmed.",
+    "detail_attachment": "The side detail card should feel connected to the selected node and relationship context, not like a generic profile panel detached from the graph."
+  },
+  "motion": {
+    "micro": {
+      "node-hover": "scale(1→1.15) + ring-glow 150ms ease-out",
+      "edge-hover": "opacity 0.3→1 + thickness increase 150ms ease-out"
+    },
+    "transitions": {
+      "focus-entity": "selected node translates to center + connected nodes fan out radially 500ms ease-in-out",
+      "unfocus": "nodes return to force-directed positions 400ms ease-out",
+      "detail-open": "translateX(100%→0) 300ms ease-out",
+      "filter-apply": "non-matching nodes opacity 1→0.15 300ms ease-out"
+    },
+    "ambient": {
+      "force-settle": "nodes drift gently as force simulation converges, continuous",
+      "connection-pulse": "subtle opacity pulse on edges of selected entity 3s ease-in-out infinite"
+    }
+  },
+  "interactions": [
+    "drag-nodes",
+    "pan-background",
+    "zoom-scroll",
+    "click-select",
+    "hover-tooltip",
+    "animate-on-mount"
+  ],
+  "composition": {
+    "RelationshipGraph": "Container(d-section, spatial) > [SearchOverlay(d-control) + FilterPanel?(d-surface)] + GraphCanvas > EntityNode*(d-interactive) + RelationshipEdge* + DetailCard?(d-surface)",
+    "GraphCanvas": "Canvas(d-data, pannable, zoomable, dot-grid-bg) > [RelationshipEdge* + EntityNode*]",
+    "EntityNode": "Node(d-interactive, shape: entityType, color: typeColor) > [Avatar|Icon + NameLabel(d-annotation)]",
+    "RelationshipEdge": "Edge(d-data, curved, labeled) > [PathLine + MidpointLabel(d-annotation)]",
+    "DetailCard": "Panel(d-surface, slide-right) > [Header > [EntityAvatar + Name + TypeBadge] + Details(d-data) + RelationshipList + ActivityFeed]",
+    "SearchOverlay": "Overlay(d-control, top-left, frosted) > [SearchInput + SuggestionList?]"
+  },
+  "accessibility": {
+    "role": "img",
+    "aria-label": "Entity relationship network graph",
+    "keyboard": [
+      "Tab: cycle focus between entity nodes",
+      "Enter: select focused entity and open detail card",
+      "Escape: deselect entity and close detail card",
+      "Arrow keys: pan the graph canvas",
+      "Plus/Minus: zoom in/out",
+      "S: focus the search overlay input",
+      "F: toggle the filter panel",
+      "R: switch to radial layout centered on selected entity",
+      "0: reset zoom to fit all entities"
+    ],
+    "announcements": [
+      "Entity: {name}, {type}, {connectionCount} connections",
+      "Relationship: {entity1} {relationshipType} {entity2}",
+      "Detail card opened for {name}",
+      "Filter applied: showing {count} of {total} entities",
+      "View centered on {name} with {degree}-degree connections visible"
+    ]
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "auth-flow-enterprise",
+  "role": "gateway",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Enterprise Auth Flow",
+  "description": "Enterprise authentication flow with SSO, MFA, org creation during registration, and team invitation acceptance for multi-tenant SaaS platforms.",
+  "tags": [
+    "auth",
+    "sso",
+    "enterprise",
+    "mfa",
+    "invite"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "enterprise auth",
+        "sso login",
+        "enterprise sign-in",
+        "saml authentication",
+        "enterprise onboarding"
+      ],
+      "secondary": [
+        "multi-factor auth",
+        "team invite",
+        "org creation",
+        "invite accept",
+        "sso redirect"
+      ],
+      "negative": [
+        "no-auth",
+        "public-only",
+        "consumer-social"
+      ]
+    },
+    "implies": [
+      "tenant-switcher-dashboard"
+    ],
+    "weight": 1,
+    "tier": "core"
+  },
+  "pages": [
+    {
+      "id": "login",
+      "patterns": [
+        {
+          "pattern": "auth-form",
+          "preset": "login",
+          "as": "login-form"
+        }
+      ],
+      "default_layout": [
+        "login-form"
+      ],
+      "shell": "centered"
+    },
+    {
+      "id": "register",
+      "patterns": [
+        {
+          "pattern": "auth-form",
+          "preset": "register",
+          "as": "register-form"
+        },
+        {
+          "pattern": "onboarding-wizard",
+          "preset": "stepper",
+          "as": "org-setup"
+        }
+      ],
+      "default_layout": [
+        "register-form",
+        "org-setup"
+      ],
+      "shell": "centered"
+    },
+    {
+      "id": "sso",
+      "patterns": [
+        {
+          "pattern": "auth-form",
+          "preset": "login",
+          "as": "sso-form"
+        }
+      ],
+      "default_layout": [
+        "sso-form"
+      ],
+      "shell": "centered"
+    },
+    {
+      "id": "invite-accept",
+      "patterns": [
+        {
+          "pattern": "auth-form",
+          "preset": "register",
+          "as": "invite-form"
+        }
+      ],
+      "default_layout": [
+        "invite-form"
+      ],
+      "shell": "centered"
+    }
+  ],
+  "page_briefs": {
+    "login": "Centered auth card on a minimal background. Email and password fields with a primary sign-in button. SSO section below with 'Sign in with SSO' button that expands to show an organization slug input for SAML/OIDC redirect. OAuth provider buttons for Google and Microsoft. Forgot-password and sign-up links at the bottom.",
+    "register": "Two-phase registration flow. First phase is a centered auth card with name, email, password fields, and terms checkbox. On submit, transitions to an onboarding wizard stepper for org creation: step 1 is organization name and slug, step 2 is team invite via email list, step 3 is plan selection. Progress indicator at the top.",
+    "sso": "Minimal centered card for SSO redirect. Organization slug input field with auto-detection hint. Submit button initiates SAML/OIDC redirect to the identity provider. Loading spinner state during redirect. Error state for invalid org slug or IdP configuration issues.",
+    "invite-accept": "Centered auth card pre-filled with the invited email address from the token. Fields for name and password to complete account creation. Organization name and inviter shown as context above the form. Accept-invitation primary button. Link to sign in if the user already has an account."
+  },
+  "features": [
+    "auth",
+    "sso",
+    "mfa",
+    "invite-flow"
+  ],
+  "shells": {
+    "centered": "Centered card on background for authentication flows"
+  },
+  "dependencies": {
+    "patterns": {
+      "auth-form": "^1.0.0",
+      "onboarding-wizard": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon",
+      "clean"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  }
+}

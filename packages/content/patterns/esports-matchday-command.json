@@ -1,0 +1,132 @@
+{
+  "id": "esports-matchday-command",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Esports Matchday Command",
+  "description": "A full-bleed cinematic esports homepage pattern built around a live match hero, broadcast telemetry, roster matchup panel, vertical update reel, and aggressive gaming CTAs.",
+  "category": "esports",
+  "tags": [
+    "2026",
+    "esports",
+    "gaming",
+    "matchday",
+    "broadcast",
+    "full-bleed",
+    "immersive",
+    "homepage"
+  ],
+  "components": [
+    "BroadcastStage",
+    "MatchHeadline",
+    "TitleGleam",
+    "LiveTelemetryStrip",
+    "CutButton",
+    "LiveRosterPanel",
+    "PlayerAvatarRow",
+    "VerticalUpdateReel",
+    "ArenaCanvas",
+    "CommandLayerRunway",
+    "AccessTeaser"
+  ],
+  "contained": false,
+  "default_preset": "broadcast-home",
+  "presets": {
+    "broadcast-home": {
+      "description": "Full homepage treatment with fixed immersive header, first-viewport match stage, right-side 5v5 roster panel, vertical live update reel, command layers section, and access teaser.",
+      "layout": {
+        "layout": "full-bleed-stage",
+        "atoms": "_relative _minh[100dvh] _overflow-hidden _px0 _py0"
+      }
+    },
+    "hero-only": {
+      "description": "First-viewport match hero only. Use when the page needs a cinematic top section but the rest of the route is composed from separate product patterns.",
+      "layout": {
+        "layout": "hero-stage",
+        "atoms": "_relative _grid _minh[100dvh] _overflow-hidden"
+      }
+    },
+    "compact": {
+      "description": "Compressed broadcast stage for route previews and smaller public pages. Keeps headline, live score, CTAs, and roster proof while dropping secondary command-layer sections.",
+      "layout": {
+        "layout": "compact-stage",
+        "atoms": "_relative _grid _minh[72dvh] _overflow-hidden"
+      }
+    }
+  },
+  "visual_brief": "The page should feel like a professional live esports broadcast command surface, not a generic SaaS landing page. The first viewport is a dark arena-like stage with cyan, acid green, violet, and red light beams over a subtle perspective grid. A huge italic uppercase match headline names a specific live match, for example 'Team Vitality vs. r3Fraction'. The headline stays white while a narrow gleam sweeps left-to-right on load and then repeats every few seconds. Supporting copy is short and operational. A compact telemetry strip sits beneath it with current score, map, map-ban timer, comms, form, and momentum. Primary actions use angular cut/parallelogram buttons, not pills. The right third of desktop contains a liquid-glass roster panel with a score row at the top, two-column 5v5 circular-avatar player matchups, and a vertical rolling update reel in the empty lower space. The bottom page ticker is forbidden; live updates belong inside the roster panel. Ambient animation may include a radar/galaxy layer on desktop top-left and mobile right-side, but avoid mascot, controller, or decorative character graphics that compete with the copy.",
+  "layout_hints": {
+    "container": "full-bleed route section, never a d-surface card",
+    "shell": "Prefer immersive-stage. If top-nav-footer is used, override its default section padding and make the header flush full-width.",
+    "headline": "Use bold italic display typography with no negative letter spacing. Text should remain white at rest; shimmer is an overlay only.",
+    "buttons": "Use angular clipped buttons with hover gleam, slight skew/translate on hover, and active press feedback. Avoid rounded pill CTAs.",
+    "roster_panel": "Desktop panel is about one third of viewport width. It starts with the score row, not an extra 'Live roster / 5v5' label strip.",
+    "updates": "Use a vertical rolling update reel inside the roster panel. Duplicate reel items for seamless looping. Fade top/bottom edges.",
+    "anti_patterns": "Do not use generic hero paragraph CTA card scaffolds, chip-heavy hero badges, nested cards, bottom horizontal marquees, mascot/controller hero graphics, or blocky grid-card wrapping in the first viewport."
+  },
+  "default_layout": {
+    "layout": "full-bleed-stage",
+    "atoms": "_relative _minh[100dvh] _overflow-hidden _px0 _py0",
+    "slots": {
+      "broadcast-stage": "Full-viewport background stage with perspective grid, scanline/grain texture, and colored light beams.",
+      "match-headline": "Large match title with explicit teams and small VS tag tucked into the line flow.",
+      "live-telemetry-strip": "Inline score and operating metrics below supporting copy.",
+      "cut-button": "Primary and secondary angular CTAs with icon support and animated hover state.",
+      "live-roster-panel": "Glass panel containing score row, 5v5 player avatar matchups, and update reel.",
+      "vertical-update-reel": "Top-to-bottom rolling match updates contained inside the roster panel.",
+      "command-layer-runway": "Second section with three free-form operating layers for pressure, replay, and partner control.",
+      "access-teaser": "Login or access teaser can use a split scene later on the page, not inside the first hero card."
+    }
+  },
+  "composition": {
+    "EsportsMatchdayCommand": "Page(full-bleed) > BroadcastStage > [AmbientCanvas + HeaderShell + HeroGrid > [HeroCopy > [Eyebrow + MatchHeadline + Lede + LiveTelemetryStrip + ActionDock] + LiveRosterPanel > [ScoreRow + RosterGrid + VerticalUpdateReel]]] + CommandLayerRunway + AccessTeaser",
+    "MatchHeadline": "Heading(display, italic, uppercase) > [TeamName(primary) + VsTag + TeamName(opponent)] with TitleGleam overlay",
+    "LiveTelemetryStrip": "Masked horizontal grid > [ScoreCell + TimerCell + CommsCell + FormCell + MomentumCell]",
+    "LiveRosterPanel": "GlassPanel(liquid, translucent) > [ScoreRow + RosterGrid(5 rows, 2 columns) + VerticalUpdateReel]",
+    "VerticalUpdateReel": "MaskedViewport(height fixed) > ReelTrack(duplicated updates, translateY loop) > UpdateRow[] > [Timestamp + EventText]",
+    "CommandLayerRunway": "Open full-width section with three offset layers, each border-accented by a different match color"
+  },
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Live esports matchday command homepage",
+    "announcements": [
+      "Live score {teamA} {scoreA}, {teamB} {scoreB}",
+      "Match update: {event} at {time}"
+    ],
+    "keyboard": [
+      "Tab: move through navigation, CTAs, roster panel, and access form",
+      "Enter: activate CTAs",
+      "Space: pause live update reel when focused if implemented as an interactive control"
+    ],
+    "focus_management": "Animated updates should not steal focus. Provide readable text alternatives for canvas-only ambience."
+  },
+  "responsive": {
+    "mobile": "Single-column stage. Header hides secondary nav links. Headline reduces enough to fit without clipping. Telemetry becomes two columns, then one column below very narrow widths. Roster panel stacks beneath CTAs; player matchups become vertical pairs. Radar ambience may move to the right side and should never obscure the lede.",
+    "tablet": "Hero copy stays first, roster panel moves beneath or beside depending on available width. Keep the match title readable and preserve the score row.",
+    "desktop": "Hero uses two columns: copy consumes remaining width, roster panel occupies roughly one third. Ambient radar sits top-left. Header accent line spans full viewport width."
+  },
+  "motion": {
+    "ambient": {
+      "title-gleam": "Overlay shimmer sweeps left-to-right on load and repeats about every 4 seconds while base text stays white.",
+      "radar": "Subtle rotating radar or orbital particle layer, desktop top-left and mobile right-side.",
+      "vertical-reel": "Live update reel rolls vertically with top and bottom mask fades.",
+      "scanline": "Optional low-opacity scanline texture, disabled under reduced motion."
+    },
+    "micro": {
+      "button-hover": "Cut buttons translate up, skew slightly, and sweep a light band across the fill.",
+      "button-active": "Button presses down by 1px and scales slightly.",
+      "live-beacon": "Primary live CTA includes pulsing dot/ring icon."
+    },
+    "transitions": {
+      "hero-enter": "Headline and telemetry fade up quickly; roster panel follows with a soft lift."
+    }
+  },
+  "interactions": [
+    "animate-on-mount",
+    "status-pulse",
+    "glow-hover",
+    "live-simulation",
+    "real-time-updates",
+    "keyboard-navigation"
+  ]
+}

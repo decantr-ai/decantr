@@ -1,0 +1,112 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "rent-roll",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Rent Roll",
+  "description": "Monthly rent summary with all units showing expected rent, collected, outstanding, and vacancy loss. Calculates totals.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "icon",
+        "Badge",
+        "Select"
+      ],
+      "charts": [
+        "AreaChart"
+      ]
+    }
+  },
+  "components": [
+    "Button",
+    "icon",
+    "Badge",
+    "Select"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full rent roll with summary and table",
+      "components": [
+        "Button",
+        "icon",
+        "Badge",
+        "Select"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6",
+        "slots": {
+          "header": "Month selector, export button",
+          "summary": "Expected rent, collected, outstanding, vacancy loss cards",
+          "table": "All units with rent status",
+          "totals": "Grand totals row",
+          "trends": "Collection rate trend chart"
+        }
+      }
+    },
+    "summary": {
+      "description": "Compact rent roll summary for dashboard",
+      "components": [
+        "Badge"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap3 _p4",
+        "slots": {
+          "header": "Title",
+          "metrics": "Collected, outstanding",
+          "progress": "Collection progress bar"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap6",
+    "slots": {
+      "header": "Title and controls",
+      "summary": "Summary metrics",
+      "table": "Rent roll table",
+      "totals": "Totals row"
+    }
+  },
+  "visual_brief": "Data table showing monthly rent collection for all units in a property. Columns: unit number, tenant name, expected rent, amount collected, outstanding balance (highlighted red if nonzero), and payment status badge (paid, partial, unpaid, vacant). A header row has the title, month/year selector, and export button. A summary row at the top shows total expected, total collected, total outstanding, and vacancy loss. The totals row at the bottom sums all columns. The summary preset shows only the KPI metrics without the full table.",
+  "responsive": {
+    "mobile": "Table becomes a card list — each unit as a card with key values. Summary metrics in a 2x2 grid. Month selector is a simple dropdown.",
+    "tablet": "Table with horizontal scroll if needed. Summary visible above. Comfortable row height.",
+    "desktop": "Full table with all columns visible. Summary bar at top. Sticky header row."
+  },
+  "layout_hints": {
+    "collection_priority": "Lead with expected, collected, and outstanding totals first, then the unit-by-unit ledger. Users should understand collection health before diving into individual rows.",
+    "row_discipline": "Each unit row should make rent status, balance, and occupancy state easy to scan without relying on color alone.",
+    "summary_role": "The summary bar supports the table as a high-level read, but the table remains the authoritative rent-roll record."
+  },
+  "motion": {
+    "micro": "Summary metrics and status badges may sharpen subtly on hover or focus. Export and month controls should respond crisply.",
+    "transitions": "Month or property changes should update the roll smoothly enough to preserve confidence in the ledger and totals."
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Rent roll",
+    "keyboard": [
+      "Summary controls and the rent table should remain keyboard navigable in a predictable order."
+    ],
+    "announcements": [
+      "Expected rent, collected totals, balances, and payment status should be exposed semantically so the roll remains understandable without visual table formatting alone."
+    ]
+  },
+  "composition": {
+    "RentRoll": "Container(d-section, flex-col, gap-4) > [Header + SummaryMetrics + UnitTable + Totals]",
+    "Header": "Row(d-control) > [Title + MonthSelector(d-control) + PropertyFilter(d-control) + ExportButton(d-interactive)]",
+    "SummaryMetrics": "Row(d-data) > [ExpectedTotal(mono-data) + CollectedTotal(mono-data, color: success) + Outstanding(mono-data, color: warning) + VacancyLoss(mono-data, color: destructive)]",
+    "UnitTable": "Table(d-data) > UnitRow[]",
+    "UnitRow": "Row(d-data-row) > [UnitNumber + Tenant + ExpectedRent(mono-data) + Collected(mono-data) + Balance(mono-data, color: status) + StatusBadge(d-annotation)]"
+  }
+}

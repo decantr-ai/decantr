@@ -1,0 +1,109 @@
+{
+  "id": "supply-chain-map",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Supply Chain Map",
+  "description": "A geographic supply chain visualization mapping suppliers, material flows, and emissions intensity across tiers of a company's upstream value chain.",
+  "category": "climate",
+  "tags": [
+    "2026",
+    "climate",
+    "supply-chain",
+    "map",
+    "geography",
+    "scope-3",
+    "sustainability"
+  ],
+  "components": [
+    "MapCanvas",
+    "SupplierPin",
+    "FlowLine",
+    "EmissionBadge",
+    "TierRing",
+    "DetailCard"
+  ],
+  "default_preset": "world",
+  "presets": {
+    "world": {
+      "description": "Global orthographic or mercator world map displaying all suppliers across every geography with aggregate flow lines to headquarters",
+      "layout": {
+        "layout": "full-bleed-map",
+        "atoms": "_relative _w100 _h-full _overflow-hidden _bg-canvas"
+      }
+    },
+    "region": {
+      "description": "Zoomed regional view focused on a single continent or country with detailed supplier clusters and transport corridor visualization",
+      "layout": {
+        "layout": "full-bleed-map",
+        "atoms": "_relative _w100 _h-full _overflow-hidden _bg-canvas"
+      }
+    },
+    "network": {
+      "description": "Abstract concentric tier visualization showing tier-1, tier-2, tier-3 suppliers as rings around the company with connection threads",
+      "layout": {
+        "layout": "centered-radial",
+        "atoms": "_relative _w100 _h-full _flex _items-center _justify-center _bg-canvas"
+      }
+    }
+  },
+  "visual_brief": "A dark-canvas world map with subtle country outlines and graticule lines. Supplier pins appear as filled circles sized proportional to emissions contribution (range 6px to 28px radius), colored by emissions intensity on a heatmap scale from cool teal (low) to hot magenta (high). Thin curved flow lines connect each supplier pin to the company headquarters marker, with line width encoding trade volume and dash animation showing material flow direction. A toggleable tier ring overlay renders concentric translucent circles around HQ labeling tier-1 (innermost), tier-2, and tier-3 supplier bands. Hovering any supplier pin raises a floating detail card showing supplier name, location, emissions tCO2e, tier, risk rating badge (low/med/high), and primary commodity. Map controls (zoom, recenter, layer toggle) sit bottom-right. Legend top-left explains intensity colors and tier rings.",
+  "layout_hints": {
+    "container": "d-section",
+    "note": "Full-bleed map. Do not wrap in card surface. Pin hit-targets must be at least 24px for tap accessibility.",
+    "risk_badges": "Risk ratings use textual labels not icon-only. 'Low Risk' / 'Medium Risk' / 'High Risk' with consistent color semantics."
+  },
+  "default_layout": {
+    "layout": "full-bleed-map",
+    "atoms": "_relative _w100 _h-full _overflow-hidden _bg-canvas",
+    "slots": {
+      "map-canvas": "Zoomable, pannable map projection (SVG or WebGL) rendering country geometries, graticule, and pin/line overlays. Supports pinch-zoom and drag-pan.",
+      "supplier-pin": "Repeating circular marker positioned by lat/lon. Radius scales with emissions magnitude. Fill color encodes intensity.",
+      "flow-line": "SVG bezier path connecting supplier-pin to HQ marker. Stroke-width encodes volume, animated dash encodes flow direction.",
+      "emission-badge": "Small annotation near each pin showing emissions value on hover or at high zoom levels.",
+      "tier-ring": "Concentric translucent circles anchored at HQ representing supplier tiers. Labels positioned at cardinal points.",
+      "detail-card": "Floating tooltip-style card that appears near the pointer on hover. Contains supplier name, location, emissions, tier, risk rating, commodity."
+    }
+  },
+  "accessibility": {
+    "role": "application",
+    "aria-label": "Supply chain geographic map",
+    "announcements": [
+      "Supplier {name} in {location}: {emissions} tCO2e, tier {tier}, {risk} risk"
+    ],
+    "keyboard": [
+      "Tab: cycle through supplier pins",
+      "Enter: open detail card",
+      "+/-: zoom in/out",
+      "Arrow keys: pan map",
+      "Escape: dismiss detail card"
+    ]
+  },
+  "responsive": {
+    "mobile": "Map simplifies to clustered pins. Detail card appears as bottom sheet. Tier rings hidden by default.",
+    "tablet": "Full map retained. Detail card docks to right edge on tap."
+  },
+  "motion": {
+    "micro": {
+      "pin-hover": "scale(1.3) + glow-ring 180ms ease-out",
+      "flow-line-hover": "stroke-width +1px 150ms"
+    },
+    "transitions": {
+      "map-zoom": "transform scale interpolate 400ms ease-in-out",
+      "preset-switch": "cross-fade with geometry morph 600ms"
+    },
+    "ambient": {
+      "flow-animation": "dash-offset drift 4s linear infinite on all flow-lines"
+    }
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "composition": {
+    "SupplyChainMap": "Section(d-section, full-bleed) > MapCanvas > [CountryLayer + FlowLine[] + SupplierPin[](d-interactive) + EmissionBadge[] + TierRing[]] + DetailCard? + Legend + MapControls",
+    "MapCanvas": "Viewport(zoomable, pannable) > ProjectionLayer",
+    "SupplierPin": "Circle(positioned, sized, colored) > HoverTarget",
+    "FlowLine": "Path(bezier, animated-dash, volume-weighted)",
+    "DetailCard": "Card(d-surface, floating, tooltip) > [SupplierName + Location + Emissions + TierBadge + RiskBadge + Commodity]"
+  }
+}

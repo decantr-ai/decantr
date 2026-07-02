@@ -1,0 +1,111 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "reputation-badge",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Reputation Badge",
+  "description": "User reputation score display with numeric score, trust level indicator, and progress toward next trust threshold. Used in dashboards, content cards, and moderation views.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Badge",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "contained": true,
+  "components": [
+    "Badge",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Inline reputation display with score number and trust level icon. Color-coded by trust threshold.",
+      "components": [
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "inline",
+        "atoms": "_inline-flex _aic _gap2",
+        "slots": {
+          "icon": "Trust level icon: shield for trusted, star for rising, circle for new",
+          "score": "Numeric reputation score",
+          "label": "Trust level text (Trusted / Rising / New)"
+        }
+      }
+    },
+    "large": {
+      "description": "Large reputation card with score, trust level, progress bar toward trust threshold (50 points), and stats breakdown.",
+      "components": [
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap3 _p4 _border _bordermuted/20 _r3",
+        "slots": {
+          "header": "Trust level icon and label with large score number",
+          "progress-bar": "Progress bar toward trust threshold (50 points)",
+          "stats": "Approved count, rejected count, featured count row",
+          "status": "Trusted indicator or points-to-go message"
+        }
+      }
+    },
+    "compact": {
+      "description": "Minimal inline score number with colored dot indicator. For content cards and list items.",
+      "components": [
+        "icon"
+      ],
+      "layout": {
+        "layout": "inline",
+        "atoms": "_inline-flex _aic _gap1",
+        "slots": {
+          "dot": "Colored dot: green for trusted, yellow for rising, gray for new",
+          "score": "Numeric score, small text"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "inline",
+    "atoms": "_inline-flex _aic _gap2",
+    "slots": {
+      "icon": "Trust level icon",
+      "score": "Numeric score",
+      "label": "Trust level text"
+    }
+  },
+  "visual_brief": "Compact inline badge displaying a user's reputation score and trust level. Shows a trust-level icon (shield, star, or checkmark based on level), a numeric score in medium-weight text, and a text label for the trust level (New, Trusted, Verified, etc.) in muted smaller text. A subtle progress indicator shows advancement toward the next trust threshold. The large preset enlarges everything and adds a detailed breakdown tooltip on hover. The compact preset shows icon and score only. Color varies by trust level — gray for new, blue for trusted, gold for verified.",
+  "layout_hints": {
+    "badge_layout": "Inline pill: star icon + score number (font-semibold) + level text (text-muted). Background: subtle primary tint. Tooltip on hover shows breakdown.",
+    "levels": "Level names: Newcomer (0-10), Contributor (11-50), Trusted (51-200), Expert (201+). Color intensifies with level."
+  },
+  "responsive": {
+    "mobile": "Compact preset preferred. Badge renders inline at standard body text size.",
+    "tablet": "Standard badge with icon, score, and label visible.",
+    "desktop": "Full badge with progress indicator. Large preset with tooltip on hover."
+  },
+  "motion": {
+    "micro": "Level indicators and progress cues may brighten or animate softly on hover, but the badge should remain calm and compact.",
+    "transitions": "Score and level updates should cross-fade or count smoothly over 150-220ms without causing layout shift."
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "accessibility": {
+    "role": "status",
+    "aria-label": "Reputation badge",
+    "keyboard": [
+      "If the badge exposes a tooltip or breakdown, keyboard users should be able to reveal it via focus and dismiss it via Escape."
+    ],
+    "announcements": [
+      "Score and trust level should be announced together rather than relying on color or iconography alone."
+    ],
+    "focus_management": "If the badge is interactive, preserve focus on the badge trigger when tooltips or detail popovers close."
+  }
+}

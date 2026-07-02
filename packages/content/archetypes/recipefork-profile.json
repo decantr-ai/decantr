@@ -1,0 +1,180 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "recipefork-profile",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipefork Profile",
+  "description": "Current-user and public profile surfaces for Recipefork with editable identity, a dedicated owner recipe workspace, public recipe/cookbook grids, follower stats, owner-only branch analytics, recent activity, and social navigation back into recipes and cookbooks.",
+  "tags": [
+    "recipes",
+    "profile",
+    "social",
+    "creator",
+    "2026"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "recipefork profile",
+        "cook profile page",
+        "creator recipe profile"
+      ],
+      "secondary": [
+        "follow cooks",
+        "editable recipe profile",
+        "public cookbook profile"
+      ],
+      "negative": [
+        "admin"
+      ]
+    },
+    "implies": [
+      "social",
+      "follows",
+      "collections"
+    ],
+    "weight": 0.85,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "me",
+      "patterns": [
+        {
+          "pattern": "creator-profile",
+          "preset": "standard",
+          "as": "profile-header"
+        },
+        {
+          "pattern": "account-settings",
+          "preset": "standard",
+          "as": "profile-editor"
+        },
+        {
+          "pattern": "stats-overview",
+          "preset": "standard",
+          "as": "profile-stats"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "content",
+          "as": "my-recipes"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "collection",
+          "as": "my-cookbooks"
+        }
+      ],
+      "default_layout": [
+        "profile-header",
+        "profile-editor",
+        "profile-stats",
+        "my-recipes",
+        "my-cookbooks"
+      ],
+      "shell": "recipefork-top-nav"
+    },
+    {
+      "id": "my-recipes",
+      "patterns": [
+        {
+          "pattern": "stats-overview",
+          "preset": "standard",
+          "as": "workspace-stats"
+        },
+        {
+          "pattern": "filter-bar",
+          "preset": "standard",
+          "as": "workspace-filters"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "content",
+          "as": "workspace-recipes"
+        }
+      ],
+      "default_layout": [
+        "workspace-stats",
+        "workspace-filters",
+        "workspace-recipes"
+      ],
+      "shell": "recipefork-top-nav"
+    },
+    {
+      "id": "public-profile",
+      "patterns": [
+        {
+          "pattern": "creator-profile",
+          "preset": "standard",
+          "as": "public-header"
+        },
+        {
+          "pattern": "stats-overview",
+          "preset": "standard",
+          "as": "public-stats"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "content",
+          "as": "public-recipes"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "collection",
+          "as": "public-cookbooks"
+        },
+        {
+          "pattern": "recipefork-activity-feed",
+          "preset": "preview-cards",
+          "as": "public-activity"
+        }
+      ],
+      "default_layout": [
+        "public-header",
+        "public-stats",
+        "public-recipes",
+        "public-cookbooks",
+        "public-activity"
+      ],
+      "shell": "recipefork-top-nav"
+    }
+  ],
+  "page_briefs": {
+    "me": "Current-user profile with editable identity, avatar/banner management, personal stats, lineage-aware branch metrics, published recipe grid, and cookbook management. Editing is inline and product-native rather than a detached settings portal.",
+    "my-recipes": "Owner-only recipe workspace for drafts, published recipes, forks, and branch-aware metrics. This is where recipe management lives, separate from the public-facing profile surface.",
+    "public-profile": "Public cook profile with follow CTA, follower stats, public recipe and cookbook grids, and recent activity. Public views should not expose owner-only branch analytics or internal fork-management data."
+  },
+  "features": [
+    "profile-editing",
+    "follows",
+    "collections",
+    "activity-feed",
+    "public-profiles",
+    "branch-analytics"
+  ],
+  "dependencies": {
+    "patterns": {
+      "creator-profile": ">=1.0.0",
+      "account-settings": ">=1.0.0",
+      "stats-overview": ">=1.0.0",
+      "filter-bar": ">=1.0.0",
+      "card-grid": ">=1.0.0",
+      "recipefork-activity-feed": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "recipefork"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ],
+    "shapes": [
+      "rounded"
+    ]
+  }
+}

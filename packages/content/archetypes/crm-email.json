@@ -1,0 +1,88 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "crm-email",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "CRM Email",
+  "description": "AI-assisted email interface integrated with the CRM. Features smart inbox with auto-categorization and an AI-powered compose experience for personalized outreach.",
+  "tags": [
+    "crm",
+    "email",
+    "ai",
+    "compose",
+    "inbox"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "crm email",
+        "sales email",
+        "email inbox",
+        "ai email composer",
+        "email outreach"
+      ],
+      "secondary": [
+        "email categorization",
+        "smart inbox",
+        "email templates",
+        "follow-up",
+        "sequence"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "inbox",
+      "patterns": [
+        {
+          "pattern": "conversation-list",
+          "preset": "standard",
+          "as": "email-threads"
+        }
+      ],
+      "default_layout": [
+        "conversation-list"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "compose",
+      "patterns": [
+        {
+          "pattern": "chat-input",
+          "preset": "rich",
+          "as": "email-composer"
+        }
+      ],
+      "default_layout": [
+        "chat-input"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "inbox": "Two-pane email inbox. Left column lists email threads grouped by category — action required, awaiting reply, informational — with sender avatar, subject, preview snippet, and timestamp. Selecting a thread opens the full conversation in the right pane with inline reply capability. AI-generated labels and priority badges appear on each thread.",
+    "compose": "AI-assisted email composer. A rich text input area with formatting toolbar, recipient fields, and subject line. An AI sidebar suggests tone adjustments, auto-completes sentences, and offers full draft generation based on deal context and contact history. Supports template insertion, variable interpolation, and scheduled send."
+  },
+  "features": [
+    "email",
+    "ai-compose",
+    "categorization"
+  ],
+  "suggested_theme": {
+    "ids": [
+      "luminarum",
+      "clean",
+      "carbon"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

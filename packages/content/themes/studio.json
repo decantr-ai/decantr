@@ -1,0 +1,488 @@
+{
+  "$schema": "https://decantr.ai/schemas/theme.v1.json",
+  "id": "studio",
+  "version": "1.0.0",
+  "name": "Studio",
+  "description": "Warm, creative theme with coral accents and rich purple premium highlights. Friendly, approachable, premium but not cold. Inspired by Figma, Framer, Gumroad.",
+  "tags": [
+    "light",
+    "dark",
+    "creative",
+    "warm",
+    "friendly",
+    "premium"
+  ],
+  "personality": "creative + warm + friendly + premium",
+  "seed": {
+    "primary": "#F97316",
+    "secondary": "#8B5CF6",
+    "accent": "#14B8A6",
+    "background": "#FAF9F7"
+  },
+  "palette": {
+    "background": {
+      "light": "#FAF9F7",
+      "dark": "#1C1917"
+    },
+    "surface": {
+      "light": "#FFFFFF",
+      "dark": "#231F1E"
+    },
+    "surface-raised": {
+      "light": "#F5F3F0",
+      "dark": "#2C2624"
+    },
+    "border": {
+      "light": "#E7E5E4",
+      "dark": "#44403C"
+    },
+    "text": {
+      "light": "#1C1917",
+      "dark": "#FAF9F7"
+    },
+    "text-muted": {
+      "light": "#78716C",
+      "dark": "#A8A29E"
+    },
+    "primary": {
+      "light": "#F97316",
+      "dark": "#FB923C"
+    },
+    "primary-hover": {
+      "light": "#EA580C",
+      "dark": "#FDBA74"
+    },
+    "secondary": {
+      "light": "#8B5CF6",
+      "dark": "#A78BFA"
+    },
+    "secondary-hover": {
+      "light": "#7C3AED",
+      "dark": "#C4B5FD"
+    },
+    "accent": {
+      "light": "#14B8A6",
+      "dark": "#2DD4BF"
+    }
+  },
+  "modes": [
+    "light",
+    "dark",
+    "auto"
+  ],
+  "shapes": [
+    "rounded",
+    "soft",
+    "pill"
+  ],
+  "cvd_support": [
+    "deuteranopia",
+    "protanopia"
+  ],
+  "tokens": {
+    "base": {
+      "success": "#14B8A6",
+      "danger": "#EF4444",
+      "warning": "#F59E0B"
+    },
+    "cvd": {
+      "deuteranopia": {
+        "success": "#0EA5E9",
+        "danger": "#F59E0B"
+      },
+      "protanopia": {
+        "success": "#06B6D4",
+        "danger": "#FBBF24"
+      }
+    }
+  },
+  "decantr_compat": ">=2.0.0",
+  "source": "core",
+  "decorators": {
+    "studio-canvas": "Warm background using theme background token. Friendly, inviting foundation.",
+    "studio-surface": "Soft surface elevation with 1px warm border and subtle shadow. Uses surface background.",
+    "studio-input": "Warm border with coral focus ring and gentle glow effect. Friendly input styling.",
+    "studio-card": "Surface background, soft shadow, 12px radius, hover lift transition.",
+    "studio-card-premium": "Premium card with purple gradient border for exclusive content.",
+    "studio-divider": "Warm hairline separator using border-color token.",
+    "studio-badge-tier": "Tier badge with gradient backgrounds for subscription levels.",
+    "studio-avatar-creator": "Larger creator avatar with accent ring highlight.",
+    "studio-fade-up": "Entrance animation: opacity 0 to 1, translateY 16px to 0, 250ms ease-out.",
+    "studio-skeleton": "Loading placeholder with warm pulse animation.",
+    "studio-glow": "Subtle primary-tinted glow effect for call-to-action buttons.",
+    "studio-gate-blur": "Backdrop blur effect for content behind paywalls."
+  },
+  "spatial": {
+    "density_bias": 0,
+    "content_gap_shift": 0,
+    "section_padding": "4rem",
+    "card_wrapping": "soft",
+    "surface_override": null
+  },
+  "motion": {
+    "preference": "subtle",
+    "reduce_motion": true,
+    "entrance": "studio-fade-up",
+    "micro": "smooth",
+    "timing": "cubic-bezier(0.4, 0, 0.2, 1)",
+    "durations": {
+      "hover": "180ms",
+      "entrance": "250ms",
+      "modal": "280ms",
+      "page": "350ms",
+      "instant": "80ms",
+      "fast": "150ms",
+      "base": "250ms",
+      "slow": "400ms",
+      "slower": "600ms",
+      "stagger": "60ms"
+    },
+    "easings": {
+      "ease": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "easeOut": "cubic-bezier(0, 0, 0.2, 1)",
+      "easeIn": "cubic-bezier(0.4, 0, 1, 1)",
+      "spring": "cubic-bezier(0.34, 1.56, 0.64, 1)"
+    }
+  },
+  "effects": {
+    "enabled": true,
+    "intensity": "medium",
+    "type_mapping": {
+      "card": [
+        "studio-card"
+      ],
+      "card_premium": [
+        "studio-card-premium"
+      ],
+      "input": [
+        "studio-input"
+      ],
+      "tier": [
+        "studio-badge-tier"
+      ]
+    },
+    "component_fallback": {
+      "pre": "code_block",
+      "code": "code_block",
+      "Card": "card",
+      "Input": "input"
+    }
+  },
+  "compositions": {
+    "dashboard": {
+      "description": "Creator dashboard with sidebar navigation. Analytics, content management, subscriber views.",
+      "shell": "sidebar-main",
+      "effects": [
+        "studio-surface"
+      ]
+    },
+    "storefront": {
+      "description": "Fan-facing storefront with top navigation. Creator profiles, content browsing.",
+      "shell": "top-nav-main",
+      "card_style": "studio-card"
+    },
+    "checkout": {
+      "description": "Minimal checkout flow with focused content area.",
+      "shell": "minimal-header",
+      "card_style": "studio-card-premium"
+    },
+    "marketing": {
+      "description": "Marketing pages with top nav and footer. Clean sections with warm accents.",
+      "shell": "top-nav-footer"
+    },
+    "auth": {
+      "description": "Centered auth forms with warm card styling.",
+      "shell": "centered",
+      "card_style": "studio-card"
+    }
+  },
+  "radius": {
+    "philosophy": "rounded",
+    "base": 8
+  },
+  "pattern_preferences": {
+    "prefer": [
+      "tier-builder",
+      "tier-card",
+      "earnings-dashboard",
+      "content-feed",
+      "storefront-hero",
+      "checkout-flow"
+    ],
+    "avoid": [],
+    "default_presets": {}
+  },
+  "shell": {
+    "preferred": [
+      "sidebar-main",
+      "top-nav-main",
+      "top-nav-footer"
+    ],
+    "avoid": [],
+    "nav_style": "friendly",
+    "default_nav_state": "expanded",
+    "root": "studio-canvas",
+    "nav": "studio-surface",
+    "header": "",
+    "navLabel": "",
+    "brand": "",
+    "dimensions": null
+  },
+  "typography": {
+    "scale": "modular",
+    "heading_weight": 600,
+    "body_weight": 400,
+    "display": "'Inter', ui-sans-serif, system-ui, sans-serif",
+    "body": "'Inter', ui-sans-serif, system-ui, sans-serif"
+  },
+  "decorator_definitions": {
+    "studio-canvas": {
+      "description": "Warm background using theme background token. Friendly, inviting foundation.",
+      "intent": "Use as the root page background to establish the warm, creative atmosphere. The off-white warmth differentiates this from cold corporate themes.",
+      "suggested_properties": {
+        "background-color": "var(--d-bg, #FAF9F7)",
+        "color": "var(--d-text, #1C1917)",
+        "min-height": "100vh"
+      },
+      "pairs_with": [
+        "studio-surface",
+        "studio-divider"
+      ],
+      "usage": [
+        "Page root containers",
+        "App shell backgrounds"
+      ]
+    },
+    "studio-surface": {
+      "description": "Soft surface elevation with 1px warm border and subtle shadow. Uses surface background.",
+      "intent": "Use for sidebar panels and elevated content areas that need gentle visual separation from the canvas.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #FFFFFF)",
+        "border": "1px solid var(--d-border, #E7E5E4)",
+        "box-shadow": "0 1px 3px rgba(0, 0, 0, 0.04)",
+        "border-radius": "var(--d-radius, 8px)"
+      },
+      "pairs_with": [
+        "studio-canvas",
+        "studio-card"
+      ],
+      "usage": [
+        "Sidebar panels",
+        "Settings containers",
+        "Content areas"
+      ]
+    },
+    "studio-input": {
+      "description": "Warm border with coral focus ring and gentle glow effect. Friendly input styling.",
+      "intent": "Use for all form inputs. The coral focus ring creates a warm, inviting interaction that matches the creative personality.",
+      "suggested_properties": {
+        "border": "1px solid var(--d-border, #E7E5E4)",
+        "border-radius": "var(--d-radius, 8px)",
+        "background": "var(--d-surface, #FFFFFF)",
+        "transition": "border-color 180ms ease, box-shadow 180ms ease"
+      },
+      "pairs_with": [
+        "studio-card",
+        "studio-canvas"
+      ],
+      "usage": [
+        "Text inputs",
+        "Search fields",
+        "Text areas",
+        "Form fields"
+      ]
+    },
+    "studio-card": {
+      "description": "Surface background, soft shadow, 12px radius, hover lift transition.",
+      "intent": "Use for content cards that need a friendly, tactile feel. The soft shadow and hover lift create approachable interactivity.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #FFFFFF)",
+        "border-radius": "12px",
+        "box-shadow": "0 2px 8px rgba(0, 0, 0, 0.06)",
+        "transition": "transform 180ms ease, box-shadow 180ms ease"
+      },
+      "pairs_with": [
+        "studio-canvas",
+        "studio-divider"
+      ],
+      "usage": [
+        "Content cards",
+        "Product cards",
+        "Creator profiles",
+        "Feature cards"
+      ]
+    },
+    "studio-card-premium": {
+      "description": "Premium card with purple gradient border for exclusive content.",
+      "intent": "Use for premium or paid content containers. The purple gradient border signals exclusive, higher-tier content.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #FFFFFF)",
+        "border": "2px solid transparent",
+        "border-image": "linear-gradient(135deg, #8B5CF6, #A78BFA) 1",
+        "border-radius": "12px",
+        "box-shadow": "0 4px 12px rgba(139, 92, 246, 0.1)"
+      },
+      "pairs_with": [
+        "studio-card",
+        "studio-badge-tier",
+        "studio-gate-blur"
+      ],
+      "usage": [
+        "Premium content cards",
+        "Paid tier features",
+        "Exclusive posts"
+      ]
+    },
+    "studio-divider": {
+      "description": "Warm hairline separator using border-color token.",
+      "intent": "Use to create gentle visual separation between content sections. The warm tone matches the friendly aesthetic.",
+      "suggested_properties": {
+        "border-top": "1px solid var(--d-border, #E7E5E4)",
+        "margin": "0"
+      },
+      "pairs_with": [
+        "studio-canvas",
+        "studio-card"
+      ],
+      "usage": [
+        "Section dividers",
+        "List separators",
+        "Content breaks"
+      ]
+    },
+    "studio-badge-tier": {
+      "description": "Tier badge with gradient backgrounds for subscription levels.",
+      "intent": "Use for subscription tier labels and membership badges. Gradient backgrounds visually differentiate between tier levels.",
+      "suggested_properties": {
+        "border-radius": "9999px",
+        "padding": "4px 12px",
+        "font-size": "12px",
+        "font-weight": "600",
+        "text-transform": "uppercase"
+      },
+      "pairs_with": [
+        "studio-card-premium",
+        "studio-card"
+      ],
+      "usage": [
+        "Subscription tier badges",
+        "Membership labels",
+        "Plan indicators"
+      ]
+    },
+    "studio-avatar-creator": {
+      "description": "Larger creator avatar with accent ring highlight.",
+      "intent": "Use for creator profile images and author avatars. The accent ring draws attention and indicates creator status.",
+      "suggested_properties": {
+        "border-radius": "50%",
+        "border": "3px solid var(--d-accent, #14B8A6)",
+        "width": "48px",
+        "height": "48px",
+        "object-fit": "cover"
+      },
+      "pairs_with": [
+        "studio-card",
+        "studio-surface"
+      ],
+      "usage": [
+        "Creator avatars",
+        "Author profile images",
+        "User thumbnails"
+      ]
+    },
+    "studio-fade-up": {
+      "description": "Entrance animation: opacity 0 to 1, translateY 16px to 0, 250ms ease-out.",
+      "intent": "Use as the entrance animation for content appearing on load. Slightly longer duration for a more relaxed, creative feel.",
+      "suggested_properties": {
+        "animation": "studio-fade-up 250ms ease-out both",
+        "opacity": "0",
+        "transform": "translateY(16px)"
+      },
+      "pairs_with": [
+        "studio-card",
+        "studio-surface"
+      ],
+      "usage": [
+        "Page entrance animations",
+        "Card reveals",
+        "Section stagger animations"
+      ]
+    },
+    "studio-skeleton": {
+      "description": "Loading placeholder with warm pulse animation.",
+      "intent": "Use as a placeholder while content loads. The warm-toned pulse matches the creative, friendly aesthetic.",
+      "suggested_properties": {
+        "background": "var(--d-surface-raised, #F5F3F0)",
+        "border-radius": "var(--d-radius, 8px)",
+        "animation": "pulse 1.5s ease-in-out infinite"
+      },
+      "pairs_with": [
+        "studio-card",
+        "studio-canvas"
+      ],
+      "usage": [
+        "Loading skeletons",
+        "Content placeholders",
+        "Image placeholders"
+      ]
+    },
+    "studio-glow": {
+      "description": "Subtle primary-tinted glow effect for call-to-action buttons.",
+      "intent": "Use for primary CTA buttons and important action triggers. The coral glow creates warmth and urgency.",
+      "suggested_properties": {
+        "box-shadow": "0 4px 16px rgba(249, 115, 22, 0.25)",
+        "transition": "box-shadow 180ms ease"
+      },
+      "pairs_with": [
+        "studio-card",
+        "studio-canvas"
+      ],
+      "usage": [
+        "Primary CTA buttons",
+        "Subscribe buttons",
+        "Purchase buttons"
+      ]
+    },
+    "studio-gate-blur": {
+      "description": "Backdrop blur effect for content behind paywalls.",
+      "intent": "Use to obscure premium content behind paywalls. The blur teases content while clearly indicating it requires a subscription.",
+      "suggested_properties": {
+        "filter": "blur(8px)",
+        "user-select": "none",
+        "pointer-events": "none",
+        "position": "relative"
+      },
+      "pairs_with": [
+        "studio-card-premium",
+        "studio-badge-tier"
+      ],
+      "usage": [
+        "Paywalled content",
+        "Blurred previews",
+        "Gated sections"
+      ]
+    }
+  },
+  "elevation": {
+    "1": {
+      "light": "0 1px 2px rgba(0,0,0,0.05)",
+      "dark": "0 1px 2px rgba(0,0,0,0.30)"
+    },
+    "2": {
+      "light": "0 2px 6px rgba(0,0,0,0.07)",
+      "dark": "0 2px 6px rgba(0,0,0,0.40)"
+    },
+    "3": {
+      "light": "0 6px 16px rgba(0,0,0,0.09)",
+      "dark": "0 6px 16px rgba(0,0,0,0.45)"
+    },
+    "4": {
+      "light": "0 12px 32px rgba(0,0,0,0.12)",
+      "dark": "0 12px 32px rgba(0,0,0,0.50)"
+    },
+    "5": {
+      "light": "0 24px 64px rgba(0,0,0,0.16)",
+      "dark": "0 24px 64px rgba(0,0,0,0.55)"
+    }
+  }
+}

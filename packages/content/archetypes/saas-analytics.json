@@ -1,0 +1,69 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "saas-analytics",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "SaaS Analytics",
+  "description": "Deep analytics with charts, sparklines, and usage meters. Detailed breakdowns of product metrics, user behavior, and resource consumption.",
+  "tags": ["saas", "analytics", "charts", "usage", "metrics", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["saas analytics", "product analytics", "usage analytics", "metrics dashboard", "analytics page"],
+      "secondary": ["charts", "sparklines", "usage meters", "data visualization", "trends"],
+      "negative": ["marketing", "landing", "public"]
+    },
+    "implies": [],
+    "weight": 0.8,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "analytics",
+      "patterns": [
+        {
+          "pattern": "kpi-grid",
+          "preset": "dashboard",
+          "as": "analytics-kpis"
+        },
+        {
+          "pattern": "chart-grid",
+          "preset": "standard",
+          "as": "analytics-charts"
+        },
+        {
+          "pattern": "sparkline-cell",
+          "preset": "standard",
+          "as": "sparklines"
+        },
+        {
+          "pattern": "usage-meter",
+          "preset": "breakdown",
+          "as": "usage-breakdown"
+        }
+      ],
+      "default_layout": ["analytics-kpis", "analytics-charts", "sparklines", "usage-breakdown"],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "analytics": "Full analytics page. Top KPI row with period comparison. Main area has a chart grid with line, bar, and area charts for key metrics. Sparkline cells show inline trends in tabular data below. Usage meters at bottom show resource consumption with segmented breakdowns by category. Date range picker and export controls in the toolbar."
+  },
+  "features": ["charts", "export", "date-range", "real-time"],
+  "shells": {
+    "sidebar-main": "Collapsible sidebar navigation with main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "kpi-grid": ">=1.0.0",
+      "chart-grid": ">=1.0.0",
+      "sparkline-cell": ">=1.0.0",
+      "usage-meter": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": ["auradecantism"],
+    "modes": ["dark", "light"]
+  }
+}

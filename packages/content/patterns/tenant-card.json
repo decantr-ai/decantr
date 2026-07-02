@@ -1,0 +1,150 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "tenant-card",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Tenant Card",
+  "description": "Tenant profile summary card with photo, contact info, property/unit, lease details, and payment status.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "icon",
+        "Badge",
+        "Avatar"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "icon",
+    "Badge",
+    "Avatar"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full tenant card with photo and all details",
+      "components": [
+        "Button",
+        "icon",
+        "Badge",
+        "Avatar"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4 _p4",
+        "slots": {
+          "avatar": "Tenant photo",
+          "name": "Full name",
+          "contact": "Phone, email",
+          "property": "Current property/unit",
+          "lease": "Lease dates, rent amount",
+          "status": "Payment status badge",
+          "actions": "Message, view, edit buttons"
+        }
+      }
+    },
+    "compact": {
+      "description": "Condensed inline tenant summary",
+      "components": [
+        "Avatar",
+        "Badge"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _aic _gap3",
+        "slots": {
+          "avatar": "Small avatar",
+          "info": "Name, contact",
+          "status": "Payment status"
+        }
+      }
+    },
+    "contact": {
+      "description": "Contact-focused view with quick actions",
+      "components": [
+        "Button",
+        "icon",
+        "Avatar"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _aic _gap3 _p4 _tc",
+        "slots": {
+          "avatar": "Large centered avatar",
+          "name": "Tenant name",
+          "contact-actions": "Call, email, SMS buttons"
+        }
+      }
+    },
+    "self": {
+      "description": "Tenant's own profile view for tenant portal",
+      "components": [
+        "Button",
+        "icon",
+        "Avatar"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4 _p4",
+        "slots": {
+          "avatar": "Profile photo with edit",
+          "info": "Name, contact info",
+          "lease": "Current lease summary",
+          "actions": "Edit profile button"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap4 _p4",
+    "slots": {
+      "avatar": "Tenant photo",
+      "info": "Name and contact",
+      "details": "Property and lease info",
+      "actions": "Action buttons"
+    }
+  },
+  "visual_brief": "Bordered card with a tenant avatar or photo at the top-left, followed by name and contact information (phone, email). Below, property/unit assignment as a linked label and lease period dates. A payment status indicator shows current standing (current, late, delinquent) with color coding. Action buttons (Message, View Profile) sit at the bottom. The compact preset is a dense horizontal row with avatar, name, unit, and status. The contact preset emphasizes phone and email with click-to-call/email actions. The self preset is a tenant-facing card showing their own information and quick links.",
+  "responsive": {
+    "mobile": "Cards take full width. Action buttons stack. Contact info uses tap-to-call/email links.",
+    "tablet": "Two-column card grid. Standard card proportions.",
+    "desktop": "Three-column grid or list layout. Cards at comfortable size with all details visible."
+  },
+  "layout_hints": {
+    "identity_priority": "Lead with tenant identity and current standing first, then property and lease context. Action buttons should support that understanding, not fight for attention.",
+    "variant_role": "Standard, compact, contact, and self variants should all preserve the same core tenant identity while changing emphasis based on workflow.",
+    "status_visibility": "Payment or lease standing should be visible without overwhelming the card. Keep status, contact, and unit context tightly grouped."
+  },
+  "motion": {
+    "micro": "Action buttons and status affordances may sharpen slightly on hover. Contact-focused variants may emphasize quick actions a bit more when focused.",
+    "transitions": "Card selection or status updates should feel steady and professional rather than social-feed-like."
+  },
+  "interactions": [
+    "lift-hover",
+    "click-select",
+    "animate-on-mount",
+    "stagger-children"
+  ],
+  "accessibility": {
+    "role": "group",
+    "aria-label": "Tenant summary",
+    "keyboard": [
+      "Tenant actions should be reachable after the core identity and status information in a predictable order."
+    ],
+    "announcements": [
+      "Tenant name, unit, lease context, and standing should be exposed semantically so the card remains informative beyond visual badges and layout."
+    ]
+  },
+  "composition": {
+    "TenantCard": "Card(d-surface, hoverable) > [Avatar(large) + TenantInfo + PaymentStatus + Actions]",
+    "TenantInfo": "Stack(flex-col) > [Name(font-medium) + Property(text-muted) + Unit(text-muted) + LeaseEnd(d-annotation)]",
+    "PaymentStatus": "Badge(d-annotation, color: status)",
+    "Actions": "Row(d-interactive) > [ViewButton + MessageButton(variant: ghost) + MenuButton]"
+  }
+}

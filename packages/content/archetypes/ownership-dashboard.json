@@ -1,0 +1,97 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "ownership-dashboard",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Ownership Dashboard",
+  "description": "Authenticated investor workspace for managing fractional holdings. Shows portfolio KPIs, cap tables per asset, and distribution history with performance charts.",
+  "tags": [
+    "portfolio",
+    "ownership",
+    "holdings",
+    "dashboard",
+    "distributions"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "ownership dashboard",
+        "my holdings",
+        "portfolio dashboard",
+        "investor dashboard"
+      ],
+      "secondary": [
+        "cap table",
+        "distributions",
+        "dividends",
+        "portfolio"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "portfolio",
+      "path": "/portfolio",
+      "patterns": [
+        { "pattern": "kpi-grid", "preset": "dashboard", "as": "metrics" },
+        { "pattern": "data-table", "preset": "standard", "as": "holdings" },
+        { "pattern": "chart-grid", "preset": "standard", "as": "performance" }
+      ],
+      "default_layout": ["kpi-grid", "data-table", "chart-grid"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "cap-table",
+      "path": "/portfolio/:id/cap",
+      "patterns": [
+        { "pattern": "cap-table", "preset": "standard", "as": "cap" },
+        { "pattern": "chart-grid", "preset": "standard", "as": "pie-summary" }
+      ],
+      "default_layout": ["cap-table", "chart-grid"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "distributions",
+      "path": "/distributions",
+      "patterns": [
+        { "pattern": "dividend-ledger", "preset": "standard", "as": "ledger" },
+        { "pattern": "chart-grid", "preset": "standard", "as": "trend" }
+      ],
+      "default_layout": ["dividend-ledger", "chart-grid"],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "portfolio": "Investor-only holdings dashboard. Dashboard KPI grid across the top shows total portfolio value, 30-day change, total yield, and distribution YTD. Standard data table lists each position with asset name, shares, cost basis, current value, and P/L. Chart grid underneath plots performance and allocation.",
+    "cap-table": "Per-asset ownership breakdown. Standard cap table shows full holder list with share counts and ownership percentages. Pie summary chart visualizes concentration among top holders versus float.",
+    "distributions": "Dividend history page. Standard ledger lists every distribution received across all assets with date, asset, per-share amount, and total paid. Chart grid visualizes distribution trends over time by asset."
+  },
+  "features": [
+    "ownership",
+    "distributions",
+    "portfolio",
+    "cap-table"
+  ],
+  "shells": {
+    "sidebar-main": "Authenticated app shell with sidebar navigation and main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "kpi-grid": "^1.0.0",
+      "data-table": "^1.0.0",
+      "chart-grid": "^1.0.0",
+      "cap-table": "^1.0.0",
+      "dividend-ledger": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": ["swiss"],
+    "modes": ["light", "dark"]
+  }
+}

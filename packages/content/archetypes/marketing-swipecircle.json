@@ -1,0 +1,185 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "marketing-swipecircle",
+  "role": "public",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "SwipeCircle Marketing",
+  "description": "Public marketing landing page for SwipeCircle — a mobile-first swipe-based social rating community. Photo-first hero with 'Rate. Connect. Vibe.' tagline, dual sign-up/log-in CTAs plus a demo mode entry, feature highlights showing the swipe loop, social proof, and a final conversion CTA. Optimized for casual consumer first-impressions.",
+  "tags": [
+    "marketing",
+    "landing",
+    "consumer",
+    "social",
+    "dating",
+    "mobile",
+    "public",
+    "seo",
+    "2026"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "swipe app landing",
+        "dating app marketing",
+        "social discovery homepage",
+        "consumer social landing",
+        "matchmaking app site"
+      ],
+      "secondary": [
+        "mobile social marketing",
+        "community discovery landing",
+        "rating community homepage"
+      ],
+      "negative": [
+        "dashboard",
+        "admin",
+        "analytics",
+        "enterprise"
+      ]
+    },
+    "implies": [
+      "seo",
+      "conversion",
+      "mobile-first"
+    ],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "description": "Public splash and conversion landing for SwipeCircle.",
+      "patterns": [
+        {
+          "pattern": "hero-split",
+          "preset": "centered",
+          "as": "splash-hero"
+        },
+        {
+          "pattern": "cta-section",
+          "preset": "standard",
+          "as": "auth-cta"
+        },
+        {
+          "pattern": "features",
+          "preset": "standard",
+          "as": "swipe-loop-features"
+        },
+        {
+          "pattern": "how-it-works",
+          "preset": "standard",
+          "as": "how-swipecircle-works"
+        },
+        {
+          "pattern": "testimonials",
+          "preset": "standard",
+          "as": "community-voices"
+        },
+        {
+          "pattern": "cta-section",
+          "preset": "banner",
+          "as": "join-cta"
+        },
+        {
+          "pattern": "footer",
+          "preset": "standard",
+          "as": "site-footer"
+        }
+      ],
+      "default_layout": [
+        "splash-hero",
+        "auth-cta",
+        "swipe-loop-features",
+        "how-swipecircle-works",
+        "community-voices",
+        "join-cta",
+        "site-footer"
+      ],
+      "shell": "top-nav-footer",
+      "directives": [
+        "Hero tagline: 'Rate. Connect. Vibe.' — three-word punch. Keep it fully visible in the first viewport with no clipping, transforms, or overlapping CTA strips.",
+        "Hero subhead: warm, inviting, ~12-18 words — describe the swipe-and-connect promise without being thirsty",
+        "Hero background should feel photo-first and premium: use a real-looking swipe card mockup/photo stack on a mostly white or warm off-white surface with coral/violet accents. Avoid a single solid peach gradient slab as the whole hero.",
+        "Auth CTA section provides TWO equal-weight buttons: 'Sign Up' (primary coral pill) and 'Log In' (secondary white-bordered pill), plus a small ghost link below: 'Try Demo Mode' for instant exploration without signup. It must sit in normal document flow below the hero copy or inside the hero composition, never as a fixed or overlapping banner.",
+        "Features section highlights the four pillars: Swipe (heart icon), Match (sparkle icon), Chat (message icon), Vibe (smile icon) — short blurb per pillar, soft white cards with subtle peach tint and enough internal padding that text never hugs the border.",
+        "How-it-works walks through the 3-step loop: 1) Build your profile, 2) Swipe through your circle, 3) Chat with matches — illustrated by photo cards or compact mockups rather than empty bordered slabs",
+        "Testimonials use real-feeling first-name + age tags (no LinkedIn-style headshots) — '— Maya, 27', '— Jordan, 32' — feels like reading text messages from friends",
+        "Final CTA banner is coral-fill with white text + arrow icon: 'Find your circle today →'",
+        "Footer remains warm: about, privacy, terms, contact — no enterprise compliance noise. Footer must be part of the page flow and must not cover the how-it-works or CTA content."
+      ]
+    }
+  ],
+  "page_briefs": {
+    "home": "A warm, photo-first marketing splash that feels more like a welcome than a sales pitch. Top-nav-footer shell with brand logo (small, friendly), thin nav with 'About / How It Works / Log In', and a coral 'Sign Up' pill button at the right. Hero is centered and mobile-first responsive, with a large fully visible 'Rate. Connect. Vibe.' display headline, a single-sentence subhead, two side-by-side pill CTAs (Sign Up primary coral / Log In white-bordered), and a small 'Try Demo Mode' ghost link. The hero uses a real-looking swipe-card mockup/photo stack as the visual anchor on a mostly white or warm off-white surface with coral and violet accents; do not make the first viewport one solid peach gradient slab. Below the hero, a four-pillar features grid (Swipe / Match / Chat / Vibe) uses soft white cards with subtle peach tint and minimal Lucide icons. The how-it-works section walks through three steps with photo-card or mockup illustrations. Testimonials feel like text messages — short quotes attributed to first names + ages. The closing CTA banner is full-width coral with a final invitation. All sections and the footer remain in normal document flow with no overlap or fixed footer. Voice throughout: playful, warm, encouraging — never desperate, never pushy. Avoid 'Submit' / 'Click here' / 'Buy now' verbs."
+  },
+  "features": [
+    "marketing",
+    "seo",
+    "conversion",
+    "demo-mode"
+  ],
+  "directives": [
+    "All CTAs use pill shape (border-radius: 9999px)",
+    "Primary buttons fill coral; secondary buttons use white border + transparent fill",
+    "Demo Mode link sets a localStorage flag and navigates to /discover with mock data — no actual auth",
+    "Hero must work on mobile portrait — stack hero text + CTAs vertically, swipe-card mockup moves below on narrow viewports",
+    "Hero, auth CTA, feature cards, how-it-works, final CTA, and footer must be laid out as normal page sections with clear spacing. Do NOT use fixed/sticky CTA strips or negative margins that can cover the headline, cards, or footer content.",
+    "Do not render implementation notes, pattern labels, Decantr guard prose, or hotkey/debug hints as visible marketing copy.",
+    "Page is fully accessible: heading hierarchy h1→h2→h3, all CTAs keyboard-focusable with visible focus rings, alt text on all imagery"
+  ],
+  "navigation_items": [
+    {
+      "label": "How It Works",
+      "route": "/#how-it-works",
+      "icon": "Sparkles"
+    },
+    {
+      "label": "About",
+      "route": "/#about",
+      "icon": "Heart"
+    },
+    {
+      "label": "Log In",
+      "route": "/login",
+      "icon": "LogIn"
+    },
+    {
+      "label": "Sign Up",
+      "route": "/signup",
+      "icon": "UserPlus"
+    }
+  ],
+  "shells": {
+    "top-nav-footer": "Sticky top nav (logo left, primary nav center, auth CTAs right) over a body that scrolls through hero + sections + footer."
+  },
+  "dependencies": {
+    "patterns": {
+      "hero-split": ">=1.0.0",
+      "cta-section": ">=1.0.0",
+      "features": ">=1.0.0",
+      "how-it-works": ">=1.0.0",
+      "testimonials": ">=1.0.0",
+      "footer": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "swipecircle"
+    ],
+    "modes": [
+      "light"
+    ],
+    "shapes": [
+      "pill"
+    ]
+  },
+  "personality": [
+    "Photo-first marketing splash that feels more like a friendly welcome than a sales pitch. Pill-shaped CTAs, coral primaries with violet hover, warm off-white surfaces, soft peach accents, and real-looking swipe-card/photo mockups. Tagline 'Rate. Connect. Vibe.' is large but never clipped or overlapped. Testimonials read like text messages from friends, not LinkedIn endorsements. Buttons feel tactile with bouncy spring transitions. Hinge-meets-Dribbble vibe — never thirsty, never enterprise."
+  ],
+  "certification": {
+    "tier": "demo",
+    "rationale": "Contains demo-mode auth guidance backed by localStorage; excluded from enterprise artifact sets."
+  }
+}

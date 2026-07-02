@@ -1,0 +1,125 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "booking-calendar",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Booking Calendar",
+  "description": "Availability-aware booking calendar with selectable time slots, optional provider selection, timezone handling, and inline confirmation for scheduling workflows.",
+  "category": "scheduling",
+  "tags": [
+    "2026",
+    "scheduling",
+    "calendar",
+    "booking",
+    "availability",
+    "time-slots",
+    "appointments"
+  ],
+  "components": [
+    "AvailabilityGrid",
+    "TimeSlot",
+    "ProviderSelector",
+    "BookingConfirmation",
+    "DatePicker",
+    "TimezoneSelector"
+  ],
+  "default_preset": "week-view",
+  "presets": {
+    "week-view": {
+      "description": "Seven-day week grid showing available time slots as selectable chips in each day column — the primary booking view for browsing availability across a week",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc7 _gap2 _py4 _w-full"
+      }
+    },
+    "day-view": {
+      "description": "Single-day hourly slot list with half-hour granularity — vertical stack of time slot buttons for detailed availability on a specific date",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap2 _py4 _maxw-[400px] _mx-auto"
+      }
+    },
+    "provider-select": {
+      "description": "Provider-first flow: choose a provider from avatar cards, then see their specific availability in a day or week grid below — for multi-practitioner booking scenarios",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6 _py4 _w-full"
+      }
+    }
+  },
+  "visual_brief": "Calendar interface with a header row containing a DatePicker (left/right arrows flanking the current week or date label, e.g. 'Mar 24 - 30, 2026'), and a small TimezoneSelector dropdown in the top-right corner showing the detected timezone with a globe icon. Below the header, the week-view preset renders a 7-column grid: each column has a day label header (Mon 24, Tue 25, etc.) with today's date highlighted in accent. Within each column, available time slots appear as small outlined rectangular buttons (e.g. '9:00 AM', '9:30 AM', '10:00 AM') stacked vertically. Available slots have an accent-outlined style with hover fill. Unavailable/past slots are grayed out with reduced opacity and no pointer cursor. The currently selected slot has a filled accent background with white text and a subtle checkmark. Days with no availability show a muted 'No availability' label. The day-view preset shows a single vertical list of slot buttons at full width, grouped by morning/afternoon/evening with subtle section dividers. The provider-select preset adds a horizontal scrollable row of provider cards at the top: each card shows a circular avatar (48px), provider name below, and a specialty/role label in muted text. The selected provider card has an accent border ring. Below the provider row, the availability grid (week or day) loads for that provider. When a time slot is selected, a BookingConfirmation card slides up from the bottom (or appears as an adjacent panel on desktop): it shows the selected provider's avatar and name, the date and time in bold, the duration (e.g. '30 min'), the timezone, and a prominent 'Confirm Booking' primary button with a secondary 'Cancel' text button. The confirmation card has a surface background with slight elevation (shadow-md).",
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap4 _py4 _w-full",
+    "slots": {
+      "controls-bar": "A horizontal row at the top containing: the DatePicker on the left (back/forward arrow buttons flanking a week or date range label, clickable to open a mini calendar popover), a view toggle in the center (Week / Day segmented control), the ProviderSelector (only in provider-select preset, otherwise hidden) as a horizontal scrollable row of avatar cards, and the TimezoneSelector on the right as a small dropdown with globe icon showing the current timezone abbreviation.",
+      "availability-grid": "The main scheduling area. In week-view: a 7-column CSS grid with sticky day-name headers. Each column contains vertically stacked TimeSlot buttons for that day's available times. Columns have equal width and a subtle vertical separator between them. In day-view: a single column of TimeSlot buttons with time labels, grouped under 'Morning', 'Afternoon', 'Evening' subheadings. The grid loads availability data per provider and date range, showing a skeleton shimmer during fetch.",
+      "time-slot": "Individual bookable time chip. Renders as a rounded button (border-radius: 8px, padding: 8px 16px). States: available (outlined accent border, transparent background, accent text), unavailable (gray border, gray text, opacity 0.4, cursor not-allowed), selected (filled accent background, white text, checkmark icon), hovered (accent background at 10% opacity). Shows the time label (e.g. '2:30 PM'). Slots are 30-min intervals by default.",
+      "booking-confirmation": "Conditional panel that appears after a time slot is selected. Card with surface background and shadow-md elevation. Contains: provider avatar (40px) and name in a row, a horizontal divider, the selected date in bold (e.g. 'Wednesday, March 25, 2026'), the selected time range (e.g. '2:30 PM - 3:00 PM'), timezone label, duration badge (e.g. '30 min'), a primary 'Confirm Booking' button (full-width), and a text 'Cancel' link below it. On confirmation, the button shows a spinner then transitions to a success checkmark with 'Booked!' text."
+    }
+  },
+  "responsive": {
+    "mobile": "Week-view switches to a horizontal scrollable day strip (shows 3 days visible, swipe for more) with the selected day's slots below as a vertical list. DatePicker becomes a compact single-date selector. Provider cards scroll horizontally. Booking confirmation renders as a bottom sheet that slides up. Time slots are full-width buttons with larger tap targets (min 44px height).",
+    "tablet": "Week-view shows all 7 columns at comfortable width. Provider cards remain a horizontal row. Booking confirmation appears as a right-side panel or inline below the grid. Standard touch target sizes.",
+    "desktop": "Full 7-column week grid with generous slot spacing. Booking confirmation appears as a fixed sidebar panel on the right (30% width) alongside the grid. Provider cards display with additional detail (next available time). Hover states are fully active."
+  },
+  "motion": {
+    "micro": {
+      "slot-hover": "background-color accent/10 + border-color accent 120ms ease-out",
+      "slot-select": "scale(0.97→1) + background-fill 150ms ease-out",
+      "provider-card-hover": "translateY(-2px) + shadow-md 150ms ease-out"
+    },
+    "transitions": {
+      "confirmation-enter": "translateY(24px)→0 + opacity 0→1 350ms ease-out",
+      "confirmation-exit": "translateY(0)→24px + opacity 1→0 250ms ease-in",
+      "week-navigate": "translateX(±100%)→0 + opacity 0→1 300ms ease-out",
+      "confirm-success": "button-width shrink + checkmark-scale(0→1) 400ms ease-out"
+    },
+    "ambient": {
+      "skeleton-shimmer": "background-position sweep left→right 1.5s ease-in-out infinite during loading"
+    }
+  },
+  "interactions": [
+    "click-select",
+    "drag-reorder",
+    "keyboard-navigation",
+    "animate-on-mount"
+  ],
+  "composition": {
+    "BookingCalendar": "Container(d-section, flex-col, gap-4) > [ControlsBar(d-control) > [ProviderSelector?(d-control, horizontal-scroll) + DatePicker(d-control) + TimezoneSelector(d-control, dropdown)] + AvailabilityGrid(d-surface, grid: week|day) > TimeSlot(d-interactive, selectable, state: available|unavailable|selected)* + BookingConfirmation?(d-surface, elevation-md, conditional: slot-selected)]",
+    "ProviderSelector": "Row(d-control, horizontal-scroll) > ProviderCard(d-interactive, selectable) > [Avatar(d-annotation, circle) + Name(d-data) + Role(d-annotation, muted)]",
+    "AvailabilityGrid": "Grid(d-surface, columns: 7|1) > DayColumn(d-data, sticky-header) > [DayLabel(d-annotation) + TimeSlot(d-interactive)[]]",
+    "BookingConfirmation": "Card(d-surface, shadow-md) > [ProviderRow > [Avatar + Name] + Divider + DateLabel(d-data, bold) + TimeRange(d-data) + TimezoneLabel(d-annotation) + DurationBadge(d-annotation) + ConfirmButton(d-interactive, variant: primary, full-width) + CancelLink(d-interactive, text)]"
+  },
+  "layout_hints": {
+    "calendar_priority": "Availability and selection state should be clear before provider metadata or secondary controls. The user should immediately understand when they can book.",
+    "confirmation_attachment": "The confirmation card should feel attached to the selected slot and provider rather than like a separate checkout surface.",
+    "mobile_fallback": "On small screens, preserve the same sense of temporal availability even when controls collapse and the grid becomes denser."
+  },
+  "layout_hints": {
+    "calendar_priority": "Availability and selection state should be clear before provider metadata or secondary controls. The user should immediately understand when they can book.",
+    "confirmation_attachment": "The confirmation card should feel attached to the selected slot and provider rather than like a separate checkout surface.",
+    "mobile_fallback": "On small screens, preserve the same sense of temporal availability even when controls collapse and the grid becomes denser."
+  },
+  "accessibility": {
+    "role": "application",
+    "aria-label": "Booking calendar with time slot selection",
+    "keyboard": [
+      "Arrow Left/Right: navigate between days in week-view",
+      "Arrow Up/Down: navigate between time slots within a day",
+      "Enter/Space: select the focused time slot or confirm booking",
+      "Tab: move between controls (date picker, timezone, provider, grid, confirmation)",
+      "Escape: deselect current slot or dismiss confirmation",
+      "P: focus provider selector (when available)",
+      "T: open timezone selector"
+    ],
+    "announcements": [
+      "Viewing availability for {date_range}",
+      "Provider {name} selected, loading availability",
+      "Time slot {time} on {date}: {status}",
+      "Selected {time} on {date} with {provider}. Confirm or press Escape to cancel",
+      "Booking confirmed: {date} at {time} with {provider}",
+      "Timezone changed to {timezone}"
+    ]
+  }
+}

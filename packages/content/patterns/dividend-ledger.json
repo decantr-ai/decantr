@@ -1,0 +1,120 @@
+{
+  "id": "dividend-ledger",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Dividend Ledger",
+  "description": "A dividend payment history ledger that records declaration dates, ex-dates, payment dates, per-share amounts, total payouts, and tax treatment classifications across an investor's entire dividend income timeline.",
+  "category": "finance",
+  "tags": [
+    "2026",
+    "finance",
+    "dividends",
+    "ledger",
+    "tax",
+    "income",
+    "investor",
+    "history"
+  ],
+  "components": [
+    "DividendRow",
+    "DateBadge",
+    "AmountCell",
+    "TaxTreatmentChip",
+    "TotalFooter",
+    "YearGroupHeader",
+    "ScheduledBadge"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Detailed row-by-row ledger showing declaration date, ex-date, pay date, amount per share, total amount, and tax treatment chip. Every dividend payment appears as a discrete row with alternating backgrounds for readability.",
+      "layout": {
+        "layout": "data-table",
+        "atoms": "_w100 _grid _gap2"
+      }
+    },
+    "annual": {
+      "description": "Yearly-grouped summary with YearGroupHeader rows aggregating dividend income per calendar year plus per-year subtotals broken down by tax treatment category, ideal for tax-season preparation and annual reporting.",
+      "layout": {
+        "layout": "data-table",
+        "atoms": "_w100 _grid _gap2"
+      }
+    },
+    "upcoming": {
+      "description": "Forward-looking view highlighting only scheduled and announced-but-unpaid dividends with ScheduledBadge indicators, sorted by pay date ascending, intended for cash-flow planning dashboards.",
+      "layout": {
+        "layout": "data-table",
+        "atoms": "_w100 _grid _gap2"
+      }
+    }
+  },
+  "visual_brief": "A dense financial ledger rendered inside a d-surface card. The table header spans the full width with d-annotation small-caps column labels: Declaration, Ex-Date, Pay Date, Per Share, Total, Tax Treatment. A thin border separates the header from data rows. DividendRows alternate between the default surface color and a subtle 2% primary-tinted background for zebra striping. Each row contains: three DateBadges in compact pill form (e.g., 'Dec 14, 2025' in mono-data small text with a calendar icon glyph), then an AmountCell showing per-share amount ($0.24) in mono-data tabular-nums figures, then the total amount paid (computed from shares held × per-share) in semibold mono-data, then a TaxTreatmentChip color-coded by category: Qualified=emerald, Ordinary=slate, Return-of-Capital=amber, Foreign=violet, Section199A=teal. Chips are pill-shaped with tiny icon prefixes. Rows are clickable and expand inline to reveal source security ticker, shares held at record date, withholding tax breakdown, and notes. A sticky TotalFooter at the bottom shows aggregate totals: total dividends received, total shares paid on, effective yield, and breakdown percentages per tax treatment. Annual preset inserts YearGroupHeader rows (full-width pill with year number in large semibold text, background matching surface-elevated) between year boundaries, with a subtotal row beneath each year showing annual dividend income grouped by tax category. Upcoming preset replaces the default row background with a subtle amber-tinted surface for scheduled dividends and adds a ScheduledBadge ('Scheduled' or 'Announced') in each row, with a days-until-pay countdown chip.",
+  "layout_hints": {
+    "container": "d-surface card",
+    "note": "Dividend ledgers are tax-critical financial records. Use mono-data with tabular-nums for ALL monetary and date figures. Right-align amount columns, left-align dates. Never round or truncate monetary values.",
+    "date_badges": "DateBadge uses d-annotation[data-date] in pill form with a subtle calendar glyph prefix. All three date types (declaration/ex/pay) use identical styling to keep the row balanced. Dates formatted as 'MMM D, YYYY'.",
+    "tax_treatment_colors": "TaxTreatmentChip colors MUST be consistent across the application: Qualified=emerald, Ordinary=slate, ROC=amber, Foreign=violet, 199A=teal. Never use red/green alone (colorblind-safe — pair with icon prefix).",
+    "total_footer": "TotalFooter uses sticky positioning with color-mix background. Shows aggregate total plus percentage breakdown by tax treatment. Essential for 1099-DIV preparation.",
+    "year_group": "YearGroupHeader uses d-row[data-group-header] with a larger text size (text-lg) and elevated background. Annual subtotal rows sit immediately below the final dividend row of each year, before the next YearGroupHeader."
+  },
+  "default_layout": {
+    "layout": "data-table",
+    "atoms": "_w100 _grid _gap2 _p4",
+    "slots": {
+      "table-header": "Sticky column-label row showing Declaration, Ex-Date, Pay Date, Per Share, Total, and Tax Treatment labels in d-annotation small-caps. Underline border separates header from data rows during scroll.",
+      "dividend-rows": "Repeating slot — one DividendRow per dividend payment event. Each row contains three DateBadges (declaration/ex/pay), AmountCell for per-share amount, AmountCell for total dollars received, and TaxTreatmentChip. Rows are interactive and expand inline to show source security, shares held at record date, withholding tax, and notes.",
+      "year-group-headers": "Annual-preset-only slot. Full-width header rows grouping dividends by calendar year. Each header shows the year number and a right-aligned annual total. Subtotal row beneath each year breaks down by tax treatment category.",
+      "scheduled-badges": "Upcoming-preset-only slot. Each DividendRow includes a ScheduledBadge showing 'Announced', 'Scheduled', or 'Declared' status plus a countdown chip with days-until-pay. Rows tinted amber to distinguish from paid dividends.",
+      "total-footer": "Sticky footer aggregating total dividends received, total shares paid on, weighted-average yield, and breakdown percentages by tax treatment category. Uses bold mono-data figures."
+    }
+  },
+  "accessibility": {
+    "role": "table",
+    "aria-label": "Dividend payment history ledger",
+    "announcements": [
+      "Dividend of {amount} paid on {date} from {security}",
+      "Annual total for {year}: {total} across {count} payments",
+      "Upcoming dividend of {amount} scheduled for {date}"
+    ],
+    "keyboard": [
+      "Tab: cycle through dividend rows",
+      "Enter: expand row for payment details",
+      "Escape: collapse expanded row",
+      "Arrow Down/Up: navigate between rows",
+      "G: jump to next year group (annual preset)"
+    ]
+  },
+  "responsive": {
+    "mobile": "Table reflows to a vertical card-stack. Each dividend becomes a card showing total amount and tax treatment chip prominently, with dates and per-share stacked beneath. TotalFooter remains sticky. YearGroupHeaders remain visible as section dividers.",
+    "tablet": "Standard table with DateBadges condensed to show only pay-date; ex-date and declaration-date revealed on row expand."
+  },
+  "motion": {
+    "micro": {
+      "row-hover": "background-color shift 150ms ease-out",
+      "chip-glow": "tax-chip subtle scale 1.03 on hover 120ms ease-out"
+    },
+    "transitions": {
+      "row-expand": "height auto + fade 250ms ease-out",
+      "row-collapse": "height 0 + fade 200ms ease-in",
+      "year-group-collapse": "height auto + fade 300ms ease-in-out"
+    },
+    "ambient": {
+      "upcoming-pulse": "ScheduledBadge border glow 1.5s ease-in-out infinite on unpaid dividends"
+    }
+  },
+  "interactions": [
+    "animate-on-mount",
+    "real-time-updates",
+    "hover-tooltip"
+  ],
+  "composition": {
+    "DividendLedger": "Surface(d-surface, card) > [TableHeader + YearGroupHeader[]? + DividendRow[] + TotalFooter]",
+    "DividendRow": "Row(d-row, data-interactive) > [DeclarationBadge + ExDateBadge + PayDateBadge + AmountCell + TotalCell + TaxTreatmentChip + ScheduledBadge?]",
+    "DateBadge": "Chip(d-annotation, data-date) > [CalendarIcon + DateText]",
+    "AmountCell": "Cell(d-annotation, data-currency) > [CurrencySymbol + AmountText]",
+    "TaxTreatmentChip": "Chip(d-annotation, data-tax-treatment) > [CategoryIcon + CategoryLabel]",
+    "YearGroupHeader": "Row(d-row, data-group-header) > [YearLabel + AnnualTotal]",
+    "TotalFooter": "Footer(d-row, sticky) > [AggregateTotal + BreakdownByTaxCategory + WeightedYield]"
+  }
+}

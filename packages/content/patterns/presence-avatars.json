@@ -1,0 +1,129 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "presence-avatars",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Presence Avatars",
+  "description": "Horizontal stack of collaborator avatars showing who is currently viewing or editing. Each avatar has a unique presence color ring.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Avatar",
+        "Button",
+        "Tooltip",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Avatar",
+    "Button",
+    "Tooltip"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Avatar stack with overflow count and hover tooltips",
+      "components": [
+        "Avatar",
+        "Tooltip"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _aic _-space-x-2",
+        "slots": {
+          "avatars": "Stacked avatar images with presence color ring",
+          "overflow": "+N more indicator",
+          "tooltip": "Hover shows full name and status"
+        }
+      }
+    },
+    "compact": {
+      "description": "Smaller avatars with tighter spacing",
+      "components": [
+        "Avatar",
+        "Tooltip"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _aic _-space-x-1",
+        "slots": {
+          "avatars": "Small stacked avatars",
+          "overflow": "Overflow count"
+        }
+      }
+    },
+    "detailed": {
+      "description": "Avatars with online/away status dots",
+      "components": [
+        "Avatar",
+        "Tooltip"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _aic _gap1",
+        "slots": {
+          "avatars": "Avatars with status indicator",
+          "status-dot": "Online/away/idle indicator"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "row",
+    "atoms": "_flex _aic _-space-x-2",
+    "slots": {
+      "avatars": "Stacked avatar images with presence color ring",
+      "overflow": "+N more indicator with click to expand",
+      "tooltip": "Hover tooltip showing collaborator name and status"
+    }
+  },
+  "io": {
+    "consumes": [
+      "collaborators",
+      "maxVisible"
+    ],
+    "produces": [],
+    "actions": [
+      "expand-list",
+      "view-profile"
+    ]
+  },
+  "visual_brief": "Horizontal stack of overlapping circular avatar images, each with a colored ring border indicating their presence state (green for active, yellow for idle, gray for offline). Avatars overlap by about 25% of their diameter. When there are more avatars than can be shown, a '+N' overflow indicator appears at the end as a circular badge with a muted background. Hovering any avatar shows a tooltip with the collaborator's name and status. The detailed preset adds a dropdown panel on click showing all collaborators with name, role, and status. The compact preset reduces avatar size to 24px.",
+  "responsive": {
+    "mobile": "Avatars at 28px. Maximum 3-4 visible with overflow indicator. Tooltip replaced by tap-to-reveal.",
+    "tablet": "Avatars at 32px. Up to 6 visible. Tap or hover for tooltip.",
+    "desktop": "Avatars at 36px. Up to 8 visible. Hover tooltips. Detailed preset dropdown on click."
+  },
+  "layout_hints": {
+    "presence_priority": "The pattern should communicate who is here now before it communicates every individual detail. Overflow handling should preserve that quick presence read.",
+    "stack_logic": "Overlap should feel intentional and orderly, with the most relevant or recent collaborators visually favored if ordering matters.",
+    "detailed_mode": "Expanded or detailed modes should feel like a continuation of the avatar stack rather than a separate people directory."
+  },
+  "motion": {
+    "micro": "Presence state changes and hover emphasis may brighten or pulse subtly, especially for active collaborators.",
+    "transitions": "Entries joining or leaving should animate gently enough to preserve the sense of live collaboration without making the avatar rail jitter."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "hover-reveal"
+  ],
+  "accessibility": {
+    "role": "group",
+    "aria-label": "Presence avatars",
+    "keyboard": [
+      "Overflow, detailed views, and interactive avatars should remain reachable in a simple left-to-right order."
+    ],
+    "announcements": [
+      "Collaborator identity and presence state should be exposed semantically so the stack remains meaningful beyond colored avatar rings."
+    ]
+  },
+  "composition": {
+    "PresenceAvatars": "Row(d-section, overlapping) > [AvatarStack + OverflowBadge?]",
+    "AvatarStack": "Row(negative-margin) > Avatar(ring-color: presence-state, tooltip: name)[]",
+    "OverflowBadge": "Badge(d-annotation, muted-bg, circular) > PlusCount"
+  }
+}

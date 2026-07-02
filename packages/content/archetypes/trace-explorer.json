@@ -1,0 +1,113 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "trace-explorer",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Trace Explorer",
+  "description": "Distributed tracing viewer with trace search, latency histograms, full waterfall visualization, and service topology mapping.",
+  "tags": [
+    "observability",
+    "traces",
+    "distributed-tracing",
+    "latency",
+    "service-map"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "trace explorer",
+        "distributed tracing",
+        "trace viewer",
+        "span waterfall",
+        "trace search"
+      ],
+      "secondary": [
+        "latency analysis",
+        "service topology",
+        "trace context",
+        "span detail",
+        "request tracing"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "traces",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "trace-list"
+        },
+        {
+          "pattern": "chart-grid",
+          "preset": "standard",
+          "as": "latency-histogram"
+        }
+      ],
+      "default_layout": [
+        "filter-bar",
+        "kpi-grid",
+        "data-table"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "trace-detail",
+      "patterns": [
+        {
+          "pattern": "trace-waterfall",
+          "preset": "standard",
+          "as": "waterfall"
+        }
+      ],
+      "default_layout": [
+        "trace-waterfall"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "service-topology",
+      "patterns": [
+        {
+          "pattern": "service-map",
+          "preset": "graph",
+          "as": "topology"
+        }
+      ],
+      "default_layout": [
+        "service-map"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "traces": "Trace search landing page. A chart grid at the top renders a latency histogram and error rate distribution across recent traces. Below, a full-width data table lists traces with columns for trace ID, root service, duration, span count, and status, supporting sort, filter, and time range controls.",
+    "trace-detail": "Full trace waterfall visualization. Each span renders as a horizontal bar proportional to its duration, nested by parent-child relationships. Clicking a span reveals tags, logs, and linked resources in a slide-out panel. Critical path highlighting shows the longest chain of dependent spans.",
+    "service-topology": "Interactive service dependency graph rendered as a force-directed or hierarchical layout. Nodes represent services sized by request volume; edges show call relationships annotated with latency percentiles and error rates. Hovering a node highlights upstream and downstream dependencies."
+  },
+  "features": [
+    "traces",
+    "service-map",
+    "latency-analysis"
+  ],
+  "suggested_theme": {
+    "ids": [
+      "fintech",
+      "carbon",
+      "neon-dark"
+    ],
+    "modes": [
+      "dark"
+    ]
+  },
+  "directives": [
+    "Trace explorer KPIs (the kpi-grid on /traces) MUST show trace-specific metrics — average trace duration, p99 latency, error rate, traces/second. Do NOT reuse the metrics dashboard KPIs (requests/sec, SLO budget). Trace explorer is for investigating individual request paths; its KPIs should reflect trace-level aggregates.",
+    "Trace data-table columns (in order): Trace ID (mono link) · Root span (METHOD /path) · Service (chip) · Duration · Spans · Status (ok|error pill) · Started (timestamp). Status uses d-annotation with data-status=\"error|success\"."
+  ]
+}

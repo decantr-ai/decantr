@@ -1,0 +1,120 @@
+{
+  "$schema": "https://decantr.ai/schemas/blueprint.v1.json",
+  "id": "content-studio",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Content Studio",
+  "description": "Private editorial workspace for managing drafts, writing articles, reviewing published content, and maintaining account settings.",
+  "blueprint_portfolio": {
+    "visibility": "public",
+    "maturity": "supported-contract",
+    "rationale": "Supported registry blueprint that remains useful in All without being promoted as a flagship default.",
+    "artifact": {
+      "status": "candidate",
+      "showcase": "content-studio",
+      "notes": "Showcase-backed candidate; certification requires artifact evidence beyond registry availability."
+    }
+  },
+  "tags": [
+    "content",
+    "editorial",
+    "authoring",
+    "publishing",
+    "workspace",
+    "2026"
+  ],
+  "compose": [
+    "content-author",
+    "auth-flow",
+    "settings"
+  ],
+  "theme": {
+    "mode": "light",
+    "shape": "sharp",
+    "id": "editorial"
+  },
+  "personality": "Focused editorial workspace for writers and editors. The interface should feel quiet, efficient, and typographically disciplined. Writing and publishing tools are present, but the chrome stays secondary to the article work itself. Think editorial CMS rather than noisy analytics dashboard.",
+  "voice": {
+    "tone": "Clear, editorial, and operational.",
+    "cta_verbs": ["Write", "Edit", "Publish", "Review", "Update"],
+    "avoid": ["Submit", "Click here", "Buy now"],
+    "empty_states": "Supportive and work-focused. Empty drafts should encourage the writer to start a new piece, not feel like a blank admin panel.",
+    "errors": "Brief and practical. Explain what failed and what the editor should do next.",
+    "loading": "Quiet table and editor skeletons. No flashy loading motion."
+  },
+  "features": [
+    "editing",
+    "publishing",
+    "auto-save",
+    "markdown",
+    "auth",
+    "dark-mode"
+  ],
+  "routes": {
+    "/login": {
+      "page": "login",
+      "shell": "centered",
+      "archetype": "auth-flow"
+    },
+    "/register": {
+      "page": "register",
+      "shell": "centered",
+      "archetype": "auth-flow"
+    },
+    "/forgot-password": {
+      "page": "forgot-password",
+      "shell": "centered",
+      "archetype": "auth-flow"
+    },
+    "/drafts": {
+      "page": "drafts",
+      "shell": "sidebar-main",
+      "archetype": "content-author"
+    },
+    "/drafts/:id": {
+      "page": "editor",
+      "shell": "sidebar-main",
+      "archetype": "content-author"
+    },
+    "/published": {
+      "page": "published",
+      "shell": "sidebar-main",
+      "archetype": "content-author"
+    },
+    "/settings": {
+      "page": "settings",
+      "shell": "sidebar-main",
+      "archetype": "settings"
+    }
+  },
+  "overrides": {
+    "features_add": ["theme-toggle"],
+    "features_remove": [],
+    "pages": {},
+    "pages_remove": []
+  },
+  "seo_hints": {
+    "schema_org": ["WebApplication"],
+    "meta_priorities": ["description"]
+  },
+  "navigation": {
+    "command_palette": true,
+    "hotkeys": [
+      { "key": "g d", "route": "/drafts", "label": "Go to Drafts" },
+      { "key": "g p", "route": "/published", "label": "Go to Published" },
+      { "key": "g s", "route": "/settings", "label": "Go to Settings" }
+    ]
+  },
+  "dependencies": {
+    "archetypes": {
+      "content-author": ">=1.0.0",
+      "auth-flow": ">=1.0.0",
+      "settings": ">=1.0.0"
+    }
+  },
+  "suggested_themes": [
+    "editorial",
+    "paper",
+    "clean"
+  ]
+}

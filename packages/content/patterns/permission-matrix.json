@@ -1,0 +1,129 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "permission-matrix",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Permission Matrix",
+  "description": "Role-based access control grid showing permissions by role. Used for workspace settings and team management.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Checkbox",
+        "Tooltip",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Checkbox",
+    "Tooltip",
+    "icon"
+  ],
+  "default_preset": "simple",
+  "presets": {
+    "simple": {
+      "description": "Basic viewer/editor/admin permissions",
+      "components": [
+        "Checkbox",
+        "Tooltip",
+        "icon"
+      ],
+      "layout": {
+        "layout": "table",
+        "atoms": "_w[full] _border _r2 _overflow[hidden]",
+        "slots": {
+          "header": "Role names as column headers",
+          "rows": "Permission names as row labels",
+          "cells": "Checkbox for each role×permission"
+        }
+      }
+    },
+    "granular": {
+      "description": "Detailed per-feature permissions with categories",
+      "components": [
+        "Button",
+        "Checkbox",
+        "Tooltip",
+        "icon"
+      ],
+      "layout": {
+        "layout": "table",
+        "atoms": "_w[full]",
+        "slots": {
+          "header": "Role columns",
+          "category-rows": "Permission category headers",
+          "permission-rows": "Individual permissions within categories"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "table",
+    "atoms": "_w[full] _border _r2",
+    "slots": {
+      "roles": "Column headers with role names",
+      "permissions": "Row labels with permission names and descriptions",
+      "cells": "Checkbox/toggle for each role×permission intersection",
+      "add-role": "Button to create custom role"
+    }
+  },
+  "io": {
+    "consumes": [
+      "roles",
+      "permissions",
+      "values"
+    ],
+    "produces": [
+      "permission-change"
+    ],
+    "actions": [
+      "toggle-permission",
+      "add-role",
+      "delete-role",
+      "save",
+      "revert"
+    ]
+  },
+  "visual_brief": "Grid table with role names as column headers and permission categories as row labels. Each cell contains a checkbox or toggle indicating whether that role has that permission. Permission rows are grouped by category (Content, Users, Settings, Billing) with bold category headers. The simple preset shows a reduced set of roles and permissions. The granular preset shows every permission with sub-categories. An 'Add Custom Role' button appears after the last column header. Hovering a permission row shows a description tooltip. Changed but unsaved permissions are highlighted with a subtle accent background.",
+  "responsive": {
+    "mobile": "Matrix transposes — each role becomes a section with permission checkboxes listed vertically. Role selector at top switches between roles. Horizontal scroll alternative for small matrices.",
+    "tablet": "Standard matrix with horizontal scroll if more than 4 roles. Touch-friendly checkbox sizes.",
+    "desktop": "Full matrix grid with all roles and permissions visible. Sticky left column for permission names. Sticky header row for role names."
+  },
+  "layout_hints": {
+    "matrix_priority": "Role headers and permission groupings should make the matrix legible before the user starts toggling controls. Preserve strong row/column orientation cues at all times.",
+    "change_visibility": "Unsaved or changed cells should be noticeable but not visually louder than the permission structure itself.",
+    "mobile_translation": "When the matrix collapses into role-by-role sections, preserve the same permission grouping and naming so users do not lose conceptual continuity."
+  },
+  "motion": {
+    "micro": "Permission toggles may confirm changes with subtle state transitions, and unsaved indicators may fade in gently when cells change.",
+    "transitions": "Role switching or expanding granular categories should preserve orientation rather than redrawing the matrix abruptly."
+  },
+  "interactions": [
+    "click-select",
+    "hover-reveal",
+    "animate-on-mount",
+    "keyboard-navigation"
+  ],
+  "accessibility": {
+    "role": "table",
+    "aria-label": "Permission matrix",
+    "keyboard": [
+      "Keyboard users should be able to move predictably through role headers, permission rows, and toggle cells without losing row/column context."
+    ],
+    "announcements": [
+      "Role, permission name, and checked state should be exposed together so matrix navigation is understandable without relying on visual alignment."
+    ]
+  },
+  "composition": {
+    "PermissionMatrix": "Container(d-section) > [MatrixTable + AddRoleButton?(d-interactive)]",
+    "MatrixTable": "Table(d-data, full-width) > [HeaderRow > RoleHeader[] + CategoryGroup[]]",
+    "CategoryGroup": "Group > [CategoryHeader(d-annotation, font-bold) + PermissionRow[]]",
+    "PermissionRow": "Row(d-data-row) > [PermissionLabel + PermissionCell(d-control) > Checkbox[] + Tooltip?(d-annotation)]"
+  }
+}

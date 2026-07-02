@@ -1,0 +1,87 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "search-hub",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Search Hub",
+  "description": "AI-powered search interface with semantic results, filters, and highlighting. Provides intelligent search across knowledge base content.",
+  "tags": [
+    "search",
+    "ai-search",
+    "semantic",
+    "discovery",
+    "knowledge-base"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "ai search",
+        "semantic search",
+        "search hub",
+        "intelligent search",
+        "knowledge search"
+      ],
+      "secondary": [
+        "full-text search",
+        "search results",
+        "search filters",
+        "algolia",
+        "search page"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 0.8,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "search",
+      "patterns": [
+        {
+          "pattern": "command-palette",
+          "preset": "standard",
+          "as": "search-bar"
+        },
+        {
+          "pattern": "filter-bar",
+          "preset": "standard",
+          "as": "filters"
+        }
+      ],
+      "default_layout": [
+        "command-palette",
+        "filter-bar"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "search": "Full-page search experience. A prominent command palette search bar sits at the top, accepting natural language queries. Below it, a filter bar allows narrowing results by category, date, content type, and tags. The main area displays ranked search results with AI-generated summaries, highlighted matching terms, and relevance scores. A sidebar provides faceted navigation and saved search history."
+  },
+  "features": [
+    "ai-search",
+    "semantic-search",
+    "highlighting"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar with faceted navigation and main content area for search results"
+  },
+  "dependencies": {
+    "patterns": {
+      "command-palette": "^1.0.0",
+      "filter-bar": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "clean"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

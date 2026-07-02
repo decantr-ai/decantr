@@ -1,0 +1,140 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "rent-reminder",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Rent Reminder",
+  "description": "Payment reminder notification with contextual styling for upcoming, due today, and overdue states. Includes one-click payment action.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "icon",
+        "Badge"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "icon",
+    "Badge"
+  ],
+  "default_preset": "upcoming",
+  "presets": {
+    "upcoming": {
+      "description": "Upcoming payment reminder with blue info tint, due date countdown, and a pay-now action button",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _aic _gap4 _p4 _r2 _bgPrimary/10",
+        "slots": {
+          "icon": "Calendar icon",
+          "title": "Reminder headline",
+          "amount": "Amount due",
+          "due-date": "Due date",
+          "action": "Pay now button"
+        }
+      }
+    },
+    "due-today": {
+      "description": "Due-today alert banner with warning tint, prominent amount display, and urgent pay-now action",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _aic _gap4 _p4 _r2 _bgWarning/10",
+        "slots": {
+          "icon": "Alert icon",
+          "title": "Due today message",
+          "amount": "Amount due",
+          "action": "Pay now button"
+        }
+      }
+    },
+    "overdue": {
+      "description": "Overdue payment warning with destructive red tint, late fee breakdown, and days-overdue counter",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _aic _gap4 _p4 _r2 _bgDanger/10",
+        "slots": {
+          "icon": "Warning icon",
+          "title": "Overdue message",
+          "amount": "Amount with late fee",
+          "days-overdue": "Days overdue",
+          "action": "Pay now button"
+        }
+      }
+    },
+    "paid": {
+      "description": "Payment confirmed success banner with green tint, checkmark icon, and payment date receipt",
+      "components": [
+        "icon"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _aic _gap4 _p4 _r2 _bgSuccess/10",
+        "slots": {
+          "icon": "Check icon",
+          "title": "Paid confirmation",
+          "amount": "Amount paid",
+          "date": "Payment date"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "row",
+    "atoms": "_flex _aic _gap4 _p4 _r2",
+    "slots": {
+      "icon": "Status icon",
+      "content": "Message and details",
+      "amount": "Amount",
+      "action": "Action button"
+    }
+  },
+  "visual_brief": "Notification-style card or banner with contextual coloring based on payment state. Upcoming (blue/info tint) shows a calendar icon with 'Rent due in X days', the amount, and a 'Pay Now' button. Due today (yellow/warning tint) shows an alert icon with 'Rent due today', the amount prominently, and an urgent 'Pay Now' button. Overdue (red/destructive tint) shows a warning triangle icon with 'Rent overdue by X days', the amount with late fee breakdown, and a 'Pay Now' button. Paid (green/success tint) shows a checkmark icon with 'Rent paid' and the payment date.",
+  "responsive": {
+    "mobile": "Full-width banner card. Amount text large for visibility. Pay button full-width at the bottom. Details stack vertically.",
+    "tablet": "Standard card width. All elements in a comfortable layout. Pay button inline.",
+    "desktop": "Card or inline banner. All information on one or two lines. Pay button on the right."
+  },
+  "layout_hints": {
+    "urgency_priority": "The current payment state should be instantly legible before the user reads supporting details. Amount and due status must dominate the first scan.",
+    "banner_role": "This pattern is a contextual prompt, not a full financial dashboard. Keep it concise and attach it closely to the payment or tenant context it refers to.",
+    "state_translation": "Upcoming, due, overdue, and paid variants should all preserve the same structural rhythm so the status shift feels semantic rather than like a different component."
+  },
+  "motion": {
+    "micro": "Status tint and CTA may sharpen slightly on hover. Overdue states may carry a restrained emphasis, but the reminder should remain calm and actionable.",
+    "transitions": "State changes from upcoming to due or paid should feel clear and affirmative without becoming alarming or flashy."
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "accessibility": {
+    "role": "status",
+    "aria-label": "Rent reminder",
+    "keyboard": [
+      "If a pay action is present, it should be reachable immediately after the reminder content in reading order."
+    ],
+    "announcements": [
+      "Due state, amount, and payment timing should be announced together so urgency is understandable without relying on color alone."
+    ]
+  },
+  "composition": {
+    "RentReminder": "Card(d-surface, tint: status) > [StatusIcon(color: status) + ReminderContent + PayAction]",
+    "ReminderContent": "Stack(flex-col) > [Title(font-medium) + DueDate(d-annotation, mono-data) + Amount(heading3, mono-data) + Property?(text-muted)]",
+    "PayAction": "Button(d-interactive, variant: status === overdue ? destructive : primary)"
+  }
+}

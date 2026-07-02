@@ -1,0 +1,101 @@
+{
+  "id": "stem-stack",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Stem Stack",
+  "description": "Multi-stem audio mixer with per-stem channel strips, faders, pan knobs, meters, plugin slots, and master chain for DAW-style mixing.",
+  "category": "music",
+  "tags": ["2026", "music", "mixer", "stems", "channels", "faders", "daw"],
+  "components": ["StemChannel", "ChannelFader", "PanKnob", "MuteSoloButton", "MeterBar", "PluginSlot"],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full mixer with per-stem plugin slots, pan knobs, mute/solo, faders, meters, and master channel on right for complete mixing control",
+      "layout": {
+        "layout": "flex",
+        "atoms": "_flex _flex-row _gap-2 _p-4 _w-full _bg-surface _min-h-[480px]"
+      }
+    },
+    "compact": {
+      "description": "Track-only view without plugin slots showing just the essential fader, pan, and mute controls for quick balance adjustments",
+      "layout": {
+        "layout": "flex",
+        "atoms": "_flex _flex-row _gap-2 _p-4 _w-full _bg-surface _min-h-[320px]"
+      }
+    },
+    "expanded": {
+      "description": "Extended view with expanded plugin chains and send controls for deep mixing sessions and mastering workflows",
+      "layout": {
+        "layout": "flex",
+        "atoms": "_flex _flex-row _gap-2 _p-4 _w-full _bg-surface _min-h-[640px]"
+      }
+    }
+  },
+  "visual_brief": "Vertical channel strips arranged side-by-side in a horizontal row. Each channel strip is approximately 80px wide and 480px tall (standard preset). From top to bottom each strip contains: 3-4 plugin slots as stacked small rectangles (72x24px) with plugin name text, a circular pan knob (40px diameter) with rotation indicator line and pan label, a row with mute and solo buttons (24px each, M/S labeled), a tall vertical fader (dominating center of strip, approximately 240px tall) with draggable knob cap and dB scale markings on one side, stereo level meter bars (2px wide each, flanking the fader on both sides) with color-graded peaks (green <-6dB, yellow -6 to -3dB, red >-3dB) and a peak-hold dot, and a stem name label at the bottom in 11px text with optional color-coding. The master channel on the far right is visually distinct (slight border highlight, primary-color accent) and has fewer plugin slots, emphasizing the master fader and meters. Hovering the fader cap shows a dB value tooltip. Meters update in real-time with audio levels.",
+  "default_layout": {
+    "layout": "flex",
+    "atoms": "_flex _flex-row _gap-2 _p-4 _w-full _bg-surface _min-h-[480px]",
+    "slots": {
+      "stem-channel": "Repeating vertical channel strip (d-surface, 80px wide) containing all controls for one stem. Dark background with subtle border separators.",
+      "plugin-slots": "Stack of 3-4 plugin slot rectangles at top of strip. Each shows plugin name, bypass toggle, and edit-on-click affordance. Empty slots show + indicator.",
+      "pan-knob": "Circular rotary knob (40px diameter) with rotation indicator showing pan position. Center detent, -100 to +100 range. Drag up/down or scroll to adjust.",
+      "mute-solo-button": "Small button row (M and S buttons, 24px each). Mute = yellow active, Solo = blue active. Mutually visible.",
+      "channel-fader": "Vertical slider fader (240px tall) with large draggable cap and dB scale on side. 0dB unity mark highlighted. Drag vertically to adjust.",
+      "meter-bar": "Stereo level meter bars (2px wide each) flanking the fader. Color-graded amplitude with peak-hold dots. Updates in real-time.",
+      "stem-label": "Stem name at bottom of strip (11px text). Optional color coding for stem grouping.",
+      "master-channel": "Distinct master channel at far right with primary accent, fewer plugin slots, and emphasized master fader."
+    }
+  },
+  "responsive": {
+    "mobile": "Channel strips scroll horizontally. Plugin slots reduce to 2. Pan knob becomes slider. Meters simplify to single bar.",
+    "tablet": "Channel strips at 72px wide. Full controls maintained. Horizontal scroll for many stems.",
+    "desktop": "Full 80px strips with all controls visible, hover tooltips, and keyboard automation."
+  },
+  "motion": {
+    "micro": {
+      "fader-drag": "cap follows pointer 60fps with real-time dB text update",
+      "knob-drag": "rotation follows pointer delta 60fps with value readout"
+    },
+    "transitions": {
+      "plugin-add": "slot scale-in + fade 200ms spring",
+      "solo-mode": "non-soloed channels fade to 40% opacity 150ms ease-out"
+    },
+    "ambient": {
+      "meter-levels": "amplitude bars animate in real-time from audio signal",
+      "peak-hold": "peak dot holds for 1.5s then decays"
+    }
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "composition": {
+    "StemStack": "Root(d-section, flex-row) > [StemChannel* + MasterChannel(d-surface, emphasized)]",
+    "StemChannel": "Strip(d-surface, vertical) > [PluginSlot* + PanKnob + MuteSoloButton + FaderWithMeters + StemLabel]",
+    "FaderWithMeters": "Container(relative) > [MeterBar(left) + ChannelFader(center) + MeterBar(right)]",
+    "PluginSlots": "Stack > PluginSlot*(d-interactive, empty|filled)"
+  },
+  "layout_hints": {
+    "channel_priority": "Each strip should read top-to-bottom as one coherent signal path so plugin, pan, mute/solo, fader, and metering feel structurally connected.",
+    "master_emphasis": "The master channel should stand out as the session summary without visually drowning out the individual stem strips.",
+    "scroll_behavior": "When the mixer overflows horizontally, channel width and meter readability should hold steady rather than collapsing into unreadable narrow strips."
+  },
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Multi-stem audio mixer",
+    "announcements": [
+      "{channel} fader set to {value} dB",
+      "{channel} pan set to {value}",
+      "{channel} {muted|soloed}",
+      "Plugin {name} added to {channel}"
+    ],
+    "keyboard": [
+      "Tab: cycle through channels",
+      "Arrow keys: adjust focused fader/knob",
+      "Shift+Arrow: fine adjustment",
+      "M: mute focused channel",
+      "S: solo focused channel",
+      "0: reset fader to 0dB"
+    ]
+  }
+}

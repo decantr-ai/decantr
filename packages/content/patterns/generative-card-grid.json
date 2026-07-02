@@ -1,0 +1,130 @@
+{
+  "id": "generative-card-grid",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Generative Card Grid",
+  "description": "A grid of cards where each card shows a procedurally generated preview of what an AI would build from a given prompt. Cards display live micro-renders, placeholder sketches, or wireframe thumbnails that materialize from skeleton states. The grid itself is generative: card sizes, positions, and visual weights adapt to content relevance and user interaction history. For AI generation galleries, prompt exploration interfaces, template browsers, and any context where users browse and compare multiple AI outputs.",
+  "category": "generative",
+  "tags": [
+    "2026",
+    "generative",
+    "cards",
+    "grid",
+    "AI",
+    "gallery",
+    "preview",
+    "masonry",
+    "prompt"
+  ],
+  "components": [
+    "PreviewCard",
+    "GenerationBadge",
+    "PromptTag",
+    "ActionBar",
+    "SkeletonPreview",
+    "RegenerateButton"
+  ],
+  "default_preset": "masonry",
+  "presets": {
+    "masonry": {
+      "description": "Variable-height masonry grid using CSS columns or grid with masonry alignment. Cards size to their content preview height. Optimal for browsing diverse generation outputs where previews have different aspect ratios. Gap between cards is consistent. New cards append with fade-in animation.",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap4 _p4"
+      }
+    },
+    "uniform": {
+      "description": "Fixed-size card grid using auto-fill with minmax(280px, 1fr). All cards same height with preview area cropped to fit. Clean and predictable. Good for structured browsing when previews have similar content types.",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap4 _p4"
+      }
+    },
+    "featured": {
+      "description": "Mixed grid where one card is expanded to 2x2 size (the featured or highest-confidence result) while others remain standard. Featured card shows larger preview with more detail. Grid rearranges when a different card is featured. Good for highlighting the best AI output.",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap4 _p4"
+      }
+    },
+    "list": {
+      "description": "Vertical list layout. Each card is a horizontal row: preview thumbnail on the left, prompt and metadata on the right, action bar at the far right. Compact and scannable. Good for comparing many generations by prompt text.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap3 _p4"
+      }
+    }
+  },
+  "visual_brief": "Responsive auto-fill card grid (minmax 280px). Each card shows a generated preview thumbnail, a generation badge overlay (top-right), a truncated prompt label below, and a hover-reveal action bar. Cards shimmer from skeleton to final preview. Masonry or uniform sizing depending on preset.",
+  "layout_hints": {
+    "filtering": "If filter tabs or category pills are shown, they MUST be functional. Clicking a tab/pill filters the grid. Use React state to filter. Non-functional filter UI is worse than no filters.",
+    "empty_state": "When filters produce 0 results, show an empty state: centered icon (48px, muted) + descriptive message + 'Clear filters' action.",
+    "grid": "Use CSS grid with auto-fill: grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)). Cards should be equal height within each row."
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gap4 _p4",
+    "slots": {
+      "grid-container": "The grid parent that holds all preview cards. Supports auto-fill columns with responsive minmax sizing. In masonry preset, uses CSS columns or masonry grid alignment. Container handles empty state (no generations yet) with a centered prompt-to-start message. Supports infinite scroll or paginated loading.",
+      "preview-card": "Individual PreviewCard containing a generated preview. Card lifecycle: SkeletonPreview (loading) → generation animation (materializing) → final preview (interactive). Preview area shows a miniature render of the AI output: could be a wireframe, screenshot thumbnail, or abstract representation. Card has a subtle border, rounded corners, and lift shadow on hover.",
+      "generation-overlay": "GenerationBadge overlay on each card showing generation metadata: model used, generation time, confidence score, or iteration number. Positioned as a small pill in the card's top-right corner. Semi-transparent background to not obscure the preview. Shows 'Generating...' with a spinner animation during active generation.",
+      "prompt-label": "PromptTag showing the input prompt or description that produced this generation. Truncated to 2 lines with full text in a tooltip. Displayed below the preview area. Supports click-to-copy for prompt reuse. If the card represents a variation, shows the delta from the original prompt.",
+      "action-bar": "ActionBar with card-level actions: RegenerateButton (re-run this prompt), favorite/bookmark, expand to full view, copy output, delete, and share. Appears on card hover or focus. In list preset, always visible. Actions are icon-only with tooltips, except RegenerateButton which has a label.",
+      "skeleton-state": "SkeletonPreview rendered while the generation is in progress. Shows animated placeholder shapes that hint at the expected output structure: header bars, content blocks, image placeholders. Skeleton uses shimmer animation (background gradient translateX). Transitions to the real preview with a reveal animation (clip-path or opacity)."
+    }
+  },
+  "accessibility": {
+    "role": "feed",
+    "aria_label": "AI generation gallery",
+    "announcements": [
+      "Announce new generation completion: 'Generation complete: [prompt summary]'",
+      "Announce when entering skeleton/loading state: 'Generating preview for: [prompt]'",
+      "Announce grid layout changes: 'Switched to [preset] view'",
+      "Announce featured card change: '[prompt] featured'"
+    ],
+    "keyboard": [
+      "Tab navigates between cards in grid order",
+      "Arrow keys navigate between cards in 2D grid (Left/Right within row, Up/Down between rows)",
+      "Enter expands the focused card to full view",
+      "R key triggers regeneration for the focused card",
+      "F key toggles the focused card as featured",
+      "V key cycles between grid presets (masonry, uniform, featured, list)",
+      "Escape closes expanded view and returns focus to the card"
+    ],
+    "reduce_motion": "Skeleton shimmer animation replaced with static gray placeholder. Card appearance transitions are instant (no fade-in). Grid rearrangement on featured change is immediate. Generation overlay spinner replaced with static 'Generating...' text."
+  },
+  "responsive": {
+    "mobile": "Single column layout regardless of preset. Cards full-width. Preview area maintains 16:9 aspect ratio. ActionBar always visible (no hover state on touch). Skeleton state simplified to a single pulsing block. Maximum 10 cards before 'Load more' button.",
+    "tablet": "Two-column grid for uniform and masonry presets. Featured preset uses 2-column with featured card spanning full width at top. List preset unchanged. Touch targets for ActionBar buttons are 44px minimum."
+  },
+  "motion": {
+    "micro": {
+      "card-hover": "translateY(-4px) + shadow-lg 200ms ease-out",
+      "card-press": "scale(0.98) 100ms ease-out"
+    },
+    "transitions": {
+      "card-enter": "fade-up + scale(0.95→1) 300ms ease-out, stagger 50ms per card",
+      "grid-reflow": "position + size lerp 400ms ease-in-out",
+      "card-remove": "scale(1→0.9) + fade-out 200ms ease-in"
+    },
+    "ambient": {
+      "shimmer-loading": "gradient-sweep left-to-right 1.5s ease-in-out infinite on skeleton"
+    }
+  },
+  "interactions": [
+    "lift-hover",
+    "click-select",
+    "animate-on-mount",
+    "stagger-children",
+    "glow-hover",
+    "live-simulation"
+  ],
+  "composition": {
+    "GenerativeCardGrid": "Grid(d-section, auto-fill, responsive) > [PreviewCard[] + EmptyState?]",
+    "PreviewCard": "Card(d-surface, hoverable, lift-on-hover) > [SkeletonPreview | Preview + GenerationBadge(d-annotation, top-right) + PromptTag(d-data, line-clamp-2) + ActionBar]",
+    "SkeletonPreview": "Placeholder(shimmer, animated)",
+    "GenerationBadge": "Badge(d-annotation, semi-transparent) > [ModelName + GenerationTime + ConfidenceScore?]",
+    "ActionBar": "Row(d-interactive, show-on-hover) > [RegenerateButton(labeled) + FavoriteButton + ExpandButton + CopyButton + DeleteButton]"
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "recipe-browser",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipe Browser",
+  "description": "Browse and search recipes with filterable card grid and rich recipe detail pages with step-by-step instructions.",
+  "tags": ["recipes", "browse", "search", "food", "cooking", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["recipe browser", "browse recipes", "recipe search", "recipe catalog", "recipe listing"],
+      "secondary": ["food search", "recipe grid", "recipe detail", "cooking instructions"],
+      "negative": ["dashboard", "admin", "analytics"]
+    },
+    "implies": ["cook-mode", "recipe-creator"],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "recipes",
+      "patterns": [
+        {
+          "pattern": "search-filter-bar",
+          "preset": "standard",
+          "as": "recipe-search"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "content",
+          "as": "recipe-grid"
+        }
+      ],
+      "default_layout": ["recipe-search", "recipe-grid"],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "recipe-detail",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "image-overlay",
+          "as": "recipe-hero"
+        },
+        {
+          "pattern": "detail-header",
+          "preset": "standard",
+          "as": "recipe-header"
+        },
+        {
+          "pattern": "stepper",
+          "preset": "vertical",
+          "as": "recipe-steps"
+        }
+      ],
+      "default_layout": ["recipe-hero", "recipe-header", "recipe-steps"],
+      "shell": "top-nav-main"
+    }
+  ],
+  "page_briefs": {
+    "recipes": "Recipe browsing page with search and filter bar at top (cuisine, dietary, difficulty, time). Below, a content card grid where each card is a gorgeous food photo with overlaid title, cook time, and difficulty badge. Filterable and sortable.",
+    "recipe-detail": "Hero image overlay with recipe title and key stats (servings, time, difficulty). Detail header with ingredient list, nutritional info, and creator attribution. Vertical stepper for step-by-step instructions with photos per step. Cook-mode CTA button to enter distraction-free cooking."
+  },
+  "features": ["search", "filter", "gallery", "sharing"],
+  "shells": {
+    "top-nav-main": "Fixed top navigation bar with main content area below"
+  },
+  "dependencies": {
+    "patterns": {
+      "search-filter-bar": ">=1.0.0",
+      "card-grid": ">=1.0.0",
+      "hero": ">=1.0.0",
+      "detail-header": ">=1.0.0",
+      "stepper": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": ["auradecantism"],
+    "modes": ["light", "dark"]
+  }
+}

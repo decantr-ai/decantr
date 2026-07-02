@@ -1,0 +1,74 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "restaurant-floor",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Restaurant Floor",
+  "description": "Live floor map and reservations workspace for front-of-house staff. Real-time table status, reservation calendar, and guest seating.",
+  "tags": ["restaurant", "floor", "reservations", "seating", "hospitality", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["floor map", "table management", "restaurant floor", "seating chart", "reservations"],
+      "secondary": ["host stand", "walk-ins", "table status", "guest seating"],
+      "negative": ["kitchen", "inventory", "marketing"]
+    },
+    "implies": ["floor-map", "reservations"],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "floor",
+      "patterns": [
+        { "pattern": "table-map", "preset": "floor", "as": "floor-map" },
+        { "pattern": "activity-feed", "preset": "compact", "as": "floor-activity" },
+        { "pattern": "kpi-grid", "preset": "compact", "as": "floor-kpis" }
+      ],
+      "default_layout": ["floor-kpis", "floor-map", "floor-activity"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "reservations",
+      "patterns": [
+        { "pattern": "calendar-view", "preset": "day", "as": "reservation-calendar" },
+        { "pattern": "data-table", "preset": "standard", "as": "reservation-list" }
+      ],
+      "default_layout": ["reservation-calendar", "reservation-list"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "new-reservation",
+      "patterns": [
+        { "pattern": "form-sections", "preset": "standard", "as": "reservation-form" },
+        { "pattern": "table-map", "preset": "floor", "as": "table-picker" }
+      ],
+      "default_layout": ["reservation-form", "table-picker"],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "floor": "Live floor map showing tables color-coded by status (open, seated, ordering, paying, dirty). Compact KPI strip at top with covers, turn-time, and wait list size. Right rail activity feed shows real-time seatings, checks closed, and guest arrivals.",
+    "reservations": "Day calendar view with timeline slots and party bubbles representing each reservation. Below, a sortable data table listing reservations with guest name, party size, time, table, phone, and status (confirmed, arrived, seated, no-show).",
+    "new-reservation": "Form sections for guest details (name, phone, email, party size, date, time, special requests) alongside an interactive table map to assign the reservation to a specific table. Submit creates a confirmed booking."
+  },
+  "features": ["floor-map", "reservations", "walk-ins"],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area for floor operations"
+  },
+  "suggested_theme": {
+    "ids": ["clean", "auradecantism"],
+    "modes": ["light", "auto"]
+  },
+  "dependencies": {
+    "patterns": {
+      "table-map": ">=1.0.0",
+      "activity-feed": ">=1.0.0",
+      "kpi-grid": ">=1.0.0",
+      "calendar-view": ">=1.0.0",
+      "data-table": ">=1.0.0",
+      "form-sections": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

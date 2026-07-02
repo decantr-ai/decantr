@@ -1,0 +1,69 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "tech-pills",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Tech Pills",
+  "description": "Row of technology or integration pill badges showing compatibility and supported platforms. Each pill is a rounded badge with the technology name, displayed in a centered flex-wrap row. Used for 'works with' sections to communicate broad technology compatibility. Supports standard uniform styling or individually colored brand pills.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Badge"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Badge"
+  ],
+  "contained": false,
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Centered row of pill badges with uniform styling. Each pill has a rounded shape (border-radius: 20px), medium padding, semi-bold text, and a subtle hover lift. All pills use a consistent muted background with light text. Wrapped in a flex container with center justification and 12px gap. Max-width constrained to ~700px.",
+      "components": [
+        "Badge"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _flexwrap _justify[center] _gap3 _mw[700px] _mx[auto]",
+        "slots": {
+          "pill-items": "Array of Badge pills, each with _rounded[20px] _py2 _px5 _fs[0.85rem] _fw600 _transition _hover:translateY[-2px]. Background: _bgwhite/10. Text: _fgwhite/80. Each pill contains a technology name (e.g., 'React', 'Next.js', 'Claude', 'Cursor')."
+        }
+      }
+    },
+    "colored": {
+      "description": "Each pill gets a unique brand color from a rotating palette. Background is the accent color at ~15% opacity, text uses the full accent color. Colors rotate through coral, amber, cyan, green, yellow, purple, pink, orange. Same layout and sizing as standard, but with per-pill color variation for visual interest.",
+      "components": [
+        "Badge"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _flexwrap _justify[center] _gap3 _mw[700px] _mx[auto]",
+        "slots": {
+          "pill-items": "Array of Badge pills with individual colors. Each pill: _rounded[20px] _py2 _px5 _fs[0.85rem] _fw600 _transition _hover:translateY[-2px]. Background uses the pill's accent color at 15% opacity (e.g., rgba(245,136,130,0.15)). Text uses the full accent color (e.g., #F58882). Colors rotate: coral, amber, cyan, green, yellow, purple, pink, orange."
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "row",
+    "atoms": "_flex _flexwrap _justify[center] _gap3 _mw[700px] _mx[auto]",
+    "slots": {
+      "pill-items": "Technology compatibility pill badges in a centered row"
+    }
+  },
+  "io": {
+    "consumes": [],
+    "produces": [],
+    "actions": []
+  },
+  "visual_brief": "Centered flex-wrap row of rounded pill badges, each displaying a technology or integration name (e.g., 'React', 'Vue', 'Next.js', 'Tailwind', 'Figma'). Standard preset shows uniform styling — each pill has a muted border, surface background, and small text in consistent color. The colored preset gives each pill a unique brand-colored background or border (React blue, Vue green, etc.) with white or dark text for contrast. Pills have consistent padding and slight letter spacing. The row wraps naturally, creating an organic layout of technology compatibility indicators.",
+  "responsive": {
+    "mobile": "Pills wrap across multiple lines. Sizing remains consistent. Narrower horizontal padding if needed.",
+    "tablet": "Pills in a comfortable centered row, wrapping as needed.",
+    "desktop": "Single or two row display depending on count. Generous spacing between pills."
+  }
+}

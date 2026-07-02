@@ -1,0 +1,102 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "stats-detail",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Stats Detail",
+  "description": "Detailed statistical breakdown panel showing confidence distributions, percentile bars, metric comparisons, and drill-down tables for quantitative analysis.",
+  "category": "data",
+  "tags": [
+    "statistics",
+    "analytics",
+    "metrics",
+    "data-visualization",
+    "transparency"
+  ],
+  "components": [
+    "Card",
+    "ProgressBar",
+    "Badge",
+    "Text",
+    "Icon",
+    "Tooltip"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full statistical breakdown with distribution chart, percentile bars, and comparison table — suitable as a primary analysis view or dashboard panel",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6 _py4"
+      }
+    },
+    "compact": {
+      "description": "Condensed stats for sidebar or card placement — key percentiles and a mini distribution bar only, no table",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap3 _py2"
+      }
+    },
+    "comparison": {
+      "description": "Side-by-side metric comparison layout — two or more metric groups displayed in columns with delta indicators",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc2 _gap6 _py4"
+      }
+    }
+  },
+  "visual_brief": "A structured statistics panel with a header showing the primary metric in large text (text-2xl, font-bold) alongside a trend indicator badge (d-annotation with data-status). Below, a horizontal distribution chart renders as a segmented bar with labeled breakpoints. Percentile rows display as labeled progress bars (0-100%) with the current value marked by a small indicator. A comparison table uses d-data styling with alternating muted rows, showing metric name, value, delta, and a mini sparkline. All numeric values use tabular-nums for alignment. Section headings use d-label styling with accent left-border.",
+  "layout_hints": {
+    "numbers": "All numeric values must use font-variant-numeric: tabular-nums (or the mono-data class) for proper columnar alignment.",
+    "distribution_bar": "The distribution chart is a single horizontal bar divided into colored segments. Each segment width is proportional to its percentage. Labels sit below each segment. Total bar height: 24-32px.",
+    "percentile_bars": "Percentile indicators are horizontal bars with a filled portion up to the percentile value. Use CSS gradient or width percentage. Mark P50 and P95 with small tick marks.",
+    "comparison_deltas": "Delta values show +/- change with color coding: positive = success, negative = error, neutral = text-muted."
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap6 _py4",
+    "slots": {
+      "header": "Primary metric display with large value, label, and trend badge (d-annotation). Optional subtitle with time range or scope description.",
+      "distribution": "Horizontal segmented bar chart showing value distribution across categories or buckets. Each segment is color-coded and labeled with percentage and count. A legend below maps colors to category names.",
+      "percentiles": "Vertical stack of labeled percentile bars. Each row: label (P50, P90, P95, P99), progress bar filled to percentile value, and numeric value right-aligned. Key percentiles (P50, P95) are visually emphasized with bolder treatment.",
+      "comparison-table": "Data table (d-data) with columns: Metric, Current Value, Previous Value, Delta (%), Trend. Delta column uses color-coded badges. Rows are sortable. Footer shows aggregate or average row.",
+      "breakdown-cards": "Optional grid of small metric cards showing detailed sub-metrics. Each card: icon, label, value, and mini sparkline or trend arrow."
+    }
+  },
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Statistical details",
+    "keyboard": [
+      "Tab navigates between metric sections",
+      "Arrow keys navigate table rows",
+      "Enter expands detail for selected metric"
+    ],
+    "announcements": [
+      "Distribution updated: {category} is {percentage}%",
+      "Metric {name} changed by {delta}",
+      "Sorted by {column} {direction}"
+    ],
+    "focus_management": "Focus moves to first interactive element in each section on tab"
+  },
+  "responsive": {
+    "mobile": "Distribution bar stacks vertically as a list of labeled bars. Comparison table scrolls horizontally. Percentile bars remain horizontal but reduce padding. Header metric stacks label above value.",
+    "tablet": "Standard layout maintained. Comparison table fits without scrolling for up to 5 columns. Grid cards use 2-column layout.",
+    "desktop": "Full layout with side-by-side sections possible. Comparison table shows all columns. Breakdown cards use 3-4 column grid."
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "composition": {
+    "StatsDetail": "Container(d-section, flex-col, gap-6) > [Header + Distribution + Percentiles + ComparisonTable + BreakdownCards?]",
+    "Header": "Row(flex, justify-between, align-baseline) > [MetricValue(text-2xl, font-bold) + TrendBadge(d-annotation)]",
+    "Distribution": "Card(d-surface) > [Label(d-label) + SegmentedBar(flex, rounded) + Legend(flex, gap-4, text-sm)]",
+    "Percentiles": "Card(d-surface) > [Label(d-label) + PercentileRow(flex, align-center, gap-3)[]]",
+    "ComparisonTable": "Table(d-data) > [Header(d-data-header) + Row(d-data-row, d-data-cell)[]]",
+    "BreakdownCards": "Grid(gc2, lg:gc4, gap-4) > Card(d-surface, compact)[]"
+  },
+  "io": {
+    "consumes": ["metrics-data", "distribution-data", "comparison-data"],
+    "produces": ["selected-metric", "sort-order"],
+    "actions": ["sort", "filter", "drill-down", "export"]
+  }
+}

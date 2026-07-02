@@ -1,0 +1,101 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "recipefork-landing",
+  "role": "public",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipefork Landing",
+  "description": "Recipefork's public landing page under the shared product nav, combining hero marketing, featured recipes, community proof, and conversion calls without switching to a separate shell.",
+  "tags": [
+    "recipes",
+    "landing",
+    "marketing",
+    "public",
+    "2026"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "recipefork home page",
+        "recipe landing under app nav",
+        "shared-shell landing page"
+      ],
+      "secondary": [
+        "food product landing",
+        "recipe marketing home"
+      ],
+      "negative": [
+        "admin",
+        "analytics"
+      ]
+    },
+    "implies": [
+      "marketing",
+      "seo"
+    ],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "landing",
+          "as": "landing-hero"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "content",
+          "as": "featured-recipes"
+        },
+        {
+          "pattern": "testimonials",
+          "preset": "standard",
+          "as": "community-quotes"
+        },
+        {
+          "pattern": "cta-section",
+          "preset": "standard",
+          "as": "join-cta"
+        }
+      ],
+      "default_layout": [
+        "landing-hero",
+        "featured-recipes",
+        "community-quotes",
+        "join-cta"
+      ],
+      "shell": "recipefork-top-nav"
+    }
+  ],
+  "page_briefs": {
+    "home": "Recipefork's public front door rendered inside the same sticky top-nav shell used by the rest of the product. It should still feel like a landing page, but not like a disconnected marketing microsite."
+  },
+  "features": [
+    "marketing",
+    "seo"
+  ],
+  "dependencies": {
+    "patterns": {
+      "hero": ">=1.0.0",
+      "card-grid": ">=1.0.0",
+      "testimonials": ">=1.0.0",
+      "cta-section": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "recipefork"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ],
+    "shapes": [
+      "rounded"
+    ]
+  }
+}

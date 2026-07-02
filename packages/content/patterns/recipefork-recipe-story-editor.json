@@ -1,0 +1,51 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "recipefork-recipe-story-editor",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipefork Recipe Story Editor",
+  "description": "Expandable optional rich-text story editor for recipe narratives, family context, and cooking notes. Mirrors Recipefork's optional story flow with toolbar and sanitization-aware output expectations.",
+  "dependencies": {
+    "patterns": {
+      "doc-editor": "^1.0.0"
+    },
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Badge",
+        "Card",
+        "Textarea",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Badge",
+    "Card",
+    "Textarea",
+    "icon"
+  ],
+  "default_preset": "expandable",
+  "presets": {
+    "expandable": {
+      "description": "Collapsed optional section that expands into a lightweight rich-text editor with formatting toolbar.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap3",
+        "slots": {
+          "header": "Toggleable section header",
+          "toolbar": "Bold, italic, heading, list, ordered list, link actions",
+          "editor": "Rich text area",
+          "meta": "Character count and helper copy"
+        }
+      }
+    }
+  },
+  "visual_brief": "A dashed-border card with an optional badge and a collapsible header labeled as the recipe story. When expanded, it reveals a compact formatting toolbar and a narrative editing surface for recipe origin stories, memories, and serving notes.",
+  "composition": {
+    "RecipeStoryEditor": "Card(recipefork-editor) > [Header(toggle) + Toolbar? + EditorArea + MetaRow]"
+  }
+}

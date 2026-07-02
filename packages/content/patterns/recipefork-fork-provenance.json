@@ -1,0 +1,50 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "recipefork-fork-provenance",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipefork Fork Provenance",
+  "description": "Lineage-aware provenance block for Recipefork recipes showing the immediate parent and root original publicly, while reserving branch stats, history, and descendant activity for owner-facing contexts.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Card",
+        "Avatar",
+        "Button",
+        "Badge",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Card",
+    "Avatar",
+    "Button",
+    "Badge",
+    "icon"
+  ],
+  "default_preset": "lineage-card",
+  "presets": {
+    "lineage-card": {
+      "description": "Inline provenance card that keeps the direct parent visible and exposes the root original when different for all viewers. Branch metrics, history stacks, and descendant timelines are owner-facing expansions rather than public browsing defaults.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap3",
+        "slots": {
+          "immediate-parent": "Primary attribution row for the recipe version directly forked",
+          "root-original": "Secondary attribution row for the original source recipe when it differs from the parent",
+          "branch-stats": "Owner-facing metrics for direct forks, branch variations, and contributors",
+          "fork-history": "Owner-facing accordion list of ancestor recipes in order with links and timestamps",
+          "branch-timeline": "Owner-facing descendant activity list of published branch variations with depth, author, and creation time"
+        }
+      }
+    }
+  },
+  "visual_brief": "A provenance surface that feels native to Recipefork rather than bolted on. Public viewers should get clear creator credit, while owners can expand into richer branch analytics and network history without exposing internal branch management data to everyone.",
+  "composition": {
+    "RecipeforkForkProvenance": "Card(recipefork-provenance) > [ImmediateParent + RootOriginal? + BranchStats + ForkHistoryAccordion? + BranchTimeline?]"
+  }
+}

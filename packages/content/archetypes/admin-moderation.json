@@ -1,0 +1,87 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "admin-moderation",
+  "role": "auxiliary",
+  "version": "1.0.1",
+  "decantr_compat": ">=2.0.0",
+  "name": "Admin Moderation",
+  "description": "Admin moderation queue for reviewing, approving, and rejecting community-submitted registry content.",
+  "tags": [
+    "admin",
+    "moderation",
+    "review",
+    "queue",
+    "approval"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "moderation",
+        "admin-queue",
+        "content-review",
+        "approval"
+      ],
+      "secondary": [
+        "reject",
+        "approve",
+        "flagged",
+        "pending"
+      ],
+      "negative": []
+    },
+    "implies": [
+      "auth"
+    ],
+    "weight": 0.7,
+    "tier": "optional"
+  },
+  "pages": [
+    {
+      "id": "moderation-queue",
+      "path": "/admin/moderation",
+      "default_layout": [
+        "search-filter-bar",
+        "moderation-queue-item"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "moderation-detail",
+      "path": "/admin/moderation/[id]",
+      "default_layout": [
+        "content-detail-hero",
+        "json-viewer",
+        "moderation-queue-item"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "moderation-queue": "Dense but readable admin list view with a responsive search/filter header. Queue items should wrap naturally and keep decision actions accessible without forcing everything into one horizontal strip. Admin access, navigation visibility, and queue actions should all agree with one shared admin capability source instead of scattered page-level checks.",
+    "moderation-detail": "Detail layout with content hero, artifact viewer, and moderation actions. Two-column when space allows, single-column below tablet widths. Action bars and metadata should stay compact but never cramped. Admin shell state should match the same identity and capability model used by the broader authenticated workspace."
+  },
+  "features": [
+    "auth",
+    "admin"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "search-filter-bar": "^1.0.0",
+      "moderation-queue-item": "^1.0.0",
+      "content-detail-hero": "^1.0.0",
+      "json-viewer": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "luminarum"
+    ],
+    "modes": [
+      "dark"
+    ]
+  }
+}

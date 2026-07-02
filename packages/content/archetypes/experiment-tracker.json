@@ -1,0 +1,83 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "experiment-tracker",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Experiment Tracker",
+  "description": "Experiment lifecycle management for a research lab. Researchers track planned, in-progress, and completed experiments with protocols and timelines.",
+  "tags": [
+    "experiments",
+    "research",
+    "lab",
+    "protocols",
+    "tracking"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "experiment tracker",
+        "experiment management",
+        "lab experiments"
+      ],
+      "secondary": [
+        "experiments",
+        "protocols",
+        "trials"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "experiments",
+      "path": "/experiments",
+      "patterns": [
+        { "pattern": "kanban-board", "preset": "standard", "as": "board" },
+        { "pattern": "data-table", "preset": "standard", "as": "list" }
+      ],
+      "default_layout": ["kanban-board", "data-table"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "experiment-detail",
+      "path": "/experiments/:id",
+      "patterns": [
+        { "pattern": "detail-header", "preset": "standard", "as": "header" },
+        { "pattern": "protocol-step", "preset": "standard", "as": "protocol" },
+        { "pattern": "timeline", "preset": "standard", "as": "history" }
+      ],
+      "default_layout": ["detail-header", "protocol-step", "timeline"],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "experiments": "Experiment workspace with dual views. Standard kanban board across the top swimlanes experiments by status (planned, running, analyzing, complete) with researcher-assigned cards. Standard data table below provides sortable, filterable rows for every experiment with ID, PI, start date, protocol, and status.",
+    "experiment-detail": "Single experiment record. Standard detail header shows experiment title, status chip, researcher, and primary actions. Standard protocol step panel lists each procedure step with reagents, durations, and status. Standard timeline threads amendments, runs, and result milestones."
+  },
+  "features": [
+    "experiments",
+    "protocols",
+    "tracking"
+  ],
+  "shells": {
+    "sidebar-main": "Authenticated app shell with sidebar navigation and main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "kanban-board": "^1.0.0",
+      "data-table": "^1.0.0",
+      "detail-header": "^1.0.0",
+      "protocol-step": "^1.0.0",
+      "timeline": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": ["swiss"],
+    "modes": ["light", "dark"]
+  }
+}

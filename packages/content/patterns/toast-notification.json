@@ -1,0 +1,123 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "toast-notification",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Toast Notification",
+  "description": "Transient notification toast with auto-dismiss timer, severity-colored stripe, stacking behavior, and optional action buttons. Slides in from top-right and auto-removes after a configurable duration with a shrinking progress bar.",
+  "category": "system",
+  "tags": [
+    "2026",
+    "system",
+    "notification",
+    "toast",
+    "alert",
+    "feedback",
+    "transient"
+  ],
+  "components": [
+    "ToastContainer",
+    "Toast",
+    "ToastIcon",
+    "ToastTitle",
+    "ToastDescription",
+    "ToastAction",
+    "DismissButton",
+    "ProgressBar"
+  ],
+  "default_preset": "info",
+  "presets": {
+    "info": {
+      "description": "Informational toast with blue left stripe, info circle icon, and neutral styling for general messages",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_fixed _top4 _right4 _z[200] _flex _col _gap2"
+      }
+    },
+    "success": {
+      "description": "Success toast with green left stripe, checkmark icon, confirming a completed action",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_fixed _top4 _right4 _z[200] _flex _col _gap2"
+      }
+    },
+    "warning": {
+      "description": "Warning toast with amber left stripe, triangle-exclamation icon, for non-blocking cautions",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_fixed _top4 _right4 _z[200] _flex _col _gap2"
+      }
+    },
+    "error": {
+      "description": "Error toast with red left stripe, x-circle icon, for failures requiring attention — does not auto-dismiss",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_fixed _top4 _right4 _z[200] _flex _col _gap2"
+      }
+    },
+    "action": {
+      "description": "Toast with an inline action button on the right side for undo, retry, or custom CTA alongside the message",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_fixed _top4 _right4 _z[200] _flex _col _gap2"
+      }
+    }
+  },
+  "visual_brief": "Fixed-position toast container anchored to the top-right corner of the viewport. Each toast is a compact card (max-width 380px) with border-radius 8px, a 4px left color stripe indicating severity (blue for info, green for success, amber for warning, red for error). Interior layout is a row: a 20px severity icon on the left, then a vertical stack of bold title (14px, font-weight 600) and description text (13px, muted color) in the center, and a small ghost dismiss button (X icon, 16px) on the far right. In the action preset, a small outlined button sits between the text and dismiss button. At the very bottom of each toast card, a thin 2px progress bar spans the full width, starting at 100% and shrinking to 0% over the auto-dismiss duration (default 5 seconds), colored to match the severity stripe. The bar uses a linear animation for predictable timing. Multiple toasts stack vertically with 8px gap, newest on top. When more than 3 toasts are visible, older toasts compress to show only a 4px peek of their top edge behind the stack, giving a layered card-deck appearance. Toast cards have a subtle box-shadow (0 4px 12px rgba(0,0,0,0.15)) and a 1px border in a muted tone. Background uses the standard surface color with high opacity (no frosted glass).",
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_fixed _top4 _right4 _z[200] _flex _col _gap2",
+    "slots": {
+      "toast-container": "Fixed-position wrapper anchored top-right of the viewport. Manages stacking order of multiple toasts with newest on top. Sets max-width 380px for all child toasts. Handles vertical gap and overflow behavior when more than 3 toasts are visible by compressing older toasts into a peek stack.",
+      "toast-card": "Repeating slot — one per notification. A compact card with 4px colored left border-stripe indicating severity (blue=info, green=success, amber=warning, red=error). Interior is a row layout: ToastIcon (20px severity icon matching stripe color) on the left, a vertical stack of ToastTitle (bold, 14px) and ToastDescription (muted, 13px) in the center, and DismissButton (ghost X, 16px) on the right. Card has border-radius 8px, subtle shadow, surface background, 12px padding. Error toasts have a faint red background tint.",
+      "toast-action": "Optional slot for the action preset. A small outlined button (text + optional icon) positioned between the description text and the dismiss button. Button uses accent color and ghost variant. Common actions: Undo, Retry, View, Open.",
+      "progress-bar": "A 2px-tall bar at the absolute bottom of the toast card spanning its full width. Starts at 100% width and linearly shrinks to 0% over the auto-dismiss duration. Color matches the severity stripe. When it reaches 0%, the toast dismisses. Error toasts have no progress bar (they persist until manually dismissed)."
+    }
+  },
+  "accessibility": {
+    "role": "alert",
+    "aria-label": "Notification toast",
+    "announcements": [
+      "New notification: {severity} — {title}: {description}",
+      "Notification dismissed",
+      "Action available: {action_label}",
+      "Error notification requires manual dismissal"
+    ],
+    "keyboard": [
+      "Tab: focus the toast, then cycle through action button and dismiss button",
+      "Enter: activate focused button (action or dismiss)",
+      "Escape: dismiss the currently focused toast",
+      "F6: move focus to the toast container when notifications are present"
+    ]
+  },
+  "responsive": {
+    "mobile": "Toasts appear at the top of the screen spanning full width with 8px horizontal margin. Max-width removed. Stack compresses to show only the newest toast with a count badge ('2 more') below. Swipe right to dismiss. Progress bar height increases to 3px for visibility.",
+    "tablet": "Toasts anchored top-right at 380px max-width. Standard stacking with up to 3 visible. Dismiss on tap of X button.",
+    "desktop": "Full layout with top-right positioning, hover reveals dismiss button (hidden by default on non-error toasts), mouse hover pauses the auto-dismiss timer and progress bar animation."
+  },
+  "motion": {
+    "micro": {
+      "dismiss-hover": "opacity 0.6→1 + scale(1.1) 120ms ease-out on dismiss button hover",
+      "action-press": "scale(0.96) 80ms ease-in on action button press"
+    },
+    "transitions": {
+      "toast-enter": "translateX(120%)→translateX(0) + opacity 0→1 350ms cubic-bezier(0.21, 1.02, 0.73, 1)",
+      "toast-exit": "translateX(0)→translateX(120%) + opacity 1→0 250ms ease-in",
+      "stack-reorder": "translateY shift 200ms ease-out when toasts above are dismissed",
+      "progress-shrink": "width 100%→0% linear over auto-dismiss duration"
+    },
+    "ambient": {
+      "error-pulse": "box-shadow pulse with red glow 2s ease-in-out infinite on error toasts"
+    }
+  },
+  "interactions": [
+    "animate-on-mount",
+    "stagger-children"
+  ],
+  "composition": {
+    "ToastContainer": "Container(fixed, top-right, z-200, flex-col, gap-2) > Toast*",
+    "Toast": "Card(d-surface, border-left: severity-color, shadow, max-w-380) > [ToastIcon(severity-color) + ContentStack + ToastAction?(d-interactive) + DismissButton(ghost) + ProgressBar(absolute-bottom)]",
+    "ContentStack": "Stack(flex-col, gap-1) > [ToastTitle(font-bold, text-sm) + ToastDescription(text-xs, muted)]",
+    "ProgressBar": "Bar(absolute, bottom-0, h-2px, bg: severity-color, width: 100%→0%, linear)"
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "quick-start",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Quick Start",
+  "description": "Numbered step cards with code blocks, chat bubbles, or output content showing a getting-started flow. Each card has a vibrant gradient background, a numbered circle badge, a step title, and a content block. Supports tabbed configuration blocks below the cards for framework-specific setup instructions. Ideal for onboarding sections and quick-start guides.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Card",
+        "Badge"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Card",
+    "Badge"
+  ],
+  "contained": false,
+  "default_preset": "cards",
+  "presets": {
+    "cards": {
+      "description": "3 cards in a horizontal row, each with a vibrant gradient background (coral, amber, purple). Each card contains: a 40px numbered circle badge with semi-transparent dark background, a bold step title, and a content block that can be a monospace code block (dark semi-transparent bg), a chat bubble (rounded corners, left-aligned), or a terminal output block. Cards lift on hover with colored box-shadow. Below the cards, an optional tabbed config section shows framework-specific code with tab buttons (rounded top corners, active tab highlighted in cyan).",
+      "components": [
+        "Card",
+        "Badge"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_flex _gap6 _mw[920px] _mx[auto] _mb12",
+        "slots": {
+          "step-number": "Badge circle: _w10 _h10 _rounded[50%] _flex _items[center] _justify[center] _fs[1rem] _fw700 _mb4 _bgblack/20 _fgwhite. Displays the step number.",
+          "step-title": "Step heading with h3 _fs[1rem] _fw700 _mb3 _fgwhite. Brief title like 'Configure', 'Prompt', 'Build'.",
+          "step-content": "Content area that varies by step type. Code block: _bgblack/30 _rounded[8px] _p3 _mono _fs[0.7rem] _lh[1.7] _overflow[auto] _whitespace[pre] _fgwhite/85. Chat bubble: _bgblack/20 _rounded[10px_10px_10px_2px] _p4 _fs[0.82rem] _lh[1.5] _text[left]. Output block: _bgblack/30 _rounded[8px] _p3 _mono _fs[0.68rem] _lh[1.7] _whitespace[pre] _overflow[auto] _fgwhite/85."
+        }
+      }
+    },
+    "vertical": {
+      "description": "Stacked vertical layout with steps arranged top to bottom instead of side by side. Each step is a full-width card with the same gradient, badge, title, and content structure. Better for mobile-first designs or when step content is longer.",
+      "components": [
+        "Card",
+        "Badge"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_flex _col _gap6 _mw[640px] _mx[auto]",
+        "slots": {
+          "step-number": "Badge circle with numbered step, _rounded[50%] _w10 _h10 _bgblack/20 _fgwhite",
+          "step-title": "Step heading with _fw700 _fgwhite _mb3",
+          "step-content": "Content block: code block, chat bubble, or output depending on the step"
+        }
+      }
+    }
+  },
+  "interactions": [
+    "animate-on-mount",
+    "focus-trap",
+    "click-select"
+  ],
+  "layout_hints": {
+    "direction": "horizontal",
+    "note": "For 3-5 steps, use a HORIZONTAL layout with connecting lines or arrows between numbered circles. Center the entire row within the section. For 6+ steps, use a 2-column grid. NEVER use a left-aligned vertical list for ≤5 steps.",
+    "connector": "Use a subtle horizontal line between step circles (1px solid var(--d-border) or border at 50% opacity).",
+    "step_circle": "Numbered circle with accent border, 40-48px diameter, number centered. Background transparent or surface.",
+    "alignment": "center",
+    "step_text": "Title bold, below or right of circle. Description in muted text, max 2 lines."
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_flex _gap6 _mw[920px] _mx[auto]",
+    "slots": {
+      "step-number": "Numbered circle badge",
+      "step-title": "Step title heading",
+      "step-content": "Code block, chat bubble, or output content"
+    }
+  },
+  "io": {
+    "consumes": [],
+    "produces": [],
+    "actions": [
+      "tab-switch"
+    ]
+  }
+}

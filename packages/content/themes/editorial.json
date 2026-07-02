@@ -1,0 +1,237 @@
+{
+  "$schema": "https://decantr.ai/schemas/theme.v1.json",
+  "id": "editorial",
+  "version": "1.0.0",
+  "name": "Editorial",
+  "description": "Digital print magazine aesthetic. High-contrast, dramatic typography, zero decoration. Content is the design. Ink-on-paper warmth with modern sensibility.",
+  "tags": [
+    "magazine",
+    "typography",
+    "high-contrast",
+    "print",
+    "minimal"
+  ],
+  "personality": "sharp + flat elevation + instant motion + no borders + no gradients",
+  "seed": {
+    "primary": "#1a1a1a",
+    "secondary": "#c41e3a",
+    "accent": "#1a5276",
+    "background": "#fefcf9"
+  },
+  "palette": {
+    "background": {
+      "light": "#FEFCF9",
+      "dark": "#141210"
+    },
+    "surface": {
+      "light": "#FFFFFF",
+      "dark": "#1C1A17"
+    },
+    "surface-raised": {
+      "light": "#F8F5F0",
+      "dark": "#252320"
+    },
+    "border": {
+      "light": "#E8E4DD",
+      "dark": "#3A3630"
+    },
+    "text": {
+      "light": "#1A1A1A",
+      "dark": "#F5F2ED"
+    },
+    "text-muted": {
+      "light": "#6B665E",
+      "dark": "#A09A90"
+    },
+    "primary": {
+      "light": "#1A1A1A",
+      "dark": "#F5F2ED"
+    },
+    "primary-hover": {
+      "light": "#C41E3A",
+      "dark": "#E8354F"
+    }
+  },
+  "modes": [
+    "light",
+    "dark"
+  ],
+  "shapes": [
+    "sharp",
+    "rounded",
+    "pill"
+  ],
+  "decantr_compat": ">=2.0.0",
+  "source": "community",
+  "decorators": {
+    "editorial-card": "Clean white card with thin hairline border, generous whitespace, and elegant serif typography framing.",
+    "editorial-pullquote": "Large italic serif text with bold left accent border in secondary red, generous vertical margins.",
+    "editorial-divider": "Thin single-pixel line separator with generous vertical spacing to create breathing room between sections.",
+    "editorial-caption": "Small uppercase tracking-wide text in muted color for image captions and metadata labels.",
+    "editorial-dropcap": "Oversized initial letter spanning three lines in bold serif weight to open article sections."
+  },
+  "spatial": {
+    "density_bias": 0,
+    "content_gap_shift": 1,
+    "section_padding": "6rem",
+    "card_wrapping": "none"
+  },
+  "motion": {
+    "preference": "none",
+    "reduce_motion": true,
+    "entrance": "none",
+    "timing": "ease-out",
+    "durations": {
+      "hover": "100ms",
+      "entrance": "0ms",
+      "instant": "100ms",
+      "fast": "180ms",
+      "base": "300ms",
+      "slow": "500ms",
+      "slower": "750ms",
+      "stagger": "70ms"
+    },
+    "easings": {
+      "ease": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "easeOut": "cubic-bezier(0, 0, 0.2, 1)",
+      "easeIn": "cubic-bezier(0.4, 0, 1, 1)",
+      "spring": "cubic-bezier(0.34, 1.4, 0.64, 1)"
+    }
+  },
+  "typography_hints": {
+    "scale": "modular",
+    "heading_weight": 600,
+    "body_weight": 400
+  },
+  "motion_hints": {
+    "preference": "subtle",
+    "reduce_motion_default": true
+  },
+  "decorator_definitions": {
+    "editorial-card": {
+      "description": "Clean white card with thin hairline border, generous whitespace, and elegant serif typography framing.",
+      "intent": "Use for article cards and content containers. Minimal styling lets typography and imagery do all the visual work.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #FFFFFF)",
+        "border": "1px solid var(--d-border, #E8E4DD)",
+        "padding": "32px"
+      },
+      "pairs_with": [
+        "editorial-divider",
+        "editorial-pullquote"
+      ],
+      "usage": [
+        "Article cards",
+        "Content containers",
+        "Feature summaries",
+        "Editorial layouts"
+      ]
+    },
+    "editorial-pullquote": {
+      "description": "Large italic serif text with bold left accent border in secondary red, generous vertical margins.",
+      "intent": "Use to highlight key quotes and important passages. The left border in red creates dramatic emphasis within long-form content.",
+      "suggested_properties": {
+        "font-style": "italic",
+        "font-size": "1.5rem",
+        "border-left": "4px solid var(--d-secondary, #C41E3A)",
+        "padding-left": "24px",
+        "margin": "48px 0",
+        "color": "var(--d-text, #1A1A1A)"
+      },
+      "pairs_with": [
+        "editorial-card",
+        "editorial-divider"
+      ],
+      "usage": [
+        "Pull quotes",
+        "Key excerpts",
+        "Highlighted passages",
+        "Testimonials"
+      ]
+    },
+    "editorial-divider": {
+      "description": "Thin single-pixel line separator with generous vertical spacing to create breathing room between sections.",
+      "intent": "Use between major content sections. Generous vertical spacing creates the dramatic pacing of a print magazine layout.",
+      "suggested_properties": {
+        "border-top": "1px solid var(--d-border, #E8E4DD)",
+        "margin": "64px 0"
+      },
+      "pairs_with": [
+        "editorial-card",
+        "editorial-pullquote"
+      ],
+      "usage": [
+        "Section dividers",
+        "Article breaks",
+        "Content section separators"
+      ]
+    },
+    "editorial-caption": {
+      "description": "Small uppercase tracking-wide text in muted color for image captions and metadata labels.",
+      "intent": "Use for image captions, bylines, dates, and metadata labels. Uppercase tracking creates the classic editorial meta-text treatment.",
+      "suggested_properties": {
+        "font-size": "11px",
+        "text-transform": "uppercase",
+        "letter-spacing": "0.1em",
+        "color": "var(--d-text-muted, #6B665E)"
+      },
+      "pairs_with": [
+        "editorial-card",
+        "editorial-pullquote"
+      ],
+      "usage": [
+        "Image captions",
+        "Bylines",
+        "Date labels",
+        "Category labels"
+      ]
+    },
+    "editorial-dropcap": {
+      "description": "Oversized initial letter spanning three lines in bold serif weight to open article sections.",
+      "intent": "Use at the start of article sections for dramatic editorial opening. The oversized letter signals a new section or chapter.",
+      "suggested_properties": {
+        "float": "left",
+        "font-size": "4rem",
+        "line-height": "0.8",
+        "font-weight": "700",
+        "margin-right": "8px",
+        "margin-top": "4px"
+      },
+      "pairs_with": [
+        "editorial-card",
+        "editorial-divider"
+      ],
+      "usage": [
+        "Article openers",
+        "Chapter starts",
+        "Section introductions"
+      ]
+    }
+  },
+  "typography": {
+    "display": "'Playfair Display', 'Georgia', serif",
+    "body": "'Source Sans Pro', ui-sans-serif, system-ui, sans-serif"
+  },
+  "elevation": {
+    "1": {
+      "light": "0 1px 2px rgba(0,0,0,0.05)",
+      "dark": "0 1px 2px rgba(0,0,0,0.30)"
+    },
+    "2": {
+      "light": "0 2px 6px rgba(0,0,0,0.07)",
+      "dark": "0 2px 6px rgba(0,0,0,0.40)"
+    },
+    "3": {
+      "light": "0 6px 16px rgba(0,0,0,0.09)",
+      "dark": "0 6px 16px rgba(0,0,0,0.45)"
+    },
+    "4": {
+      "light": "0 12px 32px rgba(0,0,0,0.12)",
+      "dark": "0 12px 32px rgba(0,0,0,0.50)"
+    },
+    "5": {
+      "light": "0 24px 64px rgba(0,0,0,0.16)",
+      "dark": "0 24px 64px rgba(0,0,0,0.55)"
+    }
+  }
+}

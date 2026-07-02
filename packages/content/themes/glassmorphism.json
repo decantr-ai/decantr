@@ -1,0 +1,309 @@
+{
+  "$schema": "https://decantr.ai/schemas/theme.v1.json",
+  "id": "glassmorphism",
+  "version": "1.0.0",
+  "name": "Glassmorphism",
+  "description": "Stormy blue frosted glass aesthetic. Dark glass surfaces with blue-tinted borders, sky-blue primary, cyan accents, and atmospheric gradient backgrounds.",
+  "tags": [
+    "glass",
+    "frosted",
+    "stormy",
+    "atmospheric",
+    "blur"
+  ],
+  "personality": "rounded + glass elevation + smooth motion + thin borders + vivid gradients",
+  "seed": {
+    "primary": "#38bdf8",
+    "secondary": "#22d3ee",
+    "accent": "#4ade80",
+    "background": "#f0f4f9"
+  },
+  "palette": {
+    "background": {
+      "light": "#F0F4F9",
+      "dark": "#0E1624"
+    },
+    "surface": {
+      "light": "rgba(255,255,255,0.72)",
+      "dark": "rgba(19, 30, 48, 0.62)"
+    },
+    "surface-raised": {
+      "light": "rgba(255,255,255,0.86)",
+      "dark": "rgba(28, 41, 64, 0.78)"
+    },
+    "border": {
+      "light": "rgba(102, 132, 166, 0.22)",
+      "dark": "rgba(133, 171, 214, 0.20)"
+    },
+    "text": {
+      "light": "#10253D",
+      "dark": "#E8F2FF"
+    },
+    "text-muted": {
+      "light": "#5D708A",
+      "dark": "#A9BDD8"
+    },
+    "primary": {
+      "light": "#0EA5E9",
+      "dark": "#38BDF8"
+    },
+    "primary-hover": {
+      "light": "#0284C7",
+      "dark": "#67D3FF"
+    },
+    "secondary": {
+      "light": "#22D3EE",
+      "dark": "#67E8F9"
+    },
+    "secondary-hover": {
+      "light": "#06B6D4",
+      "dark": "#A5F3FC"
+    },
+    "accent": {
+      "light": "#22C55E",
+      "dark": "#4ADE80"
+    },
+    "accent-hover": {
+      "light": "#16A34A",
+      "dark": "#86EFAC"
+    }
+  },
+  "modes": [
+    "light",
+    "dark"
+  ],
+  "shapes": [
+    "sharp",
+    "rounded",
+    "pill"
+  ],
+  "decantr_compat": ">=2.0.0",
+  "source": "community",
+  "decorators": {
+    "glass-backdrop": "Dark gradient background with subtle noise texture.",
+    "glass-panel": "Frosted panel with blur(20px), 5% white background, subtle border.",
+    "glass-card": "Individual glass card element.",
+    "glass-header": "Glass hero section with layered blur panels.",
+    "glass-overlay": "Modal overlay with heavy blur.",
+    "glass-fade-up": "Entrance animation: fade + translateY(20px) over 0.5s."
+  },
+  "spatial": {
+    "density_bias": 0,
+    "content_gap_shift": 0,
+    "section_padding": "5rem",
+    "card_wrapping": "glass",
+    "surface_override": null
+  },
+  "motion": {
+    "preference": "subtle",
+    "reduce_motion": true,
+    "entrance": "glass-fade-up",
+    "micro": "smooth",
+    "durations": {
+      "instant": "100ms",
+      "fast": "180ms",
+      "base": "300ms",
+      "slow": "500ms",
+      "slower": "750ms",
+      "stagger": "70ms"
+    },
+    "easings": {
+      "ease": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "easeOut": "cubic-bezier(0.16, 1, 0.3, 1)",
+      "easeIn": "cubic-bezier(0.7, 0, 0.84, 0)",
+      "spring": "cubic-bezier(0.34, 1.56, 0.64, 1)"
+    }
+  },
+  "effects": {
+    "enabled": true,
+    "intensity": "medium",
+    "type_mapping": {
+      "card": [
+        "glass-card"
+      ],
+      "nav": [
+        "glass-panel"
+      ],
+      "modal": [
+        "glass-overlay"
+      ]
+    }
+  },
+  "radius": {
+    "philosophy": "rounded",
+    "base": 8
+  },
+  "shell": {
+    "preferred": [
+      "sidebar-main",
+      "top-nav-main"
+    ],
+    "avoid": [],
+    "nav_style": "glass",
+    "default_nav_state": "expanded",
+    "root": "glass-backdrop",
+    "nav": "glass-panel",
+    "header": "glass-header"
+  },
+  "card_styles": {
+    "glass": {
+      "description": "Frosted glass card with blur and subtle border",
+      "properties": {
+        "background": "rgba(255,255,255,0.05)",
+        "backdrop-filter": "blur(20px)",
+        "border": "1px solid rgba(255,255,255,0.1)",
+        "border-radius": "16px"
+      }
+    }
+  },
+  "typography": {
+    "scale": "modular",
+    "heading_weight": 600,
+    "body_weight": 400,
+    "display": "ui-sans-serif, system-ui, -apple-system, sans-serif",
+    "body": "ui-sans-serif, system-ui, -apple-system, sans-serif"
+  },
+  "decorator_definitions": {
+    "glass-backdrop": {
+      "description": "Dark gradient background with subtle noise texture.",
+      "intent": "Use as the foundational page background behind glass surfaces. The dark gradient and noise create depth for the frosted effect.",
+      "suggested_properties": {
+        "background": "linear-gradient(135deg, #1a1a2e, #16213e, #0f3460)",
+        "min-height": "100vh",
+        "position": "relative"
+      },
+      "pairs_with": [
+        "glass-panel",
+        "glass-card"
+      ],
+      "usage": [
+        "Page root containers",
+        "App shell backgrounds",
+        "Full-page backdrops"
+      ]
+    },
+    "glass-panel": {
+      "description": "Frosted panel with blur(20px), 5% white background, subtle border.",
+      "intent": "Use for navigation bars, sidebars, and content panels that need the signature frosted glass treatment.",
+      "suggested_properties": {
+        "background": "rgba(255, 255, 255, 0.05)",
+        "backdrop-filter": "blur(20px)",
+        "-webkit-backdrop-filter": "blur(20px)",
+        "border": "1px solid rgba(255, 255, 255, 0.1)",
+        "border-radius": "16px"
+      },
+      "pairs_with": [
+        "glass-backdrop",
+        "glass-card",
+        "glass-header"
+      ],
+      "usage": [
+        "Navigation bars",
+        "Sidebar panels",
+        "Content panels",
+        "Floating containers"
+      ]
+    },
+    "glass-card": {
+      "description": "Individual glass card element.",
+      "intent": "Use for cards within content grids and feature sections. Lighter glass effect than panels for visual hierarchy.",
+      "suggested_properties": {
+        "background": "rgba(255, 255, 255, 0.05)",
+        "backdrop-filter": "blur(20px)",
+        "-webkit-backdrop-filter": "blur(20px)",
+        "border": "1px solid rgba(255, 255, 255, 0.1)",
+        "border-radius": "16px"
+      },
+      "pairs_with": [
+        "glass-panel",
+        "glass-backdrop"
+      ],
+      "usage": [
+        "Feature cards",
+        "Content cards",
+        "Grid items",
+        "Info cards"
+      ]
+    },
+    "glass-header": {
+      "description": "Glass hero section with layered blur panels.",
+      "intent": "Use for hero sections and page headers that need dramatic frosted depth with multiple layered blur panels.",
+      "suggested_properties": {
+        "background": "rgba(255, 255, 255, 0.03)",
+        "backdrop-filter": "blur(30px)",
+        "-webkit-backdrop-filter": "blur(30px)",
+        "border-bottom": "1px solid rgba(255, 255, 255, 0.08)",
+        "padding": "80px 0"
+      },
+      "pairs_with": [
+        "glass-backdrop",
+        "glass-panel"
+      ],
+      "usage": [
+        "Hero sections",
+        "Page headers",
+        "Landing page hero areas"
+      ]
+    },
+    "glass-overlay": {
+      "description": "Modal overlay with heavy blur.",
+      "intent": "Use for modal backdrops and overlay containers. The heavy blur isolates the modal content from the page beneath.",
+      "suggested_properties": {
+        "background": "rgba(0, 0, 0, 0.4)",
+        "backdrop-filter": "blur(30px)",
+        "-webkit-backdrop-filter": "blur(30px)",
+        "position": "fixed",
+        "inset": "0"
+      },
+      "pairs_with": [
+        "glass-panel",
+        "glass-card"
+      ],
+      "usage": [
+        "Modal overlays",
+        "Dialog backdrops",
+        "Lightbox backgrounds"
+      ]
+    },
+    "glass-fade-up": {
+      "description": "Entrance animation: fade + translateY(20px) over 0.5s.",
+      "intent": "Use as the entrance animation for glass elements appearing on page load. The smooth motion complements the fluid glass aesthetic.",
+      "suggested_properties": {
+        "animation": "glass-fade-up 0.5s ease-out both",
+        "opacity": "0",
+        "transform": "translateY(20px)"
+      },
+      "pairs_with": [
+        "glass-card",
+        "glass-panel"
+      ],
+      "usage": [
+        "Card entrance animations",
+        "Section reveals",
+        "Page load transitions"
+      ]
+    }
+  },
+  "elevation": {
+    "1": {
+      "light": "0 1px 2px rgba(0,0,0,0.05)",
+      "dark": "0 1px 2px rgba(0,0,0,0.30)"
+    },
+    "2": {
+      "light": "0 2px 6px rgba(0,0,0,0.07)",
+      "dark": "0 2px 6px rgba(0,0,0,0.40)"
+    },
+    "3": {
+      "light": "0 6px 16px rgba(0,0,0,0.09)",
+      "dark": "0 6px 16px rgba(0,0,0,0.45)"
+    },
+    "4": {
+      "light": "0 12px 32px rgba(0,0,0,0.12)",
+      "dark": "0 12px 32px rgba(0,0,0,0.50)"
+    },
+    "5": {
+      "light": "0 24px 64px rgba(0,0,0,0.16)",
+      "dark": "0 24px 64px rgba(0,0,0,0.55)"
+    }
+  }
+}

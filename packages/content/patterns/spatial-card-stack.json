@@ -1,0 +1,133 @@
+{
+  "id": "spatial-card-stack",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Spatial Card Stack",
+  "description": "Z-axis stacked cards with depth parallax and gesture-based navigation — supports swipeable deck, fanned arc, 3D carousel, and chronological timeline stack layouts.",
+  "category": "spatial",
+  "tags": [
+    "2027",
+    "frontier",
+    "spatial",
+    "3D",
+    "cards",
+    "gesture",
+    "parallax",
+    "depth",
+    "carousel"
+  ],
+  "components": [
+    "CardStack",
+    "DepthCard",
+    "StackControls",
+    "DepthIndicator",
+    "GestureZone"
+  ],
+  "default_preset": "deck",
+  "presets": {
+    "deck": {
+      "description": "Swipeable card stack where cards are layered along the Z-axis — front card is full-size and interactive, cards behind progressively scale down, dim, and offset upward",
+      "layout": {
+        "layout": "spatial",
+        "atoms": "_relative _w-full _flex _items-center _justify-center _perspective-1000"
+      }
+    },
+    "fan": {
+      "description": "Cards spread in a horizontal arc like a hand of playing cards — each card rotated at increasing angles from center, hovering a card raises it from the fan for preview",
+      "layout": {
+        "layout": "spatial",
+        "atoms": "_relative _w-full _flex _items-end _justify-center _perspective-1200 _pb-16"
+      }
+    },
+    "carousel3d": {
+      "description": "Cards arranged in a circular 3D orbit around a vertical axis — the front-facing card is fully visible, flanking cards foreshorten with perspective, navigation rotates the entire ring",
+      "layout": {
+        "layout": "spatial",
+        "atoms": "_relative _w-full _flex _items-center _justify-center _perspective-800"
+      }
+    },
+    "timeline-stack": {
+      "description": "Chronologically ordered cards stacked with the newest on top — cards behind offset downward and to the right creating a cascading paper stack effect with visible timestamps on edges",
+      "layout": {
+        "layout": "spatial",
+        "atoms": "_relative _w-full _flex _items-start _justify-center _perspective-1000 _p-8"
+      }
+    }
+  },
+  "visual_brief": "In deck mode: a stack of cards centered in the container. The container has CSS perspective: 1000px applied to enable 3D transforms. The front (active) card renders at full size (width: 320px, aspect-ratio: 3/4 by default, rounded-xl, shadow-xl, bg-surface). It sits at translateZ(0) and is fully interactive — clickable, scrollable content inside. Behind it, up to 4 additional cards are visible. The second card: transform: translateZ(-30px) translateY(-12px) scale(0.95), opacity: 0.85. Third card: translateZ(-60px) translateY(-24px) scale(0.90), opacity: 0.7. Fourth card: translateZ(-90px) translateY(-36px) scale(0.85), opacity: 0.55. Fifth card: translateZ(-120px) translateY(-48px) scale(0.80), opacity: 0.4. Cards beyond the fifth are hidden (display: none). Each card has a subtle border (1px solid var(--d-border)). Swiping left on the front card (via touch drag or mouse drag) causes it to rotate slightly (rotateY -5deg) and translate left, then once past a 30% threshold, it flies off-screen (translateX -120%, rotateY -15deg, opacity 0, 300ms spring) and the next card springs forward to the front position. Swiping right brings the previous card back. Arrow controls (left/right chevron buttons, 36px circle, bg-surface, shadow-md) sit on either side of the stack. A DepthIndicator below the stack shows the current position as small dots (8px circles, gap-2) — the active dot is filled (bg-accent), others are outline (border, bg-transparent). In fan mode: cards are arranged in a semicircular arc. Each card is rotated around its bottom-center origin. The center card is at rotate(0deg), cards to the left at -8deg, -16deg, -24deg and cards to the right at +8deg, +16deg, +24deg. Cards overlap slightly. Hovering a card raises it: translateY(-20px) + scale(1.05) with a 200ms ease-out transition, bringing it above the fan. Clicking selects it and centers it. In carousel3d mode: cards are arranged in a 3D ring. Each card is positioned using rotateY(N * 360/total deg) translateZ(300px). The container has a preserve-3d transform-style. Navigation rotates the entire ring by one card increment (300ms ease-out). The front-facing card has full opacity and no perspective distortion. Cards at 90deg are edge-on and nearly invisible. In timeline-stack mode: cards cascade down-right. Each successive card offsets by translateX(8px) translateY(12px). The top card is fully visible; cards below show just their right and bottom edges. A small timestamp label (text-xs, font-mono, bg-muted, rounded, px-1) peeks out from the right edge of each stacked card.",
+  "layout_hints": {
+    "container": "block with perspective",
+    "note": "The container MUST have CSS perspective set (1000px default) for 3D effects. Cards should use transform-style: preserve-3d for nested 3D content. Ensure the container has enough padding to accommodate card offsets and shadows.",
+    "card_sizing": "Default card size: 320px wide, auto height. Override with CSS custom properties --card-width and --card-height. Maintain consistent aspect ratio across all cards in a stack.",
+    "gesture_thresholds": "Swipe threshold: 30% of card width to trigger navigation. Below threshold, card springs back. Velocity-based: fast swipes (>500px/s) trigger regardless of distance.",
+    "performance": "Only render the active card + 4 surrounding cards. Use will-change: transform, opacity on visible cards. Remove will-change from hidden cards."
+  },
+  "default_layout": {
+    "layout": "spatial",
+    "atoms": "_relative _w-full _flex _flex-col _items-center _justify-center _perspective-1000 _gap-4 _py-8",
+    "slots": {
+      "card-stack": "The 3D container holding all DepthCard elements. Uses transform-style: preserve-3d. Dimensions match the front card size plus padding for depth offset (add 48px padding on each side for the cascade effect). Position: relative. All child DepthCards are position: absolute, centered within this container via left: 50%, top: 50%, translate(-50%, -50%) as the base transform, with each card's depth transform layered on top. The container handles pointer events for swipe/drag gestures via a GestureZone overlay. In carousel3d mode, the container additionally applies a rotateY transform that animates when navigating between cards.",
+      "depth-card": "Repeating slot — one per item in the stack. Each card is a d-surface element (rounded-xl, shadow-lg, overflow-hidden, bg-surface). Position: absolute, centered in the card-stack container. The card's visual depth is controlled by CSS transforms: translateZ (depth), translateY (vertical offset), and scale (size reduction). These three properties are interpolated based on the card's position relative to the active index. The active (front) card: translateZ(0) scale(1) opacity(1), pointer-events: auto, z-index: highest. Cards behind: pointer-events: none, progressively reduced z-index. Each card has transition: transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1), opacity 300ms ease-out — the spring-like bezier gives a satisfying physical feel when cards move forward. Card content is projected inside via a slot: the card accepts arbitrary children (images, text, interactive elements). In fan mode, the transform changes to rotateZ(angle) with transform-origin: bottom center.",
+      "stack-controls": "Navigation buttons flanking the card stack. Two circular buttons (36px diameter, bg-surface, border, shadow-md, rounded-full) positioned absolutely: left button at left: -48px, top: 50%, translateY(-50%); right button at right: -48px, top: 50%, translateY(-50%). Each contains a chevron icon (16px, stroke-width: 2). Left button: chevron-left icon, navigates to previous card. Right button: chevron-right icon, navigates to next card. Buttons have hover state (bg-accent/10%, scale 1.05) and active state (scale 0.95). Disabled state (at start/end of stack): opacity 0.3, pointer-events: none. In carousel3d mode, buttons rotate the ring. In fan mode, buttons shift the highlighted card.",
+      "depth-indicator": "A row of small dots below the card stack showing the current position within the stack. Uses flex layout (gap-2, items-center, justify-center). Each dot is an 8px circle. The active card's dot: bg-accent, scale(1). Other dots: border 1.5px solid var(--d-border), bg-transparent, scale(0.85). Dots transition between states with: background-color 200ms, transform 200ms. If there are more than 7 items, the indicator collapses: shows the active dot, 2 dots on each side, and small ellipsis dots (...) at the edges. Clicking a dot navigates directly to that card.",
+      "gesture-zone": "An invisible overlay covering the card-stack area that captures touch/mouse drag events for swipe navigation. Position: absolute, inset: 0, z-index above cards. Captures pointerdown → pointermove → pointerup sequences. During drag: the front card follows the pointer horizontally with a slight rotateY tilt (max ±8deg at card edges). Visual feedback: the card tilts in the drag direction, the next card in the swipe direction begins scaling up (scale 0.95→0.98) as a preview. On release: if past threshold (30% card width or velocity >500px/s), commit the navigation with a spring animation (300ms). Below threshold, spring back to center (250ms ease-out). The gesture zone also handles keyboard arrow events bubbled from child focus."
+    }
+  },
+  "accessibility": {
+    "role": "group",
+    "aria-label": "Card stack navigation",
+    "aria-roledescription": "carousel",
+    "announcements": [
+      "Showing card {current} of {total}",
+      "Navigated to card {current}: {card_title}",
+      "Card stack: swipe left or right to navigate, or use arrow keys"
+    ],
+    "keyboard": [
+      "Arrow Left: navigate to previous card",
+      "Arrow Right: navigate to next card",
+      "Home: navigate to first card",
+      "End: navigate to last card",
+      "Enter: activate/click the front card",
+      "Tab: move focus into the front card's content",
+      "Escape: return focus to the card stack from card content"
+    ]
+  },
+  "responsive": {
+    "mobile": "Card width reduces to min(280px, 90vw). Only 3 depth cards rendered behind active (instead of 4). Stack controls hidden — swipe gestures only. Depth indicator dots reduce to 6px. Fan mode disabled — falls back to deck mode. Carousel3d simplified to 2D horizontal scroll.",
+    "tablet": "Full card width (320px). All 4 depth cards rendered. Stack controls visible at 32px. Touch gestures + button navigation both active. All presets functional."
+  },
+  "motion": {
+    "micro": {
+      "card-hover": "translateY(-4px) + shadow-elevation over 200ms ease-out (deck mode, front card only)",
+      "control-hover": "scale(1.05) + bg-accent/10% over 150ms ease-out",
+      "dot-hover": "scale(1.1) over 150ms"
+    },
+    "transitions": {
+      "card-forward": "translateZ + scale + opacity to front position, 400ms cubic-bezier(0.34, 1.56, 0.64, 1) — spring feel",
+      "card-backward": "translateZ + scale + opacity to depth position, 350ms ease-out",
+      "card-swipe-away": "translateX(±120%) + rotateY(±15deg) + opacity 0, 300ms spring",
+      "card-spring-back": "translateX(0) + rotateY(0), 250ms ease-out",
+      "carousel-rotate": "parent rotateY by card-increment degrees, 400ms ease-out",
+      "fan-highlight": "translateY(-20px) + scale(1.05), 200ms ease-out"
+    },
+    "ambient": {
+      "depth-parallax": "subtle translateX/Y offset on depth cards in response to mouse position (max ±4px), 100ms ease-out — creates a parallax depth illusion",
+      "idle-float": "front card subtle translateY oscillation (±2px) over 4s ease-in-out infinite — gentle floating effect when not interacting"
+    }
+  },
+  "interactions": [
+    "lift-hover",
+    "click-select",
+    "animate-on-mount",
+    "stagger-children"
+  ],
+  "composition": {
+    "SpatialCardStack": "Section(d-section, perspective-1000, flex-col, items-center) > [CardStackContainer + StackControls + DepthIndicator]",
+    "CardStackContainer": "Div(relative, preserve-3d) > [DepthCard*(d-surface, absolute, depth-transformed) + GestureZone(invisible-overlay)]",
+    "DepthCard": "Surface(d-surface, rounded-xl, shadow-lg, positioned) > [CardContent(slot)]",
+    "StackControls": "Div(absolute, flanking) > [PrevButton(circle, chevron-left) + NextButton(circle, chevron-right)]",
+    "DepthIndicator": "Flex(gap-2, items-center) > Dot*(8px, circle, active: filled, inactive: outline)",
+    "GestureZone": "Div(absolute, inset-0, pointer-capture) > SwipeHandler(threshold: 30%, velocity: 500px/s)"
+  }
+}

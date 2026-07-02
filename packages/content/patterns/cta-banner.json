@@ -1,0 +1,103 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "cta-banner",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "CTA Banner",
+  "description": "Full-width gradient call-to-action banner with bold headline, supporting subtext, and a prominent action button. Conversion-focused section designed to sit near the bottom of landing pages. Features a multi-stop gradient background that spans the full viewport width.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button"
+  ],
+  "contained": false,
+  "default_preset": "gradient",
+  "presets": {
+    "gradient": {
+      "description": "Full-width section with a vibrant multi-stop gradient background (coral -> amber -> cyan -> green at 135deg). Dark text on the bright gradient. Centered layout with: bold headline (2.2rem, dark), supporting paragraph (1.1rem, dark/70%), and a dark pill button. Generous padding (100px vertical). The gradient creates a strong visual break from dark content sections above and below.",
+      "components": [
+        "Button"
+      ],
+      "layout": {
+        "layout": "hero",
+        "atoms": "_py[100px] _px6 _textc _rel _z[1]",
+        "slots": {
+          "headline": "Bold heading with _fs[2.2rem] _fw700 _fgdark _mb3 _ls[-0.02em]. Direct, action-oriented text like 'Ready to Build Something Great?'",
+          "subtext": "Supporting paragraph with _fs[1.1rem] _fgdark/70 _mb8. Brief value proposition or urgency statement.",
+          "cta-button": "Dark pill Button: _inline-flex _items[center] _gap2 _py3 _px9 _bgdark _fgwhite _fw700 _fs[1rem] _border[none] _rounded[100px] _transition. Hover: translateY(-2px) with dark box-shadow."
+        }
+      }
+    },
+    "dark": {
+      "description": "Dark background section with colored text and a colored pill button. Reversed contrast from the gradient preset. Uses the dark app background with a vibrant accent-colored headline, muted subtext, and a primary-colored pill button. Subtler visual treatment, good for sections that should feel integrated with the overall dark theme.",
+      "components": [
+        "Button"
+      ],
+      "layout": {
+        "layout": "hero",
+        "atoms": "_py[100px] _px6 _textc _rel _z[1] _bgbg",
+        "slots": {
+          "headline": "Bold heading with _fs[2.2rem] _fw700 _fgprimary _mb3 _ls[-0.02em]. Uses the brand accent color.",
+          "subtext": "Supporting paragraph with _fs[1.1rem] _fgmuted _mb8.",
+          "cta-button": "Primary pill Button: _rounded[100px] _bgprimary _fgwhite _fw700 _py3 _px9. Hover lifts with shadow."
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "hero",
+    "atoms": "_py[100px] _px6 _textc _rel _z[1]",
+    "slots": {
+      "headline": "Bold, conversion-focused headline",
+      "subtext": "Supporting value proposition text",
+      "cta-button": "Prominent pill-shaped action button"
+    }
+  },
+  "io": {
+    "consumes": [],
+    "produces": [],
+    "actions": [
+      "cta-click"
+    ]
+  },
+  "visual_brief": "Full-viewport-width banner with a multi-stop gradient background (flowing from primary through accent colors). A bold, large headline centered in the banner delivers the conversion message. Below the headline, a single line of supporting subtext in slightly lighter weight. A prominent pill-shaped action button (rounded-full, primary contrast colors) sits centered below the text. The dark preset uses a dark solid background instead of gradient. Generous vertical padding (py-16 to py-24) creates breathing room.",
+  "layout_hints": {
+    "single_focus": "CTA banner should resolve to one obvious action. Avoid secondary utility controls inside the banner unless the route explicitly requires them.",
+    "contrast": "Keep the button and text contrast extremely strong against the gradient background so the section remains legible in both dark and light-adjacent contexts.",
+    "section_break": "Use the banner as a clear conversion moment near the end of a narrative flow, not as a generic filler block."
+  },
+  "responsive": {
+    "mobile": "Text scales down slightly. Button goes full-width with generous padding. Vertical padding reduces. Headline may wrap to two lines.",
+    "tablet": "Standard centered layout. Button at natural width. Comfortable padding.",
+    "desktop": "Full impact — large headline, generous whitespace, button with hover scale effect."
+  },
+  "motion": {
+    "micro": "Button hover and press states may use a compact lift or brightness change. Background gradients should remain stable instead of constantly shifting.",
+    "transitions": "Banner entrances should feel premium but restrained: fade-up or soft scale over 220-320ms.",
+    "ambient": "If the gradient breathes, keep the animation very low amplitude so the CTA remains readable and calm."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "glow-hover",
+    "scale-hover"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Call to action banner",
+    "keyboard": [
+      "Tab should move directly to the primary CTA."
+    ],
+    "announcements": [
+      "Headline and value proposition should be announced before the CTA control."
+    ],
+    "focus_management": "The primary action should be the first interactive target inside the banner and should receive a visible focus treatment that still contrasts against the banner background."
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "id": "sparkline-cell",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Sparkline Cell",
+  "description": "An inline mini-chart designed for table cells, showing trend data over time as a compact SVG sparkline with trend indicator and value label.",
+  "category": "data-visualization",
+  "tags": [
+    "2026",
+    "data-visualization",
+    "sparkline",
+    "chart",
+    "inline",
+    "trend",
+    "table"
+  ],
+  "components": [
+    "Sparkline",
+    "TrendIndicator",
+    "ValueLabel"
+  ],
+  "default_preset": "line",
+  "presets": {
+    "line": {
+      "description": "A smooth bezier SVG path sparkline in accent color with a filled circle at the last data point — the most common variant for showing continuous trends",
+      "layout": {
+        "layout": "inline",
+        "atoms": "_inline-flex _align-center _gap-2"
+      }
+    },
+    "bar": {
+      "description": "A mini bar chart with thin vertical bars proportionally sized to data values — well suited for discrete time intervals like daily counts or weekly totals",
+      "layout": {
+        "layout": "inline",
+        "atoms": "_inline-flex _align-center _gap-2"
+      }
+    },
+    "area": {
+      "description": "A filled area chart with a gradient from accent color to transparent beneath the line path — adds visual weight and emphasis compared to the line-only variant",
+      "layout": {
+        "layout": "inline",
+        "atoms": "_inline-flex _align-center _gap-2"
+      }
+    }
+  },
+  "visual_brief": "A compact inline element designed to sit within a table cell, composed of three parts arranged horizontally with an 8px gap: the sparkline SVG on the left, the trend indicator arrow in the middle, and the value label on the right. The sparkline SVG is 80px wide and 24px tall with no axes, labels, or grid lines — pure data visualization. In the line preset, the data renders as a smooth cubic bezier path (SVG <path> with C commands for smooth curves) stroked in the accent color at 2px width with round line-cap and line-join, no fill. The last data point has a small filled circle (4px radius, accent color) to mark the current value. In the area preset, the same bezier path is drawn but with an additional closed path below it filled with a vertical linear gradient from accent color at 30% opacity at the top to transparent at the bottom, creating a soft shaded area. The line itself remains 2px accent stroke on top of the fill. In the bar preset, the sparkline renders as a series of thin vertical rectangles (4px wide, 2px gap between each) whose heights are proportional to data values, aligned to the bottom of the 24px SVG viewport. Bars use accent color fill at 70% opacity, with the last bar at full accent opacity to highlight the current value. The TrendIndicator is a small directional arrow: an upward-pointing triangle (▲) in green (--d-success) for positive trends, a downward-pointing triangle (▼) in red (--d-error) for negative trends, or a horizontal dash (—) in muted text color for flat/neutral trends. The arrow is 10px in size, vertically centered. The ValueLabel shows the percentage change as text (e.g., '+12.4%', '-3.1%', '0.0%') in text-xs font-medium. Positive values use green (--d-success), negative use red (--d-error), neutral use text-muted. The entire component has a line-height matched to the table row for perfect vertical centering. The overall footprint is approximately 140px wide and 24px tall, fitting comfortably in standard table cells.",
+  "layout_hints": {
+    "container": "table-cell or inline",
+    "note": "This component is designed to be placed inside a <td> or any inline container. It should not be used standalone — it is a cell-level data visualization. The sparkline SVG has no interactivity by default but can optionally show a tooltip on hover revealing the exact data point values.",
+    "svg_rendering": "The SVG viewBox should be '0 0 80 24'. Use vector-effect: non-scaling-stroke to keep stroke width consistent. The bezier path should use catmull-rom or monotone interpolation converted to cubic bezier commands for smooth curves that pass through all data points.",
+    "color_semantics": "Positive trend: --d-success (green). Negative trend: --d-error (red). Neutral trend: text-muted. Sparkline path: accent color. These semantic colors ensure the component adapts to light and dark themes."
+  },
+  "default_layout": {
+    "layout": "inline",
+    "atoms": "_inline-flex _align-center _gap-2",
+    "slots": {
+      "sparkline": "The SVG mini-chart element, 80px wide and 24px tall. viewBox='0 0 80 24'. Overflow: visible (to allow the endpoint dot to extend slightly). No axes, no grid, no labels — pure data path only. Line preset: a single <path> element with smooth cubic bezier curves interpolated through all data points, stroke: accent, stroke-width: 2px, fill: none, stroke-linecap: round, stroke-linejoin: round. A <circle> at the last data point (cx=rightmost x, cy=corresponding y) with r=3, fill: accent. Area preset: same <path> as line, plus a <path> that closes the area down to the bottom edge (lineTo right-bottom, lineTo left-bottom, close), filled with a <linearGradient> from accent-30% at y=0 to transparent at y=24, id='sparkline-gradient'. The gradient path renders behind the stroke path. Bar preset: a series of <rect> elements, each 4px wide with 2px gaps, heights mapped proportionally from data values to the 0–24px range, y-position calculated as 24-height, fill: accent at 70% opacity, last bar at 100% opacity. All data points are evenly distributed across the 80px width. The SVG has shape-rendering: geometricPrecision for crisp lines.",
+      "trend-indicator": "A small inline element showing the trend direction. Renders as a 10px equilateral triangle pointing up (▲, color: --d-success) for positive percentage change, pointing down (▼, color: --d-error) for negative change, or a horizontal line (—, color: text-muted) for zero/negligible change. The threshold for 'negligible' is configurable but defaults to ±0.1%. The indicator is vertically centered with the sparkline and value label. It uses the same font-size as the value label (text-xs) for consistent sizing. An aria-hidden='true' attribute is set since the value label conveys the same information textually.",
+      "value-label": "A text element displaying the percentage change value. Format: sign + number + '%' (e.g., '+12.4%', '-3.1%', '0.0%'). Font: text-xs (12px), font-medium (500 weight). Color: --d-success for positive, --d-error for negative, text-muted for zero/neutral. White-space: nowrap to prevent wrapping within the cell. The label has a title attribute with the full description (e.g., 'Increased 12.4% over the last 7 days') for additional context on hover. min-width: 48px to prevent layout shift between positive and negative values. text-align: right."
+    }
+  },
+  "accessibility": {
+    "role": "img",
+    "aria-label": "Sparkline showing {metric} trend: {direction} {percentage} over {period}",
+    "announcements": [
+      "Trend is {up|down|flat} at {percentage} change"
+    ],
+    "keyboard": [
+      "Tab: focus the sparkline cell (if interactive tooltips enabled)",
+      "Enter: show detailed data point values in a tooltip",
+      "Escape: dismiss tooltip"
+    ]
+  },
+  "responsive": {
+    "mobile": "Sparkline width reduces to 60px (viewBox scales proportionally). Value label may be hidden to save space, leaving only the sparkline and trend arrow. Trend indicator remains visible. The entire component min-width is 80px on mobile.",
+    "tablet": "Full 80px sparkline width. All three sub-components visible. Value label font remains text-xs. Component fits comfortably in standard table cells.",
+    "desktop": "Full 80px sparkline with optional hover tooltip showing exact data point values at each position along the path. Cursor changes to crosshair over the sparkline SVG when tooltips are enabled."
+  },
+  "motion": {
+    "micro": {
+      "path-draw": "stroke-dashoffset animation from full-length to 0, 600ms ease-out on initial render (line and area presets)",
+      "bar-grow": "each bar scaleY from 0 to 1 (transform-origin: bottom), staggered 30ms per bar, 300ms ease-out on initial render",
+      "dot-appear": "scale 0→1 + opacity 0→1, 200ms ease-out, delayed until path draw completes"
+    },
+    "transitions": {
+      "data-update": "path morphs from old shape to new shape via d attribute interpolation, 400ms ease-in-out",
+      "trend-change": "color crossfade 200ms ease when trend direction changes"
+    },
+    "ambient": {}
+  },
+  "interactions": [
+    "animate-on-mount",
+    "hover-tooltip",
+    "real-time-updates"
+  ],
+  "composition": {
+    "SparklineCell": "Container(inline-flex, align-center, gap-2) > [Sparkline(svg) + TrendIndicator + ValueLabel]",
+    "Sparkline": "SVG(80x24, viewBox, no-axes) > [Path(bezier|bars|area) + EndpointDot?]",
+    "TrendIndicator": "Indicator(triangle-up|triangle-down|dash, semantic-color, aria-hidden)",
+    "ValueLabel": "Text(text-xs, font-medium, semantic-color, nowrap) > '{sign}{value}%'"
+  }
+}

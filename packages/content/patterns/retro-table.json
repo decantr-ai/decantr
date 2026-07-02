@@ -1,0 +1,128 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "retro-table",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Retro Table",
+  "description": "ASCII-bordered data tables with box-drawing characters for terminal-style displays.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {
+      "terminal": "^1.0.0"
+    },
+    "requires_core": {
+      "components": [
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full ASCII borders with box-drawing characters",
+      "components": [
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _mono _fggreen _overflow[auto]",
+        "slots": {
+          "header": "Column headers",
+          "body": "Data rows",
+          "footer": "Summary row",
+          "pagination": "Page controls"
+        }
+      }
+    },
+    "simple": {
+      "description": "Simple pipe separators without full borders",
+      "components": [],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _mono _fggreen",
+        "slots": {
+          "header": "Column headers with pipes",
+          "body": "Data rows with pipes"
+        }
+      }
+    },
+    "compact": {
+      "description": "Compact table without vertical lines",
+      "components": [],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _mono _fggreen",
+        "slots": {
+          "header": "Underlined headers",
+          "body": "Space-separated data"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _mono _fggreen",
+    "slots": {
+      "header": "Column headers",
+      "body": "Data rows",
+      "footer": "Summary",
+      "pagination": "Page controls"
+    }
+  },
+  "features": [
+    "sortable-columns",
+    "resizable-columns",
+    "horizontal-scroll",
+    "row-selection",
+    "copy-cell",
+    "export-csv"
+  ],
+  "border_characters": {
+    "top_left": "┌",
+    "top_right": "┐",
+    "bottom_left": "└",
+    "bottom_right": "┘",
+    "horizontal": "─",
+    "vertical": "│",
+    "t_left": "├",
+    "t_right": "┤",
+    "t_top": "┬",
+    "t_bottom": "┴",
+    "cross": "┼"
+  },
+  "visual_brief": "Data table rendered entirely with ASCII box-drawing characters on a monospace font. Headers and cells are separated by lines drawn with characters like ─, │, ┌, ┐, └, ┘, ├, ┤, ┬, ┴, ┼. Column headers are bold or uppercase. Cell content is padded for alignment. The simple preset uses single-line borders. The compact preset uses minimal separators (only horizontal lines between rows). A pagination row at the bottom uses ASCII characters for page indicators. Footer summary row uses double-line border (═, ║) to distinguish from data rows.",
+  "responsive": {
+    "mobile": "Table scrolls horizontally in a container. Column widths minimize. Font size can reduce slightly. Fewer columns shown with a 'more' expand option.",
+    "tablet": "Standard table width. All columns visible with comfortable padding.",
+    "desktop": "Full-width table with generous column padding. Box-drawing characters render crisply at standard monospace sizing."
+  },
+  "layout_hints": {
+    "table_priority": "Headers, rows, and footer summaries should remain easy to parse before the ASCII framing becomes the star. The borders support the data, not vice versa.",
+    "density_control": "Reduce columns or switch presets on narrow widths rather than forcing unreadably tight ASCII geometry.",
+    "summary_role": "Footer summaries should feel like part of the same ledger, just with stronger separation, not like a detached status banner."
+  },
+  "motion": {
+    "micro": "Selected rows or sortable headers may sharpen subtly to confirm focus or interaction state.",
+    "transitions": "Sorting, pagination, and row selection should remain crisp and terminal-like without introducing modern card-style motion."
+  },
+  "interactions": [
+    "click-select",
+    "hover-reveal",
+    "animate-on-mount",
+    "keyboard-navigation"
+  ],
+  "accessibility": {
+    "role": "table",
+    "aria-label": "Retro data table",
+    "keyboard": [
+      "Headers, rows, and pagination should remain reachable in the same structural order as the visual table."
+    ],
+    "announcements": [
+      "Column names, row values, and summary totals should be exposed semantically so the table remains useful beyond its ASCII presentation."
+    ]
+  }
+}

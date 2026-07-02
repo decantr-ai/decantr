@@ -1,0 +1,164 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "settings-full",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Settings Full",
+  "description": "Complete account settings with profile, security (password, MFA, sessions), preferences (theme, notifications, language), and danger zone.",
+  "tags": [
+    "settings",
+    "account",
+    "profile",
+    "security",
+    "preferences"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "settings",
+        "account settings",
+        "user settings",
+        "preferences"
+      ],
+      "secondary": [
+        "profile",
+        "security",
+        "password",
+        "theme"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "core"
+  },
+  "pages": [
+    {
+      "id": "profile",
+      "patterns": [
+        {
+          "pattern": "account-settings",
+          "preset": "profile",
+          "as": "settings"
+        }
+      ],
+      "default_layout": [
+        "account-settings"
+      ],
+      "shell": "inherit"
+    },
+    {
+      "id": "security",
+      "patterns": [
+        {
+          "pattern": "account-settings",
+          "preset": "security",
+          "as": "security-settings"
+        },
+        {
+          "pattern": "session-manager",
+          "preset": "standard",
+          "as": "sessions"
+        }
+      ],
+      "default_layout": [
+        "account-settings",
+        "sessions"
+      ],
+      "shell": "inherit"
+    },
+    {
+      "id": "preferences",
+      "patterns": [
+        {
+          "pattern": "account-settings",
+          "preset": "preferences",
+          "as": "settings"
+        }
+      ],
+      "default_layout": [
+        "account-settings"
+      ],
+      "shell": "inherit"
+    },
+    {
+      "id": "danger",
+      "patterns": [
+        {
+          "pattern": "account-settings",
+          "preset": "danger-zone",
+          "as": "settings"
+        }
+      ],
+      "default_layout": [
+        "account-settings"
+      ],
+      "shell": "inherit"
+    }
+  ],
+  "page_briefs": {
+    "profile": "Profile settings form with avatar upload, display name, email, and bio fields. Save button at the bottom of each section. Clean grouped form layout.",
+    "security": "Security settings with password change form (current + new password fields), MFA toggle with setup flow, and active sessions table showing device, location, and last-active with revoke buttons.",
+    "preferences": "Preferences form with theme selector (light/dark/auto toggle), notification preference checkboxes, language dropdown, and timezone selector.",
+    "danger": "Danger zone section with red-bordered cards for destructive actions. Export data button, deactivate account toggle, and delete account button with confirmation dialog warning."
+  },
+  "features": [
+    "profile-edit",
+    "password-change",
+    "mfa-management",
+    "session-management",
+    "theme-toggle",
+    "account-deletion"
+  ],
+  "directives": [
+    "Settings pages use the blueprint's primary shell (`sidebar-main` or `top-nav-main` depending on blueprint). Sidebar nav shows settings sub-pages as `d-nav-link` entries.",
+    "Forms use `d-surface` cards with `d-control` inputs. Each settings section is a distinct `d-surface` — do NOT nest one d-surface inside another.",
+    "Dangerous actions (delete account, revoke all sessions) use `d-interactive[data-variant=\"danger\"]` + `d-annotation[data-status=\"warning\"]` for the warning text. A confirmation dialog uses `d-modal` + `d-modal-panel[data-size=\"sm\"]`.",
+    "Theme toggle is a compact `d-icon-btn[data-size=\"sm\"]` in the shell header AND a labeled control in settings/preferences. State flows through the document root `data-mode` attribute, not through inline styles. Persist user choice to `localStorage.setItem('decantr_theme_mode', mode)` and hydrate via `document.documentElement.setAttribute('data-mode', localStorage.getItem('decantr_theme_mode') ?? '<blueprint.theme.mode>')` BEFORE React mounts (place in index.html or a sync top-level script) — avoids flash-of-wrong-theme. The fallback MUST match the blueprint's declared `theme.mode` (look it up in the scaffold-pack); never hardcode `'dark'` for a `light`-mode blueprint.",
+    "MFA toggle rendering: use `d-step-chip[data-step-state=\"done|pending\"]` for completed/pending MFA methods. Session list rows use `d-data` table family.",
+    "Breadcrumbs (when present in the shell header) derive from the current route + the scaffold-pack route table — do NOT hand-map breadcrumbs in each settings page. Use a small helper that reads `window.location.pathname`, splits on `/`, and looks up labels from the navigation_items list. This keeps breadcrumbs in sync when routes change.",
+    "When a settings sub-route is active, the parent shell's primary sidebar MUST collapse the ACCOUNT section to a single \"Settings\" entry (or hide the section entirely) so users do not see the same nav links twice — once in the main sidebar and once in the settings sub-nav middle column. The settings sub-nav (left column inside the settings page itself) is the canonical navigation when within /settings/*; the main sidebar should yield. This is a shell-behavior contract."
+  ],
+  "navigation_items": [
+    {
+      "label": "Profile",
+      "route": "/settings/profile",
+      "icon": "user"
+    },
+    {
+      "label": "Security",
+      "route": "/settings/security",
+      "icon": "shield-check"
+    },
+    {
+      "label": "Preferences",
+      "route": "/settings/preferences",
+      "icon": "sliders-horizontal"
+    },
+    {
+      "label": "Danger zone",
+      "route": "/settings/danger",
+      "icon": "alert-triangle"
+    }
+  ],
+  "shells": {
+    "inherit": "Inherits shell from parent archetype or app context"
+  },
+  "dependencies": {
+    "patterns": {
+      "account-settings": "^1.0.0",
+      "session-manager": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  }
+}

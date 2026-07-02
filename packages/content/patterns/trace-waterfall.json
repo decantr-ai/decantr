@@ -1,0 +1,123 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "trace-waterfall",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Trace Waterfall",
+  "description": "Horizontal waterfall chart showing execution trace spans with nested parent-child relationships, color-coded by span type, time axis alignment, and expandable span detail panels for debugging distributed systems.",
+  "category": "observability",
+  "tags": [
+    "2026",
+    "observability",
+    "tracing",
+    "waterfall",
+    "spans",
+    "distributed-systems",
+    "performance"
+  ],
+  "components": [
+    "TraceContainer",
+    "SpanBar",
+    "SpanLabel",
+    "TimeAxis",
+    "SpanDetail",
+    "FilterBar"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full trace waterfall with all spans expanded showing nested parent-child indentation, time axis with millisecond markers, and click-to-expand detail panels",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap0 _wfull _overflow-x-auto"
+      }
+    },
+    "compact": {
+      "description": "Collapsed spans grouped by service — only top-level spans visible by default with expand toggles to reveal children, reducing vertical space for large traces",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap0 _wfull _compact"
+      }
+    },
+    "flame": {
+      "description": "Flame chart style rendering where spans stack vertically by depth level rather than listing sequentially — wider bars represent longer durations, nested calls stack downward creating a flame shape",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap0 _wfull _overflow-x-auto _overflow-y-auto"
+      }
+    }
+  },
+  "visual_brief": "Vertical list of horizontal bars where each bar represents a trace span. A horizontal time axis runs across the top with millisecond markers and thin vertical gridlines descending the full height. Each span row contains a left-aligned label area (service name, operation name, duration text) and a horizontal bar positioned and sized proportionally to its start time and duration relative to the total trace. Nested child spans indent further right in the label column and align beneath their parent bars. Bar colors indicate span type: blue for HTTP calls, green for database queries, purple for AI/LLM calls, orange for cache operations, red for errored spans. Hovering a span highlights it with increased opacity and dims all non-ancestor/non-descendant spans. Clicking a span expands a detail panel below it showing metadata key-value pairs, tags, log entries, and timing breakdown. Error spans display a red left border and a small warning triangle icon in the label area. The filter bar at the top provides service name dropdown, minimum duration slider, and error-only toggle.",
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap0 _wfull _overflow-x-auto",
+    "slots": {
+      "filter-bar": "Horizontal toolbar at the top containing a service name dropdown filter, a minimum duration threshold slider, an error-only toggle switch, and a search input for filtering spans by operation name. Filters apply instantly and fade out non-matching spans rather than removing them.",
+      "time-axis": "Fixed horizontal ruler at the top of the waterfall showing time markers in milliseconds. Thin vertical gridlines extend downward through all span rows. The axis auto-scales to fit the trace duration. Markers appear at regular intervals (e.g., every 50ms or 100ms depending on total duration). The total trace duration displays at the right edge.",
+      "span-row": "Repeating slot — one per span. Each row is a horizontal strip divided into a fixed-width label area on the left and a proportional bar area on the right. The label area shows: indent guides (thin vertical lines) for nesting depth, an expand/collapse chevron if the span has children, the service name as a colored badge, the operation name, and the duration in milliseconds. The bar area contains a colored horizontal rectangle positioned according to start time and sized according to duration. Error spans have a red-tinted background on the entire row.",
+      "span-detail": "Expandable panel that appears below a span row when clicked. Contains a metadata section with key-value pairs (trace ID, span ID, parent ID, service, operation), a tags section showing span attributes as pills, a logs section with timestamped log entries, and a timing breakdown showing queue time, execution time, and child time as a stacked mini-bar."
+    }
+  },
+  "responsive": {
+    "mobile": "Label area collapses to show only service icon and duration. Span bars use full width. Tap a span to open detail in a bottom sheet. Filter bar collapses to a single filter icon button that opens a dropdown. Time axis shows fewer markers.",
+    "tablet": "Standard layout with slightly narrower label area. Span detail opens inline. Filter bar fully visible. Comfortable touch targets on span rows.",
+    "desktop": "Full waterfall with generous label area showing service name, operation, and duration. Hover effects active. Span detail expands inline with full metadata. Filter bar shows all controls in a single row."
+  },
+  "layout_hints": {
+    "axis_priority": "The time axis and span alignment must remain visually trustworthy. Labels, bars, and detail panels should all reinforce the temporal read rather than acting like separate widgets.",
+    "detail_discipline": "Expanded span details should feel attached to their parent row and should not break the user's sense of trace hierarchy.",
+    "filter_rhythm": "Keep the filter bar compact and clearly upstream of the waterfall so it reads as a control strip, not as another data panel."
+  },
+  "motion": {
+    "micro": {
+      "span-hover": "opacity 0.7→1 + background-tint 150ms ease-out on hovered span, opacity 1→0.3 on non-related spans",
+      "bar-highlight": "box-shadow glow matching span color 200ms ease-out"
+    },
+    "transitions": {
+      "detail-expand": "max-height 0→auto + fade 250ms ease-out",
+      "detail-collapse": "max-height auto→0 + fade 150ms ease-in",
+      "filter-apply": "opacity transition 300ms ease-out on non-matching spans"
+    },
+    "ambient": {
+      "error-pulse": "border-left color pulse red 2s ease-in-out infinite on error spans"
+    }
+  },
+  "interactions": [
+    "hover-tooltip",
+    "hover-reveal",
+    "click-select",
+    "status-pulse",
+    "animate-on-mount",
+    "real-time-updates",
+    "keyboard-navigation"
+  ],
+  "composition": {
+    "TraceWaterfall": "TraceContainer(d-section, flex-col) > [FilterBar(d-control) + TimeAxis(d-annotation) + SpanList]",
+    "FilterBar": "Row(d-control) > [ServiceFilter + DurationSlider + ErrorToggle + SearchInput]",
+    "TimeAxis": "Ruler(d-annotation, sticky-top) > [TimeMarker* + Gridlines]",
+    "SpanList": "Stack(d-data) > SpanRow*",
+    "SpanRow": "Row(d-interactive, indent: depth) > [SpanLabel > [Chevron? + ServiceBadge + OperationName + Duration] + SpanBar(color: type, position: startTime, width: duration)] + SpanDetail?(d-surface)",
+    "SpanDetail": "Panel(d-surface, expandable) > [Metadata(d-data) + Tags + Logs + TimingBreakdown]"
+  },
+  "accessibility": {
+    "role": "tree",
+    "aria-label": "Execution trace waterfall showing span hierarchy",
+    "keyboard": [
+      "Arrow Up/Down: navigate between span rows",
+      "Arrow Right: expand collapsed span children or open span detail",
+      "Arrow Left: collapse expanded children or close span detail",
+      "Enter: toggle span detail panel",
+      "F: focus the filter bar",
+      "E: toggle error-only filter",
+      "Home: jump to root span",
+      "End: jump to last span"
+    ],
+    "announcements": [
+      "Span: {service} {operation}, duration {duration}ms, {status}",
+      "Expanded {childCount} child spans under {operation}",
+      "Detail panel opened for {service} {operation}",
+      "Filter applied: showing {count} of {total} spans",
+      "Error span: {service} {operation} failed after {duration}ms"
+    ]
+  }
+}

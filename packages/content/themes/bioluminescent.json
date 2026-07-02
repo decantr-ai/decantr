@@ -1,0 +1,217 @@
+{
+  "$schema": "https://decantr.ai/schemas/theme.v1.json",
+  "id": "bioluminescent",
+  "version": "1.0.0",
+  "name": "Bioluminescent",
+  "description": "Deep ocean aesthetic. Organic glow. Luminescent edges on dark backgrounds, living and breathing UI. Glowing borders, pulsing animations, deep abyss backgrounds.",
+  "tags": [
+    "ocean",
+    "glow",
+    "organic",
+    "luminescent",
+    "deep-sea"
+  ],
+  "personality": "pill + glow elevation + smooth motion + no borders + vivid gradients",
+  "seed": {
+    "primary": "#00ffd5",
+    "secondary": "#7b61ff",
+    "accent": "#ff6b9d",
+    "background": "#f0fdf4"
+  },
+  "palette": {
+    "background": {
+      "light": "#F0FDF4",
+      "dark": "#050A0E"
+    },
+    "surface": {
+      "light": "#FFFFFF",
+      "dark": "#0A1218"
+    },
+    "surface-raised": {
+      "light": "#ECFDF5",
+      "dark": "#101C25"
+    },
+    "border": {
+      "light": "#A7F3D0",
+      "dark": "#0D3B3B"
+    },
+    "text": {
+      "light": "#0A1A12",
+      "dark": "#E0FFF0"
+    },
+    "text-muted": {
+      "light": "#4A7A60",
+      "dark": "#6AA898"
+    },
+    "primary": {
+      "light": "#059669",
+      "dark": "#00FFD5"
+    },
+    "primary-hover": {
+      "light": "#047857",
+      "dark": "#33FFE0"
+    }
+  },
+  "modes": [
+    "light",
+    "dark"
+  ],
+  "shapes": [
+    "sharp",
+    "rounded",
+    "pill"
+  ],
+  "decantr_compat": ">=2.0.0",
+  "source": "community",
+  "decorators": {
+    "bio-glow-card": "Dark card with luminescent cyan border glow at 40% opacity, subtle pulse animation on the border shadow.",
+    "bio-glow-ring": "Circular element with animated bioluminescent ring that slowly pulses between cyan and violet hues.",
+    "bio-abyss": "Deep near-black background with faint radial cyan glow emanating from center for depth effect.",
+    "bio-tendril": "Organic wavy border accent using SVG path with glowing cyan stroke and animated dash offset."
+  },
+  "spatial": {
+    "density_bias": 0,
+    "content_gap_shift": 0,
+    "section_padding": "6rem",
+    "card_wrapping": "standard"
+  },
+  "motion": {
+    "preference": "moderate",
+    "reduce_motion": false,
+    "entrance": "fade",
+    "timing": "ease-out",
+    "durations": {
+      "hover": "200ms",
+      "entrance": "400ms",
+      "instant": "80ms",
+      "fast": "160ms",
+      "base": "280ms",
+      "slow": "450ms",
+      "slower": "650ms",
+      "stagger": "70ms"
+    },
+    "easings": {
+      "ease": "cubic-bezier(0.34, 1.4, 0.64, 1)",
+      "easeOut": "cubic-bezier(0, 0, 0.2, 1)",
+      "easeIn": "cubic-bezier(0.4, 0, 1, 1)",
+      "spring": "cubic-bezier(0.34, 1.56, 0.64, 1)"
+    }
+  },
+  "typography_hints": {
+    "scale": "modular",
+    "heading_weight": 600,
+    "body_weight": 400
+  },
+  "motion_hints": {
+    "preference": "subtle",
+    "reduce_motion_default": true
+  },
+  "decorator_definitions": {
+    "bio-glow-card": {
+      "description": "Dark card with luminescent cyan border glow at 40% opacity, subtle pulse animation on the border shadow.",
+      "intent": "Use for content containers that should feel alive and organic. The pulsing glow border mimics deep-sea bioluminescence.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #0A1218)",
+        "border": "1px solid rgba(0, 255, 213, 0.3)",
+        "border-radius": "12px",
+        "box-shadow": "0 0 12px rgba(0, 255, 213, 0.4)",
+        "animation": "bio-pulse 3s ease-in-out infinite"
+      },
+      "pairs_with": [
+        "bio-abyss",
+        "bio-glow-ring"
+      ],
+      "usage": [
+        "Feature cards",
+        "Data panels",
+        "Status containers",
+        "Info cards"
+      ]
+    },
+    "bio-glow-ring": {
+      "description": "Circular element with animated bioluminescent ring that slowly pulses between cyan and violet hues.",
+      "intent": "Use for avatar frames, status indicators, and circular elements that need the living bioluminescent effect.",
+      "suggested_properties": {
+        "border-radius": "50%",
+        "border": "2px solid rgba(0, 255, 213, 0.5)",
+        "box-shadow": "0 0 8px rgba(0, 255, 213, 0.3), 0 0 16px rgba(123, 97, 255, 0.2)",
+        "animation": "bio-ring-pulse 4s ease-in-out infinite"
+      },
+      "pairs_with": [
+        "bio-glow-card",
+        "bio-abyss"
+      ],
+      "usage": [
+        "Avatar frames",
+        "Status rings",
+        "Circular indicators",
+        "Icon containers"
+      ]
+    },
+    "bio-abyss": {
+      "description": "Deep near-black background with faint radial cyan glow emanating from center for depth effect.",
+      "intent": "Use as the foundational page background to create the deep ocean abyss atmosphere. The central glow suggests light from an unseen source.",
+      "suggested_properties": {
+        "background": "radial-gradient(ellipse at center, rgba(0, 255, 213, 0.05), #050A0E 70%)",
+        "min-height": "100vh",
+        "color": "#E0FFF0"
+      },
+      "pairs_with": [
+        "bio-glow-card",
+        "bio-tendril"
+      ],
+      "usage": [
+        "Page root containers",
+        "App shell backgrounds",
+        "Hero section backdrops"
+      ]
+    },
+    "bio-tendril": {
+      "description": "Organic wavy border accent using SVG path with glowing cyan stroke and animated dash offset.",
+      "intent": "Use as decorative section borders or dividers. The animated organic wave creates a living, breathing separation between content.",
+      "suggested_properties": {
+        "stroke": "#00FFD5",
+        "stroke-width": "2",
+        "fill": "none",
+        "stroke-dasharray": "8 4",
+        "animation": "tendril-flow 3s linear infinite",
+        "opacity": "0.6"
+      },
+      "pairs_with": [
+        "bio-abyss",
+        "bio-glow-card"
+      ],
+      "usage": [
+        "Section dividers",
+        "Decorative borders",
+        "Content separators"
+      ]
+    }
+  },
+  "typography": {
+    "display": "'Inter', ui-sans-serif, system-ui, sans-serif",
+    "body": "'Inter', ui-sans-serif, system-ui, sans-serif"
+  },
+  "elevation": {
+    "1": {
+      "light": "0 1px 2px rgba(0,0,0,0.06)",
+      "dark": "0 1px 2px rgba(0,0,0,0.4)"
+    },
+    "2": {
+      "light": "0 2px 6px rgba(0,0,0,0.08)",
+      "dark": "0 2px 8px rgba(255, 255, 255, 0.06)"
+    },
+    "3": {
+      "light": "0 6px 16px rgba(0,0,0,0.10)",
+      "dark": "0 4px 16px rgba(255, 255, 255, 0.08)"
+    },
+    "4": {
+      "light": "0 12px 32px rgba(0,0,0,0.14)",
+      "dark": "0 8px 28px rgba(255, 255, 255, 0.12)"
+    },
+    "5": {
+      "light": "0 24px 64px rgba(0,0,0,0.18)",
+      "dark": "0 16px 48px rgba(255, 255, 255, 0.16)"
+    }
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "doc-browser",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Documentation Browser",
+  "description": "Full documentation reading experience with navigable doc tree, content pane, and table of contents. Core interface for knowledge base platforms.",
+  "tags": [
+    "documentation",
+    "knowledge-base",
+    "docs",
+    "reading",
+    "technical-writing"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "documentation site",
+        "docs browser",
+        "knowledge base docs",
+        "doc reader",
+        "technical documentation"
+      ],
+      "secondary": [
+        "doc tree",
+        "table of contents",
+        "markdown docs",
+        "developer docs",
+        "gitbook"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "docs",
+      "patterns": [
+        {
+          "pattern": "page-tree",
+          "preset": "standard",
+          "as": "doc-tree"
+        },
+        {
+          "pattern": "breadcrumb-nav",
+          "preset": "standard",
+          "as": "breadcrumbs"
+        }
+      ],
+      "default_layout": [
+        "breadcrumb-nav",
+        "page-tree"
+      ],
+      "shell": "three-column-browser"
+    },
+    {
+      "id": "doc-page",
+      "patterns": [
+        {
+          "pattern": "legal-prose",
+          "preset": "standard",
+          "as": "doc-content"
+        },
+        {
+          "pattern": "command-palette",
+          "preset": "minimal",
+          "as": "search"
+        }
+      ],
+      "default_layout": [
+        "command-palette",
+        "legal-prose"
+      ],
+      "shell": "three-column-browser"
+    }
+  ],
+  "page_briefs": {
+    "docs": "Three-column documentation hub. Left column displays a hierarchical page tree for navigating the doc structure. Center column shows the currently selected document content. Right column renders a sticky table of contents generated from document headings. Breadcrumb navigation spans the top of the center column for orientation within nested sections.",
+    "doc-page": "Individual documentation page rendered in long-form prose format. Left sidebar retains the page tree for context. Center column displays the full document with heading anchors, inline code blocks, and callout boxes. A minimal command palette is available via keyboard shortcut for quick navigation to other pages. Right column shows the on-page TOC."
+  },
+  "features": [
+    "docs",
+    "navigation",
+    "table-of-contents",
+    "breadcrumbs"
+  ],
+  "shells": {
+    "three-column-browser": "Doc tree sidebar, content pane, and TOC sidebar for three-column documentation browsing"
+  },
+  "dependencies": {
+    "patterns": {
+      "page-tree": "^1.0.0",
+      "breadcrumb-nav": "^1.0.0",
+      "legal-prose": "^1.0.0",
+      "command-palette": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "clean"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

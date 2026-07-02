@@ -1,0 +1,118 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "tenant-directory",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Tenant Directory",
+  "description": "All tenants list with search, filters, bulk actions, and summary stats. Supports card and table views.",
+  "dependencies": {
+    "patterns": {
+      "tenant-card": "^1.0.0"
+    },
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "icon",
+        "Input",
+        "Select",
+        "Badge"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "icon",
+    "Input",
+    "Select",
+    "Badge"
+  ],
+  "default_preset": "table",
+  "presets": {
+    "table": {
+      "description": "Detailed table view of tenants",
+      "components": [
+        "Button",
+        "icon",
+        "Input",
+        "Select",
+        "Badge"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "header": "Title, add tenant button",
+          "summary": "Total tenants, active, past due counts",
+          "filters": "Search, status filter, property filter, lease expiring filter",
+          "table": "Tenant table with sortable columns",
+          "pagination": "Page controls"
+        }
+      }
+    },
+    "cards": {
+      "description": "Visual card grid of tenants with avatar, property, and lease status displayed per card",
+      "components": [
+        "Button",
+        "icon",
+        "Input"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "header": "Title and controls",
+          "filters": "Search and filters",
+          "grid": "Tenant cards"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap4",
+    "slots": {
+      "header": "Title and add button",
+      "summary": "Stats",
+      "filters": "Search and filters",
+      "items": "Tenant cards or rows",
+      "pagination": "Page controls"
+    }
+  },
+  "visual_brief": "Directory page with a header containing 'Tenants' title, a search input, and an 'Add Tenant' button. Summary stats show total tenants, active leases, and average occupancy. Filter controls offer search by name, filter by property/status. The main area displays tenant cards in a responsive grid (cards preset) or a data table (table preset) with columns for avatar, name, property, unit, lease dates, payment status, and actions. Pagination controls at the bottom for large directories.",
+  "responsive": {
+    "mobile": "Single-column tenant cards. Summary in a compact bar. Filters collapse to a button. Search is full-width.",
+    "tablet": "Two-column card grid or table with horizontal scroll. Filters visible.",
+    "desktop": "Three-column card grid or full-width table. All summary, filters, and pagination visible."
+  },
+  "layout_hints": {
+    "directory_priority": "Lead with tenant discoverability first: search, filters, and status summary, then the actual records. The pattern should help managers answer who is active, at risk, or needs attention quickly.",
+    "card_vs_table": "Card and table modes should preserve the same core tenant fields so switching views changes density, not meaning.",
+    "bulk_workflow": "If bulk actions are present, keep them clearly downstream of selection so the directory still reads as a stable list before it becomes an action surface."
+  },
+  "motion": {
+    "micro": "Search focus, row hover, and selection states may sharpen slightly. Bulk-selection or filter states may brighten enough to confirm changes without overwhelming the list.",
+    "transitions": "Filtering, sorting, and pagination should preserve list orientation and avoid dramatic layout jumps."
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Tenant directory",
+    "keyboard": [
+      "Search, filters, summary controls, and tenant items should remain reachable in one clear reading order."
+    ],
+    "announcements": [
+      "Tenant identity, unit context, and status should be exposed semantically so both card and table variants remain understandable without visual styling alone."
+    ]
+  },
+  "composition": {
+    "TenantDirectory": "Container(d-section, flex-col, gap-4) > [Header + Filters + SummaryStats? + TenantList + Pagination]",
+    "Header": "Row(d-control, space-between) > [Title + AddTenantButton(d-interactive) + ViewToggle(d-interactive)]",
+    "Filters": "Row(d-control) > [SearchInput(d-control) + PropertyFilter(d-control) + StatusFilter(d-control)]",
+    "SummaryStats": "Row(d-data) > [TotalTenants + ActiveLeases + PendingPayments(color: warning)]",
+    "TenantList": "Grid(d-data, responsive: 1/2/3-col) > TenantCard[]"
+  }
+}

@@ -1,0 +1,129 @@
+{
+  "id": "notebook-entry",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Notebook Entry",
+  "description": "An electronic lab notebook (ELN) entry card combining rich text, embedded images, LaTeX-rendered formulas, timestamp-chained edit history, and reviewer annotations for scientific record-keeping and witness-signing compliance.",
+  "category": "science",
+  "tags": [
+    "2026",
+    "science",
+    "eln",
+    "notebook",
+    "lab",
+    "record",
+    "witness",
+    "rich-text"
+  ],
+  "components": [
+    "EntryHeader",
+    "RichContent",
+    "ImageEmbed",
+    "FormulaBlock",
+    "TimestampChain",
+    "ReviewerNote",
+    "TextBlock",
+    "SignatureBlock",
+    "AuthorAvatar"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full rich-entry rendering with header, body content (text/images/formulas/tables), timestamp chain, and signature block. Intended as the primary reading view for lab notebook entries in research ELN systems.",
+      "layout": {
+        "layout": "document",
+        "atoms": "_w100 _grid _gap4 _p6 _max-w-820"
+      }
+    },
+    "minimal": {
+      "description": "Text-only collapsed rendering suitable for linked-entry preview cards and search results. Hides images and formulas, shows only header metadata and a truncated text body with expand-to-read action.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_w100 _grid _gap2 _p4 _max-w-640"
+      }
+    },
+    "review": {
+      "description": "Review-mode rendering with reviewer annotation marginalia visible alongside the entry body. ReviewerNotes render as yellow sticky-note cards in the right margin anchored to the text range they annotate.",
+      "layout": {
+        "layout": "document",
+        "atoms": "_w100 _grid _grid-cols-[1fr_240px] _gap4 _p6 _max-w-1040"
+      }
+    }
+  },
+  "visual_brief": "A lab-notebook entry rendered as a d-surface document with a thin left accent border and generous padding reflecting the feel of a bound laboratory notebook page. The EntryHeader at the top shows: a DateBadge pill with full date and time ('April 5, 2026 — 14:23'), an experiment-ID chip ('EXP-2026-042'), and an AuthorAvatar (32px circle) with author name and role beneath. A title in text-2xl semibold follows ('Protein Expression Optimization — Trial 3'). A horizontal rule separates header from body. The RichContent body flows in a newspaper-column-inspired layout with readable line-height (1.6) and max-width 70ch. TextBlocks render as paragraphs with proper typography. ImageEmbeds appear as centered figures with thin borders, captions beneath ('Figure 1: SDS-PAGE gel showing lane 1-6 expressed protein') in text-sm italic, and click-to-enlarge behavior opening a full-resolution lightbox. FormulaBlocks render mathematical expressions via LaTeX (e.g., 'OD600 = log(I₀/I) × path-length') in a display-math style with subtle gray background inset. Data tables render with monospaced headers and tabular-nums cells. The TimestampChain sits at the bottom of the entry showing edit-history as a horizontal chain: small timestamp pills connected with arrows ('Created 14:23 → Edited 15:47 → Edited 16:12'). Each pill shows user initial + time, hoverable for full diff. In review preset, ReviewerNotes render as yellow sticky-note cards in the right margin, anchored by thin connector lines to the text range they annotate, with reviewer avatar, note text, and 'resolve' button. A SignatureBlock at the very bottom shows the author signature (e.g., 'Signed: J. Chen 16:12 EDT') and when witnessed, a co-signer block ('Witnessed by: S. Park 17:04 EDT') with tamper-evident hash of the content. The entire entry becomes immutable after signing — further edits create a new dated revision.",
+  "layout_hints": {
+    "container": "d-surface document with left-accent border",
+    "note": "ELN entries are regulated scientific records (21 CFR Part 11 compliant). After signature, entries are immutable. Edits create new revisions with full diff preserved.",
+    "rich_content_width": "RichContent body max-width 70ch for readable line-length. Line-height 1.6. Paragraph spacing generous.",
+    "image_embed": "ImageEmbed figures centered with 1px border, 8px padding, and caption beneath in text-sm italic. Click opens lightbox at full resolution.",
+    "formula_block": "FormulaBlock uses MathJax/KaTeX rendering, display-math style. Inset gray background for visual distinction from body text.",
+    "timestamp_chain": "TimestampChain shows ALL edits with user+timestamp. Never hides revision history. Hoverable pills show diff of that edit.",
+    "signature_block": "SignatureBlock hashes entry content at time of signing for tamper-evidence. After witness co-signature, entry enters locked state (no further edits allowed, only appended revisions)."
+  },
+  "default_layout": {
+    "layout": "document",
+    "atoms": "_w100 _grid _gap4 _p6 _max-w-820",
+    "slots": {
+      "entry-header": "Top section with DateBadge, experiment-ID chip, AuthorAvatar + name + role, and entry title (text-2xl semibold). Horizontal rule separates header from body.",
+      "rich-content": "Main body content with mixed block types: TextBlocks (paragraphs), ImageEmbeds (figures with captions), FormulaBlocks (LaTeX math), tables, lists, quotes. Newspaper-column typography with max-width 70ch.",
+      "image-embeds": "Repeating sub-slot within rich-content. Figure elements with centered image, thin border, italic caption, and click-to-lightbox behavior. Numbered automatically (Figure 1, Figure 2...).",
+      "formula-blocks": "Repeating sub-slot within rich-content. LaTeX-rendered mathematical expressions in display-math style with subtle gray background.",
+      "timestamp-chain": "Horizontal chain of edit-history pills at bottom of entry. Each pill shows user initial + time, hoverable to reveal diff. Chain uses arrows connecting pills chronologically.",
+      "reviewer-notes": "Review-preset-only slot. Yellow sticky-note cards in right margin anchored by connector lines to annotated text ranges. Each note shows reviewer avatar, text, timestamp, and resolve action.",
+      "signature-block": "Footer at entry end showing author signature with timestamp and optional witness co-signature. Includes tamper-evidence content hash. Locks entry from further edits after witnessing."
+    }
+  },
+  "accessibility": {
+    "role": "article",
+    "aria-label": "Laboratory notebook entry",
+    "announcements": [
+      "Entry by {author} from {date}, experiment {id}",
+      "Edited {count} times, last edit {timestamp}",
+      "Entry signed by {author} and witnessed by {witness}",
+      "New reviewer note on {range}"
+    ],
+    "keyboard": [
+      "J/K: navigate between entries",
+      "R: toggle review annotations",
+      "I: open images in lightbox",
+      "E: edit current entry (if unsigned)",
+      "S: sign entry (author) or witness (reviewer)"
+    ]
+  },
+  "responsive": {
+    "mobile": "Entry expands to full width with reduced padding. ReviewerNotes collapse into inline indicators that expand on tap. ImageEmbeds fit 100% width. FormulaBlocks allow horizontal scroll.",
+    "tablet": "Standard document at max-w-820px. Review preset maintains right margin ReviewerNotes at reduced 200px width."
+  },
+  "motion": {
+    "micro": {
+      "image-hover": "subtle shadow-lift 150ms ease-out",
+      "timestamp-hover": "pill brightens + expands 120ms ease-out",
+      "formula-hover": "background darkens subtly 150ms ease-out"
+    },
+    "transitions": {
+      "image-lightbox": "image scale + fade from thumbnail to fullscreen 300ms ease-out",
+      "note-resolve": "yellow note fade + slide-out 250ms ease-in",
+      "signature-lock": "border color shift to success + content dim 400ms ease-out"
+    },
+    "ambient": {
+      "unsigned-pulse": "SignatureBlock subtle amber tint pulse 2s ease-in-out infinite when entry unsigned"
+    }
+  },
+  "interactions": [
+    "click-select",
+    "animate-on-mount",
+    "keyboard-navigation",
+    "hover-reveal"
+  ],
+  "composition": {
+    "NotebookEntry": "Surface(d-surface, document, border-left-accent) > [EntryHeader + RichContent + TimestampChain + ReviewerNote[]? + SignatureBlock]",
+    "EntryHeader": "Header(d-annotation) > [DateBadge + ExperimentIdChip + AuthorAvatar + EntryTitle]",
+    "RichContent": "Body(d-prose, max-w-70ch) > [TextBlock[] + ImageEmbed[] + FormulaBlock[] + DataTable[]]",
+    "ImageEmbed": "Figure(d-surface, bordered, data-interactive) > [Image + Caption + LightboxLink]",
+    "FormulaBlock": "Block(d-annotation, data-formula, mathjax) > [LatexExpression]",
+    "TimestampChain": "Chain(d-annotation, data-timestamp-history) > [TimestampPill[] > [UserInitial + TimeText] + ChainArrow[]]",
+    "ReviewerNote": "Card(d-surface, data-note, sticky-yellow, margin-right) > [ReviewerAvatar + NoteText + Timestamp + ResolveButton + AnchorLine]",
+    "SignatureBlock": "Block(d-annotation, data-signature, data-locked?) > [AuthorSignature + WitnessSignature? + ContentHash]"
+  }
+}

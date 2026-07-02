@@ -1,0 +1,158 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "video-editor",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "AI Video Editor",
+  "description": "Core timeline-based editing workspace for AI-generated video projects. Combines multi-track timeline, scene storyboard, and render queue for end-to-end video production.",
+  "tags": [
+    "ai",
+    "video",
+    "editor",
+    "timeline",
+    "scenes",
+    "storyboard",
+    "render",
+    "2026"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "video editor",
+        "timeline editor",
+        "ai video studio",
+        "video production",
+        "scene editor"
+      ],
+      "secondary": [
+        "storyboard",
+        "render queue",
+        "shot editor",
+        "video timeline",
+        "film editor"
+      ],
+      "negative": [
+        "chatbot",
+        "livestream"
+      ]
+    },
+    "implies": [
+      "scenes",
+      "render"
+    ],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "editor",
+      "path": "/editor",
+      "patterns": [
+        {
+          "pattern": "timeline-scrubber",
+          "preset": "video",
+          "as": "timeline"
+        },
+        {
+          "pattern": "scene-storyboard",
+          "preset": "grid",
+          "as": "storyboard"
+        },
+        {
+          "pattern": "render-queue",
+          "preset": "compact",
+          "as": "queue"
+        }
+      ],
+      "default_layout": [
+        "storyboard",
+        "timeline",
+        "queue"
+      ],
+      "shell": "sidebar-aside"
+    },
+    {
+      "id": "project-detail",
+      "path": "/projects/:id",
+      "patterns": [
+        {
+          "pattern": "scene-storyboard",
+          "preset": "detail",
+          "as": "scene-review"
+        },
+        {
+          "pattern": "character-sheet",
+          "preset": "grid",
+          "as": "cast"
+        },
+        {
+          "pattern": "shot-grid",
+          "preset": "flow",
+          "as": "shots"
+        }
+      ],
+      "default_layout": [
+        "scene-review",
+        "cast",
+        "shots"
+      ],
+      "shell": "sidebar-aside"
+    },
+    {
+      "id": "export",
+      "path": "/editor/export",
+      "patterns": [
+        {
+          "pattern": "form-sections",
+          "preset": "structured",
+          "as": "export-settings"
+        },
+        {
+          "pattern": "render-queue",
+          "preset": "list",
+          "as": "render-jobs"
+        }
+      ],
+      "default_layout": [
+        "export-settings",
+        "render-jobs"
+      ],
+      "shell": "sidebar-aside"
+    }
+  ],
+  "page_briefs": {
+    "editor": "Three-region editing workspace. Top area shows a scene storyboard grid of 16:9 scene cards with drag-to-reorder, each displaying thumbnail, duration badge, and scene number. Center area is a multi-track timeline with draggable scrubber handle, frame thumbnails, audio waveforms, scene markers, and zoom controls. Right aside shows a compact render queue with active jobs, progress bars, and status chips. Main content flex-grows so the timeline stays anchored near the bottom of the viewport.",
+    "project-detail": "Project overview with storyboard grid on left occupying majority of width, showing all scenes with selected-scene script notes in a right sidebar. Below the storyboard, a character sheet grid displays cast members with portrait, name, role, and consistency score. A shot grid flows horizontally showing shot thumbnails with shot-number badges, camera angle icons, and connection arrows indicating narrative order.",
+    "export": "Two-region export configuration. Upper region is a grouped form with sections for resolution, codec, bitrate, aspect ratio, format, and output destination; each section has clear labels, numeric inputs, and dropdowns with save and reset actions. Lower region shows the render queue as a full list with job rows: scene name, duration, progress bar, ETA, and cancel/retry actions."
+  },
+  "features": [
+    "timeline-editing",
+    "scene-management",
+    "render-queue"
+  ],
+  "shells": {
+    "sidebar-aside": "Collapsible sidebar with main content area and optional right aside panel"
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon",
+      "neon-dark"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  },
+  "dependencies": {
+    "patterns": {
+      "timeline-scrubber": ">=1.0.0",
+      "scene-storyboard": ">=1.0.0",
+      "render-queue": ">=1.0.0",
+      "character-sheet": ">=1.0.0",
+      "shot-grid": ">=1.0.0",
+      "form-sections": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

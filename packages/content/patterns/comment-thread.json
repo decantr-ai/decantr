@@ -1,0 +1,155 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "comment-thread",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Comment Thread",
+  "description": "Inline or sidebar comment discussions with reply threading, @mentions, reactions, and resolve functionality.",
+  "dependencies": {
+    "patterns": {
+      "mention-popup": "^1.0.0"
+    },
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Avatar",
+        "Button",
+        "Textarea",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Avatar",
+    "Button",
+    "Textarea",
+    "icon"
+  ],
+  "default_preset": "sidebar",
+  "presets": {
+    "sidebar": {
+      "description": "Full thread display in aside panel",
+      "components": [
+        "Avatar",
+        "Button",
+        "Textarea",
+        "icon"
+      ],
+      "layout": {
+        "layout": "column",
+        "atoms": "_flex _col _gap3 _p4",
+        "slots": {
+          "comments": "List of comment messages",
+          "reply-input": "New reply composer",
+          "actions": "Thread-level actions (resolve, delete)"
+        }
+      }
+    },
+    "inline": {
+      "description": "Compact thread attached to text selection",
+      "components": [
+        "Avatar",
+        "Button",
+        "Textarea",
+        "icon"
+      ],
+      "layout": {
+        "layout": "popover",
+        "atoms": "_absolute _w[320px] _bg[var(--surface)] _shadow _r2 _border",
+        "slots": {
+          "anchor": "Connection line to commented text",
+          "comments": "Compact comment list",
+          "reply-input": "Inline reply field"
+        }
+      }
+    },
+    "resolved": {
+      "description": "Collapsed resolved thread indicator",
+      "components": [
+        "Avatar",
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _aic _gap2 _p2 _bg[var(--surface-raised)] _r1",
+        "slots": {
+          "indicator": "Resolved checkmark",
+          "summary": "Brief thread summary",
+          "expand": "Expand to view"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "column",
+    "atoms": "_flex _col _gap3",
+    "slots": {
+      "anchor": "Connection to commented content",
+      "comments": "List of comment messages with avatar, author, timestamp",
+      "reply-input": "Textarea for new replies",
+      "actions": "Resolve, delete, react actions",
+      "resolved-indicator": "Checkmark when thread is resolved"
+    }
+  },
+  "io": {
+    "consumes": [
+      "thread",
+      "currentUser"
+    ],
+    "produces": [
+      "reply",
+      "resolve",
+      "react"
+    ],
+    "actions": [
+      "add-reply",
+      "resolve-thread",
+      "reopen-thread",
+      "add-reaction",
+      "delete-comment",
+      "edit-comment"
+    ]
+  },
+  "visual_brief": "Vertical thread of comment messages with an anchor line connecting to the commented content. Each comment shows a small avatar, author name in bold, timestamp in muted text, and the comment body. Replies indent slightly with a thin left border. A textarea input at the bottom allows new replies with a send button. A resolve button (checkmark icon) sits in the thread header. Resolved threads show a green checkmark and collapsed state. Sidebar preset renders as a right-side panel. Inline preset positions the thread as a popover near the anchor point.",
+  "responsive": {
+    "mobile": "Thread renders full-width as a bottom sheet. Avatar size reduces. Reply input is full-width. Thread collapses to show only the first comment with an expand button.",
+    "tablet": "Sidebar preset renders as a right panel at 320px width. Inline preset uses a popover.",
+    "desktop": "Standard sidebar or inline popover layout. Full avatars and comfortable spacing."
+  },
+  "layout_hints": {
+    "thread_role": "The thread should feel attached to the referenced content first and like a discussion surface second. Anchor cues, indentation, and resolve state should preserve that relationship.",
+    "reply_hierarchy": "Primary comment, replies, and thread actions should read in a clear top-to-bottom progression. Resolve controls should be easy to find without visually dominating the discussion.",
+    "inline_vs_sidebar": "Inline threads should stay compact and context-tethered, while sidebar threads may breathe more and show a fuller reply composer."
+  },
+  "motion": {
+    "micro": "Resolve state, hover actions, and reply affordances may fade or sharpen in gently as attention moves through the thread.",
+    "transitions": "Opening, collapsing, or resolving threads should feel calm and collaborative rather than abrupt or chatty."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "stagger-children",
+    "real-time-updates",
+    "inline-edit",
+    "hover-reveal"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Comment thread",
+    "keyboard": [
+      "Thread messages, reply composer, and resolve actions should follow a predictable reading order.",
+      "Resolved and reopened states should remain clear to keyboard and assistive-technology users."
+    ],
+    "announcements": [
+      "Author, timestamp, reply depth, and resolution state should be communicated semantically, not only through indentation or color."
+    ]
+  },
+  "composition": {
+    "CommentThread": "Container(d-surface, flex-col) > [AnchorLine? + CommentList + ReplyInput + ThreadActions]",
+    "CommentList": "List(flex-col, gap-3) > Comment[]",
+    "Comment": "Row > [Avatar(small) + Body(flex-col) > [AuthorName(font-bold) + Timestamp(text-muted) + CommentText] + ReactionBar?]",
+    "ReplyInput": "Row > [Textarea(d-control) + SendButton(d-interactive)]",
+    "ThreadActions": "Row(d-interactive) > [ResolveButton(icon: check) + DeleteButton?(variant: ghost)]"
+  }
+}

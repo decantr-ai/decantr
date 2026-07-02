@@ -1,0 +1,131 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "data-source-connector",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Data Source Connector",
+  "description": "Card-based interface for connecting to external data sources with status indicators, configuration forms, connection testing, and sync controls for integration management.",
+  "category": "integration",
+  "tags": [
+    "2026",
+    "integration",
+    "data-source",
+    "connector",
+    "sync",
+    "configuration",
+    "api"
+  ],
+  "components": [
+    "SourceCard",
+    "SourceIcon",
+    "ConnectionStatus",
+    "SyncButton",
+    "ConfigForm",
+    "TestConnectionButton",
+    "SourceCatalog"
+  ],
+  "default_preset": "catalog",
+  "presets": {
+    "catalog": {
+      "description": "Grid of available data source cards showing icons, names, and connection status — the starting view for browsing and initiating new connections",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _sm:gc2 _lg:gc3 _gap4 _py4 _w-full"
+      }
+    },
+    "connected": {
+      "description": "Filtered view showing only active connections with last sync time, sync status, and quick-action controls — for monitoring and managing established integrations",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _sm:gc2 _lg:gc3 _gap4 _py4 _w-full"
+      }
+    },
+    "setup": {
+      "description": "Configuration form panel for establishing or editing a data source connection — shows credential fields, host/port inputs, and test connection workflow with inline validation",
+      "layout": {
+        "layout": "center",
+        "atoms": "_flex _col _gap6 _maxw-[560px] _mx-auto _py6"
+      }
+    }
+  },
+  "visual_brief": "Responsive grid of SourceCard components. Each card is a surface card (border, rounded-lg, padding 24px) containing: a large recognizable SourceIcon at the top center (48px, e.g. PostgreSQL blue elephant, MySQL dolphin, Stripe purple logo, Snowflake snowflake, MongoDB green leaf, Google Sheets green document icon, Salesforce cloud), the source name in semibold text below the icon, a short one-line description in muted text (e.g. 'Relational database'), and a ConnectionStatus badge at the bottom. Connected sources show a green dot + 'Connected' label with 'Last sync: 2m ago' in small muted text below. Disconnected sources show a gray dot + 'Not connected' and the card has slightly reduced opacity (0.85). Sources with sync errors show a red dot + 'Error' with a warning icon. Hovering a card elevates it with shadow-md and a subtle border accent. Clicking a disconnected card opens the setup panel: a centered form card that slides in from the right (or replaces the grid on mobile). The ConfigForm contains: the source icon and name at the top, a horizontal divider, then input fields specific to the source type (e.g. for PostgreSQL: Host, Port, Database Name, Username, Password with a show/hide toggle, SSL toggle). Each field has a label and placeholder text. Below the fields, a TestConnectionButton: a secondary outlined button that on click shows a spinner, then either a green checkmark + 'Connection successful' or a red X + error message with detail text. Below the test button, a primary 'Save & Connect' button (disabled until test passes). For connected sources, clicking the card shows a detail panel with: connection info summary (host, database, masked credentials), last sync timestamp, sync duration, record counts, a SyncButton (secondary button with rotating arrows icon during sync, 'Sync Now' label), a 'Disconnect' destructive text button, and an 'Edit' button to modify configuration. The SyncButton shows rotating arrows during active sync with a progress label ('Syncing... 45%'), then transitions to a checkmark + 'Synced' on completion.",
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gc1 _sm:gc2 _lg:gc3 _gap4 _py4",
+    "slots": {
+      "source-catalog": "The main grid container displaying SourceCard components. Shows all available data sources in a responsive grid (1 column mobile, 2 tablet, 3 desktop). A search input above the grid filters cards by name. Optional category tabs (Databases, APIs, Files, Warehouses) filter the catalog. An 'Add Custom Source' card with a dashed border and plus icon sits at the end of the grid.",
+      "source-card": "Repeating card slot for each data source. Surface card with: SourceIcon (48px, centered, recognizable brand icon or generic database/API icon), source name (semibold, centered below icon), source description (muted, one-line, centered), and ConnectionStatus badge at bottom. Card states: disconnected (normal surface, gray status dot), connected (normal surface, green status dot, last sync time), error (surface with subtle red-tinted border, red status dot, error message). Hover: elevate with shadow-md + border-accent hint. Click: opens setup form (if disconnected) or detail panel (if connected).",
+      "config-form": "Setup/edit panel for configuring a data source connection. Header: source icon (32px) + source name + close X button. Body: form fields varying by source type — common fields include Host/URL input, Port number input, Database/Resource name, Authentication section (username + password with visibility toggle, or API key field, or OAuth connect button). SSL/TLS toggle switch. Advanced section (collapsible): connection timeout, max pool size, custom parameters as key-value pairs. Footer: TestConnectionButton (outlined, shows spinner → success/failure inline) and primary 'Save & Connect' button (disabled until test succeeds). For editing existing connections, fields are pre-filled and the button reads 'Save Changes'.",
+      "connection-detail": "Panel shown when clicking a connected source card. Shows: connection summary (host, database, credentials masked as dots), sync statistics (last sync time, duration, records synced, errors), SyncButton with label and rotating-arrows animation during sync, a 'Disconnect' destructive button with confirmation dialog, and an 'Edit Configuration' button that switches to the config form."
+    }
+  },
+  "responsive": {
+    "mobile": "Grid becomes single column. Source cards are full-width. Config form opens as a full-screen overlay or pushed view. Test connection result shows inline. Search input full-width above cards. Category tabs become a horizontal scrollable chip row.",
+    "tablet": "Two-column grid. Config form opens as a right-side panel (50% width) overlaying the grid. Comfortable card sizes with full icon and text visibility.",
+    "desktop": "Three-column grid with generous card spacing. Config form opens as a slide-out panel from the right (400px fixed width) with the grid still visible and dimmed behind. Connection detail can show as a popover or the same slide-out panel."
+  },
+  "layout_hints": {
+    "catalog_priority": "Lead with source identity and connection state first. Setup and detail panels should feel like progressive disclosure attached to the selected source rather than a separate admin surface.",
+    "status_clarity": "Connected, disconnected, and error states should remain immediately legible before the user reads any deeper configuration detail.",
+    "panel_attachment": "Config and connection-detail panels should feel physically tied to the selected source card so users never lose track of what they are editing."
+  },
+  "layout_hints": {
+    "catalog_priority": "Lead with source identity and connection state first. Setup and detail panels should feel like progressive disclosure attached to the selected source rather than a separate admin surface.",
+    "status_clarity": "Connected, disconnected, and error states should remain immediately legible before the user reads any deeper configuration detail.",
+    "panel_attachment": "Config and connection-detail panels should feel physically tied to the selected source card so users never lose track of what they are editing."
+  },
+  "motion": {
+    "micro": {
+      "card-hover": "translateY(-2px) + shadow-md + border-color accent/30 150ms ease-out",
+      "status-dot-pulse": "scale(1→1.3→1) 2s ease-in-out infinite on connected status",
+      "test-button-press": "scale(0.97) 100ms ease-in"
+    },
+    "transitions": {
+      "config-panel-open": "translateX(100%)→0 + opacity 0→1 300ms ease-out",
+      "config-panel-close": "translateX(0)→100% + opacity 1→0 250ms ease-in",
+      "test-success": "spinner-fade-out 200ms + checkmark-scale(0→1) 300ms ease-out bounce",
+      "test-failure": "spinner-fade-out 200ms + error-icon-shake translateX(-3px→3px→0) 300ms ease-out",
+      "sync-complete": "rotating-arrows-stop + checkmark-fade-in 400ms ease-out",
+      "card-connect": "border-color gray→accent + status-dot-color gray→green 500ms ease-out"
+    },
+    "ambient": {
+      "sync-in-progress": "rotate(0→360deg) 1.2s linear infinite on sync arrows icon",
+      "error-glow": "box-shadow red/10 pulse 2s ease-in-out infinite on error status cards"
+    }
+  },
+  "interactions": [
+    "inline-edit",
+    "click-select",
+    "animate-on-mount"
+  ],
+  "composition": {
+    "DataSourceConnector": "Container(d-section, flex-col, gap-4) > [SearchBar?(d-control) + CategoryTabs?(d-control) + SourceCatalog(d-surface, grid: responsive)] > SourceCard(d-interactive, hover-elevate)* > [SourceIcon(d-annotation, centered, 48px) + SourceName(d-data, semibold) + SourceDescription(d-annotation, muted) + ConnectionStatus(d-annotation, dot + label)] + ConfigForm?(d-surface, slide-panel)",
+    "SourceCatalog": "Grid(d-surface, responsive-columns) > SourceCard(d-interactive)[] + AddCustomCard(d-interactive, dashed-border)",
+    "SourceCard": "Card(d-interactive, surface, rounded-lg, hover: elevate) > [SourceIcon(d-annotation, brand-icon, 48px, centered) + SourceName(d-data, semibold, centered) + SourceDescription(d-annotation, muted, one-line) + ConnectionStatus(d-annotation) > [StatusDot(color: status) + StatusLabel + LastSync?(muted, small)]]",
+    "ConfigForm": "Panel(d-surface, slide-from-right, padding-lg) > [Header > [SourceIcon(32px) + SourceName + CloseButton(d-interactive)] + Divider + FormFields(d-data, flex-col, gap-4) > [Input(d-interactive, type: per-field)]* + TestConnectionButton(d-interactive, secondary, inline-result) + SaveButton(d-interactive, primary, disabled-until-tested)]",
+    "ConnectionDetail": "Panel(d-surface) > [ConnectionSummary(d-data) + SyncStats(d-data) > [LastSync + Duration + RecordCount] + SyncButton(d-interactive, icon: rotating-arrows) + EditButton(d-interactive, secondary) + DisconnectButton(d-interactive, destructive)]"
+  },
+  "accessibility": {
+    "role": "grid",
+    "aria-label": "Data source connector catalog and configuration",
+    "keyboard": [
+      "Arrow keys: navigate between source cards in the grid",
+      "Enter: open configuration form or connection detail for focused card",
+      "Tab: move between form fields within config panel",
+      "Escape: close config panel or connection detail",
+      "T: trigger test connection (when config form is open)",
+      "S: trigger sync (when connection detail is open)",
+      "Backspace/Delete: disconnect source (with confirmation)"
+    ],
+    "announcements": [
+      "{source_name}: {connection_status}",
+      "Configuration form opened for {source_name}",
+      "Testing connection to {source_name}...",
+      "Connection test {result}: {detail}",
+      "Connected to {source_name} successfully",
+      "Sync started for {source_name}",
+      "Sync complete: {record_count} records in {duration}",
+      "Disconnected from {source_name}"
+    ]
+  }
+}

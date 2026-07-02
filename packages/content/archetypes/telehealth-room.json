@@ -1,0 +1,78 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "telehealth-room",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Telehealth Room",
+  "description": "Video consultation room for telehealth appointments with speaker-focused layout, session controls, and provider notes.",
+  "tags": [
+    "health",
+    "telehealth",
+    "video",
+    "consultation",
+    "telemedicine"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "telehealth room",
+        "video consultation",
+        "telemedicine",
+        "virtual visit"
+      ],
+      "secondary": [
+        "video call",
+        "doctor video",
+        "remote consultation",
+        "virtual appointment"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 0.7,
+    "tier": "optional"
+  },
+  "pages": [
+    {
+      "id": "session",
+      "patterns": [
+        {
+          "pattern": "video-room",
+          "preset": "speaker",
+          "as": "telehealth-video"
+        }
+      ],
+      "default_layout": [
+        "video-room"
+      ],
+      "shell": "minimal-header"
+    }
+  ],
+  "page_briefs": {
+    "session": "Telehealth session at /telehealth/:id. Speaker-focused video layout with the active speaker in a large center frame and the patient's self-view in a smaller picture-in-picture corner. Bottom toolbar has mic, camera, screen-share, and end-call controls. Side panel (collapsible) for session notes, shared documents, and chat."
+  },
+  "features": [
+    "telehealth",
+    "video",
+    "notes"
+  ],
+  "shells": {
+    "minimal-header": "Minimal top bar with session info and controls, maximized content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "video-room": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "clean"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  }
+}

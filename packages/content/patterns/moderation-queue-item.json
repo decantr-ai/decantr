@@ -1,0 +1,129 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "moderation-queue-item",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Moderation Queue Item",
+  "description": "Submission card for the admin moderation queue showing content preview, submitter info, reputation score, and approve/reject action buttons.",
+  "dependencies": {
+    "patterns": {
+      "namespace-badge": "^1.0.0",
+      "reputation-badge": "^1.0.0"
+    },
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Card",
+        "Badge",
+        "Button",
+        "Avatar",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "contained": false,
+  "components": [
+    "Card",
+    "CardHeader",
+    "CardBody",
+    "CardFooter",
+    "Badge",
+    "Button",
+    "Avatar",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full moderation card with content preview, submitter avatar, reputation score, submission date, and approve/reject buttons.",
+      "components": [
+        "Card",
+        "CardHeader",
+        "CardBody",
+        "CardFooter",
+        "Badge",
+        "Button",
+        "Avatar",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap0 _border _bordermuted/20 _r3 _overflow[hidden]",
+        "slots": {
+          "header": "Type badge, content name, and submission timestamp",
+          "submitter": "Avatar, username, reputation score badge, and trust indicator",
+          "preview": "Content description and truncated JSON preview",
+          "notes": "Optional admin notes textarea",
+          "actions": "Approve Button (success), Reject Button (destructive), View Detail link"
+        }
+      }
+    },
+    "compact": {
+      "description": "Compact single-row moderation item for dense queue views. Inline approve/reject icons.",
+      "components": [
+        "Badge",
+        "Button",
+        "Avatar",
+        "icon"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _aic _gap4 _px4 _py3 _borderb _bordermuted/10",
+        "slots": {
+          "avatar": "Submitter Avatar, small",
+          "content-info": "Type badge, name, and short description inline",
+          "reputation": "Reputation score, compact",
+          "actions": "Approve/reject icon Buttons"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap0 _border _bordermuted/20 _r3",
+    "slots": {
+      "header": "Type, name, timestamp",
+      "submitter": "Avatar, name, reputation",
+      "preview": "Description and content preview",
+      "actions": "Approve and reject buttons"
+    }
+  },
+  "visual_brief": "Bordered card for a single moderation queue entry. The header row shows a type badge (pattern, theme, etc.) in a color-coded pill, the content name, and a submission timestamp. A submitter row displays a small avatar, username, and reputation score badge. The card body shows a description preview and a collapsible content preview section (rendered JSON or markdown). The footer contains Approve (primary green) and Reject (destructive red) action buttons with optional feedback textarea. Compact preset condenses to a single row with inline approve/reject icon buttons.",
+  "responsive": {
+    "mobile": "Cards take full width. Approve/Reject buttons are full-width stacked. Content preview defaults to collapsed. Feedback textarea appears on button click.",
+    "tablet": "Standard card layout. Buttons side by side in the footer.",
+    "desktop": "Full card with content preview visible. Buttons inline in footer. Feedback textarea expandable."
+  },
+  "motion": {
+    "micro": "Approve and reject controls may use clear hover/focus transitions, while status borders may brighten subtly when an item is selected.",
+    "transitions": "Expand/collapse of previews and feedback surfaces should animate over 160-240ms without making the moderation queue feel noisy."
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "layout_hints": {
+    "card_layout": "Bordered card: type badge (d-annotation) + title + namespace + submitted-by + submitted-at. Right side: Approve (primary) + Reject (danger ghost) action buttons.",
+    "status_indicator": "Left border colored by status: pending=amber, approved=green, rejected=red.",
+    "density": "Compact cards — this is an admin worklist, not a showcase. Minimal vertical padding."
+  },
+  "accessibility": {
+    "role": "article",
+    "aria-label": "Moderation queue item",
+    "keyboard": [
+      "Tab moves through preview, approve, reject, and feedback controls in order."
+    ],
+    "announcements": [
+      "Moderation status and decision outcomes should be announced clearly.",
+      "Collapsed preview state changes should be announced when expanded."
+    ],
+    "focus_management": "After moderation actions, keep focus on the affected row or feedback control so the reviewer can continue operating without losing queue context."
+  },
+  "composition": {
+    "ModerationQueueItem": "Card(d-surface, bordered) > [Header + SubmitterRow + ContentPreview + AdminNotes? + ActionBar]",
+    "Header": "CardHeader > [TypeBadge(d-annotation, color-coded) + ContentName(heading4) + Timestamp(text-muted)]",
+    "SubmitterRow": "Row > [Avatar + Username(font-medium) + ReputationBadge(d-annotation)]",
+    "ContentPreview": "CardBody(d-data) > [Description + JSONPreview?(collapsible, mono-data)]",
+    "ActionBar": "CardFooter(d-interactive) > [ApproveButton(variant: success) + RejectButton(variant: destructive) + ViewDetailLink(variant: ghost)]"
+  }
+}

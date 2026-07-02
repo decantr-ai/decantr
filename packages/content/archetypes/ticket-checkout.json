@@ -1,0 +1,84 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "ticket-checkout",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Ticket Checkout",
+  "description": "Ticket selection and checkout flow for events. Guides users through tier selection, attendee info, and payment in a focused, distraction-free interface.",
+  "tags": [
+    "events",
+    "tickets",
+    "checkout",
+    "payment",
+    "purchase"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "ticket checkout",
+        "buy tickets",
+        "event tickets",
+        "ticket purchase"
+      ],
+      "secondary": [
+        "ticket tiers",
+        "event payment",
+        "checkout flow"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "tickets",
+      "patterns": [
+        {
+          "pattern": "checkout-flow",
+          "preset": "purchase",
+          "as": "checkout"
+        },
+        {
+          "pattern": "onboarding-wizard",
+          "preset": "stepper",
+          "as": "stepper"
+        }
+      ],
+      "default_layout": [
+        "stepper",
+        "checkout"
+      ],
+      "shell": "minimal-header"
+    }
+  ],
+  "page_briefs": {
+    "tickets": "Multi-step ticket purchase flow in a focused minimal-header layout. A stepper at the top shows progress through ticket selection, attendee details, and payment. The main area displays ticket tier cards with name, price, description, and quantity selectors. Advancing reveals attendee info fields and then a payment form with order summary sidebar showing line items, fees, and total."
+  },
+  "features": [
+    "tickets",
+    "checkout",
+    "payment"
+  ],
+  "shells": {
+    "minimal-header": "Minimal header with focused content area for checkout flows"
+  },
+  "dependencies": {
+    "patterns": {
+      "checkout-flow": "^1.0.0",
+      "onboarding-wizard": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  }
+}

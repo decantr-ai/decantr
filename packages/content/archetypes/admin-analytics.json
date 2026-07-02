@@ -1,0 +1,63 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "admin-analytics",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Admin Analytics",
+  "description": "Revenue and sales analytics for e-commerce administrators with KPI dashboards, trend charts, and inline sparkline data tables.",
+  "tags": ["analytics", "revenue", "charts", "kpi", "admin", "ecommerce", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["admin analytics", "sales analytics", "revenue analytics", "store analytics"],
+      "secondary": ["sales report", "revenue chart", "conversion analytics", "product analytics"],
+      "negative": ["storefront", "checkout", "customer-facing"]
+    },
+    "implies": ["analytics", "reporting"],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "analytics",
+      "patterns": [
+        {
+          "pattern": "kpi-grid",
+          "preset": "dashboard",
+          "as": "revenue-kpis"
+        },
+        {
+          "pattern": "chart-grid",
+          "preset": "standard",
+          "as": "analytics-charts"
+        },
+        {
+          "pattern": "sparkline-cell",
+          "preset": "standard",
+          "as": "trend-sparklines"
+        }
+      ],
+      "default_layout": ["revenue-kpis", "analytics-charts", "trend-sparklines"],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "analytics": "KPI grid at top showing total revenue, order count, average order value, and refund rate with period-over-period change indicators. Chart grid below with revenue trend line, sales by category stacked bar, conversion funnel, and top products horizontal bar. Sparkline cells embedded in summary tables showing 7-day trends for each metric."
+  },
+  "features": ["analytics-state", "data-export", "date-range-picker"],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area"
+  },
+  "suggested_theme": {
+    "ids": ["auradecantism", "carbon"],
+    "modes": ["dark", "light"]
+  },
+  "dependencies": {
+    "patterns": {
+      "kpi-grid": ">=1.0.0",
+      "chart-grid": ">=1.0.0",
+      "sparkline-cell": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

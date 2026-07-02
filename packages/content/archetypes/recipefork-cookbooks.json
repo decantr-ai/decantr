@@ -1,0 +1,104 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "recipefork-cookbooks",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipefork Cookbooks",
+  "description": "Cookbook management and cookbook detail views for Recipefork, including creation, visibility state, owner-only editing, public cookbook viewing, and recipe collection browsing.",
+  "tags": [
+    "recipes",
+    "cookbooks",
+    "collections",
+    "2026"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "cookbook manager",
+        "recipe collections",
+        "recipefork cookbooks"
+      ],
+      "secondary": [
+        "saved recipes",
+        "collection detail"
+      ],
+      "negative": [
+        "analytics"
+      ]
+    },
+    "implies": [
+      "collections"
+    ],
+    "weight": 0.8,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "cookbooks",
+      "patterns": [
+        {
+          "pattern": "card-grid",
+          "preset": "collection",
+          "as": "cookbook-grid"
+        },
+        {
+          "pattern": "cta-section",
+          "preset": "compact",
+          "as": "create-cookbook"
+        }
+      ],
+      "default_layout": [
+        "cookbook-grid",
+        "create-cookbook"
+      ],
+      "shell": "recipefork-top-nav"
+    },
+    {
+      "id": "cookbook-detail",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "image-overlay",
+          "as": "cookbook-hero"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "content",
+          "as": "cookbook-recipes"
+        }
+      ],
+      "default_layout": [
+        "cookbook-hero",
+        "cookbook-recipes"
+      ],
+      "shell": "recipefork-top-nav"
+    }
+  ],
+  "page_briefs": {
+    "cookbooks": "Grid of the current user's cookbooks with creation affordances, visibility state, and recipe counts. The experience is more product-manager than social-gallery.",
+    "cookbook-detail": "Cookbook detail page with large cover imagery, visibility metadata, recipe count, author attribution, and a grid of linked recipes. Owner controls are present only for the cookbook author; public visitors get a read-only view."
+  },
+  "features": [
+    "collections",
+    "visibility",
+    "recipe-saving"
+  ],
+  "dependencies": {
+    "patterns": {
+      "card-grid": ">=1.0.0",
+      "cta-section": ">=1.0.0",
+      "hero": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "recipefork"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

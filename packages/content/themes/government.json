@@ -1,0 +1,481 @@
+{
+  "$schema": "https://decantr.ai/schemas/theme.v1.json",
+  "id": "government",
+  "version": "1.0.0",
+  "name": "Government",
+  "description": "Accessible, conservative, high-contrast theme for government and public sector applications. Strong blue primary on pure white backgrounds. WCAG AAA mandatory with 7:1 contrast ratios. Full CVD support, large typography, and 3px focus indicators.",
+  "tags": [
+    "light",
+    "dark",
+    "accessible",
+    "government",
+    "conservative",
+    "high-contrast",
+    "wcag-aaa",
+    "public-sector"
+  ],
+  "personality": "authoritative + accessible + conservative + trustworthy",
+  "seed": {
+    "primary": "#1D4ED8",
+    "secondary": "#4338CA",
+    "accent": "#B91C1C",
+    "background": "#FFFFFF"
+  },
+  "palette": {
+    "background": {
+      "light": "#FFFFFF",
+      "dark": "#0F1117"
+    },
+    "surface": {
+      "light": "#FFFFFF",
+      "dark": "#1A1D26"
+    },
+    "surface-raised": {
+      "light": "#F3F4F6",
+      "dark": "#252830"
+    },
+    "border": {
+      "light": "#D1D5DB",
+      "dark": "#4B5563"
+    },
+    "text": {
+      "light": "#111827",
+      "dark": "#F9FAFB"
+    },
+    "text-muted": {
+      "light": "#4B5563",
+      "dark": "#9CA3AF"
+    },
+    "primary": {
+      "light": "#1D4ED8",
+      "dark": "#60A5FA"
+    },
+    "primary-hover": {
+      "light": "#1E40AF",
+      "dark": "#93C5FD"
+    },
+    "secondary": {
+      "light": "#4338CA",
+      "dark": "#818CF8"
+    },
+    "secondary-hover": {
+      "light": "#3730A3",
+      "dark": "#A5B4FC"
+    },
+    "accent": {
+      "light": "#B91C1C",
+      "dark": "#FCA5A5"
+    },
+    "accent-hover": {
+      "light": "#991B1B",
+      "dark": "#FECACA"
+    }
+  },
+  "modes": [
+    "light",
+    "dark",
+    "auto"
+  ],
+  "shapes": [
+    "sharp"
+  ],
+  "cvd_support": [
+    "deuteranopia",
+    "protanopia",
+    "tritanopia",
+    "achromatopsia"
+  ],
+  "tokens": {
+    "base": {
+      "success": "#15803D",
+      "danger": "#B91C1C",
+      "warning": "#A16207",
+      "info": "#1D4ED8"
+    },
+    "cvd": {
+      "deuteranopia": {
+        "success": "#1D4ED8",
+        "danger": "#C2410C"
+      },
+      "protanopia": {
+        "success": "#0369A1",
+        "danger": "#B45309"
+      },
+      "tritanopia": {
+        "success": "#15803D",
+        "danger": "#BE123C"
+      },
+      "achromatopsia": {
+        "success": "#1F2937",
+        "danger": "#6B7280"
+      }
+    }
+  },
+  "typography": {
+    "scale": "modular",
+    "heading_weight": 700,
+    "body_weight": 400,
+    "display": "'Source Sans Pro', ui-sans-serif, system-ui, sans-serif",
+    "body": "'Source Sans Pro', ui-sans-serif, system-ui, sans-serif"
+  },
+  "decantr_compat": ">=2.0.0",
+  "source": "core",
+  "decorators": {
+    "gov-card": "White card with 1px solid border, no shadow, square corners. Maximum clarity and formality.",
+    "gov-badge": "Rectangular badge with solid background. High-contrast text. No rounded corners.",
+    "gov-alert": "Full-width alert bar with high-contrast background. Bold text and clear icon for immediate recognition.",
+    "gov-table": "Clear bordered table with large text and strong header contrast. Optimized for data accessibility.",
+    "gov-form": "Generous spacing with large input fields. Clear labels above inputs. Required field indicators.",
+    "gov-surface": "Pure white background with clear borders. Maximum contrast and readability.",
+    "gov-nav": "High-contrast navigation with visible focus indicators. 3px solid outline with offset.",
+    "gov-input": "Large input with clear label positioning. Bold focus indicator and generous padding."
+  },
+  "spatial": {
+    "density_bias": -1,
+    "content_gap_shift": 1,
+    "section_padding": "3rem",
+    "card_wrapping": "bordered",
+    "surface_override": null
+  },
+  "motion": {
+    "preference": "minimal",
+    "reduce_motion": true,
+    "entrance": "none",
+    "micro": "instant",
+    "timing": "ease",
+    "durations": {
+      "hover": "100ms",
+      "entrance": "0ms",
+      "modal": "150ms",
+      "page": "0ms",
+      "instant": "80ms",
+      "fast": "150ms",
+      "base": "250ms",
+      "slow": "400ms",
+      "slower": "600ms",
+      "stagger": "60ms"
+    },
+    "easings": {
+      "ease": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "easeOut": "cubic-bezier(0, 0, 0.2, 1)",
+      "easeIn": "cubic-bezier(0.4, 0, 1, 1)",
+      "spring": "cubic-bezier(0.34, 1.56, 0.64, 1)"
+    }
+  },
+  "effects": {
+    "enabled": false,
+    "intensity": "none",
+    "type_mapping": {
+      "card": [
+        "gov-card"
+      ],
+      "badge": [
+        "gov-badge"
+      ],
+      "input": [
+        "gov-input"
+      ],
+      "table": [
+        "gov-table"
+      ],
+      "alert": [
+        "gov-alert"
+      ]
+    },
+    "optional_effects": {
+      "glow": false,
+      "grain": false,
+      "gradient": false,
+      "animation": false
+    },
+    "component_fallback": {
+      "Card": "card",
+      "Badge": "badge",
+      "Input": "input",
+      "Table": "table",
+      "Alert": "alert"
+    }
+  },
+  "compositions": {
+    "dashboard": {
+      "description": "Government service dashboard with clear navigation, large text, and high-contrast data displays.",
+      "shell": "sidebar-main",
+      "effects": [
+        "gov-card",
+        "gov-table"
+      ]
+    },
+    "auth": {
+      "description": "Accessible authentication with large inputs, clear instructions, and high-contrast form styling.",
+      "shell": "centered",
+      "card_style": "gov-card"
+    },
+    "marketing": {
+      "description": "Government service information page with clear headings, structured content, and accessible navigation.",
+      "shell": "top-nav-footer"
+    },
+    "forms": {
+      "description": "Government form pages with generous spacing, clear labels, large inputs, and step indicators.",
+      "shell": "top-nav-main",
+      "effects": [
+        "gov-form",
+        "gov-input",
+        "gov-alert"
+      ]
+    },
+    "portal": {
+      "description": "Citizen portal with service cards, status tracking, and document management.",
+      "shell": "sidebar-main",
+      "effects": [
+        "gov-card",
+        "gov-badge",
+        "gov-table"
+      ]
+    }
+  },
+  "radius": {
+    "philosophy": "sharp",
+    "base": 2
+  },
+  "pattern_preferences": {
+    "prefer": [
+      "service-directory",
+      "form-wizard",
+      "status-tracker",
+      "document-list",
+      "data-table",
+      "notification-center"
+    ],
+    "avoid": [
+      "playful-cards",
+      "gradient-hero",
+      "carousel",
+      "infinite-scroll"
+    ],
+    "default_presets": {
+      "service-directory": "list",
+      "document-list": "table",
+      "data-table": "full-bordered"
+    }
+  },
+  "shell": {
+    "preferred": [
+      "sidebar-main",
+      "top-nav-main",
+      "top-nav-footer"
+    ],
+    "avoid": [
+      "terminal-split",
+      "chat-portal",
+      "full-bleed"
+    ],
+    "nav_style": "high-contrast",
+    "default_nav_state": "expanded",
+    "root": "gov-surface",
+    "nav": "gov-nav",
+    "header": "",
+    "navLabel": "",
+    "brand": "",
+    "dimensions": null
+  },
+  "decorator_definitions": {
+    "gov-card": {
+      "description": "White card with 1px solid border, no shadow, square corners. Maximum clarity and formality.",
+      "intent": "Use for all content containers. The borderline-only, shadowless design ensures maximum clarity and avoids visual ambiguity. Square corners project formality and authority.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #FFFFFF)",
+        "border": "1px solid var(--d-border, #D1D5DB)",
+        "border-radius": "2px",
+        "padding": "24px"
+      },
+      "pairs_with": [
+        "gov-surface",
+        "gov-badge",
+        "gov-table"
+      ],
+      "usage": [
+        "Service cards",
+        "Information panels",
+        "Document containers",
+        "Status summaries"
+      ]
+    },
+    "gov-badge": {
+      "description": "Rectangular badge with solid background. High-contrast text. No rounded corners.",
+      "intent": "Use for status indicators and labels. The rectangular shape and solid background ensure maximum readability. High contrast meets WCAG AAA requirements.",
+      "suggested_properties": {
+        "border-radius": "2px",
+        "padding": "4px 10px",
+        "font-size": "14px",
+        "font-weight": "600",
+        "display": "inline-flex",
+        "align-items": "center"
+      },
+      "pairs_with": [
+        "gov-card",
+        "gov-table"
+      ],
+      "usage": [
+        "Status badges",
+        "Priority labels",
+        "Service type indicators",
+        "Document status"
+      ]
+    },
+    "gov-alert": {
+      "description": "Full-width alert bar with high-contrast background. Bold text and clear icon for immediate recognition.",
+      "intent": "Use for important notices, warnings, and system alerts. Full-width ensures visibility; high contrast ensures readability for all users including those with visual impairments.",
+      "suggested_properties": {
+        "background": "var(--alert-bg, #EFF6FF)",
+        "border": "1px solid var(--alert-border, #1D4ED8)",
+        "border-left": "4px solid var(--alert-color, #1D4ED8)",
+        "padding": "16px 20px",
+        "font-size": "16px",
+        "font-weight": "500",
+        "display": "flex",
+        "align-items": "flex-start",
+        "gap": "12px"
+      },
+      "pairs_with": [
+        "gov-card",
+        "gov-surface"
+      ],
+      "usage": [
+        "System alerts",
+        "Important notices",
+        "Service disruption warnings",
+        "Compliance reminders",
+        "Deadline warnings"
+      ]
+    },
+    "gov-table": {
+      "description": "Clear bordered table with large text and strong header contrast. Optimized for data accessibility.",
+      "intent": "Use for all data tables. Clear borders on every cell ensure readability for screen magnifier users. Large text and strong header contrast aid scanning. Minimum 16px font size.",
+      "suggested_properties": {
+        "width": "100%",
+        "border-collapse": "collapse",
+        "font-size": "16px",
+        "border": "1px solid var(--d-border, #D1D5DB)"
+      },
+      "pairs_with": [
+        "gov-card",
+        "gov-badge",
+        "gov-surface"
+      ],
+      "usage": [
+        "Data tables",
+        "Document listings",
+        "Service directories",
+        "Payment records",
+        "Application status tables"
+      ]
+    },
+    "gov-form": {
+      "description": "Generous spacing with large input fields. Clear labels above inputs. Required field indicators.",
+      "intent": "Use as a wrapper for form sections. The generous spacing reduces cognitive load and input errors; clear labeling meets accessibility requirements for government services.",
+      "suggested_properties": {
+        "display": "flex",
+        "flex-direction": "column",
+        "gap": "24px",
+        "max-width": "640px"
+      },
+      "pairs_with": [
+        "gov-input",
+        "gov-card",
+        "gov-alert"
+      ],
+      "usage": [
+        "Application forms",
+        "Service request forms",
+        "Contact forms",
+        "Registration forms"
+      ]
+    },
+    "gov-surface": {
+      "description": "Pure white background with clear borders. Maximum contrast and readability.",
+      "intent": "Use as the root page background. Pure white provides the highest possible contrast with dark text, meeting WCAG AAA requirements for government accessibility standards.",
+      "suggested_properties": {
+        "background-color": "var(--d-bg, #FFFFFF)",
+        "color": "var(--d-text, #111827)",
+        "min-height": "100vh"
+      },
+      "pairs_with": [
+        "gov-card",
+        "gov-nav"
+      ],
+      "usage": [
+        "Page root backgrounds",
+        "App shell backgrounds"
+      ]
+    },
+    "gov-nav": {
+      "description": "High-contrast navigation with visible focus indicators. 3px solid outline with offset.",
+      "intent": "Use for primary navigation. The 3px focus outline with offset ensures keyboard users can clearly see their position. High contrast text meets WCAG AAA for navigation elements.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #FFFFFF)",
+        "border-right": "1px solid var(--d-border, #D1D5DB)",
+        "padding": "20px 16px",
+        "display": "flex",
+        "flex-direction": "column",
+        "gap": "4px"
+      },
+      "pairs_with": [
+        "gov-surface",
+        "gov-card"
+      ],
+      "usage": [
+        "Sidebar navigation",
+        "Main navigation panels",
+        "Service category navigation"
+      ]
+    },
+    "gov-input": {
+      "description": "Large input with clear label positioning. Bold focus indicator and generous padding.",
+      "intent": "Use for all form inputs. The large size (minimum 48px touch target) and generous padding reduce input errors. The 3px focus outline with 2px offset provides clear keyboard navigation indication.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #FFFFFF)",
+        "border": "2px solid var(--d-border, #D1D5DB)",
+        "border-radius": "2px",
+        "padding": "14px 16px",
+        "font-size": "16px",
+        "min-height": "48px",
+        "outline-offset": "2px",
+        "transition": "border-color 100ms ease"
+      },
+      "pairs_with": [
+        "gov-form",
+        "gov-card",
+        "gov-surface"
+      ],
+      "usage": [
+        "Text inputs",
+        "Select fields",
+        "Search bars",
+        "Textarea inputs",
+        "Date inputs"
+      ]
+    }
+  },
+  "elevation": {
+    "1": {
+      "light": "0 1px 2px rgba(0,0,0,0.06)",
+      "dark": "0 1px 2px rgba(0,0,0,0.45)"
+    },
+    "2": {
+      "light": "0 2px 4px rgba(0,0,0,0.08)",
+      "dark": "0 2px 4px rgba(0,0,0,0.55)"
+    },
+    "3": {
+      "light": "0 4px 12px rgba(0,0,0,0.10)",
+      "dark": "0 4px 12px rgba(0,0,0,0.60)"
+    },
+    "4": {
+      "light": "0 8px 24px rgba(0,0,0,0.14)",
+      "dark": "0 8px 24px rgba(0,0,0,0.65)"
+    },
+    "5": {
+      "light": "0 16px 48px rgba(0,0,0,0.18)",
+      "dark": "0 16px 48px rgba(0,0,0,0.70)"
+    }
+  }
+}

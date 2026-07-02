@@ -1,0 +1,80 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "slash-command",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Slash Command",
+  "description": "Block-type command palette triggered by / character. Provides quick access to insert different block types with keyboard navigation.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full command list with icons organized by category",
+      "components": [
+        "icon"
+      ],
+      "layout": {
+        "layout": "dropdown",
+        "atoms": "_absolute _bg[var(--surface)] _shadow _r2 _border _w[320px] _max-h[400px] _overflow[auto] _z[100]",
+        "slots": {
+          "search": "Command filter input",
+          "categories": "Grouped command sections",
+          "commands": "Individual command items"
+        }
+      }
+    },
+    "filtered": {
+      "description": "Show only commands matching current filter",
+      "components": [
+        "icon"
+      ],
+      "layout": {
+        "layout": "dropdown",
+        "atoms": "_absolute _bg[var(--surface)] _shadow _r1 _border _w[280px] _z[100]",
+        "slots": {
+          "results": "Filtered command list only"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "dropdown",
+    "atoms": "_absolute _bg[var(--surface)] _shadow _r2 _border _w[320px] _z[100]",
+    "slots": {
+      "search": "Command filter input (typically inline)",
+      "categories": "Grouped command sections (Text, Lists, Media, Advanced)",
+      "commands": "Individual command items with icon, name, description, shortcut"
+    }
+  },
+  "io": {
+    "consumes": [
+      "position",
+      "query"
+    ],
+    "produces": [
+      "select"
+    ],
+    "actions": [
+      "select-command",
+      "close"
+    ]
+  },
+  "visual_brief": "Floating dropdown menu that appears inline when '/' is typed at the start of a block. Contains a search input at the top (auto-focused, filtering as user types), and categorized command groups below: Text (paragraph, headings H1-H3, quote, callout), Lists (bullet, numbered, todo, toggle), Media (image, video, file, embed), and Advanced (code block, table, divider, math). Each command item shows an icon, name, and a brief description in muted text. The currently selected item has a highlighted background. Keyboard shortcut hints appear on the right. The filtered preset shows only matching commands when search text is entered.",
+  "responsive": {
+    "mobile": "Menu renders as a bottom sheet. Full-width items with larger touch targets. Category headers prominent. No keyboard shortcut hints.",
+    "tablet": "Floating dropdown near the cursor. Standard item sizing.",
+    "desktop": "Compact floating dropdown near the cursor. Full keyboard navigation with up/down arrows and Enter to select."
+  }
+}

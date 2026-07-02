@@ -1,0 +1,103 @@
+{
+  "id": "spatial-presence-ring",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Spatial Presence Ring",
+  "description": "A circular or arc display showing nearby agents and users with live status indicators. Ring segments represent participants, expanding on hover or focus to reveal details. Segments are distributed evenly around the ring with smooth reflow when participants join or leave. For collaborative workspaces, multiplayer agent UIs, and real-time presence-aware interfaces.",
+  "category": "spatial",
+  "tags": [
+    "2026",
+    "spatial",
+    "presence",
+    "collaboration",
+    "ring",
+    "multiplayer",
+    "agents",
+    "real-time"
+  ],
+  "components": [
+    "PresenceRing",
+    "PresenceSegment",
+    "StatusDot",
+    "DetailPopover",
+    "UserAvatar"
+  ],
+  "default_preset": "full-ring",
+  "presets": {
+    "full-ring": {
+      "description": "Complete 360-degree ring. Segments distributed evenly using CSS conic-gradient for the track and positioned elements for each participant. Ring surrounds center-content. Scales from 2 to 24 participants before switching to overflow indicator.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_relative _flex _aic _jcc"
+      }
+    },
+    "half-arc": {
+      "description": "180-degree arc across the top or bottom of the container. Useful when the ring shares space with other content. Segments are larger since they span a half-circle. Good for 2-12 participants.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_relative _flex _col _aic"
+      }
+    },
+    "linear-fallback": {
+      "description": "Horizontal row of avatars with status dots. Used when container is too narrow for a ring or on mobile. Overflow scrolls horizontally. Detail popover appears above/below on tap.",
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _row _aic _gap2 _overflow-x-auto"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_relative _flex _aic _jcc",
+    "slots": {
+      "ring-container": "The circular track that holds all presence segments. Rendered as a CSS conic-gradient ring or SVG circle. Track shows segment boundaries with subtle dividers. Ring diameter should be responsive to container size with a minimum of 200px.",
+      "presence-segment": "A single participant slice of the ring. Contains UserAvatar and StatusDot. Default state shows avatar thumbnail on the ring edge. Expanded state (hover/focus) grows the segment to show name, role, and activity. Segments reflow smoothly when participants change.",
+      "detail-popover": "Expanded information panel that appears when a segment is activated. Shows full user name, role label, current activity description, connection quality indicator, and action buttons (message, call, follow). Positioned radially outward from the segment.",
+      "status-indicator": "StatusDot showing participant state: active (green pulse), idle (amber static), away (gray), busy (red), AI agent (blue pulse). Dot is positioned at the outer edge of each segment. Pulse animation indicates real-time activity.",
+      "center-content": "The content area inside the ring. Typically shows aggregate information: participant count, shared context label, or a collaborative focus element. In full-ring preset, this is the primary content area surrounded by the presence display."
+    }
+  },
+  "accessibility": {
+    "role": "group",
+    "aria_label": "Active participants",
+    "announcements": [
+      "Announce when a participant joins: '[Name] joined, [N] participants active'",
+      "Announce when a participant leaves: '[Name] left'",
+      "Announce status changes: '[Name] is now [status]'",
+      "Announce segment expansion: 'Viewing details for [Name], [role]'"
+    ],
+    "keyboard": [
+      "Tab enters the ring, then Arrow Left/Right cycles between segments",
+      "Enter or Space expands the focused segment's detail popover",
+      "Escape closes the detail popover and returns focus to the segment",
+      "Home/End jumps to first/last segment in ring order"
+    ],
+    "reduce_motion": "Disable ring rotation animations and segment reflow transitions. StatusDot pulse replaced with static color. Segment expansion is instant rather than animated. Ring layout preserved (not decorative motion)."
+  },
+  "responsive": {
+    "mobile": "Switch to linear-fallback preset. Horizontal scrollable avatar row with status dots. Tap to expand detail popover as a bottom sheet. Maximum 8 visible before overflow count badge.",
+    "tablet": "Half-arc preset by default to save vertical space. Segments are touch-sized (48px minimum). Detail popover appears as a card overlay rather than radial popup."
+  },
+  "visual_brief": "Circular ring display where each participant occupies an arc segment proportional to their activity level. Segments distribute evenly around the ring with subtle dividers. Each segment shows a small avatar and a status dot (green/yellow/red). Expanding a segment on hover reveals a detail popover with name, role, and activity details. The ring track itself is rendered as a conic gradient or SVG circle. The half-arc preset shows only the top semicircle. The linear-fallback preset arranges participants in a horizontal row for simpler layouts. Smooth reflow animation when participants join or leave.",
+  "layout_hints": {
+    "segment_balance": "Ring segments should remain readable and evenly distributed. Avoid crowding the arc with too much text in the default state.",
+    "detail_reveal": "Expanded participant details should feel like contextual overlays, not detached popovers that obscure the whole ring.",
+    "fallback_consistency": "The linear fallback should preserve status, identity, and shared-context meaning rather than becoming a generic avatar strip."
+  },
+  "motion": {
+    "micro": "Status dots and active participant states may pulse subtly to show presence without turning the ring into a constant animation source.",
+    "transitions": "Segment reflow and detail reveal should animate smoothly over 180-260ms while preserving the ring's overall stability."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "hover-reveal"
+  ],
+  "composition": {
+    "SpatialPresenceRing": "Container(d-section, centered) > [RingTrack + CenterContent]",
+    "RingTrack": "Ring(d-data, circular) > PresenceSegment[]",
+    "PresenceSegment": "Segment(d-interactive, expandable) > [UserAvatar(small) + StatusDot(d-annotation, color: state, pulse?: active)]",
+    "DetailPopover": "Popover(d-surface, radial-position) > [FullName + RoleLabel(d-annotation) + Activity(text-muted) + ActionButtons(d-interactive)]",
+    "CenterContent": "Panel(d-surface, inner) > [ParticipantCount + SharedContext?]"
+  }
+}

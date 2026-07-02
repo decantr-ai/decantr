@@ -1,0 +1,118 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "tier-card",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Tier Card",
+  "description": "Single subscription tier display card with pricing, benefits, and subscribe CTA. Used on storefronts and upgrade flows.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Card",
+        "Badge",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Card",
+    "Badge",
+    "icon"
+  ],
+  "default_preset": "storefront",
+  "presets": {
+    "storefront": {
+      "description": "Public-facing tier card with subscribe CTA",
+      "components": [
+        "Button",
+        "Card",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "card",
+        "atoms": "studio-card _flex _col _p6 _r3",
+        "slots": {
+          "header": "Tier name, price, badge",
+          "benefits": "List of included perks",
+          "cta": "Subscribe/upgrade button",
+          "subscribers": "Optional subscriber count"
+        }
+      }
+    },
+    "compact": {
+      "description": "Compact inline tier display with color indicator, name, and price for use in lists and selectors",
+      "components": [
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "inline",
+        "atoms": "_flex _aic _gap3 _p3 _r2 _bgmuted/5",
+        "slots": {
+          "color": "Tier color indicator",
+          "name": "Tier name",
+          "price": "Price display"
+        }
+      }
+    },
+    "featured": {
+      "description": "Large highlighted tier with glow effect",
+      "components": [
+        "Button",
+        "Card",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "card",
+        "atoms": "studio-card-premium _flex _col _p8 _r4 _scale[1.05]",
+        "slots": {
+          "header": "Tier name with featured badge",
+          "benefits": "Extended benefits list",
+          "cta": "Prominent subscribe button",
+          "guarantee": "Money-back guarantee text"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "card",
+    "atoms": "studio-card _flex _col _p6 _r3",
+    "slots": {
+      "header": "Tier name and price",
+      "benefits": "Benefits list",
+      "cta": "Subscribe button"
+    }
+  },
+  "io": {
+    "produces": [
+      "subscribe-click"
+    ],
+    "consumes": [
+      "tier-data",
+      "billing-cycle"
+    ]
+  },
+  "visual_brief": "Bordered card displaying a subscription tier. Header shows the tier name and an optional 'Popular' or 'Best Value' badge. The price is prominently displayed as a large number with currency symbol and '/month' suffix. A benefits list uses checkmark icons in green/primary color with benefit text for each item. A 'Subscribe' CTA button fills the bottom of the card. The featured preset adds a colored top border or accent and slightly scales up the card. The compact preset reduces padding and uses smaller type. The storefront preset adds additional social proof (subscriber count, rating).",
+  "responsive": {
+    "mobile": "Cards stack full-width. Subscribe button full-width. Benefits list compact.",
+    "tablet": "Two or three column grid of tier cards for comparison.",
+    "desktop": "Three-column grid for plan comparison. Featured tier slightly elevated. Generous padding."
+  },
+  "interactions": [
+    "lift-hover",
+    "click-select",
+    "animate-on-mount",
+    "stagger-children"
+  ],
+  "composition": {
+    "TierCard": "Card(d-surface, accent-border?: featured) > [TierName(heading4) + Price(mono-data, heading2) + BillingPeriod(text-muted) + BenefitsList > CheckItem(icon: check)[] + SubscribeCTA(d-interactive, variant: featured ? primary : ghost, full-width)]",
+    "SubscribeCTA": "Button(d-interactive, full-width)"
+  }
+}

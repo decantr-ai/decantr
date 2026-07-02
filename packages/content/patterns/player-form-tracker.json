@@ -1,0 +1,111 @@
+{
+  "id": "player-form-tracker",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Player Form Tracker",
+  "description": "A player performance tracking surface displaying K/D, win rate, average damage, form sparkline, self-reported mental state, and win/loss streaks.",
+  "category": "esports",
+  "tags": [
+    "2026",
+    "esports",
+    "player",
+    "form",
+    "performance",
+    "stats",
+    "health",
+    "tracking"
+  ],
+  "components": [
+    "PlayerCard",
+    "FormSparkline",
+    "StatRow",
+    "MoodIndicator",
+    "StreakBadge",
+    "MetricBar"
+  ],
+  "default_preset": "individual",
+  "presets": {
+    "individual": {
+      "description": "Single-player deep-dive card showing full stat stack, trend sparkline, mood log, and streak indicator for one athlete coaching session",
+      "layout": {
+        "layout": "card-large",
+        "atoms": "_flex _flex-col _gap-4 _w100 _max-w-xl _p-6 _rounded-lg _bg-surface _border"
+      }
+    },
+    "team": {
+      "description": "Five-up roster grid displaying all starting players as smaller linked cards for team-wide form comparison at daily practice stand-ups",
+      "layout": {
+        "layout": "grid-5",
+        "atoms": "_grid _grid-cols-5 _gap-3 _w100 _p-4"
+      }
+    },
+    "comparison": {
+      "description": "Two player cards rendered side by side with aligned stat rows and overlaid sparklines for head-to-head form and matchup evaluation",
+      "layout": {
+        "layout": "grid-2",
+        "atoms": "_grid _grid-cols-2 _gap-6 _w100 _p-4"
+      }
+    }
+  },
+  "visual_brief": "A player card with circular avatar (64px) top-left, player handle in bold sans-serif right of avatar, role badge below name (Duelist, Controller, Sentinel, Initiator, Flex). Prominent form sparkline (48px tall) arcs across the card top area showing last 10 matches performance rating with area fill shaded to trend direction (rising green, declining red). Stat rows below list: K/D ratio, Win Rate %, Avg Damage/Round, Headshot %, each as a row with label left, value right-aligned in monospace, and a small trend arrow (up/down/flat). Metric bars show percentile rank relative to pro league. Mood indicator is a three-dot semaphore (green/yellow/red) labelled 'Feeling: Strong/OK/Rough' based on self-reported check-in. Streak badge pill shows current W/L streak (e.g. 'W4' green or 'L2' red). Team preset renders 5 mini cards horizontally with only avatar, handle, form sparkline, and mood.",
+  "layout_hints": {
+    "container": "d-surface",
+    "note": "Card is clickable (d-interactive) to open full player profile. Stat values in monospace.",
+    "mood_semantics": "Mood is self-reported, not algorithmic. Green=Strong, Yellow=OK, Red=Rough. Never auto-derive from stats."
+  },
+  "default_layout": {
+    "layout": "card-large",
+    "atoms": "_flex _flex-col _gap-4 _w100 _max-w-xl _p-6 _rounded-lg _bg-surface _border",
+    "slots": {
+      "player-card": "Container card holding all player form information with avatar, name, role, and stats.",
+      "form-sparkline": "Horizontal mini-chart showing performance rating trend across last 10 matches with area fill.",
+      "stat-row": "Repeating row with stat label, monospace value, trend arrow, and optional metric bar.",
+      "mood-indicator": "Three-dot semaphore with labeled self-reported mental state.",
+      "streak-badge": "Pill showing current win or loss streak count with semantic color.",
+      "metric-bar": "Thin horizontal bar visualizing percentile rank for a given stat."
+    }
+  },
+  "accessibility": {
+    "role": "article",
+    "aria-label": "Player performance form tracker",
+    "announcements": [
+      "Player {handle}: {role}, form {trend}, {streak} streak",
+      "Mood self-reported as {mood}"
+    ],
+    "keyboard": [
+      "Tab: focus player card",
+      "Enter: open full player profile",
+      "M: update mood check-in (when authenticated as player)"
+    ]
+  },
+  "responsive": {
+    "mobile": "Team grid becomes vertical list. Individual card stats stack with metric bars full-width.",
+    "tablet": "Team grid becomes 3+2 split. Comparison preset becomes vertical stack."
+  },
+  "motion": {
+    "micro": {
+      "card-hover": "elevation raise + avatar scale(1.05) 150ms ease-out",
+      "sparkline-hover": "data point dots appear 180ms ease"
+    },
+    "transitions": {
+      "mood-update": "indicator dot color crossfade + pulse 400ms ease-in-out",
+      "stat-update": "value counter roll 500ms ease-out"
+    },
+    "ambient": {
+      "hot-streak": "streak badge subtle glow pulse when streak >= 3 wins 2s ease-in-out infinite"
+    }
+  },
+  "interactions": [
+    "animate-on-mount",
+    "inline-edit",
+    "keyboard-navigation"
+  ],
+  "composition": {
+    "PlayerFormTracker": "Surface(d-surface) > PlayerCard[](d-interactive) > [Header > [PlayerAvatar + [PlayerHandle + RoleBadge]] + FormSparkline + StatRow[] > [StatLabel + StatValue(mono) + TrendArrow + MetricBar] + Footer > [MoodIndicator + StreakBadge]]",
+    "FormSparkline": "Chart(horizontal, area-fill) > [TrendLine + AreaFill(trend-colored) + DataPoints(hover-only)]",
+    "StatRow": "Row > [StatLabel + StatValue(mono) + TrendArrow + MetricBar?]",
+    "MoodIndicator": "Semaphore(3-dot) > [MoodDot + MoodLabel]",
+    "StreakBadge": "Pill(d-annotation, data-streak) > [StreakPrefix + StreakCount]"
+  }
+}

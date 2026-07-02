@@ -1,0 +1,124 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "deal-pipeline-board",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Deal Pipeline Board",
+  "description": "Sales pipeline Kanban board specialized for deal management with stage columns, deal cards showing amounts and close probability, drag-to-advance functionality, and value aggregation per stage.",
+  "category": "crm",
+  "tags": [
+    "2026",
+    "crm",
+    "pipeline",
+    "kanban",
+    "deals",
+    "sales",
+    "board"
+  ],
+  "components": [
+    "PipelineBoard",
+    "StageColumn",
+    "DealCard",
+    "StageHeader",
+    "DealAmount",
+    "ProbabilityIndicator",
+    "WonLostBanner"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full Kanban board with deal cards showing company name, contact, amount, and probability bar — cards are draggable between stage columns with smooth animations",
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _row _gap4 _hfull _overflow-x-auto _p4"
+      }
+    },
+    "compact": {
+      "description": "Dense one-line-per-deal view within each stage column — shows only company name and amount on a single row, maximizing the number of visible deals for high-volume pipelines",
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _row _gap3 _hfull _overflow-x-auto _p3"
+      }
+    },
+    "forecast": {
+      "description": "Probability-weighted view where deal amounts are multiplied by close probability — stage totals show weighted pipeline value, and cards display both raw and weighted amounts for forecasting accuracy",
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _row _gap4 _hfull _overflow-x-auto _p4"
+      }
+    }
+  },
+  "visual_brief": "Horizontal Kanban board with five or more stage columns arranged left to right representing the sales pipeline: Lead, Qualified, Proposal, Negotiation, Won, and Lost. Each column is a vertical container (240-280px wide) with a sticky header and scrollable card area below. Stage headers display the stage name in bold, a deal count badge (e.g., '12 deals'), and a total dollar value with a small dollar-sign icon (e.g., '$340,000'). The header has a subtle bottom border colored to match the stage. Deal cards within each column are white rounded rectangles (full column width, approximately 100px tall) with: the company name in bold 14px text at the top, the contact name in muted 12px text below, the deal amount in prominent 16px semi-bold text with dollar formatting, and a thin horizontal progress bar at the bottom representing close probability (0-100%). The progress bar fills from left to right with the stage's accent color. Cards have a subtle left border colored by how long the deal has been in the current stage (green for recent, amber for aging, red for stale). Dragging a card shows a lifted shadow state and destination columns highlight with a dashed border drop zone. The Won column has a light green background tint with a subtle checkmark watermark. The Lost column has a light red background tint with dimmed card opacity (60%). The forecast preset shows a secondary weighted amount below the raw amount in a smaller muted style. Cards in all presets show a small avatar circle for the deal owner in the top-right corner.",
+  "default_layout": {
+    "layout": "row",
+    "atoms": "_flex _row _gap4 _hfull _overflow-x-auto _p4",
+    "slots": {
+      "stage-column": "Repeating slot — one per pipeline stage. A vertical container with a fixed width (260px), full height, a subtle background tint, and rounded corners. Contains a sticky StageHeader at the top and a scrollable area below for DealCards. The Won column has a green-tinted background. The Lost column has a red-tinted background. Columns accept drag-drop from other columns with a dashed border highlight as the drop indicator.",
+      "stage-header": "Sticky header within each stage column. Shows the stage name (16px bold), a deal count badge (small rounded pill with count), and the total pipeline value for that stage formatted as currency with a dollar icon. A subtle colored bottom border (2px) uses the stage's accent color. In forecast preset, shows both raw total and weighted total.",
+      "deal-card": "Repeating slot within a stage column — one per deal. A rounded card (border-radius 8px, padding 12px) with: company name (14px bold, single line truncated), contact name (12px muted, single line), deal amount (16px semi-bold, formatted as $X,XXX), a ProbabilityIndicator progress bar (4px tall, full width, fills to probability percentage), and a small owner avatar (24px circle) in the top-right corner. Left border (3px) colored by age-in-stage. The card is draggable with a grab cursor. On hover, the card elevates with a shadow increase. In compact preset, the card reduces to a single row: company name + amount on one line.",
+      "probability-indicator": "A thin horizontal progress bar at the bottom of each deal card. Width fills to the deal's close probability percentage. Color matches the stage accent color. In forecast preset, the bar also shows a small percentage label at the right end.",
+      "won-lost-banner": "Visual treatment applied to the Won and Lost stage columns. Won column: light green background (#f0fdf4), a subtle checkmark icon watermark at 5% opacity behind cards, and cards have a green left border. Lost column: light red background (#fef2f2), cards render at 60% opacity with a red left border, and a subtle X icon watermark."
+    }
+  },
+  "responsive": {
+    "mobile": "Columns stack as swipeable horizontal carousel with snap points — one column visible at a time with stage name tabs at the top for quick navigation. Deal cards use full width. Drag-to-move replaced with a 'Move to stage' dropdown on each card. Stage totals visible in the tab bar.",
+    "tablet": "Two to three columns visible at a time with horizontal scroll. Deal cards at full detail level. Drag-and-drop supported with touch. Stage headers remain sticky.",
+    "desktop": "All stage columns visible simultaneously with horizontal scroll if needed. Full drag-and-drop with hover previews. Deal cards show all details including owner avatar and probability bar. Stage headers are sticky during vertical scroll within columns."
+  },
+  "layout_hints": {
+    "pipeline_priority": "Stage progression is the primary read. Totals and card details should support the pipeline state rather than compete with the columns.",
+    "card_signal": "Each deal card should make amount, stage aging, and ownership obvious at a glance so movement decisions feel fast and confident.",
+    "mobile_translation": "When drag-and-drop collapses to explicit actions, preserve the same stage logic so mobile users still understand the board as a pipeline."
+  },
+  "motion": {
+    "micro": {
+      "card-hover": "translateY(-2px) + box-shadow increase 150ms ease-out",
+      "card-grab": "scale(1.03) + shadow elevation 100ms ease-out",
+      "probability-fill": "width transition 400ms ease-out on value change"
+    },
+    "transitions": {
+      "card-drop": "position lerp + scale(1.03→1) 300ms ease-out when card is dropped in new column",
+      "column-highlight": "border-style solid→dashed + background-tint 200ms ease-out on valid drop target",
+      "card-move": "slide-out from source column + slide-in to destination column 350ms ease-in-out",
+      "stage-total-update": "number counter animation 500ms ease-out"
+    },
+    "ambient": {
+      "stale-deal-pulse": "subtle red border pulse on deals that have been in a stage past their expected duration, 3s infinite"
+    }
+  },
+  "interactions": [
+    "drag-reorder",
+    "click-select",
+    "lift-hover",
+    "animate-on-mount",
+    "stagger-children"
+  ],
+  "composition": {
+    "PipelineBoard": "Board(d-section, flex-row, gap-4, overflow-x-auto) > StageColumn*(d-surface)",
+    "StageColumn": "Column(d-surface, flex-col, fixed-width, droppable) > [StageHeader(d-annotation) > [StageName + DealCount(d-annotation) + TotalValue(d-data)] + CardList(d-data, scrollable) > DealCard*]",
+    "DealCard": "Card(d-interactive, draggable) > [CompanyName + ContactName(d-annotation) + DealAmount(d-data) + ProbabilityIndicator(d-data) + OwnerAvatar?]",
+    "WonLostBanner": "Overlay(d-annotation, watermark, tinted-bg)"
+  },
+  "accessibility": {
+    "role": "application",
+    "aria-label": "Sales deal pipeline board with draggable deal cards across stages",
+    "keyboard": [
+      "Tab: move focus between stage columns",
+      "Arrow Up/Down: navigate between deal cards within a column",
+      "Arrow Left/Right: move focus between stage columns",
+      "Space: pick up focused deal card for moving",
+      "Arrow Left/Right (while holding): move picked-up card to adjacent stage",
+      "Space/Enter: drop card in current stage",
+      "Escape: cancel card move and return to original position",
+      "D: open deal detail view for focused card"
+    ],
+    "announcements": [
+      "Stage {name}: {count} deals, total value {total}",
+      "Deal: {company}, {amount}, {probability}% probability in {stage} stage",
+      "Deal {company} moved from {fromStage} to {toStage}",
+      "Deal {company} marked as won, value {amount}",
+      "Deal {company} marked as lost",
+      "Pipeline total: {totalDeals} deals worth {totalValue}"
+    ]
+  }
+}

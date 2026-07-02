@@ -1,0 +1,169 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "seller-dashboard",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Seller Dashboard",
+  "description": "Seller management hub with listing management, performance analytics, earnings tracking, and review monitoring for marketplace sellers.",
+  "tags": [
+    "marketplace",
+    "seller",
+    "dashboard",
+    "analytics",
+    "listings"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "seller dashboard",
+        "host dashboard",
+        "seller portal",
+        "listing management"
+      ],
+      "secondary": [
+        "seller analytics",
+        "earnings",
+        "seller reviews",
+        "manage listings"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "seller-overview",
+      "patterns": [
+        {
+          "pattern": "kpi-grid",
+          "preset": "dashboard",
+          "as": "metrics"
+        },
+        {
+          "pattern": "data-table",
+          "preset": "compact",
+          "as": "recent-activity"
+        }
+      ],
+      "default_layout": [
+        "metrics",
+        "recent-activity"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "seller-listings",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "listings-table"
+        }
+      ],
+      "default_layout": [
+        "listings-table"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "seller-listing-edit",
+      "patterns": [
+        {
+          "pattern": "form-sections",
+          "preset": "standard",
+          "as": "listing-form"
+        }
+      ],
+      "default_layout": [
+        "listing-form"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "seller-analytics",
+      "patterns": [
+        {
+          "pattern": "chart-grid",
+          "preset": "standard",
+          "as": "charts"
+        },
+        {
+          "pattern": "kpi-grid",
+          "preset": "compact",
+          "as": "summary-kpis"
+        },
+        {
+          "pattern": "sparkline-cell",
+          "preset": "standard",
+          "as": "trends"
+        }
+      ],
+      "default_layout": [
+        "summary-kpis",
+        "charts",
+        "trends"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "seller-reviews",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "reviews-table"
+        }
+      ],
+      "default_layout": [
+        "reviews-table"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "seller-overview": "Seller home dashboard with a KPI grid showing total earnings, active listings, booking rate, and average rating. Below, a compact data table displays recent bookings and inquiries with status badges and quick-action buttons.",
+    "seller-listings": "Full data table of all seller listings with columns for title, status (active/draft/paused), views, bookings, and price. Bulk actions allow publish, pause, or delete. A create-new-listing button sits in the top-right corner.",
+    "seller-listing-edit": "Multi-section form for creating or editing a listing. Sections include basic info (title, description, category), pricing, photos upload zone, availability calendar, location, and amenities checklist. Save and preview buttons anchor at the bottom.",
+    "seller-analytics": "Analytics dashboard with compact KPI cards at the top showing views, conversion rate, revenue, and response time. Below, a chart grid displays booking trends, revenue over time, and traffic sources. Sparkline cells highlight week-over-week changes.",
+    "seller-reviews": "Data table of all reviews received with columns for listing, reviewer, rating stars, excerpt, date, and response status. Expanding a row reveals the full review text and a reply form for the seller to respond publicly."
+  },
+  "features": [
+    "listings",
+    "analytics",
+    "earnings",
+    "reviews"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "kpi-grid": "^1.0.0",
+      "data-table": "^1.0.0",
+      "form-sections": "^1.0.0",
+      "chart-grid": "^1.0.0",
+      "sparkline-cell": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  },
+  "directives": [
+    "Seller dashboard MUST be data-rich but NOT intimidating. Lead with 4-card KPI grid (active listings, upcoming bookings, occupancy %, this-month revenue), then secondary surfaces (recent activity feed, alerts). Avoid wall-of-numbers density \u2014 the seller is often a non-technical operator.",
+    "Listings table on /seller/listings: each row shows thumbnail + title + city + status (active/draft/paused) + nights-booked-this-month + Edit link. Make 'Add new listing' the primary action button at the top right of the table.",
+    "Listing edit form MUST be a SECTIONED form (form-sections pattern), grouped: Basics (title, description, category) \u2192 Location \u2192 Details (sleeps, bedrooms, amenities) \u2192 Pricing \u2192 Photos \u2192 Availability rules. Save state must be visible: dirty changes show 'Unsaved' chip; on save, briefly show 'Saved 12s ago' annotation.",
+    "Analytics: cap at 4 KPI tiles + 4 charts. Each chart must have title + value + delta-from-prior-period + sparkline preview before drilling. Do NOT render a 12-tile metric wall \u2014 that's enterprise-dashboard, not seller-tool.",
+    "Reviews on /seller/reviews: every review row shows star rating + reviewer name + date + first 2 lines + 'Reply' action. Replied reviews get a small annotation: 'You replied 3d ago'. Pending replies are visually pulled forward.",
+    "Sidebar nav must include: Overview, Listings, Analytics, Reviews, Messages \u2014 and a sign-out at bottom. The nav is the seller's surface; don't hide critical destinations behind a settings cog."
+  ]
+}

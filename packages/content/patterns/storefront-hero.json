@@ -1,0 +1,120 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "storefront-hero",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Storefront Hero",
+  "description": "Creator landing page banner with cover image, avatar, bio, social links, and subscribe CTA. The first impression for fans.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Avatar",
+        "Badge",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Avatar",
+    "Badge",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full hero with cover image and all details",
+      "components": [
+        "Button",
+        "Avatar",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col",
+        "slots": {
+          "cover": "Banner/cover image area",
+          "avatar": "Creator profile photo",
+          "name": "Creator display name with verification badge",
+          "tagline": "Short bio/description",
+          "social": "Social media links",
+          "stats": "Subscriber count, post count",
+          "cta": "Primary subscribe button"
+        }
+      }
+    },
+    "minimal": {
+      "description": "Compact header-style hero without cover image, showing avatar, name, and subscribe button inline",
+      "components": [
+        "Button",
+        "Avatar",
+        "icon"
+      ],
+      "layout": {
+        "layout": "inline",
+        "atoms": "_flex _aic _gap4 _p4 _borderB",
+        "slots": {
+          "avatar": "Small avatar",
+          "name": "Creator name",
+          "cta": "Subscribe button"
+        }
+      }
+    },
+    "video": {
+      "description": "Video background hero with autoplaying muted loop, content overlay, and gradient scrim",
+      "components": [
+        "Button",
+        "Avatar",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _relative",
+        "slots": {
+          "video": "Background video",
+          "overlay": "Content overlay",
+          "avatar": "Creator avatar",
+          "content": "Name, bio, CTA"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col",
+    "slots": {
+      "cover": "Cover image",
+      "avatar": "Creator avatar",
+      "content": "Name, bio, stats",
+      "cta": "Subscribe action"
+    }
+  },
+  "io": {
+    "produces": [
+      "subscribe-click",
+      "share-click"
+    ],
+    "consumes": [
+      "creator-data"
+    ]
+  },
+  "visual_brief": "Full-width hero banner with a large cover image filling the background (or a gradient if no image). A large circular avatar overlaps the bottom edge of the cover, centered or left-aligned. Below the avatar, the creator's display name as a large heading, a short bio paragraph, social link icons (Twitter, YouTube, Instagram, etc.), and subscriber/follower count. A prominent 'Subscribe' CTA button sits on the right or below the bio. The minimal preset removes the cover image and uses a colored background. The video preset replaces the cover image with an autoplaying muted video loop.",
+  "responsive": {
+    "mobile": "Cover image height reduces. Avatar centers above the name. Bio text wraps fully. Social links in a compact icon row. Subscribe button goes full-width.",
+    "tablet": "Standard hero proportions. Avatar and text left-aligned. Subscribe button inline.",
+    "desktop": "Full-width hero with generous cover height. Avatar, bio, social links, and subscribe button all comfortably laid out."
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "composition": {
+    "StorefrontHero": "Section(d-section, full-width) > [CoverImage(full-bleed) + ProfileRow + SocialLinks?]",
+    "ProfileRow": "Row(centered, gap-4) > [Avatar(large, border) + InfoColumn > [CreatorName(heading2) + Bio(text-muted) + StatsRow > [FollowerCount + PostCount]] + SubscribeCTA(d-interactive, variant: primary)]"
+  }
+}

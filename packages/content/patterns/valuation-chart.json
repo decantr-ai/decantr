@@ -1,0 +1,126 @@
+{
+  "id": "valuation-chart",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Valuation Chart",
+  "description": "A time-series valuation chart that renders historical price data with optional projection, confidence bands, benchmark overlays, and annotated event markers for critical moments like funding rounds or product launches.",
+  "category": "finance",
+  "tags": [
+    "2026",
+    "finance",
+    "chart",
+    "valuation",
+    "time-series",
+    "dataviz",
+    "projection",
+    "benchmark"
+  ],
+  "components": [
+    "ChartCanvas",
+    "PriceLine",
+    "ConfidenceBand",
+    "ProjectionDashed",
+    "BenchmarkLine",
+    "EventMarker",
+    "ValueCallout",
+    "AxisLabels",
+    "CrosshairTooltip"
+  ],
+  "default_preset": "line",
+  "presets": {
+    "line": {
+      "description": "Classic single-line price history with time on the x-axis and valuation on the y-axis. Clean and readable, ideal for investor dashboards showing straightforward price evolution without forecast noise.",
+      "layout": {
+        "layout": "chart",
+        "atoms": "_w100 _relative _overflow-hidden"
+      }
+    },
+    "area": {
+      "description": "Area-fill chart with projection extension and confidence band shading showing forecast uncertainty. The filled area beneath the price line uses a gradient fade, while the forecast extends as a dashed line with shaded confidence envelope.",
+      "layout": {
+        "layout": "chart",
+        "atoms": "_w100 _relative _overflow-hidden"
+      }
+    },
+    "candlestick": {
+      "description": "OHLC candlestick rendering with wicks and bodies colored green (up) or red (down). Includes volume histogram below and moving-average overlays. Intended for detailed trader views rather than summary dashboards.",
+      "layout": {
+        "layout": "chart",
+        "atoms": "_w100 _relative _overflow-hidden"
+      }
+    }
+  },
+  "visual_brief": "A wide time-series chart rendered as an SVG inside a d-surface card with chart padding of 24px. The x-axis runs along the bottom with tick labels showing dates (Jan '24, Apr '24, Jul '24, ...) in d-annotation muted text. The y-axis runs along the left with currency-formatted value ticks ($10M, $20M, $50M, ...) in mono-data tabular figures. A subtle horizontal grid-line pattern spans the plot area with very low opacity. The PriceLine is the primary element: a 2px solid stroke in the primary accent color, drawn as a smooth monotone curve connecting historical data points. Each data point has an invisible hover target (12px radius) that reveals a CrosshairTooltip showing the exact date and value. When projection is enabled, the line transitions mid-chart to a dashed pattern (4-4 dash array) with 60% opacity, extending into the future portion of the x-axis, which has a subtle background tint distinguishing historical from projected zones. The ConfidenceBand renders behind the projected line as a shaded polygon with gradient fill (15% opacity primary at edges, 5% at center) representing ±1 standard deviation. A BenchmarkLine (e.g., S&P 500 or peer index) overlays as a thin 1px dashed stroke in a muted secondary color with its own label at the right edge. EventMarkers appear as vertical 1px lines from top to bottom of the plot area at key moments, each topped with a small circular badge (icon: rocket for launch, dollar for funding, flag for milestone) and a rotated label. Hovering an event expands a card with the event description and delta impact. A ValueCallout card anchors to the top-right corner showing the current/latest value in large semibold figures, the absolute delta from a chosen baseline, and a trend arrow (up/down) colored success/destructive. On area preset, the space under PriceLine fills with a vertical gradient from 30% primary at top fading to 0% at the x-axis. On candlestick preset, each trading period renders as a vertical body (filled rectangle) with wicks (thin vertical lines) showing high/low; green for close-above-open, red for close-below-open.",
+  "layout_hints": {
+    "container": "d-surface card with chart padding",
+    "note": "Charts need generous padding to prevent label collisions with chart edges. Minimum 24px padding on all sides, 48px on left for y-axis labels and 32px on bottom for x-axis labels.",
+    "axis_labels": "Use d-annotation text-xs muted for all axis labels. Rotate x-axis labels -30deg only if they would otherwise overlap. Always include unit indicators ($, %, shares) in axis titles.",
+    "projection_distinction": "Historical vs projected zones MUST be visually distinct: different line stroke (solid vs dashed), different background tint for the projected x-axis region (very subtle), and always a vertical 'today' line separating them.",
+    "event_markers": "EventMarkers use d-annotation[data-event-type]. Icon badges at top of vertical line, labels rotated 45deg or stacked vertically to avoid overlap. Click opens detail card. Limit to 8 visible markers to prevent clutter.",
+    "value_callout": "ValueCallout is a d-surface card floating in top-right with absolute positioning, backdrop-blur, and z-index above chart. Contains current value (text-2xl semibold mono-data), delta (text-sm with trend arrow), and timeframe label."
+  },
+  "default_layout": {
+    "layout": "chart",
+    "atoms": "_w100 _relative _overflow-hidden _p6",
+    "slots": {
+      "chart-canvas": "The main SVG plot area responsible for rendering all chart primitives. Contains axis grid lines, price paths, benchmark overlays, and event markers. Must be responsive to container width and maintain aspect ratio (typically 16:9 or 2:1). Uses viewBox for resolution-independent rendering.",
+      "price-line": "The primary data series rendered as an SVG path element using a monotone curve interpolator. Historical segment uses solid 2px stroke in primary color. Projected segment (if present) uses dashed 4-4 stroke pattern at 60% opacity. Anchors to data points with invisible hover targets.",
+      "confidence-band": "Shaded polygon behind the projection line representing forecast uncertainty. Rendered as an SVG path with gradient fill (primary color at low opacity). Only visible when projection data includes upper/lower bounds.",
+      "benchmark-line": "Optional overlay line (or multiple lines) showing comparison index like S&P 500, category average, or peer valuation. Rendered as thin 1px dashed stroke in muted secondary color with right-edge label identifying the benchmark name.",
+      "event-markers": "Repeating slot — one EventMarker per annotated event. Each marker is a vertical 1px line spanning plot height with a circular icon badge at top (24px diameter) and rotated text label. Clickable to reveal full event description in a floating card.",
+      "axis-labels": "X-axis tick labels (dates) along bottom edge and y-axis tick labels (values with currency formatting) along left edge. Uses d-annotation small-caps muted styling with tabular-nums for alignment.",
+      "value-callout": "Floating card anchored top-right corner showing current/latest valuation in large figures, delta from baseline, percent change, trend arrow, and timeframe selector. Uses backdrop-blur and elevated z-index.",
+      "crosshair-tooltip": "On-hover element that follows cursor along the price line, displaying vertical guide line plus a floating tooltip card with exact date, value, benchmark comparison at that point, and any nearby event annotations."
+    }
+  },
+  "accessibility": {
+    "role": "img",
+    "aria-label": "Valuation chart showing price history and projections",
+    "announcements": [
+      "Current valuation: {value}, change of {delta} over {timeframe}",
+      "Event: {eventName} on {date} with impact {delta}",
+      "Projection shows range from {low} to {high} by {futureDate}"
+    ],
+    "keyboard": [
+      "Left/Right arrows: move crosshair along time axis",
+      "Up/Down arrows: toggle between visible data series",
+      "Enter: open detail card for currently highlighted event",
+      "Escape: dismiss tooltip or detail card",
+      "T: toggle between absolute and percent-change axis"
+    ]
+  },
+  "responsive": {
+    "mobile": "Chart height reduces to 240px minimum. BenchmarkLine overlays hidden by default, toggle-able. EventMarker labels collapse to icon-only with tap-to-expand. ValueCallout repositions to inline above chart rather than floating overlay. Axis tick density reduced.",
+    "tablet": "Full chart with dual-finger pinch-to-zoom on x-axis. EventMarker labels rotate -45deg for space. ValueCallout remains floating but shrinks to compact mode."
+  },
+  "motion": {
+    "micro": {
+      "line-draw": "stroke-dashoffset animate from full-length to 0 over 800ms ease-out on mount",
+      "crosshair-follow": "x-position transform 80ms linear",
+      "tooltip-fade": "opacity 0 to 1 120ms ease-out"
+    },
+    "transitions": {
+      "data-update": "path morph with d-attribute interpolation 400ms ease-in-out",
+      "zoom-change": "viewBox interpolation 300ms ease-out",
+      "preset-swap": "cross-fade 250ms ease-in-out between line, area, and candlestick renderings"
+    },
+    "ambient": {
+      "projection-shimmer": "confidence-band opacity 0.1 to 0.2 to 0.1 over 3s ease-in-out infinite",
+      "current-value-pulse": "ValueCallout subtle scale 1.0 to 1.02 to 1.0 on data refresh 600ms ease-out"
+    }
+  },
+  "interactions": [
+    "animate-on-mount",
+    "hover-tooltip",
+    "real-time-updates"
+  ],
+  "composition": {
+    "ValuationChart": "Section(d-section, d-surface) > [ChartCanvas + ValueCallout]",
+    "ChartCanvas": "SVG(responsive, viewBox) > [GridLines + AxisLabels + PriceLine + ConfidenceBand? + ProjectionDashed? + BenchmarkLine[] + EventMarker[] + CrosshairTooltip]",
+    "PriceLine": "Path(d-annotation, data-series) > [HistoricalSegment + ProjectionSegment?]",
+    "ConfidenceBand": "Polygon(d-annotation, data-band) > [GradientFill]",
+    "EventMarker": "Marker(d-annotation, data-event, data-interactive) > [VerticalLine + IconBadge + Label + DetailCard?]",
+    "ValueCallout": "Card(d-surface, floating, backdrop-blur) > [CurrentValue + DeltaChip + TrendArrow + TimeframeSelector]"
+  }
+}

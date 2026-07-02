@@ -1,0 +1,104 @@
+{
+  "id": "split-calculator",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Split Calculator",
+  "description": "Royalty split calculator for music collaborators with percentage allocation, role tagging, preset splits, and validation that totals equal 100%.",
+  "category": "music",
+  "tags": ["2026", "music", "royalties", "splits", "collaborators", "calculator", "rights"],
+  "components": ["SplitRow", "PercentageInput", "CollaboratorAvatar", "RoleTag", "TotalBadge", "PresetButton"],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full split calculator with collaborator rows, percentage inputs with sliders, role tags, total validation, and preset buttons for common splits",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _gap-4 _p-6 _bg-surface _rounded-xl _border _w-full _max-w-2xl"
+      }
+    },
+    "simple": {
+      "description": "Two-party simplified split with just percentage inputs and names, suitable for quick agreements between duo collaborators",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _gap-3 _p-4 _bg-surface _rounded-lg _border _w-full _max-w-md"
+      }
+    },
+    "advanced": {
+      "description": "Advanced variant with role-specific sub-splits, writer vs publisher breakdown, and master vs publishing separation for complex rights arrangements",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _gap-6 _p-6 _bg-surface _rounded-xl _border _w-full _max-w-3xl"
+      }
+    }
+  },
+  "visual_brief": "A vertical list of collaborator rows inside a rounded card. Each collaborator row has a drag handle on the far left (6-dot grip icon, visible on hover), a 40px circular avatar with initials fallback, a name text in semibold 14px with role tag beneath as a small colored pill (Producer=purple, Songwriter=blue, Performer=amber, Engineer=gray), and on the right a percentage input combining a horizontal slider (flex-grow, 0-100%) with a coupled numeric spinbox (60px wide) showing the exact percentage with % suffix. A visible remove-row X button appears on hover at far right. Below the rows sits a total badge showing the sum of all percentages (e.g. '100.0%') as a prominent pill: green background if exactly 100%, red background with warning icon if over or under. Preset buttons row below the total shows common allocations ('50/50', '70/30', 'Equal shares', 'Custom') as outlined buttons that apply instantly. Add-collaborator button at bottom spans full width as a dashed-border outlined button with plus icon.",
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _flex-col _gap-4 _p-6 _bg-surface _rounded-xl _border _w-full _max-w-2xl",
+    "slots": {
+      "split-row": "Repeating row (d-interactive) per collaborator with drag handle, avatar, name+role, percentage input, and remove button.",
+      "drag-handle": "6-dot grip icon at far left, visible on hover. Enables drag-reorder of rows.",
+      "collaborator-avatar": "40px circular avatar with profile image or initials fallback on colored background.",
+      "name-and-role": "Stack showing collaborator name in semibold and role tag pill beneath with category-specific color.",
+      "role-tag": "Small colored pill displaying role (Producer/Songwriter/Performer/Engineer). Category-coded colors.",
+      "percentage-input": "Compound input combining horizontal slider (0-100) and numeric spinbox (0.0-100.0 with % suffix). Coupled bidirectionally.",
+      "remove-button": "X icon button at far right, visible on row hover, removes that collaborator row.",
+      "total-badge": "Prominent pill showing sum of all percentages. Green if = 100%, red with warning icon if not.",
+      "preset-buttons": "Horizontal row of quick-apply preset buttons (50/50, 70/30, Equal, Custom).",
+      "add-row-button": "Full-width dashed-border button at bottom with plus icon to add new collaborator."
+    }
+  },
+  "responsive": {
+    "mobile": "Rows wrap: avatar + name on top, slider + spinbox on bottom. Remove button moves next to drag handle. Preset buttons scroll horizontally.",
+    "tablet": "Standard layout with slightly condensed spacing.",
+    "desktop": "Full inline layout with all controls and hover states visible."
+  },
+  "motion": {
+    "micro": {
+      "slider-drag": "slider fill follows pointer at 60fps with spinbox number update",
+      "total-change": "total badge color transitions 200ms ease-out when crossing 100%"
+    },
+    "transitions": {
+      "row-add": "scale-in + fade 250ms spring at bottom of list",
+      "row-remove": "slide-out + fade + collapse 200ms ease-in",
+      "preset-apply": "all percentages animate simultaneously to new values 400ms ease-out"
+    },
+    "ambient": {
+      "invalid-total-pulse": "total badge red pulse 1.5s ease-in-out infinite when sum ≠ 100%"
+    }
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "composition": {
+    "SplitCalculator": "Root(d-surface, stack) > [SplitRow* + TotalBadge + PresetButtons + AddRowButton]",
+    "SplitRow": "Row(d-interactive) > [DragHandle + CollaboratorAvatar + NameAndRole + PercentageInput + RemoveButton?]",
+    "PercentageInput": "Compound > [Slider(0-100) + Spinbox(numeric, %)]",
+    "PresetButtons": "FlexRow > PresetButton*(d-control, outlined)",
+    "TotalBadge": "Pill(d-annotation, state-colored) > [SumText + WarningIcon?]"
+  },
+  "layout_hints": {
+    "allocation_priority": "Collaborator identity, role, and percentage share should read as one unit so users can audit ownership splits without scanning in multiple passes.",
+    "validation_prominence": "The running total and invalid-state warning should stay visible as supporting guidance without overpowering the row-by-row editing flow.",
+    "preset_behavior": "Preset actions should feel like quick starting points attached to the current split list, not a detached settings mode."
+  },
+  "accessibility": {
+    "role": "form",
+    "aria-label": "Royalty split calculator",
+    "announcements": [
+      "{collaborator} set to {percent}%",
+      "Total is now {total}%",
+      "Warning: total does not equal 100%",
+      "Preset {name} applied"
+    ],
+    "keyboard": [
+      "Tab: cycle through collaborator inputs",
+      "Arrow keys: adjust focused percentage by 1%",
+      "Shift+Arrow: fine adjust by 0.1%",
+      "Enter: confirm value",
+      "Delete: remove focused collaborator",
+      "Ctrl+A: add new collaborator"
+    ]
+  }
+}

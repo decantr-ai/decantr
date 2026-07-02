@@ -1,0 +1,123 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "recipefork-photo-generator",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipefork Photo Generator",
+  "description": "Photo-to-recipe generation surface for AI food apps. Combines image upload/drop zone, preview, prompt/context controls, generation status, and generated recipe result panel.",
+  "tags": [
+    "recipe",
+    "food",
+    "ai",
+    "vision",
+    "photo",
+    "image-upload",
+    "upload",
+    "generation",
+    "claude",
+    "brownfield",
+    "ai-food"
+  ],
+  "components": [
+    "Card",
+    "Image",
+    "Button",
+    "Input",
+    "Textarea",
+    "Progress",
+    "Badge",
+    "icon"
+  ],
+  "default_preset": "split",
+  "presets": {
+    "split": {
+      "description": "Upload/preview panel beside generated recipe preview on desktop, stacked on mobile.",
+      "components": [
+        "Card",
+        "Image",
+        "Button",
+        "Textarea",
+        "Progress",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "split",
+        "atoms": "_grid _gc1 _lg:gc2 _gap6",
+        "slots": {
+          "upload": "Drop zone, file picker, image preview, and remove/replace controls",
+          "controls": "Optional prompt, cuisine, dietary, or serving controls",
+          "status": "Generation progress, streaming status, and error state",
+          "result": "Generated recipe title, ingredients, instructions, and save/fork actions"
+        }
+      }
+    },
+    "single": {
+      "description": "Single-column mobile-first generator with upload first and result below.",
+      "components": [
+        "Card",
+        "Image",
+        "Button",
+        "Progress",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap5",
+        "slots": {
+          "upload": "Large image upload zone",
+          "status": "Generation status and retry",
+          "result": "Generated recipe preview"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "split",
+    "atoms": "_grid _gc1 _lg:gc2 _gap6",
+    "slots": {
+      "upload": "Image upload and preview",
+      "result": "Generated recipe panel"
+    }
+  },
+  "visual_brief": "A utility-first AI kitchen page where the food photo and generated recipe are the two anchors. The upload state should feel trustworthy and obvious; the generated result should look like an editable RecipeFork recipe, not a detached AI transcript.",
+  "composition": {
+    "PhotoGenerator": "Split > [UploadPanel + GeneratedRecipePanel]",
+    "UploadPanel": "Card > [DropZone + ImagePreview? + PromptControls + GenerateButton + Status]",
+    "GeneratedRecipePanel": "Card > [Title + Ingredients + Instructions + SaveToCookbook + ForkMetadata?]"
+  },
+  "layout_hints": {
+    "brownfield_fit": "If the existing project already uses shadcn upload/card controls, keep them and map Decantr intent into those classes.",
+    "status_visibility": "Generation status must remain visible after upload; do not hide loading/errors inside the image region only.",
+    "result_editability": "Generated recipe sections should be structured so they can be saved, edited, or assigned to a cookbook."
+  },
+  "motion": {
+    "micro": {
+      "drop": "Drop zone border may strengthen on drag-over.",
+      "loading": "Generation status may use shimmer or progress pulse without animating the uploaded image."
+    },
+    "transitions": {
+      "result": "Generated result may fade in once the first useful recipe fields are available."
+    }
+  },
+  "interactions": [
+    "shimmer-skeleton",
+    "animate-on-mount"
+  ],
+  "responsive": {
+    "mobile": "Stack upload, status, and result. Keep the primary generate action reachable without horizontal scrolling.",
+    "tablet": "Stack or split depending on available width.",
+    "desktop": "Two-column split with upload controls left and generated recipe right."
+  },
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Photo to recipe generator",
+    "keyboard": [
+      "File input, generate, retry, remove image, save, and edit controls must be keyboard reachable."
+    ],
+    "announcements": [
+      "Announce upload success, generation start, generation errors, and generated recipe readiness."
+    ]
+  }
+}

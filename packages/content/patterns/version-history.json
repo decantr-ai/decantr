@@ -1,0 +1,140 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "version-history",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Version History",
+  "description": "Document revision timeline with version preview, diff view, and restore functionality. Shows auto-saves and named checkpoints.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Avatar",
+        "Button",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Avatar",
+    "Button",
+    "icon"
+  ],
+  "default_preset": "sidebar",
+  "presets": {
+    "sidebar": {
+      "description": "Vertical timeline in aside panel",
+      "components": [
+        "Avatar",
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "column",
+        "atoms": "_flex _col _hfull",
+        "slots": {
+          "header": "Panel header with close button",
+          "timeline": "Chronological version list",
+          "actions": "Restore and compare buttons"
+        }
+      }
+    },
+    "modal": {
+      "description": "Full-screen history viewer with preview pane",
+      "components": [
+        "Avatar",
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "split",
+        "atoms": "_grid _grid-cols[300px_1fr] _h[80vh]",
+        "slots": {
+          "timeline": "Left pane with version list",
+          "preview": "Right pane with version content",
+          "diff-toggle": "Switch between content and diff view",
+          "actions": "Restore and download buttons"
+        }
+      }
+    },
+    "compact": {
+      "description": "Condensed dropdown version selector with current version label and version list menu",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "dropdown",
+        "atoms": "_relative",
+        "slots": {
+          "trigger": "Current version display with dropdown arrow",
+          "menu": "Version list dropdown"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "column",
+    "atoms": "_flex _col",
+    "slots": {
+      "timeline": "Chronological version list grouped by date",
+      "preview": "Selected version content view",
+      "compare": "Diff view toggle between versions",
+      "restore": "Restore to selected version button"
+    }
+  },
+  "io": {
+    "consumes": [
+      "versions",
+      "currentVersionId"
+    ],
+    "produces": [
+      "version-select",
+      "restore"
+    ],
+    "actions": [
+      "select-version",
+      "restore-version",
+      "create-checkpoint",
+      "download-version",
+      "compare-versions"
+    ]
+  },
+  "visual_brief": "Sidebar or modal panel showing a chronological list of document versions grouped by date. Each version entry shows a timestamp, an auto-save or named-checkpoint label, the author avatar and name, and a brief summary of changes. Selecting a version shows a preview of the document at that point. A compare toggle enables diff view between the selected version and the current or another version. A 'Restore' button allows reverting to the selected version with a confirmation dialog. The sidebar preset renders as a right-side panel. The modal preset opens as a centered modal. The compact preset shows a condensed timeline with fewer details.",
+  "responsive": {
+    "mobile": "Version history opens as a full-screen overlay. Timeline entries are compact. Preview replaces the timeline view (back button to return). Restore button at the bottom.",
+    "tablet": "Sidebar at 320px width with timeline and inline preview. Compare mode uses a bottom sheet.",
+    "desktop": "Sidebar with timeline, adjacent preview panel, and inline diff view. Full author details and change summaries visible."
+  },
+  "layout_hints": {
+    "timeline_priority": "Lead with chronology and authorship. Restore or compare actions should feel secondary until a version is actively selected.",
+    "preview_attachment": "The selected version preview or diff should feel attached to the highlighted entry so users never lose track of which revision they are viewing.",
+    "compact_mode": "Compact mode should keep the current version and recent named checkpoints most visible rather than trying to render the full timeline density."
+  },
+  "motion": {
+    "micro": "Selected entries may sharpen or glow subtly, and restore/compare actions may acknowledge focus clearly without distracting from the timeline.",
+    "transitions": "Entry selection, preview swaps, and compare-mode toggles should preserve the sense of chronological navigation rather than feeling like unrelated modal jumps."
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Version history",
+    "keyboard": [
+      "Timeline entries should be keyboard navigable in chronological order, with clear focus and selected state.",
+      "Restore and compare actions should be exposed without requiring pointer hover."
+    ],
+    "announcements": [
+      "Version author, timestamp, and change summary should be announced together so revision choice remains understandable without visual grouping."
+    ]
+  },
+  "composition": {
+    "VersionHistory": "Panel(d-section, flex-col) > [VersionList + DiffView?]",
+    "VersionList": "List(d-data, flex-col) > VersionEntry[]",
+    "VersionEntry": "Row(d-data-row, hoverable, active?: selected) > [Avatar(small) + EntryInfo > [AuthorName(font-medium) + Timestamp(text-muted, mono-data)] + VersionLabel?(d-annotation) + RestoreButton?(d-interactive)]",
+    "DiffView": "Panel(d-surface, split) > [OldContent + NewContent(highlighted-changes)]"
+  }
+}

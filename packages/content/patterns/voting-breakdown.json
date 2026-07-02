@@ -1,0 +1,101 @@
+{
+  "id": "voting-breakdown",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Voting Breakdown",
+  "description": "Vote tally breakdown with demographic slicing, comment distribution, and proportional visualizations for civic decisions and polling.",
+  "category": "civic",
+  "tags": ["2026", "civic", "voting", "results", "demographics", "tally", "breakdown"],
+  "components": ["VoteBar", "OptionLabel", "PercentageText", "DemographicToggle", "CommentSnippet"],
+  "default_preset": "bars",
+  "presets": {
+    "bars": {
+      "description": "Horizontal bar chart displaying vote percentages per option with color-coded fills and vote counts for standard results views",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _gap-3 _p-4 _w-full _bg-surface"
+      }
+    },
+    "pie": {
+      "description": "Proportional pie/donut chart visualization emphasizing relative share of votes across options for at-a-glance results understanding",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _grid-cols-[1fr_1fr] _gap-6 _p-4 _w-full _bg-surface"
+      }
+    },
+    "grouped": {
+      "description": "Grouped bars segmented by category (region, age, party) for comparative analysis across voter demographic slices",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _flex-col _gap-4 _p-4 _w-full _bg-surface"
+      }
+    }
+  },
+  "visual_brief": "A vertical stack of horizontal bar rows displaying voting results. Each row has a fixed-width option label on the left (approximately 120px) showing the option text (e.g. 'Yes', 'No', 'Abstain'). The bar fills the remaining horizontal space with a colored fill proportional to vote percentage: yes=green (#10b981), no=red (#ef4444), abstain=neutral gray (#9ca3af). Percentage text and raw count appear on the right edge of each row (e.g. '62% (4,218)') in monospace semibold numerals. A demographic toggle group sits above the chart as a pill-shaped segmented control with options (Age, Region, Party, All). Selecting a toggle re-renders bars grouped or colored accordingly. Below each bar, expandable comment snippet boxes show 1-2 representative voter comments per option in italic muted text with quote marks, limited to 2 lines with 'show more' affordance. Overall vote total displays at top-right with turnout percentage. Bars have a subtle shimmer during initial load.",
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _flex-col _gap-3 _p-4 _w-full _bg-surface",
+    "slots": {
+      "demographic-toggle": "Segmented control pill at top showing demographic slice options (Age, Region, Party, All). Active state highlighted with primary color.",
+      "total-summary": "Top-right summary showing total votes, turnout percentage, and timestamp of last update.",
+      "vote-bar-row": "Repeating row (d-row) containing option label, bar fill, and percentage text. Each row represents one vote option.",
+      "option-label": "Fixed-width label (120px) on left of row displaying the vote option text in semibold 14px type.",
+      "bar-fill": "Horizontal bar with animated fill width matching percentage. Color-coded by option semantic: success/destructive/neutral.",
+      "percentage-text": "Right-aligned monospace numeric showing percentage and raw count (e.g. '62% (4,218)').",
+      "comment-snippet": "Expandable box below each bar showing 1-2 representative comments in italic with quote marks. 2-line clamp with show-more affordance."
+    }
+  },
+  "responsive": {
+    "mobile": "Option labels move above bars (stacked). Comment snippets collapse to count badge with expand-to-view. Demographic toggle scrolls horizontally. Pie preset stacks vertically.",
+    "tablet": "Standard horizontal layout with condensed labels. Pie preset shows side-by-side.",
+    "desktop": "Full layout with all elements visible and hover tooltips on bars showing detailed breakdown."
+  },
+  "layout_hints": {
+    "results_priority": "Option labels, percentages, and counts should be readable in one quick scan before comments or demographic slicing deepen the interpretation.",
+    "toggle_role": "Demographic toggles should clearly frame how the data is being sliced without overshadowing the actual vote results.",
+    "comment_support": "Comment snippets are contextual evidence, not the main chart. Keep them visually subordinate to the tally bars."
+  },
+  "layout_hints": {
+    "results_priority": "Option labels, percentages, and counts should be readable in one quick scan before comments or demographic slicing deepen the interpretation.",
+    "toggle_role": "Demographic toggles should clearly frame how the data is being sliced without overshadowing the actual vote results.",
+    "comment_support": "Comment snippets are contextual evidence, not the main chart. Keep them visually subordinate to the tally bars."
+  },
+  "motion": {
+    "micro": {
+      "bar-hover": "bar outline highlight + tooltip fade-in 150ms ease-out",
+      "toggle-change": "active pill slide 200ms spring"
+    },
+    "transitions": {
+      "bar-fill-initial": "width 0 to target 800ms ease-out staggered 100ms per bar",
+      "demographic-switch": "bars re-render with fade-cross 400ms ease-in-out"
+    },
+    "ambient": {
+      "live-update-pulse": "subtle counter tick animation when live results update"
+    }
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "composition": {
+    "VotingBreakdown": "Root(d-data, stack) > [DemographicToggle + TotalSummary + VoteBarRow* + CommentSnippet*]",
+    "VoteBarRow": "Row(d-row) > [OptionLabel + BarFill(animated) + PercentageText]",
+    "PieVariant": "Grid > [PieChart(svg) + LegendList]",
+    "GroupedVariant": "Stack > GroupSection*(d-section) > [GroupHeader + VoteBarRow*]"
+  },
+  "accessibility": {
+    "role": "figure",
+    "aria-label": "Voting results breakdown",
+    "announcements": [
+      "{option}: {percent}% with {count} votes",
+      "Demographic filter changed to {slice}",
+      "Results updated: {total} total votes"
+    ],
+    "keyboard": [
+      "Tab: cycle through bars and toggles",
+      "Arrow keys: navigate between options",
+      "Enter: expand comment snippets for focused option",
+      "1-9: jump to demographic toggle"
+    ]
+  }
+}

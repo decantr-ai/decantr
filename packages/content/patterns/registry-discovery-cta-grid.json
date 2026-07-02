@@ -1,0 +1,93 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "registry-discovery-cta-grid",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Registry Discovery CTA Grid",
+  "description": "Editorial quick-start discovery cards for the public registry homepage. Each card helps builders choose a path into the registry with a strong icon, concise framing copy, and a clearly-owned Decantr action treatment.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Card",
+        "Button",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Card",
+    "Button",
+    "icon"
+  ],
+  "contained": false,
+  "default_preset": "editorial",
+  "presets": {
+    "editorial": {
+      "description": "Three discovery cards in a responsive grid. Each card has an icon badge, eyebrow, title, supporting description, and a bottom action rail that reads like the next step a builder should take.",
+      "components": [
+        "Card",
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _md:gc2 _xl:gc3 _gap4",
+        "slots": {
+          "card-icon": "Compact icon badge tied to the discovery path. Distinct but not louder than the title.",
+          "card-eyebrow": "Uppercase label using d-label treatment to explain the decision lens for the card.",
+          "card-title": "Strong section heading that frames the user intent.",
+          "card-description": "Two-to-four lines of editorial helper copy that explains why a builder would take this path.",
+          "card-action": "Primary CTA rail with icon, label, and supporting hint. The action must feel clearly clickable, not like body copy."
+        }
+      }
+    }
+  },
+  "visual_brief": "A premium discovery grid that feels closer to a product decision surface than a checklist. Cards should be calm, dark, and atmospheric with subtle accent gradients, a strong top-left icon moment, and a bottom CTA rail that is unmistakably interactive. The CTA should not collapse into generic ghost-button text. Think curated launchpad cards: crisp type, clear action hierarchy, and just enough motion and accent contrast to feel current without becoming noisy.",
+  "responsive": {
+    "mobile": "Single-column cards with full-width CTA rails. The icon, eyebrow, title, description, and CTA stack vertically with no dead space.",
+    "tablet": "Two-column layout when space allows. Cards keep even height and a clear action zone at the bottom.",
+    "desktop": "Three-column editorial grid with balanced card height, stronger hover treatment, and CTA rails aligned along the bottom edge."
+  },
+  "motion": {
+    "micro": "Discovery cards may lift slightly and brighten their accent treatment on hover. CTA rails should respond clearly on hover and focus with a directional sense of momentum.",
+    "transitions": "Grid cards may reveal with a short stagger or fade-up sequence, but the surface should still feel curated rather than animated for its own sake."
+  },
+  "interactions": [
+    "lift-hover",
+    "click-select",
+    "animate-on-mount",
+    "stagger-children",
+    "scroll-reveal"
+  ],
+  "layout_hints": {
+    "card_structure": "Use one visual lane per card: icon + eyebrow at the top, narrative in the middle, action rail at the bottom. Avoid chip clouds, diagnostics, or inline metadata.",
+    "cta_treatment": "CTA rails should be explicit actions with iconography and supporting hint copy. Prefer directional arrow or external-link affordances over plain text-only links.",
+    "tone_mapping": "Each discovery card can use its own accent family so the user can quickly parse blueprint-first vs showcase-first vs registry-wide exploration."
+  },
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Registry discovery actions",
+    "keyboard": [
+      "Tab moves through discovery CTAs in card order."
+    ],
+    "announcements": [
+      "Card title, supporting narrative, and CTA intent should be available without relying on color or hover effects."
+    ],
+    "focus_management": "Each discovery card should expose a clear focusable CTA rather than forcing keyboard users to parse the whole card surface as one unlabeled block."
+  },
+  "composition": {
+    "RegistryDiscoveryCtaGrid": "Grid(1/2/3-col responsive) > DiscoveryCard[]",
+    "DiscoveryCard": "Card(d-surface, raised) > [CardHead > [IconBadge + Eyebrow] + Title + Description + ActionRail]",
+    "ActionRail": "Button(d-interactive, primary or strong secondary) > [ActionLabel + ActionHint + TrailingIcon]"
+  },
+  "io": {
+    "consumes": [],
+    "produces": [],
+    "actions": [
+      "cta-click"
+    ]
+  }
+}

@@ -1,0 +1,142 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "patient-dashboard",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Patient Dashboard",
+  "description": "Patient overview dashboard with appointments, vitals tracking, and medication management. Central hub for health and wellness portal users.",
+  "tags": [
+    "health",
+    "wellness",
+    "patient",
+    "dashboard",
+    "vitals",
+    "medications"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "patient dashboard",
+        "health dashboard",
+        "patient portal",
+        "wellness dashboard"
+      ],
+      "secondary": [
+        "vitals tracking",
+        "medication list",
+        "appointment overview",
+        "health records"
+      ],
+      "negative": []
+    },
+    "implies": [
+      "appointment-center",
+      "health-records"
+    ],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "overview",
+      "patterns": [
+        {
+          "pattern": "kpi-grid",
+          "preset": "dashboard",
+          "as": "vitals-summary"
+        },
+        {
+          "pattern": "calendar-view",
+          "preset": "agenda",
+          "as": "upcoming-appointments"
+        }
+      ],
+      "default_layout": [
+        "kpi-grid",
+        "calendar-view"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "vitals",
+      "patterns": [
+        {
+          "pattern": "chart-grid",
+          "preset": "standard",
+          "as": "vitals-charts"
+        },
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "vitals-history"
+        },
+        {
+          "pattern": "sparkline-cell",
+          "preset": "standard",
+          "as": "trend-indicators"
+        }
+      ],
+      "default_layout": [
+        "chart-grid",
+        "data-table",
+        "sparkline-cell"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "medications",
+      "patterns": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "medication-list"
+        },
+        {
+          "pattern": "calendar-view",
+          "preset": "day",
+          "as": "medication-schedule"
+        }
+      ],
+      "default_layout": [
+        "data-table",
+        "calendar-view"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "overview": "Patient home dashboard at /dashboard. Top row of KPI cards shows key vitals (heart rate, blood pressure, weight, steps) with sparkline trends. Below, an agenda-style calendar lists upcoming appointments with provider name, time, and type (in-person or telehealth). Quick-action buttons for booking appointments and refilling medications.",
+    "vitals": "Vitals history view at /vitals. Grid of time-series charts (blood pressure, heart rate, weight, glucose) with selectable date ranges. Below the charts, a sortable data table lists individual readings with timestamp, value, and source device. Sparkline cells in each row show recent trend direction.",
+    "medications": "Medication management at /medications. Data table lists active medications with name, dosage, frequency, prescribing provider, and refill date. Day calendar view below shows today's medication schedule with check-off capability for dose tracking."
+  },
+  "features": [
+    "vitals",
+    "medications",
+    "appointments",
+    "health-records"
+  ],
+  "shells": {
+    "sidebar-main": "Persistent left sidebar with patient navigation, main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "kpi-grid": "^1.0.0",
+      "calendar-view": "^1.0.0",
+      "chart-grid": "^1.0.0",
+      "data-table": "^1.0.0",
+      "sparkline-cell": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "clean",
+      "medical"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

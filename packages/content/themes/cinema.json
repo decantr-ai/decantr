@@ -1,0 +1,479 @@
+{
+  "$schema": "https://decantr.ai/schemas/theme.v1.json",
+  "id": "cinema",
+  "version": "1.0.0",
+  "name": "Cinema",
+  "description": "Film and video production theme with deep charcoal background and warm amber highlights. Title-card typography with serif display, film-grain texture, and dramatic framing for cinematic storytelling interfaces.",
+  "tags": [
+    "dark",
+    "cinema",
+    "film",
+    "video",
+    "production",
+    "dramatic"
+  ],
+  "personality": "cinematic + warm + amber highlights + dramatic",
+  "seed": {
+    "primary": "#F59E0B",
+    "secondary": "#78350F",
+    "accent": "#FBBF24",
+    "background": "#0A0A0A"
+  },
+  "palette": {
+    "background": {
+      "dark": "#0A0A0A"
+    },
+    "surface": {
+      "dark": "#141414"
+    },
+    "surface-raised": {
+      "dark": "#1F1F1F"
+    },
+    "border": {
+      "dark": "#2A2A2A"
+    },
+    "text": {
+      "dark": "#F5F5F4"
+    },
+    "text-muted": {
+      "dark": "#A8A29E"
+    },
+    "primary": {
+      "dark": "#F59E0B"
+    },
+    "primary-hover": {
+      "dark": "#D97706"
+    },
+    "secondary": {
+      "dark": "#78350F"
+    },
+    "secondary-hover": {
+      "dark": "#92400E"
+    },
+    "accent": {
+      "dark": "#FBBF24"
+    },
+    "accent-hover": {
+      "dark": "#F59E0B"
+    }
+  },
+  "modes": [
+    "dark"
+  ],
+  "shapes": [
+    "sharp"
+  ],
+  "cvd_support": [],
+  "tokens": {
+    "base": {
+      "success": "#10B981",
+      "danger": "#EF4444",
+      "warning": "#F59E0B",
+      "info": "#FBBF24"
+    },
+    "domain": {
+      "shot-approved": "success",
+      "shot-pending": "warning",
+      "shot-rejected": "danger",
+      "shot-in-progress": "info",
+      "shot-archived": "text-muted"
+    }
+  },
+  "typography": {
+    "scale": "modular",
+    "heading_weight": 700,
+    "body_weight": 400,
+    "display": "'Inter Tight', 'Inter', ui-sans-serif, sans-serif",
+    "body": "'Inter', ui-sans-serif, system-ui, sans-serif"
+  },
+  "decantr_compat": ">=2.0.0",
+  "source": "core",
+  "decorators": {
+    "cinema-frame": "Aspect-ratio containers (4:3 or 16:9) with black letterbox bars for cinematic framing of content.",
+    "cinema-title": "Large serif title-card typography with dramatic spacing. Uppercase tracking, Playfair Display or similar.",
+    "cinema-slate": "Clapperboard-style numbered badges with amber/black striped border. Scene/take number display.",
+    "cinema-grain": "Subtle film grain overlay using noise texture. 3-5% opacity, blend mode overlay.",
+    "cinema-filmstrip": "Horizontal scroll strips with sprocket hole decorations on top/bottom edges. Thumbnail rows.",
+    "cinema-amber-glow": "Warm amber glow on active elements using box-shadow. Simulates tungsten key-light.",
+    "cinema-timecode": "Monospace timecode displays (HH:MM:SS:FF) with amber color on black. Tabular-nums.",
+    "cinema-vignette": "Dark radial vignette overlay at edges. Focuses attention to center of viewport.",
+    "cinema-crosshair": "Focus crosshair overlay with thin amber lines. Cinematographer framing guide aesthetic.",
+    "cinema-letterbox": "Top and bottom black bars creating anamorphic 2.35:1 widescreen presentation."
+  },
+  "spatial": {
+    "density_bias": -1,
+    "content_gap_shift": 1,
+    "section_padding": "5rem",
+    "card_wrapping": "none",
+    "surface_override": null
+  },
+  "motion": {
+    "preference": "expressive",
+    "reduce_motion": true,
+    "entrance": "cinema-fade-in",
+    "micro": "smooth",
+    "timing": "cubic-bezier(0.25, 0.1, 0.25, 1)",
+    "durations": {
+      "hover": "200ms",
+      "entrance": "600ms",
+      "modal": "400ms",
+      "page": "500ms",
+      "instant": "100ms",
+      "fast": "180ms",
+      "base": "350ms",
+      "slow": "600ms",
+      "slower": "900ms",
+      "stagger": "80ms"
+    },
+    "easings": {
+      "ease": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "easeOut": "cubic-bezier(0.16, 1, 0.3, 1)",
+      "easeIn": "cubic-bezier(0.7, 0, 0.84, 0)",
+      "spring": "cubic-bezier(0.34, 1.56, 0.64, 1)"
+    }
+  },
+  "effects": {
+    "enabled": true,
+    "intensity": "strong",
+    "type_mapping": {
+      "card": [
+        "cinema-frame"
+      ],
+      "title": [
+        "cinema-title"
+      ],
+      "badge": [
+        "cinema-slate"
+      ],
+      "root": [
+        "cinema-grain",
+        "cinema-vignette"
+      ],
+      "button": [
+        "cinema-amber-glow"
+      ]
+    },
+    "optional_effects": {
+      "grain": true,
+      "vignette": true,
+      "letterbox": false
+    },
+    "component_fallback": {
+      "Card": "card",
+      "Heading": "title",
+      "Badge": "badge",
+      "Button": "button"
+    }
+  },
+  "compositions": {
+    "gallery": {
+      "description": "Cinematic shot gallery with filmstrip navigation and large preview frames.",
+      "shell": "top-nav-main",
+      "effects": [
+        "cinema-frame",
+        "cinema-filmstrip",
+        "cinema-grain"
+      ]
+    },
+    "editor": {
+      "description": "Video editor timeline with timecode displays and multi-track layout.",
+      "shell": "sidebar-main",
+      "effects": [
+        "cinema-timecode",
+        "cinema-frame"
+      ]
+    },
+    "marketing": {
+      "description": "Film production marketing page with dramatic title cards and letterboxed hero.",
+      "shell": "top-nav-footer",
+      "effects": [
+        "cinema-title",
+        "cinema-letterbox",
+        "cinema-grain"
+      ]
+    },
+    "review": {
+      "description": "Shot review interface with slate numbering and approval workflow.",
+      "shell": "sidebar-main",
+      "effects": [
+        "cinema-slate",
+        "cinema-frame"
+      ]
+    }
+  },
+  "radius": {
+    "philosophy": "sharp",
+    "base": 0
+  },
+  "pattern_preferences": {
+    "prefer": [
+      "filmstrip-gallery",
+      "timeline-editor",
+      "shot-grid",
+      "review-board",
+      "timecode-display"
+    ],
+    "avoid": [
+      "chat-portal"
+    ],
+    "default_presets": {
+      "shot-grid": "frames",
+      "review-board": "cards"
+    }
+  },
+  "shell": {
+    "preferred": [
+      "top-nav-main",
+      "sidebar-main",
+      "full-bleed"
+    ],
+    "avoid": [
+      "chat-portal"
+    ],
+    "nav_style": "minimal",
+    "default_nav_state": "collapsed",
+    "root": "cinema-grain",
+    "nav": "cinema-frame",
+    "header": "cinema-title",
+    "navLabel": "",
+    "brand": "",
+    "dimensions": null
+  },
+  "decorator_definitions": {
+    "cinema-frame": {
+      "description": "Aspect-ratio containers (4:3 or 16:9) with black letterbox bars for cinematic framing of content.",
+      "intent": "Use to frame media and content with authentic cinematic aspect ratios. Black bars preserve the frame and focus attention.",
+      "suggested_properties": {
+        "aspect-ratio": "16 / 9",
+        "background": "#000000",
+        "border": "1px solid #2A2A2A",
+        "overflow": "hidden",
+        "position": "relative"
+      },
+      "pairs_with": [
+        "cinema-grain",
+        "cinema-vignette",
+        "cinema-title"
+      ],
+      "usage": [
+        "Media containers",
+        "Video previews",
+        "Shot thumbnails",
+        "Hero sections"
+      ]
+    },
+    "cinema-title": {
+      "description": "Large serif title-card typography with dramatic spacing. Uppercase tracking, Playfair Display or similar.",
+      "intent": "Use for hero headlines and scene titles. Evokes the classic film title-card with serif weight and wide letter-spacing.",
+      "suggested_properties": {
+        "font-family": "'Playfair Display', 'Cormorant Garamond', Georgia, serif",
+        "font-weight": "700",
+        "letter-spacing": "0.05em",
+        "text-transform": "uppercase",
+        "color": "#F5F5F4",
+        "font-size": "clamp(2rem, 5vw, 4rem)"
+      },
+      "pairs_with": [
+        "cinema-frame",
+        "cinema-amber-glow",
+        "cinema-letterbox"
+      ],
+      "usage": [
+        "Hero headlines",
+        "Scene title cards",
+        "Section headers",
+        "Movie-poster style displays"
+      ]
+    },
+    "cinema-slate": {
+      "description": "Clapperboard-style numbered badges with amber/black striped border. Scene/take number display.",
+      "intent": "Use for scene numbering, take indicators, and sequence identification. Mimics the iconic clapperboard slate.",
+      "suggested_properties": {
+        "background": "#000000",
+        "color": "#FBBF24",
+        "border": "2px solid #F59E0B",
+        "font-family": "ui-monospace, monospace",
+        "padding": "4px 10px",
+        "font-weight": "700"
+      },
+      "pairs_with": [
+        "cinema-frame",
+        "cinema-timecode"
+      ],
+      "usage": [
+        "Scene numbers",
+        "Take indicators",
+        "Sequence badges",
+        "Production IDs"
+      ]
+    },
+    "cinema-grain": {
+      "description": "Subtle film grain overlay using noise texture. 3-5% opacity, blend mode overlay.",
+      "intent": "Apply to root containers and media frames for authentic celluloid grain texture. Adds analog warmth.",
+      "suggested_properties": {
+        "position": "fixed",
+        "inset": "0",
+        "pointer-events": "none",
+        "background-image": "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E\")",
+        "opacity": "0.05",
+        "mix-blend-mode": "overlay",
+        "z-index": "9998"
+      },
+      "pairs_with": [
+        "cinema-vignette",
+        "cinema-frame"
+      ],
+      "usage": [
+        "Full-page overlay",
+        "Media frame texture",
+        "Background noise"
+      ]
+    },
+    "cinema-filmstrip": {
+      "description": "Horizontal scroll strips with sprocket hole decorations on top/bottom edges. Thumbnail rows.",
+      "intent": "Use for horizontal browsing of frames and clips. Sprocket holes reinforce the celluloid metaphor.",
+      "suggested_properties": {
+        "display": "flex",
+        "gap": "8px",
+        "padding": "16px 0",
+        "background": "#000000",
+        "border-top": "8px dashed #2A2A2A",
+        "border-bottom": "8px dashed #2A2A2A",
+        "overflow-x": "auto"
+      },
+      "pairs_with": [
+        "cinema-frame",
+        "cinema-slate"
+      ],
+      "usage": [
+        "Thumbnail navigation",
+        "Clip browsers",
+        "Shot sequences",
+        "Timeline previews"
+      ]
+    },
+    "cinema-amber-glow": {
+      "description": "Warm amber glow on active elements using box-shadow. Simulates tungsten key-light.",
+      "intent": "Use to highlight interactive and focused elements with warm cinematic lighting. Creates depth.",
+      "suggested_properties": {
+        "box-shadow": "0 0 20px rgba(245, 158, 11, 0.4), 0 0 40px rgba(245, 158, 11, 0.2)",
+        "transition": "box-shadow 200ms ease"
+      },
+      "pairs_with": [
+        "cinema-title",
+        "cinema-frame",
+        "cinema-slate"
+      ],
+      "usage": [
+        "Active buttons",
+        "Focused media",
+        "Hover highlights",
+        "Call-to-action elements"
+      ]
+    },
+    "cinema-timecode": {
+      "description": "Monospace timecode displays (HH:MM:SS:FF) with amber color on black. Tabular-nums.",
+      "intent": "Use for timecode readouts, duration displays, and frame counters. Production-accurate timing displays.",
+      "suggested_properties": {
+        "font-family": "ui-monospace, 'JetBrains Mono', monospace",
+        "color": "#FBBF24",
+        "background": "#000000",
+        "padding": "4px 8px",
+        "font-variant-numeric": "tabular-nums",
+        "font-size": "14px",
+        "letter-spacing": "0.05em"
+      },
+      "pairs_with": [
+        "cinema-slate",
+        "cinema-frame"
+      ],
+      "usage": [
+        "Timecode readouts",
+        "Duration displays",
+        "Frame counters",
+        "Playhead indicators"
+      ]
+    },
+    "cinema-vignette": {
+      "description": "Dark radial vignette overlay at edges. Focuses attention to center of viewport.",
+      "intent": "Apply to root containers to darken edges and draw focus inward. Classic cinematography technique.",
+      "suggested_properties": {
+        "position": "fixed",
+        "inset": "0",
+        "pointer-events": "none",
+        "background": "radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.6) 100%)",
+        "z-index": "9997"
+      },
+      "pairs_with": [
+        "cinema-grain",
+        "cinema-frame"
+      ],
+      "usage": [
+        "Page-level vignette",
+        "Media frame edges",
+        "Hero section focus"
+      ]
+    },
+    "cinema-crosshair": {
+      "description": "Focus crosshair overlay with thin amber lines. Cinematographer framing guide aesthetic.",
+      "intent": "Use as overlay guides for framing, composition, and targeting UIs. Echoes viewfinder graticules.",
+      "suggested_properties": {
+        "position": "absolute",
+        "inset": "0",
+        "pointer-events": "none",
+        "background": "linear-gradient(to right, transparent 49.9%, rgba(245,158,11,0.3) 50%, transparent 50.1%), linear-gradient(to bottom, transparent 49.9%, rgba(245,158,11,0.3) 50%, transparent 50.1%)"
+      },
+      "pairs_with": [
+        "cinema-frame",
+        "cinema-timecode"
+      ],
+      "usage": [
+        "Framing guides",
+        "Composition overlays",
+        "Targeting reticles"
+      ]
+    },
+    "cinema-letterbox": {
+      "description": "Top and bottom black bars creating anamorphic 2.35:1 widescreen presentation.",
+      "intent": "Use for hero sections and immersive content to create widescreen cinematic feel.",
+      "suggested_properties": {
+        "position": "relative",
+        "padding-top": "56.25%",
+        "background": "#000000",
+        "overflow": "hidden"
+      },
+      "pairs_with": [
+        "cinema-title",
+        "cinema-grain",
+        "cinema-vignette"
+      ],
+      "usage": [
+        "Hero sections",
+        "Full-bleed media",
+        "Immersive pages"
+      ]
+    }
+  },
+  "elevation": {
+    "1": {
+      "light": "0 1px 2px rgba(0,0,0,0.06)",
+      "dark": "0 1px 2px rgba(0,0,0,0.4)"
+    },
+    "2": {
+      "light": "0 2px 6px rgba(0,0,0,0.08)",
+      "dark": "0 2px 8px rgba(255, 255, 255, 0.06)"
+    },
+    "3": {
+      "light": "0 6px 16px rgba(0,0,0,0.10)",
+      "dark": "0 4px 16px rgba(255, 255, 255, 0.08)"
+    },
+    "4": {
+      "light": "0 12px 32px rgba(0,0,0,0.14)",
+      "dark": "0 8px 28px rgba(255, 255, 255, 0.12)"
+    },
+    "5": {
+      "light": "0 24px 64px rgba(0,0,0,0.18)",
+      "dark": "0 16px 48px rgba(255, 255, 255, 0.16)"
+    }
+  }
+}

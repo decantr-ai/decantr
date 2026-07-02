@@ -1,0 +1,100 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "creator-earnings",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Creator Earnings",
+  "description": "Revenue analytics and payout management for creators. Full earnings dashboard and payout configuration.",
+  "tags": [
+    "creator",
+    "earnings",
+    "analytics",
+    "payouts",
+    "monetization"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "creator earnings",
+        "revenue analytics",
+        "payout settings"
+      ],
+      "secondary": [
+        "earnings dashboard",
+        "payment settings",
+        "revenue breakdown"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "earnings",
+      "patterns": [
+        {
+          "pattern": "earnings-dashboard",
+          "preset": "standard",
+          "as": "earnings"
+        },
+        {
+          "pattern": "payout-settings",
+          "preset": "readonly",
+          "as": "payout-preview"
+        }
+      ],
+      "default_layout": [
+        "earnings-dashboard",
+        "payout-settings"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "payouts",
+      "patterns": [
+        {
+          "pattern": "payout-settings",
+          "preset": "standard",
+          "as": "payout-settings"
+        }
+      ],
+      "default_layout": [
+        "payout-settings"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "earnings": "Revenue analytics view. Full earnings dashboard with line chart showing monthly revenue, bar chart for tier breakdown, and summary cards. Below, a read-only payout preview card showing next payout date and amount.",
+    "payouts": "Payout configuration page. Form sections for bank account details, payout schedule selector, minimum threshold input, and tax information fields."
+  },
+  "features": [
+    "revenue-charts",
+    "tier-breakdown",
+    "payout-configuration",
+    "export-reports"
+  ],
+  "shells": {
+    "sidebar-main": "Creator dashboard with sidebar navigation"
+  },
+  "dependencies": {
+    "patterns": {
+      "earnings-dashboard": "^1.0.0",
+      "payout-settings": "^1.0.0",
+      "sparkline-cell": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "studio"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

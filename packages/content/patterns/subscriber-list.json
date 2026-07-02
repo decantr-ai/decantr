@@ -1,0 +1,135 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "subscriber-list",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Subscriber List",
+  "description": "Fan/subscriber management table with filtering, search, sorting, and bulk actions. Export and messaging capabilities.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Card",
+        "Input",
+        "Badge",
+        "Avatar",
+        "Checkbox",
+        "Select",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Card",
+    "Input",
+    "Badge",
+    "Avatar",
+    "Checkbox",
+    "Select",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full data table with all subscriber info",
+      "components": [
+        "Button",
+        "Card",
+        "Input",
+        "Badge",
+        "Avatar",
+        "Checkbox",
+        "Select",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "filters": "Tier, date, status filters",
+          "search": "Subscriber search input",
+          "table": "Subscriber data rows",
+          "pagination": "Page navigation controls",
+          "bulk-actions": "Mass action buttons"
+        }
+      }
+    },
+    "compact": {
+      "description": "Responsive card grid view with subscriber info cards optimized for mobile and touch interactions",
+      "components": [
+        "Card",
+        "Avatar",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _md:gc2 _gap4",
+        "slots": {
+          "cards": "Subscriber info cards"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap4",
+    "slots": {
+      "filters": "Filter controls",
+      "table": "Subscriber table",
+      "pagination": "Page controls"
+    }
+  },
+  "io": {
+    "produces": [
+      "subscriber-selected",
+      "export-triggered"
+    ],
+    "consumes": [
+      "subscriber-data",
+      "tier-data"
+    ]
+  },
+  "visual_brief": "Data table of subscribers/fans with columns: checkbox (for bulk select), avatar, display name, email, subscription tier badge, joined date, status badge (active, cancelled, paused), and a kebab menu for actions. A header bar contains search input, tier filter dropdown, status filter, and bulk action buttons (message, export). A pagination bar at the bottom shows page controls and total count. The compact preset removes the avatar column and reduces row height.",
+  "responsive": {
+    "mobile": "Table becomes a card list — each subscriber as a card with avatar, name, tier, and status. Bulk actions move to a bottom action bar. Filters collapse to a filter button.",
+    "tablet": "Table with horizontal scroll. Search and primary filters visible. Checkboxes and bulk actions functional.",
+    "desktop": "Full table with all columns visible. Filters, search, and bulk actions in a single toolbar row."
+  },
+  "layout_hints": {
+    "list_priority": "Subscriber identity, tier, and lifecycle state should be easy to scan before bulk actions or export workflows enter the picture.",
+    "selection_discipline": "Bulk action controls should only rise in prominence once selection exists. Until then, the table remains the primary surface.",
+    "card_translation": "Card mode should preserve the same subscriber hierarchy as the table so mobile users do not lose account or tier context."
+  },
+  "motion": {
+    "micro": "Selected rows, status badges, and bulk actions may brighten subtly to confirm state changes.",
+    "transitions": "Filtering, sorting, and pagination should preserve orientation and list trust, especially for managers working through large subscriber sets."
+  },
+  "interactions": [
+    "click-select",
+    "hover-reveal",
+    "animate-on-mount",
+    "stagger-children"
+  ],
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Subscriber list",
+    "keyboard": [
+      "Search, filters, row selection, and per-subscriber actions should be reachable in a clear operational order."
+    ],
+    "announcements": [
+      "Subscriber name, tier, joined date, and status should be exposed semantically so both table and card variants remain understandable without relying on badge styling alone."
+    ]
+  },
+  "composition": {
+    "SubscriberList": "Container(d-section, flex-col, gap-4) > [Toolbar + SubscriberTable + Pagination + BulkActions?]",
+    "Toolbar": "Row(d-control) > [SearchInput(d-control) + TierFilter(d-control) + StatusFilter(d-control) + ExportButton(d-interactive)]",
+    "SubscriberTable": "Table(d-data) > SubscriberRow[]",
+    "SubscriberRow": "Row(d-data-row) > [Checkbox(d-control) + Avatar + Name(font-medium) + Email(text-muted) + TierBadge(d-annotation) + JoinDate + StatusBadge(d-annotation) + ActionsMenu(d-interactive)]",
+    "BulkActions": "Bar(d-control, sticky-bottom) > [SelectedCount + MessageButton(d-interactive) + ExportButton(d-interactive)]"
+  }
+}

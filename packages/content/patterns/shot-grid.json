@@ -1,0 +1,104 @@
+{
+  "id": "shot-grid",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Shot Grid",
+  "description": "Grid of individual shot compositions with aspect ratio indicators, shot numbers, duration chips, and optional transition arrows for video shot planning.",
+  "category": "media",
+  "tags": ["2026", "media", "shots", "video", "composition", "cinematography"],
+  "components": ["ShotCard", "AspectBadge", "TransitionArrow", "ShotNumber", "DurationChip"],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Responsive 4-column grid of shot cards with aspect badges and duration chips for general shot planning and review",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _grid-cols-4 _gap-4 _p-4 _w-full"
+      }
+    },
+    "flow": {
+      "description": "Linear flow layout connecting shots with transition arrows indicating cut, fade, dissolve, and other transition types for editorial planning",
+      "layout": {
+        "layout": "flex",
+        "atoms": "_flex _flex-row _flex-wrap _items-center _gap-2 _p-4 _w-full"
+      }
+    },
+    "comparison": {
+      "description": "Side-by-side comparison layout showing two shots for A/B review with synchronized playback and diff indicators",
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _grid-cols-2 _gap-6 _p-4 _w-full"
+      }
+    }
+  },
+  "visual_brief": "Grid of rectangular shot cards with variable aspect ratios. Each card renders a single shot thumbnail with a subtle rounded border. Aspect ratio badge appears as a small tag at top-right of thumbnail (e.g. '16:9', '9:16', '4:3', '2.39:1') in monospace uppercase text against a dark translucent pill. Shot number overlays at top-left as a bold numeric badge (e.g. 'SH-042') in a contrasting pill. Duration chip sits at bottom-right showing timecode (e.g. '0:03.5') with a clock icon prefix. In flow preset, cards are connected by arrow icons between them indicating transition type: solid arrow = cut, dotted arrow with fade gradient = fade, diagonal lines = dissolve, curved = wipe. Arrow color reflects transition duration. Cards selected for comparison have an accent border ring. Hover state lifts cards 2px with shadow enhancement.",
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _grid-cols-4 _gap-4 _p-4 _w-full",
+    "slots": {
+      "shot-card": "Individual shot card (d-surface, data-interactive) with thumbnail and metadata overlays. Aspect ratio of card matches the shot's native aspect to preserve composition integrity.",
+      "shot-thumbnail": "Primary image area showing the shot frame. Fills entire card. Supports still image or first-frame preview of video. Lazy-loaded.",
+      "aspect-badge": "Small pill at top-right of card showing aspect ratio in monospace uppercase. Background dark-translucent, 10px font, 4px vertical padding.",
+      "shot-number": "Bold numeric identifier at top-left of card in a contrasting pill. Format 'SH-{number}' or simple '{number}'. Uses primary color background.",
+      "duration-chip": "Timecode display at bottom-right with clock icon prefix. Monospace font, dark translucent pill.",
+      "transition-arrow": "Between-card element in flow preset indicating transition type between adjacent shots. Icon visualization encodes transition type (cut/fade/dissolve/wipe) and width encodes duration."
+    }
+  },
+  "responsive": {
+    "mobile": "Single column with full-width cards. Flow preset stacks vertically with arrows rotated 90 degrees. Comparison preset stacks vertically with divider.",
+    "tablet": "2-column grid. Flow preset maintains horizontal layout with wrap. Badges slightly reduced in size.",
+    "desktop": "4-column grid with all hover states and badges at full size."
+  },
+  "layout_hints": {
+    "shot_priority": "Shot identity, aspect ratio, and duration should be immediately legible. Transition or comparison signals support the shot read rather than replacing it.",
+    "flow_sequence": "The flow preset should emphasize editorial sequence and transition logic, not just spatial adjacency.",
+    "comparison_clarity": "When comparing shots, keep the selected pair visually tied together so users read them as alternatives rather than unrelated cards."
+  },
+  "layout_hints": {
+    "shot_priority": "Shot identity, aspect ratio, and duration should be immediately legible. Transition or comparison signals support the shot read rather than replacing it.",
+    "flow_sequence": "The flow preset should emphasize editorial sequence and transition logic, not just spatial adjacency.",
+    "comparison_clarity": "When comparing shots, keep the selected pair visually tied together so users read them as alternatives rather than unrelated cards."
+  },
+  "motion": {
+    "micro": {
+      "card-hover": "translateY(-2px) + shadow-lift 180ms ease-out",
+      "badge-hover": "scale(1.08) 120ms ease-out"
+    },
+    "transitions": {
+      "card-select": "border-ring + glow 200ms ease-out",
+      "flow-reorder": "FLIP layout 300ms ease-in-out"
+    },
+    "ambient": {
+      "transition-arrow-pulse": "opacity 0.6 to 1 pulse 3s ease-in-out infinite on active flow"
+    }
+  },
+  "interactions": [
+    "lift-hover",
+    "click-select",
+    "animate-on-mount",
+    "stagger-children"
+  ],
+  "composition": {
+    "ShotGrid": "Root(d-section, grid) > ShotCard*(d-interactive)",
+    "ShotCard": "Card(d-surface) > [ShotThumbnail + AspectBadge + ShotNumber + DurationChip]",
+    "FlowVariant": "Root(flex-row, wrap) > [ShotCard + TransitionArrow]*",
+    "ComparisonVariant": "Root(grid-2) > ShotCard*(selected-highlight)"
+  },
+  "accessibility": {
+    "role": "list",
+    "aria-label": "Shot composition grid",
+    "announcements": [
+      "Shot {number} selected",
+      "Transition between {from} and {to} set to {type}",
+      "{count} shots selected for comparison"
+    ],
+    "keyboard": [
+      "Tab: cycle through shots",
+      "Enter: open shot detail",
+      "Space: select shot for comparison",
+      "Arrow keys: navigate grid",
+      "T: cycle transition type (flow preset)"
+    ]
+  }
+}

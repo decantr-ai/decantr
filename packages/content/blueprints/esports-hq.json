@@ -1,0 +1,116 @@
+{
+  "$schema": "https://decantr.ai/schemas/blueprint.v1.json",
+  "id": "esports-hq",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Esports HQ",
+  "description": "Professional esports matchday command platform with live roster tracking, scrim scheduling, VOD review, sponsor dashboards, full auth, and an immersive broadcast-style public homepage.",
+  "blueprint_portfolio": {
+    "visibility": "featured",
+    "maturity": "certified-flagship",
+    "rationale": "Flagship blueprint with a maintained showcase capsule, thumbnail asset, and smoke-green shortlist verification suitable for first-run discovery.",
+    "artifact": {
+      "status": "certified",
+      "showcase": "esports-hq",
+      "notes": "Certified Artifact Contract V0: showcase capsule plus shortlist verification report are available in the Decantr monorepo."
+    }
+  },
+  "tags": ["esports", "gaming", "team-ops", "competitive", "2026"],
+  "compose": [
+    "team-operations",
+    "scrim-scheduler",
+    "vod-review",
+    "sponsor-dashboard",
+    "marketing-esports",
+    "auth-full",
+    "settings-full"
+  ],
+  "theme": {
+    "mode": "dark",
+    "shape": "rounded",
+    "id": "gaming-guild"
+  },
+  "personality": "Professional esports matchday command platform with a cinematic live-broadcast public homepage and operational app surfaces behind auth. The homepage should feel like a premium arena command room: full-bleed dark stage, neon cyan/acid/red accents, huge italic match headline, live telemetry, 5v5 roster proof, vertical match update reel, angular CTAs, subtle radar ambience, and no generic card-heavy SaaS scaffolding. Auth and app surfaces remain practical for coaches, analysts, players, and managers: player form trackers, scrim calendars, frame-by-frame VOD review, and sponsor activation metrics. Lucide icons. Competitive, polished, and production-ready.",
+  "voice": {
+    "tone": "Competitive and operational. Speaks to coaches, analysts, players, managers.",
+    "cta_verbs": ["Scrim", "Review", "Draft", "Bench", "Rotate", "Analyze"],
+    "avoid": ["Manage", "Handle"],
+    "empty_states": "No scrims scheduled. Reach out to the {region} captains.",
+    "errors": "VOD upload failed — file size exceeds 4GB limit.",
+    "loading": "Loading match replay..."
+  },
+  "features": ["roster", "scrims", "vods", "sponsors", "auth", "mfa", "oauth", "marketing", "seo"],
+  "routes": {
+    "/": { "page": "home", "shell": "immersive-stage", "archetype": "marketing-esports" },
+    "/login": { "page": "login", "shell": "centered", "archetype": "auth-full" },
+    "/register": { "page": "register", "shell": "centered", "archetype": "auth-full" },
+    "/forgot-password": { "page": "forgot-password", "shell": "centered", "archetype": "auth-full" },
+    "/reset-password": { "page": "reset-password", "shell": "centered", "archetype": "auth-full" },
+    "/verify-email": { "page": "verify-email", "shell": "centered", "archetype": "auth-full" },
+    "/mfa-setup": { "page": "mfa-setup", "shell": "centered", "archetype": "auth-full" },
+    "/mfa-verify": { "page": "mfa-verify", "shell": "centered", "archetype": "auth-full" },
+    "/phone-verify": { "page": "phone-verify", "shell": "centered", "archetype": "auth-full" },
+    "/team": { "page": "overview", "shell": "sidebar-main", "archetype": "team-operations" },
+    "/team/roster": { "page": "roster", "shell": "sidebar-main", "archetype": "team-operations" },
+    "/team/players/:id": { "page": "player-detail", "shell": "sidebar-main", "archetype": "team-operations" },
+    "/scrims": { "page": "scrims", "shell": "sidebar-main", "archetype": "scrim-scheduler" },
+    "/scrims/:id": { "page": "match-detail", "shell": "sidebar-main", "archetype": "scrim-scheduler" },
+    "/vods": { "page": "vods", "shell": "sidebar-main", "archetype": "vod-review" },
+    "/vods/:id": { "page": "vod-detail", "shell": "sidebar-main", "archetype": "vod-review" },
+    "/sponsors": { "page": "sponsors", "shell": "sidebar-main", "archetype": "sponsor-dashboard" },
+    "/sponsors/:id": { "page": "sponsor-detail", "shell": "sidebar-main", "archetype": "sponsor-dashboard" },
+    "/settings/profile": { "page": "profile", "shell": "sidebar-aside", "archetype": "settings-full" },
+    "/settings/security": { "page": "security", "shell": "sidebar-aside", "archetype": "settings-full" },
+    "/settings/preferences": { "page": "preferences", "shell": "sidebar-aside", "archetype": "settings-full" },
+    "/settings/danger": { "page": "danger", "shell": "sidebar-aside", "archetype": "settings-full" }
+  },
+  "overrides": { "features_add": [], "features_remove": [], "pages": {}, "pages_remove": [] },
+  "seo_hints": { "schema_org": ["Organization", "SportsTeam"], "meta_priorities": ["description", "og:image"] },
+  "navigation": {
+    "command_palette": true,
+    "hotkeys": [
+      { "key": "g t", "route": "/team", "label": "Go to Team" },
+      { "key": "g s", "route": "/scrims", "label": "Go to Scrims" },
+      { "key": "g v", "route": "/vods", "label": "Go to VODs" }
+    ]
+  },
+  "dependencies": {
+    "archetypes": {
+      "team-operations": ">=1.0.0",
+      "scrim-scheduler": ">=1.0.0",
+      "vod-review": ">=1.0.0",
+      "sponsor-dashboard": ">=1.0.0",
+      "marketing-esports": ">=1.0.0",
+      "auth-full": ">=1.0.0",
+      "settings-full": ">=1.0.0"
+    },
+    "patterns": {
+      "esports-matchday-command": ">=1.0.0"
+    },
+    "shells": {
+      "immersive-stage": ">=1.0.0"
+    }
+  },
+  "design_constraints": {
+    "public_home": {
+      "style": "cinematic full-bleed esports broadcast stage",
+      "required_pattern": "esports-matchday-command/broadcast-home",
+      "required_shell": "immersive-stage",
+      "avoid": [
+        "generic SaaS hero plus card grid",
+        "chip-heavy hero badges",
+        "bottom horizontal marquees",
+        "mascot or controller hero graphics",
+        "nested cards in the first viewport",
+        "pill-only CTA treatment"
+      ]
+    }
+  },
+  "responsive_strategy": {
+    "public_home": {
+      "desktop": "Two-column first viewport: match copy and telemetry on the left, 5v5 roster panel with vertical update reel on the right.",
+      "mobile": "Single-column flow: headline, lede, telemetry, CTAs, then roster panel. Headline must resize without clipping and the VS tag must remain legible."
+    }
+  },
+  "suggested_themes": ["gaming-guild", "neon-cyber", "carbon-neon", "neo-tokyo", "dopamine"]
+}

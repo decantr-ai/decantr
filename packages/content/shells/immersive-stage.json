@@ -1,0 +1,89 @@
+{
+  "$schema": "https://decantr.ai/schemas/shell.v1.json",
+  "id": "immersive-stage",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Immersive Stage",
+  "description": "Full-bleed public shell for cinematic launch, game, venue, and live-event homepages where the first viewport is a designed stage rather than a standard stacked marketing page.",
+  "layout": "stack",
+  "atoms": "_relative _flex _col _minh[100vh] _overflow-x-hidden",
+  "config": {
+    "regions": ["header", "body"],
+    "grid": {
+      "areas": [["header"], ["body"]]
+    },
+    "nav": {
+      "position": "top"
+    },
+    "header": {
+      "height": "64px",
+      "sticky": true
+    },
+    "body": {
+      "scroll": true
+    }
+  },
+  "configurable": {
+    "nav": {
+      "positions": ["top"],
+      "modes": ["full", "compact"]
+    },
+    "header": {
+      "toggleable": true
+    },
+    "sizing": {
+      "headerHeight": {
+        "min": 56,
+        "max": 72,
+        "default": 64
+      }
+    }
+  },
+  "guidance": {
+    "header_treatment": "Header sits flush to the top edge and spans the full viewport width. Keep content constrained inside the header, but let the bottom accent line span edge-to-edge.",
+    "accent_line": "Use a one-pixel border-gradient from cyan on the left through transparent middle into red or brand-hot accent on the right. The line belongs to the viewport, not the content container.",
+    "body_spacing": "The page body owns its first-viewport composition. Do not apply default marketing shell section padding to the hero stage.",
+    "navigation": "Use compact brand, two or three nav links, and one aggressive CTA. Avoid utility clutter in the public hero shell.",
+    "footer": "No persistent footer is required for a staged homepage. If legal links are needed, place them after the cinematic content rather than inside the first viewport."
+  },
+  "internal_layout": {
+    "root": {
+      "display": "flex",
+      "direction": "column",
+      "min_height": "100vh",
+      "overflow_x": "hidden",
+      "background": "var(--d-bg)",
+      "atoms": "_relative _flex _col _minh[100vh] _overflow-x-hidden"
+    },
+    "header": {
+      "height": "64px",
+      "position": "fixed",
+      "top": "0",
+      "left": "0",
+      "right": "0",
+      "z_index": "50",
+      "display": "grid",
+      "grid_template": "auto 1fr auto",
+      "align": "center",
+      "padding": "0.625rem max(1rem, calc((100vw - 1240px) / 2))",
+      "background": "linear-gradient(180deg, color-mix(in srgb, var(--d-bg) 94%, black), transparent)",
+      "border_bottom": "1px solid color-mix(in srgb, var(--d-text) 12%, transparent)",
+      "accent_line": "absolute bottom edge, left:0, right:0, height:1px, linear-gradient(90deg, cyan, transparent 34%, rgba(255,255,255,.16), transparent 72%, hot accent)",
+      "left_content": "Compact brand mark and name",
+      "center_content": "Two or three nav anchors only",
+      "right_content": "Primary sign-in or live action CTA",
+      "button_sizing": "Header CTAs are compact, slanted or clipped when the theme supports it, and about 40px tall."
+    },
+    "body": {
+      "flex": "1",
+      "overflow_y": "auto",
+      "padding": "0",
+      "atoms": "_flex1 _overflow-y-auto _px0 _py0",
+      "note": "Route components render full-bleed sections directly. Do not wrap the body in a centered card or default d-section container."
+    }
+  },
+  "code": {
+    "imports": "Use the target router outlet and compact nav/link primitives available in the app.",
+    "example": "ImmersiveStageShell -> FixedHeader(edge-to-edge accent line) + MainOutlet(full-bleed body)"
+  }
+}

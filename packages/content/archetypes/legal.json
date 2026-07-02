@@ -1,0 +1,107 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "legal",
+  "role": "public",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Legal",
+  "description": "Legal pages including privacy policy, terms of service, and cookie policy with sticky TOC and print-friendly layout.",
+  "tags": [
+    "legal",
+    "privacy",
+    "terms",
+    "cookies",
+    "policy"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "legal pages",
+        "privacy policy",
+        "terms of service",
+        "cookie policy"
+      ],
+      "secondary": [
+        "tos",
+        "legal",
+        "compliance"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "core"
+  },
+  "pages": [
+    {
+      "id": "privacy",
+      "patterns": [
+        {
+          "pattern": "legal-prose",
+          "preset": "privacy",
+          "as": "content"
+        }
+      ],
+      "default_layout": [
+        "legal-prose"
+      ],
+      "shell": "top-nav-footer"
+    },
+    {
+      "id": "terms",
+      "patterns": [
+        {
+          "pattern": "legal-prose",
+          "preset": "terms",
+          "as": "content"
+        }
+      ],
+      "default_layout": [
+        "legal-prose"
+      ],
+      "shell": "top-nav-footer"
+    },
+    {
+      "id": "cookies",
+      "patterns": [
+        {
+          "pattern": "legal-prose",
+          "preset": "cookies",
+          "as": "content"
+        }
+      ],
+      "default_layout": [
+        "legal-prose"
+      ],
+      "shell": "top-nav-footer"
+    }
+  ],
+  "page_briefs": {
+    "privacy": "Long-form legal prose with sticky table of contents sidebar. Clean typography with numbered sections, generous line height, and comfortable max-width for readability. Print-friendly layout.",
+    "terms": "Same structure as privacy page. Sticky TOC on the side, numbered sections of terms text in a clean prose layout with last-updated date at the top.",
+    "cookies": "Compact legal prose page. Sticky TOC, cookie categories table, and consent management section. Same clean typography and layout as other legal pages."
+  },
+  "features": [
+    "toc-navigation",
+    "print-friendly",
+    "smooth-scroll"
+  ],
+  "shells": {
+    "top-nav-footer": "Standard page layout with navigation and footer"
+  },
+  "dependencies": {
+    "patterns": {
+      "legal-prose": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  }
+}

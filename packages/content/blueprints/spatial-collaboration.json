@@ -1,0 +1,172 @@
+{
+  "$schema": "https://decantr.ai/schemas/blueprint.v1.json",
+  "id": "spatial-collaboration",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Spatial Collaboration",
+  "description": "Immersive collaborative workspace combining spatial depth-layered canvases with real-time presence, auth, and public-facing about pages.",
+  "blueprint_portfolio": {
+    "visibility": "labs",
+    "maturity": "experimental",
+    "rationale": "Interesting direction for advanced users, but not yet a default recommendation because the public positioning or scaffold proof needs more tightening.",
+    "artifact": {
+      "status": "candidate",
+      "showcase": "spatial-collaboration",
+      "notes": "Visible through Labs; promote after clearer product positioning and evidence-backed scaffold quality."
+    }
+  },
+  "tags": [
+    "spatial",
+    "collaboration",
+    "workspace",
+    "immersive",
+    "canvas",
+    "real-time",
+    "2026"
+  ],
+  "compose": [
+    "spatial-workspace",
+    "auth-full",
+    "about-hybrid"
+  ],
+  "theme": {
+    "mode": "dark",
+    "shape": "rounded",
+    "id": "carbon"
+  },
+  "personality": "Immersive spatial workspace with depth and presence. Glassmorphic floating panels over depth-layered backgrounds. Smooth spring animations for all transitions. Presence indicators use warm accent colors. Think Figma meets a sci-fi command bridge. System sans-serif typography. Minimal chrome, maximum canvas.",
+  "voice": {
+    "tone": "Minimal and spatial-aware. UI text is brief — the canvas is the focus. Status messages are contextual to the user's position in the workspace.",
+    "cta_verbs": [
+      "Create",
+      "Place",
+      "Connect",
+      "Share",
+      "Focus",
+      "Navigate"
+    ],
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Buy",
+      "Subscribe"
+    ],
+    "empty_states": "Spatial and inviting. An empty canvas should show a subtle grid with a centered prompt to place the first element. Presence dots should appear as collaborators join.",
+    "errors": "Non-intrusive. Connection drops show a subtle reconnecting indicator at the canvas edge. Conflict resolution uses visual diffing on the affected object.",
+    "loading": "Canvas grid renders immediately. Objects fade in as data arrives. Presence rings pulse gently during connection establishment. No blocking loading screens."
+  },
+  "features": [
+    "spatial",
+    "collaboration",
+    "drag-drop",
+    "real-time",
+    "presence",
+    "auth",
+    "mfa",
+    "oauth"
+  ],
+  "routes": {
+    "/": {
+      "page": "workspace",
+      "shell": "canvas-overlay",
+      "archetype": "spatial-workspace"
+    },
+    "/settings": {
+      "page": "workspace-settings",
+      "shell": "sidebar-main",
+      "archetype": "spatial-workspace"
+    },
+    "/login": {
+      "page": "login",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/register": {
+      "page": "register",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/forgot-password": {
+      "page": "forgot-password",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/reset-password": {
+      "page": "reset-password",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/verify-email": {
+      "page": "verify-email",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/mfa-setup": {
+      "page": "mfa-setup",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/mfa-verify": {
+      "page": "mfa-verify",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/phone-verify": {
+      "page": "phone-verify",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/about": {
+      "page": "about",
+      "shell": "top-nav-footer",
+      "archetype": "about-hybrid"
+    }
+  },
+  "overrides": {
+    "features_add": [
+      "theme-toggle"
+    ],
+    "features_remove": [],
+    "pages": {},
+    "pages_remove": []
+  },
+  "seo_hints": {
+    "schema_org": [
+      "Organization",
+      "WebApplication"
+    ],
+    "meta_priorities": [
+      "description",
+      "og:image"
+    ]
+  },
+  "navigation": {
+    "command_palette": true,
+    "hotkeys": [
+      {
+        "key": "g w",
+        "route": "/",
+        "label": "Go to Workspace"
+      },
+      {
+        "key": "g s",
+        "route": "/settings",
+        "label": "Go to Settings"
+      }
+    ]
+  },
+  "dependencies": {
+    "archetypes": {
+      "spatial-workspace": ">=1.0.0",
+      "auth-full": ">=1.0.0",
+      "about-hybrid": ">=1.0.0"
+    }
+  },
+  "suggested_themes": [
+    "carbon",
+    "glassmorphism",
+    "prismatic",
+    "bioluminescent"
+  ]
+}

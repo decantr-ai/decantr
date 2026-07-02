@@ -1,0 +1,121 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "marketing-marketplace",
+  "role": "public",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Marketplace Marketing",
+  "description": "Public-facing marketing and landing pages for a two-sided marketplace. Showcases featured listings, categories, testimonials, and conversion CTAs.",
+  "tags": [
+    "marketplace",
+    "marketing",
+    "landing",
+    "seo",
+    "public"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "marketplace landing",
+        "marketplace homepage",
+        "marketplace marketing"
+      ],
+      "secondary": [
+        "featured listings",
+        "marketplace about",
+        "marketplace categories"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "landing",
+          "as": "hero"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "content",
+          "as": "featured-listings"
+        },
+        {
+          "pattern": "testimonials",
+          "preset": "standard",
+          "as": "social-proof"
+        },
+        {
+          "pattern": "cta-section",
+          "preset": "standard",
+          "as": "cta"
+        }
+      ],
+      "default_layout": [
+        "hero",
+        "featured-listings",
+        "social-proof",
+        "cta"
+      ],
+      "shell": "top-nav-footer"
+    },
+    {
+      "id": "about",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "brand",
+          "as": "about-hero"
+        }
+      ],
+      "default_layout": [
+        "about-hero"
+      ],
+      "shell": "top-nav-footer"
+    }
+  ],
+  "page_briefs": {
+    "home": "Marketplace landing page with a bold hero section featuring a search bar, tagline, and background imagery. Below, a content card grid showcases featured listings organized by category. A testimonials section displays buyer and seller quotes with avatars. The page closes with a prominent CTA section encouraging sign-up or listing creation.",
+    "about": "Brand story page with a large hero section featuring the marketplace mission statement, founding story imagery, and team values. Clean typography-focused layout that communicates trust and community."
+  },
+  "features": [
+    "marketing",
+    "seo",
+    "featured-listings"
+  ],
+  "shells": {
+    "top-nav-footer": "Top navigation with footer layout for public pages"
+  },
+  "dependencies": {
+    "patterns": {
+      "hero": "^1.0.0",
+      "card-grid": "^1.0.0",
+      "testimonials": "^1.0.0",
+      "cta-section": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "carbon"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  },
+  "directives": [
+    "Hero MUST be visually rich, NOT just headline + stats. Compose: eyebrow + headline + subtitle + dual CTA + supporting media (one of: 2-3 listing card previews to the right of the copy, OR a stylized map snippet, OR a 3-card trust-strip showing 'verified hosts' / 'instant book' / 'review-backed'). A marketplace landing page with no listing imagery feels empty.",
+    "Featured listings section: 3-card carousel or grid \u2014 each card uses the same anatomy as the browse-page cards (image + title + location + rating + price). The marketing context is showcase: prefer cards with high ratings + good photos + variety of categories.",
+    "Social proof: dedicated section with 3-4 user testimonial cards + (optionally) trust stats ('4.9 avg', '14k spots', '38 cities'). Avoid presenting trust stats as the ONLY supporting content \u2014 they should accent testimonials, not replace them.",
+    "Final CTA banner: re-iterates the dual buyer/seller positioning ('Find your next stay' + 'Become a host'). Both CTAs are equal weight on the page.",
+    "About page: hero with mission statement + visual (team or map) + 3-4 value cards + leadership grid (avatar + name + role) + final CTA. Do NOT ship an about page with just a wall of text \u2014 marketplace trust depends on a face.",
+    "Marketing pages must stay in document flow: hero, featured listings, testimonials, CTA, and footer cannot overlap or use fixed positioning except for the shell header. Leave clear vertical rhythm between sections and ensure the footer never covers the last content row.",
+    "Do not render implementation labels, keyboard shortcut tips, Decantr guard prose, or pattern names as visible customer copy. Only show helper text when it is part of the marketplace product experience."
+  ]
+}

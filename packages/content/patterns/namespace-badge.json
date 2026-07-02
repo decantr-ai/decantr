@@ -1,0 +1,93 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "namespace-badge",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Namespace Badge",
+  "description": "Color-coded badge for content namespaces: @official (primary/blue), @community (green), and @org:slug (purple). Indicates content provenance and trust level.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Badge",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "contained": true,
+  "components": [
+    "Badge",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Standard-sized namespace badge with icon and namespace text.",
+      "components": [
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "inline",
+        "atoms": "_inline-flex _aic _gap1",
+        "slots": {
+          "icon": "Namespace icon: shield-check for @official, users for @community, building for @org",
+          "label": "Namespace text label"
+        }
+      }
+    },
+    "compact": {
+      "description": "Small badge with icon only, tooltip shows full namespace. For dense list views.",
+      "components": [
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "inline",
+        "atoms": "_inline-flex _aic",
+        "slots": {
+          "icon": "Namespace icon only, with title attribute for tooltip"
+        }
+      }
+    },
+    "pill": {
+      "description": "Pill-shaped badge with background color fill. Prominent display for detail pages.",
+      "components": [
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "inline",
+        "atoms": "_inline-flex _aic _gap1 _rfull _px3 _py1",
+        "slots": {
+          "icon": "Namespace icon with matching color",
+          "label": "Namespace text, bold weight"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "inline",
+    "atoms": "_inline-flex _aic _gap1",
+    "slots": {
+      "icon": "Namespace icon",
+      "label": "Namespace text"
+    }
+  },
+  "visual_brief": "Small inline badge with a namespace icon and text label. @official renders with a blue/primary background and a shield or checkmark icon. @community renders with a green background and a people/globe icon. @org:slug renders with a purple background and a building icon. The standard preset shows both icon and text. Compact preset shows icon only with a tooltip for the full namespace. Pill preset renders as a rounded-full capsule shape. All variants use white or contrast text on the colored background.",
+  "interactions": [
+    "animate-on-mount",
+    "click-select"
+  ],
+  "layout_hints": {
+    "badge_layout": "Small inline pill: @ symbol + namespace text. @official gets accent bg with white text. Community namespaces get outlined style with border.",
+    "sizing": "text-xs, pill-shaped (rounded-full), horizontal padding 0.5rem."
+  },
+  "responsive": {
+    "mobile": "Badge renders at standard size. Compact preset preferred in tight layouts to save space.",
+    "tablet": "Standard badge with icon and text visible.",
+    "desktop": "Full badge with comfortable padding. Pill preset works well inline with other metadata."
+  }
+}

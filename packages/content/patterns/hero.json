@@ -1,0 +1,227 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "hero",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Hero Section",
+  "description": "Full-width hero with headline, subtext, CTA buttons, and optional media. Entry point for landing pages, recipe detail headers, and marketing sections.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Avatar",
+        "Badge",
+        "Button",
+        "Chip",
+        "Image",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "icon"
+  ],
+  "default_preset": "landing",
+  "presets": {
+    "landing": {
+      "description": "Centered headline + CTA + optional media",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _aic _textc _gap6 _py16 _px6",
+        "slots": {
+          "headline": "Primary heading, typically h1 with _heading1",
+          "description": "Supporting paragraph with _body _muted",
+          "cta-group": "Horizontal Button group with _flex _gap3",
+          "media": "Optional image, illustration, or chart component"
+        }
+      }
+    },
+    "image-overlay": {
+      "description": "Full-bleed image with gradient overlay, content at bottom. Used for recipe/cookbook detail headers.",
+      "components": [
+        "Button",
+        "Chip",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_rel _wfull _h[400px] _overhidden _r4",
+        "slots": {
+          "image": "Full-bleed background cover image with gradient overlay",
+          "top-bar": "Absolute top row: back button (left) + action buttons (right)",
+          "tags": "Optional horizontal Chip row for tags overlaid on image",
+          "title": "Title (_heading2) overlaid at bottom of image",
+          "description": "Short description overlaid below title"
+        }
+      }
+    },
+    "brand": {
+      "description": "Full-viewport centered hero with massive headline, animated decorations, and dual CTAs. Entry point for brand landing pages.",
+      "components": [
+        "Button",
+        "Badge",
+        "Chip",
+        "icon",
+        "Image"
+      ],
+      "layout": {
+        "layout": "hero",
+        "atoms": "_flex _col _aic _textc _gap8 _py24 _px6 _minh[100vh] _jcc _rel",
+        "slots": {
+          "badge": "Optional announcement pill (Badge) above headline",
+          "media": "Optional logo or illustration with d-float + aura-glow-strong animation",
+          "headline": "Display-size heading with d-heading-display + d-gradient-text",
+          "description": "Supporting paragraph with _body _fgmuted _mw[640px]",
+          "cta-group": "Horizontal Button group with _flex _gap3, primary gets aura-glow",
+          "decoration": "Absolute-positioned aura-orb elements for ambient background effect"
+        }
+      }
+    },
+    "vision": {
+      "description": "AI-native vision statement hero with gradient headline, value prop, and dual CTAs. Hero-only gradient treatment.",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _aic _textc _gap8 _py24 _px6 _minh[100vh] _jcc _rel",
+        "slots": {
+          "decoration": "Absolute-positioned aura-orb elements for ambient background",
+          "headline": "Display-size heading with d-heading-hero (gradient-only class)",
+          "description": "Value proposition paragraph with _textlg _fgmuted _mw[640px]",
+          "cta-group": "Horizontal Button group: primary (npx decantr init) + secondary (View Showcase)"
+        }
+      }
+    },
+    "split": {
+      "description": "Two-column hero: media/logo on one side, headline + description + CTAs on the other. Stacks vertically on mobile.",
+      "components": [
+        "Button",
+        "Badge",
+        "icon",
+        "Image"
+      ],
+      "layout": {
+        "layout": "row",
+        "atoms": "_grid _gc1 _lg:gc2 _gap8 _py24 _px6 _minh[100vh] _aic _rel",
+        "slots": {
+          "media": "Logo, illustration, or image \u2014 centered in its grid cell",
+          "badge": "Optional announcement pill (Badge) above headline",
+          "headline": "Display-size heading, left-aligned on desktop",
+          "description": "Supporting paragraph with _body _fgmuted",
+          "cta-group": "Horizontal Button group, left-aligned on desktop",
+          "decoration": "Optional absolute-positioned decorative elements"
+        }
+      }
+    },
+    "section-primary": {
+      "description": "Compact content-dense hero for primary section pages (NOT marketing landing). Short vertical height (~120-180px), leaves most above-fold real estate for the content below. Eyebrow + headline + optional subtitle + inline CTAs — no full-bleed media, splash, or minimum-viewport-height directive. Use for /marketplace, /agents, /transparency, and other in-app primary routes where the user already knows they're in the product.",
+      "components": [
+        "Button",
+        "Badge"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap3 _py8 _px6",
+        "slots": {
+          "eyebrow": "Short all-caps monospace label with section context (e.g., 'AGENT MARKETPLACE'). Use d-label[data-anchor] when the theme ships that treatment.",
+          "headline": "h2-to-h3 weight heading. NOT display-size. One line preferred — the content below is the main event, not this.",
+          "description": "Optional one-sentence subtitle with _textsm _fgmuted. Omit entirely if the headline is self-sufficient.",
+          "cta-group": "Horizontal Button group inline with the headline row. Primary CTA + at most one secondary. Do not stack CTAs vertically in this preset."
+        }
+      }
+    },
+    "image-overlay-compact": {
+      "description": "Compact full-bleed image with overlay for collection headers. Shorter height, fewer slots.",
+      "components": [
+        "Button",
+        "Badge",
+        "Avatar",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_rel _wfull _h[300px] _overhidden _r4",
+        "slots": {
+          "image": "Full-bleed background cover image with gradient overlay",
+          "top-actions": "Absolute top-right: edit and delete action Buttons",
+          "content": "Absolute bottom: title (_heading2), count Badge, author Avatar + name"
+        }
+      }
+    },
+    "empty-state": {
+      "description": "Empty state placeholder with illustration slot, message, and action CTA. Used when a list or page has no data yet.",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _aic _textc _gap4 _py12 _px6",
+        "slots": {
+          "illustration": "Large icon or illustration placeholder",
+          "title": "Empty state heading with _heading4",
+          "description": "Explanatory text with _body _fgmuted",
+          "cta": "Primary action Button to create first item or import data"
+        }
+      }
+    }
+  },
+  "accessibility": {
+    "role": "banner",
+    "aria-label": "Hero section",
+    "keyboard": [
+      "Tab to CTA button",
+      "Enter activates CTA"
+    ],
+    "announcements": [
+      "Page title announced on load"
+    ],
+    "focus_management": "CTA button is the primary focus target"
+  },
+  "visual_brief": "Full-width section dominating the viewport with a bold, large-scale headline centered or left-aligned depending on preset. Generous vertical padding (4-6rem top/bottom) creates breathing room. Subtext sits beneath the headline in muted, lighter-weight type with relaxed line-height. One or two CTA buttons are arranged horizontally with equal height \u2014 the primary filled, the secondary ghost-outlined. Optional media (illustration, screenshot, product image, photo, or restrained ambient treatment) appears below or beside the content. Brand preset fills the first viewport with clear brand/product/place signal and real supporting media when available. Split preset uses a two-column grid with content on one side and media on the other.",
+  "responsive": {
+    "mobile": "Single column, stacked vertically. Headline drops to heading2 scale. CTAs stack full-width. Padding reduces to py8 px4. Media goes below content at full width. Min-height removed on brand/vision presets.",
+    "tablet": "Content remains centered or stacked. Headline at heading1 scale. CTAs stay horizontal. Split preset still single-column. Padding at py12 px6.",
+    "desktop": "Full layout as designed \u2014 centered or split two-column. Headline at display scale for brand/vision. Generous py16-py24 padding. Split preset activates side-by-side grid. Decorative elements visible."
+  },
+  "motion": {
+    "micro": "CTA buttons scale subtly on hover (scale 1.02). Badge shimmer on announcement pill.",
+    "transitions": "Hero entrance: headline fades up from 20px below with 600ms ease-out. Subtext follows 150ms later. CTAs follow 300ms after subtext. Brand preset media may float gently with vertical oscillation when it does not obscure or compete with the copy."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "stagger-children",
+    "scale-hover",
+    "glow-hover",
+    "float-idle"
+  ],
+  "layout_hints": {
+    "container": "none",
+    "note": "Hero sections should NOT wrap content in d-surface cards. The hero IS the section. Use d-section for spacing.",
+    "visual_proof": "The visual element below CTAs should be an ambient visualization (animated gradient, particle effect, blurred screenshot) \u2014 NOT a data widget wrapped in a card. If showing product data (agents, metrics), render as floating elements without card containment. Omit entirely if no meaningful visual is available.",
+    "subtitle": "Subtitle line-height should be 1.6-1.8. Use text-muted color, smaller font than heading.",
+    "cta_sizing": "Primary and secondary CTAs should have equal padding and height. Primary is filled (d-interactive[data-variant=primary]), secondary is ghost (d-interactive[data-variant=ghost]).",
+    "announcement": "If showing an announcement badge above the heading, use d-annotation with prominent styling \u2014 not a tiny muted pill. Accent border or accent background at 15% opacity.",
+    "background": "Hero sections should have a subtle radial or mesh gradient background using the theme palette \u2014 not a flat color. Use the primary and accent colors at very low opacity (5-10%) to create depth. Example: radial-gradient(ellipse at top center, rgba(var(--d-accent-rgb), 0.08) 0%, transparent 60%), or a soft gradient from primary to transparent. The gradient should fade to var(--d-bg) at the edges so it blends seamlessly with the page.",
+    "ambient_glow": "For themes with neon/glow personality, add a soft ambient glow behind the hero heading or CTA area. Use a blurred pseudo-element or box-shadow with the accent color at 10-15% opacity, radius 200-400px. This creates a focal point without overwhelming the content."
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _aic _textc _gap6 _py16 _px6",
+    "slots": {
+      "headline": "Primary heading, typically h1 with _heading1",
+      "description": "Supporting paragraph with _body _muted",
+      "cta-group": "Horizontal Button group with _flex _gap3",
+      "media": "Optional image, illustration, or chart component"
+    }
+  }
+}

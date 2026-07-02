@@ -1,0 +1,140 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "timeline",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Timeline",
+  "description": "Chronological sequence of events with dates, descriptions, and optional media.",
+  "tags": [
+    "history",
+    "events",
+    "chronology",
+    "activity",
+    "milestones"
+  ],
+  "classification": {
+    "triggers": [
+      "timeline",
+      "history",
+      "milestones",
+      "event log",
+      "journey"
+    ],
+    "tier": "recommended"
+  },
+  "components": ["Card", "Badge", "icon", "Text"],
+  "default_preset": "default",
+  "presets": {
+    "default": {
+      "description": "Vertical timeline with alternating sides",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6 _rel",
+        "slots": {
+          "events": "Vertical sequence of timeline entries alternating around a central connector line"
+        },
+        "orientation": "vertical",
+        "alternating": true
+      }
+    },
+    "compact": {
+      "description": "Single-side vertical timeline with all entries on one side of the connector line for compact layouts",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4 _rel",
+        "slots": {
+          "events": "Compact single-sided vertical timeline entries aligned to one connector line"
+        },
+        "orientation": "vertical",
+        "alternating": false
+      }
+    },
+    "horizontal": {
+      "description": "Horizontal scrolling timeline with entries arranged left-to-right along a connector line",
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _gap6 _overauto",
+        "slots": {
+          "events": "Horizontally scrolling timeline entries arranged along a shared connector line"
+        },
+        "orientation": "horizontal"
+      }
+    }
+  },
+  "slots": {
+    "events": {
+      "type": "array",
+      "item": {
+        "date": {
+          "type": "datetime",
+          "required": true
+        },
+        "title": {
+          "type": "text",
+          "required": true
+        },
+        "description": {
+          "type": "text",
+          "required": false
+        },
+        "icon": {
+          "type": "icon",
+          "required": false
+        },
+        "media": {
+          "type": "image",
+          "required": false
+        }
+      }
+    }
+  },
+  "layout": {
+    "container": "section",
+    "header": [
+      "title?"
+    ],
+    "body": [
+      "events"
+    ],
+    "connector": "line"
+  },
+  "visual_brief": "Vertical sequence of timeline entries connected by a thin vertical line. Each entry has a small circle dot on the line, a date or timestamp label, an event title in medium weight, and a description paragraph. Optional media (images, icons) can appear beside entries. The compact preset reduces spacing and hides descriptions, showing only date and title. The horizontal preset arranges entries left-to-right along a horizontal line with dates below and content above. Milestone entries may have a larger dot or distinct icon.",
+  "layout_hints": {
+    "connector_rhythm": "The connector line should unify the sequence visually without overpowering the content. Dots and timestamps need stable alignment across entries.",
+    "milestone_emphasis": "Milestone entries may be more prominent, but they should still belong to the same temporal rhythm as the surrounding items.",
+    "content_balance": "Descriptions and optional media should support the chronology rather than turning the timeline into a card gallery."
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap6 _rel",
+    "slots": {
+      "events": "Vertical sequence of timeline entries alternating around a central connector line"
+    }
+  },
+  "responsive": {
+    "mobile": "Vertical timeline only. Line on the left edge with content to the right. Dates above entries. Compact spacing.",
+    "tablet": "Standard vertical timeline with comfortable spacing. Content beside the timeline dots.",
+    "desktop": "Full vertical or horizontal timeline. Entries alternate left and right of the center line (vertical) or spread evenly (horizontal)."
+  },
+  "motion": {
+    "micro": "Connector highlights and milestone accents may animate softly on hover and focus.",
+    "transitions": "New entries or progressive reveals should fade or slide in gently without making the chronology feel unstable."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "stagger-children",
+    "real-time-updates",
+    "scroll-reveal"
+  ],
+  "accessibility": {
+    "role": "list",
+    "aria-label": "Timeline",
+    "keyboard": [
+      "Tab moves through interactive timeline items and associated actions in chronological order."
+    ],
+    "announcements": [
+      "Dates, titles, and milestone states should be available semantically rather than through layout alone."
+    ],
+    "focus_management": "Keep focus transitions chronological and avoid jumping users between distant timeline entries unexpectedly."
+  }
+}

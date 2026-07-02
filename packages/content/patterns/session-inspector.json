@@ -1,0 +1,62 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "session-inspector",
+  "version": "1.1.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Session Inspector",
+  "description": "Contextual inspector panel for producer sessions showing selected stem metadata, automation values, collaborator presence, comments, export readiness, and split status.",
+  "category": "music",
+  "tags": ["2026", "music", "daw", "inspector", "metadata", "collaboration", "export"],
+  "components": ["SelectedStemCard", "AutomationSummary", "PresenceList", "CommentStack", "ExportReadiness", "SplitStatus"],
+  "default_preset": "aside",
+  "presets": {
+    "aside": {
+      "description": "Right-side inspector for desktop DAW shells",
+      "layout": { "layout": "stack", "atoms": "_flex _flex-col _gap-4 _bg-bg _border-l _p-4" }
+    },
+    "sheet": {
+      "description": "Bottom sheet inspector for mobile DAW shells",
+      "layout": { "layout": "stack", "atoms": "_flex _flex-col _gap-3 _bg-surface _border-t _p-4" }
+    }
+  },
+  "visual_brief": "A dense right-side production inspector with compact modules rather than big cards. It shows selected stem/region, automation parameters, plugin chain summary, collaborator cursors, comments, export readiness checks, and split validation. It can also act as a desktop sidecar for track crate, collaborator ops, room monitor, and settings guardrail routes when those pages need production context. Use small headings, tokenized chips, status dots, monospace values, separators, and inline actions so it feels like a serious utility panel. Avoid marketing copy, oversized empty states, sparse wide panels, and decorative card nesting.",
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _flex-col _gap-4 _bg-bg _border-l _p-4",
+    "slots": {
+      "selected-object": "Current stem/region metadata with color, gain, pan, key, and duration.",
+      "automation": "Compact automation lane summary with editable values.",
+      "collaboration": "Presence, comments, and active edit cursors.",
+      "release-readiness": "Bounce/export readiness and split validation."
+    }
+  },
+  "composition": {
+    "SessionInspector": "Aside(stack) > [SelectedStemCard + AutomationSummary + PresenceList + CommentStack + ExportReadiness + SplitStatus]"
+  },
+  "motion": {
+    "micro": {
+      "selection-change": "modules crossfade in 150ms when selected region changes",
+      "status-update": "status chips pulse once when a validation state changes"
+    }
+  },
+  "interactions": ["hover-reveal", "status-pulse", "real-time-updates", "keyboard-navigation"],
+  "responsive": {
+    "mobile": {
+      "layout": "alternate-pattern",
+      "alternate_pattern_id": "session-inspector",
+        "notes": "Render as a tab panel or bottom sheet opened from selected stem/status controls. Keep selected item, readiness, and collaborator state visible before long notes."
+      },
+    "desktop": "Right aside stays visible for active sessions and can collapse to icon rail. On secondary desktop routes, use inspector-like sidecars to prevent sparse card-only layouts."
+  },
+  "accessibility": {
+    "role": "complementary",
+    "aria-label": "Session inspector",
+    "keyboard": ["I: toggle inspector", "Esc: close inspector sheet on mobile"],
+    "announcements": ["Inspector showing {item}", "Export readiness {status}", "Split total {percent}%"]
+  },
+  "layout_hints": {
+    "density": "Favor concise stacked utility rows over marketing cards.",
+    "desktop_sidecar": "A sidecar should carry real state: queue, readiness, latency, voice sync, export checks, or selected-item metadata.",
+    "contextuality": "Inspector content must reflect the selected track, region, or room state."
+  }
+}

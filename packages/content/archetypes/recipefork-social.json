@@ -1,0 +1,103 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "recipefork-social",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipefork Social",
+  "description": "Recipefork's public discovery feed with engagement-aware recipe ranking, event filters, followed-creator cues, fork-depth/root lineage badges on cards, and a preview-card community activity rail.",
+  "tags": [
+    "recipes",
+    "social",
+    "feed",
+    "activity",
+    "2026"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "recipefork feed",
+        "recipe activity rail",
+        "community recipe feed"
+      ],
+      "secondary": [
+        "recipe publishing feed",
+        "follow activity",
+        "food social timeline"
+      ],
+      "negative": [
+        "admin",
+        "analytics"
+      ]
+    },
+    "implies": [
+      "social",
+      "reactions",
+      "comments",
+      "follows"
+    ],
+    "weight": 0.9,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "feed",
+      "patterns": [
+        {
+          "pattern": "filter-bar",
+          "preset": "standard",
+          "as": "feed-filters"
+        },
+        {
+          "pattern": "recipefork-recipe-card",
+          "preset": "feed",
+          "as": "recipe-grid"
+        },
+        {
+          "pattern": "recipefork-activity-feed",
+          "preset": "preview-cards",
+          "as": "community-activity"
+        }
+      ],
+      "default_layout": [
+        "feed-filters",
+        "recipe-grid",
+        "community-activity"
+      ],
+      "shell": "recipefork-top-nav"
+    }
+  ],
+  "page_briefs": {
+    "feed": "Recipefork's discovery home after landing: a recipe-first feed with newest-versus-trending controls on the left and a linked community activity rail on the right. Trending should consider more than forks alone: recent reactions, comments, saves, branch-variation counts, and affinity to followed cooks all inform the ordering. Cards can reveal fork depth and rooted lineage without overwhelming the browsing experience."
+  },
+  "features": [
+    "social",
+    "activity-feed",
+    "comments",
+    "reactions",
+    "follows",
+    "forking",
+    "engagement-ranking",
+    "lineage-cues"
+  ],
+  "dependencies": {
+    "patterns": {
+      "filter-bar": ">=1.0.0",
+      "recipefork-recipe-card": ">=1.0.0",
+      "recipefork-activity-feed": ">=1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "recipefork"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ],
+    "shapes": [
+      "rounded"
+    ]
+  }
+}

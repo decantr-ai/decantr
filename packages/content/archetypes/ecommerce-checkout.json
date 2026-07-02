@@ -1,0 +1,57 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "ecommerce-checkout",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "E-Commerce Checkout",
+  "description": "Multi-step checkout flow with shipping, payment, and order confirmation. Minimal chrome for a focused, distraction-free purchase experience.",
+  "tags": ["ecommerce", "checkout", "payment", "shipping", "stepper", "2026"],
+  "classification": {
+    "triggers": {
+      "primary": ["checkout", "purchase flow", "buy now", "payment flow", "order checkout"],
+      "secondary": ["shipping form", "payment form", "order confirmation", "checkout stepper"],
+      "negative": ["admin", "browse", "catalog", "dashboard"]
+    },
+    "implies": ["payments"],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "checkout",
+      "patterns": [
+        {
+          "pattern": "onboarding-wizard",
+          "preset": "stepper",
+          "as": "checkout-stepper"
+        },
+        {
+          "pattern": "form-sections",
+          "preset": "structured",
+          "as": "checkout-form"
+        }
+      ],
+      "default_layout": ["checkout-stepper", "checkout-form"],
+      "shell": "minimal-header"
+    }
+  ],
+  "page_briefs": {
+    "checkout": "Three-step checkout wizard with a horizontal stepper at top showing Shipping, Payment, and Review steps. Each step renders structured form sections: Step 1 has address fields with autocomplete; Step 2 has card input with saved-payment selector; Step 3 has order summary with line items, totals, and a Place Order button. Minimal header with logo and cart summary only."
+  },
+  "features": ["payments", "address-autocomplete", "saved-payments"],
+  "shells": {
+    "minimal-header": "Minimal header with logo and cart summary, no navigation distractions"
+  },
+  "suggested_theme": {
+    "ids": ["auradecantism", "clean"],
+    "modes": ["light"]
+  },
+  "dependencies": {
+    "patterns": {
+      "onboarding-wizard": ">=1.0.0",
+      "form-sections": ">=1.0.0"
+    },
+    "styles": {}
+  }
+}

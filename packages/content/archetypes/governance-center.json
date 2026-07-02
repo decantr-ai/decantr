@@ -1,0 +1,82 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "governance-center",
+  "role": "auxiliary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Governance Center",
+  "description": "DAO-style governance surface for fractional asset holders. Members review active proposals, cast weighted votes, and follow discussion activity.",
+  "tags": [
+    "governance",
+    "voting",
+    "dao",
+    "proposals",
+    "ballots"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "governance center",
+        "voting",
+        "proposals",
+        "dao governance"
+      ],
+      "secondary": [
+        "ballot",
+        "vote",
+        "proposal"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "proposals",
+      "path": "/governance",
+      "patterns": [
+        { "pattern": "data-table", "preset": "standard", "as": "active" },
+        { "pattern": "card-grid", "preset": "content", "as": "featured" }
+      ],
+      "default_layout": ["card-grid", "data-table"],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "proposal-detail",
+      "path": "/governance/:id",
+      "patterns": [
+        { "pattern": "governance-ballot", "preset": "single-choice", "as": "ballot" },
+        { "pattern": "activity-feed", "preset": "standard", "as": "discussion" }
+      ],
+      "default_layout": ["governance-ballot", "activity-feed"],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "proposals": "Governance landing page. Content card grid spotlights featured or urgent proposals with title, quorum progress, and time remaining. Standard data table lists all active and past proposals with filterable status, proposer, votes cast, and close date.",
+    "proposal-detail": "Single proposal view with voting action. Single-choice governance ballot displays the proposal summary, choices, holder voting power, current tally, and submit button. Standard activity feed threads comments, endorsements, and status updates chronologically."
+  },
+  "features": [
+    "governance",
+    "voting",
+    "proposals"
+  ],
+  "shells": {
+    "sidebar-main": "Authenticated app shell with sidebar navigation and main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "data-table": "^1.0.0",
+      "card-grid": "^1.0.0",
+      "governance-ballot": "^1.0.0",
+      "activity-feed": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": ["swiss"],
+    "modes": ["light", "dark"]
+  }
+}

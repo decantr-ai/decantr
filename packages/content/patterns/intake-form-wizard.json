@@ -1,0 +1,134 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "intake-form-wizard",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Intake Form Wizard",
+  "description": "Multi-step healthcare intake form with conditional branching, progress sidebar, auto-save, file upload, section review, and conversational single-question mode.",
+  "category": "healthcare",
+  "tags": [
+    "2026",
+    "healthcare",
+    "form",
+    "wizard",
+    "intake",
+    "multi-step",
+    "compliance"
+  ],
+  "components": [
+    "FormStep",
+    "QuestionGroup",
+    "ProgressSidebar",
+    "ReviewPanel",
+    "SaveIndicator",
+    "ConditionalBranch",
+    "FileUploadField"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Step-by-step wizard with a left progress sidebar showing section names and completion status, one question group per step in a centered content card",
+      "layout": {
+        "layout": "split",
+        "atoms": "_grid _gc1 _lg:gc[240px_1fr] _gap8 _py6 _min-h-screen"
+      }
+    },
+    "conversational": {
+      "description": "One question at a time in a centered, large-input conversational flow — minimal chrome, each answer animates to the next question with a chat-like progression feel",
+      "layout": {
+        "layout": "center",
+        "atoms": "_flex _col _aic _jcc _maxw-[560px] _mx-auto _py8 _min-h-screen"
+      }
+    },
+    "review": {
+      "description": "All previously answered sections displayed in a scrollable summary table with inline edit links — the final step before submission to review and correct answers",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6 _maxw-[720px] _mx-auto _py6"
+      }
+    }
+  },
+  "visual_brief": "Two-panel layout. Left panel is a fixed ProgressSidebar (240px wide, surface background, full viewport height): a vertical list of section names (e.g. 'Personal Info', 'Medical History', 'Current Medications', 'Insurance', 'Consent') each with a status icon to the left. Completed sections show a green circle with white checkmark. The current section shows an accent-filled circle with a dot. Upcoming sections show an empty gray circle. A thin vertical line connects the circles. Section names are medium-weight text; the current section is bold with accent color. At the bottom of the sidebar, a small muted progress label shows '3 of 5 sections completed'. The right panel is the main form content area with a clean white card (max-width 600px, centered within the right panel, generous padding 32px). The card header shows the current section title in heading-3 style and a one-line description below in muted text. Below the header, QuestionGroup components render vertically: each question has a label (semibold, with a small red asterisk for required fields), a help text line below the label in muted text, and the appropriate input (text field, textarea, radio group, checkbox group, select dropdown, date picker, or FileUploadField). FileUploadField renders as a dashed-border drop zone with an upload icon, 'Drag file or click to browse' text, and accepted file types listed below. Inputs have comfortable vertical spacing (24px gap). Validation errors appear below the input in red text with an error icon. At the bottom of the card, a row with 'Back' secondary button on the left and 'Continue' primary button on the right. The SaveIndicator sits in the top-right corner of the card as a small pill: during save it shows a spinning circle icon + 'Saving...', after save it shows a green checkmark + 'Saved' that fades to subtle opacity after 3 seconds. ConditionalBranch logic hides or reveals question groups based on prior answers (e.g. selecting 'Yes' to allergies reveals an allergy detail text area). The conversational preset shows one large question centered on screen with a large input below it, no sidebar, and a 'Next' button or Enter-to-advance. Previous answers appear as small muted chips above the current question. The review preset lists all sections as collapsible panels with answer summaries in a two-column table (question label | answer) and 'Edit' links that jump back to that section.",
+  "default_layout": {
+    "layout": "split",
+    "atoms": "_grid _gc1 _lg:gc[240px_1fr] _gap8 _py6",
+    "slots": {
+      "progress-sidebar": "Fixed-width left sidebar showing form completion progress. Vertical stepper with connected circles and section labels. Each section: status circle (completed=green checkmark, current=accent dot, upcoming=gray empty) connected by a thin vertical line. Section name text: completed sections are muted with strikethrough-free normal weight, current section is bold accent, upcoming sections are normal weight muted. Bottom of sidebar shows overall progress: 'X of Y completed' label and optionally a thin horizontal progress bar. The sidebar is sticky on scroll so it remains visible as the user scrolls through long form sections.",
+      "form-step": "The main content card for the current step. Clean surface card with rounded corners and comfortable padding (32px). Header: section title (heading-3) and optional description paragraph (muted text). Body: one or more QuestionGroup components stacked vertically with 24px spacing. Each question group can contain multiple related questions (e.g. first name + last name grouped horizontally). Footer: navigation row with 'Back' button (secondary, left-aligned, hidden on first step) and 'Continue' button (primary, right-aligned, changes to 'Submit' on the last step). The card has a subtle border and optional shadow-sm for elevation.",
+      "question-group": "A cluster of related form questions within a FormStep. Contains one or more question rows. Each question row: label (semibold, 14px, with red asterisk if required), optional help text below label (muted, 12px), and the input field. Supported input types: text input, textarea (auto-growing), radio group (vertical list of radio options), checkbox group, select dropdown, date picker, file upload zone. Conditional branching: when a question has branch logic, answering it triggers a smooth reveal of dependent questions below with a slide-down animation. Validation messages appear on blur or on 'Continue' click: red text below the input with an error icon.",
+      "save-indicator": "Small status pill positioned at the top-right corner of the form card. Three states: idle (hidden or very subtle 'Auto-saved'), saving (spinning circle icon + 'Saving...' in muted text), saved (green checkmark + 'Saved' in green text, fades to lower opacity after 3 seconds). Triggers auto-save on each input blur or after a debounced typing pause (default 2 seconds).",
+      "review-panel": "Displayed in the review preset or as the final step. Lists all completed sections as collapsible panels. Each panel header shows section name and a small 'Edit' link. Panel body shows a two-column table: left column is question labels (muted), right column is answers (normal weight). Unanswered optional questions show a dash. File uploads show the filename as a link. At the bottom, a 'Submit' primary button and a consent checkbox if required."
+    }
+  },
+  "responsive": {
+    "mobile": "Sidebar collapses to a horizontal progress bar at the top of the screen (thin bar showing percentage + current section name). Form card goes full-width with reduced padding (16px). Navigation buttons are full-width and stacked (Continue on top, Back below). File upload zone uses a simple button instead of a drag area. Conversational preset works naturally at full width. Review panel tables stack question above answer.",
+    "tablet": "Sidebar remains visible at reduced width (200px). Form card fills remaining space. Standard padding and input sizes. Navigation buttons in a row. Comfortable touch targets on all inputs.",
+    "desktop": "Full two-panel layout with 240px sidebar and centered form card (max-width 600px). Generous spacing and padding. Hover states on all interactive elements. File upload supports drag-and-drop."
+  },
+  "motion": {
+    "micro": {
+      "input-focus": "border-color accent + shadow-ring-accent/20 150ms ease-out",
+      "step-circle-complete": "scale(0.9→1.1→1) + color-fill green 300ms ease-out",
+      "button-press": "scale(0.98) 100ms ease-in"
+    },
+    "transitions": {
+      "step-forward": "current-card translateX(0→-20px) + opacity 1→0 200ms ease-in, then new-card translateX(20px→0) + opacity 0→1 300ms ease-out",
+      "step-backward": "current-card translateX(0→20px) + opacity 1→0 200ms ease-in, then new-card translateX(-20px→0) + opacity 0→1 300ms ease-out",
+      "conditional-reveal": "max-height 0→auto + opacity 0→1 350ms ease-out",
+      "conditional-hide": "max-height auto→0 + opacity 1→0 250ms ease-in",
+      "save-indicator-fade": "opacity 1→0.4 1s ease-out after 3s delay"
+    },
+    "ambient": {
+      "saving-spinner": "rotate(0→360deg) 800ms linear infinite",
+      "required-asterisk-pulse": "opacity 0.6→1→0.6 2s ease-in-out infinite on validation error"
+    }
+  },
+  "interactions": [
+    "animate-on-mount",
+    "inline-edit",
+    "keyboard-navigation",
+    "click-select",
+    "focus-trap",
+    "stagger-children"
+  ],
+  "composition": {
+    "IntakeWizard": "Container(d-section, grid: sidebar+main) > [ProgressSidebar(d-surface, sticky, flex-col) + FormStep(d-surface, card, centered, max-w-600) > QuestionGroup(d-data, flex-col, gap-6)* > [Question(d-data) > [Label(required?) + HelpText? + Input(d-interactive) + ValidationMsg?]] + NavigationRow > [BackButton?(d-interactive, secondary) + ContinueButton(d-interactive, primary)]] + ReviewPanel?(d-surface, conditional: final-step) + SaveIndicator(d-annotation, position: absolute, top-right)",
+    "ProgressSidebar": "Nav(d-surface, sticky, flex-col, gap-2) > StepItem(d-annotation, status: completed|current|upcoming) > [StatusCircle(color: status) + SectionLabel(weight: status)]",
+    "FormStep": "Card(d-surface, padding-lg) > [StepHeader > [Title(heading-3) + Description?(muted)] + QuestionGroup* + NavRow]",
+    "QuestionGroup": "Fieldset(d-data, flex-col, gap-6) > QuestionRow > [Label(semibold, required-asterisk?) + HelpText?(muted, text-sm) + Input(d-interactive, type-variant) + ConditionalBranch?(expandable) + ValidationError?(d-annotation, red)]",
+    "ReviewPanel": "Container(d-surface, flex-col, gap-4) > ReviewSection(d-data, collapsible) > [SectionHeader > [SectionName + EditLink(d-interactive)] + AnswerTable(d-data, two-column) > AnswerRow > [QuestionLabel(muted) + AnswerValue]]"
+  },
+  "layout_hints": {
+    "wizard_priority": "Step progress and the current question set should be obvious before secondary save or review chrome. The user should always know where they are in the process.",
+    "conditional_reveal": "Conditional branches should appear as a continuation of the current step, not like a different form dropped into the middle of the wizard.",
+    "review_phase": "Review mode should preserve the same section structure used during intake so users can reconcile answers without rebuilding the form mentally."
+  },
+  "layout_hints": {
+    "wizard_priority": "Step progress and the current question set should be obvious before secondary save or review chrome. The user should always know where they are in the process.",
+    "conditional_reveal": "Conditional branches should appear as a continuation of the current step, not like a different form dropped into the middle of the wizard.",
+    "review_phase": "Review mode should preserve the same section structure used during intake so users can reconcile answers without rebuilding the form mentally."
+  },
+  "accessibility": {
+    "role": "form",
+    "aria-label": "Multi-step intake form wizard",
+    "keyboard": [
+      "Tab: move between form fields within the current step",
+      "Enter: advance to the next step (when on Continue button) or submit answer (conversational mode)",
+      "Shift+Tab: move backwards between fields",
+      "Arrow Up/Down: navigate radio and select options",
+      "Space: toggle checkboxes",
+      "Escape: cancel file upload or close date picker",
+      "Alt+Left: go to previous step",
+      "Alt+Right: go to next step"
+    ],
+    "announcements": [
+      "Step {current} of {total}: {section_name}",
+      "Required field: {label}",
+      "Validation error on {label}: {error_message}",
+      "Progress saved automatically",
+      "Conditional questions revealed: {count} additional questions",
+      "Review mode: check your answers before submitting",
+      "Form submitted successfully"
+    ]
+  }
+}

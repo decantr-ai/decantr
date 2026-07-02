@@ -1,0 +1,118 @@
+{
+  "id": "citation-graph",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Citation Graph",
+  "description": "An interactive network graph visualizing case citation relationships, cross-references, and legal authority chains for research and precedent analysis.",
+  "category": "legal",
+  "tags": [
+    "2026",
+    "legal",
+    "research",
+    "citations",
+    "network",
+    "graph",
+    "precedent"
+  ],
+  "components": [
+    "CitationNode",
+    "CitationEdge",
+    "CaseLabel",
+    "DepthIndicator",
+    "FilterPanel"
+  ],
+  "default_preset": "network",
+  "presets": {
+    "network": {
+      "description": "Force-directed network graph layout with nodes settling organically by citation density and cross-reference clustering patterns",
+      "layout": {
+        "layout": "force-directed",
+        "atoms": "_relative _w100 _h100 _overflow-hidden _bg-canvas"
+      }
+    },
+    "hierarchical": {
+      "description": "Tree-style top-down hierarchical layout with foundational cases at top flowing downward through citing authorities by decision date",
+      "layout": {
+        "layout": "tree-dag",
+        "atoms": "_relative _w100 _h100 _overflow-auto _bg-canvas"
+      }
+    },
+    "timeline": {
+      "description": "Chronological left-to-right layout arranging cases along a time axis with citation arrows arcing forward through decision years",
+      "layout": {
+        "layout": "horizontal-time",
+        "atoms": "_relative _w100 _h100 _overflow-x-auto _bg-canvas"
+      }
+    }
+  },
+  "visual_brief": "A full-bleed dark canvas with circular nodes representing cases. Node size scales logarithmically with citation count (leading cases become large hubs). Node color encodes court level (SCOTUS dark purple, Circuit Courts blue, District Courts teal, State courts amber) or topic area depending on filter. Edges are directed curved arrows: 'cites' edges in muted gray, 'cited-by' in primary blue, 'overruled' in red with dashed stroke, 'distinguished' in orange. Hovering any node expands a tooltip with full case citation (e.g. 'Brown v. Board of Education, 347 U.S. 483 (1954)'), year, jurisdiction, key holding excerpt, and in/out citation counts. Left-side filter panel contains collapsible sections for jurisdiction, date range slider, topic tags, and citation-depth control. A depth indicator pill in the top-right shows current traversal depth (e.g. '3 hops from root case'). Nodes can be dragged to reposition.",
+  "layout_hints": {
+    "container": "d-section",
+    "note": "Full-bleed graph canvas. Node hit targets minimum 24px. Case labels must render textually, not symbolically.",
+    "citation_format": "Always use Bluebook citation format for case labels. Court and year required.",
+    "edge_semantics": "Edge style MUST encode relationship type (cites/overruled/distinguished). Do not collapse to single style."
+  },
+  "default_layout": {
+    "layout": "force-directed",
+    "atoms": "_relative _w100 _h100 _overflow-hidden _bg-canvas",
+    "slots": {
+      "graph-canvas": "Zoomable, pannable SVG or WebGL canvas hosting the network. Runs force simulation or static layout depending on preset.",
+      "citation-node": "Repeating circular node positioned by simulation. Sized by citation count, colored by court or topic.",
+      "citation-edge": "Directed curved arrow connecting two nodes. Style (color, dash, width) encodes citation relationship type.",
+      "case-label": "Text label attached to each node showing short case name. Expands to full citation on hover.",
+      "depth-indicator": "Pill badge in top-right showing current traversal depth from the root focus case.",
+      "filter-panel": "Left-docked sidebar with jurisdiction, date, topic, and depth filters. Collapsible sections."
+    }
+  },
+  "accessibility": {
+    "role": "application",
+    "aria-label": "Legal case citation network graph",
+    "announcements": [
+      "Case {citation} has {inCount} inbound and {outCount} outbound citations",
+      "Filter {name} set to {value}",
+      "Traversal depth changed to {depth}"
+    ],
+    "keyboard": [
+      "Tab: cycle through citation nodes",
+      "Enter: focus node and show full detail",
+      "Arrow keys: pan canvas",
+      "+/-: zoom in/out",
+      "F: open filter panel",
+      "Escape: clear selection"
+    ]
+  },
+  "responsive": {
+    "mobile": "Graph remains interactive but filter panel becomes a bottom sheet. Node labels hidden by default, shown on tap.",
+    "tablet": "Filter panel collapses to icon bar. Graph canvas expanded."
+  },
+  "motion": {
+    "micro": {
+      "node-hover": "scale(1.15) + highlight-ring 180ms ease-out",
+      "edge-hover": "stroke-width +1.5px + opacity-boost 150ms"
+    },
+    "transitions": {
+      "filter-apply": "nodes fade to 0.2 then back 400ms ease-in-out",
+      "layout-reflow": "position lerp 800ms spring",
+      "preset-switch": "layout morph 600ms ease"
+    },
+    "ambient": {
+      "active-path": "dash-offset drift 3s linear infinite on focused-path edges"
+    }
+  },
+  "interactions": [
+    "drag-nodes",
+    "pan-background",
+    "zoom-scroll",
+    "click-select",
+    "hover-tooltip",
+    "animate-on-mount"
+  ],
+  "composition": {
+    "CitationGraph": "Section(d-section, full-bleed) > [FilterPanel(left) + GraphCanvas > [CitationNode[](d-interactive) + CitationEdge[]] + DepthIndicator(top-right) + Legend]",
+    "GraphCanvas": "Viewport(zoomable, pannable) > [EdgeLayer + NodeLayer + LabelLayer]",
+    "CitationNode": "Circle(sized, court-colored) > [CaseLabel + HoverTooltip > FullCitation]",
+    "CitationEdge": "Path(arrow, styled-by-relation) > RelationBadge?",
+    "FilterPanel": "Panel(d-surface) > [JurisdictionFilter + DateRangeFilter + TopicFilter + DepthSlider]"
+  }
+}

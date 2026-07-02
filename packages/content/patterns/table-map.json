@@ -1,0 +1,134 @@
+{
+  "id": "table-map",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Table Map",
+  "description": "A restaurant floor-plan table map visualizing venue layout with tables positioned spatially, status color coding, party-size indicators, reservation chips, and section labels for host-stand seating and reservation management.",
+  "category": "restaurant",
+  "tags": [
+    "2026",
+    "restaurant",
+    "venue",
+    "floor-plan",
+    "seating",
+    "reservations",
+    "hospitality",
+    "spatial"
+  ],
+  "components": [
+    "FloorCanvas",
+    "TableShape",
+    "StatusColor",
+    "PartySize",
+    "ReservationChip",
+    "SectionLabel",
+    "WallOutline",
+    "DoorMarker",
+    "CapacityChart"
+  ],
+  "default_preset": "floor",
+  "presets": {
+    "floor": {
+      "description": "Visual top-down floor plan showing tables positioned with their real venue coordinates, colored by occupancy status, sized by capacity, with walls, doors, and section labels rendered to match the physical space.",
+      "layout": {
+        "layout": "spatial",
+        "atoms": "_w100 _h100 _relative _overflow-hidden"
+      }
+    },
+    "list": {
+      "description": "Status-grouped table list showing tables organized by availability state (available/seated/reserved/unavailable). Each group displays tables as rows with table number, section, capacity, and current party info.",
+      "layout": {
+        "layout": "data-table",
+        "atoms": "_w100 _grid _gap2 _p3"
+      }
+    },
+    "chart": {
+      "description": "Capacity-analysis dashboard showing occupancy over time with stacked bar chart of seated/reserved/available by section and turnover metrics. Best for managers reviewing daily performance rather than active seating.",
+      "layout": {
+        "layout": "chart",
+        "atoms": "_w100 _grid _gap4 _p4"
+      }
+    }
+  },
+  "visual_brief": "A top-down architectural-style floor plan rendered in a FloorCanvas (d-section, spatial, full-bleed) with a subtle grid background representing the venue footprint. WallOutlines render as solid 2px dark lines forming the room perimeter and interior walls. DoorMarkers appear as arc segments breaking the walls (entrance door, kitchen door, restroom door) with small labels. TableShapes are positioned absolutely via x/y coordinates and rendered according to shape (circle for round 2/4/6-top, square for 2-top, rectangle for 4-top, long rectangle for banquet). Each table's physical size in the map correlates to its capacity (larger shapes for larger tables). Tables are color-filled by StatusColor: available=emerald-100 fill with emerald-600 border, seated=sky-100 fill with sky-600 border, reserved=amber-100 fill with amber-600 border, unavailable=gray-200 fill with gray-500 border, turning=violet-100 fill with violet-600 border. The table number displays inside the shape in bold mono-data text. A PartySize chip appears overlaid at the top-right of occupied tables showing party count with people-icon prefix ('4'). ReservationChips appear anchored below upcoming-reserved tables showing guest-name initial and reservation time ('S. Park 7:30p'). Hovering a table surfaces a tooltip with full details: guest name, party size, server assigned, seated-time, course progress, and quick-actions (mark paid, turn table, message server). SectionLabels render as translucent large-text watermarks over each zone ('PATIO', 'BAR', 'MAIN DINING', 'PRIVATE ROOM') in text-3xl tracking-widest muted. Along the bottom edge, a CapacityChart summary bar shows total tables, seated count, reserved count, available count, and turnover-rate numerically with small progress bars. A legend in the top-right corner explains status colors. The entire floor plan is pan/zoom-able with +/- controls. Clicking a table selects it and opens a side panel with detailed actions.",
+  "layout_hints": {
+    "container": "d-section spatial full-bleed",
+    "note": "Floor maps are real-time operational tools for host staff. Status color MUST be instantly scannable. Shape/size MUST correlate to real table capacity. Position MUST match physical venue.",
+    "status_colors": "StatusColor mapping is fixed: available=emerald, seated=sky, reserved=amber, unavailable=gray, turning=violet. These MUST be consistent venue-wide and match POS integration.",
+    "table_shapes": "TableShape rendered by capacity+shape: circle (round tops), square (2-top squares), rectangle (4-top+ rectangles), long-rectangle (banquet). Shape size scales with capacity.",
+    "walls_doors": "WallOutline uses solid 2px stroke for perimeter and 1.5px for interior walls. DoorMarker uses arc segment with label. Must match real venue layout.",
+    "section_labels": "SectionLabel renders as translucent watermark (opacity 0.15) in text-3xl tracking-widest. Never obstructs table interaction. Pointer-events-none.",
+    "interaction": "TableShape uses d-surface[data-interactive] with cursor:pointer. Click selects, hover tooltips. Drag repositions (admin mode only)."
+  },
+  "default_layout": {
+    "layout": "spatial",
+    "atoms": "_w100 _h100 _relative _overflow-hidden _bg-canvas",
+    "slots": {
+      "floor-canvas": "The main spatial canvas representing the venue footprint. Background grid optional. Contains all table shapes, walls, doors, and section labels positioned absolutely. Pan/zoom enabled.",
+      "wall-outlines": "SVG path elements drawn along perimeter and interior walls of the venue. Solid 2px stroke matching architectural drawings. Static, non-interactive.",
+      "door-markers": "Arc-segment SVG elements indicating doorways in the wall outlines with small labels (Entry, Kitchen, Restroom). Static, non-interactive.",
+      "table-shapes": "Repeating slot — one TableShape per physical table. Positioned absolutely via x/y. Shape (circle/square/rectangle) and size correlate to real table capacity. Color-filled by status.",
+      "party-size-chips": "Overlaid chips on occupied tables showing current party count with people-icon. Anchored top-right of table shape.",
+      "reservation-chips": "Anchored beneath upcoming-reserved tables showing guest-name initial and reservation time.",
+      "section-labels": "Translucent watermark text over each venue zone (patio, bar, main dining, private room). Pointer-events-none to not block table interaction.",
+      "capacity-chart": "Bottom-edge summary bar showing total/seated/reserved/available counts with mini progress bars and turnover-rate metric.",
+      "legend": "Top-right corner legend explaining status color coding, shape meaning, and chip symbols.",
+      "pan-zoom-controls": "Floor-canvas controls for zoom-in, zoom-out, fit-to-view anchored bottom-right."
+    }
+  },
+  "accessibility": {
+    "role": "application",
+    "aria-label": "Restaurant floor plan and table status",
+    "announcements": [
+      "Table {number} in {section}: {status}, {capacity}-top",
+      "Reservation at table {number}: {guest} for party of {size} at {time}",
+      "Table {number} turned, now available"
+    ],
+    "keyboard": [
+      "Tab: cycle through tables in DOM order",
+      "Enter: select focused table and open action panel",
+      "Escape: deselect table",
+      "Arrow keys: pan canvas viewport",
+      "+/-: zoom in/out",
+      "0: fit floor plan to view"
+    ]
+  },
+  "responsive": {
+    "mobile": "Switches automatically to list preset grouped by status. FloorCanvas not usable at small sizes. Tables render as rows with status icon, number, section, capacity, and party info.",
+    "tablet": "Full floor canvas with touch-friendly zoom/pan. ReservationChips condense to time-only on hover. Section labels reduce opacity."
+  },
+  "motion": {
+    "micro": {
+      "table-hover": "scale 1.05 + shadow-elevation 150ms ease-out",
+      "status-change": "fill-color crossfade 300ms ease-in-out on state transition",
+      "selected-ring": "primary-colored ring appears around selected table 200ms ease-out"
+    },
+    "transitions": {
+      "table-turn": "violet pulse + reset to emerald fill 600ms ease-out",
+      "reservation-arrive": "amber to sky fill transition + party-size chip fade-in 400ms ease-out",
+      "drag-reposition": "table shape follows cursor with smooth 60fps update"
+    },
+    "ambient": {
+      "turning-pulse": "violet-tinted tables pulse 1.2s ease-in-out infinite during turnover",
+      "overdue-reservation-shake": "amber reservation chip subtle shake every 5s if guest late >15min"
+    }
+  },
+  "interactions": [
+    "click-select",
+    "hover-reveal",
+    "animate-on-mount",
+    "keyboard-navigation"
+  ],
+  "composition": {
+    "TableMap": "Section(d-section, spatial, full-bleed) > [FloorCanvas + CapacityChart + Legend + PanZoomControls]",
+    "FloorCanvas": "Canvas(d-surface, zoomable, pannable) > [WallOutline[] + DoorMarker[] + SectionLabel[] + TableShape[]]",
+    "TableShape": "Shape(d-surface, data-interactive, data-status, positioned, data-shape) > [TableNumber + PartySize? + ReservationChip?]",
+    "WallOutline": "Path(d-annotation, data-wall) > [SvgStroke]",
+    "DoorMarker": "Arc(d-annotation, data-door) > [ArcSvg + DoorLabel]",
+    "SectionLabel": "Label(d-annotation, translucent, pointer-events-none) > [SectionName]",
+    "PartySize": "Chip(d-annotation, data-party) > [PeopleIcon + PartyCount]",
+    "ReservationChip": "Chip(d-annotation, data-reservation) > [GuestInitial + ReservationTime]",
+    "CapacityChart": "Bar(d-annotation, bottom-bar) > [TotalCount + SeatedCount + ReservedCount + AvailableCount + TurnoverRate]"
+  }
+}

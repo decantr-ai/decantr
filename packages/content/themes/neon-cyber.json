@@ -1,0 +1,280 @@
+{
+  "$schema": "https://decantr.ai/schemas/theme.v1.json",
+  "id": "neon-cyber",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Neon Cyber",
+  "description": "Cyberpunk aesthetic with vivid neon accents on pure dark backgrounds. High-energy, high-contrast, data-dense.",
+  "tags": [
+    "dark",
+    "neon",
+    "cyber",
+    "vibrant",
+    "developer",
+    "futuristic"
+  ],
+  "seed": {
+    "primary": "#00E5FF",
+    "secondary": "#B388FF",
+    "accent": "#76FF03",
+    "background": "#0A0A0F"
+  },
+  "palette": {
+    "background": {
+      "dark": "#0A0A0F"
+    },
+    "surface": {
+      "dark": "#12121A"
+    },
+    "surface-raised": {
+      "dark": "#1A1A25"
+    },
+    "border": {
+      "dark": "#2A2A3A"
+    },
+    "text": {
+      "dark": "#E8E8F0"
+    },
+    "text-muted": {
+      "dark": "#8888AA"
+    },
+    "primary-hover": {
+      "dark": "#33ECFF"
+    },
+    "accent-glow": {
+      "dark": "rgba(118, 255, 3, 0.3)"
+    }
+  },
+  "modes": [
+    "dark"
+  ],
+  "shapes": [
+    "rounded",
+    "sharp"
+  ],
+  "decorators": {
+    "neon-card": "Surface card with subtle border that glows cyan on hover, rounded 8px radius, shadow elevation with hover shadow transition",
+    "neon-input": "Input field with border that transitions to cyan glow on focus, gentle focus ring with neon primary color",
+    "neon-glass": "Frosted glassmorphic panel with backdrop blur(16px), semi-transparent surface background, subtle cyan-tinted border",
+    "neon-code": "Monospace code block with surface-raised background, 3px left border in primary cyan, subtle rounded radius",
+    "neon-glow": "Element with cyan box-shadow glow effect, pulsing animation on hover",
+    "neon-divider": "Horizontal divider with gradient from transparent to primary to transparent",
+    "neon-badge": "Small surface-raised background badge with rounded radius and subtle border"
+  },
+  "spatial": {
+    "density_bias": 0,
+    "section_padding": "6rem",
+    "content_gap_shift": 0,
+    "card_wrapping": "soft"
+  },
+  "motion": {
+    "preference": "energetic",
+    "reduce_motion": false,
+    "entrance": "neon-fade",
+    "timing": "cubic-bezier(0.4, 0, 0.2, 1)",
+    "durations": {
+      "hover": "0.12s",
+      "entrance": "0.3s",
+      "modal": "0.25s",
+      "instant": "50ms",
+      "fast": "100ms",
+      "base": "180ms",
+      "slow": "320ms",
+      "slower": "500ms",
+      "stagger": "40ms"
+    },
+    "easings": {
+      "ease": "cubic-bezier(0.65, 0, 0.35, 1)",
+      "easeOut": "cubic-bezier(0, 0, 0.2, 1)",
+      "easeIn": "cubic-bezier(0.4, 0, 1, 1)",
+      "spring": "cubic-bezier(0.34, 1.56, 0.64, 1)"
+    }
+  },
+  "typography": {
+    "scale": "1.25",
+    "heading_weight": 700,
+    "body_weight": 400,
+    "mono": "ui-monospace, 'Cascadia Code', 'Fira Code', monospace",
+    "display": "'Orbitron', 'Inter', ui-sans-serif, system-ui, sans-serif",
+    "body": "'Inter', ui-sans-serif, system-ui, sans-serif"
+  },
+  "radius": {
+    "philosophy": "sharp",
+    "base": 4
+  },
+  "treatments": {
+    "d-interactive[data-variant=\"primary\"]:hover": {
+      "box-shadow": "0 0 24px var(--d-accent-glow, rgba(118, 255, 3, 0.3))"
+    }
+  },
+  "tokens": {
+    "base": {
+      "success": "#22C55E",
+      "danger": "#EF4444",
+      "warning": "#F59E0B"
+    }
+  },
+  "decorator_definitions": {
+    "neon-card": {
+      "description": "Surface card with subtle border that glows cyan on hover, rounded 8px radius, shadow elevation with hover shadow transition",
+      "intent": "Use for content containers in cyberpunk-styled dashboards and data interfaces. The hover glow creates an electric interactive feel.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #12121A)",
+        "border": "1px solid var(--d-border, #2A2A3A)",
+        "border-radius": "8px",
+        "transition": "box-shadow 120ms ease, border-color 120ms ease"
+      },
+      "pairs_with": [
+        "neon-glow",
+        "neon-glass",
+        "neon-divider"
+      ],
+      "usage": [
+        "Data cards",
+        "Dashboard widgets",
+        "Feature cards",
+        "Status panels"
+      ]
+    },
+    "neon-input": {
+      "description": "Input field with border that transitions to cyan glow on focus, gentle focus ring with neon primary color",
+      "intent": "Use for form inputs in data-dense interfaces. The cyan focus glow provides clear, high-contrast interaction feedback.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #12121A)",
+        "border": "1px solid var(--d-border, #2A2A3A)",
+        "border-radius": "6px",
+        "transition": "border-color 120ms ease, box-shadow 120ms ease"
+      },
+      "pairs_with": [
+        "neon-card",
+        "neon-glass"
+      ],
+      "usage": [
+        "Search inputs",
+        "Filter fields",
+        "Command inputs",
+        "Form fields"
+      ]
+    },
+    "neon-glass": {
+      "description": "Frosted glassmorphic panel with backdrop blur(16px), semi-transparent surface background, subtle cyan-tinted border",
+      "intent": "Use for navigation bars and floating panels that need depth. The cyan-tinted border adds the neon signature to glass surfaces.",
+      "suggested_properties": {
+        "background": "rgba(18, 18, 26, 0.85)",
+        "backdrop-filter": "blur(16px)",
+        "-webkit-backdrop-filter": "blur(16px)",
+        "border": "1px solid rgba(0, 229, 255, 0.1)"
+      },
+      "pairs_with": [
+        "neon-card",
+        "neon-glow"
+      ],
+      "usage": [
+        "Navigation bars",
+        "Floating panels",
+        "Sidebar containers",
+        "Sticky headers"
+      ]
+    },
+    "neon-code": {
+      "description": "Monospace code block with surface-raised background, 3px left border in primary cyan, subtle rounded radius",
+      "intent": "Use for code blocks and technical output displays. The cyan left border ties code to the neon aesthetic.",
+      "suggested_properties": {
+        "background": "var(--d-surface-raised, #1A1A25)",
+        "border-left": "3px solid #00E5FF",
+        "border-radius": "6px",
+        "font-family": "ui-monospace, 'Cascadia Code', 'Fira Code', monospace",
+        "padding": "16px"
+      },
+      "pairs_with": [
+        "neon-card",
+        "neon-glass"
+      ],
+      "usage": [
+        "Code blocks",
+        "API output",
+        "Terminal displays",
+        "Log viewers"
+      ]
+    },
+    "neon-glow": {
+      "description": "Element with cyan box-shadow glow effect, pulsing animation on hover",
+      "intent": "Use to add the signature neon glow to CTAs and featured elements. The pulsing hover animation creates electric energy.",
+      "suggested_properties": {
+        "box-shadow": "0 0 15px rgba(0, 229, 255, 0.3), 0 0 30px rgba(0, 229, 255, 0.1)",
+        "transition": "box-shadow 120ms ease"
+      },
+      "pairs_with": [
+        "neon-card",
+        "neon-glass"
+      ],
+      "usage": [
+        "CTA buttons",
+        "Featured elements",
+        "Active indicators",
+        "Hero accents"
+      ]
+    },
+    "neon-divider": {
+      "description": "Horizontal divider with gradient from transparent to primary to transparent",
+      "intent": "Use between content sections for a dramatic, glowing separation. The gradient creates a neon light-bar effect.",
+      "suggested_properties": {
+        "height": "1px",
+        "background": "linear-gradient(90deg, transparent, #00E5FF, transparent)",
+        "border": "none"
+      },
+      "pairs_with": [
+        "neon-card",
+        "neon-glass"
+      ],
+      "usage": [
+        "Section dividers",
+        "Content separators",
+        "Decorative breaks"
+      ]
+    },
+    "neon-badge": {
+      "description": "Small surface-raised background badge with rounded radius and subtle border",
+      "intent": "Use for status labels, tags, and category indicators. Subtle styling ensures badges complement rather than compete with neon accents.",
+      "suggested_properties": {
+        "background": "var(--d-surface-raised, #1A1A25)",
+        "border": "1px solid var(--d-border, #2A2A3A)",
+        "border-radius": "6px",
+        "padding": "2px 8px",
+        "font-size": "12px"
+      },
+      "pairs_with": [
+        "neon-card",
+        "neon-glow"
+      ],
+      "usage": [
+        "Status badges",
+        "Category tags",
+        "Labels",
+        "Metric indicators"
+      ]
+    }
+  },
+  "elevation": {
+    "1": {
+      "light": "0 1px 2px rgba(0,0,0,0.06)",
+      "dark": "0 1px 2px rgba(0,0,0,0.4)"
+    },
+    "2": {
+      "light": "0 2px 6px rgba(0,0,0,0.08)",
+      "dark": "0 2px 8px rgba(255, 255, 255, 0.06)"
+    },
+    "3": {
+      "light": "0 6px 16px rgba(0,0,0,0.10)",
+      "dark": "0 4px 16px rgba(255, 255, 255, 0.08)"
+    },
+    "4": {
+      "light": "0 12px 32px rgba(0,0,0,0.14)",
+      "dark": "0 8px 28px rgba(255, 255, 255, 0.12)"
+    },
+    "5": {
+      "light": "0 24px 64px rgba(0,0,0,0.18)",
+      "dark": "0 16px 48px rgba(255, 255, 255, 0.16)"
+    }
+  }
+}

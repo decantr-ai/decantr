@@ -1,0 +1,131 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "eval-dashboard",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Eval Dashboard",
+  "description": "Model evaluation metrics grid with test case results and multi-model comparison. Displays aggregate metrics (accuracy, latency, cost, pass rate) with sparkline trends, a detailed test case table with color-coded scores, and side-by-side model diff views.",
+  "category": "ai-tools",
+  "tags": [
+    "2026",
+    "ai-tools",
+    "evaluation",
+    "metrics",
+    "dashboard",
+    "comparison",
+    "testing",
+    "LLM",
+    "benchmarks"
+  ],
+  "components": [
+    "MetricCard",
+    "TestCaseTable",
+    "ScoreBar",
+    "DiffView",
+    "ModelComparisonGrid",
+    "ConfusionMatrix"
+  ],
+  "default_preset": "overview",
+  "presets": {
+    "overview": {
+      "description": "Aggregate metrics view with top-row metric cards showing accuracy, latency, cost, and pass rate, each with sparkline trends and summary stats",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6 _py4 _px4"
+      }
+    },
+    "detail": {
+      "description": "Per-test breakdown with a scrollable table of every eval case showing input, expected output, actual output, score bar, and inline diff toggle",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4 _py4 _px4"
+      }
+    },
+    "comparison": {
+      "description": "Model-vs-model comparison with two models side by side, highlighted metric differences, and a shared test case table with dual output columns",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6 _py4 _px4"
+      }
+    }
+  },
+  "visual_brief": "Dashboard layout starting with a top row of 4-5 MetricCards arranged in a horizontal grid (equal width, 16px gap). Each MetricCard is a surface-colored rounded card (border-radius 12px, 20px padding) containing: a muted label at top (12px, uppercase tracking, e.g., 'ACCURACY', 'LATENCY P50', 'COST', 'PASS RATE'), a large primary value below (28px, font-weight 700, e.g., '94.2%', '230ms', '$0.42', '87/100'), a delta indicator showing change from previous run (small text with up/down arrow in green for improvement, red for regression), and a sparkline chart (60px wide, 24px tall) in the bottom-right showing the metric trend over the last 10-20 runs as a thin line with the area beneath filled at 10% opacity. Sparkline color matches the metric's health: green if above target, amber if borderline, red if below. Below the metric cards is the TestCaseTable: a full-width data table with alternating row backgrounds (surface and slightly darker surface). Columns: # (row number, 40px), Input (preview text, truncated to 2 lines, 30% width), Expected (expected output, truncated, 20% width), Actual (actual model output, truncated, 20% width), Score (ScoreBar, 15% width), and Actions (diff toggle icon button, 5% width). The ScoreBar in each row is a horizontal bar (120px wide, 8px tall, border-radius 4px) with a fill that is colored green if score > 80%, yellow if 50-80%, red if < 50%. The fill width represents the score percentage. The numeric score is displayed to the right of the bar (e.g., '92%'). Clicking the diff toggle on a row expands an inline DiffView below that row, showing a side-by-side or unified diff between expected and actual output with green highlights for additions and red for deletions. Table header row is sticky with a muted background. Rows are sortable by clicking column headers (sort indicator arrows). In the comparison preset, the top metric cards show two values per card (Model A vs Model B) with the better value highlighted in accent color and a delta between them. The test case table gains two 'Actual' columns (one per model) and two ScoreBars. The ConfusionMatrix component appears as an optional section: a grid heatmap where rows are true labels and columns are predicted labels, cells colored by frequency (white for 0, deepening accent for higher counts), with count numbers displayed in each cell.",
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap6 _py4 _px4",
+    "slots": {
+      "metric-cards": "Horizontal grid row of 4-5 MetricCard components with equal width and 16px gap. Each card shows: muted uppercase label (metric name), large bold value, delta from previous run (green up arrow or red down arrow + percentage), and a sparkline trend line in the bottom area. Cards have surface background, 12px border-radius, subtle shadow. Click a metric card to filter the test case table by that metric's criteria.",
+      "test-case-table": "Full-width scrollable data table with sticky header. Columns: row number, input preview (truncatable, click to expand), expected output, actual output, ScoreBar (color-coded horizontal fill bar + numeric score), and actions column with diff toggle. Alternating row background colors. Sortable columns via header click. Pagination or virtual scroll for large eval sets (100+ cases). Row click expands to show full input/output text. Filter controls above the table for score range, pass/fail, and text search.",
+      "score-bar": "Inline horizontal bar (120px wide, 8px tall) representing a 0-100% score. Fill color: green (#22c55e) for >80%, yellow (#eab308) for 50-80%, red (#ef4444) for <50%. Numeric score label (e.g., '92%') to the right of the bar in matching color. Background track is muted gray.",
+      "diff-view": "Expandable inline panel below a test case row showing the difference between expected and actual output. Supports unified or side-by-side diff mode toggle. Added text highlighted with green background, removed text with red background. Line numbers in a muted gutter. Monospace font. Collapsible via the actions toggle button.",
+      "model-comparison-grid": "Comparison preset only. Metric cards show paired values (Model A | Model B) with the superior value in accent color and the delta between models displayed. Test case table includes dual Actual columns and dual ScoreBars. A summary row at the bottom shows win/loss/tie counts across all test cases.",
+      "confusion-matrix": "Optional section showing a labeled grid heatmap. Rows represent true/expected categories, columns represent predicted categories. Each cell is colored by frequency count from white (0) through deepening accent color intensity. Count numbers displayed in each cell. Row and column labels on the axes. Diagonal cells (correct predictions) have a subtle accent border."
+    }
+  },
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Model evaluation dashboard",
+    "announcements": [
+      "Metric {name}: {value}, {delta_direction} {delta_value} from previous run",
+      "Test case {number}: score {score}%, {pass_or_fail}",
+      "Diff view expanded for test case {number}",
+      "Diff view collapsed",
+      "Table sorted by {column} {direction}",
+      "Comparison: Model A {metric} {value_a} vs Model B {value_b}, delta {delta}",
+      "Filter applied: showing {count} of {total} test cases"
+    ],
+    "keyboard": [
+      "Tab: cycle between metric cards, table, and controls",
+      "Arrow Up/Down: navigate table rows",
+      "Arrow Left/Right: navigate between metric cards",
+      "Enter: expand selected row to show full content or toggle diff",
+      "S: toggle sort on focused column header",
+      "F: focus the table filter/search input",
+      "Escape: collapse expanded row or diff view",
+      "1/2/3: switch between overview/detail/comparison presets"
+    ]
+  },
+  "responsive": {
+    "mobile": "Metric cards stack vertically (1 column) with full width. Test case table shows only Input, Score, and expand button columns — other columns accessible by expanding the row. Diff view opens as a bottom sheet. Sparklines hidden on metric cards. Score values shown as colored badges instead of bars. Confusion matrix horizontally scrollable.",
+    "tablet": "Metric cards in a 2x2 grid. Test case table shows all columns with horizontal scroll for overflow. Diff view renders inline. Sparklines visible. Confusion matrix fits if categories are few, otherwise scrollable.",
+    "desktop": "Full horizontal metric card row (4-5 across). Test case table with all columns visible without scroll. Diff view inline with generous width. Comparison preset shows side-by-side model columns comfortably. Hover tooltips on sparklines showing exact values per data point. Confusion matrix fully visible."
+  },
+  "layout_hints": {
+    "metric_priority": "Lead with the health of the evaluation run first, then the case-by-case detail. The user should understand overall quality before they inspect individual failures.",
+    "table_role": "The test-case table is the diagnostic core. Diffs, filters, and comparisons should support it rather than fragmenting the surface.",
+    "comparison_read": "When comparing models, preserve a strong sense of shared inputs and evaluation criteria so the dashboard reads as one experiment."
+  },
+  "motion": {
+    "micro": {
+      "metric-card-hover": "translateY(-2px) + shadow elevation increase 150ms ease-out",
+      "score-bar-fill": "width 0→{score}% 600ms ease-out on initial render or data change",
+      "sparkline-draw": "SVG path stroke-dashoffset animation drawing line left-to-right 800ms ease-out on load"
+    },
+    "transitions": {
+      "diff-expand": "max-height 0→auto + opacity 0→1 300ms ease-out",
+      "diff-collapse": "max-height auto→0 + opacity 1→0 200ms ease-in",
+      "sort-reorder": "rows translateY to new positions 250ms ease-in-out",
+      "preset-switch": "cross-fade 200ms ease-in-out between preset layouts",
+      "metric-value-update": "old value slides up + fades out, new value slides up from below + fades in, 300ms ease-out"
+    },
+    "ambient": {
+      "live-sparkline": "sparkline extends with new data points appended smoothly, 500ms ease-out per new point"
+    }
+  },
+  "interactions": [
+    "drag-reorder",
+    "click-select",
+    "animate-on-mount",
+    "real-time-updates",
+    "hover-tooltip"
+  ],
+  "composition": {
+    "EvalDashboard": "Section(d-section, flex-col, gap-6) > [MetricCard*(d-surface) > [Label(d-annotation, uppercase) + Value(font-bold, text-2xl) + Delta(color: improvement) + Sparkline(d-data, mini)] + TestCaseTable(d-data) > [HeaderRow(sticky) + Row*(d-row) > [Input(truncatable) + Expected(truncatable) + Actual(truncatable) + ScoreBar(d-data, color: score) + DiffToggle(d-interactive)]]",
+    "MetricCard": "Card(d-surface, rounded-xl, p-5, shadow-sm) > [Label(d-annotation) + Value(d-data, mono-data, text-2xl) + Delta(text-sm, color: direction) + Sparkline(svg, 60x24)]",
+    "TestCaseTable": "Table(d-data, full-width, sticky-header, sortable) > Row*(alternating-bg) > [Cell* + ScoreBar + DiffToggle]",
+    "ScoreBar": "Bar(d-data, h-8px, rounded, bg: muted) > Fill(width: score%, bg: green|yellow|red) + Label(mono-data, text-xs)",
+    "DiffView": "Panel(d-surface, monospace, expandable) > [ModeToggle(unified|side-by-side) + DiffContent(green: added, red: removed)]",
+    "ModelComparisonGrid": "Grid(d-section) > [PairedMetricCard* + DualColumnTable + SummaryRow(wins/losses/ties)]",
+    "ConfusionMatrix": "Grid(d-data, heatmap) > Cell*(bg-intensity: count) > [CountLabel]"
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "id": "depth-layered-canvas",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Depth-Layered Canvas",
+  "description": "A true z-axis spatial layout with foreground, midground, and background layers using CSS perspective and transform-style: preserve-3d. Layers stack along the depth axis with parallax scrolling and focal-plane blur effects. For immersive dashboards, data landscapes, and spatial storytelling where information lives at different visual depths.",
+  "category": "spatial",
+  "tags": [
+    "2026",
+    "spatial",
+    "immersive",
+    "parallax",
+    "3d",
+    "dashboard",
+    "depth"
+  ],
+  "components": [
+    "SpatialLayer",
+    "FocalPoint",
+    "DepthSlider",
+    "ParallaxContainer",
+    "BlurMask"
+  ],
+  "default_preset": "three-plane",
+  "presets": {
+    "three-plane": {
+      "description": "Classic three-plane depth layout with background environment, midground content, and foreground controls. Parallax ratio: background 0.3x, midground 0.7x, foreground 1.0x.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_relative _full _overflow-hidden"
+      }
+    },
+    "focal-spotlight": {
+      "description": "Single focal point in the foreground with all other content defocused in the background. DepthSlider lets users shift focus between layers. Useful for detail-on-demand data exploration.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_relative _full _overflow-hidden"
+      }
+    },
+    "flat-fallback": {
+      "description": "Flat stacked layout for reduced-motion or non-supporting browsers. All layers collapse to a vertical stack with no perspective transforms. Content ordering preserved: background, midground, foreground top-to-bottom.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap8"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_relative _full _overflow-hidden",
+    "slots": {
+      "background-layer": "Deepest visual plane. Ambient content: gradients, data visualizations, environment textures, or slow-moving decorative elements. Rendered at lowest z-index with strongest blur and slowest parallax rate (0.3x scroll speed).",
+      "midground-layer": "Primary content plane. Cards, panels, charts, and interactive widgets live here. Medium parallax rate (0.7x). This is where most user attention should land.",
+      "foreground-layer": "Closest visual plane. Navigation controls, floating action buttons, and contextual toolbars. Moves at 1:1 scroll speed with no blur. Always interactive.",
+      "focal-point": "A single highlighted element that draws depth-of-field focus. When active, surrounding layers receive graduated blur via BlurMask. Can be any content type: a card, chart, or media element.",
+      "depth-controls": "DepthSlider and layer visibility toggles. Lets users adjust parallax intensity, shift focal plane, or collapse to flat view. Should dock to an edge or float accessibly.",
+      "parallax-track": "The scroll or gesture track that drives parallax motion. Can be vertical scroll, horizontal drag, or pointer-follow. ParallaxContainer reads this track to translate layer positions."
+    }
+  },
+  "accessibility": {
+    "role": "region",
+    "aria_label": "Spatial content canvas with depth layers",
+    "announcements": [
+      "Announce active focal layer when depth changes",
+      "Announce when transitioning between flat and spatial view"
+    ],
+    "keyboard": [
+      "Tab moves focus between interactive elements across all layers, foreground-first",
+      "Arrow Up/Down adjusts depth slider when focused",
+      "Escape collapses to flat fallback view",
+      "F key toggles focal-point spotlight mode"
+    ],
+    "reduce_motion": "Collapse all layers to flat-fallback preset. Disable parallax transforms. Remove blur transitions. Preserve content order and interactivity."
+  },
+  "responsive": {
+    "mobile": "Collapse to flat-fallback preset. Stack layers vertically. DepthSlider hidden. Focal-point renders inline without blur effect.",
+    "tablet": "Reduce parallax intensity to 50%. Two visible planes (midground + foreground). Background becomes a static backdrop. DepthSlider available but simplified."
+  },
+  "visual_brief": "Three-plane spatial layout using CSS perspective and preserve-3d transforms. Background layer sits deepest with ambient gradients or data visualizations, rendered with blur and slow parallax. Midground layer holds the primary content cards and panels at normal focus. Foreground layer contains interactive controls, tooltips, and floating action elements at the closest depth. A depth slider control on the edge lets users adjust focal plane. Layers shift on scroll with different parallax rates. The flat-fallback preset collapses all layers to a standard stacked layout for reduced-motion preference.",
+  "layout_hints": {
+    "depth_hierarchy": "Keep background, midground, and foreground responsibilities visually distinct. Do not let every layer become equally busy or equally interactive.",
+    "flat_fallback": "The reduced-motion and mobile fallback should still preserve content ordering and task intent, not just remove the 3D transforms.",
+    "overlay_balance": "Foreground controls should feel anchored and usable without crowding the main focal content."
+  },
+  "motion": {
+    "micro": "Depth controls and focal states may animate softly as layers gain or lose focus.",
+    "transitions": "Parallax and focal-plane shifts should feel smooth and spatial, but never induce motion sickness or obscure content state."
+  },
+  "interactions": [
+    "drag-nodes",
+    "pan-background",
+    "zoom-scroll",
+    "click-select",
+    "hover-tooltip",
+    "animate-on-mount"
+  ],
+  "composition": {
+    "DepthLayeredCanvas": "Container(d-section, perspective, preserve-3d, full) > [BackgroundLayer + MidgroundLayer + ForegroundLayer + DepthControls?]",
+    "BackgroundLayer": "SpatialLayer(d-surface, z-back, blur, parallax: 0.3x)",
+    "MidgroundLayer": "SpatialLayer(d-surface, z-mid, parallax: 0.7x) > Content[]",
+    "ForegroundLayer": "SpatialLayer(d-interactive, z-front, parallax: 1x) > Controls[]",
+    "DepthControls": "Panel(d-control, floating) > [DepthSlider(d-control) + FlatToggle(d-interactive)]"
+  }
+}

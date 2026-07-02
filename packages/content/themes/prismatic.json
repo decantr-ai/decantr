@@ -1,0 +1,217 @@
+{
+  "$schema": "https://decantr.ai/schemas/theme.v1.json",
+  "id": "prismatic",
+  "version": "1.0.0",
+  "name": "Prismatic",
+  "description": "Chromatic depth shifting. Iridescent, futuristic. Surfaces change hue as they layer deeper, creating a rainbow-depth effect. Each elevation level has a different hue tint.",
+  "tags": [
+    "iridescent",
+    "chromatic",
+    "futuristic",
+    "depth",
+    "rainbow"
+  ],
+  "personality": "rounded + raised elevation + smooth motion + thin borders + vivid gradients",
+  "seed": {
+    "primary": "#6366f1",
+    "secondary": "#ec4899",
+    "accent": "#14b8a6",
+    "background": "#fafafa"
+  },
+  "palette": {
+    "background": {
+      "light": "#FAFAFA",
+      "dark": "#0E0E18"
+    },
+    "surface": {
+      "light": "#FFFFFF",
+      "dark": "#161625"
+    },
+    "surface-raised": {
+      "light": "#F5F3FF",
+      "dark": "#1E1E35"
+    },
+    "border": {
+      "light": "#E0DEFF",
+      "dark": "#3A3868"
+    },
+    "text": {
+      "light": "#1A1A2E",
+      "dark": "#EEEEF8"
+    },
+    "text-muted": {
+      "light": "#6B6B8A",
+      "dark": "#9898B8"
+    },
+    "primary": {
+      "light": "#6366F1",
+      "dark": "#818CF8"
+    },
+    "primary-hover": {
+      "light": "#4F46E5",
+      "dark": "#A5B4FC"
+    }
+  },
+  "modes": [
+    "light",
+    "dark"
+  ],
+  "shapes": [
+    "sharp",
+    "rounded",
+    "pill"
+  ],
+  "decantr_compat": ">=2.0.0",
+  "source": "community",
+  "decorators": {
+    "prismatic-card": "Rounded card with iridescent border shimmer that shifts hue on hover, subtle indigo-tinted shadow at rest.",
+    "prismatic-gradient": "Background gradient shifting through indigo, pink, and teal at low opacity for section backgrounds.",
+    "prismatic-chip": "Small rounded chip with chromatic gradient fill that changes hue based on elevation depth level.",
+    "prismatic-glow": "Soft radial glow behind hero elements using primary indigo at 15% opacity with feathered edges."
+  },
+  "spatial": {
+    "density_bias": 0,
+    "content_gap_shift": 0,
+    "section_padding": "6rem",
+    "card_wrapping": "standard"
+  },
+  "motion": {
+    "preference": "moderate",
+    "reduce_motion": false,
+    "entrance": "fade",
+    "timing": "ease-out",
+    "durations": {
+      "hover": "200ms",
+      "entrance": "350ms",
+      "instant": "90ms",
+      "fast": "170ms",
+      "base": "300ms",
+      "slow": "500ms",
+      "slower": "750ms",
+      "stagger": "70ms"
+    },
+    "easings": {
+      "ease": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "easeOut": "cubic-bezier(0.16, 1, 0.3, 1)",
+      "easeIn": "cubic-bezier(0.7, 0, 0.84, 0)",
+      "spring": "cubic-bezier(0.34, 1.56, 0.64, 1)"
+    }
+  },
+  "typography_hints": {
+    "scale": "modular",
+    "heading_weight": 600,
+    "body_weight": 400
+  },
+  "motion_hints": {
+    "preference": "subtle",
+    "reduce_motion_default": true
+  },
+  "decorator_definitions": {
+    "prismatic-card": {
+      "description": "Rounded card with iridescent border shimmer that shifts hue on hover, subtle indigo-tinted shadow at rest.",
+      "intent": "Use for content containers that reveal the chromatic depth effect. The iridescent border shift creates a magical, futuristic interaction.",
+      "suggested_properties": {
+        "background": "var(--d-surface, #FFFFFF)",
+        "border": "1px solid var(--d-border, #E0DEFF)",
+        "border-radius": "12px",
+        "box-shadow": "0 4px 12px rgba(99, 102, 241, 0.08)",
+        "transition": "border-color 200ms ease, box-shadow 200ms ease"
+      },
+      "pairs_with": [
+        "prismatic-gradient",
+        "prismatic-glow"
+      ],
+      "usage": [
+        "Feature cards",
+        "Content cards",
+        "Interactive containers",
+        "Gallery items"
+      ]
+    },
+    "prismatic-gradient": {
+      "description": "Background gradient shifting through indigo, pink, and teal at low opacity for section backgrounds.",
+      "intent": "Use as a background for page sections to create the signature chromatic shift. Each section can have a slightly different hue emphasis.",
+      "suggested_properties": {
+        "background": "linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(236, 72, 153, 0.04), rgba(20, 184, 166, 0.03))",
+        "border-radius": "24px",
+        "padding": "48px"
+      },
+      "pairs_with": [
+        "prismatic-card",
+        "prismatic-chip"
+      ],
+      "usage": [
+        "Section backgrounds",
+        "Hero sections",
+        "Feature area wraps"
+      ]
+    },
+    "prismatic-chip": {
+      "description": "Small rounded chip with chromatic gradient fill that changes hue based on elevation depth level.",
+      "intent": "Use for tags, labels, and small interactive elements. The chromatic fill visually encodes depth or category information.",
+      "suggested_properties": {
+        "background": "linear-gradient(135deg, #6366F1, #EC4899)",
+        "color": "#FFFFFF",
+        "border-radius": "8px",
+        "padding": "4px 10px",
+        "font-size": "12px",
+        "font-weight": "600"
+      },
+      "pairs_with": [
+        "prismatic-card",
+        "prismatic-gradient"
+      ],
+      "usage": [
+        "Tags",
+        "Category chips",
+        "Filter pills",
+        "Label indicators"
+      ]
+    },
+    "prismatic-glow": {
+      "description": "Soft radial glow behind hero elements using primary indigo at 15% opacity with feathered edges.",
+      "intent": "Use behind hero elements and featured content to create an ethereal, glowing backdrop that enhances the chromatic depth effect.",
+      "suggested_properties": {
+        "background": "radial-gradient(ellipse at center, rgba(99, 102, 241, 0.15), transparent 70%)",
+        "position": "absolute",
+        "inset": "-20%",
+        "pointer-events": "none"
+      },
+      "pairs_with": [
+        "prismatic-card",
+        "prismatic-gradient"
+      ],
+      "usage": [
+        "Hero background glows",
+        "Featured content backdrops",
+        "Section accent lighting"
+      ]
+    }
+  },
+  "typography": {
+    "display": "'Inter Display', 'Inter', ui-sans-serif, sans-serif",
+    "body": "'Inter', ui-sans-serif, system-ui, sans-serif"
+  },
+  "elevation": {
+    "1": {
+      "light": "0 1px 2px rgba(0,0,0,0.06)",
+      "dark": "0 1px 2px rgba(0,0,0,0.4)"
+    },
+    "2": {
+      "light": "0 2px 6px rgba(0,0,0,0.08)",
+      "dark": "0 2px 8px rgba(255, 255, 255, 0.06)"
+    },
+    "3": {
+      "light": "0 6px 16px rgba(0,0,0,0.10)",
+      "dark": "0 4px 16px rgba(255, 255, 255, 0.08)"
+    },
+    "4": {
+      "light": "0 12px 32px rgba(0,0,0,0.14)",
+      "dark": "0 8px 28px rgba(255, 255, 255, 0.12)"
+    },
+    "5": {
+      "light": "0 24px 64px rgba(0,0,0,0.18)",
+      "dark": "0 16px 48px rgba(255, 255, 255, 0.16)"
+    }
+  }
+}

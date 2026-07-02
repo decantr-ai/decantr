@@ -1,0 +1,86 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "marketing-legal",
+  "role": "public",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Legal Marketing",
+  "description": "Public marketing landing surface for a legal research platform with hero, feature grid, testimonials, and final call to action.",
+  "tags": [
+    "legal",
+    "marketing",
+    "landing",
+    "saas",
+    "public"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "legal marketing",
+        "legal saas landing",
+        "legal research marketing",
+        "law firm landing"
+      ],
+      "secondary": [
+        "legal tech landing",
+        "attorney marketing site",
+        "legal product marketing"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "brand",
+          "as": "landing-hero"
+        },
+        {
+          "pattern": "features",
+          "preset": "standard",
+          "as": "feature-grid"
+        },
+        {
+          "pattern": "testimonials",
+          "preset": "standard",
+          "as": "attorney-testimonials"
+        },
+        {
+          "pattern": "cta-section",
+          "preset": "standard",
+          "as": "signup-cta"
+        }
+      ],
+      "default_layout": [
+        "hero",
+        "features",
+        "testimonials",
+        "cta-section"
+      ],
+      "shell": "top-nav-footer"
+    }
+  ],
+  "page_briefs": {
+    "home": "Marketing landing page for a legal research platform. Brand hero anchors the top with a headline positioning the product against Westlaw and Lexis, a subheadline emphasizing AI-powered citation checking, and dual CTAs for trial and demo. Below, a features grid spotlights case law search, citation graphs, memo drafting, and contract review. Next, a testimonials band carries quotes from practicing attorneys and partners. The page closes with a full-width cta-section prompting visitors to start a free trial."
+  },
+  "features": [
+    "marketing"
+  ],
+  "suggested_theme": {
+    "ids": [
+      "counsel",
+      "paper",
+      "editorial"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

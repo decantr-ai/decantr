@@ -1,0 +1,95 @@
+{
+  "id": "terminal-split",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Terminal Split",
+  "description": "Terminal-style layout with status bar, resizable split panes, and hotkey bar. Optimized for CLI tool interfaces with monospace typography and ASCII borders.",
+  "layout": "grid",
+  "atoms": "_grid _h[100vh] _mono _bgblack",
+  "config": {
+    "regions": [
+      "status-bar",
+      "body",
+      "hotkey-bar"
+    ],
+    "grid": {
+      "areas": [
+        [
+          "status-bar"
+        ],
+        [
+          "body"
+        ],
+        [
+          "hotkey-bar"
+        ]
+      ]
+    },
+    "status-bar": {
+      "height": "24px",
+      "sticky": true
+    },
+    "body": {
+      "scroll": false,
+      "splitPanes": true,
+      "resizable": true
+    },
+    "hotkey-bar": {
+      "height": "28px",
+      "sticky": true
+    }
+  },
+  "configurable": {
+    "body": {
+      "layouts": [
+        "horizontal",
+        "vertical",
+        "quad"
+      ],
+      "minPaneSize": 100
+    },
+    "status-bar": {
+      "toggleable": true,
+      "positions": [
+        "top",
+        "bottom"
+      ]
+    },
+    "hotkey-bar": {
+      "toggleable": true
+    },
+    "sizing": {
+      "statusBarHeight": {
+        "min": 20,
+        "max": 32,
+        "default": 24
+      },
+      "hotkeyBarHeight": {
+        "min": 24,
+        "max": 40,
+        "default": 28
+      }
+    }
+  },
+  "internal_layout": {
+    "root": { "display": "grid", "height": "100vh", "grid_template": "rows: 24px 1fr 28px", "font": "monospace", "background": "var(--d-black)", "color": "var(--d-green)", "atoms": "_grid _h[100vh] _mono _bgblack _fggreen" },
+    "status_bar": { "height": "24px", "display": "flex", "align": "center", "justify": "space-between", "padding": "0 0.5rem", "background": "var(--d-green)", "color": "var(--d-black)", "font_size": "sm", "sticky": true, "left_content": "App name + version", "right_content": "Status indicator" },
+    "body": { "display": "flex", "overflow": "hidden", "padding": "0.5rem",
+      "pane_left": { "flex": "1", "overflow_y": "auto", "padding": "0.5rem", "note": "Left split pane. Resizable width via drag handle." },
+      "divider": { "width": "4px", "cursor": "col-resize", "background": "var(--d-border)", "note": "Drag handle between panes." },
+      "pane_right": { "flex": "1", "overflow_y": "auto", "padding": "0.5rem", "note": "Right split pane. Resizable width via drag handle." },
+      "note": "Split pane body. Supports horizontal, vertical, and quad layouts. Min pane size 100px."
+    },
+    "hotkey_bar": { "height": "28px", "display": "flex", "align": "center", "gap": "1rem", "padding": "0 0.5rem", "background": "var(--d-surface)", "font_size": "sm", "sticky": true, "atoms": "_flex _aic _gap4 _px2 _bgmuted _textsm", "note": "Keyboard shortcut hints. Each item: kbd badge + label." }
+  },
+  "guidance": {
+    "section_label_treatment": "d-label",
+    "section_density": "compact",
+    "shell_spacing": "Terminal-split owns the status bar, split pane rhythm, resize dividers, and hotkey footer. Route content should live directly inside the panes with minimal internal guttering rather than introducing card chrome or extra scroll containers that fight the shell."
+  },
+  "code": {
+    "imports": "Target-specific imports vary. Translate the internal_layout contract into your framework's status bar, resizable split panes, and hotkey footer display.",
+    "example": "TerminalSplitShell(root) -> StatusBar(app name, version, status) + SplitBody(resizable panes) + HotkeyFooter(bound controls and shortcuts)"
+  },
+  "$schema": "https://decantr.ai/schemas/shell.v1.json"
+}

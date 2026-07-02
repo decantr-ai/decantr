@@ -1,0 +1,126 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "product-box-spec-panel",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Product Box Spec Panel",
+  "description": "Back-of-box product explanation panel with contents, specs, compatibility, proof, shipping notes, and campaign caveats.",
+  "category": "campaign",
+  "tags": [
+    "campaign",
+    "product",
+    "specs",
+    "features",
+    "launch",
+    "proof"
+  ],
+  "components": [
+    "Badge",
+    "Accordion",
+    "icon",
+    "KPI"
+  ],
+  "contained": false,
+  "default_preset": "box-back",
+  "presets": {
+    "box-back": {
+      "description": "Back-of-package grid with feature callouts, contents list, compatibility, shipping status, and support notes.",
+      "components": [
+        "Badge",
+        "Accordion",
+        "icon",
+        "KPI"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap6 _wfull _maxw[76rem] _mx[auto]",
+        "slots": {
+          "feature-burst": "Two to four high-impact product benefits in bold manual panels.",
+          "contents-list": "What is included in the pledge or launch package.",
+          "compatibility-strip": "Works with, integrations, sizing, OS, or audience fit.",
+          "proof-stamps": "Prototype status, guarantee, press proof, or maker credibility.",
+          "shipping-note": "Delivery window, beta wave, manufacturing status, or digital access timing."
+        }
+      }
+    },
+    "manual-foldout": {
+      "description": "Instruction-manual style foldout with numbered specs, diagrams, and usage scenarios.",
+      "components": [
+        "Badge",
+        "Accordion",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap5 _wfull _maxw[70rem] _mx[auto]",
+        "slots": {
+          "numbered-spec": "Repeated numbered feature or spec row.",
+          "diagram-slot": "Product diagram, screenshot, or simplified flow.",
+          "usage-scenario": "Short scenario copy showing why the product matters."
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gap6 _wfull _maxw[76rem] _mx[auto]",
+    "slots": {
+      "feature-burst": "Primary product benefits",
+      "contents-list": "Included items or access",
+      "compatibility-strip": "Works-with and fit details",
+      "proof-stamps": "Prototype, trust, and maker proof",
+      "shipping-note": "Delivery or access timing"
+    }
+  },
+  "visual_brief": "A back-of-box product panel, like the rear of a toy or gadget package. It should explain the offer with practical detail while keeping a playful launch tone. Use structured zones, thick separators, sticker-like labels, and readable body text. Do not turn each feature into a floating card.",
+  "responsive": {
+    "mobile": "Stack feature bursts, contents, compatibility, and notes. Use accordions for secondary details.",
+    "tablet": "Two-column manual layout with specs and proof beside a diagram.",
+    "desktop": "Asymmetric package-back layout with a large contents/spec column and smaller proof/shipping panels."
+  },
+  "layout_hints": {
+    "content_order": "Explain what it is, what is included, who it is for, and when/how backers receive it.",
+    "trust": "Campaign caveats should be visible and plain, not hidden in tiny legal copy.",
+    "visual_language": "Use package/manual framing rather than SaaS feature grids."
+  },
+  "motion": {
+    "micro": {
+      "stamp-hover": "proof stamp tilts or brightens slightly",
+      "accordion-open": "manual panel expands instantly with no bouncy motion"
+    }
+  },
+  "interactions": [
+    "click-select",
+    "hover-reveal",
+    "keyboard-navigation"
+  ],
+  "composition": {
+    "ProductBoxSpecPanel": "Panel(arcade-manual-panel) > [FeatureBurst + ContentsList + CompatibilityStrip + ProofStamps + ShippingNote]",
+    "FeatureBurst": "Grid > BenefitBlock[]",
+    "ProofStamps": "Rail > StampBadge[]"
+  },
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Product launch specifications",
+    "keyboard": [
+      "Accordion sections must use button semantics and expose expanded state.",
+      "Proof stamps should have text labels, not only icons."
+    ],
+    "announcements": [
+      "Specification section expanded: {section}."
+    ]
+  },
+  "io": {
+    "consumes": [
+      "product-specs",
+      "campaign-fulfillment"
+    ],
+    "produces": [
+      "product-understanding"
+    ],
+    "actions": [
+      "spec-expand",
+      "compatibility-check"
+    ]
+  }
+}

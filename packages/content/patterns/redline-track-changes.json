@@ -1,0 +1,113 @@
+{
+  "id": "redline-track-changes",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Redline Track Changes",
+  "description": "A document review surface with inline track-changes, margin comments, author attribution, accept/reject controls, and a revision version timeline.",
+  "category": "legal",
+  "tags": [
+    "2026",
+    "legal",
+    "redline",
+    "track-changes",
+    "review",
+    "collaboration",
+    "document"
+  ],
+  "components": [
+    "DocumentPane",
+    "InlineChange",
+    "CommentBubble",
+    "AuthorBadge",
+    "AcceptRejectControls",
+    "VersionTimeline"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full editorial review mode displaying inline tracked changes with margin comment bubbles and per-change accept and reject controls on hover",
+      "layout": {
+        "layout": "document-with-margin",
+        "atoms": "_grid _grid-cols-[1fr_320px] _gap-6 _w100 _max-w-6xl _mx-auto _p-6"
+      }
+    },
+    "clean": {
+      "description": "Approved-state view rendering the document as if all accepted changes were applied with no markup visible for final review presentation",
+      "layout": {
+        "layout": "single-column",
+        "atoms": "_flex _flex-col _w100 _max-w-3xl _mx-auto _p-8"
+      }
+    },
+    "author": {
+      "description": "Author-attribution mode color-coding every change by its contributing reviewer with a legend of authors active during the revision cycle",
+      "layout": {
+        "layout": "document-with-margin",
+        "atoms": "_grid _grid-cols-[1fr_320px] _gap-6 _w100 _max-w-6xl _mx-auto _p-6"
+      }
+    }
+  },
+  "visual_brief": "A document rendered in serif font with generous margins, similar to Word track-changes. Insertions appear underlined in an author-specific color (author A red, author B blue, author C purple, etc.) with author initial badge floating at start of insertion. Deletions shown with strikethrough in the same author color. Comment bubbles in right margin are rounded rectangles with author avatar, timestamp, comment text, and thin connecting line drawn to the referenced text span. Hovering any change surface reveals a floating action bar with Accept (green check) and Reject (red X) icon buttons plus 'Reply' option. Top header contains a horizontal version timeline chip strip showing v1, v2, v3... with dots for revision authors, current version highlighted. Side panel can filter by author, change type, or resolved/unresolved comments.",
+  "layout_hints": {
+    "container": "d-section",
+    "note": "Comments in margin must have visible connector lines to source text. Author badges use initials, never emoji.",
+    "color_attribution": "Each author gets a stable color assigned at entry. Do not recycle colors mid-revision."
+  },
+  "default_layout": {
+    "layout": "document-with-margin",
+    "atoms": "_grid _grid-cols-[1fr_320px] _gap-6 _w100 _max-w-6xl _mx-auto _p-6",
+    "slots": {
+      "document-pane": "Main serif-font document surface containing paragraphs with inline change markup interspersed.",
+      "inline-change": "Repeating span within document representing an insertion or deletion. Color-coded by author, attached to author badge.",
+      "comment-bubble": "Right-margin card showing author avatar, timestamp, comment body, thread replies, and resolve toggle.",
+      "author-badge": "Small colored circular badge with author initials. Placed at start of each change span and on each comment bubble.",
+      "accept-reject-controls": "Floating action bar revealed on hover over any change containing Accept, Reject, and Reply buttons.",
+      "version-timeline": "Horizontal strip across top header with numbered version pills and author dots showing revision progression."
+    }
+  },
+  "accessibility": {
+    "role": "region",
+    "aria-label": "Document track changes review",
+    "announcements": [
+      "Change by {author}: {type} at paragraph {n}",
+      "Comment added by {author}: {excerpt}",
+      "Change {accepted|rejected}"
+    ],
+    "keyboard": [
+      "J / K: next / previous change",
+      "A: accept focused change",
+      "R: reject focused change",
+      "C: add comment to selection",
+      "Arrow keys: navigate within document",
+      "Escape: close comment thread"
+    ]
+  },
+  "responsive": {
+    "mobile": "Comment margin collapses to a drawer with indicator badges inline in the document. Controls appear in a bottom action sheet.",
+    "tablet": "Narrower margin column. Version timeline collapses to current-version dropdown."
+  },
+  "motion": {
+    "micro": {
+      "change-hover": "background brighten + controls fade-in 180ms ease-out",
+      "comment-focus": "bubble elevation raise 200ms ease"
+    },
+    "transitions": {
+      "accept-change": "background flash green then content reflow 400ms ease-in-out",
+      "reject-change": "strikethrough pulse then content removal 400ms",
+      "comment-resolve": "bubble fade to muted 300ms"
+    },
+    "ambient": {
+      "unresolved-pulse": "unresolved comment bubble subtle ring-pulse 3s ease-in-out infinite"
+    }
+  },
+  "interactions": [
+    "animate-on-mount"
+  ],
+  "composition": {
+    "RedlineTrackChanges": "Section(d-section) > [VersionTimeline(header) + DocumentPane(main) > [Paragraph[] > InlineChange[](author-colored) > [AuthorBadge + ChangeText + AcceptRejectControls]] + CommentMargin > CommentBubble[](d-annotation) > [AuthorBadge + Timestamp + CommentBody + ReplyThread + ResolveToggle]]",
+    "DocumentPane": "Article(serif, margin-sized) > Paragraph[]",
+    "InlineChange": "Span(colored, underline|strikethrough, data-author) > [AuthorBadge + TextContent]",
+    "CommentBubble": "Card(d-annotation, connector-line) > [Header(avatar+name+time) + Body + Replies + Actions]",
+    "VersionTimeline": "Strip(horizontal) > VersionPill[] > [VersionNumber + AuthorDots + DateLabel]"
+  }
+}

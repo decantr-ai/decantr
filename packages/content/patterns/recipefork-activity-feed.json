@@ -1,0 +1,51 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "recipefork-activity-feed",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Recipefork Activity Feed",
+  "description": "Recipefork-flavored community activity rail with publish, fork, follow, comment, reaction, and cookbook events rendered as linked preview cards.",
+  "dependencies": {
+    "patterns": {
+      "activity-feed": "^1.0.0"
+    },
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Card",
+        "Image",
+        "Avatar",
+        "Badge",
+        "Button",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Card",
+    "Image",
+    "Avatar",
+    "Badge",
+    "Button",
+    "icon"
+  ],
+  "default_preset": "preview-cards",
+  "presets": {
+    "preview-cards": {
+      "description": "Vertical rail of linked activity cards with preview image, event icon, summary text, actor attribution, and timestamp.",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "filters": "Compact event filter chips for all, recipes, social, and cookbooks",
+          "event-card": "Linked activity card with preview image, icon chip, summary, actor attribution, and timestamp"
+        }
+      }
+    }
+  },
+  "visual_brief": "A right-rail social surface that feels native to Recipefork rather than like a generic audit log. Each event has enough food or cookbook imagery to stay visually connected to the product, with compact event-type cues and lightweight timestamps.",
+  "composition": {
+    "RecipeforkActivityFeed": "Stack(recipefork-rail) > [FilterChips + EventCard*]"
+  }
+}

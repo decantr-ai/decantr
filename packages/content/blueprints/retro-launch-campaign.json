@@ -1,0 +1,205 @@
+{
+  "$schema": "https://decantr.ai/schemas/blueprint.v1.json",
+  "id": "retro-launch-campaign",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Retro Launch Campaign",
+  "description": "Campaign-style product launch funnel with premium retro arcade visual language, physical product-theater hero, preorder or waitlist conversion, reward cartridges, stretch goals, prototype demos, maker story, updates, press kit, checkout, and post-conversion sharing.",
+  "blueprint_portfolio": {
+    "visibility": "labs",
+    "maturity": "experimental",
+    "rationale": "Interesting direction for advanced users, but not yet a default recommendation because the public positioning or scaffold proof needs more tightening.",
+    "artifact": {
+      "status": "candidate",
+      "showcase": "retro-launch-campaign",
+      "notes": "Visible through Labs; promote after clearer product positioning and evidence-backed scaffold quality."
+    }
+  },
+  "tags": [
+    "campaign",
+    "launch",
+    "marketing",
+    "conversion",
+    "preorder",
+    "waitlist",
+    "crowdfunding",
+    "retro",
+    "arcade",
+    "2026"
+  ],
+  "compose": [
+    "launch-campaign"
+  ],
+  "theme": {
+    "mode": "dark",
+    "shape": "sharp",
+    "id": "retro-arcade"
+  },
+  "personality": "A retro product launch campaign that feels like a coin-op arcade cabinet, a boxed toy set, a hardware controller, and a transparent maker campaign in one system. Full-bleed atmosphere is allowed, but content lives inside a centered campaign safe area. The first viewport must make the product unmistakable through packaging, cartridge, controller, prototype, or product render. Sections are cabinet shells, scoreboards, bezels, counters, manual panels, shelves, cartridges, ticket rails, and continue screens rather than generic cards. CTAs are raised rectangular controller buttons with hard press states, not pills; labels and icons need enough x-padding to avoid touching the walls. Scoreboards and LED counters need padded interiors and clear gaps so metrics feel like real display modules. Demo controls should be clustered by purpose, with the primary conversion action separated intentionally. The funnel is explicit: product reveal -> proof -> rewards -> stretch goals -> maker trust -> conversion -> share. Vibrant, playful, high contrast, and conversion-focused without hiding delivery or beta-access caveats.",
+  "voice": {
+    "tone": "Excited, maker-led, transparent, playful, and concrete. The copy should make the campaign feel alive while clearly explaining what exists, what is shipping, and what support unlocks.",
+    "cta_verbs": [
+      "Back",
+      "Reserve",
+      "Join",
+      "Choose",
+      "Unlock",
+      "Watch",
+      "Share"
+    ],
+    "avoid": [
+      "Submit",
+      "Buy now",
+      "Learn more",
+      "Click here",
+      "Guaranteed overnight success",
+      "Revolutionary"
+    ],
+    "empty_states": "Use launch-native empty states such as First backers will appear here, Updates will unlock after launch day, or Press assets are being packed.",
+    "errors": "Inline, specific, and calm. Campaign checkout errors must preserve trust and never obscure payment timing, fulfillment expectations, or waitlist status.",
+    "loading": "Render stable retro frames immediately. Counters, tiers, and media fill in without layout shift. No spinner-only launch states."
+  },
+  "features": [
+    "marketing",
+    "seo",
+    "analytics",
+    "conversion",
+    "campaign-progress",
+    "reward-tiers",
+    "preorder",
+    "waitlist",
+    "referrals",
+    "press-kit",
+    "updates",
+    "checkout"
+  ],
+  "routes": {
+    "/": {
+      "page": "home",
+      "shell": "full-bleed",
+      "archetype": "launch-campaign"
+    },
+    "/rewards": {
+      "page": "rewards",
+      "shell": "full-bleed",
+      "archetype": "launch-campaign"
+    },
+    "/updates": {
+      "page": "updates",
+      "shell": "full-bleed",
+      "archetype": "launch-campaign"
+    },
+    "/story": {
+      "page": "story",
+      "shell": "full-bleed",
+      "archetype": "launch-campaign"
+    },
+    "/demo": {
+      "page": "demo",
+      "shell": "full-bleed",
+      "archetype": "launch-campaign"
+    },
+    "/checkout": {
+      "page": "checkout",
+      "shell": "full-bleed",
+      "archetype": "launch-campaign"
+    },
+    "/thanks": {
+      "page": "thanks",
+      "shell": "full-bleed",
+      "archetype": "launch-campaign"
+    },
+    "/press": {
+      "page": "press",
+      "shell": "full-bleed",
+      "archetype": "launch-campaign"
+    }
+  },
+  "overrides": {
+    "features_add": [],
+    "features_remove": [],
+    "pages": {},
+    "pages_remove": []
+  },
+  "visual_brief": "A complete retro launch funnel for products that need momentum: physical product visual above the fold, campaign progress, preorder or waitlist cartridges, stretch goals, transparent maker story, updates, checkout, press assets, and share/referral after conversion. The UI should feel like opening a new retro product kit: bold packaging, breathable LED counters, tactile rectangular controls with generous label/icon spacing, hard-edged cabinet surfaces, and generous full-bleed atmosphere. Every visual flourish must serve campaign comprehension or conversion.",
+  "conversion_model": {
+    "primary_paths": [
+      "pledge_or_preorder",
+      "join_waitlist",
+      "reserve_beta_access"
+    ],
+    "funnel": [
+      "discover",
+      "understand",
+      "trust",
+      "choose_reward",
+      "pledge_or_reserve",
+      "share"
+    ],
+    "trust_requirements": [
+      "show physical product, packaging, cartridge, controller, or prototype evidence early",
+      "show campaign status before asking for conversion",
+      "show delivery or access timing near reward actions",
+      "show updates and caveats plainly",
+      "use rectangular controller-button CTAs instead of pill actions",
+      "leave clear breathing room inside buttons, metric counters, and control panels",
+      "cluster related demo controls and separate primary conversion actions intentionally"
+    ]
+  },
+  "seo_hints": {
+    "schema_org": [
+      "WebSite",
+      "Product",
+      "Organization",
+      "FAQPage"
+    ],
+    "meta_priorities": [
+      "description",
+      "og:title",
+      "og:image",
+      "product:price:amount",
+      "product:availability"
+    ]
+  },
+  "navigation": {
+    "command_palette": true,
+    "hotkeys": [
+      {
+        "key": "g h",
+        "route": "/",
+        "label": "Go to Campaign Home"
+      },
+      {
+        "key": "g r",
+        "route": "/rewards",
+        "label": "Go to Rewards"
+      },
+      {
+        "key": "g u",
+        "route": "/updates",
+        "label": "Go to Updates"
+      },
+      {
+        "key": "g d",
+        "route": "/demo",
+        "label": "Go to Demo"
+      },
+      {
+        "key": "g p",
+        "route": "/press",
+        "label": "Go to Press Kit"
+      }
+    ]
+  },
+  "dependencies": {
+    "archetypes": {
+      "launch-campaign": ">=1.0.0"
+    }
+  },
+  "suggested_themes": [
+    "retro-arcade",
+    "retro",
+    "dopamine",
+    "terminal"
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "id": "centered",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Centered",
+  "description": "Centered card on a background. Used for auth flows (login, register, forgot password) across all archetypes.",
+  "layout": "center",
+  "atoms": "_flex _aic _jcc _h[100vh] _bgmuted",
+  "config": {
+    "regions": [
+      "body"
+    ],
+    "grid": {
+      "areas": [
+        [
+          "body"
+        ]
+      ]
+    },
+    "nav": {
+      "position": "left",
+      "defaultState": "hidden"
+    },
+    "body": {
+      "scroll": false
+    }
+  },
+  "configurable": {
+    "nav": {
+      "positions": [],
+      "modes": []
+    },
+    "sizing": {}
+  },
+  "guidance": {
+    "max_width": "Centered content should be constrained to max-width: 28rem (448px) for auth forms, 36rem (576px) for wider content.",
+    "vertical_centering": "Center the content card vertically using min-height: 100dvh with flexbox centering.",
+    "shell_spacing": "Centered shell owns viewport centering, outer padding, and maximum-width rhythm. Route components should render the card contents only and must not add nested full-height centering wrappers."
+  },
+  "internal_layout": {
+    "root": { "display": "flex", "align": "center", "justify": "center", "min_height": "100vh", "background": "var(--d-bg)", "atoms": "_flex _aic _jcc _minh[100vh]" },
+    "body": { "width": "100%", "max_width_auth": "28rem", "max_width_wide": "36rem", "padding": "1.5rem", "treatment": "d-surface", "border_radius": "var(--d-radius-lg)", "note": "Single centered card. No sidebar, no header. Auth forms use 28rem, wider content 36rem." }
+  },
+  "code": {
+    "imports": "Target-specific imports vary. Translate the internal_layout contract into your framework's shell wrapper, centered card surface, and route outlet.",
+    "example": "CenteredShell(root) -> Viewport(min-height full, centered content) + CardSurface(max-width auth or wide variant) + RouteContent"
+  },
+  "$schema": "https://decantr.ai/schemas/shell.v1.json"
+}

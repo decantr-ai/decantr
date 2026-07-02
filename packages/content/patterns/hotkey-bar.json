@@ -1,0 +1,97 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "hotkey-bar",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Hotkey Bar",
+  "description": "Function key shortcut bar inspired by DOS/Norton Commander style interfaces.",
+  "dependencies": {
+    "patterns": {},
+    "styles": {
+      "terminal": "^1.0.0"
+    },
+    "requires_core": {
+      "components": [],
+      "charts": []
+    }
+  },
+  "components": ["Text", "Kbd"],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Standard F1-F10 function key bar with evenly spaced shortcut labels in a fixed bottom row",
+      "components": [],
+      "layout": {
+        "layout": "flex",
+        "atoms": "_flex _aic _jcsb _px1 _mono _textsm _h[28px] _bgmuted",
+        "slots": {
+          "keys": "Array of F1-F10 hotkey bindings"
+        }
+      }
+    },
+    "extended": {
+      "description": "F1-F12 extended function key bar",
+      "components": [],
+      "layout": {
+        "layout": "flex",
+        "atoms": "_flex _aic _jcsb _px1 _mono _textsm _h[28px] _bgmuted",
+        "slots": {
+          "keys": "Array of F1-F12 hotkey bindings"
+        }
+      }
+    },
+    "custom": {
+      "description": "Custom key bindings with modifiers",
+      "components": [],
+      "layout": {
+        "layout": "flex",
+        "atoms": "_flex _aic _gap4 _px2 _mono _textsm _h[28px] _bgmuted",
+        "slots": {
+          "keys": "Custom key bindings with labels"
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "flex",
+    "atoms": "_flex _aic _jcsb _px1 _mono _textsm _h[28px]",
+    "slots": {
+      "keys": "Hotkey bindings"
+    }
+  },
+  "features": [
+    "click-activate",
+    "keyboard-trigger",
+    "disabled-state",
+    "active-pressed-state"
+  ],
+  "visual_brief": "Fixed horizontal bar at the bottom of the viewport displaying function key shortcuts in a DOS/Norton Commander style. Each slot shows a function key label (F1, F2, ... F10) in a highlighted badge followed by the action name (Help, Menu, View, Edit, Copy, Move, Mkdir, Delete, etc.). Background is typically dark with bright key labels. Extended preset adds Shift+F and Ctrl+F combinations as additional rows. The bar spans the full viewport width with evenly distributed key slots.",
+  "responsive": {
+    "mobile": "Bar shows only the most critical shortcuts (F1-F5). Remaining keys accessible via a more button. Key labels use abbreviated action names.",
+    "tablet": "Full F1-F10 bar visible. Key slots slightly narrower.",
+    "desktop": "Full bar with all function keys and comfortable spacing. Extended preset shows additional modifier combinations."
+  },
+  "layout_hints": {
+    "bar_priority": "The key label should read before the action text so users can scan function bindings rapidly.",
+    "density": "Keep the bar extremely compact and horizontal. It is terminal chrome, not a secondary navigation rail.",
+    "mobile_translation": "On smaller screens, preserve the most important bindings and collapse the rest rather than shrinking every slot to illegibility."
+  },
+  "motion": {
+    "micro": "Hovered or active key slots may brighten slightly to acknowledge interaction without looking like conventional buttons.",
+    "transitions": "The bar should feel stable and ever-present; avoid animated reflow unless shortcut sets genuinely change."
+  },
+  "interactions": [
+    "hover-reveal",
+    "keyboard-navigation"
+  ],
+  "accessibility": {
+    "role": "toolbar",
+    "aria-label": "Hotkey bar",
+    "keyboard": [
+      "Shortcut items should be reachable in sequence, with the underlying key command still working even if the bar itself is not focused."
+    ],
+    "announcements": [
+      "Each binding should expose both the function key and its action name semantically so the bar is understandable without color-coded badges alone."
+    ]
+  }
+}

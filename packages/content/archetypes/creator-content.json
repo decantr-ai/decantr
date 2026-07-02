@@ -1,0 +1,128 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "creator-content",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Creator Content",
+  "description": "Content management for creators. Upload, organize, and manage posts, media, and products.",
+  "tags": [
+    "creator",
+    "content",
+    "upload",
+    "media",
+    "products"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "creator content",
+        "content management",
+        "upload media"
+      ],
+      "secondary": [
+        "post management",
+        "product library",
+        "media upload"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "content",
+      "patterns": [
+        {
+          "pattern": "filter-bar",
+          "preset": "standard",
+          "as": "filters"
+        },
+        {
+          "pattern": "product-grid",
+          "preset": "list",
+          "as": "content-list"
+        }
+      ],
+      "default_layout": [
+        "filters",
+        "content-list"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "new",
+      "patterns": [
+        {
+          "pattern": "content-uploader",
+          "preset": "standard",
+          "as": "uploader"
+        },
+        {
+          "pattern": "form-sections",
+          "preset": "standard",
+          "as": "post-form"
+        }
+      ],
+      "default_layout": [
+        "content-uploader",
+        "post-form"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "edit",
+      "patterns": [
+        {
+          "pattern": "content-uploader",
+          "preset": "single",
+          "as": "media-preview"
+        },
+        {
+          "pattern": "form-sections",
+          "preset": "standard",
+          "as": "edit-form"
+        }
+      ],
+      "default_layout": [
+        "media-preview",
+        "edit-form"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "content": "Content library view. Filter bar at top with type and status filters. Below, a list view of content items showing thumbnail, title, publish date, tier badge, and status indicator per row.",
+    "new": "Upload-first creation flow. Large drag-and-drop uploader area at top for media files. Below, a structured form with title, description, tier selector, scheduling date picker, and tags input.",
+    "edit": "Media preview panel at top showing the uploaded asset. Below, the same form layout as new, pre-populated with existing content data and an update button."
+  },
+  "features": [
+    "media-upload",
+    "tier-gating",
+    "scheduling",
+    "drafts"
+  ],
+  "shells": {
+    "sidebar-main": "Creator dashboard with sidebar navigation"
+  },
+  "dependencies": {
+    "patterns": {
+      "filter-bar": "^1.0.0",
+      "product-grid": "^1.0.0",
+      "content-uploader": "^1.0.0",
+      "form-sections": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "studio"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

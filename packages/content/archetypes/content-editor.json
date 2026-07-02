@@ -1,0 +1,82 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "content-editor",
+  "role": "primary",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Content Editor",
+  "description": "Content creation and editing interface for publishing patterns, themes, blueprints, and other registry items.",
+  "tags": [
+    "editor",
+    "content",
+    "publish",
+    "create",
+    "json"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "editor",
+        "create-content",
+        "publish",
+        "content-form"
+      ],
+      "secondary": [
+        "json-editor",
+        "schema-validation",
+        "preview"
+      ],
+      "negative": []
+    },
+    "implies": [
+      "auth"
+    ],
+    "weight": 0.8,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "content-new",
+      "path": "/dashboard/content/new",
+      "default_layout": [
+        "form",
+        "json-viewer"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "content-edit",
+      "path": "/dashboard/content/[id]/edit",
+      "default_layout": [
+        "form",
+        "json-viewer"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "page_briefs": {
+    "content-new": "Two-panel editing layout. Left panel has a structured form for content metadata (type selector, name, description, tags). Right panel shows a live JSON viewer with syntax highlighting that updates as the form changes.",
+    "content-edit": "Same two-panel layout as new. Left form pre-populated with existing content data. Right panel shows the full JSON with diff indicators for changed fields."
+  },
+  "features": [
+    "auth",
+    "validation"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "json-viewer": "^1.0.0"
+    },
+    "styles": {}
+  },
+  "suggested_theme": {
+    "ids": [
+      "luminarum"
+    ],
+    "modes": [
+      "dark"
+    ]
+  }
+}

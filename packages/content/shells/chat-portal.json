@@ -1,0 +1,153 @@
+{
+  "id": "chat-portal",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.0.0",
+  "name": "Chat Portal",
+  "description": "AI chatbot layout with collapsible conversation sidebar and anchored input. Used by ai-chatbot archetype for chat-first applications.",
+  "layout": "grid",
+  "atoms": "_grid _h[100vh]",
+  "config": {
+    "regions": [
+      "header",
+      "nav",
+      "body"
+    ],
+    "grid": {
+      "areas": [
+        [
+          "nav",
+          "header"
+        ],
+        [
+          "nav",
+          "body"
+        ]
+      ]
+    },
+    "nav": {
+      "position": "left",
+      "width": "280px",
+      "collapseTo": "64px",
+      "collapseBelow": "md"
+    },
+    "header": {
+      "height": "52px",
+      "sticky": true
+    },
+    "body": {
+      "scroll": true,
+      "inputAnchored": true
+    }
+  },
+  "configurable": {
+    "nav": {
+      "positions": [
+        "left"
+      ],
+      "modes": [
+        "full",
+        "rail",
+        "hidden"
+      ]
+    },
+    "header": {
+      "toggleable": true
+    },
+    "footer": {
+      "toggleable": false
+    },
+    "sizing": {
+      "sidebarWidth": {
+        "min": 64,
+        "max": 320,
+        "default": 280
+      },
+      "headerHeight": {
+        "min": 44,
+        "max": 64,
+        "default": 52
+      }
+    }
+  },
+  "internal_layout": {
+    "root": {
+      "display": "grid",
+      "height": "100vh",
+      "grid_template": "columns: sidebar 1fr; rows: 52px 1fr",
+      "atoms": "_grid _h[100vh]"
+    },
+    "sidebar": {
+      "width": "280px",
+      "collapsed_width": "64px",
+      "collapse_breakpoint": "md",
+      "position": "left",
+      "direction": "column",
+      "border": "right",
+      "background": "var(--d-surface)",
+      "grid_span": "row 1/3",
+      "atoms": "_flex _col _bgmuted _borderR",
+      "brand": {
+        "height": "52px",
+        "display": "flex",
+        "align": "center",
+        "justify": "space-between",
+        "padding": "0.75rem",
+        "border": "bottom",
+        "content": "Conversations heading + collapse toggle"
+      },
+      "nav": {
+        "flex": "1",
+        "overflow_y": "auto",
+        "padding": "0.5rem",
+        "item_gap": "0.25rem",
+        "item_padding": "0.5rem",
+        "item_content": "Avatar (sm) + conversation title (truncated). Collapsed: avatar only."
+      },
+      "footer": {
+        "border": "top",
+        "padding": "0.5rem",
+        "content": "New Chat button (full-width outline)"
+      }
+    },
+    "header": {
+      "height": "52px",
+      "display": "flex",
+      "align": "center",
+      "justify": "space-between",
+      "padding": "0 1.5rem",
+      "border": "bottom",
+      "background": "var(--d-bg)",
+      "left_content": "Chat title",
+      "right_content": "Notifications bell + user avatar",
+      "button_sizing": "Buttons in the header use compact sizing: py-1.5 px-3 text-sm (~32px tall). The header is a tight 52px bar \u2014 default d-interactive padding is too large here."
+    },
+    "body": {
+      "flex": "1",
+      "direction": "column",
+      "overflow": "hidden",
+      "atoms": "_flex _col _overflow[hidden]",
+      "messages": {
+        "flex": "1",
+        "overflow_y": "auto",
+        "padding": "1.5rem",
+        "note": "Scrollable message list. Messages stack vertically."
+      },
+      "input": {
+        "position": "anchored_bottom",
+        "padding": "1rem 1.5rem",
+        "border": "top",
+        "note": "Chat input anchored to bottom of body. Always visible."
+      }
+    }
+  },
+  "guidance": {
+    "shell_spacing": "Chat portal owns the conversation sidebar width, header inset rhythm, message stream padding, and anchored composer spacing. Route components should not re-solve those frame decisions.",
+    "section_label_treatment": "d-label",
+    "section_density": "compact"
+  },
+  "code": {
+    "imports": "Target-specific imports vary. Translate the internal_layout contract into your framework's conversation list state, compact header, message stream, and anchored chat input.",
+    "example": "ChatPortalShell(root) -> ConversationSidebar(list, collapse or drawer state) + Header(chat title, compact actions) + MessageStream(sole scroll region) + AnchoredInput(always visible at bottom)"
+  },
+  "$schema": "https://decantr.ai/schemas/shell.v1.json"
+}
