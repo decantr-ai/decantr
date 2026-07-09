@@ -1,0 +1,91 @@
+name: Publish MCP Directory Metadata
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Publish"]
+    types: [completed]
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: publish-mcp-${{ github.event.workflow_run.head_sha || github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      startsWith(github.event.workflow_run.head_branch, 'v'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout release metadata
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Verify npm package metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          server_name=$(jq -r '.name' packages/mcp-server/server.json)
+          package_name=$(jq -r '.name' packages/mcp-server/package.json)
+          package_mcp_name=$(jq -r '.mcpName' packages/mcp-server/package.json)
+          server_version=$(jq -r '.version' packages/mcp-server/server.json)
+          package_version=$(jq -r '.version' packages/mcp-server/package.json)
+          package_ref=$(jq -r '.packages[0].identifier' packages/mcp-server/server.json)
+          package_ref_version=$(jq -r '.packages[0].version' packages/mcp-server/server.json)
+
+          test "$server_name" = "$package_mcp_name"
+          test "$package_name" = "$package_ref"
+          test "$server_version" = "$package_version"
+          test "$server_version" = "$package_ref_version"
+          test "$(npm view "$package_name@$package_version" version)" = "$package_version"
+
+      - name: Install pinned MCP publisher
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive=/tmp/mcp-publisher_linux_amd64.tar.gz
+          curl --fail --location --retry 3 \
+            --output "$archive" \
+            https://github.com/modelcontextprotocol/registry/releases/download/v1.7.9/mcp-publisher_linux_amd64.tar.gz
+          echo "ab128162b0616090b47cf245afe0a23f3ef08936fdce19074f5ba0a4469281ac  $archive" | sha256sum --check --strict
+          tar -xzf "$archive" -C /tmp mcp-publisher
+          chmod +x /tmp/mcp-publisher
+
+      - name: Validate MCP metadata
+        run: /tmp/mcp-publisher validate packages/mcp-server/server.json
+
+      - name: Authenticate with GitHub OIDC
+        run: /tmp/mcp-publisher login github-oidc
+
+      - name: Publish MCP metadata
+        run: /tmp/mcp-publisher publish packages/mcp-server/server.json
+
+      - name: Verify MCP Registry listing
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(jq -r '.version' packages/mcp-server/server.json)
+          name=$(jq -r '.name' packages/mcp-server/server.json)
+          encoded_name=$(jq -rn --arg value "$name" '$value | @uri')
+          endpoint="https://registry.modelcontextprotocol.io/v0.1/servers?search=$encoded_name"
+
+          for attempt in {1..12}; do
+            if response=$(curl --fail --silent --show-error --max-time 30 "$endpoint") &&
+              jq -e --arg name "$name" --arg version "$version" \
+                '.servers[]? | select(.server.name == $name and .server.version == $version and (.server.packages[]?.version == $version))' \
+                >/dev/null <<<"$response"; then
+              printf 'Verified %s@%s in the official MCP Registry.\n' "$name" "$version"
+              exit 0
+            fi
+            sleep 10
+          done
+
+          echo "MCP Registry did not expose $name@$version before the verification deadline." >&2
+          exit 1
