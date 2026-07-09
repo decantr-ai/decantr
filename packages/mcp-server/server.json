@@ -1,7 +1,7 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.decantr-ai/mcp-server",
-  "description": "AI Frontend Governance for codebases touched by AI agents. Serves Contract context, typed graph artifacts, drift evidence, and repair prompts.",
+  "description": "AI frontend governance for Contract context, graph artifacts, drift evidence, and repair prompts.",
   "repository": {
     "url": "https://github.com/decantr-ai/decantr",
     "source": "github"
