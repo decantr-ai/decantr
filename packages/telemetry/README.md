@@ -2,7 +2,7 @@
 
 Optional telemetry contracts, privacy filters, clients, and sinks for Decantr.
 
-Decantr 3.8 keeps this package for compatibility and future/private deployments. The active hosted product no longer includes registry portal analytics, PostHog dashboards, Supabase rollups, billing funnels, public telemetry ingest, or admin telemetry pages.
+Decantr 3.8.1 keeps this package for compatibility and future/private deployments. The active hosted product no longer includes registry portal analytics, PostHog dashboards, Supabase rollups, billing funnels, public telemetry ingest, or admin telemetry pages.
 
 ## Product Stance
 
@@ -13,6 +13,7 @@ Allowed signals include command names, package versions, workflow modes, success
 ## Runtime Posture
 
 - CLI telemetry is disabled by default.
+- The CLI has no hosted default sink; callers must configure their own endpoint.
 - MCP does not emit Decantr telemetry.
 - The Fly API is content/reference only.
 - Legacy event names may still contain `registry.*` for Decantr 3.x compatibility.
@@ -40,6 +41,6 @@ await telemetry.capture({
 });
 ```
 
-Constructing a client is explicit; the package does not auto-start collection.
+Constructing a client and choosing a sink are explicit; the package does not auto-start collection or select a Decantr-hosted endpoint.
 
 See [security permissions](https://decantr.ai/reference/security-permissions.md).

@@ -21,7 +21,7 @@
       "components": [],
       "layout": {
         "layout": "absolute",
-        "atoms": "_absolute _pointer[none] _z[100]",
+        "atoms": "_absolute _ptrnone _z[100]",
         "slots": {
           "cursor": "SVG cursor icon in user's presence color",
           "label": "Name tag with colored background"
@@ -33,7 +33,7 @@
       "components": [],
       "layout": {
         "layout": "absolute",
-        "atoms": "_absolute _pointer[none] _z[100]",
+        "atoms": "_absolute _ptrnone _z[100]",
         "slots": {
           "cursor": "SVG cursor icon only"
         }
@@ -46,7 +46,7 @@
       ],
       "layout": {
         "layout": "absolute",
-        "atoms": "_absolute _pointer[none] _z[100]",
+        "atoms": "_absolute _ptrnone _z[100]",
         "slots": {
           "cursor": "SVG cursor icon",
           "avatar": "Small avatar image",
@@ -57,7 +57,7 @@
   },
   "default_layout": {
     "layout": "absolute",
-    "atoms": "_absolute _pointer[none] _z[100]",
+    "atoms": "_absolute _ptrnone _z[100]",
     "slots": {
       "cursor": "SVG cursor icon in user's presence color",
       "label": "Name tag with colored background",

@@ -173,7 +173,7 @@ Declared command palettes and hotkeys must be implemented, not merely acknowledg
 ```bash
 decantr status          # Project health
 decantr check           # Detect drift violations
-decantr get pattern X   # Fetch a pattern spec from registry
+decantr get pattern X   # Fetch a pattern spec from the official corpus
 decantr get theme X     # Fetch theme details and decorators
 decantr search <query>  # Search the registry
 ```

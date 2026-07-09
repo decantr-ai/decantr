@@ -68,7 +68,7 @@ decantr init --existing --merge-proposal  # preserve existing essence and add ob
 decantr init --existing --replace-essence # explicit destructive replacement with backup
 ```
 
-Brownfield defaults to existing-app authority: `theme.id` is `existing`, registry content is optional, Decantr CSS is not written in `contract-only`, and existing rule/docs remain cited evidence. The doctrine map ranks security/data, architecture, design-system, workflow/CI, feature/business, assistant-specific, and stale evidence, then emits resolution suggestions for conflicts and stale sources. Check scoring focuses on actionable evidence; current database migrations remain security/data doctrine instead of stale-doc noise. Direct brownfield init without analysis is still a compatibility path, but the recommended path is inventory → semantic sections → doctrine map → proposal → deterministic acceptance.
+Brownfield defaults to existing-app authority: `theme.id` is `existing`, official corpus content is optional, Decantr CSS is not written in `contract-only`, and existing rule/docs remain cited evidence. The doctrine map ranks security/data, architecture, design-system, workflow/CI, feature/business, assistant-specific, and stale evidence, then emits resolution suggestions for conflicts and stale sources. Check scoring focuses on actionable evidence; current database migrations remain security/data doctrine instead of stale-doc noise. Direct brownfield init without analysis is still a compatibility path, but the recommended path is inventory → semantic sections → doctrine map → proposal → deterministic acceptance.
 
 Task-time activation is explicit. MCP clients should call `decantr_context` with `{ "action": "task" }` before route edits; it resolves the route, section/page packs, directives, patterns, shared components, visual target, baseline evidence, theme inventory, and local screenshot references. CLI-only workflows use `decantr task <route> "<task>"`, which also surfaces accepted local patterns, local rules, changed-file context, and route impact when available.
 
@@ -115,7 +115,7 @@ decantr codify --accept
 decantr verify --brownfield --local-patterns
 ```
 
-This local law layer captures what the app standardizes on, such as button variants, card surfaces, shell spacing, form controls, theme variants, and optional `behavior_obligations` for project-owned interaction/accessibility behavior. `.decantr/local-patterns.json` is the LLM-facing standard; `.decantr/rules.json` is the narrow mechanical check layer Decantr can scan locally. `codify --from-audit` records source evidence, confidence tiers, likely variants, and behavior obligations for observed form-control or confirmation-dialog patterns so the proposal explains why a family was suggested. `.decantr/style-bridge.json` is the optional Hybrid style bridge: it maps Decantr intent such as surfaces, actions, focus, density, and theme variants onto project-owned tokens/classes without installing Decantr CSS. `codify --map-pattern <slug>` imports hosted or bundled registry guidance as advisory local law; it remains non-enforceable until the team fills in project-owned components, token/class recipes, variants, and exceptions. `decantr suggest --from-code` should surface accepted local patterns and style bridge mappings from an app root or selected `--project`, and `decantr ci` should include accepted local-rule findings, behavior-obligation Project Health findings, plus style bridge status in text, markdown, and JSON reports. It complements, but does not replace, ESLint, Biome, Storybook, axe, Playwright, visual regression, or project tests.
+This local law layer captures what the app standardizes on, such as button variants, card surfaces, shell spacing, form controls, theme variants, and optional `behavior_obligations` for project-owned interaction/accessibility behavior. `.decantr/local-patterns.json` is the LLM-facing standard; `.decantr/rules.json` is the narrow mechanical check layer Decantr can scan locally. `codify --from-audit` records source evidence, confidence tiers, likely variants, and behavior obligations for observed form-control or confirmation-dialog patterns so the proposal explains why a family was suggested. `.decantr/style-bridge.json` is the optional Hybrid style bridge: it maps Decantr intent such as surfaces, actions, focus, density, and theme variants onto project-owned tokens/classes without installing Decantr CSS. `codify --map-pattern <slug>` imports official or bundled corpus guidance as advisory local law; it remains non-enforceable until the team fills in project-owned components, token/class recipes, variants, and exceptions. `decantr suggest --from-code` should surface accepted local patterns and style bridge mappings from an app root or selected `--project`, and `decantr ci` should include accepted local-rule findings, behavior-obligation Project Health findings, plus style bridge status in text, markdown, and JSON reports. It complements, but does not replace, ESLint, Biome, Storybook, axe, Playwright, visual regression, or project tests.
 
 ## Hybrid Operating Layer
 
@@ -141,7 +141,7 @@ decantr task /settings "standardize account form buttons" --project apps/web
 decantr verify --brownfield --local-patterns --project apps/web
 ```
 
-Hybrid is still observe-first. It does not rewrite the app, replace project tests, or make hosted registry patterns enforceable by default.
+Hybrid is still observe-first. It does not rewrite the app, replace project tests, or make official corpus patterns enforceable by default.
 
 ## Project Health
 
@@ -194,8 +194,8 @@ Workspace health isolates per-project failures, keeps output deterministic, and 
 
 Offline behavior:
 
-- `--offline --adoption=contract-only` works without registry content.
-- Registry-backed blueprint, archetype, or theme flows require local cache/custom content or `DECANTR_CONTENT_DIR`.
+- `--offline --adoption=contract-only` works without content API access.
+- Blueprint, archetype, or theme flows require bundled content, local cache/custom content, `DECANTR_CONTENT_DIR`, or the content API.
 - `decantr sync` is the hosted-registry cache hardening path: it paginates official list endpoints and stores full slug-keyed item records under `.decantr/cache/@official/`, so offline guards and generated context use canonical content rather than public list summaries.
 - Supported offline flows must not call the hosted API.
 

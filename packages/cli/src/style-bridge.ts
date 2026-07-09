@@ -267,7 +267,7 @@ export function createStyleBridgeProposal(input: {
         'accepted style bridge',
         'accepted local patterns and rules',
         'Essence V4 contract',
-        'hosted registry patterns and execution packs as optional guidance',
+        'official corpus patterns and execution packs as optional guidance',
       ],
     },
     project: {
@@ -420,7 +420,7 @@ export function createStyleBridgeProposal(input: {
     ],
     rules: [
       'The bridge is advisory until accepted; after acceptance, task/doctor/CI should surface it as Hybrid authority.',
-      'The bridge does not make hosted registry patterns enforceable. Map hosted concepts into local law first.',
+      'The bridge does not make official corpus patterns enforceable. Map corpus concepts into local law first.',
       'Keep deterministic blocking checks in .decantr/rules.json, ESLint, Biome, tests, or visual regression.',
     ],
     nextSteps: [

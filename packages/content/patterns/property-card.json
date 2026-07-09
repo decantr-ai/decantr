@@ -33,7 +33,7 @@
       ],
       "layout": {
         "layout": "stack",
-        "atoms": "_flex _col _gap3 _p0 _r2 _overflow[hidden]",
+        "atoms": "_flex _col _gap3 _p0 _r2 _overhidden",
         "slots": {
           "image": "Property photo (aspect-ratio 16/9)",
           "content": "Property details and metrics",

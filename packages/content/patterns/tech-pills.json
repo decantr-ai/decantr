@@ -28,7 +28,7 @@
       ],
       "layout": {
         "layout": "row",
-        "atoms": "_flex _flexwrap _justify[center] _gap3 _mw[700px] _mx[auto]",
+        "atoms": "_flex _flexwrap _jcc _gap3 _mw[700px] _mx[auto]",
         "slots": {
           "pill-items": "Array of Badge pills, each with _rounded[20px] _py2 _px5 _fs[0.85rem] _fw600 _transition _hover:translateY[-2px]. Background: _bgwhite/10. Text: _fgwhite/80. Each pill contains a technology name (e.g., 'React', 'Next.js', 'Claude', 'Cursor')."
         }
@@ -41,7 +41,7 @@
       ],
       "layout": {
         "layout": "row",
-        "atoms": "_flex _flexwrap _justify[center] _gap3 _mw[700px] _mx[auto]",
+        "atoms": "_flex _flexwrap _jcc _gap3 _mw[700px] _mx[auto]",
         "slots": {
           "pill-items": "Array of Badge pills with individual colors. Each pill: _rounded[20px] _py2 _px5 _fs[0.85rem] _fw600 _transition _hover:translateY[-2px]. Background uses the pill's accent color at 15% opacity (e.g., rgba(245,136,130,0.15)). Text uses the full accent color (e.g., #F58882). Colors rotate: coral, amber, cyan, green, yellow, purple, pink, orange."
         }
@@ -50,7 +50,7 @@
   },
   "default_layout": {
     "layout": "row",
-    "atoms": "_flex _flexwrap _justify[center] _gap3 _mw[700px] _mx[auto]",
+    "atoms": "_flex _flexwrap _jcc _gap3 _mw[700px] _mx[auto]",
     "slots": {
       "pill-items": "Technology compatibility pill badges in a centered row"
     }

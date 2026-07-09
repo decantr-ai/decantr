@@ -27,7 +27,7 @@
       ],
       "layout": {
         "layout": "dropdown",
-        "atoms": "_absolute _bg[var(--surface)] _shadow _r2 _border _w[320px] _max-h[400px] _overflow[auto] _z[100]",
+        "atoms": "_absolute _bg[var(--surface)] _shadow _r2 _border _w[320px] _max-h[400px] _overauto _z[100]",
         "slots": {
           "search": "Command filter input",
           "categories": "Grouped command sections",

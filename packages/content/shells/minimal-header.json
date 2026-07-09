@@ -78,7 +78,7 @@
       "align": "center",
       "overflow_y": "auto",
       "padding": "2rem 0",
-      "atoms": "_flex _col _aic _overflow[auto] _flex1 _py8",
+      "atoms": "_flex _col _aic _overauto _flex1 _py8",
       "content_wrapper": {
         "width": "720px",
         "max_width": "100%",

@@ -89,7 +89,7 @@ Authority order for this project:
 1. In Brownfield and Hybrid workflows, the existing production source is the observed implementation truth.
 2. Accepted `.decantr/local-patterns.json`, `.decantr/rules.json`, and `.decantr/style-bridge.json` are project-owned local law where present.
 3. `decantr.essence.json` is the structural contract for routes, sections, DNA, guard mode, and intended product shape.
-4. Hosted registry patterns and execution packs are guidance unless the project maps them into accepted local law.
+4. Official corpus patterns and execution packs are guidance unless the project maps them into accepted local law.
 
 When runtime source and Decantr context disagree, report the drift and run `decantr doctor` or `decantr verify --brownfield --local-patterns`; do not guess which side wins.
 

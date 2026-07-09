@@ -5,7 +5,7 @@
   "version": "1.0.0",
   "decantr_compat": ">=2.0.0",
   "name": "Content Editor",
-  "description": "Content creation and editing interface for publishing patterns, themes, blueprints, and other registry items.",
+  "description": "Content creation and editing interface for maintaining patterns, themes, blueprints, and other catalog items.",
   "tags": [
     "editor",
     "content",

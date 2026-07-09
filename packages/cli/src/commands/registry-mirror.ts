@@ -49,7 +49,7 @@ export async function cmdRegistryMirror(
   const counts: Record<string, number> = {};
   const failed: string[] = [];
 
-  console.log(`\nMirroring registry content to ${DIM}.decantr/cache/${RESET}\n`);
+  console.log(`\nMirroring official content to ${DIM}.decantr/cache/${RESET}\n`);
 
   for (const type of types) {
     try {

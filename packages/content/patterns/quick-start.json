@@ -33,9 +33,9 @@
         "layout": "grid",
         "atoms": "_flex _gap6 _mw[920px] _mx[auto] _mb12",
         "slots": {
-          "step-number": "Badge circle: _w10 _h10 _rounded[50%] _flex _items[center] _justify[center] _fs[1rem] _fw700 _mb4 _bgblack/20 _fgwhite. Displays the step number.",
+          "step-number": "Badge circle: _w10 _h10 _rounded[50%] _flex _aic _jcc _fs[1rem] _fw700 _mb4 _bgblack/20 _fgwhite. Displays the step number.",
           "step-title": "Step heading with h3 _fs[1rem] _fw700 _mb3 _fgwhite. Brief title like 'Configure', 'Prompt', 'Build'.",
-          "step-content": "Content area that varies by step type. Code block: _bgblack/30 _rounded[8px] _p3 _mono _fs[0.7rem] _lh[1.7] _overflow[auto] _whitespace[pre] _fgwhite/85. Chat bubble: _bgblack/20 _rounded[10px_10px_10px_2px] _p4 _fs[0.82rem] _lh[1.5] _text[left]. Output block: _bgblack/30 _rounded[8px] _p3 _mono _fs[0.68rem] _lh[1.7] _whitespace[pre] _overflow[auto] _fgwhite/85."
+          "step-content": "Content area that varies by step type. Code block: _bgblack/30 _rounded[8px] _p3 _mono _fs[0.7rem] _lh[1.7] _overauto _whitespace[pre] _fgwhite/85. Chat bubble: _bgblack/20 _rounded[10px_10px_10px_2px] _p4 _fs[0.82rem] _lh[1.5] _text[left]. Output block: _bgblack/30 _rounded[8px] _p3 _mono _fs[0.68rem] _lh[1.7] _whitespace[pre] _overauto _fgwhite/85."
         }
       }
     },

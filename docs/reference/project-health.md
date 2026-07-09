@@ -4,7 +4,7 @@ Project Health is the end-user reliability surface for a Decantr project. It ans
 
 It is local-only by default. `decantr verify` is the user-facing reliability command; it delegates to Project Health and adds workflow conveniences such as Brownfield guard checks, evidence output defaults, workspace mode, local-pattern requirements, and accepted local-rule scans. `decantr health` remains the advanced primitive that reads the current project, composes a structured report, and prints it locally. `decantr studio` serves the same report from localhost for visual triage. None of these commands uploads source code, prompts, raw file paths, environment variables, or customer project data.
 
-Projects that explicitly opt into Decantr CLI telemetry, including through `decantr new --telemetry`, `decantr init --telemetry`, or `decantr check --telemetry`, may emit aggregate Project Health usage signals such as report status, score, finding counts, CI failure outcome, Studio start/refresh activity, and remediation prompt requests. The report body, finding evidence, raw routes, local paths, source files, and prompts stay local.
+Projects that explicitly opt into Decantr CLI telemetry and configure a caller-controlled `DECANTR_TELEMETRY_ENDPOINT` may emit aggregate Project Health usage signals such as report status, score, finding counts, CI failure outcome, Studio start/refresh activity, and remediation prompt requests. Decantr has no hosted telemetry sink; without that endpoint no events or identifiers are created. The report body, finding evidence, raw routes, local paths, source files, and prompts stay local.
 
 For the official content corpus in `packages/content`, use [Content Health](content-health.md) instead. Content Health checks content schemas, references, and generation guidance coverage; Project Health checks an application against its Decantr contract.
 
@@ -323,6 +323,6 @@ decantr ci --project apps/web --json --output .decantr/ci/apps-web.json
 
 Project Health is local project observability. It is for the customer or developer who owns the repository.
 
-Decantr telemetry is product intelligence for Decantr operators. It tracks adoption signals such as command usage and registry activity through privacy-filtered events. Project Health does not require telemetry opt-in and does not send its report to Decantr.
+The optional telemetry package and CLI hooks support caller-controlled product intelligence through privacy-filtered aggregate events. Project Health does not require telemetry opt-in, and Decantr does not receive the report or operate a default telemetry endpoint.
 
-Future private registry or enterprise offerings can consume `ProjectHealthReport` as an optional customer-controlled artifact, but the local command remains the baseline contract.
+Private deployments can consume `ProjectHealthReport` as an optional customer-controlled artifact, but the local command remains the baseline contract.

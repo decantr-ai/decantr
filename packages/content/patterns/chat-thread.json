@@ -36,7 +36,7 @@
       ],
       "layout": {
         "layout": "stack",
-        "atoms": "_flex _col _hfull _overflow[hidden]",
+        "atoms": "_flex _col _hfull _overhidden",
         "slots": {
           "messages": "Scrollable message list",
           "typing-indicator": "AI is thinking... indicator",
@@ -54,7 +54,7 @@
       ],
       "layout": {
         "layout": "stack",
-        "atoms": "_flex _col _hfull _overflow[hidden]",
+        "atoms": "_flex _col _hfull _overhidden",
         "slots": {
           "branch-indicator": "Visual marker showing conversation branch point",
           "messages": "Scrollable message list",
@@ -65,7 +65,7 @@
   },
   "default_layout": {
     "layout": "stack",
-    "atoms": "_flex _col _hfull _overflow[hidden]",
+    "atoms": "_flex _col _hfull _overhidden",
     "slots": {
       "messages": "Scrollable message list with ChatMessage components",
       "typing-indicator": "AI is thinking... animated indicator",

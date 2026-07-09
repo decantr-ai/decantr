@@ -5,7 +5,7 @@
   "version": "1.0.1",
   "decantr_compat": ">=2.0.0",
   "name": "Admin Moderation",
-  "description": "Admin moderation queue for reviewing, approving, and rejecting community-submitted registry content.",
+  "description": "Admin moderation queue for reviewing, approving, and rejecting community-submitted catalog content.",
   "tags": [
     "admin",
     "moderation",

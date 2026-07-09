@@ -44,7 +44,8 @@
       "type": "string"
     },
     "atoms": {
-      "type": "string"
+      "type": "string",
+      "description": "Legacy @decantr/css adapter hint. Contract-only and style-bridge workflows ignore this field."
     },
     "config": {
       "type": "object",
@@ -59,6 +60,7 @@
     },
     "internal_layout": {
       "type": "object",
+      "description": "Semantic shell-region layout. Nested atoms fields are legacy adapter hints and are not emitted as contract-only styling instructions.",
       "additionalProperties": true
     },
     "code": {

@@ -576,7 +576,7 @@ export function generateBrownfieldReport(
   lines.push('## Non-Goals By Default');
   lines.push('');
   lines.push(
-    '- Does not install Decantr CSS, switch themes, replace layouts, rewrite docs, mutate assistant rules, or import registry patterns unless explicitly requested.',
+    '- Does not install Decantr CSS, switch themes, replace layouts, rewrite docs, mutate assistant rules, or import official corpus patterns unless explicitly requested.',
   );
   lines.push(
     '- Does not treat stale migration or completion summaries as current doctrine without verification.',
@@ -588,7 +588,7 @@ export function generateBrownfieldReport(
     '- Existing framework, routes, layout shell, feature names, styling signals, and ambient doctrine were used as evidence for the proposal.',
   );
   lines.push(
-    '- Decantr registry content, Decantr CSS, and default Decantr themes were not accepted as brownfield defaults.',
+    '- Decantr official corpus content, Decantr CSS, and default Decantr themes were not accepted as brownfield defaults.',
   );
   lines.push('');
   lines.push('## Uncertain Evidence');

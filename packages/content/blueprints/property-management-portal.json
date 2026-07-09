@@ -8,7 +8,7 @@
   "blueprint_portfolio": {
     "visibility": "featured",
     "maturity": "supported-contract",
-    "rationale": "High-signal product composition that expands the registry beyond demos and remains valuable as a default discovery option.",
+    "rationale": "High-signal product composition that expands the corpus beyond demos and remains valuable as a default discovery option.",
     "artifact": {
       "status": "candidate",
       "showcase": "property-management-portal",

@@ -107,7 +107,7 @@ function AppRoutes() {
       />
 
       <Routes>
-        {/* Public registry — top-nav-main shell */}
+        {/* Public catalog surface — top-nav-main shell */}
         <Route element={<TopNavMain onThemeToggle={toggle} themeMode={mode} isAuthenticated={isAuthenticated} onLogout={handleLogout} />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/browse" element={<BrowsePage />} />

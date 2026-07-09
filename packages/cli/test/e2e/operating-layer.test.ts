@@ -982,7 +982,7 @@ describe('operating layer commands', () => {
     expect(task.localLaw.rulesPath).toBe('apps/web/.decantr/rules.json');
   });
 
-  it('maps a registry pattern into project-owned local law as an advisory Hybrid proposal', () => {
+  it('maps an official corpus pattern into project-owned local law as an advisory Hybrid proposal', () => {
     const output = runCli(testDir, ['codify', '--project', 'apps/web', '--map-pattern', 'hero']);
     const proposal = JSON.parse(
       readFileSync(
@@ -999,7 +999,7 @@ describe('operating layer commands', () => {
     };
     const mapped = proposal.patterns?.find((pattern) => pattern.id === 'hero');
 
-    expect(output).toContain('hosted pattern mapping proposal');
+    expect(output).toContain('content pattern mapping proposal');
     expect(output).toContain('No source files were changed');
     expect(mapped?.hostedPatternRefs?.[0]?.slug).toBe('hero');
     expect(mapped?.enforcement?.level).toBe('advisory');

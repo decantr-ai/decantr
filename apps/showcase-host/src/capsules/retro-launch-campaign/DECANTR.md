@@ -185,7 +185,7 @@ decantr health          # Local contract health report
 decantr health init-ci  # Install GitHub Actions health gate
 decantr studio          # Local health dashboard
 decantr check           # Detect drift violations
-decantr get pattern X   # Fetch a pattern spec from registry
+decantr get pattern X   # Fetch a pattern spec from the official corpus
 decantr get theme X     # Fetch theme details and decorators
 decantr search <query>  # Search the registry
 ```

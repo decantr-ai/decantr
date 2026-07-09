@@ -441,10 +441,10 @@ export function createBrownfieldCodifyProposal(
         'existing production source',
         'accepted local patterns and rules',
         'Decantr Essence V4 contract',
-        'hosted registry patterns and execution packs as optional guidance',
+        'official corpus patterns and execution packs as optional guidance',
       ],
       hostedPatternMapping:
-        'Use hosted patterns as vocabulary and review guidance. Before enforcing one, map it to a project-owned component path, class recipe, token recipe, or explicit exception here.',
+        'Use official corpus patterns as vocabulary and review guidance. Before enforcing one, map it to a project-owned component path, class recipe, token recipe, or explicit exception here.',
     },
     patterns: [
       {
@@ -767,10 +767,10 @@ export function writeHostedPatternMappingProposal(
         'existing production source',
         'accepted local patterns and rules',
         'Decantr Essence V4 contract',
-        'hosted registry patterns and execution packs as optional guidance',
+        'official corpus patterns and execution packs as optional guidance',
       ],
       hostedPatternMapping:
-        'Hosted registry patterns are advisory until mapped to project-owned component paths, token recipes, class recipes, and explicit exceptions.',
+        'Official corpus patterns are advisory until mapped to project-owned component paths, token recipes, class recipes, and explicit exceptions.',
     },
     patterns: Array.isArray(existing?.patterns) ? [...existing.patterns] : [],
     starterRules: Array.isArray(existing?.starterRules) ? existing.starterRules : [],
@@ -793,9 +793,9 @@ export function writeHostedPatternMappingProposal(
   const mappedPattern: LocalPattern = {
     id: localPatternId,
     label: input.hostedPattern.name
-      ? `${input.hostedPattern.name} registry mapping`
-      : `${slug} registry mapping`,
-    role: 'Hosted registry guidance mapped into project-owned Hybrid law',
+      ? `${input.hostedPattern.name} content mapping`
+      : `${slug} content mapping`,
+    role: 'Official corpus guidance mapped into project-owned Hybrid law',
     appliesTo: [
       ...(input.hostedPattern.components ?? []),
       ...(input.hostedPattern.interactions ?? []),
@@ -804,13 +804,13 @@ export function writeHostedPatternMappingProposal(
     componentPaths: [],
     tokenHints: [],
     classHints: [],
-    decide: `Map hosted pattern "${slug}" into this app's existing components, tokens, classes, and exceptions before treating it as enforceable.`,
+    decide: `Map official corpus pattern "${slug}" into this app's existing components, tokens, classes, and exceptions before treating it as enforceable.`,
     hostedPatternRefs: [input.hostedPattern],
     confidence: {
       tier: 'low',
       score: 0.25,
       rationale: [
-        'A hosted registry pattern was selected intentionally.',
+        'An official corpus pattern was selected intentionally.',
         'No project-owned component path or token recipe has been mapped yet.',
       ],
     },
@@ -819,25 +819,25 @@ export function writeHostedPatternMappingProposal(
       status: 'needs-mapping',
       notes: [
         'This proposal does not change source files.',
-        'Do not enforce this hosted pattern until project-owned implementation details are filled in.',
+        'Do not enforce this corpus pattern until project-owned implementation details are filled in.',
         'Use accepted local rules, ESLint, Biome, Storybook, or visual regression for deterministic blocking checks.',
       ],
     },
     evidence: [
-      `Hosted pattern ${input.hostedPattern.source}/${slug}${input.hostedPattern.description ? `: ${input.hostedPattern.description}` : ''}`,
+      `Corpus pattern ${input.hostedPattern.source}/${slug}${input.hostedPattern.description ? `: ${input.hostedPattern.description}` : ''}`,
       input.hostedPattern.visualBrief
         ? `Visual brief: ${input.hostedPattern.visualBrief}`
-        : 'Visual brief not provided by the hosted pattern.',
+        : 'Visual brief not provided by the corpus pattern.',
     ],
     evidenceToCollect: [
       'Project-owned component path(s) that implement this pattern.',
       'Allowed token/class recipe(s) for this app.',
       'Variant names and states that are legal in this project.',
-      'Explicit exceptions where this hosted pattern should not apply.',
+      'Explicit exceptions where this corpus pattern should not apply.',
     ],
     forbiddenAlternatives: [
-      'Replacing existing app components solely because a hosted pattern exists.',
-      'Treating hosted registry guidance as enforceable without accepted local law.',
+      'Replacing existing app components solely because a corpus pattern exists.',
+      'Treating official corpus guidance as enforceable without accepted local law.',
     ],
   };
   const index = (patternPack.patterns ?? []).findIndex((pattern) => pattern.id === localPatternId);
@@ -850,7 +850,7 @@ export function writeHostedPatternMappingProposal(
   patternPack.nextSteps = [
     ...new Set([
       ...(patternPack.nextSteps ?? []),
-      'Fill the hosted mapping with project-owned component paths, token/class recipes, variants, and exceptions.',
+      'Fill the corpus mapping with project-owned component paths, token/class recipes, variants, and exceptions.',
       'Run decantr codify --accept only after the mapping reflects the existing app.',
       'Use decantr verify --brownfield --local-patterns after edits to keep mapped local law visible.',
     ]),
@@ -919,7 +919,7 @@ export function validateLocalLaw(projectRoot: string): LocalLawValidation {
       }
       if (id && hostedRefs.length > 0 && paths.length === 0) {
         warnings.push(
-          `Local pattern ${id} maps hosted registry guidance but has no project-owned component path yet.`,
+          `Local pattern ${id} maps official corpus guidance but has no project-owned component path yet.`,
         );
       }
       if (

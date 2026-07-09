@@ -8,7 +8,9 @@ import {
 import type { ApiContentType, ContentType } from '@decantr/content';
 
 export type Env = {
-  Variables: Record<string, never>;
+  Variables: {
+    requestId: string;
+  };
 };
 
 export type { ContentType, ApiContentType };

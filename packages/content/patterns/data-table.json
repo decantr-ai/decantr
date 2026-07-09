@@ -42,7 +42,7 @@
       ],
       "layout": {
         "layout": "column",
-        "atoms": "_flex _col _gap4 _w[100%] _overflow[auto]",
+        "atoms": "_flex _col _gap4 _w[100%] _overauto",
         "slots": {
           "toolbar": "Top row with optional search Input and action Buttons",
           "table-header": "Column headers with sort controls",
@@ -61,7 +61,7 @@
       ],
       "layout": {
         "layout": "column",
-        "atoms": "_flex _col _gap2 _w[100%] _overflow[auto]",
+        "atoms": "_flex _col _gap2 _w[100%] _overauto",
         "slots": {
           "table-header": "Column headers without sort controls",
           "table-body": "Dense data rows without selection",
@@ -104,7 +104,7 @@
   },
   "default_layout": {
     "layout": "column",
-    "atoms": "_flex _col _gap4 _w[100%] _overflow[auto]",
+    "atoms": "_flex _col _gap4 _w[100%] _overauto",
     "slots": {
       "toolbar": "Top row with optional search Input and action Buttons",
       "table-header": "Column headers with sort controls",

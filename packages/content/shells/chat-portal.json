@@ -125,7 +125,7 @@
       "flex": "1",
       "direction": "column",
       "overflow": "hidden",
-      "atoms": "_flex _col _overflow[hidden]",
+      "atoms": "_flex _col _overhidden",
       "messages": {
         "flex": "1",
         "overflow_y": "auto",

@@ -35,7 +35,7 @@
       ],
       "layout": {
         "layout": "card",
-        "atoms": "studio-card _overflow[hidden]",
+        "atoms": "studio-card _overhidden",
         "slots": {
           "thumbnail": "Preview image/video",
           "title": "Product name",
@@ -72,7 +72,7 @@
       ],
       "layout": {
         "layout": "card",
-        "atoms": "studio-card _overflow[hidden] _lg:flex _lg:row",
+        "atoms": "studio-card _overhidden _lg:flex _lg:row",
         "slots": {
           "media": "Large preview area",
           "content": "Full title, description, meta",
@@ -83,7 +83,7 @@
   },
   "default_layout": {
     "layout": "card",
-    "atoms": "studio-card _overflow[hidden]",
+    "atoms": "studio-card _overhidden",
     "slots": {
       "thumbnail": "Preview image",
       "title": "Product name",

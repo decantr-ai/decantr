@@ -192,7 +192,7 @@
     "table": {
       "wraps": "DataTable",
       "description": "DataTable with glass wrapper and subtle border.",
-      "example": "const { div, span } = tags;\ndiv({ class: css('d-glass _r4 _overflow[hidden]') },\n  div({ class: css('_flex _aic _jcsb _px4 _py3 _borderB') },\n    span({ class: css('_heading5') }, 'Transactions'),\n    span({ class: css('_textsm _fgmuted') }, '248 records')\n  ),\n  DataTable({ columns, data, sortable: true, paginate: true })\n)"
+      "example": "const { div, span } = tags;\ndiv({ class: css('d-glass _r4 _overhidden') },\n  div({ class: css('_flex _aic _jcsb _px4 _py3 _borderB') },\n    span({ class: css('_heading5') }, 'Transactions'),\n    span({ class: css('_textsm _fgmuted') }, '248 records')\n  ),\n  DataTable({ columns, data, sortable: true, paginate: true })\n)"
     },
     "form": {
       "description": "Form in a glass card with gradient submit button.",
@@ -204,7 +204,7 @@
     },
     "layout": {
       "description": "Full page layout with mesh background, glass sidebar, and content area.",
-      "example": "const { div, main, header, span } = tags;\ndiv({ class: css('d-mesh _grid _h[100vh]'), style: 'grid-template-columns:240px 1fr' },\n  // glass sidebar\n  // ...,\n  div({ class: css('_flex _col _overflow[hidden]') },\n    header({ class: css('_flex _aic _jcsb _px6 _py3 _borderB d-glass') },\n      span({ class: css('_heading4') }, 'Dashboard')\n    ),\n    main({ class: css('_flex _col _gap4 _p6 _overflow[auto]') },\n      // page content\n    )\n  )\n)"
+      "example": "const { div, main, header, span } = tags;\ndiv({ class: css('d-mesh _grid _h[100vh]'), style: 'grid-template-columns:240px 1fr' },\n  // glass sidebar\n  // ...,\n  div({ class: css('_flex _col _overhidden') },\n    header({ class: css('_flex _aic _jcsb _px6 _py3 _borderB d-glass') },\n      span({ class: css('_heading4') }, 'Dashboard')\n    ),\n    main({ class: css('_flex _col _gap4 _p6 _overauto') },\n      // page content\n    )\n  )\n)"
     },
     "alert": {
       "wraps": "Alert",
@@ -219,7 +219,7 @@
     "chart": {
       "wraps": "Chart",
       "description": "Chart in glass panel with gradient title.",
-      "example": "const { div, span } = tags;\ndiv({ class: css('d-glass _r4 _overflow[hidden]') },\n  div({ class: css('_flex _aic _jcsb _px4 _py3 _borderB') },\n    span({ class: css('d-gradient-text _bold') }, 'Revenue Trend'),\n    span({ class: css('_textxs _fgmuted') }, 'Last 30 days')\n  ),\n  Chart({ type: 'area', data: revenueData, x: 'date', y: 'amount', height: 300 })\n)"
+      "example": "const { div, span } = tags;\ndiv({ class: css('d-glass _r4 _overhidden') },\n  div({ class: css('_flex _aic _jcsb _px4 _py3 _borderB') },\n    span({ class: css('d-gradient-text _bold') }, 'Revenue Trend'),\n    span({ class: css('_textxs _fgmuted') }, 'Last 30 days')\n  ),\n  Chart({ type: 'area', data: revenueData, x: 'date', y: 'amount', height: 300 })\n)"
     }
   },
   "radius": {

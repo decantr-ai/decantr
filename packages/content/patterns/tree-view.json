@@ -29,7 +29,7 @@
       ],
       "layout": {
         "layout": "stack",
-        "atoms": "_flex _col _mono _fggreen _overflow[auto]",
+        "atoms": "_flex _col _mono _fggreen _overauto",
         "slots": {
           "root": "Tree root node",
           "nodes": "Child tree nodes"

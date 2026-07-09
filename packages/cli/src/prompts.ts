@@ -477,7 +477,7 @@ export async function runSimplifiedInit(
 
   console.log('\n? What blueprint would you like to scaffold?\n');
   console.log('  1. Decantr default (recommended)');
-  console.log('  2. Search registry...\n');
+  console.log('  2. Search official content...\n');
 
   const choice = await question('Enter choice (1 or 2): ');
 

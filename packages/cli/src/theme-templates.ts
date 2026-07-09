@@ -69,7 +69,7 @@ decantr theme validate mytheme
 
 ## Reference
 
-See registry themes for examples:
+See official corpus themes for examples:
 
 \`\`\`bash
 decantr get theme auradecantism

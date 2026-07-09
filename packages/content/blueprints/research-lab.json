@@ -8,11 +8,11 @@
   "blueprint_portfolio": {
     "visibility": "public",
     "maturity": "supported-contract",
-    "rationale": "Supported registry blueprint that remains useful in All without being promoted as a flagship default.",
+    "rationale": "Supported corpus blueprint that remains useful in All without being promoted as a flagship default.",
     "artifact": {
       "status": "candidate",
       "showcase": "research-lab",
-      "notes": "Showcase-backed candidate; certification requires artifact evidence beyond registry availability."
+      "notes": "Showcase-backed candidate; certification requires artifact evidence beyond corpus availability."
     }
   },
   "tags": ["research", "lab", "science", "notebook", "experiments", "2026"],

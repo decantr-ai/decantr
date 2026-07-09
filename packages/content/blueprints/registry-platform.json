@@ -4,15 +4,16 @@
   "version": "1.0.0",
   "decantr_compat": ">=2.0.0",
   "name": "Registry Platform",
-  "description": "Content registry with browsing, publishing, user management, team collaboration, and admin moderation. Dogfooded UI for the Decantr design intelligence platform.",
+  "description": "Generic content registry with browsing, publishing, user management, team collaboration, and admin moderation. Retained as a registry-domain composition, not as a Decantr product surface.",
   "blueprint_portfolio": {
-    "visibility": "featured",
-    "maturity": "certified-flagship",
-    "rationale": "Flagship blueprint with a maintained showcase capsule, thumbnail asset, and smoke-green shortlist verification suitable for first-run discovery.",
+    "visibility": "hidden",
+    "maturity": "legacy-hidden",
+    "rationale": "Retained by slug as a generic registry-domain reference, but hidden from discovery because Decantr no longer operates a public registry product.",
+    "recommended_alternative": "content-studio",
     "artifact": {
-      "status": "certified",
+      "status": "candidate",
       "showcase": "registry-platform",
-      "notes": "Certified Artifact Contract V0: showcase capsule plus shortlist verification report are available in the Decantr monorepo."
+      "notes": "Historical showcase evidence remains available for compatibility; this blueprint is not a current Decantr product recommendation."
     }
   },
   "tags": [
@@ -38,7 +39,7 @@
     "mode": "dark",
     "shape": "pill"
   },
-  "personality": "Vibrant design intelligence registry. Warm coral and amber accents on a rich dark canvas (or crisp warm-white in light mode). Content cards are the hero — outlined with colored type borders, hovering with purpose. Search is instant and faceted. Publishing feels like sharing art. The Decantr dogfood app — built with its own system, proudly showing what the platform produces. Think Figma Community meets shadcn/ui registry.",
+  "personality": "Vibrant design asset registry. Warm coral and amber accents on a rich dark canvas (or crisp warm-white in light mode). Content cards are the hero — outlined with colored type borders, hovering with purpose. Search is instant and faceted. Publishing feels like sharing art. Treat this as a generic marketplace-style composition rather than a Decantr product surface. Think Figma Community meets a component catalog.",
   "voice": {
     "tone": "Welcoming and developer-friendly. Uses design-system terminology naturally. Celebrates community contributions.",
     "cta_verbs": [

@@ -47,7 +47,7 @@
           "description": "Concise description explaining what the item does and why it matters",
           "meta-row": "Human-readable source line, publish date, and tightly scoped supporting metadata",
           "quick-start-panel": "Action-first quick-start surface with a primary command, a secondary inspect action, and a short 'what to do next' note",
-          "trust-strip": "Compact row of trust summary cards for registry intelligence and showcase verification",
+          "trust-strip": "Compact row of trust summary cards for content provenance and showcase verification",
           "action-group": "Type-aware CTA buttons such as Start from blueprint, Copy reference, Inspect JSON, or Open showcase"
         }
       }
@@ -81,7 +81,7 @@
       "description": "Content description",
       "meta-row": "Friendly source line, date, and concise supporting metadata",
       "quick-start-panel": "Action-first quick-start guidance with primary and secondary commands",
-      "trust-strip": "Registry intelligence and showcase verification summaries",
+      "trust-strip": "Content provenance and showcase verification summaries",
       "action-group": "Primary and supporting actions"
     }
   },

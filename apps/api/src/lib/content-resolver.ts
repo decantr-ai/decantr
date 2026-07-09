@@ -2,7 +2,24 @@ import {
   createContentResolver,
   OFFICIAL_CONTENT_NAMESPACE,
 } from '@decantr/content';
-import type { ContentResolver, ContentType, ResolvedContent } from '@decantr/registry';
+import type {
+  Archetype,
+  Blueprint,
+  ContentResolver,
+  ContentType,
+  Pattern,
+  ResolvedContent,
+  Shell,
+  Theme,
+} from '@decantr/registry';
+
+type ContentMap = {
+  pattern: Pattern;
+  archetype: Archetype;
+  theme: Theme;
+  blueprint: Blueprint;
+  shell: Shell;
+};
 
 interface PublicContentResolverOptions {
   onResolve?: (event: {
@@ -24,7 +41,10 @@ export function createPublicContentResolver(
   const localResolver = createContentResolver(preferredNamespace);
 
   return {
-    async resolve<T extends ContentType>(type: T, id: string): Promise<ResolvedContent | null> {
+    async resolve<T extends ContentType>(
+      type: T,
+      id: string,
+    ): Promise<ResolvedContent<ContentMap[T]> | null> {
       const startedAt = Date.now();
       const resolved = await localResolver.resolve(type, id);
 
@@ -39,7 +59,7 @@ export function createPublicContentResolver(
         errorCode: resolved ? undefined : 'content_item_not_found',
       });
 
-      return resolved as ResolvedContent | null;
+      return resolved as ResolvedContent<ContentMap[T]> | null;
     },
   };
 }

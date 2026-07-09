@@ -35,7 +35,7 @@
       ],
       "layout": {
         "layout": "stack",
-        "atoms": "_flex _col _items[center] _gap6 _wfull _maxw[64rem] _mx[auto] _text[center] _py16",
+        "atoms": "_flex _col _aic _gap6 _wfull _maxw[64rem] _mx[auto] _text[center] _py16",
         "slots": {
           "continue-prompt": "Large direct headline such as Continue the build, Back the first run, or Unlock beta access.",
           "countdown": "Campaign timer or limited window note.",
@@ -55,7 +55,7 @@
       ],
       "layout": {
         "layout": "stack",
-        "atoms": "_flex _col _items[center] _gap5 _wfull _maxw[56rem] _mx[auto] _text[center] _py12",
+        "atoms": "_flex _col _aic _gap5 _wfull _maxw[56rem] _mx[auto] _text[center] _py12",
         "slots": {
           "success-message": "Thank-you headline.",
           "referral-progress": "Progress toward referral unlock.",
@@ -67,7 +67,7 @@
   },
   "default_layout": {
     "layout": "stack",
-    "atoms": "_flex _col _items[center] _gap6 _wfull _maxw[64rem] _mx[auto] _text[center] _py16",
+    "atoms": "_flex _col _aic _gap6 _wfull _maxw[64rem] _mx[auto] _text[center] _py16",
     "slots": {
       "continue-prompt": "Final conversion headline",
       "countdown": "Campaign timer or urgency cue",

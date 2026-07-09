@@ -148,7 +148,7 @@ Run `decantr check` to validate code against the spec.
 ```bash
 decantr status          # Project health
 decantr check           # Detect drift violations
-decantr get pattern X   # Fetch a pattern spec from registry
+decantr get pattern X   # Fetch a pattern spec from the official corpus
 decantr get theme X     # Fetch theme details and decorators
 decantr search <query>  # Search the registry
 ```

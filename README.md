@@ -102,6 +102,7 @@ Security review starts with the installed npm surface, not the whole monorepo. T
 | `@decantr/registry` | Legacy compatibility package for content/API client naming in Decantr 3.x |
 | `@decantr/css` | Legacy optional CSS atom adapter; not a default adoption path |
 | `@decantr/core` | Execution-pack compiler primitives, typed Contract graph builders, graph diffs, snapshot history, hybrid graph ranking, evidence/proof ingestion, and Contract capsules |
+| `@decantr/telemetry` | Optional event contracts and caller-controlled sinks; no hosted default collection |
 | `@decantr/verifier` | Shared audit, critique, v2 Evidence Bundle, loop readiness, authority resolution, component reuse drift, behavior-obligation drift, style bridge drift, stable diagnostic code, typed repair ID, graph-anchored finding, contract assertion, and report-schema engine |
 | `@decantr/mcp-server` | MCP delivery surface for assistants and agent tooling |
 | `@decantr/cli` | Local contract, content, Project Health CI/Studio, audit, and maintenance workflows |
@@ -258,15 +259,16 @@ decantr studio --report decantr-health.json
 
 In contract-only Brownfield projects, Decantr may not own `src/styles/tokens.css`; `export --to figma-tokens` is for Decantr CSS token exports, while project-native token exports remain the app's source of truth unless you adopt a style bridge.
 
-Opted-in product telemetry:
+Caller-configured private telemetry:
 
 ```bash
 decantr telemetry status
 decantr telemetry explain
-decantr telemetry link --enable --org <org-slug>
+DECANTR_TELEMETRY_ENDPOINT=https://telemetry.example/v1/events decantr init --telemetry
+decantr telemetry link --api-url https://telemetry.example/v1 --api-key <key>
 ```
 
-Telemetry stays product-level: command names, aggregate lifecycle counts, content sources, Project Health scores/counts, and adoption workflow signals. `decantr telemetry explain` prints the CLI event catalog subset and never-collected list before a team opts in. It does not collect source code, prompts, raw paths, emails, private package slugs, or health report contents.
+Decantr does not operate a hosted telemetry sink. Setting `telemetry: true` records a local preference, but the CLI sends nothing and creates no opaque telemetry identifiers unless `DECANTR_TELEMETRY_ENDPOINT` points to a caller-controlled sink. Private deployments can additionally configure identity linking with an explicit `--api-url`; the Decantr content API does not provide that route. When configured, telemetry stays product-level: command names, aggregate lifecycle counts, content sources, Project Health scores/counts, and adoption workflow signals. It never includes source code, prompts, raw paths, emails, private package slugs, or health report contents.
 
 Official content supply chain:
 

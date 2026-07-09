@@ -61,7 +61,7 @@
       ],
       "layout": {
         "layout": "row",
-        "atoms": "_flex _row _gap6 _items[start]",
+        "atoms": "_flex _row _gap6 _aifs",
         "slots": {
           "avatar": "Large Avatar (96px) with image and fallback initials",
           "info": "Vertical column with name, title, bio: _flex _col _gap2 _flex1",

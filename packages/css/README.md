@@ -5,7 +5,7 @@ Release channel: `stable`
 
 Legacy optional CSS atoms runtime for Decantr projects that explicitly adopt the Decantr CSS adapter.
 
-Decantr 3.8 defaults to contract-only governance. New greenfield and Brownfield projects should not install `@decantr/css` unless `--adoption=decantr-css` is explicit or an existing project already depends on this runtime.
+Decantr 3.8.1 defaults to contract-only governance. New greenfield and Brownfield projects should not install `@decantr/css` unless `--adoption=decantr-css` is explicit or an existing project already depends on this runtime.
 
 ## Installation
 

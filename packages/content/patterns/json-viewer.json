@@ -31,7 +31,7 @@
       ],
       "layout": {
         "layout": "stack",
-        "atoms": "_flex _col _gap0 _r3 _overflow[hidden] _border _bordermuted/20",
+        "atoms": "_flex _col _gap0 _r3 _overhidden _border _bordermuted/20",
         "slots": {
           "header": "Toolbar row with artifact title, summary badges, and copy-to-clipboard Button. Maintain a shared horizontal inset so title and actions never sit flush against the frame.",
           "tabs": "Segmented tab strip for JSON, Commands, and Evidence views with the same horizontal inset as the toolbar",
@@ -50,7 +50,7 @@
       ],
       "layout": {
         "layout": "stack",
-        "atoms": "_flex _col _gap0 _r3 _overflow[hidden] _border _bordermuted/20",
+        "atoms": "_flex _col _gap0 _r3 _overhidden _border _bordermuted/20",
         "slots": {
           "header": "Toolbar row with title, expand/collapse all toggle, and copy-to-clipboard Button",
           "line-numbers": "Gutter column with line numbers, _fgmuted _textxs _mono",
@@ -67,7 +67,7 @@
       ],
       "layout": {
         "layout": "stack",
-        "atoms": "_relative _r2 _overflow[hidden] _border _bordermuted/20",
+        "atoms": "_relative _r2 _overhidden _border _bordermuted/20",
         "slots": {
           "copy-button": "Absolute top-right copy Button",
           "json-content": "Syntax-highlighted JSON, no line numbers"
@@ -77,7 +77,7 @@
   },
   "default_layout": {
     "layout": "stack",
-    "atoms": "_flex _col _gap0 _r3 _overflow[hidden] _border _bordermuted/20",
+    "atoms": "_flex _col _gap0 _r3 _overhidden _border _bordermuted/20",
     "slots": {
       "header": "Toolbar with title, summary, and copy button",
       "tabs": "Segmented tab strip",

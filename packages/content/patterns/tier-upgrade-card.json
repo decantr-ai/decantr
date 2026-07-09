@@ -43,7 +43,7 @@
       ],
       "layout": {
         "layout": "stack",
-        "atoms": "_flex _col _gap0 _border _bordermuted/20 _r4 _overflow[hidden]",
+        "atoms": "_flex _col _gap0 _border _bordermuted/20 _r4 _overhidden",
         "slots": {
           "header": "Plan name with _heading4 and optional 'Popular' Badge",
           "price": "Monthly price with large _heading2 number and /mo suffix",
@@ -63,7 +63,7 @@
       ],
       "layout": {
         "layout": "stack",
-        "atoms": "_flex _col _gap0 _border2 _borderprimary _r4 _overflow[hidden] _relative",
+        "atoms": "_flex _col _gap0 _border2 _borderprimary _r4 _overhidden _relative",
         "slots": {
           "highlight-bar": "Top gradient accent bar",
           "badge": "Recommended/Popular Badge at top",

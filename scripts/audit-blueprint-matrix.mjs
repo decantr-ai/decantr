@@ -35,9 +35,9 @@ const matrix = [
     rationale: 'Documentation/search-heavy topology with docs, auth, and settings surfaces.',
   },
   {
-    id: 'registry-platform',
-    category: 'dogfood-control-plane',
-    rationale: 'Most complex Decantr dogfood blueprint with browse, dashboard, admin, and auth zones.',
+    id: 'agent-studio',
+    category: 'ai-governance-workspace',
+    rationale: 'AI operations workspace with governance, orchestration, observability, and auth zones.',
   },
   {
     id: 'terminal-dashboard',

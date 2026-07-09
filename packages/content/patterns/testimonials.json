@@ -55,7 +55,7 @@
       ],
       "layout": {
         "layout": "row",
-        "atoms": "_flex _aic _gap6 _py12 _px6 _overflow[hidden]",
+        "atoms": "_flex _aic _gap6 _py12 _px6 _overhidden",
         "slots": {
           "testimonial-slide": "Single visible testimonial with large quote text and author",
           "navigation": "Prev/next arrow Buttons and dot indicators below",

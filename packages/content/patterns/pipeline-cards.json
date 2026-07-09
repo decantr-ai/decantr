@@ -33,7 +33,7 @@
         "layout": "grid",
         "atoms": "_grid _gc2 _gap6 _mw[920px] _mx[auto]",
         "slots": {
-          "step-number": "Badge circle: _inline-flex _items[center] _justify[center] _w8 _h8 _rounded[50%] _mono _fs[0.8rem] _fw700 _mb3. Background uses the card's accent color, text is dark. Displays the step number (1, 2, 3...).",
+          "step-number": "Badge circle: _inline-flex _aic _jcc _w8 _h8 _rounded[50%] _mono _fs[0.8rem] _fw700 _mb3. Background uses the card's accent color, text is dark. Displays the step number (1, 2, 3...).",
           "step-name": "Step heading with _fs[1.15rem] _fw700 _mb2. Color matches the card's accent color from the rotation palette.",
           "step-description": "Step body text with _fs[0.85rem] _lh[1.6] _mb4 _fgwhite/75. Brief description of what happens in this step.",
           "step-visual": "Optional inner content area with _rounded[10px] _p3 and subtle tinted background matching the card's accent color at ~7% opacity. Can contain: chat bubbles, tag lists, code snippets, layer stacks, pattern compositions, mini code blocks, or check results."
@@ -65,7 +65,7 @@
       ],
       "layout": {
         "layout": "grid",
-        "atoms": "_flex _row _gap6 _overflow[auto] _snap[x_mandatory] _pb4 _px4",
+        "atoms": "_flex _row _gap6 _overauto _snap[x_mandatory] _pb4 _px4",
         "slots": {
           "step-number": "Badge circle with accent-colored background, monospace number, _rounded[50%] _w8 _h8",
           "step-name": "Step heading colored to match card accent",

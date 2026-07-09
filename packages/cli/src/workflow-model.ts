@@ -125,9 +125,7 @@ export function resolveWorkflowPolicy(input: {
   }
 
   const adoptionMode: AdoptionMode =
-    requestedAdoption ??
-    input.workflowSeed?.adoptionMode ??
-    'contract-only';
+    requestedAdoption ?? input.workflowSeed?.adoptionMode ?? 'contract-only';
 
   const contentSource: ContentSource = hasRegistryContent
     ? input.offline
@@ -189,7 +187,7 @@ export function createBrownfieldInitSeed(
     existing: true,
     notes: [
       'Use decantr init --existing to attach Decantr contract and context files to this project.',
-      'Registry content is optional during brownfield adoption.',
+      'Official corpus content is optional during brownfield adoption.',
       'Use decantr add/remove, decantr theme switch, and registry commands later for hybrid composition.',
     ],
   };

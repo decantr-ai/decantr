@@ -4,13 +4,32 @@ import { readFileSync } from 'node:fs';
 
 const TOOL_SOURCE_PATH = 'packages/mcp-server/src/tools.ts';
 const DOCS_INDEX_PATH = 'docs/index.html';
+const DOCS_ANALYTICS_PATH = 'docs/analytics.js';
 const ACTIVE_STORY_PATHS = [
   'README.md',
   'CLAUDE.md',
   'docs/index.html',
   'docs/README.md',
   'docs/llms.txt',
+  'docs/architecture/scaffolding-flow.md',
+  'docs/guides/ai-assistant-setup.md',
+  'docs/guides/existing-apps.md',
+  'docs/reference/command-surface.md',
+  'docs/reference/project-health.md',
+  'docs/reference/telemetry.md',
+  'docs/reference/workflow-model.md',
+  'docs/schemas/index.html',
+  'apps/showcase-host/DECANTR.md',
   'packages/cli/README.md',
+  'packages/cli/src/bundled/blueprints/default.json',
+  'packages/cli/src/index.ts',
+  'packages/cli/src/prompts.ts',
+  'packages/cli/src/scaffold.ts',
+  'packages/cli/src/templates/DECANTR.md.template',
+  'packages/content/README.md',
+  'packages/content/patterns/registry-discovery-cta-grid.json',
+  'packages/content/patterns/search-filter-bar.json',
+  'packages/content/shells/top-nav-main.json',
   'packages/mcp-server/README.md',
   'packages/registry/README.md',
   'packages/css/README.md',
@@ -24,6 +43,26 @@ const FORBIDDEN_ACTIVE_STORY_PATTERNS = [
   { pattern: /\bopen registry (?:for|with|that|where)/i, message: 'open registry positioning' },
   { pattern: /3\.5\.x/i, message: 'stale 3.5.x release copy' },
   { pattern: /Decantr CSS is (?:the )?(?:default|core)/i, message: 'Decantr CSS as default/core positioning' },
+  { pattern: /Explore more at decantr\.ai\/registry/i, message: 'retired registry exploration CTA' },
+  { pattern: /\bSearch registry\b/i, message: 'registry-first search copy' },
+  { pattern: /Registry content health report/i, message: 'registry-first content health copy' },
+  { pattern: /latest registry content/i, message: 'registry-first update copy' },
+  { pattern: /public registry metadata source/i, message: 'registry portal showcase ownership' },
+  { pattern: /public registry (?:filter bar|homepage|pages)/i, message: 'registry portal content guidance' },
+  { pattern: /hosted registry patterns/i, message: 'hosted registry guidance positioning' },
+  { pattern: /Decantr 3\.7 keeps/i, message: 'stale MCP compatibility release copy' },
+  { pattern: /https?:\/\/api\.decantr\.ai\/v1\/telemetry\/(?:events|guard)/i, message: 'retired hosted telemetry endpoint' },
+  { pattern: /calls the hosted `\/v1\/me\/telemetry-link`/i, message: 'retired hosted identity-link copy' },
+  { pattern: /adoptionMode[^\n]*\|\|\s*'decantr-css'/i, message: 'Decantr CSS fallback adoption' },
+];
+
+const FORBIDDEN_DOCS_ANALYTICS_PATTERNS = [
+  { pattern: /navigator\.sendBeacon/, message: 'first-party beacon delivery' },
+  { pattern: /\bfetch\s*\(/, message: 'first-party fetch delivery' },
+  { pattern: /localStorage/, message: 'persisted local attribution' },
+  { pattern: /document\.cookie/, message: 'persisted attribution cookie' },
+  { pattern: /telemetryEndpoint/, message: 'first-party telemetry endpoint configuration' },
+  { pattern: /decantr_anonymous_id/, message: 'persisted anonymous identifier' },
 ];
 
 const EXPECTED_PACKAGE_PATHS = {
@@ -77,6 +116,7 @@ function difference(left, right) {
 
 const toolSource = readFileSync(TOOL_SOURCE_PATH, 'utf8');
 const docsIndex = readFileSync(DOCS_INDEX_PATH, 'utf8');
+const docsAnalytics = readFileSync(DOCS_ANALYTICS_PATH, 'utf8');
 
 const toolNames = unique(extractToolNames(toolSource));
 const docsToolNames = unique(extractDocsToolNames(docsIndex));
@@ -95,6 +135,34 @@ for (const file of ACTIVE_STORY_PATHS) {
       failures.push(`${file} still contains retired story copy: ${check.message}.`);
     }
   }
+}
+
+for (const check of FORBIDDEN_DOCS_ANALYTICS_PATTERNS) {
+  if (check.pattern.test(docsAnalytics)) {
+    failures.push(`${DOCS_ANALYTICS_PATH} still contains retired analytics behavior: ${check.message}.`);
+  }
+}
+
+const telemetrySource = readFileSync('packages/cli/src/telemetry.ts', 'utf8');
+const telemetryCommandSource = readFileSync('packages/cli/src/commands/telemetry.ts', 'utf8');
+if (/DECANTR_TELEMETRY_ENDPOINT\s*\|\|/.test(telemetrySource)) {
+  failures.push('CLI telemetry still falls back from DECANTR_TELEMETRY_ENDPOINT to a default sink.');
+}
+if (/DECANTR_API_URL/.test(telemetryCommandSource)) {
+  failures.push('Telemetry identity linking still reuses DECANTR_API_URL instead of an explicit private endpoint.');
+}
+
+const registryPlatform = JSON.parse(readFileSync('packages/content/blueprints/registry-platform.json', 'utf8'));
+const showcaseManifest = JSON.parse(readFileSync('apps/showcase/manifest.json', 'utf8'));
+const registryShowcase = showcaseManifest.apps.find((entry) => entry.slug === 'registry-platform');
+if (registryPlatform.blueprint_portfolio?.visibility !== 'hidden') {
+  failures.push('registry-platform must remain hidden from current blueprint discovery.');
+}
+if (registryPlatform.blueprint_portfolio?.maturity !== 'legacy-hidden') {
+  failures.push('registry-platform must remain legacy-hidden rather than a current flagship.');
+}
+if (registryShowcase?.goldenCandidate) {
+  failures.push('registry-platform must not remain a golden showcase candidate.');
 }
 
 if (!toolHeadingMatch) {

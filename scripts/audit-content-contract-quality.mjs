@@ -19,17 +19,18 @@ const ALPHA_RE = /^(_[a-zA-Z0-9]+)\/(\d+)$/;
 const ARB_RE = /^_([a-zA-Z]+)\[([^\]]+)\]$/;
 const SPECIAL_ATOMS = new Set(['_group', '_peer', '_prose', '_divideY', '_divideX']);
 const ARB_PROPS = new Set([
-  'w', 'h', 'mw', 'mh', 'minw', 'minh',
+  'w', 'h', 'mw', 'mh', 'maxw', 'maxh', 'minw', 'minh',
   'p', 'pt', 'pr', 'pb', 'pl', 'px', 'py',
   'm', 'mt', 'mr', 'mb', 'ml', 'mx', 'my',
   'gap', 'gx', 'gy',
-  't', 'fs', 'lh', 'fw', 'ls',
-  'r', 'bg', 'fg', 'bc',
-  'bw', 'bt', 'bb', 'br', 'bl',
+  't', 'fs', 'lh', 'fw', 'ls', 'leading', 'tracking',
+  'r', 'rounded', 'bg', 'fg', 'bc',
+  'bw', 'bt', 'bb', 'br', 'bl', 'border',
   'z', 'op',
   'top', 'right', 'bottom', 'left', 'inset',
   'shadow', 'bf',
-  'outline', 'trans', 'object',
+  'outline', 'trans', 'object', 'overflow', 'pointer',
+  'text', 'whitespace', 'items', 'justify', 'aspect',
   'gc', 'gr',
 ]);
 

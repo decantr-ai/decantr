@@ -57,7 +57,7 @@
       "step-proof": "Outcome note"
     }
   },
-  "visual_brief": "A crisp operational flow that makes Decantr feel immediately usable. The sequence should look like a product workflow, not a tutorial wall. Use clear step labels, small command blocks, and simple connective rhythm so users understand the path from registry choice to verified project health.",
+  "visual_brief": "A crisp operational flow that makes Decantr feel immediately usable. The sequence should look like a product workflow, not a tutorial wall. Use clear step labels, small command blocks, and simple connective rhythm so users understand the path from content choice to verified project health.",
   "responsive": {
     "mobile": "Stack steps vertically with compact command blocks and visible step numbers.",
     "tablet": "Two-column grid for four steps.",

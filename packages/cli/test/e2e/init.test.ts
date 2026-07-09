@@ -293,7 +293,7 @@ describe('init command', () => {
       );
       expect(content).toContain('`.decantr/doctrine-map.json`');
       expect(content).toContain(
-        'Registry content is optional in this workflow unless the task explicitly asks for it.',
+        'Official corpus content is optional in this workflow unless the task explicitly asks for it.',
       );
       expect(essence.meta?.target).toBe('angular');
       expect((essence as { dna?: { theme?: { id?: string } } }).dna?.theme?.id).toBe('existing');

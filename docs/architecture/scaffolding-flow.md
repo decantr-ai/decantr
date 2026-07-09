@@ -52,8 +52,8 @@
 │  brownfield-attach        → inventory → proposal → acceptance        │
 │  hybrid-compose           → mutate existing essence/context         │
 │                                                                     │
-│  Offline contract-only exits without hosted registry access.        │
-│  Offline registry-backed flows require cache/custom/content dir.    │
+│  Offline contract-only exits without content API access.            │
+│  Offline corpus flows require bundled/cache/custom/content dir.     │
 └──────────────────────────┬──────────────────────────────────────────┘
                            │
                            ▼
@@ -66,7 +66,7 @@
 │  ┌────────────────────────────┐                                     │
 │  │  "What blueprint?"         │                                     │
 │  │  1. Default (recommended)  │──→ Phase B: runInteractivePrompts() │
-│  │  2. Search registry...     │──→ Select from results, use defaults│
+│  │  2. Search official content│──→ Select from results, use defaults│
 │  └────────────────────────────┘                                     │
 │                                                                     │
 │  Phase B (only if "Default" selected):                              │

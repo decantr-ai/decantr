@@ -6,6 +6,7 @@ import { cmdTelemetry } from '../src/commands/telemetry.js';
 import {
   sendAnalyzeCompletedTelemetry,
   sendCliCommandTelemetry,
+  sendGuardMetrics,
   sendNewProjectCompletedTelemetry,
 } from '../src/telemetry.js';
 
@@ -14,6 +15,8 @@ let configDir = '';
 let previousActorType: string | undefined;
 let previousConfigDir: string | undefined;
 let previousTelemetryEndpoint: string | undefined;
+let previousTelemetryGuardEndpoint: string | undefined;
+let previousTelemetryIdentityApiUrl: string | undefined;
 
 function restoreEnv(name: string, value: string | undefined): void {
   if (value === undefined) {
@@ -42,6 +45,8 @@ beforeEach(() => {
   previousActorType = process.env.DECANTR_TELEMETRY_ACTOR_TYPE;
   previousConfigDir = process.env.DECANTR_CONFIG_DIR;
   previousTelemetryEndpoint = process.env.DECANTR_TELEMETRY_ENDPOINT;
+  previousTelemetryGuardEndpoint = process.env.DECANTR_TELEMETRY_GUARD_ENDPOINT;
+  previousTelemetryIdentityApiUrl = process.env.DECANTR_TELEMETRY_IDENTITY_API_URL;
 
   projectRoot = mkdtempSync(join(tmpdir(), 'decantr-cli-telemetry-project-'));
   configDir = mkdtempSync(join(tmpdir(), 'decantr-cli-telemetry-config-'));
@@ -54,6 +59,8 @@ afterEach(() => {
   restoreEnv('DECANTR_TELEMETRY_ACTOR_TYPE', previousActorType);
   restoreEnv('DECANTR_CONFIG_DIR', previousConfigDir);
   restoreEnv('DECANTR_TELEMETRY_ENDPOINT', previousTelemetryEndpoint);
+  restoreEnv('DECANTR_TELEMETRY_GUARD_ENDPOINT', previousTelemetryGuardEndpoint);
+  restoreEnv('DECANTR_TELEMETRY_IDENTITY_API_URL', previousTelemetryIdentityApiUrl);
   vi.unstubAllGlobals();
 
   rmSync(projectRoot, { recursive: true, force: true });
@@ -296,6 +303,36 @@ describe('CLI command telemetry', () => {
     logSpy.mockRestore();
   });
 
+  it('requires an explicit private API URL before enabling or creating link identities', async () => {
+    delete process.env.DECANTR_TELEMETRY_IDENTITY_API_URL;
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(
+      cmdTelemetry(['link', '--enable', '--api-key', 'test-key'], projectRoot),
+    ).rejects.toThrow('hosted telemetry identity linking is retired');
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(() => readJson(join(projectRoot, '.decantr', 'project.json'))).toThrow();
+    expect(() => readJson(join(configDir, 'config.json'))).toThrow();
+  });
+
+  it('validates a private identity API URL before enabling or creating identifiers', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(
+      cmdTelemetry(
+        ['link', '--enable', '--api-key', 'test-key', '--api-url', 'not-a-url'],
+        projectRoot,
+      ),
+    ).rejects.toThrow('absolute HTTP(S) URL');
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(() => readJson(join(projectRoot, '.decantr', 'project.json'))).toThrow();
+    expect(() => readJson(join(configDir, 'config.json'))).toThrow();
+  });
+
   it('explains opted-in telemetry without exposing local project data', async () => {
     writeProjectConfig({ telemetry: true });
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
@@ -304,12 +341,16 @@ describe('CLI command telemetry', () => {
 
     const output = logSpy.mock.calls.map((call) => String(call[0])).join('\n');
     const report = JSON.parse(output) as {
+      delivery: string;
       enabled: boolean;
+      endpoint: string | null;
       events: Array<{ name: string; privacy: string }>;
       neverCollected: string[];
     };
 
     expect(report.enabled).toBe(true);
+    expect(report.delivery).toBe('caller-configured');
+    expect(report.endpoint).toBe('https://telemetry.test/v1/events');
     expect(report.events).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ name: 'cli.command.completed', privacy: 'aggregate' }),
@@ -403,6 +444,44 @@ describe('CLI command telemetry', () => {
       durationMs: 42,
       projectRoot,
       success: true,
+    });
+
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('does not send or create identifiers without an explicit event endpoint', async () => {
+    delete process.env.DECANTR_TELEMETRY_ENDPOINT;
+    writeProjectConfig({ telemetry: true });
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    await sendCliCommandTelemetry({
+      args: ['refresh'],
+      durationMs: 42,
+      projectRoot,
+      success: true,
+    });
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(() => readJson(join(configDir, 'config.json'))).toThrow();
+    expect(readJson(join(projectRoot, '.decantr', 'project.json'))).toEqual({ telemetry: true });
+  });
+
+  it('does not send guard metrics without a dedicated explicit endpoint', async () => {
+    delete process.env.DECANTR_TELEMETRY_GUARD_ENDPOINT;
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    await sendGuardMetrics({
+      timestamp: new Date(0).toISOString(),
+      cli_version: '3.8.1',
+      essence_version: '4.0.0',
+      guard_mode: 'guided',
+      violations: { dna: 0, blueprint: 0, by_rule: {} },
+      resolution_rate: 0,
+      sections_count: 1,
+      routes_count: 1,
+      theme: 'existing',
     });
 
     expect(fetchMock).not.toHaveBeenCalled();

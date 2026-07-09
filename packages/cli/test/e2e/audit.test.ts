@@ -253,7 +253,7 @@ describe('audit command (e2e)', () => {
     expect(requests).toHaveLength(1);
     expect(requests[0]?.method).toBe('POST');
     expect(requests[0]?.url).toContain('/v1/packs/select');
-    expect(output).toContain('Hydrated missing review pack and manifest from hosted registry.');
+    expect(output).toContain('Hydrated missing review pack and manifest from the content API.');
     expect(output).toContain('Review pack: present');
   });
 
@@ -472,7 +472,7 @@ describe('audit command (e2e)', () => {
     expect(requests).toHaveLength(1);
     expect(requests[0]?.method).toBe('POST');
     expect(requests[0]?.url).toContain('/v1/packs/select');
-    expect(output).toContain('Hydrated missing review pack from hosted registry.');
+    expect(output).toContain('Hydrated missing review pack from the content API.');
     expect(output).toContain('Inline style literals were detected');
   });
 });

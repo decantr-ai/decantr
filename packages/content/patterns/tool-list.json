@@ -24,7 +24,7 @@
         "layout": "grid",
         "atoms": "_grid _gc2 _gap0 _mw[880px] _mx[auto]",
         "slots": {
-          "tool-name": "Tool name displayed in monospace font with _mono _fs[0.82rem] _fw600 _mb1. Includes a colored dot bullet (6px circle, inline-block, flex-shrink-0) before the name. Both the dot and name text use the item's accent color from the rotation palette. Wrapped in a _flex _items[center] _gap2 container.",
+          "tool-name": "Tool name displayed in monospace font with _mono _fs[0.82rem] _fw600 _mb1. Includes a colored dot bullet (6px circle, inline-block, flex-shrink-0) before the name. Both the dot and name text use the item's accent color from the rotation palette. Wrapped in a _flex _aic _gap2 container.",
           "tool-description": "Tool description with _fs[0.82rem] _fgmuted _lh[1.4]. Brief one-line description of the tool's purpose."
         }
       }

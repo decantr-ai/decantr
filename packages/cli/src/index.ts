@@ -146,7 +146,7 @@ import {
   styleBridgeProposalPath,
   writeStyleBridgeProposal,
 } from './style-bridge.js';
-import { optIn, sendCliCommandTelemetry } from './telemetry.js';
+import { getCliTelemetryIdentityStatus, optIn, sendCliCommandTelemetry } from './telemetry.js';
 import {
   createTheme,
   deleteTheme,
@@ -689,8 +689,8 @@ function generateBrownfieldPrompt(ctx: PromptContext): string {
   }
   lines.push(
     ctx.workflow === 'hybrid-compose'
-      ? '- Registry content is part of this task. Layer it onto the current app through existing route/component anchors before creating new runtime structure.'
-      : '- Registry content is optional in this workflow unless the task explicitly asks for blueprint/theme/pattern enrichment.',
+      ? '- Official corpus content is part of this task. Layer it onto the current app through existing route/component anchors before creating new runtime structure.'
+      : '- Official corpus content is optional in this workflow unless the task explicitly asks for blueprint/theme/pattern enrichment.',
   );
   lines.push(
     '- Do not invent routes, sections, shells, themes, or features that are not present in the compiled packs.',
@@ -1791,13 +1791,13 @@ async function cmdSuggest(query: string, options: SuggestOptions = {}) {
       console.log(`  ${cyan(match.id)}${details ? `  ${dim(details)}` : ''}`);
     }
     console.log('');
-    console.log(`${BOLD}Registry patterns:${RESET}`);
+    console.log(`${BOLD}Official content patterns:${RESET}`);
   }
   if (matches.length === 0) {
-    console.log(dim('No hosted/bundled registry patterns matched this query.'));
+    console.log(dim('No official or bundled content patterns matched this query.'));
     console.log('');
     console.log(
-      dim('Use local law first, or run "decantr list patterns" to browse registry options.'),
+      dim('Use local law first, or run "decantr list patterns" to browse official content.'),
     );
     return;
   }
@@ -1979,7 +1979,7 @@ async function cmdList(
     const customIds = new Set(customItems.map((c) => c.id));
     const registryItems = items.filter((i) => !customIds.has(i.id));
 
-    console.log(heading(`Registry themes (${registryItems.length}):`));
+    console.log(heading(`Official themes (${registryItems.length}):`));
     for (const item of registryItems) {
       console.log(`  ${cyan(item.id)}  ${dim(item.description || item.name || '')}`);
     }
@@ -2062,9 +2062,11 @@ interface InitArgs {
 
 function enableCliTelemetry(projectRoot: string): void {
   optIn(projectRoot);
-  console.log(
-    `\n${CYAN}Telemetry enabled.${RESET} Decantr will send privacy-filtered CLI product telemetry for this project.`,
-  );
+  const status = getCliTelemetryIdentityStatus(projectRoot);
+  const message = status.endpointConfigured
+    ? 'Privacy-filtered CLI telemetry can be sent to the configured private endpoint.'
+    : 'The local preference is enabled, but no events are sent until DECANTR_TELEMETRY_ENDPOINT is configured.';
+  console.log(`\n${CYAN}Telemetry preference enabled.${RESET} ${message}`);
   console.log(`${DIM}Set "telemetry": false in .decantr/project.json to opt out.${RESET}`);
 }
 
@@ -2427,7 +2429,7 @@ async function cmdInit(args: InitArgs) {
   if (args.offline && shouldUseRegistry) {
     offlineSeed = seedOfflineRegistry(projectRoot, projectRoot);
     if (offlineSeed.seeded) {
-      console.log(dim(`  Seeded offline registry content from ${offlineSeed.strategy}.`));
+      console.log(dim(`  Seeded offline official content from ${offlineSeed.strategy}.`));
     } else if (requestedBlueprint || requestedArchetype) {
       console.log(
         error('\nOffline blueprint/archetype scaffolding requires a local Decantr content source.'),
@@ -2471,7 +2473,9 @@ async function cmdInit(args: InitArgs) {
     if (!args.blueprint) {
       console.log(`\n${YELLOW}You're offline. Scaffolding minimal Decantr project.${RESET}`);
       console.log(
-        dim('Run `decantr sync` or `decantr upgrade` when online to pull full registry content.\n'),
+        dim(
+          'Run `decantr sync` or `decantr upgrade` when online to pull the latest official content.\n',
+        ),
       );
 
       const result = scaffoldMinimal(projectRoot, {
@@ -2509,12 +2513,12 @@ async function cmdInit(args: InitArgs) {
     if (requestedBlueprint || requestedArchetype) {
       console.log(
         error(
-          '\nThe requested blueprint/archetype could not be resolved from the hosted registry or local cache.',
+          '\nThe requested blueprint/archetype could not be resolved from the official content API or local cache.',
         ),
       );
       console.log(
         dim(
-          'Run `decantr sync`, set DECANTR_CONTENT_DIR, or retry when the registry is reachable.',
+          'Run `decantr sync`, set DECANTR_CONTENT_DIR, or retry when the content API is reachable.',
         ),
       );
       process.exitCode = 1;
@@ -2522,11 +2526,13 @@ async function cmdInit(args: InitArgs) {
     }
 
     console.log(`\n${YELLOW}You're offline. Scaffolding Decantr default.${RESET}`);
-    console.log(dim('Run `decantr upgrade` when online, or visit decantr.ai/registry\n'));
+    console.log(
+      dim('Run `decantr upgrade` when online, or see decantr.ai/reference/content-health.md\n'),
+    );
     selectedBlueprint = 'default';
   } else if (shouldUseRegistry) {
     // Online: fetch blueprints and show simplified prompt
-    console.log(dim('Fetching registry content...'));
+    console.log(dim('Fetching official content...'));
     const blueprintsResult = await registryClient.fetchBlueprints();
     registrySource = blueprintsResult.source.type === 'api' ? 'api' : 'cache';
 
@@ -2535,7 +2541,7 @@ async function cmdInit(args: InitArgs) {
     selectedBlueprint = selected || 'default';
   }
 
-  // Fetch registry content for scaffold (sequential to avoid overwhelming the API)
+  // Fetch official content for scaffold (sequential to avoid overwhelming the API)
   const archetypesResult = shouldUseRegistry ? await registryClient.fetchArchetypes() : null;
   const blueprintsResult = shouldUseRegistry ? await registryClient.fetchBlueprints() : null;
   const themesResult = shouldUseRegistry ? await registryClient.fetchThemes() : null;
@@ -2767,7 +2773,7 @@ async function cmdInit(args: InitArgs) {
     } else {
       if (requestedBlueprint) {
         console.log(error(`  Error: Could not fetch blueprint "${options.blueprint}".`));
-        console.log(dim('Resolve local registry content or retry against the hosted registry.'));
+        console.log(dim('Resolve local corpus content or retry against the content API.'));
         process.exitCode = 1;
         return;
       }
@@ -2783,7 +2789,7 @@ async function cmdInit(args: InitArgs) {
     } else {
       if (requestedArchetype) {
         console.log(error(`  Error: Could not fetch archetype "${options.archetype}".`));
-        console.log(dim('Resolve local registry content or retry against the hosted registry.'));
+        console.log(dim('Resolve local corpus content or retry against the content API.'));
         process.exitCode = 1;
         return;
       }
@@ -2803,7 +2809,7 @@ async function cmdInit(args: InitArgs) {
     } else {
       if (requestedTheme) {
         console.log(error(`  Error: Could not fetch theme "${options.theme}".`));
-        console.log(dim('Resolve local registry content or retry against the hosted registry.'));
+        console.log(dim('Resolve local corpus content or retry against the content API.'));
         process.exitCode = 1;
         return;
       }
@@ -2895,7 +2901,7 @@ async function cmdInit(args: InitArgs) {
     );
     console.log('    5. Build the shell and route structure first, then implement the pages');
     console.log('    6. Run decantr check and decantr audit after implementation');
-    console.log('    7. Explore more at decantr.ai/registry');
+    console.log('    7. Review the official corpus at decantr.ai/reference/content-health.md');
   } else {
     console.log('    1. Fix the validation issue reported above');
     console.log('    2. Run decantr refresh to restore compiled execution packs');
@@ -2911,9 +2917,9 @@ async function cmdInit(args: InitArgs) {
   console.log('  Commands:');
   console.log(`    ${cyan('decantr status')}     Project health`);
   console.log(`    ${cyan('decantr health')}     Contract health report`);
-  console.log(`    ${cyan('decantr content-health')} Registry content health report`);
+  console.log(`    ${cyan('decantr content-health')} Official content health report`);
   console.log(`    ${cyan('decantr studio')}     Local health dashboard`);
-  console.log(`    ${cyan('decantr search')}     Search registry`);
+  console.log(`    ${cyan('decantr search')}     Search official content`);
   console.log(`    ${cyan('decantr get')}        Fetch content details`);
   console.log(`    ${cyan('decantr validate')}   Check essence file`);
   console.log(`    ${cyan('decantr upgrade')}    Update to latest patterns`);
@@ -2982,7 +2988,7 @@ async function cmdInit(args: InitArgs) {
   console.log('');
 
   if (registrySource === 'cache') {
-    console.log(dim('Run "decantr sync" when online to get the latest registry content.'));
+    console.log(dim('Run "decantr sync" when online to get the latest official content.'));
   }
 }
 
@@ -3089,7 +3095,7 @@ async function cmdSync() {
   const projectRoot = process.cwd();
   const cacheDir = join(projectRoot, '.decantr', 'cache');
 
-  console.log(heading('Syncing registry content...'));
+  console.log(heading('Syncing official content...'));
 
   const result = await syncRegistry(cacheDir);
 
@@ -3210,7 +3216,7 @@ async function cmdAudit(filePath?: string, options: { json?: boolean } = {}) {
         console.log(heading(`Critiquing ${filePath}...`));
       }
       if (hydration.hydrated && !jsonOutput) {
-        console.log(dim('Hydrated missing review pack from hosted registry.'));
+        console.log(dim('Hydrated missing review pack from the content API.'));
         console.log('');
       }
       const report = await critiqueProjectFile(filePath, projectRoot);
@@ -3233,8 +3239,8 @@ async function cmdAudit(filePath?: string, options: { json?: boolean } = {}) {
       console.log(
         dim(
           hydration.scope === 'bundle'
-            ? 'Hydrated missing execution packs from hosted registry.'
-            : 'Hydrated missing review pack and manifest from hosted registry.',
+            ? 'Hydrated missing execution packs from the content API.'
+            : 'Hydrated missing review pack and manifest from the content API.',
         ),
       );
       console.log('');
@@ -5322,7 +5328,7 @@ async function cmdCodifyWorkflow(args: string[]): Promise<void> {
       const suggestions = rankPatternCandidates({ query: mapPatternSlug, limit: 5 }, candidates);
       console.error(error(`Could not find pattern "${mapPatternSlug}" to map into local law.`));
       if (suggestions.length > 0) {
-        console.error(dim('Closest registry patterns:'));
+        console.error(dim('Closest official content patterns:'));
         for (const suggestion of suggestions) {
           const slug = suggestion.candidate.slug || suggestion.candidate.id;
           console.error(dim(`  ${slug} - ${suggestion.candidate.name ?? slug}`));
@@ -5338,12 +5344,12 @@ async function cmdCodifyWorkflow(args: string[]): Promise<void> {
     const slug = candidate.slug || candidate.id;
     console.log(
       success(
-        `${result.replacedExisting ? 'Updated' : 'Wrote'} hosted pattern mapping proposal: ${result.patternPath}`,
+        `${result.replacedExisting ? 'Updated' : 'Wrote'} content pattern mapping proposal: ${result.patternPath}`,
       ),
     );
     console.log(
       dim(
-        `Mapped registry pattern "${slug}" into local pattern "${result.localPatternId}" as advisory Hybrid law. No source files were changed.`,
+        `Mapped official content pattern "${slug}" into local pattern "${result.localPatternId}" as advisory Hybrid law. No source files were changed.`,
       ),
     );
     console.log(
@@ -5568,7 +5574,7 @@ ${BOLD}Advanced primitives:${RESET}
   decantr content-health [--json] [--markdown] [--ci]
   decantr telemetry status [--json]
   decantr telemetry explain [--json]
-  decantr telemetry link [--enable] [--org <slug>]
+  decantr telemetry link --api-url <private-url> --api-key <key> [--enable] [--org <slug>]
   decantr rules preview [--project=<path>]
   decantr rules apply [--project=<path>]
   decantr validate [path]
@@ -5599,7 +5605,7 @@ ${BOLD}Init Options:${RESET}
   --offline          Force offline mode
   --yes, -y          Accept defaults, skip confirmations
   --registry         Custom API URL (legacy alias; prefer DECANTR_API_URL)
-  --telemetry        Opt this project into privacy-filtered CLI product telemetry
+  --telemetry        Enable the local preference; delivery requires DECANTR_TELEMETRY_ENDPOINT
 
 ${BOLD}Commands:${RESET}
   ${cyan('setup')}       Detect project state and recommend the right Decantr workflow
@@ -5643,12 +5649,12 @@ ${BOLD}Advanced commands:${RESET}
   ${cyan('login')}       Legacy API-key helper for compatibility scripts
   ${cyan('logout')}      Remove stored legacy credentials
   ${cyan('analyze')}     Brownfield entrypoint: scan an existing project and emit attach guidance
-  ${cyan('telemetry')}   Inspect or link this project's opted-in CLI telemetry identity
+  ${cyan('telemetry')}   Inspect caller-configured private CLI telemetry
   ${cyan('export')}      Export design tokens to framework format (shadcn, tailwind, css-vars)
-  ${cyan('registry')}    Registry management and intelligence summary
+  ${cyan('registry')}    Legacy alias for content-corpus and pack helpers
   ${cyan('rules')}       Preview/apply Decantr assistant bridge blocks to repo rule files
   ${cyan('connect')}     Configure editor-specific Decantr rules and MCP where supported
-  ${cyan('upgrade')}     Check for content updates from registry
+  ${cyan('upgrade')}     Check for official content updates
   ${cyan('help')}        Show this help
 
 ${BOLD}Examples:${RESET}
@@ -5698,7 +5704,7 @@ ${BOLD}Examples:${RESET}
   decantr studio --report decantr-health.json
   decantr telemetry status
   decantr telemetry explain
-  decantr telemetry link --enable --org my-team
+  decantr telemetry link --api-url https://telemetry.example/v1 --api-key <key>
   decantr audit
   decantr audit src/pages/HomePage.tsx
   decantr migrate --to v4
@@ -5972,7 +5978,7 @@ ${BOLD}Options:${RESET}
   --no-verify         Skip the verification step
   --no-packs          Skip hosted execution-pack hydration
   --ci, --init-ci     Install the Decantr CI gate after adoption
-  --telemetry         Opt this project into privacy-filtered CLI product telemetry
+  --telemetry         Enable the local preference; delivery requires DECANTR_TELEMETRY_ENDPOINT
   --merge-proposal    Merge the observed proposal into an existing essence
   --replace-essence   Replace an existing essence with backup
 
@@ -6833,10 +6839,14 @@ async function main() {
           process.exitCode = 1;
           break;
         }
-        console.error(dim('Hosted registry critique is retired; running local decantr audit instead.'));
+        console.error(
+          dim('Hosted registry critique is retired; running local decantr audit instead.'),
+        );
         await cmdAudit(sourcePath, { json: args.includes('--json') });
       } else if (subcommand === 'audit-project') {
-        console.error(dim('Hosted registry project audit is retired; running local decantr audit instead.'));
+        console.error(
+          dim('Hosted registry project audit is retired; running local decantr audit instead.'),
+        );
         await cmdAudit(undefined, { json: args.includes('--json') });
       } else {
         console.error(

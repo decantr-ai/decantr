@@ -393,7 +393,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
     classification: 'operator',
     mutates: true,
     audience: 'operator',
-    purpose: 'Inspect or link privacy-filtered CLI telemetry identity.',
+    purpose: 'Inspect caller-configured private CLI telemetry and identity settings.',
     consolidation: 'advanced-namespace',
   },
 ];

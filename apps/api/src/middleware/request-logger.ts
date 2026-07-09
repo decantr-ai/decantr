@@ -8,7 +8,7 @@ export function requestLogger() {
     const requestId = randomUUID();
     const start = Date.now();
 
-    c.set('requestId' as any, requestId);
+    c.set('requestId', requestId);
     c.header('X-Request-ID', requestId);
 
     await next();

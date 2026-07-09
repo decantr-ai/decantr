@@ -133,7 +133,7 @@ describe('brownfield local law', () => {
     ).toBe(false);
   });
 
-  it('maps a hosted registry pattern into advisory local law without source takeover', () => {
+  it('maps an official corpus pattern into advisory local law without source takeover', () => {
     const result = writeHostedPatternMappingProposal({
       projectRoot: testDir,
       hostedPattern: {

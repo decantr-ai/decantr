@@ -120,7 +120,7 @@ function listContent(dir) {
       const item = loadJson(path);
       const id = item.id || item.slug;
       if (typeof id !== 'string' || id.trim().length === 0) {
-        addFinding('error', path, 'Active registry item is missing id/slug.');
+        addFinding('error', path, 'Active corpus item is missing id/slug.');
         continue;
       }
       items.set(id, { file, path, item });
@@ -136,14 +136,14 @@ function validateCatalogMetadata(collections) {
   for (const dir of CONTENT_DIRECTORIES) {
     for (const { path, item } of collections[dir].items.values()) {
       if (typeof item.version !== 'string' || !SEMVER_RE.test(item.version)) {
-        addFinding('error', path, 'Active registry item must declare a semver content version.');
+        addFinding('error', path, 'Active corpus item must declare a semver content version.');
       }
 
       if (item.decantr_compat !== ACTIVE_DECANTR_COMPAT) {
         addFinding(
           'error',
           path,
-          `Active registry item must declare decantr_compat "${ACTIVE_DECANTR_COMPAT}".`,
+          `Active corpus item must declare decantr_compat "${ACTIVE_DECANTR_COMPAT}".`,
           [`Actual: ${item.decantr_compat ?? '(missing)'}`],
         );
       }

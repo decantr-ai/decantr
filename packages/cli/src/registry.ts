@@ -424,7 +424,7 @@ export function createRegistryClient(options?: {
 }
 
 /**
- * Sync registry content to .decantr/cache/.
+ * Sync official content to .decantr/cache/.
  * NEVER touches .decantr/custom/.
  */
 export async function syncRegistry(

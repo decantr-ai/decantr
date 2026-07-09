@@ -420,11 +420,10 @@
       "classification": "B",
       "origin": "attempted-blueprint-scaffold",
       "target": "react-vite",
-      "goldenCandidate": "shortlist",
-      "notes": "Provisional shortlist candidate from the 2026-04-08 heuristic audit baseline: strategically relevant to Decantr and relatively low-noise for the current corpus.",
+      "notes": "Historical generic registry-domain showcase retained for slug compatibility; not a current Decantr product or golden candidate.",
       "thumbnail": {
         "src": "/showcase/thumbnails/registry-platform.png",
-        "alt": "Registry Platform blueprint showcase screenshot",
+        "alt": "Generic Registry Platform blueprint showcase screenshot",
         "width": 1600,
         "height": 1000
       }

@@ -27,7 +27,7 @@ describe('resolveWorkflowPolicy', () => {
     expect(policy.adoptionMode).toBe('contract-only');
   });
 
-  it('treats existing registry-backed init as hybrid contract-only unless greenfield is explicit', () => {
+  it('treats existing corpus-backed init as hybrid contract-only unless greenfield is explicit', () => {
     const policy = resolveWorkflowPolicy({
       command: 'init',
       detected: detectedProject({ framework: 'react', packageManager: 'pnpm' }),

@@ -7,8 +7,6 @@ const CYAN = '\x1b[36m';
 const DIM = '\x1b[2m';
 const GREEN = '\x1b[32m';
 const RESET = '\x1b[0m';
-const DEFAULT_API_URL = 'https://api.decantr.ai/v1';
-
 interface TelemetryCommandOptions {
   apiKey?: string;
   apiUrl?: string;
@@ -50,7 +48,7 @@ export async function cmdTelemetry(
 
 function printTelemetryHelp(): void {
   console.log(`
-${BOLD}decantr telemetry${RESET} — Inspect and link privacy-filtered CLI telemetry identity
+${BOLD}decantr telemetry${RESET} — Inspect caller-configured private CLI telemetry
 
 ${BOLD}Usage:${RESET}
   decantr telemetry status [--json]
@@ -58,11 +56,13 @@ ${BOLD}Usage:${RESET}
   decantr telemetry link [--enable] [--org <slug>] [--label <label>] [--api-key <key>] [--api-url <url>]
 
 ${BOLD}Examples:${RESET}
-  decantr init --telemetry
+  DECANTR_TELEMETRY_ENDPOINT=https://telemetry.example/v1/events decantr init --telemetry
   decantr telemetry status
   decantr telemetry explain
-  decantr login --api-key=<your-key>
-  decantr telemetry link --org my-team --label "CI runner"
+  decantr telemetry link --api-url https://telemetry.example/v1 --api-key <key> --org my-team
+
+Decantr does not operate a hosted telemetry sink. Delivery and identity linking are
+available only for caller-configured private infrastructure.
 `);
 }
 
@@ -76,13 +76,21 @@ function printTelemetryStatus(projectRoot: string, options: TelemetryCommandOpti
 
   console.log(`\n${BOLD}Decantr telemetry${RESET}`);
   console.log(`  Enabled:    ${status.enabled ? `${GREEN}yes${RESET}` : 'no'}`);
+  console.log(
+    `  Delivery:   ${status.endpointConfigured ? `${GREEN}configured${RESET}` : `${DIM}inactive${RESET}`}`,
+  );
+  if (status.endpoint) console.log(`  Endpoint:   ${status.endpoint}`);
   console.log(`  Project:    ${status.hasProjectConfig ? status.projectRoot : 'not initialized'}`);
   console.log(`  Install ID: ${status.installId ?? `${DIM}not created yet${RESET}`}`);
   console.log(`  Project ID: ${status.projectId ?? `${DIM}not created yet${RESET}`}`);
-  if (status.enabled) {
+  if (status.enabled && status.endpointConfigured) {
+    console.log(
+      DIM + 'Events can be sent only to the caller-configured endpoint shown above.' + RESET,
+    );
+  } else if (status.enabled) {
     console.log(
       DIM +
-        'Run `decantr telemetry link` after login to attach these opaque IDs to your Decantr account/org.' +
+        'The local preference is enabled, but no events are sent until DECANTR_TELEMETRY_ENDPOINT is configured.' +
         RESET,
     );
   } else {
@@ -108,6 +116,7 @@ function printTelemetryExplain(projectRoot: string, options: TelemetryCommandOpt
   const report = {
     source: 'cli',
     enabled: status.enabled,
+    delivery: status.endpointConfigured ? 'caller-configured' : 'inactive',
     hasProjectConfig: status.hasProjectConfig,
     identifiers: {
       installId: status.installId ?? null,
@@ -115,8 +124,7 @@ function printTelemetryExplain(projectRoot: string, options: TelemetryCommandOpt
       meaning:
         'Opaque Decantr-generated ids used only when this project has opted into CLI telemetry.',
     },
-    endpoint:
-      process.env.DECANTR_TELEMETRY_ENDPOINT ?? 'https://api.decantr.ai/v1/telemetry/events',
+    endpoint: status.endpoint ?? null,
     events: cliEvents,
     aggregateFields: [
       'command name',
@@ -124,7 +132,7 @@ function printTelemetryExplain(projectRoot: string, options: TelemetryCommandOpt
       'duration',
       'workflow and adoption mode',
       'project scope',
-      'registry source',
+      'content source',
       'aggregate analyze counts',
       'Project Health status, score, and finding counts',
       'CI gate outcome',
@@ -147,7 +155,9 @@ function printTelemetryExplain(projectRoot: string, options: TelemetryCommandOpt
       optIn:
         'Run decantr init --telemetry, decantr new --telemetry, or decantr telemetry link --enable.',
       optOut: 'Set "telemetry": false in .decantr/project.json.',
-      link: 'Run decantr telemetry link after login to attach opaque ids to your Decantr account/org.',
+      delivery:
+        'Set DECANTR_TELEMETRY_ENDPOINT to a caller-controlled private event sink. Decantr has no hosted telemetry sink.',
+      link: 'Private deployments may run decantr telemetry link with --api-url and --api-key to attach opaque ids.',
     },
   };
 
@@ -159,6 +169,8 @@ function printTelemetryExplain(projectRoot: string, options: TelemetryCommandOpt
   console.log(`\n${BOLD}Decantr telemetry explanation${RESET}`);
   console.log(`  Source:     cli`);
   console.log(`  Enabled:    ${status.enabled ? `${GREEN}yes${RESET}` : 'no'}`);
+  console.log(`  Delivery:   ${report.delivery}`);
+  if (status.endpoint) console.log(`  Endpoint:   ${status.endpoint}`);
   console.log(`  Install ID: ${status.installId ?? `${DIM}not created yet${RESET}`}`);
   console.log(`  Project ID: ${status.projectId ?? `${DIM}not created yet${RESET}`}`);
   console.log(`  Events:     ${cliEvents.length} CLI event types in the public catalog`);
@@ -171,6 +183,7 @@ function printTelemetryExplain(projectRoot: string, options: TelemetryCommandOpt
     console.log(`  - ${field}`);
   }
   console.log(`\n${DIM}${report.controls.optOut}${RESET}`);
+  console.log(`${DIM}${report.controls.delivery}${RESET}`);
   console.log(`${DIM}${report.controls.link}${RESET}`);
 }
 
@@ -178,6 +191,19 @@ async function linkTelemetryIdentity(
   projectRoot: string,
   options: TelemetryCommandOptions,
 ): Promise<void> {
+  const configuredApiUrl = options.apiUrl ?? process.env.DECANTR_TELEMETRY_IDENTITY_API_URL?.trim();
+  if (!configuredApiUrl) {
+    throw new Error(
+      'Decantr hosted telemetry identity linking is retired. Private deployments must pass --api-url or set DECANTR_TELEMETRY_IDENTITY_API_URL.',
+    );
+  }
+  const apiUrl = normalizePrivateApiUrl(configuredApiUrl);
+
+  const apiKey = options.apiKey ?? getApiKeyOrToken();
+  if (!apiKey) {
+    throw new Error('Pass --api-key <key> for the caller-configured private telemetry API.');
+  }
+
   if (options.enable && !isOptedIn(projectRoot)) {
     optIn(projectRoot);
   }
@@ -193,16 +219,6 @@ async function linkTelemetryIdentity(
     throw new Error('No telemetry identity could be created for this project.');
   }
 
-  const apiKey = options.apiKey ?? getApiKeyOrToken();
-  if (!apiKey) {
-    throw new Error(
-      'Run `decantr login --api-key=<key>` or pass `--api-key <key>` before linking telemetry.',
-    );
-  }
-
-  const apiUrl = trimTrailingSlashes(
-    options.apiUrl ?? process.env.DECANTR_API_URL ?? DEFAULT_API_URL,
-  );
   const response = await fetch(`${apiUrl}/me/telemetry-link`, {
     method: 'POST',
     headers: {
@@ -266,4 +282,15 @@ function trimTrailingSlashes(value: string): string {
   let end = value.length;
   while (end > 0 && value.charCodeAt(end - 1) === 47) end -= 1;
   return value.slice(0, end);
+}
+
+function normalizePrivateApiUrl(value: string): string {
+  const normalized = trimTrailingSlashes(value.trim());
+  try {
+    const url = new URL(normalized);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') throw new Error();
+  } catch {
+    throw new Error('Telemetry identity API URL must be an absolute HTTP(S) URL.');
+  }
+  return normalized;
 }

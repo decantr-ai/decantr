@@ -4,7 +4,7 @@
   "version": "1.1.0",
   "decantr_compat": ">=2.0.0",
   "name": "Search Filter Bar",
-  "description": "Search-first public registry filter bar with type tabs, a source filter, sort controls, and result count. Designed for builders browsing Decantr content, not for exposing internal registry-intelligence taxonomy.",
+  "description": "Search-first official content filter bar with type tabs, a provenance filter, sort controls, and result count. Designed for builders browsing the Decantr corpus, not for exposing internal operations taxonomy.",
   "dependencies": {
     "patterns": {},
     "styles": {},
@@ -32,7 +32,7 @@
   "default_preset": "standard",
   "presets": {
     "standard": {
-      "description": "Full public registry filter bar with search, type tabs, source filter, sort, and result count.",
+      "description": "Full content-catalog filter bar with search, type tabs, provenance filter, sort, and result count.",
       "components": [
         "Input",
         "Select",
@@ -70,7 +70,7 @@
       }
     },
     "with-results-count": {
-      "description": "Search bar with result count summary for registry browsing.",
+      "description": "Search bar with result count summary for corpus browsing.",
       "components": [
         "Input",
         "Select",
@@ -99,7 +99,7 @@
       "meta-row": "Result count, source filter, and sort"
     }
   },
-  "visual_brief": "Public registry filter bar with one clear purpose: help builders find the right Decantr starting point quickly. Search is the hero. Type tabs are distinct and color-coded. Source filtering is understandable to humans: Official, Community, Organizations. Sort remains available but visually secondary. The bar should feel premium, breathable, and unambiguous, not like an operator console.",
+  "visual_brief": "Official content filter bar with one clear purpose: help builders find the right Decantr starting point quickly. Search is the hero. Type tabs are distinct and color-coded. Provenance filtering is understandable to humans: Authored, Benchmark, Hybrid. Sort remains available but visually secondary. The bar should feel premium, breathable, and unambiguous, not like an operator console.",
   "responsive": {
     "mobile": "Search input full-width on its own row. Type tabs become a horizontal scrollable strip. Source and sort move into a collapsible filter surface instead of squeezing the main bar.",
     "tablet": "Search and filters fit comfortably in stacked rows. Type tabs remain visible. Source filter can stay inline if space allows.",

@@ -41,7 +41,7 @@
         "atoms": "_flex _col _gap2 _w[100%]",
         "slots": {
           "date-header": "Date group separator with _textsm _fgmuted _fontmedium",
-          "feed-item": "Single activity row: _flex _row _gap3 _items[start]",
+          "feed-item": "Single activity row: _flex _row _gap3 _aifs",
           "avatar": "User Avatar with fallback initials",
           "content": "Action text with user name (_fontmedium) and description",
           "timestamp": "Relative time label with _textsm _fgmuted",
@@ -122,7 +122,7 @@
     "atoms": "_flex _col _gap2 _w[100%]",
     "slots": {
       "date-header": "Date group separator with _textsm _fgmuted _fontmedium",
-      "feed-item": "Single activity row: _flex _row _gap3 _items[start]",
+      "feed-item": "Single activity row: _flex _row _gap3 _aifs",
       "avatar": "User Avatar with fallback initials",
       "content": "Action text with user name and description",
       "timestamp": "Relative time label",

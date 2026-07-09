@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-21",
+  "updatedAt": "2026-07-09",
   "packages": [
     {
       "name": "@decantr/essence-spec",
@@ -211,13 +211,13 @@
         "delete": ["Generated Decantr artifacts or explicit command targets such as removed generated context/theme outputs"]
       },
       "network": {
-        "outbound": ["Content API reads", "content API pack hydration", "opt-in telemetry endpoints", "user-provided browser/base-url checks"],
+        "outbound": ["Content API reads", "content API pack hydration", "caller-configured private telemetry endpoints only", "user-provided browser/base-url checks"],
         "inbound": true
       },
       "process": {
         "spawn": ["git diff with fixed argv", "package manager/bootstrap commands with argv arrays", "local Studio/browser/dev-server helper flows"]
       },
-      "telemetry": "disabled by default; enabled only by --telemetry, decantr telemetry link --enable, or project.json telemetry=true",
+      "telemetry": "disabled by default; opt-in records a local preference, and delivery occurs only when the caller explicitly configures a private endpoint",
       "hostedUpload": "not-supported in Decantr 3.8; local verify/audit/scan do not upload source",
       "localArtifacts": [".decantr/analysis.json", ".decantr/context/*", ".decantr/graph/*", ".decantr/evidence/*", ".decantr/drift-log.json", ".decantr/local-patterns*.json", ".decantr/rules*.json", ".decantr/style-bridge*.json", ".cursor/mcp.json", ".cursor/rules/decantr.mdc"],
       "scannerNotes": [
@@ -225,7 +225,8 @@
         "decantr scan is local read-only reconnaissance; it writes no .decantr directory or report files and does not upload source.",
         "Process execution is limited to fixed command/argv paths; shell execution is avoided in shipped workflow code.",
         "Visual evidence screenshots remain local in Decantr 3.8.",
-        "Optional axe accessibility evidence loads only a project/workspace-local axe-core package and records local probe summaries."
+        "Optional axe accessibility evidence loads only a project/workspace-local axe-core package and records local probe summaries.",
+        "The CLI has no Decantr-hosted telemetry default; event and identity delivery require separate explicit caller-controlled endpoints."
       ]
     },
     {

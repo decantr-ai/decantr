@@ -32,7 +32,7 @@
         "slots": {
           "headline": "Bold heading with _fs[2.2rem] _fw700 _fgdark _mb3 _ls[-0.02em]. Direct, action-oriented text like 'Ready to Build Something Great?'",
           "subtext": "Supporting paragraph with _fs[1.1rem] _fgdark/70 _mb8. Brief value proposition or urgency statement.",
-          "cta-button": "Dark pill Button: _inline-flex _items[center] _gap2 _py3 _px9 _bgdark _fgwhite _fw700 _fs[1rem] _border[none] _rounded[100px] _transition. Hover: translateY(-2px) with dark box-shadow."
+          "cta-button": "Dark pill Button: _inline-flex _aic _gap2 _py3 _px9 _bgdark _fgwhite _fw700 _fs[1rem] _border[none] _rounded[100px] _transition. Hover: translateY(-2px) with dark box-shadow."
         }
       }
     },

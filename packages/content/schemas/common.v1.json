@@ -98,7 +98,8 @@
           "$ref": "#/$defs/nonEmptyString"
         },
         "atoms": {
-          "$ref": "#/$defs/nonEmptyString"
+          "$ref": "#/$defs/nonEmptyString",
+          "description": "Legacy @decantr/css adapter hint. Other adoption modes use the semantic layout contract."
         },
         "slots": {
           "$ref": "#/$defs/stringMap"

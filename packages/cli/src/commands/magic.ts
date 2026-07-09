@@ -213,7 +213,7 @@ export function parseMagicPrompt(prompt: string): MagicIntent {
 
 /**
  * Resolve the best theme ID from theme hints.
- * When online, scores registry themes against intent hints by matching
+ * When online, scores official corpus themes against intent hints by matching
  * personality strings and tags. Falls back to hardcoded map offline.
  */
 export async function resolveTheme(

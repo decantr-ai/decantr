@@ -262,7 +262,7 @@ export async function cmdNewProject(
     ? seedOfflineRegistry(projectDir, workspaceRoot)
     : { seeded: false, strategy: null };
   if (seeded.seeded) {
-    console.log(dim(`  Seeded offline registry content from ${seeded.strategy}.`));
+    console.log(dim(`  Seeded offline official content from ${seeded.strategy}.`));
   } else if (requiresOfflineContent) {
     console.log(
       `${YELLOW}  Offline blueprint/archetype resolution requires local content corpus data.${RESET}`,

@@ -1,12 +1,13 @@
 # Telemetry
 
-Decantr 3.8 keeps `@decantr/telemetry` as an optional contract and sink package, but hosted product analytics are no longer part of the active registry/API product surface.
+Decantr 3.8.1 keeps `@decantr/telemetry` as an optional contract and sink package, but hosted product analytics are no longer part of the active registry/API product surface.
 
 The current product direction is content-first governance:
 
-- CLI telemetry stays opt-in.
+- CLI telemetry stays opt-in and has no default delivery endpoint.
 - MCP does not emit telemetry.
 - The Fly API serves content/reference routes only.
+- Docs may load an X conversion pixel only when its deployment config supplies a pixel and event id; there is no first-party docs ingest, attribution cookie, or local-storage identifier.
 - Registry portal analytics, admin telemetry pages, PostHog dashboards, Supabase rollups, billing funnels, and public ingest routes are retired.
 
 ## Package Role
@@ -21,16 +22,21 @@ Never send prompts, source code, generated files, health reports, finding eviden
 
 | Surface | Current telemetry posture |
 | --- | --- |
-| CLI | Disabled by default; only explicit telemetry commands may enable local opt-in behavior. |
+| CLI | Disabled by default. Opt-in records a local preference; events are delivered only to an explicit `DECANTR_TELEMETRY_ENDPOINT`, and identifiers are not created without it. |
 | MCP server | No Decantr telemetry emission. |
 | Content API | No hosted telemetry, usage-metering, billing, org, user, or admin analytics routes. |
-| Docs/homepage | No registry handoff funnel. |
+| Docs/homepage | No first-party ingest or persisted attribution. A deployment may explicitly configure X conversion events. |
 | Registry portal | Retired. |
 
 ## Legacy Event Names
 
 Some package event names still contain `registry.*` or `content.publish.*` for Decantr 3.x compatibility. New code should prefer content-corpus language and should not reintroduce hosted registry publishing or analytics dependencies without an explicit product decision.
 
-## External Closeout
+## Private Deployment Configuration
 
-After the 3.8 migration is verified, remove any unused PostHog projects/dashboards, Supabase telemetry tables or snapshot jobs, registry portal analytics secrets, and webhook secrets that only supported the retired hosted registry product.
+- `DECANTR_TELEMETRY_ENDPOINT` enables aggregate CLI event delivery to a caller-controlled sink.
+- `DECANTR_TELEMETRY_GUARD_ENDPOINT` separately enables legacy guard-metric delivery.
+- `DECANTR_TELEMETRY_IDENTITY_API_URL` or `decantr telemetry link --api-url ...` enables private identity linking.
+- `DECANTR_API_URL` remains the content API setting and is never treated as a telemetry identity endpoint.
+
+PostHog projects/dashboards, Supabase telemetry tables or snapshot jobs, registry portal analytics secrets, and webhooks that only supported the retired hosted product are not part of the 3.8.1 operating surface.

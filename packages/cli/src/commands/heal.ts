@@ -5,7 +5,13 @@ import { scanBrownfieldIssues } from '../brownfield-check.js';
 import { buildGuardRegistryContext } from '../guard-context.js';
 // V4 C5 wiring — scan source for missing interaction implementations.
 import { scanProjectInteractions } from '../lib/scan-interactions.js';
-import { collectMetrics, isOptedIn, optIn, sendGuardMetrics } from '../telemetry.js';
+import {
+  collectMetrics,
+  getCliTelemetryIdentityStatus,
+  isOptedIn,
+  optIn,
+  sendGuardMetrics,
+} from '../telemetry.js';
 
 const GREEN = '\x1b[32m';
 const RED = '\x1b[31m';
@@ -190,9 +196,11 @@ async function maybeSendTelemetry(
 ): Promise<void> {
   if (options.telemetry && !isOptedIn(projectRoot)) {
     optIn(projectRoot);
-    console.log(
-      `\n${CYAN}Telemetry enabled.${RESET} Decantr will send privacy-filtered CLI product telemetry for this project.`,
-    );
+    const telemetry = getCliTelemetryIdentityStatus(projectRoot);
+    const message = telemetry.endpointConfigured
+      ? 'Privacy-filtered CLI telemetry can be sent to the configured private endpoint.'
+      : 'The local preference is enabled, but no events are sent until DECANTR_TELEMETRY_ENDPOINT is configured.';
+    console.log(`\n${CYAN}Telemetry preference enabled.${RESET} ${message}`);
     console.log(`${DIM}Set "telemetry": false in .decantr/project.json to opt out.${RESET}`);
   }
 

@@ -2330,11 +2330,11 @@ function generateDecantrMdV4(params: {
     WORKFLOW_GUIDANCE:
       params.workflowMode === 'brownfield-attach'
         ? params.analysisArtifacts
-          ? `This project is using Decantr in **brownfield attach** mode with **${params.adoptionMode || 'contract-only'}** adoption.\n\nRead \`.decantr/analysis.json\` first for the detected framework, routes, styling, layout, and dependency facts.\nThen read \`.decantr/doctrine-map.json\`, \`.decantr/ambient-context.json\`, and \`.decantr/brownfield-report.md\` for ranked source precedence, existing assistant rules, docs, design-system evidence, and unresolved doctrine risks.\nThen read \`.decantr/context/scaffold-pack.md\` and \`.decantr/context/scaffold.md\` to understand the accepted Decantr contract.\n\nTreat Decantr as the reconciled contract layer and the original docs/rules as cited evidence. Preserve the current framework, package manager, router, styling system, data boundaries, and working runtime structure unless the contract gives you a reviewed reason to change them. Registry content is optional in this workflow unless the task explicitly asks for it.`
-          : `This project is using Decantr in **brownfield attach** mode with **${params.adoptionMode || 'contract-only'}** adoption.\n\nNo \`.decantr/analysis.json\` or \`.decantr/init-seed.json\` was present when this context was generated. Inventory the current framework, routes, styling, layout, package manager, and rule files before changing runtime code. Then read \`.decantr/context/scaffold-pack.md\` and \`.decantr/context/scaffold.md\` to understand the Decantr contract you are layering onto the existing app.\n\nPreserve the current framework, package manager, router, and working runtime structure unless the contract gives you a reviewed reason to change them. Registry content is optional in this workflow unless the task explicitly asks for it.`
+          ? `This project is using Decantr in **brownfield attach** mode with **${params.adoptionMode || 'contract-only'}** adoption.\n\nRead \`.decantr/analysis.json\` first for the detected framework, routes, styling, layout, and dependency facts.\nThen read \`.decantr/doctrine-map.json\`, \`.decantr/ambient-context.json\`, and \`.decantr/brownfield-report.md\` for ranked source precedence, existing assistant rules, docs, design-system evidence, and unresolved doctrine risks.\nThen read \`.decantr/context/scaffold-pack.md\` and \`.decantr/context/scaffold.md\` to understand the accepted Decantr contract.\n\nTreat Decantr as the reconciled contract layer and the original docs/rules as cited evidence. Preserve the current framework, package manager, router, styling system, data boundaries, and working runtime structure unless the contract gives you a reviewed reason to change them. Official corpus content is optional in this workflow unless the task explicitly asks for it.`
+          : `This project is using Decantr in **brownfield attach** mode with **${params.adoptionMode || 'contract-only'}** adoption.\n\nNo \`.decantr/analysis.json\` or \`.decantr/init-seed.json\` was present when this context was generated. Inventory the current framework, routes, styling, layout, package manager, and rule files before changing runtime code. Then read \`.decantr/context/scaffold-pack.md\` and \`.decantr/context/scaffold.md\` to understand the Decantr contract you are layering onto the existing app.\n\nPreserve the current framework, package manager, router, and working runtime structure unless the contract gives you a reviewed reason to change them. Official corpus content is optional in this workflow unless the task explicitly asks for it.`
         : params.workflowMode === 'greenfield-contract-only'
           ? `This project is using Decantr in **greenfield contract-only** mode with **${params.adoptionMode || 'contract-only'}** adoption.\n\nTreat the compiled execution-pack files as the primary source of truth for the app contract, but do not assume Decantr owns the runtime or styling system. Use narrative docs only as secondary explanation when the compiled packs are not enough.\nUse only files present in this workspace as the source of truth. If local scaffold files disagree, stop and report the mismatch instead of relying on external Decantr assumptions or prior examples.\n\nRead \`.decantr/context/scaffold-pack.md\` first for the compact compiled shell, theme, feature, and route contract.\nThen read \`.decantr/context/scaffold.md\` for the fuller app overview, topology, route map, and voice guidance.`
-          : `This project is using Decantr in **greenfield scaffold** mode with **${params.adoptionMode || 'decantr-css'}** adoption.\n\nTreat the compiled execution-pack files as the primary source of truth.\nUse narrative docs only as secondary explanation when the compiled packs are not enough.\nUse only files present in this workspace as the source of truth. If local scaffold files disagree, stop and report the mismatch instead of relying on external Decantr assumptions or prior examples.\n\nRead \`.decantr/context/scaffold-pack.md\` first for the compact compiled shell, theme, feature, and route contract.\nThen read \`.decantr/context/scaffold.md\` for the fuller app overview, topology, route map, and voice guidance.\nStart implementation from the shell layouts and shared route structure before filling in section pages.`,
+          : `This project is using Decantr in **greenfield scaffold** mode with **${params.adoptionMode || 'contract-only'}** adoption.\n\nTreat the compiled execution-pack files as the primary source of truth.\nUse narrative docs only as secondary explanation when the compiled packs are not enough.\nUse only files present in this workspace as the source of truth. If local scaffold files disagree, stop and report the mismatch instead of relying on external Decantr assumptions or prior examples.\n\nRead \`.decantr/context/scaffold-pack.md\` first for the compact compiled shell, theme, feature, and route contract.\nThen read \`.decantr/context/scaffold.md\` for the fuller app overview, topology, route map, and voice guidance.\nStart implementation from the shell layouts and shared route structure before filling in section pages.`,
   });
 
   // Build project brief
@@ -2345,7 +2345,7 @@ function generateDecantrMdV4(params: {
   const themeDesc = `${params.themeName || 'default'} (${params.themeMode || 'dark'} mode${params.themeShape ? `, ${params.themeShape} shape` : ''})`;
   briefLines.push(`- **Theme:** ${themeDesc}`);
   briefLines.push(`- **Workflow:** ${params.workflowMode || 'greenfield-scaffold'}`);
-  briefLines.push(`- **Adoption mode:** ${params.adoptionMode || 'decantr-css'}`);
+  briefLines.push(`- **Adoption mode:** ${params.adoptionMode || 'contract-only'}`);
   if (params.personality && params.personality.length > 0) {
     briefLines.push(`- **Personality:** ${params.personality.join('. ')}`);
   }
@@ -2487,7 +2487,7 @@ function generateProjectJson(
       version: CLI_VERSION,
       flags: buildFlagsString(options),
       workflowMode: options.workflowMode || 'greenfield-scaffold',
-      adoptionMode: options.adoptionMode || 'decantr-css',
+      adoptionMode: options.adoptionMode || 'contract-only',
       contentSource: options.contentSource || 'none',
       assistantBridge: options.assistantBridge || 'none',
       projectScope: options.projectScope || 'single-app',
@@ -2780,7 +2780,7 @@ ${renderPackReferenceList('Page Packs', pageRefs, 'No page packs were generated 
 
 - [error] Theme identity remains \`${scaffoldPack.data.theme.id}\` until the essence changes.
 - [error] The new page exists in the essence before code generation begins.
-- [error] New layouts only use registry-backed patterns.
+- [error] New layouts only use official-corpus or accepted local patterns.
 - [warn] New routes should fit the current shell and section topology instead of creating off-contract filler pages.
 
 ---
@@ -2996,7 +2996,7 @@ export async function scaffoldProject(
   }
 
   // Delegate derived file generation to refreshDerivedFiles
-  // Pass patternSpecs through to avoid double-fetching from registry (Spec 1.8)
+  // Pass patternSpecs through to avoid double-fetching from the content client (Spec 1.8)
   const refreshResult = await refreshDerivedFiles(projectRoot, essenceV4, registry, themeData, {
     isInitialScaffold: true,
     patternSpecs,
@@ -3022,7 +3022,7 @@ export async function scaffoldProject(
 }
 
 /**
- * Scaffold a minimal offline project when no blueprint is specified and the registry is unavailable.
+ * Scaffold a minimal offline project when no blueprint is specified and the content API is unavailable.
  * Creates the bare-minimum files needed to start working with Decantr.
  */
 export function scaffoldMinimal(
@@ -3164,7 +3164,7 @@ export function scaffoldMinimal(
   const decantrMdContent = `# DECANTR.md
 
 > This file was generated by \`decantr init\` in offline/minimal mode.
-> Run \`decantr upgrade\` when online to pull full registry content.
+> Run \`decantr upgrade\` when online to pull the latest official content.
 
 ## Two-Layer Model
 
@@ -3193,16 +3193,20 @@ Blueprint defines pages, shells, and patterns. Blueprint deviations are **warnin
 
 ## MCP Tools
 
-When available, use these tools:
-- \`decantr_read_essence\` — Read the current essence
-- \`decantr_check_drift\` — Check for guard violations
-- \`decantr_accept_drift\` — Accept a detected drift as intentional
-- \`decantr_update_essence\` — Update the essence spec
+When available, use the eight consolidated Decantr tools:
+- \`decantr_project\` — Read project state and workspace health
+- \`decantr_contract\` — Read, validate, generate, and drift-check the contract
+- \`decantr_context\` — Read scaffold, section, page, task, and pack context
+- \`decantr_graph\` — Query local typed Contract graph artifacts
+- \`decantr_registry\` — Compatibility content-corpus and execution-pack helper
+- \`decantr_verify\` — Run local verification and evidence reads
+- \`decantr_repair\` — Read findings, plans, prompts, and health-loop guidance
+- \`decantr_contract_write\` — Explicitly accept drift or update Essence v4
 
 ## Quick Start
 
 1. Edit \`decantr.essence.json\` to define your project structure.
-2. Run \`decantr sync\` when online to fetch registry content.
+2. Run \`decantr sync\` when online to fetch official content.
 3. Use \`decantr create <type> <name>\` to create custom content.
 4. Use \`decantr validate\` to check your essence file.
 
@@ -3210,21 +3214,20 @@ When available, use these tools:
 
 - \`decantr init\` — Initialize a new Decantr project
 - \`decantr status\` — Project health and DNA/Blueprint overview
-- \`decantr sync\` — Sync registry content
+- \`decantr sync\` — Sync official content
 - \`decantr audit\` — Audit project for issues
 - \`decantr migrate --to v4\` — Migrate older essence files to v4
 - \`decantr check\` — Detect drift issues
 - \`decantr sync-drift\` — Review and resolve drift entries
 - \`decantr validate\` — Validate essence file
-- \`decantr search\` — Search the registry
+- \`decantr search\` — Search official content
 - \`decantr suggest\` — Suggest patterns or alternatives
-- \`decantr get\` — Get full details of a registry item
+- \`decantr get\` — Get full details of a content item
 - \`decantr list\` — List items by type
 - \`decantr theme\` — Manage custom themes
 - \`decantr create\` — Create custom content items
-- \`decantr publish\` — Publish custom content to registry
-- \`decantr login\` — Authenticate with registry
-- \`decantr logout\` — Remove stored credentials
+- \`decantr content\` — Inspect and compile the official corpus
+- \`decantr registry\` — Legacy compatibility alias for content helpers
 - \`decantr upgrade\` — Check for content updates
 
 ---
@@ -3419,7 +3422,7 @@ async function generatePackContexts(
 
 /**
  * Resolve a single pattern spec: use prefetched data if available and complete,
- * otherwise fetch from registry and enrich. Falls back to synthetic generation.
+ * otherwise fetch from the content client and enrich. Falls back to synthetic generation.
  *
  * A prefetched spec is considered "complete" if it already has layout_hints or
  * visual_brief fields — the enriched fields that cmdInit's fetch omits.
@@ -3448,7 +3451,7 @@ async function resolvePatternSpec(
     return prefetched;
   }
 
-  // Fetch from registry (full spec with extended fields)
+  // Fetch from the content client (full spec with extended fields)
   try {
     const patResult = await registry.fetchPattern(name);
     if (patResult?.data) {
@@ -3549,7 +3552,7 @@ export async function refreshDerivedFiles(
 
   const effectiveWorkflowMode =
     options?.workflowMode || storedWorkflowMode || 'greenfield-scaffold';
-  const effectiveAdoptionMode = options?.adoptionMode || storedAdoptionMode || 'decantr-css';
+  const effectiveAdoptionMode = options?.adoptionMode || storedAdoptionMode || 'contract-only';
   const effectiveAnalysisArtifacts = options?.analysisArtifacts ?? storedAnalysisArtifacts ?? false;
 
   // If voice is missing but blueprintId is available, fetch from blueprint
@@ -3580,7 +3583,7 @@ export async function refreshDerivedFiles(
   };
   const personality = essence.dna.personality || [];
 
-  // ── Fetch theme from registry (use prefetched if available) ──
+  // ── Fetch theme from the content client (use prefetched if available) ──
   // The theme now contains ALL data: seed, palette, decorators, spatial, treatments, etc.
   let themeData: ThemeData | undefined = prefetchedThemeData;
   const shouldResolveThemeData = effectiveAdoptionMode !== 'contract-only' || Boolean(themeData);
@@ -3841,7 +3844,7 @@ export async function refreshDerivedFiles(
 
   // ── Resolve pattern specs for all patterns in all sections ──
   // Uses prefetched specs from cmdInit when available (Spec 1.8),
-  // enriching with extended fields from registry as needed.
+  // enriching with extended fields from the content client as needed.
   const prefetchedSpecs = options?.patternSpecs;
   const patternSpecs: Record<string, PatternSpecSummary> = {};
   const seenPatterns = new Set<string>();
@@ -4304,8 +4307,13 @@ export interface ScaffoldContextInput {
  * Handles nested sub-regions (e.g., sidebar.brand, sidebar.nav).
  * Ends with anti-patterns block.
  */
-function generateShellImplementation(shellId: string, shellInfo: ShellInfo): string[] {
+function generateShellImplementation(
+  shellId: string,
+  shellInfo: ShellInfo,
+  adoptionMode: AdoptionMode = 'contract-only',
+): string[] {
   const lines: string[] = [];
+  const usesDecantrCss = adoptionMode === 'decantr-css';
 
   lines.push(`## Shell Implementation (${shellId})`);
   lines.push('');
@@ -4316,10 +4324,12 @@ function generateShellImplementation(shellId: string, shellInfo: ShellInfo): str
       lines.push('');
       if (isRecord(props)) {
         for (const [key, value] of Object.entries(props)) {
+          if (key === 'atoms' && !usesDecantrCss) continue;
           if (isRecord(value)) {
             // Nested sub-region (e.g., sidebar.brand, sidebar.nav)
             lines.push(`- **${key}:**`);
             for (const [subKey, subValue] of Object.entries(value)) {
+              if (subKey === 'atoms' && !usesDecantrCss) continue;
               lines.push(`  - ${subKey}: ${subValue}`);
             }
           } else {
@@ -4335,12 +4345,12 @@ function generateShellImplementation(shellId: string, shellInfo: ShellInfo): str
     // Anti-patterns
     lines.push('### Anti-patterns');
     lines.push('');
-    lines.push(
-      '- Do NOT nest `overflow-y-auto` inside another `overflow-y-auto` — one scroll container per region.',
-    );
-    lines.push(
-      '- Do NOT apply `d-surface` to shell frame regions (sidebar, header). Use `var(--d-surface)` or `var(--d-bg)` directly.',
-    );
+    lines.push('- Do NOT nest scrolling regions — one scroll container per shell region.');
+    if (usesDecantrCss) {
+      lines.push(
+        '- Do NOT apply `d-surface` to shell frame regions (sidebar, header). Use `var(--d-surface)` or `var(--d-bg)` directly.',
+      );
+    }
     lines.push(
       '- Do NOT add wrapper `<div>` elements around shell regions — the grid areas handle placement.',
     );
@@ -4351,7 +4361,7 @@ function generateShellImplementation(shellId: string, shellInfo: ShellInfo): str
       lines.push(`**Layout:** ${shellInfo.layout}`);
       lines.push('');
     }
-    if (shellInfo.atoms) {
+    if (shellInfo.atoms && usesDecantrCss) {
       lines.push(`**Atoms:** \`${shellInfo.atoms}\``);
       lines.push('');
     }
@@ -4400,6 +4410,7 @@ function generateShellImplementation(shellId: string, shellInfo: ShellInfo): str
 function generateQuickStart(input: SectionContextInput): string[] {
   const { section, shellInfo, decorators, personality, voiceTone } = input;
   const lines: string[] = [];
+  const usesDecantrCss = input.adoptionMode === 'decantr-css';
 
   lines.push('## Quick Start');
   lines.push('');
@@ -4435,8 +4446,12 @@ function generateQuickStart(input: SectionContextInput): string[] {
   // the strong contract.
   if (decorators.length > 0) {
     const count = decorators.length;
+    const label = usesDecantrCss ? 'Theme decorators' : 'Theme intent references';
+    const noun = usesDecantrCss
+      ? `class${count === 1 ? '' : 'es'}`
+      : `reference${count === 1 ? '' : 's'}`;
     lines.push(
-      `**Theme decorators:** ${count} class${count === 1 ? '' : 'es'} — see \`section-${section.id}-pack.md\` for the Class | Intent | Apply-to contract`,
+      `**${label}:** ${count} ${noun} — see \`section-${section.id}-pack.md\` for the intent and apply-to contract`,
     );
   }
   // Personality utilities — theme-agnostic CSS classes triggered by personality
@@ -4564,7 +4579,13 @@ export function generateSectionContext(input: SectionContextInput): string {
 
   // Shell Implementation
   if (shellInfo) {
-    lines.push(...generateShellImplementation(section.shell as string, shellInfo));
+    lines.push(
+      ...generateShellImplementation(
+        section.shell as string,
+        shellInfo,
+        adoptionMode ?? 'contract-only',
+      ),
+    );
   }
 
   // Shell Notes — guidance from the shell definition
@@ -4655,7 +4676,7 @@ export function generateSectionContext(input: SectionContextInput): string {
   const totalDecoratorCount =
     (decoratorDefs && Object.keys(decoratorDefs).length) || decorators.length;
   if (totalDecoratorCount > 0) {
-    if (adoptionMode === 'contract-only') {
+    if (adoptionMode !== 'decantr-css') {
       lines.push(
         `**Theme intent:** ${totalDecoratorCount} \`${themeName}-*\` decorator reference(s) exist, but this project is contract-only. Translate the intent into the app's current styling system instead of applying Decantr decorator classes directly.`,
       );
@@ -4687,7 +4708,7 @@ export function generateSectionContext(input: SectionContextInput): string {
   }
   const themePrefix = themeName.split('-')[0] || themeName;
   lines.push('');
-  if (adoptionMode === 'contract-only') {
+  if (adoptionMode !== 'decantr-css') {
     lines.push(
       "Usage: implement this section through the app's existing styling authority (design-system components, Tailwind/Sass/theme tokens, CVA variants, or accepted local rules). Do not add `@decantr/css`, `css(...)`, `d-*` treatments, or Decantr token CSS unless adoption mode changes.",
     );

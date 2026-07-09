@@ -30,7 +30,7 @@
       ],
       "layout": {
         "layout": "hero",
-        "atoms": "_flex _col _items[center] _text[center] _py12 _px4 _gap4",
+        "atoms": "_flex _col _aic _text[center] _py12 _px4 _gap4",
         "slots": {
           "headline": "Section heading with _heading2, centered",
           "description": "Supporting paragraph with _body _fgmuted _mw[640px]",
@@ -46,7 +46,7 @@
       ],
       "layout": {
         "layout": "row",
-        "atoms": "_grid _gc1 _lg:gc2 _gap6 _items[center] _py8",
+        "atoms": "_grid _gc1 _lg:gc2 _gap6 _aic _py8",
         "slots": {
           "text-col": "Left column with headline, description, and CTA buttons: _flex _col _gap4",
           "headline": "Section heading with _heading2",
@@ -63,7 +63,7 @@
       ],
       "layout": {
         "layout": "row",
-        "atoms": "_flex _row _justify[between] _items[center] _py4 _px6 _rounded _bgprimary/10",
+        "atoms": "_flex _row _jcsb _aic _py4 _px6 _rounded _bgprimary/10",
         "slots": {
           "text": "Inline text with _body _fontmedium",
           "cta": "Single primary Button on the right"
@@ -105,7 +105,7 @@
   },
   "default_layout": {
     "layout": "hero",
-    "atoms": "_flex _col _items[center] _text[center] _py12 _px4 _gap4",
+    "atoms": "_flex _col _aic _text[center] _py12 _px4 _gap4",
     "slots": {
       "headline": "Section heading, centered",
       "description": "Supporting paragraph",

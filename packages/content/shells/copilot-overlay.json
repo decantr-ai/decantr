@@ -86,7 +86,7 @@
       "flex": "1",
       "overflow_y": "auto",
       "padding": "1.5rem",
-      "atoms": "_flex1 _overflow[auto] _p6",
+      "atoms": "_flex1 _overauto _p6",
       "note": "Main application content area. Scrollable. When copilot mode is 'push', body width shrinks to accommodate panel."
     },
     "copilot": {
@@ -100,7 +100,7 @@
       "background": "var(--d-surface-raised)",
       "overflow_y": "auto",
       "padding": "1rem",
-      "atoms": "_flex _col _borderL _bgraised _overflow[auto] _p4",
+      "atoms": "_flex _col _borderL _bgraised _overauto _p4",
       "header": {
         "display": "flex",
         "align": "center",

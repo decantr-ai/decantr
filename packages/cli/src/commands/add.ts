@@ -128,7 +128,7 @@ export async function cmdAddSection(
     return;
   }
 
-  // Fetch archetype from registry
+  // Fetch archetype from the official corpus client
   const registryClient = new RegistryClient({
     cacheDir: join(projectRoot, '.decantr', 'cache'),
   });

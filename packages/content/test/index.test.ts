@@ -26,7 +26,7 @@ describe('@decantr/content', () => {
     expect(resolved?.item.id).toBe('data-table');
   });
 
-  it('searches summaries without a hosted registry', () => {
+  it('searches summaries without network access', () => {
     const results = searchContent({ q: 'agent', type: 'blueprints', limit: 10 });
 
     expect(results.total).toBeGreaterThan(0);

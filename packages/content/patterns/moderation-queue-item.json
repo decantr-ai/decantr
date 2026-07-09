@@ -49,7 +49,7 @@
       ],
       "layout": {
         "layout": "stack",
-        "atoms": "_flex _col _gap0 _border _bordermuted/20 _r3 _overflow[hidden]",
+        "atoms": "_flex _col _gap0 _border _bordermuted/20 _r3 _overhidden",
         "slots": {
           "header": "Type badge, content name, and submission timestamp",
           "submitter": "Avatar, username, reputation score badge, and trust indicator",

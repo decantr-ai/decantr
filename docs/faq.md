@@ -267,7 +267,7 @@ npx @decantr/cli ci --fail-on error
 
 ## Is Decantr a code generator?
 
-Not primarily. Decantr is an AI Frontend Governance layer for codebases touched by AI agents. It gives AI tools a clearer Contract, better route-scoped Context, registry-backed vocabulary when useful, and drift evidence with repair guidance. The assistant still writes the code.
+Not primarily. Decantr is an AI Frontend Governance layer for codebases touched by AI agents. It gives AI tools a clearer Contract, better route-scoped Context, official-corpus vocabulary when useful, and drift evidence with repair guidance. The assistant still writes the code.
 
 ## Are behavior obligations a UX framework or WCAG replacement?
 
@@ -279,7 +279,7 @@ Decantr only verifies obligations where static source evidence is strong. It doe
 
 Because interaction behavior is usually app-owned. A registry pattern can provide useful accessibility and interaction guidance, but it should not override the way a production codebase composes its own Dialog, Button, Form, routing, feature flags, or test harness.
 
-Keeping `behavior_obligations` in `.decantr/local-patterns.json` lets Brownfield and Hybrid teams accept only the obligations their source evidence supports. The typed graph then projects those accepted obligations as `LocalRule` nodes, task context serves them to agents, and Project Health emits evidence-backed findings without changing Essence V4 or the public registry schema.
+Keeping `behavior_obligations` in `.decantr/local-patterns.json` lets Brownfield and Hybrid teams accept only the obligations their source evidence supports. The typed graph then projects those accepted obligations as `LocalRule` nodes, task context serves them to agents, and Project Health emits evidence-backed findings without changing Essence V4 or official content schemas.
 
 ## What should I do when Decantr flags drift?
 

@@ -37,7 +37,7 @@
       ],
       "layout": {
         "layout": "grid",
-        "atoms": "_grid _gap8 _items[center] _minh[88vh] _px6 _py10 _maxw[86rem] _mx[auto]",
+        "atoms": "_grid _gap8 _aic _minh[88vh] _px6 _py10 _maxw[86rem] _mx[auto]",
         "slots": {
           "marquee": "Oversized product-launch headline. Name the literal product, kit, drop, or category in the first viewport.",
           "supporting-copy": "Specific campaign promise with what exists now, what support unlocks, and why the launch matters.",
@@ -60,7 +60,7 @@
       ],
       "layout": {
         "layout": "grid",
-        "atoms": "_grid _gap8 _items[center] _minh[92vh] _px6 _py10 _maxw[82rem] _mx[auto]",
+        "atoms": "_grid _gap8 _aic _minh[92vh] _px6 _py10 _maxw[82rem] _mx[auto]",
         "slots": {
           "marquee": "Oversized campaign title band. Literal product or offer name, not an eyebrow-only brand mention.",
           "supporting-copy": "Short launch promise, 2-3 lines max, with one concrete product outcome.",
@@ -81,7 +81,7 @@
       ],
       "layout": {
         "layout": "grid",
-        "atoms": "_grid _gap7 _items[center] _minh[84vh] _px6 _py12 _maxw[78rem] _mx[auto]",
+        "atoms": "_grid _gap7 _aic _minh[84vh] _px6 _py12 _maxw[78rem] _mx[auto]",
         "slots": {
           "drop-label": "Small issue/date label, styled like a catalog sticker.",
           "headline": "Large product-drop headline.",
@@ -94,7 +94,7 @@
   },
   "default_layout": {
     "layout": "grid",
-    "atoms": "_grid _gap8 _items[center] _minh[92vh] _px6 _py10 _maxw[82rem] _mx[auto]",
+    "atoms": "_grid _gap8 _aic _minh[92vh] _px6 _py10 _maxw[82rem] _mx[auto]",
     "slots": {
       "marquee": "Pixel-style product launch title",
       "supporting-copy": "Campaign promise and launch context",

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://decantr.ai/schemas/registry-intelligence-summary.v1.json",
-  "title": "Decantr Registry Intelligence Summary",
+  "title": "Decantr Content Intelligence Summary",
   "type": "object",
   "required": [
     "$schema",

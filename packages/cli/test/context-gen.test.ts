@@ -35,6 +35,7 @@ function makeSectionInput(overrides?: Partial<SectionContextInput>): SectionCont
     themeName: 'midnight',
     zoneContext: 'Primary app zone — authenticated users with sidebar navigation.',
     patternSpecs: {},
+    adoptionMode: 'decantr-css',
     ...overrides,
   };
 }
@@ -89,6 +90,29 @@ describe('generateSectionContext', () => {
     expect(result).toContain('Do not add `@decantr/css`');
     expect(result).not.toContain("className={css('_flex _col _gap4')");
     expect(result).not.toContain('d-surface midnight-glass');
+  });
+
+  it('treats missing adoption metadata as contract-only and omits shell atom hints', () => {
+    const result = generateSectionContext(
+      makeSectionInput({
+        adoptionMode: undefined,
+        shellInfo: {
+          id: 'sidebar-main',
+          name: 'Sidebar Main',
+          description: 'Sidebar and main workspace',
+          atoms: '_grid _aic',
+          internal_layout: {
+            main: { display: 'grid', atoms: '_grid _aic' },
+          },
+        },
+      }),
+    );
+
+    expect(result).toContain('**Theme intent references:**');
+    expect(result).toContain('existing styling authority');
+    expect(result).not.toContain('**Atoms:**');
+    expect(result).not.toContain('_grid _aic');
+    expect(result).not.toContain('d-surface');
   });
 
   it('renders a compact decorator pointer that points to the section pack', () => {

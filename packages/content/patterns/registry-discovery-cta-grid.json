@@ -3,8 +3,8 @@
   "id": "registry-discovery-cta-grid",
   "version": "1.0.0",
   "decantr_compat": ">=2.0.0",
-  "name": "Registry Discovery CTA Grid",
-  "description": "Editorial quick-start discovery cards for the public registry homepage. Each card helps builders choose a path into the registry with a strong icon, concise framing copy, and a clearly-owned Decantr action treatment.",
+  "name": "Content Discovery CTA Grid",
+  "description": "Editorial quick-start discovery cards for an official content catalog or reference page. Each card helps builders choose a path into the corpus with a strong icon, concise framing copy, and a clearly owned action treatment.",
   "dependencies": {
     "patterns": {},
     "styles": {},
@@ -65,11 +65,11 @@
   "layout_hints": {
     "card_structure": "Use one visual lane per card: icon + eyebrow at the top, narrative in the middle, action rail at the bottom. Avoid chip clouds, diagnostics, or inline metadata.",
     "cta_treatment": "CTA rails should be explicit actions with iconography and supporting hint copy. Prefer directional arrow or external-link affordances over plain text-only links.",
-    "tone_mapping": "Each discovery card can use its own accent family so the user can quickly parse blueprint-first vs showcase-first vs registry-wide exploration."
+    "tone_mapping": "Each discovery card can use its own accent family so the user can quickly parse blueprint-first, showcase-first, and corpus-wide exploration."
   },
   "accessibility": {
     "role": "region",
-    "aria-label": "Registry discovery actions",
+    "aria-label": "Content discovery actions",
     "keyboard": [
       "Tab moves through discovery CTAs in card order."
     ],

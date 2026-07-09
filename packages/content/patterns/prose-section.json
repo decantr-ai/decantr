@@ -41,7 +41,7 @@
       "description": "Narrative company-story section with wider body copy, optional image pairing, and a sequential scroll rhythm that feels deliberate instead of dense.",
       "layout": {
         "layout": "stack",
-        "atoms": "_grid _gc1 _lg:gc[1.15fr_0.85fr] _gap8 _wfull _maxw[72rem] _mx[auto] _items[start]",
+        "atoms": "_grid _gc1 _lg:gc[1.15fr_0.85fr] _gap8 _wfull _maxw[72rem] _mx[auto] _aifs",
         "slots": {
           "heading-column": "Eyebrow, heading, and lead paragraph anchoring the story",
           "body-column": "Narrative prose blocks, milestone list, or supporting quote stack",

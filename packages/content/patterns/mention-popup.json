@@ -30,7 +30,7 @@
       ],
       "layout": {
         "layout": "dropdown",
-        "atoms": "_absolute _bg[var(--surface)] _shadow _r2 _border _w[280px] _max-h[300px] _overflow[auto] _z[100]",
+        "atoms": "_absolute _bg[var(--surface)] _shadow _r2 _border _w[280px] _max-h[300px] _overauto _z[100]",
         "slots": {
           "search": "Type-ahead filter (inline in editor)",
           "recent": "Recently mentioned users section",

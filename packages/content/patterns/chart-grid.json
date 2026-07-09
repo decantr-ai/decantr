@@ -50,7 +50,7 @@
       ],
       "layout": {
         "layout": "row",
-        "atoms": "_flex _row _gap4 _overflow[auto]",
+        "atoms": "_flex _row _gap4 _overauto",
         "slots": {
           "chart-card": "Horizontally scrollable Card with chart placeholder",
           "chart-title": "Chart title with _textsm _fontmedium",

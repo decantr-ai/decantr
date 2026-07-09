@@ -4,7 +4,7 @@
 
 ## Current Product Model
 
-Decantr 3.8 is content-first and governance-first. The official corpus lives in `@decantr/content` inside the monorepo and feeds schemas, search, resolution, content health, and execution-pack compilation. The public `registry.decantr.ai` marketplace/portal is retired. `@decantr/registry`, `decantr registry ...`, and MCP `decantr_registry` remain Decantr 3.x compatibility names for content-corpus and pack-resolution workflows.
+Decantr 3.8.1 is content-first and governance-first. The official corpus lives in `@decantr/content` inside the monorepo and feeds schemas, search, resolution, content health, and execution-pack compilation. The public `registry.decantr.ai` marketplace/portal is retired. `@decantr/registry`, `decantr registry ...`, and MCP `decantr_registry` remain Decantr 3.x compatibility names for content-corpus and pack-resolution workflows.
 
 `@decantr/css` is a legacy optional adapter. Greenfield and Brownfield defaults are contract-only unless `--adoption=decantr-css` is explicit.
 
@@ -31,6 +31,7 @@ Decantr 3.8 is content-first and governance-first. The official corpus lives in 
 - For manual pack hydration, prefer `decantr content compile-packs apps/web/decantr.essence.json --write-context`; legacy `decantr registry compile-packs ...` still works.
 - MCP agents should use the submitted eight-tool surface. `decantr_registry` is the compatibility content-corpus tool name; do not expect a ninth content tool in Decantr 3.x.
 - Browser evidence is local-only. `decantr verify --base-url <url> --evidence` writes screenshots and Evidence Bundle files under `.decantr/evidence/`.
+- CLI telemetry has no Decantr-hosted default. Opt-in is a local preference; network delivery requires an explicit caller-controlled `DECANTR_TELEMETRY_ENDPOINT`.
 
 ## Packages
 

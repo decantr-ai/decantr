@@ -32,7 +32,7 @@
     },
     "blueprint_portfolio": {
       "type": "object",
-      "description": "Registry portfolio metadata for public blueprint discovery. This controls Featured/All/Labs presentation without changing direct slug availability.",
+      "description": "Content portfolio metadata for blueprint discovery. This controls Featured/All/Labs presentation without changing direct slug availability.",
       "required": [
         "visibility",
         "maturity",

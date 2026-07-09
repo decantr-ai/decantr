@@ -43,25 +43,28 @@ export interface GuardMetrics {
   theme: string;
 }
 
-const TELEMETRY_ENDPOINT = 'https://api.decantr.ai/v1/telemetry/guard';
-const DEFAULT_TELEMETRY_EVENTS_ENDPOINT = 'https://api.decantr.ai/v1/telemetry/events';
 const TELEMETRY_TIMEOUT_MS = 3000;
 
 const DNA_RULES = new Set(['theme', 'style', 'density', 'accessibility', 'theme-mode']);
 
 export async function sendGuardMetrics(metrics: GuardMetrics): Promise<void> {
+  const endpoint = readConfiguredEndpoint('DECANTR_TELEMETRY_GUARD_ENDPOINT');
+  if (!endpoint) return;
+
+  let timer: ReturnType<typeof setTimeout> | undefined;
   try {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), TELEMETRY_TIMEOUT_MS);
-    await fetch(TELEMETRY_ENDPOINT, {
+    timer = setTimeout(() => controller.abort(), TELEMETRY_TIMEOUT_MS);
+    await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(metrics),
       signal: controller.signal,
     });
-    clearTimeout(timer);
   } catch {
     // Fire-and-forget: silently ignore all errors
+  } finally {
+    if (timer) clearTimeout(timer);
   }
 }
 
@@ -130,6 +133,11 @@ export async function captureCliTelemetryEvent(input: CliTelemetryEventInput): P
     return;
   }
 
+  const endpoint = getTelemetryEventsEndpoint();
+  if (!endpoint) {
+    return;
+  }
+
   const identities = ensureTelemetryIdentities(projectRoot);
   if (!identities) {
     return;
@@ -142,7 +150,7 @@ export async function captureCliTelemetryEvent(input: CliTelemetryEventInput): P
 
   const client = createTelemetryClient({
     sink: createFetchTelemetrySink({
-      endpoint: getTelemetryEventsEndpoint(),
+      endpoint,
       timeoutMs: TELEMETRY_TIMEOUT_MS,
     }),
   });
@@ -529,6 +537,8 @@ interface TelemetryIdentities {
 
 export interface CliTelemetryIdentityStatus {
   enabled: boolean;
+  endpoint?: string;
+  endpointConfigured: boolean;
   hasProjectConfig: boolean;
   installId?: string;
   projectId?: string;
@@ -543,9 +553,12 @@ export function getCliTelemetryIdentityStatus(
   const hasProjectConfig = existsSync(projectJsonPath);
   const identities = options.create ? ensureTelemetryIdentities(projectRoot) : null;
   const projectData = readProjectJson(projectRoot);
+  const endpoint = getTelemetryEventsEndpoint();
 
   return {
     enabled: projectData?.telemetry === true,
+    endpoint,
+    endpointConfigured: Boolean(endpoint),
     hasProjectConfig,
     installId: identities?.installId ?? readExistingInstallId(),
     projectId: identities?.projectId ?? readStringProperty(projectData, 'telemetryProjectId'),
@@ -621,8 +634,14 @@ function getConfigDir(): string {
   return process.env.DECANTR_CONFIG_DIR || join(homedir(), '.config', 'decantr');
 }
 
-function getTelemetryEventsEndpoint(): string {
-  return process.env.DECANTR_TELEMETRY_ENDPOINT || DEFAULT_TELEMETRY_EVENTS_ENDPOINT;
+export function getTelemetryEventsEndpoint(): string | undefined {
+  return readConfiguredEndpoint('DECANTR_TELEMETRY_ENDPOINT');
+}
+
+function readConfiguredEndpoint(name: string): string | undefined {
+  const value = process.env[name]?.trim();
+  if (!value) return undefined;
+  return value.replace(/\/+$/, '');
 }
 
 function getTelemetryActorType(): TelemetryActorType {

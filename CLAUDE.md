@@ -6,7 +6,7 @@ Do not add Co-Authored-By lines to commits.
 
 Decantr is AI Frontend Governance. It is a contract, context, content-corpus, and evidence layer that AI coding assistants use to keep frontend changes coherent in production codebases. Decantr does not generate code -- the AI does.
 
-Current strategic program: `docs/programs/2026-04-08-decantr-vnext-master-program.md`. A forward-looking successor architecture is tracked in `docs/audit/decantr-meta-alignment.md` (`decantr-meta` project, separate from this monorepo).
+Current product model: Decantr 3.8.1 is content-first AI Frontend Governance, documented in `docs/llms.txt` and the active `docs/reference/` pages. Files under `docs/programs/` are historical strategy unless a current reference or release note explicitly re-promotes them. A forward-looking successor architecture is tracked in `docs/audit/decantr-meta-alignment.md` (`decantr-meta` project, separate from this monorepo).
 
 ## Packages
 
@@ -16,11 +16,12 @@ Current strategic program: `docs/programs/2026-04-08-decantr-vnext-master-progra
 | `@decantr/content` | `packages/content/` | Official corpus, schemas, validation, search, resolution, and content health helpers |
 | `@decantr/registry` | `packages/registry/` | Legacy compatibility package for content/API client naming in Decantr 3.x |
 | `@decantr/core` | `packages/core/` | Design Pipeline IR engine |
+| `@decantr/telemetry` | `packages/telemetry/` | Optional event contracts and caller-controlled sinks; no hosted default collection |
 | `@decantr/mcp-server` | `packages/mcp-server/` | MCP server exposing the submitted 8-tool surface to AI assistants |
 | `@decantr/css` | `packages/css/` | Legacy optional CSS atom adapter; not a default adoption path |
 | `@decantr/verifier` | `packages/verifier/` | Shared verification, critique, and report-schema engine |
 | `@decantr/vite-plugin` | `packages/vite-plugin/` | Vite plugin for real-time design drift detection |
-| `decantr` | `packages/cli/` | CLI for project initialization, content queries, validation |
+| `@decantr/cli` | `packages/cli/` | CLI for project initialization, content queries, validation, Project Health, and governance workflows |
 
 ## Apps
 
@@ -80,6 +81,10 @@ packages/cli/src/bundled/    # Offline fallback content (not from RegistryClient
   shells/                    # Default shell layout
 ```
 
+## Telemetry Boundary
+
+Decantr has no hosted telemetry sink. CLI opt-in records a local preference, but event delivery requires an explicit caller-controlled `DECANTR_TELEMETRY_ENDPOINT`; guard metrics require `DECANTR_TELEMETRY_GUARD_ENDPOINT`. Private identity linking requires `--api-url` or `DECANTR_TELEMETRY_IDENTITY_API_URL` and must never fall back to the content API through `DECANTR_API_URL`.
+
 ## Essence Schemas
 
 - **v4** (`docs/schemas/essence.v4.json`) -- active Decantr V2 sectioned schema with DNA/Blueprint split, `dna_enforcement` / `blueprint_enforcement` fields, per-page `dna_overrides`, and section topology.
@@ -112,7 +117,7 @@ Patterns, blueprints, themes, and archetypes carry enriched fields for visual in
 | `motion.easings.{ease,easeOut,easeIn,spring}` | Theme | Per-theme tuned easing curves |
 | `typography.{display,body}` | Theme | Display + body font stacks |
 | `elevation[1..5]` | Theme | Per-theme elevation scale; mode-split via `{ light, dark }` |
-| `internal_layout` | Shell | Semantic spatial specs per region (width, height, padding, gap, scroll) |
+| `internal_layout` | Shell | Semantic spatial specs per region (width, height, padding, gap, scroll); nested atom fields are legacy hints for explicit Decantr CSS adoption only |
 | `page_briefs` | Archetype | Per-page visual descriptions |
 | `role` | Archetype | Section role: primary, gateway, public, auxiliary |
 
@@ -171,7 +176,7 @@ The guard system (`packages/essence-spec/src/guard.ts`) enforces eight rules, or
 
 5. **Structure** -- Pages referenced in code must exist in the Essence structure.
 6. **Layout** -- Pattern order in a page must match the Essence layout spec. Strict mode only.
-7. **Pattern existence** -- All patterns referenced in layouts must exist in the registry. Includes fuzzy "did you mean?" suggestions.
+7. **Pattern existence** -- All patterns referenced in layouts must exist in the official corpus or accepted local content. Includes fuzzy "did you mean?" suggestions.
 
 **Experiential guard (8th rule):**
 

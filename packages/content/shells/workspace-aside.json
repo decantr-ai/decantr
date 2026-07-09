@@ -140,7 +140,7 @@
       "direction": "column",
       "overflow_y": "auto",
       "padding": "2rem",
-      "atoms": "_flex _col _overflow[auto] _p8",
+      "atoms": "_flex _col _overauto _p8",
       "note": "Document editor area. Scrollable. Editor mode enabled."
     },
     "aside": {
@@ -150,7 +150,7 @@
       "direction": "column",
       "border": "left",
       "background": "var(--d-bg)",
-      "atoms": "_flex _col _borderL _bgbg _overflow[auto]",
+      "atoms": "_flex _col _borderL _bgbg _overauto",
       "header": {
         "display": "flex",
         "align": "center",

@@ -309,7 +309,7 @@ describe('V4 scaffold', () => {
     expect(existsSync(join(contextDir, 'task-add-page.md'))).toBe(false);
   });
 
-  it('scaffoldProject emits scaffold, section, and page packs when cache contains required registry content', async () => {
+  it('scaffoldProject emits scaffold, section, and page packs when cache contains required corpus content', async () => {
     const cacheRoot = join(testDir, '.decantr', 'cache', '@official');
     mkdirSync(join(cacheRoot, 'themes'), { recursive: true });
     mkdirSync(join(cacheRoot, 'patterns'), { recursive: true });

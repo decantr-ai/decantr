@@ -4,7 +4,7 @@
   "version": "1.3.0",
   "decantr_compat": ">=2.0.0",
   "name": "Content Card Grid",
-  "description": "Responsive grid of registry content cards with optional thumbnail media, strong type identity, builder-friendly descriptions, and a clean source/version/date footer. Used for browsing patterns, themes, blueprints, archetypes, and shells. This pattern owns the card grid, not outer section spacing.",
+  "description": "Responsive grid of official content cards with optional thumbnail media, strong type identity, builder-friendly descriptions, and a clean source/version/date footer. Used for browsing patterns, themes, blueprints, archetypes, and shells. This pattern owns the card grid, not outer section spacing.",
   "dependencies": {
     "patterns": {
       "namespace-badge": "^1.0.0"
@@ -33,7 +33,7 @@
   "default_preset": "standard",
   "presets": {
     "standard": {
-      "description": "Registry content cards with optional 16:9 media, one type chip, a 3-line description, and a clean source/version/date footer. Grid: 1/2/3 cols at sm/md/lg.",
+      "description": "Content corpus cards with optional 16:9 media, one type chip, a 3-line description, and a clean source/version/date footer. Grid: 1/2/3 cols at sm/md/lg.",
       "components": [
         "Card",
         "CardHeader",

@@ -172,9 +172,9 @@ function buildRemediationPrompt(input: {
   commands: string[];
 }): string {
   return [
-    'You are fixing one Decantr Content Health finding in a registry content repository.',
+    'You are fixing one Decantr Content Health finding in the official content corpus.',
     '',
-    'Read the referenced JSON content file and the matching Decantr schema before editing. Preserve the item id, published intent, and registry content type unless the finding explicitly says the id or type is wrong.',
+    'Read the referenced JSON content file and the matching Decantr schema before editing. Preserve the item id, published intent, and content type unless the finding explicitly says the id or type is wrong.',
     '',
     `Finding: ${input.id}`,
     `Source: ${input.source}`,
@@ -950,7 +950,8 @@ export async function createContentHealthReport(
           'Expected one or more of patterns/, themes/, blueprints/, archetypes/, shells/.',
         ],
         rule: 'content-root-empty',
-        suggestedFix: 'Run this command from packages/content or another Decantr content corpus directory.',
+        suggestedFix:
+          'Run this command from packages/content or another Decantr content corpus directory.',
         baseId: 'content-root-empty',
       }),
     );

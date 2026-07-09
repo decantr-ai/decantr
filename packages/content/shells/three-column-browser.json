@@ -106,7 +106,7 @@
       "background": "var(--d-surface)",
       "overflow_y": "auto",
       "padding": "0.5rem",
-      "atoms": "_flex _col _borderR _bgmuted _overflow[auto] _p2",
+      "atoms": "_flex _col _borderR _bgmuted _overauto _p2",
       "header": {
         "display": "flex",
         "align": "center",
@@ -137,7 +137,7 @@
       "direction": "column",
       "border": "right",
       "overflow_y": "auto",
-      "atoms": "_flex _col _borderR _overflow[auto]",
+      "atoms": "_flex _col _borderR _overauto",
       "header": {
         "display": "flex",
         "align": "center",
@@ -163,7 +163,7 @@
       "overflow_y": "auto",
       "padding": "1.5rem",
       "background": "var(--d-bg)",
-      "atoms": "_flex _col _flex1 _overflow[auto] _p6",
+      "atoms": "_flex _col _flex1 _overauto _p6",
       "header": {
         "display": "flex",
         "align": "center",

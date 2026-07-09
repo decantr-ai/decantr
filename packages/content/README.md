@@ -51,6 +51,8 @@ pnpm --filter @decantr/content test
 
 This corpus is official reference material. It is not a public marketplace, account system, or styling runtime. Brownfield attach and contract-only adoption must work without content API access. Project-owned local law created by `decantr codify --from-audit` belongs in the consuming app under `.decantr/local-patterns.json` and `.decantr/rules.json`.
 
+Some pattern and shell records retain `atoms` fields as 3.x compatibility hints for the explicit `@decantr/css` adapter. Contract-only and style-bridge workflows ignore those hints and translate semantic layout, interaction, and visual intent into the consuming project's own styling authority.
+
 `@decantr/registry`, `decantr registry ...`, and MCP `decantr_registry` remain compatibility names in Decantr 3.x. New docs and scripts should prefer `@decantr/content` and `decantr content ...`.
 
 ## License

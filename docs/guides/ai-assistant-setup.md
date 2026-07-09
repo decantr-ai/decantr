@@ -87,7 +87,7 @@ pnpm exec decantr resolve --project apps/web
 
 Do not guess whether source or Decantr context wins. The resolver prints the explicit next commands for repairing source, accepting observed source into the contract, codifying local law, updating the style bridge, regenerating graph/context, or deferring a finding to the drift log.
 
-For discovery prompts such as "standardize all buttons/cards on this page", ask the assistant to run `decantr suggest "button card" --from-code --file src/App.tsx` from the app root, or add `--project apps/web` from a monorepo root. Accepted local patterns are shown before registry patterns so the assistant starts from project-owned law. If a hosted registry pattern is useful vocabulary, map it first with `decantr codify --map-pattern <slug>`; that creates an advisory local-law proposal and does not change source.
+For discovery prompts such as "standardize all buttons/cards on this page", ask the assistant to run `decantr suggest "button card" --from-code --file src/App.tsx` from the app root, or add `--project apps/web` from a monorepo root. Accepted local patterns are shown before official corpus patterns so the assistant starts from project-owned law. If an official corpus pattern is useful vocabulary, map it first with `decantr codify --map-pattern <slug>`; that creates an advisory local-law proposal and does not change source.
 
 When an assistant asks for a Project Health repair prompt from a monorepo root, keep the app path on the prompt command: `decantr health --project apps/web --prompt <finding-id>`.
 

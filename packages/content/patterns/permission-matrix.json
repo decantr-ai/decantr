@@ -35,7 +35,7 @@
       ],
       "layout": {
         "layout": "table",
-        "atoms": "_w[full] _border _r2 _overflow[hidden]",
+        "atoms": "_w[full] _border _r2 _overhidden",
         "slots": {
           "header": "Role names as column headers",
           "rows": "Permission names as row labels",

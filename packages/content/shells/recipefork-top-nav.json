@@ -67,7 +67,7 @@
       "flex": "1",
       "overflow_y": "auto",
       "padding": "0",
-      "atoms": "_flex1 _overflow[auto]",
+      "atoms": "_flex1 _overauto",
       "note": "Individual pages own their spacing. Preserve the wide, app-like content region used by feed, recipe detail, profile, and authoring pages."
     }
   }

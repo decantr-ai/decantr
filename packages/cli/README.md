@@ -166,7 +166,7 @@ decantr check
 decantr studio --port 4319 --host 127.0.0.1
 decantr telemetry status
 decantr telemetry explain
-decantr telemetry link --enable --org <org-slug>
+decantr telemetry link --api-url https://telemetry.example/v1 --api-key <key>
 decantr content check --ci --fail-on error
 decantr content summary --namespace @official --json
 decantr list blueprints --blueprint-set featured
@@ -259,22 +259,22 @@ decantr health --json --output decantr-health.json
 decantr studio --report decantr-health.json
 ```
 
-If the project has explicitly enabled Decantr CLI telemetry, `new --telemetry`, `init --telemetry`, `analyze`, `check --telemetry`, `health`, and `studio` emit only aggregate product-activation metadata such as lifecycle command outcome, analyze counts, status, score, finding counts, CI failure outcome, Studio usage, and remediation prompt requests. They never upload the health report, finding evidence, local paths, route names, source code, package names, or prompt text.
+If a project has explicitly enabled Decantr CLI telemetry and configured `DECANTR_TELEMETRY_ENDPOINT`, `new --telemetry`, `init --telemetry`, `analyze`, `check --telemetry`, `health`, and `studio` may emit only aggregate product-activation metadata to that caller-controlled private sink. They never upload the health report, finding evidence, local paths, route names, source code, package names, or prompt text. Without the endpoint, opt-in remains a local preference and no events or opaque identifiers are created.
 
-## Opted-In Telemetry Identity
+## Private Telemetry Identity
 
-`decantr telemetry` lets users inspect and link the opaque install/project ids used by opted-in CLI telemetry. This is how customer org attribution becomes durable without collecting repository names, local paths, source code, prompts, private package slugs, emails, or secrets.
+`decantr telemetry` reports whether a caller-controlled event sink is configured and exposes the aggregate event contract for review. Decantr does not operate a hosted telemetry sink or identity service.
 
 ```bash
 decantr telemetry status
 decantr telemetry status --json
 decantr telemetry explain
 decantr telemetry explain --json
-decantr login --api-key=<key>
-decantr telemetry link --enable --org <org-slug>
+DECANTR_TELEMETRY_ENDPOINT=https://telemetry.example/v1/events decantr init --telemetry
+decantr telemetry link --api-url https://telemetry.example/v1 --api-key <key> --org <org-slug>
 ```
 
-`telemetry link` calls the hosted `/v1/me/telemetry-link` endpoint with only opaque ids, optional org slug, and optional label. The API verifies org membership, writes `telemetry_identity_aliases`, clears the actor-resolution cache, audit logs the change, and emits `telemetry.identity_linked`.
+`telemetry link` is retained for private deployments only. It requires an explicit `--api-url` or `DECANTR_TELEMETRY_IDENTITY_API_URL` plus an API key; it never falls back to `api.decantr.ai` or `DECANTR_API_URL`. Only after those values are validated can it create and send opaque install/project ids, optional org slug, and optional label.
 
 `telemetry explain` prints the CLI event catalog subset, aggregate field categories, current opaque ids if they already exist, and the explicit never-collected list. It is designed for security review and customer trust conversations before a team opts in.
 

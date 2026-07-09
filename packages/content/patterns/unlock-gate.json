@@ -35,7 +35,7 @@
       ],
       "layout": {
         "layout": "overlay",
-        "atoms": "_relative _overflow[hidden]",
+        "atoms": "_relative _overhidden",
         "slots": {
           "preview": "Blurred content preview",
           "overlay": "Unlock prompt overlay",

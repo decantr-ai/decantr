@@ -1,7 +1,7 @@
 {
   "name": "@decantr/css",
-  "version": "3.8.0",
-  "description": "Framework-agnostic CSS atom runtime for Decantr projects",
+  "version": "3.8.1",
+  "description": "Legacy optional CSS atom runtime for explicit Decantr adapter adoption",
   "author": "Decantr AI",
   "bugs": {
     "url": "https://github.com/decantr-ai/decantr/issues"
@@ -44,8 +44,7 @@
     "css",
     "atoms",
     "utility-css",
-    "design-intelligence",
-    "design-system",
+    "legacy-adapter",
     "design-tokens",
     "ai-frontend-governance"
   ],

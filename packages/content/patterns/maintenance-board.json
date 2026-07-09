@@ -38,7 +38,7 @@
       ],
       "layout": {
         "layout": "horizontal",
-        "atoms": "_flex _gap4 _overflow[auto] _pb4",
+        "atoms": "_flex _gap4 _overauto _pb4",
         "slots": {
           "header": "Title, filters, view toggle",
           "filters": "Property, priority, category, date range",
@@ -81,7 +81,7 @@
   },
   "default_layout": {
     "layout": "horizontal",
-    "atoms": "_flex _gap4 _overflow[auto]",
+    "atoms": "_flex _gap4 _overauto",
     "slots": {
       "header": "Title and controls",
       "columns": "Kanban columns"
