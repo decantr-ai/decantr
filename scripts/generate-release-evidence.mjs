@@ -240,6 +240,17 @@ function isRetiredPnpmAuditEndpoint(result) {
   );
 }
 
+function isNpmRegistryResolution(resolved) {
+  if (!resolved) return false;
+
+  try {
+    const url = new URL(resolved);
+    return url.protocol === 'https:' && url.hostname === 'registry.npmjs.org' && url.port === '';
+  } catch {
+    return false;
+  }
+}
+
 function collectRegistryDependencyVersions(projects) {
   const versionsByName = new Map();
   const visited = new Set();
@@ -258,7 +269,7 @@ function collectRegistryDependencyVersions(projects) {
         const resolved = String(dependency.resolved ?? '');
         const dependencyPath = String(dependency.path ?? '').replaceAll('\\', '/');
         const isRegistryDependency =
-          resolved.includes('registry.npmjs.org') || dependencyPath.includes('/node_modules/.pnpm/');
+          isNpmRegistryResolution(resolved) || dependencyPath.includes('/node_modules/.pnpm/');
 
         if (isRegistryDependency && typeof dependency.version === 'string') {
           const versions = versionsByName.get(name) ?? new Set();
