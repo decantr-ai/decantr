@@ -62,7 +62,9 @@ if (selectedPackages.length === 0) {
   throw new Error('No publishable packages matched the selected release filters.');
 }
 
-const commit = runGit(['rev-parse', releaseTag], { allowFailure: true })?.trim() || runGit(['rev-parse', 'HEAD']).trim();
+const commit =
+  runGit(['rev-parse', `${releaseTag}^{commit}`], { allowFailure: true })?.trim() ||
+  runGit(['rev-parse', 'HEAD']).trim();
 const payload = {
   changelog_markdown: releaseNote,
   commit,
