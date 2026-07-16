@@ -212,11 +212,11 @@ jobs:
           fi
           ARGS+=("--auth-strategy=$DECANTR_PUBLISH_AUTH_STRATEGY")
           node scripts/publish-packages.mjs "${ARGS[@]}"
-      - name: Upload qualified publish tarballs
+      - name: Upload release-evidence publish tarballs
         if: ${{ always() && github.event.inputs.dry_run_only != 'true' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: qualified-publish-tarballs-${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
+          name: release-evidence-publish-tarballs-${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
           path: ${{ runner.temp }}/decantr-release-staging/**
           if-no-files-found: error
       - name: Verify published npm packages

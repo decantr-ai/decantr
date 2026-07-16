@@ -13,6 +13,12 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import {
+  THREE_NINE_MACHINE_PACKAGES,
+  THREE_NINE_SOLE_MAINTAINER_MODE,
+  THREE_NINE_WAIVED_REQUIREMENTS,
+  evaluateThreeNineReleasePolicy,
+} from './3-9-release-policy.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const scripts = join(root, 'scripts');
@@ -41,6 +47,67 @@ function git(cwd, args) {
 function hash(value, algorithm, encoding = 'hex') {
   return createHash(algorithm).update(value).digest(encoding);
 }
+
+test('sole-maintainer policy permits publication without manufacturing qualification', () => {
+  const exactPackageTarballs = Object.fromEntries(
+    THREE_NINE_MACHINE_PACKAGES.map((name, index) => [
+      name,
+      {
+        file: `decantr-${name.split('/')[1]}-3.9.0.tgz`,
+        sha256: String(index + 1).padStart(64, '0'),
+      },
+    ]),
+  );
+  const packet = {
+    packetStatus: 'incomplete',
+    qualificationClaim: false,
+    routeCorpus: { status: 'complete' },
+    routeReplay: { status: 'complete' },
+    adoptionBoundaryReplay: { status: 'complete' },
+    machineReplay: {
+      status: 'complete',
+      artifact: { environment: { exactPackageTarballs } },
+    },
+  };
+  const missingEvidence = {
+    items: THREE_NINE_WAIVED_REQUIREMENTS.map((id) => ({ id, state: 'missing' })),
+  };
+  const waiver = {
+    schemaVersion: 'decantr-3.9-release-waiver.v1',
+    releaseVersion: '3.9.0',
+    status: 'authorized',
+    mode: THREE_NINE_SOLE_MAINTAINER_MODE,
+    authorizedAt: '2026-07-16T21:01:00Z',
+    authorizedBy: {
+      name: 'David Aimi',
+      github: 'david-aimi',
+      role: 'sole-maintainer',
+    },
+    rationale: 'One human maintains Decantr, so a two-person review cannot be represented honestly.',
+    acceptedMissingEvidence: [...THREE_NINE_WAIVED_REQUIREMENTS],
+    claims: {
+      releaseQualification: false,
+      humanFindingPrecision: false,
+      humanFindingRecall: false,
+      adoptionProven: false,
+    },
+  };
+
+  const accepted = evaluateThreeNineReleasePolicy({ packet, missingEvidence, waiver });
+  assert.deepEqual(accepted.errors, []);
+  assert.equal(accepted.mode, THREE_NINE_SOLE_MAINTAINER_MODE);
+  assert.equal(accepted.qualificationClaim, false);
+  assert.equal(accepted.packageEvidenceStatus, 'machine-qualified-human-waived');
+
+  const expanded = evaluateThreeNineReleasePolicy({
+    packet,
+    missingEvidence: {
+      items: [...missingEvidence.items, { id: 'MACHINE_QUALIFICATION_REPLAY', state: 'missing' }],
+    },
+    waiver,
+  });
+  assert.match(expanded.errors.join(' '), /only the four frozen human finding requirements/u);
+});
 
 function createTaggedFixture() {
   const directory = mkdtempSync(join(tmpdir(), 'decantr-release-tag-test-'));
@@ -132,6 +199,20 @@ function createPublishIntegrityFixture(t) {
   execFileSync('tar', ['-czf', tarballPath, '-C', tarballSource, 'package']);
   const tarballBytes = readFileSync(tarballPath);
   const tarballSha256 = hash(tarballBytes, 'sha256');
+  const exactPackageTarballs = Object.fromEntries(
+    THREE_NINE_MACHINE_PACKAGES.map((name) => {
+      if (name === '@decantr/cli') {
+        return [name, { file: tarballName, sha256: tarballSha256 }];
+      }
+      return [
+        name,
+        {
+          file: `decantr-${name.split('/')[1]}-3.9.0.tgz`,
+          sha256: hash(`fixture:${name}`, 'sha256'),
+        },
+      ];
+    }),
+  );
 
   writeJson(join(directory, 'config/package-surface.json'), {
     releaseLanes: {
@@ -161,12 +242,14 @@ function createPublishIntegrityFixture(t) {
   writeJson(join(directory, 'fixtures/qualification/3.9/qualification-packet.json'), {
     packetStatus: 'complete',
     qualificationClaim: true,
+    routeCorpus: { status: 'complete' },
+    routeReplay: { status: 'complete' },
+    adoptionBoundaryReplay: { status: 'complete' },
     machineReplay: {
+      status: 'complete',
       artifact: {
         environment: {
-          exactPackageTarballs: {
-            '@decantr/cli': { file: tarballName, sha256: tarballSha256 },
-          },
+          exactPackageTarballs,
         },
       },
     },
@@ -449,7 +532,7 @@ test('OIDC token fallback reuses the retained qualified tarball', (t) => {
   assert.equal(manifest.packages[0].publish.status, 'published');
 });
 
-test('closeout binds public npm bytes and OIDC provenance to retained qualification hashes', (t) => {
+test('closeout binds public npm bytes and OIDC provenance to retained release-evidence hashes', (t) => {
   const fixture = createPublishIntegrityFixture(t);
   const published = runNode('publish-packages.mjs', [
     '--only=@decantr/cli',
@@ -632,7 +715,7 @@ echo '{}'
   }
 });
 
-test('readiness runs the 3.9 qualification gate but leaves a 3.8 patch lane alone', (t) => {
+test('readiness runs the 3.9 release-evidence gate but leaves a 3.8 patch lane alone', (t) => {
   const directory = mkdtempSync(join(tmpdir(), 'decantr-readiness-test-'));
   t.after(() => rmSync(directory, { recursive: true, force: true }));
   const packageManifest = {
@@ -782,7 +865,7 @@ test('publish workflow is protected and verifies the tagged origin/main commit',
   assert.match(workflow, /git merge-base --is-ancestor "\$TAG_COMMIT" origin\/main/u);
   assert.match(workflow, /ref: \$\{\{ github\.event_name == 'workflow_dispatch' && inputs\.release_tag \|\| github\.ref \}\}/u);
   assert.doesNotMatch(workflow, /ARGS=""/u);
-  assert.match(workflow, /qualified-publish-tarballs/u);
+  assert.match(workflow, /release-evidence-publish-tarballs/u);
   assert.match(workflow, /DECANTR_RELEASE_STAGING_DIR/u);
   assert.match(workflow, /Run tag-bound release closeout/u);
 });

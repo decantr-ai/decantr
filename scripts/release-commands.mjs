@@ -202,7 +202,7 @@ const lines = [
   `- publish: \`${output.wrapperCommands.publish}\``,
   `- verify: \`${output.wrapperCommands.verify}\``,
   '',
-  'The wrapper commands stage each package once in a SHA-256-addressed retained set, verify qualification hashes, and publish those exact tarball paths before public npm verification.',
+  'The wrapper commands stage each package once in a SHA-256-addressed retained set, verify release-evidence hashes and policy mode, and publish those exact tarball paths before public npm verification.',
   'CI publishes use GitHub OIDC trusted publishing by default. If a package is missing npm trusted-publisher configuration and `NPM_TOKEN` is available, `auto` retries that package once with token auth and provenance disabled.',
   '',
 ];

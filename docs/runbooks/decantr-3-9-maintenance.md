@@ -2,7 +2,7 @@
 
 Date: 2026-07-16
 
-Status: Prepared for the Decantr 3.9 line. This policy becomes the active patch boundary only after 3.9.0 is qualified, published, verified, and closed out. Until then, the 3.9.0 release gate in `release-stewardship.md` remains authoritative.
+Status: Prepared for the Decantr 3.9 line. This policy becomes the active patch boundary only after 3.9.0 is published, verified, and closed out under the release-evidence gate. Human qualification remains a separate quantitative claim. Until closeout, the 3.9.0 release gate in `release-stewardship.md` remains authoritative.
 
 ## Compatibility Boundary
 
@@ -66,6 +66,8 @@ pnpm audit:3-9-qualification
 ```
 
 The default command must fail closed on missing human identities, adjudication, replay artifacts, exhaustive route candidates, confusion matrices, or write-boundary evidence. A patch may preserve an already qualified corpus and replay it, but it must not tune or relabel the frozen evidence after inspecting candidate output.
+
+Stable 3.9.0 publication uses `pnpm audit:3-9-release-gate`. Its sole-maintainer mode may accept only the exact four human finding gaps recorded in the version-bound waiver, while retaining all route, machine, adoption/Studio, package, provenance, and closeout evidence. A published unqualified release must not be described as human-qualified or adoption-proven.
 
 ## Release Closeout
 

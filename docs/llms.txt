@@ -12,7 +12,7 @@ The official corpus, client, resolver, ranking, wiring, and content provenance i
 
 Studio is a local read-only renderer: it may recompute current state in memory or read project-mode Project Health v2 and CI v2/v3 artifacts, but it does not write source/contracts/baselines or execute adoption, repair, migration, build, verification, package-manager, or agent workflows.
 
-The approved 3.9 qualification program remains incomplete until replayable route/source evidence and two-human adjudication exist. Do not claim that the 84 route, 24 forbidden-source, or 200 finding-judgment gates passed merely because schemas, fixtures, or docs exist.
+The 3.9 route/source and machine evidence lanes are complete: 84 unique route cases, 24 genuine competing forbidden sources, and 270 isolated machine samples. The two-human 200-finding adjudication lane remains incomplete. Stable 3.9.0 may publish through the explicit sole-maintainer waiver, but that does not authorize human precision, recall, release-qualification, or adoption-proven claims.
 
 ## Docs
 
@@ -36,7 +36,7 @@ The approved 3.9 qualification program remains incomplete until replayable route
 - [3.8.2 post-publish adoption audit](https://decantr.ai/audit/2026-07-16-decantr-3-8-2-post-publish-adoption.md): Measured external trial, limitations, and TanStack root-route defect.
 - [3.8.3 release note](https://decantr.ai/releases/2026-07-16-decantr-3-8-3-route-source-precision.md): Narrow delivery-wave correction for TanStack page-source precedence.
 - [3.8.3 post-publish adoption audit](https://decantr.ai/audit/2026-07-16-decantr-3-8-3-post-publish-adoption.md): Public npm install, pinned Brownfield host gates, current TanStack Greenfield proof, source ownership, and limitations.
-- [3.9 Governed Change Proof program](https://decantr.ai/programs/2026-07-16-decantr-3-9-adoption-proof-program.md): Approved scope and qualification gates; active docs do not claim the missing human/replay evidence passed.
+- [3.9 Governed Change Proof program](https://decantr.ai/programs/2026-07-16-decantr-3-9-adoption-proof-program.md): Approved scope, machine evidence, sole-maintainer release decision, and still-missing human finding qualification.
 
 ## Operational Notes
 

@@ -12,9 +12,9 @@
           "phases": ["publish", "closeout"]
         },
         {
-          "id": "release-qualification",
-          "label": "Decantr 3.9 qualification gate",
-          "script": "scripts/audit-3-9-qualification-baseline.mjs",
+          "id": "release-evidence",
+          "label": "Decantr 3.9 release evidence gate",
+          "script": "scripts/audit-3-9-release-gate.mjs",
           "phases": ["readiness", "publish", "closeout"]
         }
       ]

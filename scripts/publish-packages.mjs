@@ -18,6 +18,7 @@ import { tmpdir } from 'node:os';
 import { readArgValue } from './cli-arg-lib.mjs';
 import { getRepoRoot, loadPackageSurface, sortReleaseEntries } from './package-surface-lib.mjs';
 import { assertNpmPackageWriteAccess, readNpmVersions } from './npm-surface-lib.mjs';
+import { readThreeNineReleasePolicy } from './3-9-release-policy.mjs';
 
 const rawArgs = process.argv.slice(2);
 const args = new Set(rawArgs);
@@ -53,7 +54,6 @@ const DEPENDENCY_FIELDS = [
 const AUTH_STRATEGIES = new Set(['auto', 'oidc', 'token']);
 const INTERNAL_DEPENDENCY_FIELDS = ['dependencies', 'peerDependencies', 'optionalDependencies'];
 const STAGING_SCHEMA_VERSION = 'decantr-release-staging.v1';
-const QUALIFICATION_PACKET_PATH = 'fixtures/qualification/3.9/qualification-packet.json';
 
 if (!AUTH_STRATEGIES.has(requestedAuthStrategy)) {
   console.error(`Unsupported publish auth strategy: ${requestedAuthStrategy}`);
@@ -439,36 +439,21 @@ function runRequiredReleaseGates(entries) {
   }
 }
 
-function readQualifiedTarballs(entries) {
-  if (stable39Versions(entries).length === 0) return {};
-  const packetPath = join(root, QUALIFICATION_PACKET_PATH);
-  let packet;
-  try {
-    packet = JSON.parse(readFileSync(packetPath, 'utf8'));
-  } catch (cause) {
-    throw new Error(`Cannot read the 3.9 qualification packet: ${cause.message}`);
+function readReleaseEvidence(entries) {
+  if (stable39Versions(entries).length === 0) {
+    return {
+      mode: 'not-applicable',
+      qualificationClaim: false,
+      packageEvidenceStatus: 'not-in-machine-wave',
+      waiverPath: null,
+      exactPackageTarballs: {},
+    };
   }
-  if (packet.packetStatus !== 'complete' || packet.qualificationClaim !== true) {
-    throw new Error('The 3.9 qualification packet is not complete and qualified.');
+  const policy = readThreeNineReleasePolicy(root);
+  if (policy.errors.length > 0) {
+    throw new Error(`The 3.9 release policy is invalid: ${policy.errors.join(' ')}`);
   }
-
-  const qualified = packet.machineReplay?.artifact?.environment?.exactPackageTarballs;
-  if (!qualified || typeof qualified !== 'object' || Array.isArray(qualified)) {
-    throw new Error('The 3.9 qualification packet does not retain exact package tarball hashes.');
-  }
-  for (const [name, artifact] of Object.entries(qualified)) {
-    if (
-      !artifact
-      || typeof artifact !== 'object'
-      || typeof artifact.file !== 'string'
-      || artifact.file !== basename(artifact.file)
-      || !artifact.file.endsWith('.tgz')
-      || !/^[a-f0-9]{64}$/u.test(artifact.sha256 ?? '')
-    ) {
-      throw new Error(`Qualified tarball identity for ${name} is malformed.`);
-    }
-  }
-  return qualified;
+  return policy;
 }
 
 function resolveStagingContext(entries, sourceVerification) {
@@ -552,7 +537,7 @@ function writeStagingManifest(context, manifest) {
   renameSync(temporaryPath, context.manifestPath);
 }
 
-function validateReusableStagingManifest(context, manifest, entries, qualifiedTarballs, sourceVerification) {
+function validateReusableStagingManifest(context, manifest, entries, releaseEvidence, sourceVerification) {
   if (
     manifest.schemaVersion !== STAGING_SCHEMA_VERSION
     || manifest.release?.version !== context.releaseVersion
@@ -562,6 +547,13 @@ function validateReusableStagingManifest(context, manifest, entries, qualifiedTa
     throw new Error(`Retained staging manifest identity does not match ${context.releaseTag} at ${context.commit}.`);
   }
   if (sourceVerification && manifest.sourceVerification?.status !== 'verified') {
+    return false;
+  }
+  if (
+    manifest.qualification?.mode !== releaseEvidence.mode
+    || manifest.qualification?.qualificationClaim !== releaseEvidence.qualificationClaim
+    || manifest.qualification?.waiver !== releaseEvidence.waiverPath
+  ) {
     return false;
   }
   const expectedNames = entries.map((entry) => entry.name);
@@ -580,19 +572,20 @@ function validateReusableStagingManifest(context, manifest, entries, qualifiedTa
     }
     const path = assertStagedTarballIntegrity(context, packageArtifact);
     auditPackedManifest(entry, path, version);
-    const qualified = qualifiedTarballs[entry.name];
-    if (qualified && (
-      qualified.file !== packageArtifact.tarball.file
-      || qualified.sha256 !== packageArtifact.tarball.sha256
-      || packageArtifact.qualification?.sha256 !== qualified.sha256
+    const releaseIdentity = releaseEvidence.exactPackageTarballs[entry.name];
+    if (releaseIdentity && (
+      releaseIdentity.file !== packageArtifact.tarball.file
+      || releaseIdentity.sha256 !== packageArtifact.tarball.sha256
+      || packageArtifact.qualification?.status !== releaseEvidence.packageEvidenceStatus
+      || packageArtifact.qualification?.sha256 !== releaseIdentity.sha256
     )) {
-      throw new Error(`${entry.name}@${version} retained bytes do not match the 3.9 qualification hash.`);
+      throw new Error(`${entry.name}@${version} retained bytes do not match the 3.9 release-evidence hash.`);
     }
   }
   return true;
 }
 
-function stageReleaseTarballs(entries, sourceVerification, qualifiedTarballs) {
+function stageReleaseTarballs(entries, sourceVerification, releaseEvidence) {
   const context = resolveStagingContext(entries, sourceVerification);
   if (existsSync(context.manifestPath)) {
     const retained = JSON.parse(readFileSync(context.manifestPath, 'utf8'));
@@ -600,7 +593,7 @@ function stageReleaseTarballs(entries, sourceVerification, qualifiedTarballs) {
       context,
       retained,
       entries,
-      qualifiedTarballs,
+      releaseEvidence,
       sourceVerification,
     )) {
       console.log(`Reusing retained release staging manifest: ${context.manifestPath}`);
@@ -642,9 +635,12 @@ function stageReleaseTarballs(entries, sourceVerification, qualifiedTarballs) {
 
       const file = basename(packedPath);
       const sha256 = sha256File(packedPath);
-      const qualified = qualifiedTarballs[entry.name] ?? null;
-      if (qualified && (qualified.file !== file || qualified.sha256 !== sha256)) {
-        throw new Error(`${entry.name}@${version} staged bytes do not match the 3.9 qualification hash.`);
+      const releaseIdentity = releaseEvidence.exactPackageTarballs[entry.name] ?? null;
+      if (
+        releaseIdentity
+        && (releaseIdentity.file !== file || releaseIdentity.sha256 !== sha256)
+      ) {
+        throw new Error(`${entry.name}@${version} staged bytes do not match the 3.9 release-evidence hash.`);
       }
       const relativePath = `sha256/${sha256}/${file}`;
       const retainedPath = resolve(context.runDir, ...relativePath.split('/'));
@@ -665,8 +661,12 @@ function stageReleaseTarballs(entries, sourceVerification, qualifiedTarballs) {
           shasum: hashFile(retainedPath, 'sha1'),
           size: statSync(retainedPath).size,
         },
-        qualification: qualified
-          ? { status: 'qualified', file: qualified.file, sha256: qualified.sha256 }
+        qualification: releaseIdentity
+          ? {
+              status: releaseEvidence.packageEvidenceStatus,
+              file: releaseIdentity.file,
+              sha256: releaseIdentity.sha256,
+            }
           : { status: 'not-in-machine-wave', file: null, sha256: null },
         publish: { status: 'pending', authMode: null },
       });
@@ -686,10 +686,13 @@ function stageReleaseTarballs(entries, sourceVerification, qualifiedTarballs) {
     },
     sourceVerification: sourceVerification ?? { status: 'nonpublishing' },
     qualification: {
-      packet: QUALIFICATION_PACKET_PATH,
+      packet: 'fixtures/qualification/3.9/qualification-packet.json',
+      mode: releaseEvidence.mode,
+      qualificationClaim: releaseEvidence.qualificationClaim,
+      waiver: releaseEvidence.waiverPath,
       exactPackageTarballs: Object.fromEntries(
         packageArtifacts
-          .filter((entry) => entry.qualification.status === 'qualified')
+          .filter((entry) => entry.qualification.status !== 'not-in-machine-wave')
           .map((entry) => [entry.name, {
             file: entry.qualification.file,
             sha256: entry.qualification.sha256,
@@ -889,8 +892,8 @@ try {
     sourceVerification = verifiedAfterGates;
   }
   if (!dryRun) {
-    const qualifiedTarballs = readQualifiedTarballs(selected);
-    staging = stageReleaseTarballs(selected, sourceVerification, qualifiedTarballs);
+    const releaseEvidence = readReleaseEvidence(selected);
+    staging = stageReleaseTarballs(selected, sourceVerification, releaseEvidence);
     if (sourceVerification) {
       const verifiedAfterStaging = verifyReal39ReleaseSource(selected);
       assertSameVerifiedReleaseSource(sourceVerification, verifiedAfterStaging, 'tarballs were staged');

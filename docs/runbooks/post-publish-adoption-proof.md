@@ -1,6 +1,6 @@
 # Post-Publish Adoption Proof
 
-Use this runbook after an npm release and before describing that release as adopted successfully. It tests exact public npm artifacts, pinned Brownfield commits, a current Greenfield generator, host builds, governed-change contracts, and host-source integrity. For Decantr 3.9, this public replay supplements rather than replaces the pre-publish packed-artifact and human qualification gates.
+Use this runbook after an npm release and before describing that release as adopted successfully. It tests exact public npm artifacts, pinned Brownfield commits, a current Greenfield generator, host builds, governed-change contracts, and host-source integrity. For Decantr 3.9, this public replay supplements the pre-publish packed-artifact and release-evidence gates; it does not retroactively create human finding qualification.
 
 ## Rules
 
@@ -13,7 +13,7 @@ Use this runbook after an npm release and before describing that release as adop
 - Run v2 and explicit v3 CI separately. V2 remains the default; never infer v3 from the package version.
 - A v3 `not_proven` result is not a pass. Record missing, stale, or incompatible baseline/change evidence instead of converting unclassified findings into new findings.
 - Preserve raw per-run timings and reproducibility manifests. A percentile claim requires 30 independently initialized runs per target/command.
-- Reuse the frozen two-human-reviewer finding and route corpus. Do not generate labels from Decantr output or substitute agents for reviewers.
+- Reuse the frozen route corpus. Run the finding replay only after two independent humans complete the frozen finding corpus; do not generate labels from Decantr output or substitute agents for reviewers.
 
 ## Brownfield Corpus
 
@@ -129,4 +129,4 @@ Record these facts in the release audit:
 - source files changed by Decantr versus by host tooling
 - any defect, limitation, or unmeasured claim
 
-Run `pnpm audit:3-9-qualification` against the completed, artifact-backed packet and retain its output with the public audit. Do not claim precision/recall without the frozen two-human-reviewer corpus and recomputable confusion matrices. Do not claim a percentile from fewer than 30 independent samples, and do not describe 3.9 as adoption-proven until the dated public audit is reviewed.
+Run `pnpm audit:3-9-release-gate` against the public-artifact-backed packet and retain its output with the public audit. Also retain the expected incomplete output from `pnpm audit:3-9-qualification` while the human lane is absent. Do not claim precision/recall without the frozen two-human-reviewer corpus and recomputable confusion matrices. Do not claim a percentile from fewer than 30 independent samples, and do not describe 3.9 as adoption-proven until the dated public audit is reviewed.

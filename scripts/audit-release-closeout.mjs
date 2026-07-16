@@ -16,6 +16,12 @@ import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'nod
 import { readArgValue } from './cli-arg-lib.mjs';
 import { getRepoRoot, sortReleaseEntries } from './package-surface-lib.mjs';
 import { readNpmDistTags, readNpmVersions } from './npm-surface-lib.mjs';
+import {
+  THREE_NINE_MISSING_EVIDENCE_PATH,
+  THREE_NINE_QUALIFICATION_PACKET_PATH,
+  THREE_NINE_RELEASE_WAIVER_PATH,
+  evaluateThreeNineReleasePolicy,
+} from './3-9-release-policy.mjs';
 
 const rawArgs = process.argv.slice(2);
 const args = new Set(rawArgs);
@@ -52,7 +58,6 @@ let expandedDependencies = [];
 let stagingManifestPath = null;
 let stagingManifest = null;
 const STAGING_SCHEMA_VERSION = 'decantr-release-staging.v1';
-const QUALIFICATION_PACKET_PATH = 'fixtures/qualification/3.9/qualification-packet.json';
 
 if (!releaseVersion) {
   addCheck('release', 'target version', 'fail', 'Pass an explicit --version=x.y.z release target.');
@@ -445,20 +450,33 @@ function resolveStagingManifestPath() {
   return existsSync(candidate) ? candidate : null;
 }
 
-function readQualifiedTarballsAtTag() {
-  if (!releaseVersion?.startsWith('3.9.')) return {};
-  const packet = readJsonAtTag(releaseTag, QUALIFICATION_PACKET_PATH);
-  const qualified = packet?.machineReplay?.artifact?.environment?.exactPackageTarballs;
-  if (
-    packet?.packetStatus !== 'complete'
-    || packet?.qualificationClaim !== true
-    || !qualified
-    || typeof qualified !== 'object'
-    || Array.isArray(qualified)
-  ) {
-    throw new Error('The tagged 3.9 qualification packet lacks retained exact package tarball hashes.');
+function readReleaseEvidenceAtTag() {
+  if (!releaseVersion?.startsWith('3.9.')) {
+    return {
+      mode: 'not-applicable',
+      qualificationClaim: false,
+      packageEvidenceStatus: 'not-in-machine-wave',
+      waiverPath: null,
+      exactPackageTarballs: {},
+    };
   }
-  return qualified;
+  const packet = readJsonAtTag(releaseTag, THREE_NINE_QUALIFICATION_PACKET_PATH);
+  const readOptional = (path) => {
+    try {
+      return readJsonAtTag(releaseTag, path);
+    } catch {
+      return null;
+    }
+  };
+  const policy = evaluateThreeNineReleasePolicy({
+    packet,
+    missingEvidence: readOptional(THREE_NINE_MISSING_EVIDENCE_PATH),
+    waiver: readOptional(THREE_NINE_RELEASE_WAIVER_PATH),
+  });
+  if (policy.errors.length > 0) {
+    throw new Error(`The tagged 3.9 release policy is invalid: ${policy.errors.join(' ')}`);
+  }
+  return policy;
 }
 
 function loadStagingManifest(path) {
@@ -488,7 +506,14 @@ function loadStagingManifest(path) {
     throw new Error('Retained release staging package selection differs from tagged closeout selection.');
   }
 
-  const qualifiedTarballs = readQualifiedTarballsAtTag();
+  const releaseEvidence = readReleaseEvidenceAtTag();
+  if (
+    manifest.qualification?.mode !== releaseEvidence.mode
+    || manifest.qualification?.qualificationClaim !== releaseEvidence.qualificationClaim
+    || manifest.qualification?.waiver !== releaseEvidence.waiverPath
+  ) {
+    throw new Error('Retained release-evidence mode differs from the tagged 3.9 policy.');
+  }
   for (const packageArtifact of manifest.packages) {
     const selectedEntry = selected.find((entry) => entry.name === packageArtifact.name);
     const expectedVersion = readPackageJsonAtTag(releaseTag, selectedEntry).version;
@@ -508,15 +533,16 @@ function loadStagingManifest(path) {
       throw new Error(`Retained tarball identity is malformed for ${packageArtifact.name}.`);
     }
 
-    const qualified = qualifiedTarballs[packageArtifact.name];
-    if (qualified && (
-      qualified.file !== tarball.file
-      || qualified.sha256 !== tarball.sha256
-      || packageArtifact.qualification?.status !== 'qualified'
-      || packageArtifact.qualification?.sha256 !== qualified.sha256
-      || manifest.qualification?.exactPackageTarballs?.[packageArtifact.name]?.sha256 !== qualified.sha256
+    const releaseIdentity = releaseEvidence.exactPackageTarballs[packageArtifact.name];
+    if (releaseIdentity && (
+      releaseIdentity.file !== tarball.file
+      || releaseIdentity.sha256 !== tarball.sha256
+      || packageArtifact.qualification?.status !== releaseEvidence.packageEvidenceStatus
+      || packageArtifact.qualification?.sha256 !== releaseIdentity.sha256
+      || manifest.qualification?.exactPackageTarballs?.[packageArtifact.name]?.sha256
+        !== releaseIdentity.sha256
     )) {
-      throw new Error(`${packageArtifact.name} does not match the tagged 3.9 qualification hash.`);
+      throw new Error(`${packageArtifact.name} does not match the tagged 3.9 release-evidence hash.`);
     }
   }
   return manifest;

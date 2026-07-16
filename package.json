@@ -33,6 +33,7 @@
     "audit:packed-content-facade": "node scripts/audit-packed-content-facade.mjs",
     "audit:3-9-qualification": "node scripts/audit-3-9-qualification-baseline.mjs",
     "audit:3-9-qualification:lint": "node scripts/audit-3-9-qualification-baseline.mjs --lint-only",
+    "audit:3-9-release-gate": "node scripts/audit-3-9-release-gate.mjs",
     "qualification:3-9:route": "node scripts/run-3-9-route-qualification.mjs --write-packet",
     "qualification:3-9:machine": "node scripts/run-3-9-machine-qualification.mjs --write-packet",
     "qualification:3-9:human:lint": "node scripts/prepare-3-9-human-review.mjs --lint-only",

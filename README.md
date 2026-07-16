@@ -141,7 +141,7 @@ pnpm release:verify
 pnpm release:closeout -- --version 3.9.0
 ```
 
-Decantr 3.9 is the Governed Change Proof line. The approved scope and still-required quantitative/human qualification evidence are recorded in [docs/programs/2026-07-16-decantr-3-9-adoption-proof-program.md](docs/programs/2026-07-16-decantr-3-9-adoption-proof-program.md). Active docs describe the implemented contracts; they do not claim that the program's 84 route, 24 forbidden-source, or 200 human-adjudicated finding gates have passed.
+Decantr 3.9 is the Governed Change Proof line. The approved scope and qualification standard are recorded in [docs/programs/2026-07-16-decantr-3-9-adoption-proof-program.md](docs/programs/2026-07-16-decantr-3-9-adoption-proof-program.md). The route and machine lanes are complete; the two-human finding lane is not. Because Decantr has one human maintainer, stable 3.9.0 publication may use the explicit sole-maintainer waiver without claiming human precision, recall, release qualification, or adoption proof.
 
 ### Release stewardship
 

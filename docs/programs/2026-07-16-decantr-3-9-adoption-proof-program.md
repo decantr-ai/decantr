@@ -2,7 +2,7 @@
 
 Date: 2026-07-16
 
-Status: Approved implementation program for the unreleased Decantr 3.9 line. The shipped baseline is Decantr 3.8.3. Requirements and target behavior below are not shipped behavior until a public 3.9.0 audit proves them.
+Status: Approved implementation program for the Decantr 3.9 line. The shipped baseline is Decantr 3.8.3 until 3.9.0 publication and closeout. Requirements and target behavior below are not shipped behavior until public package verification proves them.
 
 ## Program Decision
 
@@ -18,7 +18,7 @@ The release will:
 - keep Studio read-only with respect to project files, contracts, baselines, source, and external automation
 - keep exactly the existing eight MCP tools
 - add no npm package and no CLI command
-- qualify unpublished packed artifacts and then publish straight to stable `3.9.0`, with no RC, `next`, or `candidate` release
+- machine-qualify unpublished packed artifacts and then publish straight to stable `3.9.0`, with no RC, `next`, or `candidate` release
 
 ## Product Boundary
 
@@ -373,6 +373,10 @@ Work must proceed in this order. A dependent item does not start integration unt
 - Package permissions, package surface, schemas, links, docs drift, content validation, and host toolchains pass.
 - Release notes name sample bounds, unsupported cases, and unmeasured runtime/visual claims.
 
+### Sole-Maintainer Release Decision
+
+Decantr has one human maintainer. Stable 3.9.0 publication may therefore proceed through the version-bound `sole-maintainer-unqualified` release gate when every Gate D machine/package requirement passes and the only missing items are the two-reviewer finding identities, adjudicated finding corpus, and corresponding public 3.8.3/final 3.9.0 finding replays. This decision prevents fabricated reviewer independence; it does not satisfy the human qualification lane or authorize precision, recall, release-qualification, or adoption-proven claims.
+
 ### Gate E: Publication And Public Proof
 
 - Stable 3.9.0 is the first and only 3.9.0 publication; there is no RC, `next`, or `candidate` version/tag.
@@ -386,7 +390,7 @@ Work must proceed in this order. A dependent item does not start integration unt
 2. Integrate adoption truth, task capsule, delta, and read-only Studio while keeping default outputs unchanged.
 3. Expose v3 only through `--report-version v3`; require the same explicit choice in `ci init`.
 4. Freeze refs, versions, labels, environment, and final 3.9.0 package manifests before measurements begin.
-5. Run the full matrix against unpublished packed 3.9.0 artifacts. Any gate failure returns to implementation; it does not create a prerelease publication.
+5. Run the full machine/package matrix against unpublished packed 3.9.0 artifacts. Any non-waived gate failure returns to implementation; it does not create a prerelease publication.
 6. Publish the approved wave directly to stable 3.9.0 and `latest` through the repository workflow.
 7. Run release verification/closeout and then the public npm adoption-proof matrix.
 8. Update shipped-behavior and adoption-success language only after the corresponding public evidence exists.

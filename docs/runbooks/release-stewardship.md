@@ -24,9 +24,9 @@ GitHub Releases are optional maintainer packaging. Git tags are not optional.
 
 ## Decantr 3.9 Stable Release Gate
 
-Decantr 3.9.0 publishes straight to the stable channel. Do not create an RC, `next`, `candidate`, canary, or alternate 3.9.0 package/tag. Implementation completeness is not release qualification.
+Decantr 3.9.0 publishes straight to the stable channel. Do not create an RC, `next`, `candidate`, canary, or alternate 3.9.0 package/tag. Implementation completeness is not release qualification. Decantr currently has one human maintainer, so stable 3.9.0 publication may use the version-bound sole-maintainer waiver without representing an agent, alias, or duplicate identity as an independent reviewer.
 
-Before tagging, publishing, or describing 3.9 as adoption-proven, run:
+Before tagging or publishing, run:
 
 ```bash
 pnpm audit:3-9-qualification:lint
@@ -34,15 +34,16 @@ pnpm qualification:3-9:route
 pnpm qualification:3-9:machine
 pnpm qualification:3-9:human:lint
 pnpm audit:packed-content-facade
-pnpm qualification:3-9:human
-pnpm audit:3-9-qualification
+pnpm audit:3-9-release-gate
 ```
 
-`audit:3-9-qualification:lint` validates packet structure only. It may pass while the release remains blocked. The default `audit:3-9-qualification` command is the fail-closed release gate and must exit zero with an explicit qualification claim. Its evidence must include two actual human reviewers, an adjudicated 200-judgment finding corpus, qualified 84-route/24-competing-forbidden-source labels, public 3.8.3 and final 3.9 finding replays, a final 3.9 route replay, exhaustive adoption/Studio write-boundary evidence, and SHA-256 identities for the exact machine-qualified package tarballs. Never convert a missing gate into a passing claim by weakening the audit or relabeling generated assertions as human evidence.
+`audit:3-9-qualification:lint` validates packet structure only. The default `audit:3-9-qualification` command remains the fail-closed quantitative claim gate: it exits zero only when two actual human reviewers, the adjudicated 200-judgment finding corpus, both finding replays, and all machine evidence are complete. It must continue to report `INCOMPLETE` for the sole-maintainer release and is never publication authorization by itself.
 
-Use `node scripts/prepare-3-9-human-review.mjs --help` for the staged corpus, two-reviewer, adjudication, and replay workflow. Its blank workbooks remain non-evidence; `qualification:3-9:human:lint` checks their structure, while `qualification:3-9:human` fails until both signed human reviews, all 200 adjudications, and both finding replays are complete and hash-bound.
+`audit:3-9-release-gate` is the publication gate. It accepts either a fully human-qualified packet or `fixtures/qualification/3.9/release-waiver.json` with exactly the four frozen human finding requirements still marked missing. The waiver is valid only for stable 3.9.0, names the sole maintainer, retains complete route, machine, adoption/Studio, package, provenance, and tarball evidence, and sets `qualificationClaim: false`. It cannot waive a machine failure or authorize finding precision, finding recall, release-qualification, or adoption-proven claims. Never convert a missing gate into a passing claim by weakening either audit or relabeling generated assertions as human evidence.
 
-`pnpm audit:release-readiness` detects public packages on the 3.9 line and runs the same fail-closed qualification command. Until qualification is complete, readiness must fail and the Publish workflow must stop before npm authentication or publication.
+Use `node scripts/prepare-3-9-human-review.mjs --help` if Decantr later obtains two independent human reviewers and wants to make quantitative qualification claims. Its blank workbooks remain non-evidence; `qualification:3-9:human:lint` checks their structure, while `qualification:3-9:human` fails until both signed human reviews, all 200 adjudications, and both finding replays are complete and hash-bound.
+
+`pnpm audit:release-readiness` detects public packages on the 3.9 line and runs the release-evidence gate. Readiness fails unless either full qualification or the exact version-bound sole-maintainer waiver is valid.
 
 The intended 3.9.0 package wave is:
 
@@ -72,7 +73,7 @@ pnpm release:preflight
 pnpm release:commands
 ```
 
-Publish through the wrapper command produced by `pnpm release:commands`; do not publish public Decantr packages with a bare `npm publish`. Direct `pnpm publish` remains compatible with historical 3.8 patch manifests, but every 3.9 package `prepublishOnly` requires the wrapper sentinel. The wrapper is the sole normal 3.9 publish entry point, permits only stable 3.9 semver on `latest`, and reruns the packed-facade plus fail-closed qualification gates for real and publish-dry-run attempts. It then packs each selected package once, audits the manifest, verifies machine-wave overlaps against the qualification SHA-256 values, moves the `.tgz` into a content-addressed retained set outside the worktree, rechecks SHA-256/SHA-512 immediately before each attempt, and gives that exact tarball path to `pnpm publish`. OIDC failure and token fallback reuse the same bytes. Selection-only `--dry-run` remains available for planning and does not imply release readiness.
+Publish through the wrapper command produced by `pnpm release:commands`; do not publish public Decantr packages with a bare `npm publish`. Direct `pnpm publish` remains compatible with historical 3.8 patch manifests, but every 3.9 package `prepublishOnly` requires the wrapper sentinel. The wrapper is the sole normal 3.9 publish entry point, permits only stable 3.9 semver on `latest`, and reruns the packed-facade plus release-evidence gates for real and publish-dry-run attempts. It then packs each selected package once, audits the manifest, verifies machine-wave overlaps against the packet SHA-256 values, records whether the release is `human-qualified` or `sole-maintainer-unqualified`, moves the `.tgz` into a content-addressed retained set outside the worktree, rechecks SHA-256/SHA-512 immediately before each attempt, and gives that exact tarball path to `pnpm publish`. OIDC failure and token fallback reuse the same bytes. Selection-only `--dry-run` remains available for planning and does not imply release readiness.
 
 The default retained root is the platform temporary directory under `decantr-release-staging`. Use `--staging-dir=/absolute/path` or `DECANTR_RELEASE_STAGING_DIR` to choose another location outside the repository. Preflight and real publish commands emitted together by `release:commands` share that location. Never delete the selected manifest/tarballs until closeout evidence has been retained.
 
@@ -261,12 +262,12 @@ It verifies:
 - `--only` expands to the tag's transitive internal dependency closure
 - each selected publishable package version exists on npm
 - each selected package default dist-tag points at the tagged manifest version
-- for 3.9, the retained staging manifest is bound to the release tag, commit, package closure, and tagged qualification hashes
+- for 3.9, the retained staging manifest is bound to the release tag, commit, package closure, tagged release-evidence mode, waiver path when applicable, and packet tarball hashes
 - every retained tarball still matches its staged SHA-256, SHA-512, and SHA-1 identity
 - the public npm tarball bytes match the retained SHA-256 and npm `dist.integrity` / `dist.shasum`
 - OIDC-published packages expose an npm SLSA v1 subject whose SHA-512 and Decantr publish-workflow source resolve to the release commit; token fallback remains valid and is reported without inventing provenance
 - npm's native `npm audit signatures` check cryptographically verifies registry signatures and available provenance for an exact install of the selected public package versions
-- required 3.9 packed-facade and fail-closed qualification gates pass from a clean checkout whose HEAD is the release-tag commit
+- required 3.9 packed-facade and release-evidence gates pass from a clean checkout whose HEAD is the release-tag commit
 
 The audit does not scan unrelated release notes on current HEAD. A prepared, unreleased 3.9 note therefore cannot make an earlier 3.8 closeout demand a nonexistent 3.9 tag.
 
@@ -330,6 +331,6 @@ Any AI assistant working on Decantr release tasks must use the Release Steward l
 2. use scripts as the source of truth
 3. keep filters consistent across publish and verify commands
 4. update release notes and docs in the same branch
-5. for 3.9, distinguish packet lint from the default fail-closed qualification gate
+5. for 3.9, distinguish the fail-closed quantitative qualification claim from the sole-maintainer publication gate
 6. run closeout before saying the release is done
 7. report any skipped check as a real residual risk

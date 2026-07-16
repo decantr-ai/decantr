@@ -5,6 +5,7 @@ This directory is an intentionally incomplete release-qualification packet. It d
 - `qualification-packet.schema.json` defines the active packet and evidence shapes.
 - `qualification-packet.json` is the active, currently incomplete packet.
 - `missing-evidence.json` is the machine-readable blocking-evidence inventory and must match the audit's derived missing IDs.
+- `release-waiver.json` authorizes stable 3.9.0 publication by the sole human maintainer while leaving the exact four human finding requirements missing and every qualification/adoption claim false.
 - `HUMAN-REVIEW.md` defines the two-person blind review and adjudication workflow.
 - `review/` contains blank, fail-closed human-review and replay workbooks. Blank slots are workflow inputs, never evidence.
 - `compatibility-manifest.json` freezes compatibility, the complete adoption write boundary, and the complete measurement protocol.
@@ -33,7 +34,9 @@ Run the release qualification gate:
 
     node scripts/audit-3-9-qualification-baseline.mjs
 
-The default command must exit nonzero with `INCOMPLETE` until the machine-readable missing-evidence list is empty. `--json` emits the same state on stdout even when the release gate exits nonzero.
+The default command must exit nonzero with `INCOMPLETE` until the machine-readable missing-evidence list is empty. `--json` emits the same state on stdout even when the qualification claim gate exits nonzero.
+
+Run the separate publication gate with `pnpm audit:3-9-release-gate`. It accepts the incomplete packet only when route, machine, adoption/Studio, package, and provenance evidence is complete and the missing-evidence list exactly matches the version-bound sole-maintainer waiver. A pass in this mode means publishable but unqualified; it does not authorize human precision, recall, release-qualification, or adoption-proven language.
 
 Complete replay claims are content-addressed, not prose attestations. The audit resolves each artifact path inside the repository, requires the digest in its filename, verifies its SHA-256 and successful exit code, checks exact package and tarball identity, recomputes the package-plus-behavior binding, and requires the retained artifact's cases, targets, metrics, command, environment, and timestamp to match the packet. Executable-oracle source evidence receives the same path and hash checks.
 

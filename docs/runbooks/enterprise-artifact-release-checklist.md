@@ -1,6 +1,6 @@
 # Enterprise Artifact Release Checklist
 
-Use this checklist with [Release Stewardship](release-stewardship.md). For Decantr 3.9, every qualification item is mandatory and publication is direct to stable; no RC or `next` lane exists.
+Use this checklist with [Release Stewardship](release-stewardship.md). Decantr 3.9 publishes directly to stable; no RC or `next` lane exists. Machine, package, provenance, and closeout evidence is mandatory. Human finding evidence is required only for a quantitative qualification claim and remains explicitly waived for the sole-maintainer 3.9.0 publication.
 
 - `pnpm install --frozen-lockfile`
 - `pnpm build`
@@ -12,9 +12,9 @@ Use this checklist with [Release Stewardship](release-stewardship.md). For Decan
 - `pnpm audit:3-9-qualification:lint`
 - `pnpm qualification:3-9:route`
 - `pnpm qualification:3-9:machine`
-- Obtain two signed human reviews and the adjudicated 200-judgment finding corpus.
-- Retain the public 3.8.3 and final packed 3.9.0 finding replays against that same corpus.
-- `pnpm audit:3-9-qualification` must exit zero with `qualificationClaim: true`.
+- Confirm `fixtures/qualification/3.9/release-waiver.json` names the sole maintainer, accepts exactly the four human finding gaps, and prohibits qualification/adoption claims.
+- `pnpm audit:3-9-qualification` must remain `INCOMPLETE` with exactly those four gaps unless two independent humans later complete the finding lane.
+- `pnpm audit:3-9-release-gate` must exit zero and report `SOLE-MAINTAINER UNQUALIFIED` or `HUMAN QUALIFIED`.
 - `pnpm audit:release-readiness`
 - `pnpm audit:content-package`
 - `pnpm audit:public-api -- --core-only --fail-on-error`

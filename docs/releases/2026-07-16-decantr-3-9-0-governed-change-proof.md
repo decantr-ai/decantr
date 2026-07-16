@@ -2,7 +2,7 @@
 
 Date: 2026-07-16
 
-Release status: implementation prepared; public release blocked pending full qualification, packed/public artifact verification, and release closeout. This document is not evidence that 3.9.0 has been published or adoption-proven.
+Release status: authorized for direct stable publication under the explicit sole-maintainer waiver; public release remains incomplete until packed/public artifact verification and release closeout pass. This release is not human-qualified or adoption-proven.
 
 ## Product Change
 
@@ -57,7 +57,7 @@ The remaining human-owned blockers are:
 3. A public npm 3.8.3 finding replay with a recomputable confusion matrix and separate precision/recall Wilson intervals.
 4. A final packed or public 3.9.0 finding replay against the same frozen corpus.
 
-Until those four blockers are complete and the fail-closed audit passes against the final retained artifacts, no finding precision, finding recall, release-qualification, or adoption-proven claim may be made for 3.9.0.
+Decantr has one human maintainer. Stable publication is therefore authorized by `fixtures/qualification/3.9/release-waiver.json` with these exact four gaps retained, rather than inventing a second reviewer. The waiver does not make the packet complete: no finding precision, finding recall, release-qualification, or adoption-proven claim may be made for 3.9.0.
 
 ## Release Gate
 
@@ -70,11 +70,11 @@ pnpm test
 pnpm audit:package-surface
 pnpm audit:package-permissions
 pnpm audit:packed-content-facade
-pnpm audit:3-9-qualification
+pnpm audit:3-9-release-gate
 pnpm release:preflight
 ```
 
-The publish wrapper must also retain the content-addressed staging manifest and tarballs. After both 3.9 gates pass, it packs each selected package once, verifies qualified machine-wave tarballs against the packet's SHA-256 identities, and publishes those exact `.tgz` paths. It must not inspect one tarball and let npm or pnpm repack the package directory for publication. Hashes are checked again immediately before the OIDC attempt and, when needed, before token fallback.
+The publish wrapper must also retain the content-addressed staging manifest and tarballs. After both 3.9 package/release-evidence gates pass, it packs each selected package once, verifies machine-qualified tarballs against the packet's SHA-256 identities, records `sole-maintainer-unqualified`, and publishes those exact `.tgz` paths. It must not inspect one tarball and let npm or pnpm repack the package directory for publication. Hashes are checked again immediately before the OIDC attempt and, when needed, before token fallback.
 
 A real local 3.9 publish is fail-closed unless the worktree is clean, `HEAD` is exactly `v3.9.0`, the local and remote tag both resolve to `HEAD`, the tag is reachable from `origin/main`, and fetched `origin/main` matches the live remote main ref. Selection-only and publish dry runs remain nonpublishing; they do not relax the real-publish source requirement.
 
