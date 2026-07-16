@@ -36,7 +36,7 @@ describe('resolveWorkflowPolicy', () => {
 
     expect(policy.workflowMode).toBe('hybrid-compose');
     expect(policy.adoptionMode).toBe('contract-only');
-    expect(policy.registryRequired).toBe(true);
+    expect(policy.contentRequired).toBe(true);
   });
 
   it('honors explicit greenfield workflow even when an existing footprint is detected', () => {

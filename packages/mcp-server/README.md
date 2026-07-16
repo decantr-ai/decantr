@@ -147,6 +147,8 @@ The server exposes a hard 8-tool MCP surface. Pass an `action` to select the rou
 | `decantr_repair` | Return typed findings, repair plans, repair prompts, and v2 health-loop guidance | `{ "action": "health_loop", "project_path": "apps/web" }` |
 | `decantr_contract_write` | Explicit write surface for accepting drift, deferring drift to the drift log, or mutating Essence v4 | `{ "action": "update_essence", "operation": "add_feature", "payload": { "feature": "billing" } }` |
 
+`decantr_context` task responses default to `"detail": "compact"`. Compact mode preserves route identity, implementation read targets, authority, graph readiness/ranking summaries, local law, health state, stop conditions, and verify commands while omitting full graph node/edge arrays and bounding large context lists. Pass `"detail": "full"` only for diagnostic clients that need the complete graph and context payload. Both modes return `response_detail`. Task activation reports `blocked_missing_graph` when graph artifacts are absent or stale rather than serving contradictory route context.
+
 For the broader product surface and support policy, see the root Decantr docs and package support matrix.
 
 For Decantr 3 assistant prompt migration, see the MCP migration guide: https://decantr.ai/reference/mcp-migration.md.
@@ -167,7 +169,7 @@ Content-corpus and pack-resolution tools may call the configured Decantr API. So
 
 ### 3.4 Tool Surface Migration
 
-Decantr 3.4 consolidated legacy MCP tool names into the eight action-based tools above. Decantr 3.8.1 keeps that surface, preserves v2 task/evidence/workspace-health/health-loop contracts, and routes official corpus compatibility through `decantr_registry` rather than adding a ninth tool. For example, `decantr_get_project_state` becomes `decantr_project` with `{ "action": "state" }`, `decantr_get_graph_snapshot` becomes `decantr_graph` with `{ "action": "snapshot" }`, and the legacy write tools become `decantr_contract_write` with `{ "action": "accept_drift" }` or `{ "action": "update_essence" }`.
+Decantr 3.4 consolidated legacy MCP tool names into the eight action-based tools above. Decantr 3.8.2 keeps that surface, preserves v2 task/evidence/workspace-health/health-loop contracts, and routes official corpus compatibility through `decantr_registry` rather than adding a ninth tool. For example, `decantr_get_project_state` becomes `decantr_project` with `{ "action": "state" }`, `decantr_get_graph_snapshot` becomes `decantr_graph` with `{ "action": "snapshot" }`, and the legacy write tools become `decantr_contract_write` with `{ "action": "accept_drift" }` or `{ "action": "update_essence" }`.
 
 ## How It Works
 

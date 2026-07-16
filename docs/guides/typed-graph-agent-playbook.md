@@ -25,11 +25,11 @@ Accepted project `behavior_obligations` from `.decantr/local-patterns.json` are 
 ## Default Agent Flow
 
 1. Call `decantr_project` with `{ "action": "state" }`.
-2. If graph artifacts are ready, call `decantr_contract` with `{ "action": "capsule" }` near session start; its bounded `source_artifacts` list shows project-relative file paths that can be used as `file_path` handles in graph tools. If `source_artifacts_truncated` is true, use `decantr_project` with `{ "action": "state" }` or graph queries for narrower source-file discovery.
-3. Before route work, call `decantr_graph` with `{ "action": "snapshot", "route": "/feed", "task": "..." }`.
-4. Before changing a shared node or known source file, call `decantr_graph` with `{ "action": "query", "node_ids": [...], "include_impact": true }` or `{ "action": "query", "file_path": "src/app/page.tsx", "include_impact": true }`.
-5. For an already-dirty workspace, read `decantr_context` with `{ "action": "task" }`; its typed graph block includes changed-file impact when git changed files map to SourceArtifact nodes.
-6. After edits, run `decantr verify` or `decantr ci --project apps/web --fail-on error`.
+2. If graph artifacts are missing or stale, run `decantr graph --project apps/web`; task activation deliberately blocks until the graph is current.
+3. Before route work, call `decantr_context` with `{ "action": "task", "route": "/feed", "task": "..." }`. The compact default leads with the discovered implementation source and includes authority, ranking/impact summaries, stop conditions, and verify command. Use `"detail": "full"` only for expanded nodes, edges, and context.
+4. Call `decantr_contract` with `{ "action": "capsule" }` near session start when broader source handles are needed.
+5. Before changing a shared node or known source file, call `decantr_graph` with `{ "action": "query", "node_ids": [...], "include_impact": true }` or a `file_path` query.
+6. After edits, run the verify command returned by task context.
 
 Evidence Bundles include provenance for the graph snapshot, manifest, diff, and contract capsule. Treat a missing provenance entry with `present: false` as "the graph has not been generated for this repair loop yet," and treat changed graph hashes as a reason to refresh graph context before applying a repair.
 

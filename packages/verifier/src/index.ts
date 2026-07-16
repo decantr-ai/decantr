@@ -904,7 +904,7 @@ export function createContractAssertions(
       evidence: [redactEvidenceText(projectRoot, join(contextDir, 'pack-manifest.json'))],
       suggestedFix: packManifest
         ? undefined
-        : 'Run `decantr registry compile-packs decantr.essence.json --write-context` to hydrate the full context pack bundle.',
+        : 'Run `decantr content compile-packs decantr.essence.json --write-context` to hydrate the full context pack bundle.',
     }),
   );
 
@@ -921,7 +921,7 @@ export function createContractAssertions(
       evidence: [redactEvidenceText(projectRoot, join(contextDir, 'review-pack.json'))],
       suggestedFix: audit?.reviewPack
         ? undefined
-        : 'Run `decantr registry compile-packs decantr.essence.json --write-context` so critique has the compiled review contract.',
+        : 'Run `decantr content compile-packs decantr.essence.json --write-context` so critique has the compiled review contract.',
     }),
   );
 
@@ -1432,10 +1432,30 @@ function isAuditableSourceFile(filePath: string): boolean {
 function isNonProductionSourceAuditFile(filePath: string): boolean {
   const normalized = normalizeSourceAuditPath(filePath);
   return (
-    /(?:^|\/)(?:__tests__|__mocks__|tests?|specs?|fixtures?|mocks?|stories?)(?:\/|$)/i.test(
+    /(?:^|\/)(?:__tests__|__mocks__|__generated__|tests?|testing|test-utils?|e2e|playwright|cypress|specs?|fixtures?|mocks?|stories?|generated)(?:\/|$)/i.test(
       normalized,
-    ) || /\.(?:test|spec|stories|story|fixture|mock)\.[cm]?[jt]sx?$/i.test(normalized)
+    ) || /\.(?:test|spec|stories|story|fixture|mock|gen)\.[cm]?[jt]sx?$/i.test(normalized)
   );
+}
+
+function sourceAuditUsesExplicitRouterGuard(
+  projectRoot: string,
+  authGuards: SourceAuditBucket,
+): boolean {
+  for (const file of authGuards.files) {
+    try {
+      const code = readFileSync(sourceAuditFilePath(projectRoot, file), 'utf-8');
+      if (
+        /<\s*(?:ProtectedRoute|AuthGuard|RequireAuth)\b/.test(code) ||
+        /\b(?:beforeEnter|beforeLoad)\s*:/.test(code)
+      ) {
+        return true;
+      }
+    } catch {
+      // Source collection is best-effort; unreadable files cannot prove coverage.
+    }
+  }
+  return false;
 }
 
 export function collectProjectSourceFiles(projectRoot: string): string[] {
@@ -3510,8 +3530,7 @@ function fileHasDialogSurface(code: string): boolean {
   return (
     /<\s*dialog\b/i.test(code) ||
     /role\s*=\s*["'](?:dialog|alertdialog)["']/i.test(code) ||
-    /<\s*(?:AlertDialog|Dialog|Modal|ConfirmationDialog|ConfirmDialog)\b/.test(code) ||
-    /\b(?:fixed|absolute)\b[^"'`]+(?:inset-0|z-\d+|bg-black\/|backdrop)/i.test(code)
+    /<\s*(?:AlertDialog|Dialog|Modal|ConfirmationDialog|ConfirmDialog)\b/.test(code)
   );
 }
 
@@ -3552,6 +3571,9 @@ function appendBehaviorObligationFindings(
   projectRoot: string,
   sourceFiles: string[],
 ): void {
+  sourceFiles = sourceFiles.filter(
+    (file) => !isNonProductionSourceAuditFile(sourceAuditRelativePath(projectRoot, file)),
+  );
   const behaviorPatterns = readBehaviorPatterns(projectRoot);
   if (behaviorPatterns.length === 0) return;
 
@@ -3840,6 +3862,7 @@ function appendBehaviorObligationFindings(
 
 function appendSourceAuditFindings(
   findings: VerificationFinding[],
+  projectRoot: string,
   sourceAudit: SourceAuditSummary,
   essence: EssenceFile | null,
   reviewPack: ReviewExecutionPack | null,
@@ -4288,7 +4311,8 @@ function appendSourceAuditFindings(
       sourceAudit.protectedSurfaceSignals,
       sourceAudit.authGuardSignals,
       topology,
-    )
+    ) &&
+    !sourceAuditUsesExplicitRouterGuard(projectRoot, sourceAudit.authGuardSignals)
   ) {
     findings.push(
       makeFinding({
@@ -5572,8 +5596,8 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
           : 'Compiled execution pack manifest is missing.',
         evidence: [join(projectRoot, '.decantr', 'context', 'pack-manifest.json')],
         suggestedFix: packHydrationOptional
-          ? 'Optional: run `decantr registry compile-packs decantr.essence.json --write-context` when you want hosted page packs and review packs for richer assistant context.'
-          : 'Run `decantr registry compile-packs decantr.essence.json --write-context` to hydrate scaffold, review, mutation, section, and page packs.',
+          ? 'Optional: run `decantr content compile-packs decantr.essence.json --write-context` when you want official page and review packs for richer assistant context.'
+          : 'Run `decantr content compile-packs decantr.essence.json --write-context` to hydrate scaffold, review, mutation, section, and page packs.',
       }),
     );
   } else {
@@ -5630,7 +5654,7 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
           message: 'No mutation packs were found in the manifest.',
           evidence: ['pack-manifest.json'],
           suggestedFix:
-            'Run `decantr registry compile-packs decantr.essence.json --write-context` to hydrate mutation task packs.',
+            'Run `decantr content compile-packs decantr.essence.json --write-context` to hydrate mutation task packs.',
         }),
       );
     }
@@ -5647,8 +5671,8 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
           : 'The compiled review pack file is missing.',
         evidence: [join(projectRoot, '.decantr', 'context', 'review-pack.json')],
         suggestedFix: packHydrationOptional
-          ? 'Optional: hydrate hosted packs later if you want critique consumers to anchor findings to the compiled review contract.'
-          : 'Hydrate the full hosted context bundle with `decantr registry compile-packs decantr.essence.json --write-context` so critique consumers can anchor findings to the compiled review contract.',
+          ? 'Optional: hydrate official content packs later if you want critique consumers to anchor findings to the compiled review contract.'
+          : 'Hydrate the full official context bundle with `decantr content compile-packs decantr.essence.json --write-context` so critique consumers can anchor findings to the compiled review contract.',
       }),
     );
   }
@@ -5666,7 +5690,7 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
     summarizeTopology(essence, reviewPack),
     sourceAudit,
   );
-  appendSourceAuditFindings(findings, sourceAudit, essence, reviewPack, adoptionMode);
+  appendSourceAuditFindings(findings, projectRoot, sourceAudit, essence, reviewPack, adoptionMode);
   appendBehaviorObligationFindings(findings, projectRoot, projectSourceFiles);
   appendComponentReuseFindings(findings, componentReuseAudit);
   appendStyleBridgeDriftFindings(findings, styleBridgeDriftAudit);
@@ -7913,8 +7937,7 @@ function countAuthCallbackTokenSignals(code: string, filePath: string): number {
     /\b(?:exchangeCodeForSession|handleAuthCallback|authCallback|oauthCallback)\b/gi,
   ];
 
-  const count = patterns.reduce((total, pattern) => total + (code.match(pattern)?.length ?? 0), 0);
-  return count + (/callback/i.test(filePath) ? 1 : 0);
+  return patterns.reduce((total, pattern) => total + (code.match(pattern)?.length ?? 0), 0);
 }
 
 function countAuthCallbackExchangeSignals(code: string): number {
@@ -7937,6 +7960,26 @@ function countAuthCallbackExchangeErrorSignals(code: string): number {
 }
 
 function countAuthCallbackErrorSignals(code: string, filePath: string): number {
+  const normalizedPath = filePath.replaceAll('\\\\', '/');
+  const hasCallbackPathContext =
+    /(?:^|\/)(?:(?:auth|oauth|sso)[^/]*callback|callback[^/]*(?:auth|oauth|sso))(?:[/.]|$)/i.test(
+      normalizedPath,
+    );
+  const hasCallbackCodeContext =
+    /\b(?:exchangeCodeForSession|exchangeTokenForSession|completeAuthCallback|finalizeAuthCallback|handleAuthCallback|authCallback|oauthCallback)\b/i.test(
+      code,
+    ) ||
+    /\b(?:searchParams|request\.nextUrl\.searchParams|url\.searchParams)\.get\s*\(\s*['"`](?:code|access_token|id_token|refresh_token|error|error_description|error_code|error_uri)['"`]\s*\)/i.test(
+      code,
+    ) ||
+    /\b(?:router\.query|route\.query|query)\.(?:code|access_token|id_token|refresh_token|error|error_description|error_code|error_uri)\b/i.test(
+      code,
+    );
+
+  if (!hasCallbackPathContext && !hasCallbackCodeContext) {
+    return 0;
+  }
+
   const patterns = [
     /\b(?:searchParams|request\.nextUrl\.searchParams|url\.searchParams)\.get\s*\(\s*['"`](?:error|error_description|error_code|error_uri)['"`]\s*\)/gi,
     /\b(?:router\.query|route\.query|query)\.(?:error|error_description|error_code|error_uri)\b/gi,
@@ -7945,8 +7988,7 @@ function countAuthCallbackErrorSignals(code: string, filePath: string): number {
     />\s*(?:authentication failed|sign in failed|login failed|oauth error|provider error|unable to sign you in)\s*</gi,
   ];
 
-  const count = patterns.reduce((total, pattern) => total + (code.match(pattern)?.length ?? 0), 0);
-  return count + (/callback/i.test(filePath) && /\b(?:error|failed|failure)\b/i.test(code) ? 1 : 0);
+  return patterns.reduce((total, pattern) => total + (code.match(pattern)?.length ?? 0), 0);
 }
 
 function countAuthCallbackStateSignals(code: string): number {
@@ -8194,10 +8236,16 @@ function countAuthCallbackUrlScrubSignals(code: string): number {
 }
 
 function countAuthExitSignals(code: string): number {
+  const exitHandler =
+    '(?:logout|logOut|signout|signOut|handleLogout|handleLogOut|handleSignout|handleSignOut|onLogout|onLogOut|onSignout|onSignOut)';
   const patterns = [
-    /\b(?:log\s*out|logout|sign\s*out|signout|sign-out)\b/i,
-    /\b(?:supabase\.auth\.signOut|auth\.signOut|session\.signOut)\s*\(/,
-    /\/(?:logout|signout|sign-out)\b/i,
+    new RegExp(`\\b${exitHandler}\\s*\\(`),
+    new RegExp(
+      `\\b${exitHandler}\\s*[:=]\\s*(?:async\\s*)?(?:\\([^)]*\\)|[A-Za-z_$][\\w$]*)\\s*=>`,
+    ),
+    new RegExp(`\\b(?:async\\s+)?function\\s+${exitHandler}\\s*\\(`),
+    /\b(?:supabase\.auth|auth|session)\.(?:logout|logOut|signout|signOut)\s*\(/,
+    /(?:href|to|action)\s*=\s*['"`]\/(?:logout|signout|sign-out)\b/i,
   ];
 
   return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
@@ -16285,7 +16333,7 @@ export function critiqueSource({
       ...(reviewPack
         ? []
         : [
-            'Run `decantr registry compile-packs decantr.essence.json --write-context` so critique starts from a compiled review contract.',
+            'Run `decantr content compile-packs decantr.essence.json --write-context` so critique starts from a compiled review contract.',
           ]),
       ...(placeholderNavigationTargets > 0
         ? [

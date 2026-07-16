@@ -107,7 +107,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
     mutates: true,
     audience: 'app-developer',
     purpose:
-      'Propose and accept project-owned Brownfield/Hybrid UI law, style bridges, and advisory hosted-pattern mappings.',
+      'Propose and accept project-owned Brownfield/Hybrid UI law, style bridges, and advisory official-corpus mappings.',
     consolidation: 'keep',
   },
   {

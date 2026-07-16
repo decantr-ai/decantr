@@ -4302,6 +4302,7 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
       const routeArg = typeof args.route === 'string' ? args.route : undefined;
       const pageArg = typeof args.page_id === 'string' ? args.page_id : undefined;
       const task = typeof args.task === 'string' ? args.task : '';
+      const detail = args.detail === 'full' ? 'full' : 'compact';
       if (!routeArg && !pageArg) {
         return { error: 'Provide route or page_id.' };
       }
@@ -4411,6 +4412,12 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
       }>(join(projectRoot, '.decantr', 'project.json'));
       const changedFiles = changedFilesForTask(projectRoot);
       const changedRoutes = impactedRoutesForFiles(projectRoot, changedFiles);
+      const analysis = readJsonIfExists<{
+        routes?: { routes?: Array<{ path?: string; file?: string }> };
+      }>(join(projectRoot, '.decantr', 'analysis.json'));
+      const routeSourceFile = analysis?.routes?.routes?.find(
+        (entry) => entry.path === resolvedRoute,
+      )?.file;
       const patternIds = extractPagePatternIds(page);
       const ranked = rankPatternCandidates(
         {
@@ -4425,7 +4432,8 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
       const verifyCommand = projectArg
         ? `decantr verify --project ${projectArg} --brownfield --local-patterns`
         : 'decantr verify --brownfield --local-patterns';
-      const loopState = typedGraph?.route_context ? 'ready_to_edit' : 'blocked_missing_graph';
+      const graphReady = Boolean(typedGraph?.route_context) && typedGraph?.current === true;
+      const loopState = graphReady ? 'ready_to_edit' : 'blocked_missing_graph';
       const loop = {
         $schema: LOOP_READINESS_V2_SCHEMA_URL,
         schemaVersion: 2,
@@ -4442,15 +4450,15 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
               ? 'production-source'
               : 'essence-contract',
           summary:
-            'Use production source first in Brownfield, accepted local law/style bridge next, Essence V4 structure after that, and hosted packs as advisory.',
+            'Use production source first in Brownfield, accepted local law/style bridge next, Essence V4 structure after that, and official content packs as advisory.',
           stopRule:
             'If runtime source and Decantr context disagree, stop and report drift instead of guessing.',
         },
         evidenceTier: {
           schemaVersion: 2,
-          stage: typedGraph?.route_context ? 'graph' : 'static',
+          stage: graphReady ? 'graph' : 'static',
           status: loopState === 'ready_to_edit' ? 'healthy' : 'incomplete',
-          capabilities: typedGraph?.route_context
+          capabilities: graphReady
             ? ['static-audit', 'project-health', 'typed-graph']
             : ['static-audit', 'project-health'],
           coverage: {
@@ -4462,12 +4470,14 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
             visualArtifactCount: visualRoute ? 1 : 0,
           },
           confidence: {
-            level: typedGraph?.route_context ? 'moderate' : 'low',
-            score: typedGraph?.route_context ? 0.64 : 0.32,
+            level: graphReady ? 'moderate' : 'low',
+            score: graphReady ? 0.64 : 0.32,
             reasons: [
-              typedGraph?.route_context
-                ? 'route graph context is present'
-                : 'route graph context is missing',
+              graphReady
+                ? 'current route graph context is present'
+                : typedGraph?.route_context
+                  ? 'route graph context is stale'
+                  : 'route graph context is missing',
               visualRoute
                 ? 'visual evidence reference is available'
                 : 'no visual evidence reference was found',
@@ -4496,6 +4506,9 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
           ],
         },
         readTargets: [
+          routeSourceFile && existsSync(join(projectRoot, routeSourceFile))
+            ? routeSourceFile
+            : null,
           pageManifest ? join('.decantr', 'context', pageManifest.markdown) : null,
           sectionManifest ? join('.decantr', 'context', sectionManifest.markdown) : null,
           '.decantr/context/scaffold.md',
@@ -4506,7 +4519,7 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
           typedGraph ? '.decantr/graph/graph.snapshot.json' : null,
         ].filter(Boolean),
         graphImpact: {
-          status: typedGraph?.route_context ? 'ready' : typedGraph ? 'stale' : 'missing',
+          status: graphReady ? 'ready' : typedGraph ? 'stale' : 'missing',
           snapshotId: typedGraph?.snapshot_id ?? null,
           sourceHash: typedGraph?.source_hash ?? null,
           sourceArtifactCount: typedGraph?.route_context?.summary.sourceArtifacts ?? 0,
@@ -4520,7 +4533,62 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
         verifyCommand,
       };
 
+      const compactTypedGraph = typedGraph
+        ? {
+            source: typedGraph.source,
+            artifact_path: typedGraph.artifact_path,
+            snapshot_id: typedGraph.snapshot_id,
+            schema_version: typedGraph.schema_version,
+            project_id: typedGraph.project_id,
+            source_hash: typedGraph.source_hash,
+            current: typedGraph.current,
+            stale_sources: typedGraph.stale_sources.slice(0, 12),
+            contract: typedGraph.contract,
+            route_context:
+              typedGraph.route_context && 'ranking' in typedGraph.route_context
+                ? {
+                    route: typedGraph.route_context.route,
+                    ranking: typedGraph.route_context.ranking,
+                    summary: typedGraph.route_context.summary,
+                    ids: typedGraph.route_context.ids,
+                    ranked: typedGraph.route_context.ranked.slice(0, 12),
+                    truncated: true,
+                  }
+                : typedGraph.route_context,
+            changed_file_context: typedGraph.changed_file_context
+              ? {
+                  changed_files: typedGraph.changed_file_context.changed_files.slice(0, 20),
+                  resolved_node_ids: typedGraph.changed_file_context.resolved_node_ids.slice(0, 20),
+                  missing_files: typedGraph.changed_file_context.missing_files.slice(0, 20),
+                  impact: typedGraph.changed_file_context.impact
+                    ? {
+                        ranking: typedGraph.changed_file_context.impact.ranking,
+                        summary: typedGraph.changed_file_context.impact.summary,
+                        ids: typedGraph.changed_file_context.impact.ids,
+                        ranked: typedGraph.changed_file_context.impact.ranked.slice(0, 12),
+                        truncated: true,
+                      }
+                    : null,
+                }
+              : null,
+          }
+        : null;
+      const returnedLocalLaw =
+        detail === 'full'
+          ? displayedLocalLaw
+          : {
+              ...displayedLocalLaw,
+              patterns: displayedLocalLaw.patterns.slice(0, 8),
+              behavior_obligations: displayedLocalLaw.behavior_obligations.slice(0, 8),
+              rules: displayedLocalLaw.rules.slice(0, 12),
+            };
+      const returnedStyleBridge =
+        detail === 'full'
+          ? displayedStyleBridge
+          : { ...displayedStyleBridge, mappings: displayedStyleBridge.mappings.slice(0, 8) };
+
       return {
+        response_detail: detail,
         discovery: mcpDiscoverySummary(projectRoot),
         route: resolvedRoute,
         page_id: pageId,
@@ -4533,16 +4601,25 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
           sectionPackSummary.visualTarget ??
           essence.dna.personality?.join('. ') ??
           null,
-        directives: pagePackSummary.directives,
-        patterns: pagePackSummary.patterns.length > 0 ? pagePackSummary.patterns : patternIds,
+        directives: pagePackSummary.directives.slice(0, detail === 'full' ? undefined : 20),
+        patterns: (pagePackSummary.patterns.length > 0
+          ? pagePackSummary.patterns
+          : patternIds
+        ).slice(0, detail === 'full' ? undefined : 20),
         ranked_patterns: ranked.map((match) => ({
           id: match.candidate.slug || match.candidate.id,
           score: match.score,
           reasons: match.reasons,
         })),
-        shared_components: pagePackSummary.sharedComponents,
-        section_context: sectionContext,
-        page_pack_excerpt: pagePackMarkdown ? pagePackMarkdown.slice(0, 12000) : null,
+        shared_components: pagePackSummary.sharedComponents.slice(
+          0,
+          detail === 'full' ? undefined : 20,
+        ),
+        section_context:
+          detail === 'full' ? sectionContext : (sectionContext?.slice(0, 4000) ?? null),
+        page_pack_excerpt: pagePackMarkdown
+          ? pagePackMarkdown.slice(0, detail === 'full' ? 12000 : 4000)
+          : null,
         health_evidence: health
           ? {
               baseline_path: displayProjectFile(projectRoot, health.baselinePath),
@@ -4551,11 +4628,11 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
               score_delta: health.scoreDelta,
               added_findings: health.addedFindings?.slice(0, 8) ?? [],
               resolved_findings: health.resolvedFindings?.slice(0, 8) ?? [],
-              changed_routes: health.changedRoutes ?? [],
+              changed_routes: health.changedRoutes?.slice(0, 20) ?? [],
               changed_screenshots: (health.changedScreenshots ?? [])
                 .map((path) => displayProjectFile(projectRoot, path))
                 .filter((path): path is string => Boolean(path)),
-              contract_drift: health.contractDrift ?? [],
+              contract_drift: health.contractDrift?.slice(0, 8) ?? [],
             }
           : null,
         visual_evidence: visualRoute
@@ -4568,13 +4645,17 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
           : null,
         theme_inventory: themeInventory
           ? {
-              modes: themeInventory.modes,
-              variants: themeInventory.variants,
+              modes: Array.isArray(themeInventory.modes)
+                ? themeInventory.modes.slice(0, detail === 'full' ? undefined : 8)
+                : themeInventory.modes,
+              variants: Array.isArray(themeInventory.variants)
+                ? themeInventory.variants.slice(0, detail === 'full' ? undefined : 8)
+                : themeInventory.variants,
               path: displayProjectFile(projectRoot, '.decantr/theme-inventory.json'),
             }
           : null,
-        local_law: displayedLocalLaw,
-        style_bridge: displayedStyleBridge,
+        local_law: returnedLocalLaw,
+        style_bridge: returnedStyleBridge,
         authority: taskAuthoritySummary({
           workflowMode: projectJson?.initialized?.workflowMode ?? null,
           adoptionMode: projectJson?.initialized?.adoptionMode ?? null,
@@ -4588,7 +4669,7 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
           changed_file_count: changedFiles.length,
           impacted_routes: changedRoutes,
         },
-        typed_graph: typedGraph,
+        typed_graph: detail === 'full' ? typedGraph : compactTypedGraph,
         loop,
         verify_command: verifyCommand,
         local_files: {

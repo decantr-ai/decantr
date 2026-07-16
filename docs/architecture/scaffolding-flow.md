@@ -26,7 +26,7 @@
 ┌─────────────────────────────────────────────────────────────────────┐
 │              WORKFLOW POLICY RESOLUTION                             │
 │                                                                     │
-│  Resolve once, before registry reads, adapter work, or file writes: │
+│  Resolve once, before content reads, adapter work, or file writes:  │
 │                                                                     │
 │  workflowMode:                                                      │
 │    greenfield-scaffold | greenfield-contract-only                   │
@@ -47,7 +47,7 @@
 ┌─────────────────────────────────────────────────────────────────────┐
 │                   WORKFLOW ROUTING                                  │
 │                                                                     │
-│  greenfield-scaffold      → adapter bootstrap + optional registry   │
+│  greenfield-scaffold      → contract scaffold + optional content    │
 │  greenfield-contract-only → local contract/context files only       │
 │  brownfield-attach        → inventory → proposal → acceptance        │
 │  hybrid-compose           → mutate existing essence/context         │
@@ -139,15 +139,16 @@
 │  sources before the proposal is accepted.                           │
 │  Observed routes are grouped into semantic product domains such as   │
 │  auth, RBAC, billing, reporting, facilities, settings, and public.   │
-│  Route/style scanners cover mixed Next App/Pages Router, React       │
-│  Router, Angular, SvelteKit, Vue, Nuxt, Bootstrap, MUI, and Chakra.  │
+│  Shared discovery prefers formal source routes over generated trees, │
+│  resolves nested/lazy React Router and Vue Router object routes, and │
+│  labels pathname-only fallbacks as medium confidence.                │
 │                                                                     │
 │  decantr init --existing --accept-proposal writes the proposal       │
 │  only when no essence exists. Existing essences require              │
 │  --merge-proposal or the explicit destructive --replace-essence.     │
 │                                                                     │
 │  Brownfield contract-only uses existing-app authority: no Decantr    │
-│  theme default, no CSS runtime, no rule-file mutation, no registry   │
+│  theme default, no CSS runtime, no rule-file mutation, no official   │
 │  content unless explicitly requested.                               │
 └─────────────────────────────────────────────────────────────────────┘
 
@@ -254,6 +255,7 @@
 │  .decantr/project.json ◄── Detection results + init metadata        │
 │  .decantr/context/*.md ◄── compiled packs + task and section context │
 │  .gitignore            ◄── Adds .decantr/cache/ if not present      │
+│  .prettierignore       ◄── Generated artifact boundary for formatters│
 │                                                                     │
 └──────────────────────────┬──────────────────────────────────────────┘
                            │
@@ -263,8 +265,9 @@
 │                                                                     │
 │  1. Validate essence against the v4 schema                          │
 │  2. Display file creation summary                                   │
-│  3. Generate curated prompt (copy to AI assistant)                  │
-│  4. Optionally preview/apply assistant rule bridge                  │
+│  3. Build initial typed graph with shared route/source discovery     │
+│  4. Generate curated prompt (copy to AI assistant)                  │
+│  5. Optionally preview/apply workflow-specific assistant bridge     │
 └─────────────────────────────────────────────────────────────────────┘
 
 
@@ -298,13 +301,13 @@
 │  │                                                             │    │
 │  │  Rule 6: Page exists — code pages in blueprint.pages        │    │
 │  │  Rule 7: Layout      — pattern order matches (strict only)  │    │
-│  │  Rule 8: Patterns    — referenced patterns exist in registry│    │
+│  │  Rule 8: Patterns    — refs exist in corpus/local content    │    │
 │  │                                                             │    │
 │  │  Severity: controlled by meta.guard.blueprint_enforcement   │    │
 │  │    'warn'  → violations are warnings (default)              │    │
 │  │    'off'   → violations suppressed entirely                 │    │
 │  │                                                             │    │
-│  │  autoFixable: true (can be resolved via decantr_accept_drift)│   │
+│  │  autoFixable: true (explicit decantr_contract_write action)  │   │
 │  └─────────────────────────────────────────────────────────────┘    │
 │                                                                     │
 │  Guard Modes: creative (skip all) | guided (1,2,4,5,6,8) |         │

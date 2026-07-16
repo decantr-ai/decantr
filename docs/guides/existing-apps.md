@@ -10,7 +10,7 @@ Preview the fit before you attach anything:
 npx @decantr/cli scan
 ```
 
-For a public repository or GitHub Pages site, use the hosted scanner at `/scan`. It accepts `https://github.com/owner/repo` and `https://owner.github.io/repo/` URLs, clones public GitHub source into a temporary checkout, probes the Pages URL with HTML-only HTTP, returns an ephemeral report, and does not persist source or reports.
+Hosted source scanning is retired. Clone or open the repository locally and run the CLI scan inside the selected app; it reads source in place and does not upload it.
 
 When the scan says the app is a good Brownfield UI target, attach Decantr:
 
@@ -36,7 +36,7 @@ pnpm exec decantr scan --project apps/web --json
 
 The JSON output is `scan-report.v2`. It reports the selected app path, the workspace package manager discovered by walking upward from that app, framework/language evidence, route signal count, taskable route count, component inventory confidence, styling authority, assistant rule files, and limitations. If `apps/web` is React/Vite/TypeScript beside an Angular sibling, Decantr should report the React app when `--project apps/web` is selected.
 
-`scan` is look-don't-touch reconnaissance. `analyze` is the local primitive that writes Brownfield intelligence and an observed proposal. `adopt` is the paved path that explains and runs the primitive flow for you: `analyze`, `init --existing --accept-proposal` or `--merge-proposal`, content-pack hydration when online, Project Health, a baseline, and optional CI setup. Use the primitive commands only when you need to script or debug a specific step. Pass `--no-packs` when you need a fully local/offline attach and hydrate packs later with `decantr content compile-packs <app>/decantr.essence.json --write-context`. In contract-only mode, deferred packs are optional context; missing packs should show as optional/info unless a present manifest references missing files.
+`scan` is look-don't-touch reconnaissance. `analyze` is the local primitive that writes Brownfield intelligence and an observed proposal. `adopt` is the paved path that explains and runs the primitive flow for you: `analyze`, proposal acceptance, content-pack hydration when online, Project Health, a baseline, and optional CI setup. If the host uses Prettier or Oxfmt, adoption also adds generated Decantr artifacts to `.prettierignore` at the app and workspace formatter boundaries. Pass `--no-packs` for a fully local/offline attach and hydrate packs later with `decantr content compile-packs <app>/decantr.essence.json --write-context`.
 
 If the app is already running and you want Decantr to attach route screenshots to task context, add visual evidence after adoption:
 
@@ -58,8 +58,8 @@ npx @decantr/cli verify --project apps/web --base-url http://localhost:3000 --ev
 - `.decantr/evidence/visual-manifest.json`: local route-to-screenshot map when `verify --base-url <url> --evidence` is run.
 - `.decantr/local-patterns.proposal.json`: project-owned pattern proposal when `decantr codify --from-audit` is run.
 - `.decantr/rules.proposal.json`: project-owned rule proposal when `decantr codify --from-audit` is run.
-- `.decantr/local-patterns.json`: accepted project-owned UI law when `decantr codify --accept` is run. It may include optional `behavior_obligations` for app-owned interaction and accessibility rules such as confirmation dialogs and form controls.
-- `.decantr/rules.json`: accepted project-owned local rule checks when `decantr codify --accept` is run.
+- `.decantr/local-patterns.json`: accepted project-owned UI law after `decantr codify --accept --confirm-reviewed`. It may include optional `behavior_obligations` for app-owned interaction and accessibility rules.
+- `.decantr/rules.json`: accepted project-owned local rule checks after the same reviewed acceptance command.
 
 ## What Decantr Does Not Do
 
@@ -82,7 +82,7 @@ Use `adopt` when you want the guided attach workflow. It can write the accepted 
 
 Use brownfield attach when your app already exists and the problem is drift: AI-generated pages stop matching the intended product shape, routes grow without a coherent map, or design-system decisions get repeated differently across screens.
 
-For day-two work, ask assistants to load task context before editing. MCP clients can call `decantr_context` with `{ "action": "task" }`, a route, and a task. CLI-only workflows can use `decantr task <route> "<task>"`.
+For day-two work, ask assistants to load task context before editing. MCP clients can call `decantr_context` with `{ "action": "task" }`, a route, and a task. CLI-only workflows can use `decantr task <route> "<task>"`. Task activation requires a current typed graph and starts its read targets with the discovered implementation source for that route.
 
 The CLI shortcut is:
 
@@ -99,18 +99,19 @@ npx @decantr/cli codify --from-audit --style-bridge
 # review .decantr/style-bridge.proposal.json if you want Decantr intent mapped to project tokens/classes
 npx @decantr/cli codify --map-pattern hero
 # review the advisory content-pattern mapping before accepting it as local law
-npx @decantr/cli codify --accept
+npx @decantr/cli codify --accept --confirm-reviewed
+# add --accept-style-bridge only when the reviewed bridge should become active authority
 npx @decantr/cli verify --brownfield --local-patterns
 ```
 
-Accepting local law moves the app from plain Brownfield contract-only into the first Hybrid lane. The existing app still owns source and styling, but `.decantr/local-patterns.json` and `.decantr/rules.json` become project-owned UI authority for assistants and verification. `codify --from-audit` now includes source snippets, confidence tiers, and likely variants for button, card/surface, form, shell, and theme families so the proposal is less generic. When the source shows form controls or destructive confirmation dialogs, the proposal can also include `behavior_obligations`: project-owned interaction and accessibility obligations that `task`, MCP, graph, Project Health, and repair prompts can carry without changing Essence. Accepting a style bridge adds `.decantr/style-bridge.json`, which maps Decantr concepts like surfaces, actions, focus, density, and theme variants to your own tokens/classes without adopting Decantr CSS. Official corpus patterns are useful vocabulary and review guidance; `codify --map-pattern <slug>` places one into the local-law proposal as advisory guidance, but it is not enforceable until you add project-owned components, classes, token recipes, variants, and exceptions.
+Accepting local law moves the app from plain Brownfield contract-only into the first Hybrid lane. The existing app still owns source and styling, but `.decantr/local-patterns.json` and `.decantr/rules.json` become project-owned UI authority. A style bridge is a separate authority decision: ordinary acceptance leaves `.decantr/style-bridge.proposal.json` untouched, while `codify --accept --confirm-reviewed --accept-style-bridge` writes `.decantr/style-bridge.json` and activates the style-bridge lane. Official corpus patterns remain advisory until you add project-owned components, classes, token recipes, variants, and exceptions.
 
 In a monorepo, keep passing the same app path:
 
 ```bash
 pnpm exec decantr codify --from-audit --style-bridge --project apps/web
 pnpm exec decantr codify --map-pattern hero --project apps/web
-pnpm exec decantr codify --accept --project apps/web
+pnpm exec decantr codify --accept --confirm-reviewed --project apps/web
 pnpm exec decantr task /feed "add saved recipe actions" --project apps/web
 pnpm exec decantr verify --brownfield --local-patterns --project apps/web
 pnpm exec decantr ci --project apps/web
@@ -152,13 +153,15 @@ pnpm exec decantr verify --project apps/web
 pnpm exec decantr ci --project apps/web
 ```
 
-Use `doctor` when you are unsure whether Decantr is attached correctly, whether generated context is stale, whether local law exists, or whether CI is wired. It now reports the active adoption lane, so a teammate can tell the difference between Brownfield contract-only, Hybrid local law, Hybrid style bridge, Hybrid Decantr CSS, Hybrid composition, and Greenfield modes. Use `verify` after local edits. Use `ci` in mandatory automation. Use `health`, `check`, `audit`, `refresh`, `workspace health`, and registry pack commands as advanced primitives only when you need direct control over a specific layer.
+Use `doctor` when you are unsure whether Decantr is attached correctly, whether generated context is stale, whether local law exists, or whether CI is wired. It reports the active adoption lane. Use `verify` after local edits and `ci` in mandatory automation. Use `health`, `check`, `audit`, `refresh`, `workspace health`, and content-pack commands as advanced primitives only when you need direct control over a specific layer.
 
 In contract-only or style-bridge Brownfield adoption, Decantr does not require `@decantr/css`, `css(...)`, `d-*` treatments, or generated Decantr token CSS. Critique and source audit should point you toward your project-owned design system, Tailwind/Sass/theme tokens, component variants, accepted local rules, or accepted style bridge instead.
 
 Contract-only Brownfield also suppresses Decantr CSS interaction-class enforcement. Use project-owned interaction rules if you want to make hover, motion, or animation behavior a CI gate.
 
-Project Health treats test, spec, story, fixture, and mock files as non-production source audit inputs. Localhost and security warnings should point at production source paths instead of colocated tests.
+Project Health excludes test, spec, story, fixture, mock, generated, E2E, Playwright, Cypress, and testing utility files from production source audits. Explicit router guards satisfy protected-surface topology, and callback utilities or generic fixed-position components need semantic evidence before they are classified as auth callbacks or dialogs.
+
+For adopted Brownfield apps with `.decantr/health-baseline.json`, `verify --ci` and `decantr ci` report inherited debt but gate only findings introduced after the baseline. This prevents adoption from failing solely because the baseline recorded pre-existing issues while still making that debt visible.
 
 Install CI from the monorepo root:
 

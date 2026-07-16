@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { EssenceV4 } from '@decantr/essence-spec';
+import { discoverProject } from '@decantr/verifier';
 import { scanAmbientContext } from './ambient-context.js';
 import { scanRoutes } from './analyzers/routes.js';
 import { scanStyling } from './analyzers/styling.js';
@@ -144,7 +145,10 @@ export function scanBrownfieldIssues(projectRoot: string, essence: EssenceV4): B
   const projectJson = readProjectJson(projectRoot);
   const routes = scanRoutes(projectRoot);
   const styling = scanStyling(projectRoot);
-  const ambient = scanAmbientContext(projectRoot);
+  const ambient = scanAmbientContext(
+    projectRoot,
+    discoverProject(projectRoot).workspace.workspaceRoot,
+  );
   const doctrine = readDoctrineMap(projectRoot) ?? createDoctrineMap(ambient);
   const issues: BrownfieldIssue[] = [];
 

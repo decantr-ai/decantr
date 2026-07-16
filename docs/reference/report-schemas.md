@@ -37,6 +37,8 @@ Decantr verifier report schemas are published from `packages/verifier/schema`.
 
 `scan-report.v2.json` is the active `decantr scan --json` contract. It carries the shared discovery summary: app scope, workspace package-manager evidence, framework/language, route signal count, taskable route count, component inventory confidence, source directories, styling authority, assistant-rule files, and explicit limitations. `scan-report.v1.json` remains published for stored artifact compatibility.
 
+`decantr-ci-report.v2.json` project payloads include `baselineGate`. The block records whether a saved Brownfield baseline was applied, its path/time, inherited finding IDs, and new finding IDs/severities. Inherited debt remains visible in report status, while only new health findings determine the baseline-aware health exit gate. Workspace payloads do not use this project-only block.
+
 `project-audit-report.v1.json`, `file-critique-report.v1.json`, and `showcase-shortlist-report.v1.json` remain active for their specific commands. The v1 health, CI, workspace, evidence, and scan files are retained so older integrations can validate stored artifacts.
 
 ## v2 Loop And Evidence Schemas
@@ -75,4 +77,4 @@ Each probe result has a stable `id`, `kind`, `status`, target, route, evidence s
 
 ## Implementation Notes
 
-The v2 schemas are the Decantr 3.5 control-loop contract. New Project Health, CI, workspace health, evidence, Studio, and MCP loop integrations should consume the v2 shapes directly. Keep v1 validators available for stored artifacts, but do not add new default emitters that silently fall back to v1 health or evidence payloads.
+The v2 schemas are the active Decantr 3.8 control-loop contract. New Project Health, CI, workspace health, evidence, Studio, and MCP loop integrations should consume the v2 shapes directly. Keep v1 validators available for stored artifacts, but do not add new default emitters that silently fall back to v1 health or evidence payloads.

@@ -453,9 +453,10 @@ describe('scanProject', () => {
   it('scans the selected React app in a mixed Angular/React monorepo without sibling contamination', async () => {
     writeFileSync(
       join(projectRoot, 'package.json'),
-      JSON.stringify({ private: true, workspaces: ['apps/*'], packageManager: 'pnpm@10.33.0' }),
+      JSON.stringify({ private: true, packageManager: 'pnpm@10.33.0' }),
     );
     writeFileSync(join(projectRoot, 'pnpm-lock.yaml'), 'lockfileVersion: 9.0\n');
+    writeFileSync(join(projectRoot, 'AGENTS.md'), '# Workspace rules\n');
     mkdirSync(join(projectRoot, 'apps', 'admin-angular', 'src', 'app'), { recursive: true });
     mkdirSync(join(projectRoot, 'apps', 'react-console', 'src', 'routes'), { recursive: true });
     mkdirSync(join(projectRoot, 'apps', 'react-console', 'src', 'features', 'billing'), {
@@ -583,6 +584,10 @@ describe('scanProject', () => {
       expect.arrayContaining(['/', '/reports']),
     );
     expect(report.routes.items.map((route) => route.path)).not.toContain('/angular-only');
+    expect(report.routes.items.map((route) => route.path)).not.toContain(
+      '/generated-should-not-count',
+    );
+    expect(report.assistant.ruleFiles).toContain('../../AGENTS.md');
     expect(report.components.componentCount).toBeGreaterThanOrEqual(2);
     expect(report.components.items.map((component) => component.name)).toEqual(
       expect.arrayContaining(['RevenueChart', 'AccountForm', 'HomeRoute', 'ReportsRoute']),
@@ -597,6 +602,85 @@ describe('scanProject', () => {
     expect(report.styling.approach).toBe('tailwind');
     expect(report.styling.cssVariableCount).toBeGreaterThanOrEqual(2);
     expect(report.styling.darkMode).toBe(true);
+  });
+
+  it('resolves nested React Router paths from static constants to lazy route source files', async () => {
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      JSON.stringify({
+        dependencies: {
+          react: '^19.0.0',
+          'react-dom': '^19.0.0',
+          'react-router-dom': '^7.0.0',
+        },
+      }),
+    );
+    mkdirSync(join(projectRoot, 'src', 'routes', 'app'), { recursive: true });
+    writeFileSync(
+      join(projectRoot, 'src', 'paths.ts'),
+      [
+        'export const paths = {',
+        "  home: { path: '/' },",
+        "  auth: { login: { path: '/auth/login' } },",
+        '  app: {',
+        "    root: { path: '/app' },",
+        "    dashboard: { path: '' },",
+        "    discussions: { path: 'discussions' },",
+        "    discussion: { path: 'discussions/:discussionId' },",
+        '  },',
+        '} as const;',
+        '',
+      ].join('\n'),
+    );
+    writeFileSync(
+      join(projectRoot, 'src', 'router.tsx'),
+      [
+        "import { createBrowserRouter } from 'react-router-dom';",
+        "import { paths } from './paths';",
+        'export const router = createBrowserRouter([',
+        "  { path: paths.home.path, lazy: () => import('./routes/home') },",
+        "  { path: paths.auth.login.path, lazy: () => import('./routes/login') },",
+        '  {',
+        '    path: paths.app.root.path,',
+        '    children: [',
+        "      { path: paths.app.dashboard.path, lazy: () => import('./routes/app/dashboard') },",
+        "      { path: paths.app.discussions.path, lazy: () => import('./routes/app/discussions') },",
+        "      { path: paths.app.discussion.path, lazy: () => import('./routes/app/discussion') },",
+        '    ],',
+        '  },',
+        ']);',
+        '',
+      ].join('\n'),
+    );
+    for (const file of [
+      'home.tsx',
+      'login.tsx',
+      'app/dashboard.tsx',
+      'app/discussions.tsx',
+      'app/discussion.tsx',
+    ]) {
+      writeFileSync(
+        join(projectRoot, 'src', 'routes', file),
+        'export function Component() { return <main />; }\n',
+      );
+    }
+
+    const report = await scanProject(projectRoot);
+    const routes = new Map(report.routes.items.map((route) => [route.path, route.file]));
+
+    expect(report.routes.strategy).toBe('react-router');
+    expect([...routes.keys()]).toEqual(
+      expect.arrayContaining([
+        '/',
+        '/auth/login',
+        '/app',
+        '/app/discussions',
+        '/app/discussions/:discussionId',
+      ]),
+    );
+    expect(routes.get('/app')).toBe('src/routes/app/dashboard.tsx');
+    expect(routes.get('/app/discussions')).toBe('src/routes/app/discussions.tsx');
+    expect(routes.has('/discussions')).toBe(false);
   });
 });
 

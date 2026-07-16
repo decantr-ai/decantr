@@ -36,4 +36,17 @@ describe('mergeWithDefaults', () => {
 
     expect(options.theme).toBe('luminarum');
   });
+
+  it('uses greenfield defaults when the lane is explicit inside an existing runtime', () => {
+    const options = mergeWithDefaults(
+      { workflowMode: 'greenfield-contract-only', adoptionMode: 'contract-only' },
+      detectedProject({ framework: 'react', packageManager: 'pnpm', hasTailwind: true }),
+    );
+
+    expect(options.theme).toBe('luminarum');
+    expect(options.mode).toBe('dark');
+    expect(options.shell).toBe('sidebar-main');
+    expect(options.personality).toEqual(['professional']);
+    expect(options.existing).toBe(false);
+  });
 });

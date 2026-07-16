@@ -12,10 +12,13 @@ import { createStyleBridgeTaskSummary } from '../style-bridge.js';
 import { resolveWorkspaceInfo } from '../workspace.js';
 import {
   createProjectHealthReport,
+  evaluateHealthBaselineGate,
   formatProjectHealthMarkdown,
   formatProjectHealthText,
+  type HealthBaselineGate,
   type HealthFailOn,
   shouldFailHealth,
+  shouldFailHealthBaselineGate,
 } from './health.js';
 import {
   createWorkspaceHealthReport,
@@ -88,6 +91,7 @@ interface ProjectCiReport {
   authority: AuthorityResolution;
   evidenceTier: EvidenceTier;
   health: ProjectHealthReport;
+  baselineGate: HealthBaselineGate;
   localLaw: LocalLawCiSummary;
   styleBridge: StyleBridgeCiSummary;
 }
@@ -294,14 +298,35 @@ function styleBridgeFails(summary: StyleBridgeCiSummary, failOn: HealthFailOn): 
 
 function projectCiStatus(
   health: ProjectHealthReport,
+  baselineGate: HealthBaselineGate,
   localLaw: LocalLawCiSummary,
   styleBridge: StyleBridgeCiSummary,
 ): ProjectCiReport['status'] {
-  if (health.status === 'error' || localLaw.errorCount > 0) return 'error';
-  if (health.status === 'warning' || localLaw.warnCount > 0 || styleBridge.warnings.length > 0) {
+  const gateHasErrors = baselineGate.newFindings.some((finding) => finding.severity === 'error');
+  const gateHasWarnings = baselineGate.newFindings.some((finding) => finding.severity === 'warn');
+  if (gateHasErrors || localLaw.errorCount > 0) return 'error';
+  if (
+    gateHasWarnings ||
+    baselineGate.inheritedFindingIds.length > 0 ||
+    localLaw.warnCount > 0 ||
+    styleBridge.warnings.length > 0
+  ) {
     return 'warning';
   }
-  return health.status;
+  return 'healthy';
+}
+
+function formatBaselineGateText(gate: HealthBaselineGate): string {
+  if (!gate.applied) return '';
+  return [
+    '',
+    `${BOLD}Brownfield baseline gate:${RESET}`,
+    `  Baseline: ${gate.savedAt ?? 'unknown'}`,
+    `  Inherited debt: ${gate.inheritedFindingIds.length} finding(s)`,
+    `  New findings: ${gate.newFindings.length}`,
+    '  Exit status is based on new findings; inherited debt remains visible above.',
+    '',
+  ].join('\n');
 }
 
 function formatLocalLawText(summary: LocalLawCiSummary, health: ProjectHealthReport): string {
@@ -310,7 +335,7 @@ function formatLocalLawText(summary: LocalLawCiSummary, health: ProjectHealthRep
     const isBrownfield = health.summary.workflowMode === 'brownfield-attach';
     lines.push(
       isBrownfield
-        ? '  Not accepted yet. Run `decantr codify --from-audit`, review, then `decantr codify --accept`.'
+        ? '  Not accepted yet. Run `decantr codify --from-audit`, review, then `decantr codify --accept --confirm-reviewed`.'
         : '  Not active for this project.',
     );
     return `${lines.join('\n')}\n`;
@@ -375,7 +400,7 @@ function formatLocalLawMarkdown(summary: LocalLawCiSummary, health: ProjectHealt
       return lines.join('\n');
     }
     lines.push(
-      'Local law has not been accepted yet. Run `decantr codify --from-audit`, review the proposal, then run `decantr codify --accept`.',
+      'Local law has not been accepted yet. Run `decantr codify --from-audit`, review the proposal, then run `decantr codify --accept --confirm-reviewed`.',
     );
     return lines.join('\n');
   }
@@ -442,6 +467,7 @@ function formatProjectCiMarkdown(report: ProjectCiReport): string {
     `- Loop: **${report.loop.state}**`,
     `- Evidence tier: **${report.evidenceTier.stage}** / ${report.evidenceTier.confidence.level}`,
     `- Authority: **${report.authority.activeLane}**`,
+    `- Brownfield baseline: **${report.baselineGate.applied ? `${report.baselineGate.inheritedFindingIds.length} inherited / ${report.baselineGate.newFindings.length} new` : 'not applied'}**`,
     `- Local law: ${
       report.localLaw.checked
         ? `${report.localLaw.errorCount} error(s), ${report.localLaw.warnCount} warning(s)`
@@ -452,6 +478,15 @@ function formatProjectCiMarkdown(report: ProjectCiReport): string {
     }`,
     '',
     formatProjectHealthMarkdown(report.health),
+    ...(report.baselineGate.applied
+      ? [
+          '',
+          '## Brownfield Baseline Gate',
+          '',
+          `Inherited findings remain visible but do not determine the CI exit status: **${report.baselineGate.inheritedFindingIds.length}**.`,
+          `Findings introduced after the saved baseline: **${report.baselineGate.newFindings.length}**.`,
+        ]
+      : []),
     '',
     formatLocalLawMarkdown(report.localLaw, report.health),
     '',
@@ -681,6 +716,7 @@ async function runProjectCi(root: string, options: CiOptions): Promise<number> {
 
   const failOn = options.failOn ?? 'error';
   const health = await createProjectHealthReport(workspaceInfo.appRoot);
+  const baselineGate = evaluateHealthBaselineGate(workspaceInfo.appRoot, health);
   const localLaw = summarizeLocalLaw(workspaceInfo.appRoot);
   const styleBridge = summarizeStyleBridge(workspaceInfo.appRoot);
   const projectPath =
@@ -693,11 +729,12 @@ async function runProjectCi(root: string, options: CiOptions): Promise<number> {
     mode: 'project',
     projectPath,
     failOn,
-    status: projectCiStatus(health, localLaw, styleBridge),
+    status: projectCiStatus(health, baselineGate, localLaw, styleBridge),
     loop: health.loop,
     authority: health.authority,
     evidenceTier: health.evidenceTier,
     health,
+    baselineGate,
     localLaw,
     styleBridge,
   };
@@ -712,13 +749,14 @@ async function runProjectCi(root: string, options: CiOptions): Promise<number> {
     else if (options.markdown) process.stdout.write(markdown);
     else
       process.stdout.write(
-        `${formatProjectHealthText(health)}${formatLocalLawText(localLaw, health)}${formatStyleBridgeText(styleBridge)}`,
+        `${formatProjectHealthText(health)}${formatBaselineGateText(baselineGate)}${formatLocalLawText(localLaw, health)}${formatStyleBridgeText(styleBridge)}`,
       );
   }
 
-  return shouldFailHealth(health, failOn) ||
-    localLawFails(localLaw, failOn) ||
-    styleBridgeFails(styleBridge, failOn)
+  const healthFails = baselineGate.applied
+    ? shouldFailHealthBaselineGate(baselineGate, failOn)
+    : shouldFailHealth(health, failOn);
+  return healthFails || localLawFails(localLaw, failOn) || styleBridgeFails(styleBridge, failOn)
     ? 1
     : 0;
 }

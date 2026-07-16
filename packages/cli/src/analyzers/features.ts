@@ -48,7 +48,9 @@ const FEATURE_PATTERNS: Record<string, string[]> = {
   'api-keys': ['api-keys', 'api-key', 'tokens', 'keys', 'developer'],
   team: ['team', 'organization', 'org', 'workspace', 'members', 'invite'],
   content: ['content', 'posts', 'articles', 'blog', 'cms', 'editor'],
-  registry: ['registry', 'marketplace', 'store', 'catalog', 'library'],
+  marketplace: ['marketplace'],
+  catalog: ['catalog'],
+  registry: ['registry'],
 };
 
 /**

@@ -453,8 +453,8 @@ export function createAuthorityResolution(report: ProjectHealthReportLike): Auth
     activeLane,
     summary:
       activeLane === 'production-source'
-        ? 'Brownfield authority: preserve observed production source first, then accepted local law/style bridge, then Essence V4 structure, with hosted packs advisory.'
-        : 'Contract authority: Essence V4 and accepted local project law guide source changes; hosted packs remain advisory until accepted locally.',
+        ? 'Brownfield authority: preserve observed production source first, then accepted local law/style bridge, then Essence V4 structure, with official content packs advisory.'
+        : 'Contract authority: Essence V4 and accepted local project law guide source changes; official content packs remain advisory until accepted locally.',
     conflicts,
     stopRule:
       'If runtime source and Decantr context disagree, stop and report drift instead of guessing which truth to overwrite.',

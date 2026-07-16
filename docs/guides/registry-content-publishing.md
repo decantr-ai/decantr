@@ -34,7 +34,9 @@ Community publishing to a hosted registry is no longer an active Decantr product
 ```bash
 decantr codify --from-audit --project apps/web
 decantr codify --style-bridge --project apps/web
-decantr codify --accept --project apps/web
+decantr codify --accept --confirm-reviewed --project apps/web
+# Optional: explicitly activate the reviewed bridge proposal
+decantr codify --accept --confirm-reviewed --accept-style-bridge --project apps/web
 ```
 
 Official reusable content belongs in `packages/content`. Private or customer-specific governance belongs in the customer repository.

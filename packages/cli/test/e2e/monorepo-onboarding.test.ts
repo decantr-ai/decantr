@@ -142,7 +142,7 @@ describe('brownfield monorepo onboarding', () => {
 
     const output = runCli(testDir, ['adopt', '--project', 'apps/web', '--yes']);
 
-    expect(output).toContain('Skipping hosted pack hydration in offline mode.');
+    expect(output).toContain('Skipping official content-pack hydration in offline mode.');
     expect(output).toContain('decantr init --project apps/web --existing --accept-proposal');
     expect(output).toContain('Generated Decantr typed graph artifacts:');
     expect(output).toContain('Brownfield operating loop');

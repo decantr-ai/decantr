@@ -117,7 +117,7 @@ describe('cursor connector', () => {
     });
     expect(rule).toContain('alwaysApply: true');
     expect(rule).toContain('decantr_context');
-    expect(rule).toContain('decantr verify --brownfield --local-patterns');
+    expect(rule).toContain('run the verify command returned by task context');
     expect(rule).toContain('runtime source and Decantr context disagree');
   });
 

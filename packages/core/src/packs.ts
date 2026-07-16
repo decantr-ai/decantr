@@ -426,6 +426,7 @@ export interface CompileExecutionPackBundleOptions {
   contentRoot?: string;
   overridePaths?: string[];
   resolver?: ContentResolver;
+  stylingMode?: 'host' | 'decantr-css';
 }
 
 const DEFAULT_TARGET: ExecutionPackTarget = {
@@ -565,18 +566,19 @@ const DEFAULT_REVIEW_ANTI_PATTERNS: ExecutionPackAntiPattern[] = [
     id: 'inline-styles',
     summary: 'Avoid inline style literals as the primary styling path.',
     guidance:
-      'Move visual styling into tokens.css and treatments.css instead of component-local style objects.',
+      "Move static visual styling into the project's existing styling authority instead of component-local style objects.",
   },
   {
     id: 'hardcoded-colors',
     summary: 'Avoid hardcoded color literals.',
-    guidance: 'Use CSS variables and theme decorators instead of hex, rgb, or hsl values.',
+    guidance:
+      "Use the project's semantic color tokens or theme primitives instead of ungoverned hex, rgb, or hsl values.",
   },
   {
-    id: 'utility-framework-leakage',
-    summary: 'Avoid utility-framework leakage as the primary design language.',
+    id: 'styling-authority-drift',
+    summary: 'Avoid styling that diverges from the project-owned design language.',
     guidance:
-      'Prefer compiled Decantr treatments and contract vocabulary over ad hoc utility class stacks.',
+      'Reuse established components, variants, tokens, and local conventions before adding one-off styling vocabulary.',
   },
 ];
 
@@ -916,14 +918,6 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
           `| \`.${entry.class}\` | ${escapeMarkdownCell(entry.intent)} | ${escapeMarkdownCell(entry.applyTo)} |`,
         );
       }
-      lines.push('');
-    } else {
-      // Default path (1.7.22+) — pointer to scaffold-pack's canonical table.
-      lines.push('## Theme Decorators');
-      lines.push('');
-      lines.push(
-        `Theme \`${sectionPack.data.theme.id}\` decorators are documented ONCE in \`scaffold-pack.md\` under "Required Theme Decorators". Apply them across this section's pages — the contract is the same project-wide. See also DECANTR.md "Decorator Quick Reference" for the same table.`,
-      );
       lines.push('');
     }
   }
@@ -1611,6 +1605,7 @@ export async function compileExecutionPackBundle(
   // both scaffold pack (canonical) and section packs (reference). Filter to
   // entries with the minimum data needed to render a useful row.
   const themeDecorators: ThemeDecoratorEntry[] | undefined = (() => {
+    if (options.stylingMode !== 'decantr-css') return undefined;
     const defs = pipeline.registryTheme?.decorator_definitions;
     if (!defs) return undefined;
     const entries: ThemeDecoratorEntry[] = [];

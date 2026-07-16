@@ -67,7 +67,7 @@ Then use MCP for agent-time context:
 }
 ```
 
-`decantr_context` with `action: "task"` returns the selected route context, task-ranked graph nodes, accepted local law, behavior obligations, style bridge mappings, changed-file impact when available, and a v2 loop block with maker instructions, checker instructions, authority summary, read targets, graph impact, stop conditions, and the verify command.
+`decantr_context` with `action: "task"` requires current graph artifacts and leads its read targets with the discovered route implementation source. The default `detail: "compact"` response preserves authority, ranking summaries, local law, impact, stop conditions, and verify command while omitting full node/edge arrays and bounding large context lists. Use `detail: "full"` only for diagnostic clients that need the expanded payload. Both modes return `response_detail`.
 
 ## Contract Capsule Use
 

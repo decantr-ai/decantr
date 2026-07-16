@@ -128,7 +128,7 @@ For an existing app that was attached through brownfield adoption:
 npx @decantr/cli verify --brownfield
 ```
 
-If you accepted local project law with `decantr codify --accept`, use:
+If you accepted local project law with `decantr codify --accept --confirm-reviewed`, use:
 
 ```bash
 npx @decantr/cli verify --brownfield --local-patterns
@@ -277,7 +277,7 @@ Decantr only verifies obligations where static source evidence is strong. It doe
 
 ## Why are behavior obligations local law instead of Essence or registry data?
 
-Because interaction behavior is usually app-owned. A registry pattern can provide useful accessibility and interaction guidance, but it should not override the way a production codebase composes its own Dialog, Button, Form, routing, feature flags, or test harness.
+Because interaction behavior is usually app-owned. An official corpus pattern can provide useful accessibility and interaction guidance, but it should not override the way a production codebase composes its own Dialog, Button, Form, routing, feature flags, or test harness.
 
 Keeping `behavior_obligations` in `.decantr/local-patterns.json` lets Brownfield and Hybrid teams accept only the obligations their source evidence supports. The typed graph then projects those accepted obligations as `LocalRule` nodes, task context serves them to agents, and Project Health emits evidence-backed findings without changing Essence V4 or official content schemas.
 

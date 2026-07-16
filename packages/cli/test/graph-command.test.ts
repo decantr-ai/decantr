@@ -838,25 +838,7 @@ describe('graph command artifacts', () => {
     );
   });
 
-  it('ingests health baseline diffs as temporal evidence nodes', () => {
-    mkdirSync(join(testDir, '.decantr', 'evidence'), { recursive: true });
-    mkdirSync(join(testDir, 'src', 'app'), { recursive: true });
-    writeFileSync(join(testDir, 'src', 'app', 'page.tsx'), 'export default function Page() {}\n');
-    writeJson(join(testDir, '.decantr', 'evidence', 'visual-manifest.json'), {
-      version: 1,
-      generatedAt: '2026-05-21T14:00:00.000Z',
-      localOnly: true,
-      baseUrl: 'http://127.0.0.1:3000',
-      routes: [
-        {
-          route: '/',
-          url: 'http://127.0.0.1:3000/',
-          screenshot: '.decantr/evidence/screenshots/root.png',
-          screenshotHash: 'sha256:root',
-          status: 'captured',
-        },
-      ],
-    });
+  it('does not let transient health baseline diffs invalidate graph artifacts', async () => {
     writeJson(join(testDir, '.decantr', 'health-baseline-diff.json'), {
       baselinePath: join(testDir, '.decantr', 'health-baseline.json'),
       savedAt: '2026-05-21T13:00:00.000Z',
@@ -870,73 +852,21 @@ describe('graph command artifacts', () => {
       contractDrift: ['Declared route set changed since baseline.'],
     });
 
-    const artifacts = buildGraphArtifacts(testDir);
+    await cmdGraph(testDir, { json: true });
+    const before = buildGraphArtifacts(testDir);
+    writeJson(join(testDir, '.decantr', 'health-baseline-diff.json'), {
+      savedAt: '2026-05-21T14:00:00.000Z',
+      changedFiles: [],
+      changedRoutes: [],
+      scoreDelta: 4,
+    });
+    const after = buildGraphArtifacts(testDir);
 
-    expect(artifacts?.manifest.sources.map((source) => source.id)).toContain(
+    expect(before?.manifest.sources.map((source) => source.id)).not.toContain(
       'src:.decantr/health-baseline-diff.json',
     );
-    expect(artifacts?.manifest.sources.map((source) => source.id)).toContain(
-      'src:src/app/page.tsx',
-    );
-    expect(artifacts?.snapshot.nodes).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          id: 'ev:baseline:file:src/app/page.tsx',
-          type: 'Evidence',
-          payload: expect.objectContaining({
-            kind: 'baseline-file-impact',
-            file: 'src/app/page.tsx',
-          }),
-        }),
-        expect.objectContaining({
-          id: 'ev:baseline:route:/',
-          type: 'Evidence',
-          payload: expect.objectContaining({ kind: 'baseline-route-impact', route: '/' }),
-        }),
-        expect.objectContaining({
-          id: 'ev:baseline:screenshot:1',
-          type: 'Evidence',
-          payload: expect.objectContaining({
-            kind: 'baseline-screenshot-drift',
-            screenshot: '.decantr/evidence/screenshots/root.png',
-            route: '/',
-          }),
-        }),
-        expect.objectContaining({
-          id: 'ev:baseline:contract:1',
-          type: 'Evidence',
-          payload: expect.objectContaining({
-            kind: 'baseline-contract-drift',
-            text: 'Declared route set changed since baseline.',
-          }),
-        }),
-      ]),
-    );
-    expect(artifacts?.snapshot.edges).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          src: 'ev:baseline:file:src/app/page.tsx',
-          dst: 'src:src/app/page.tsx',
-          relation: 'EVIDENCE_CAPTURED_FOR',
-        }),
-        expect.objectContaining({
-          src: 'ev:baseline:route:/',
-          dst: 'rt:/',
-          relation: 'EVIDENCE_CAPTURED_FOR',
-        }),
-        expect.objectContaining({
-          src: 'ev:baseline:screenshot:1',
-          dst: 'rt:/',
-          relation: 'EVIDENCE_CAPTURED_FOR',
-        }),
-        expect.objectContaining({
-          src: 'ev:baseline:contract:1',
-          dst: 'proj:default',
-          relation: 'EVIDENCE_CAPTURED_FOR',
-        }),
-      ]),
-    );
-    expect(artifacts?.snapshot.summary.evidence).toBeGreaterThanOrEqual(4);
+    expect(after?.snapshot.source_hash).toBe(before?.snapshot.source_hash);
+    expect(after?.staleArtifacts).toEqual([]);
   });
 
   it('ingests brownfield analysis route source files as graph provenance', () => {
@@ -1015,6 +945,39 @@ describe('graph command artifacts', () => {
           dst: 'src:src/components/ui/Button.tsx',
           relation: 'NODE_DERIVED_FROM_SOURCE',
           payload: expect.objectContaining({ role: 'component-implementation' }),
+        }),
+      ]),
+    );
+  });
+
+  it('uses shared route discovery as graph provenance without brownfield analysis', () => {
+    mkdirSync(join(testDir, 'src', 'routes'), { recursive: true });
+    writeFileSync(
+      join(testDir, 'src', 'routes', 'index.tsx'),
+      "import { createFileRoute } from '@tanstack/react-router';\nexport const Route = createFileRoute('/')({ component: () => <main>Home</main> });\n",
+    );
+
+    const artifacts = buildGraphArtifacts(testDir);
+
+    expect(artifacts?.snapshot.nodes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'src:src/routes/index.tsx',
+          type: 'SourceArtifact',
+          payload: expect.objectContaining({
+            kind: 'route-source',
+            payload: expect.objectContaining({ route: '/', strategy: 'source-declared' }),
+          }),
+        }),
+      ]),
+    );
+    expect(artifacts?.snapshot.edges).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          src: 'rt:/',
+          dst: 'src:src/routes/index.tsx',
+          relation: 'NODE_DERIVED_FROM_SOURCE',
+          payload: expect.objectContaining({ role: 'route-implementation' }),
         }),
       ]),
     );

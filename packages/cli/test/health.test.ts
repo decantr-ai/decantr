@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import type { ProjectHealthReport } from '@decantr/verifier';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { COMMAND_SURFACE, commandSurfaceByName } from '../src/command-surface.js';
 import { buildGraphArtifacts } from '../src/commands/graph.js';
@@ -9,12 +10,14 @@ import {
   cmdHealth,
   createProjectEvidenceBundle,
   createProjectHealthReport,
+  evaluateHealthBaselineGate,
   formatDiagnosticCatalogJson,
   formatProjectHealthMarkdown,
   formatProjectHealthText,
   parseHealthArgs,
   renderProjectHealthCiWorkflow,
   shouldFailHealth,
+  shouldFailHealthBaselineGate,
   writeProjectHealthCiWorkflow,
 } from '../src/commands/health.js';
 import { createWorkspaceHealthReport, listWorkspaceProjects } from '../src/commands/workspace.js';
@@ -1125,6 +1128,9 @@ exports.chromium = {
     writeRegistryCache();
     writeEssence();
     writePacks();
+    writeJson(join(testDir, '.decantr', 'project.json'), {
+      initialized: { workflowMode: 'brownfield-attach', adoptionMode: 'contract-only' },
+    });
     mkdirSync(join(testDir, 'src', 'app'), { recursive: true });
     mkdirSync(join(testDir, '.decantr', 'evidence', 'screenshots'), { recursive: true });
     writeFileSync(join(testDir, 'src', 'app', 'page.tsx'), 'export default function Page() {}\n');
@@ -1188,14 +1194,9 @@ exports.chromium = {
     expect(diff.changedScreenshots).toContain('.decantr/evidence/screenshots/root.png');
     expect(diff.scoreDelta).not.toBeNull();
 
-    const nextReport = JSON.parse(readFileSync(join(testDir, 'health-next.json'), 'utf-8')) as {
-      findings: Array<{
-        code?: string;
-        rule?: string;
-        repair?: { id?: string; payload?: Record<string, unknown> };
-        repairPlan?: { actions?: Array<{ id?: string }> };
-      }>;
-    };
+    const nextReport = JSON.parse(
+      readFileSync(join(testDir, 'health-next.json'), 'utf-8'),
+    ) as ProjectHealthReport;
     const finding = nextReport.findings.find(
       (entry) => entry.rule === 'visual-baseline-screenshot-drift',
     );
@@ -1209,6 +1210,11 @@ exports.chromium = {
       },
     });
     expect(finding?.repairPlan?.actions?.[0]?.id).toBe('review-visual-baseline-drift');
+    const gate = evaluateHealthBaselineGate(testDir, nextReport);
+    expect(gate.applied).toBe(true);
+    expect(gate.inheritedFindingIds.length).toBeGreaterThan(0);
+    expect(gate.newFindings.map((entry) => entry.id)).toContain(finding?.id);
+    expect(shouldFailHealthBaselineGate(gate, 'warn')).toBe(true);
   });
 
   it('tracks the audited CLI command surface', () => {

@@ -15,12 +15,12 @@ npm install @decantr/verifier
 
 - `auditProject()` for project-level Decantr audits
 - `auditBuiltDist()` for built-output runtime verification against emitted HTML, assets, and route hints
-- `discoverProject()` for shared read-only Brownfield discovery of workspace/app scope, package manager, framework, language, source-declared routes, taskable routes, component inventory, styling authority, Decantr presence, and assistant-rule files
+- `discoverProject()` for shared read-only Brownfield discovery of workspace/app scope, package manager, framework, language, source-declared routes, taskable routes, component inventory, styling authority, Decantr presence, and inherited assistant-rule files. Formal TanStack source routes outrank generated trees; nested React Router objects resolve lazy implementation files; Vue Router objects are recognized; pathname fallbacks carry medium confidence.
 - `scanProject()` for read-only Brownfield reconnaissance that emits `scan-report.v2` by default using the shared discovery substrate
 - `auditComponentReuse()` for the first AST-derived component reuse drift slice, focused on AI reimplementing common UI primitives instead of importing project-owned components, plus local import references that the typed graph can turn into source-to-source impact edges
 - `auditStyleBridgeDrift()` for accepted style bridge drift, focused on production `className`, common class-helper values, stylesheet declarations, and hardcoded inline color styles that bypass project-owned token/class authority
 - `collectProjectSourceFiles()` for the shared production-source file selection used by Project Health, component reuse drift, style bridge drift, and typed graph source provenance
-- `resolveGitHubScanInput()` and `probePublishedSite()` for hosted scan inputs and HTML-only published-site metadata probes
+- `resolveGitHubScanInput()` and `probePublishedSite()` as caller-invoked compatibility utilities for URL normalization and HTML-only site probes; Decantr does not operate a hosted source scanner
 - `critiqueFile()` for file-level review against compiled review-pack contracts
 - `createContractAssertions()` for explicit route, shell, accessibility, context, and design-token assertions derived from Essence/context
 - `createEvidenceBundle()` for privacy-redacted local evidence artifacts used by AI repair loops and CI
@@ -31,6 +31,7 @@ npm install @decantr/verifier
 - `ProjectHealthReport`, `ProjectHealthFinding`, and `ProjectHealthRemediation` types for the CLI's end-user health surface
 - Project Health and Evidence Bundle finding schemas include optional `code`, `repair`, `repairPlan`, and `graph` fields so agents can identify, anchor, and act on findings without parsing prose; Evidence Bundle provenance also records graph snapshot, manifest, diff, and contract-capsule hashes when present
 - interaction findings now include scanned file counts, file line ranges, and expected signal evidence where available, so CLI health/check output can point agents at source-grounded remediation
+- production source audits exclude tests, fixtures, generated code, E2E/Playwright/Cypress trees, and testing utilities; explicit router guards satisfy protected-surface topology, while callback utilities and generic fixed-position components require semantic evidence before auth/dialog findings are emitted
 - contract-only and style-bridge Brownfield critique avoids requiring Decantr treatments/decorators when the project keeps its own styling authority
 - Decantr CI report schemas include accepted style bridge status, mapping count, styling approach, theme modes, evidence tier, authority resolution, and loop readiness alongside local-law findings
 - project audits check that `pack-manifest.json` references real pack markdown/JSON files on disk

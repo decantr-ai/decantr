@@ -243,6 +243,12 @@ describe('V4 execution packs', () => {
     expect(bundle.scaffold.renderedMarkdown).toContain(
       '- / -> dashboard/overview @ sidebar-main [kpi-grid, filter-bar, data-table]',
     );
+    expect(bundle.scaffold.data.themeDecorators).toBeUndefined();
+    expect(bundle.scaffold.renderedMarkdown).not.toContain('Required Theme Decorators');
+    expect(bundle.sections[0].renderedMarkdown).not.toContain('Theme Decorators');
+    expect(bundle.review.antiPatterns.map((entry) => entry.guidance).join(' ')).not.toMatch(
+      /tokens\.css|treatments\.css|Decantr treatments/,
+    );
   });
 
   it('keeps duplicate page IDs scoped by section in V4 bundles', async () => {
