@@ -56,7 +56,7 @@ The v2 loop state tells agents and humans what to do next:
 - `blocked_missing_graph`: generate or refresh `.decantr/graph` before relying on graph-backed proof.
 - `verified`: the current contract/context/evidence loop is closed.
 
-When `.decantr/evidence/latest.json` exists, `decantr graph` can ingest the saved Evidence Bundle as graph nodes: findings become `Finding` nodes, evidence strings become `Evidence` nodes, repair IDs become `Repair` nodes, and graph anchors become typed edges back to the contract node that produced the finding. Evidence and repair read targets that point at existing project files become `SourceArtifact` nodes, so findings without a prior graph anchor can still attach to the file that needs repair. When `.decantr/health-baseline-diff.json` exists, changed files, changed routes, screenshot drift, and contract drift become temporal Evidence nodes linked back to SourceArtifact, Route, or Project nodes. Each graph generation also writes a content-addressed copy under `.decantr/graph/snapshots/`, which gives proof demos and local CI a replayable contract/evidence timeline without hosted storage.
+When `.decantr/evidence/latest.json` exists, `decantr graph` can ingest the saved Evidence Bundle as graph nodes: findings become `Finding` nodes, evidence strings become `Evidence` nodes, repair IDs become `Repair` nodes, and graph anchors become typed edges back to the contract node that produced the finding. Evidence and repair read targets that point at existing project files become `SourceArtifact` nodes, so findings without a prior graph anchor can still attach to the file that needs repair. Health-baseline diff output remains a continuity artifact and is deliberately excluded from graph inputs so comparing against a baseline cannot make the graph stale. Each graph generation also writes a content-addressed copy under `.decantr/graph/snapshots/`, which gives proof demos and local CI a replayable contract/evidence timeline without hosted storage.
 
 Project Health treats `pack-manifest.json` as a manifest, not proof by itself. If the manifest references a missing section/page/review/scaffold/mutation markdown or JSON file, health and doctor report the generated context as incomplete. In contract-only Brownfield, missing content packs are optional context: health reports them as info, doctor does not make hydration the next required step, and `refresh --check` does not fail solely because packs were intentionally deferred. In monorepos, hydrate missing or intentionally deferred content packs with `decantr content compile-packs apps/web/decantr.essence.json --write-context` so the bundle lands beside the selected app essence. Project Health remediation prompts and CI recommendations also stay project-scoped, so root runs point at `--project apps/web`, runtime prompts use root-safe app build commands such as `pnpm --dir apps/web build`, and prompt read targets point at `apps/web/DECANTR.md`, `apps/web/decantr.essence.json`, and app-local context files instead of asking users to read root files that do not own the app contract.
 
@@ -119,7 +119,9 @@ decantr health --save-baseline
 decantr health --since-baseline
 ```
 
-The baseline stores status, score, finding IDs, declared routes, pack summary, and local screenshot hashes. The comparison reports added/resolved findings, changed files from unstaged and staged Git diffs, route impact when `.decantr/analysis.json` can map a changed file to a route, screenshot hash drift, and contract drift such as route-set or pack-generation changes. Screenshot hash drift also becomes a `VISUAL010` / `review-visual-baseline-drift` Project Health finding so agents can treat visual continuity as repairable evidence.
+The baseline stores status, score, finding IDs, declared routes, pack summary, and local screenshot hashes. The comparison reports added/resolved findings, changed files from unstaged and staged Git diffs, route impact when `.decantr/analysis.json` can map a changed file to a route, screenshot hash drift, and contract drift such as route-set or pack-generation changes. Screenshot hash drift also becomes a `VISUAL010` finding.
+
+For a `brownfield-attach` project with a saved baseline, `decantr health --ci` and `decantr ci` apply a regression gate: inherited finding IDs remain visible, but only findings introduced after the baseline determine the health gate's exit code. The v2 CI report exposes this as `baselineGate`. Local-law and style-bridge checks remain separate and retain their configured failure behavior. Greenfield and Hybrid projects without a Brownfield baseline continue to gate the full report.
 
 ## Design Tokens
 
@@ -237,16 +239,17 @@ Brownfield health respects existing-app authority. It reports evidence and remed
 
 `decantr analyze` writes `.decantr/brownfield-intelligence.json`, `.decantr/theme-inventory.json`, and `.decantr/enrichment-backlog.md` alongside the original analysis/proposal/report files. Theme inventory observes light, dark, and variant theme selectors without changing Essence V4. Those artifacts are local context for agents and reviewers, not source takeover.
 
-`decantr codify --from-audit` adds a project-owned local law layer for things the official registry cannot infer from a contract-only app:
+`decantr codify --from-audit` adds a project-owned local law layer for things the official corpus cannot infer from a contract-only app:
 
 ```bash
 decantr codify --from-audit --style-bridge
 decantr codify --map-pattern hero
-decantr codify --accept
+decantr codify --accept --confirm-reviewed
+# optional: repeat acceptance with --accept-style-bridge to activate that proposal
 decantr verify --brownfield --local-patterns
 ```
 
-The accepted `.decantr/local-patterns.json` is local context and governance. `codify --from-audit` proposals include source snippets, confidence tiers, and likely variants for component families. `codify --map-pattern <slug>` can add a hosted/bundled registry pattern as advisory local law without changing source; it should be filled with project-owned component paths, token/class recipes, variants, and exceptions before acceptance. The accepted `.decantr/rules.json` adds narrow local scans for obvious drift. Deeper deterministic failures such as framework-specific wrapper-only rules should still be enforced through the project rule stack.
+The accepted `.decantr/local-patterns.json` is local context and governance. `codify --from-audit` proposals include source snippets, confidence tiers, and likely variants for component families. `codify --map-pattern <slug>` can add official corpus guidance as advisory local law without changing source; fill it with project-owned component paths, token/class recipes, variants, and exceptions before acceptance. `--accept --confirm-reviewed` accepts local patterns/rules only; use `--accept-style-bridge` as an additional explicit flag when the reviewed bridge should become active authority. Deeper deterministic failures still belong in the project rule and test stack.
 
 ## Hybrid Operating Layer
 

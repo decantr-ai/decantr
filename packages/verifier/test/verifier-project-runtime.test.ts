@@ -10671,6 +10671,121 @@ describe('verifier project and runtime evidence', () => {
     }
   });
 
+  it('keeps router guards and non-production callback/cookie helpers out of auth findings', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, '.decantr'), { recursive: true });
+      mkdirSync(join(projectRoot, 'src', 'routes'), { recursive: true });
+      mkdirSync(join(projectRoot, 'src', 'hooks'), { recursive: true });
+      mkdirSync(join(projectRoot, 'src', 'testing'), { recursive: true });
+      mkdirSync(join(projectRoot, 'src', 'components', 'ui'), { recursive: true });
+      const essence = validV4Essence() as {
+        blueprint: {
+          features: string[];
+          sections: Array<Record<string, unknown>>;
+          routes: Record<string, unknown>;
+        };
+      };
+      essence.blueprint.features = ['auth'];
+      essence.blueprint.sections = [
+        {
+          id: 'gateway',
+          role: 'gateway',
+          shell: 'observed-existing-shell',
+          features: ['auth'],
+          description: 'Sign in',
+          pages: [{ id: 'login', route: '/login', layout: ['form'] }],
+        },
+        {
+          id: 'app',
+          role: 'primary',
+          shell: 'observed-existing-shell',
+          features: ['auth'],
+          description: 'Protected app',
+          pages: [{ id: 'dashboard', route: '/dashboard', layout: ['existing-surface'] }],
+        },
+      ];
+      essence.blueprint.routes = {
+        '/login': { section: 'gateway', page: 'login' },
+        '/dashboard': { section: 'app', page: 'dashboard' },
+      };
+      writeFileSync(join(projectRoot, 'decantr.essence.json'), JSON.stringify(essence));
+      writeFileSync(
+        join(projectRoot, 'src', 'routes', 'router.tsx'),
+        'export const routes = [{ path: "/dashboard", element: <ProtectedRoute><DashboardPage /></ProtectedRoute> }];\n',
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'routes', 'DashboardPage.tsx'),
+        'export function DashboardPage() { return <a href="/dashboard">Dashboard</a>; }\n',
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'hooks', 'use-callback-ref.ts'),
+        'export function useCallbackRef() { const error = null; return error; }\n',
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'testing', 'cookies.ts'),
+        'document.cookie = "auth_token=test-only";\n',
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'components', 'ui', 'field.tsx'),
+        'export function Field() { return <span className="absolute inset-0">remove</span>; }\n',
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'components', 'Dialog.tsx'),
+        'export function Dialog() { return <dialog><h2>Delete item</h2><button>Cancel</button></dialog>; }\n',
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'components', 'file-uploader.tsx'),
+        'export function FileUploader() { function upload() { toast.error("Upload failed"); } return <button onClick={upload}>Upload</button>; }\n',
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'components', 'icons.tsx'),
+        'export const icons = { logout: IconLogout, signOut: IconSignOut };\n',
+      );
+      writeFileSync(
+        join(projectRoot, '.decantr', 'local-patterns.json'),
+        JSON.stringify({
+          version: 2,
+          status: 'accepted',
+          patterns: [
+            {
+              id: 'confirmation-dialog',
+              componentPaths: ['src/components/Dialog.tsx'],
+              behavior_obligations: {
+                pattern_role: 'confirmation-dialog',
+                obligations: [
+                  { id: 'accessible-name', label: 'Dialog has a name', severity: 'error' },
+                ],
+              },
+            },
+          ],
+        }),
+      );
+
+      const report = await auditProject(projectRoot);
+
+      expect(
+        report.findings.some(
+          (finding) => finding.id === 'source-protected-surface-auth-checks-missing',
+        ),
+      ).toBe(false);
+      expect(report.findings.some((finding) => finding.id.includes('auth-callback'))).toBe(false);
+      expect(
+        report.findings.some((finding) => finding.id === 'source-auth-exit-teardown-missing'),
+      ).toBe(false);
+      expect(
+        report.findings.some((finding) => finding.id === 'source-auth-cookie-writes-present'),
+      ).toBe(false);
+      expect(
+        report.findings.some(
+          (finding) => finding.file?.endsWith('field.tsx') && finding.code === 'A11Y010',
+        ),
+      ).toBe(false);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
   it('flags auth guards that redirect to protected destinations during project audit', async () => {
     const projectRoot = createProjectRoot();
     try {

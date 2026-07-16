@@ -12,7 +12,7 @@ npx @decantr/mcp-server
 
 The MCP server exposes the eight consolidated Decantr tools for essence reads, vocabulary search, pattern resolution, execution-pack access, critique, project audit, v2 evidence bundles, health-loop guidance, and Brownfield/Hybrid task-time context. It works with MCP-compatible assistants such as Claude Desktop, Cursor, Windsurf, VS Code agent mode, Zed, and Continue.dev.
 
-For an existing app, ask the assistant to call `decantr_context` with `{ "action": "task" }` before editing a route. Provide the route and the task, for example `{ "action": "task", "route": "/feed", "task": "improve the recipe feed loading and card layout" }`. The tool returns the route, section, page pack excerpt, directives, patterns, shared components, visual target, theme inventory, health continuity evidence, local screenshot references, accepted local law, accepted `behavior_obligations`, accepted style bridge mappings, an authority block, and a v2 loop block with maker/checker instructions, stop conditions, graph impact, and the verify command. The authority block tells the assistant whether the route is Brownfield contract-only, Hybrid local law, style bridge, Decantr CSS, Hybrid composition, or Greenfield, plus warnings for cross-runtime or Decantr CSS requests.
+For an existing app, ask the assistant to call `decantr_context` with `{ "action": "task" }` before editing a route. Provide the route and task, for example `{ "action": "task", "route": "/feed", "task": "improve the recipe feed loading and card layout" }`. Task activation requires a current typed graph and returns the discovered implementation file before generated context read targets. The default MCP response is compact and omits full graph nodes/edges plus large context lists; pass `"detail": "full"` only when the client needs that diagnostic payload. Both modes include authority, stop conditions, graph readiness/impact, and the verify command.
 
 ## Cursor
 
@@ -28,7 +28,7 @@ From a monorepo root, keep the app explicit:
 pnpm exec decantr connect cursor --project apps/web
 ```
 
-The command writes `.cursor/mcp.json` and `.cursor/rules/decantr.mdc`, preserving existing MCP servers. Use `--preview` first if you want to inspect the exact files. The generated rule tells Cursor Agent to call `decantr_context` with `{ "action": "task" }` before route edits, use the returned authority and stop conditions, run `decantr verify --brownfield --local-patterns` after edits, and report drift instead of guessing when runtime source and Decantr context disagree.
+The command writes `.cursor/mcp.json` and `.cursor/rules/decantr.mdc`, preserving existing MCP servers. Use `--preview` first if you want to inspect the exact files. The generated rule tells Cursor Agent to call `decantr_context` with `{ "action": "task" }` before route edits, use the returned authority and stop conditions, run the verify command returned by task context, and report drift instead of guessing when runtime source and Decantr context disagree.
 
 ## CLI Context
 
@@ -49,9 +49,9 @@ The important files are:
 - `decantr.essence.json`: the durable product and design contract.
 - `.decantr/context/scaffold.md`: app topology, route map, voice, and shared components.
 - `.decantr/context/section-*.md`: focused section/page implementation contracts.
-- `.decantr/local-patterns.json`: optional project-owned Brownfield/Hybrid UI standards after `decantr codify --accept`, including app-owned `behavior_obligations` for dialogs, forms, and other interaction contracts when present.
-- `.decantr/rules.json`: optional project-owned Brownfield/Hybrid rule checks after `decantr codify --accept`.
-- `.decantr/style-bridge.json`: optional Hybrid mapping from Decantr intent to project-owned tokens/classes after `decantr codify --style-bridge` and `decantr codify --accept`.
+- `.decantr/local-patterns.json`: optional project-owned Brownfield/Hybrid UI standards after `decantr codify --accept --confirm-reviewed`, including app-owned `behavior_obligations` when present.
+- `.decantr/rules.json`: optional project-owned Brownfield/Hybrid rule checks after the same reviewed acceptance command.
+- `.decantr/style-bridge.json`: optional Hybrid mapping activated only with `decantr codify --accept --confirm-reviewed --accept-style-bridge`.
 
 ## Assistant Rule Bridge
 
@@ -63,7 +63,7 @@ npx @decantr/cli rules preview
 npx @decantr/cli rules apply
 ```
 
-Brownfield init does not mutate rule files unless apply is explicit.
+Rule mutation is always explicit. Preview/apply content follows `.decantr/project.json`: contract-only Greenfield bridges cite Essence, narrative context, and the Contract capsule; corpus-backed Greenfield/Hybrid bridges cite execution packs; Brownfield bridges cite observed analysis/doctrine artifacts and available narrative context. Existing marked blocks are upgraded in place.
 
 CLI-only assistants should use task activation before editing Brownfield routes:
 
@@ -72,7 +72,7 @@ npx @decantr/cli task /feed "improve the recipe feed loading and card layout"
 npx @decantr/cli task /feed "improve the recipe feed loading and card layout" --project apps/web
 ```
 
-That output points to `.decantr/brownfield-intelligence.json`, `.decantr/theme-inventory.json`, `.decantr/enrichment-backlog.md`, matching page/section packs, local screenshots, accepted local patterns, behavior obligations, accepted local rules, changed files, impacted routes, and active authority when present. If behavior obligations appear, preserve them before changing dialogs, destructive actions, forms, labels, validation, menus, or other interactive surfaces. After the assistant edits code, run:
+That output starts with the discovered route implementation source and points to matching packs, local screenshots, accepted local patterns, behavior obligations, changed files, impacted routes, and active authority. It blocks when the typed graph is missing or stale. If behavior obligations appear, preserve them before changing interactive surfaces. After the assistant edits code, run the verify command printed by task context; for a Brownfield app with accepted local law that is typically:
 
 ```bash
 npx @decantr/cli verify --brownfield --local-patterns

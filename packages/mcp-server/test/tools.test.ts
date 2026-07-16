@@ -1443,6 +1443,12 @@ describe('MCP tool handlers', () => {
             adoptionMode: 'contract-only',
           },
         });
+        writeJson(join(projectDir, '.decantr', 'analysis.json'), {
+          routes: {
+            strategy: 'react-router',
+            routes: [{ path: '/feed', file: 'src/app/feed/page.tsx', hasLayout: false }],
+          },
+        });
         writeJson(join(projectDir, '.decantr', 'local-patterns.json'), {
           version: 2,
           status: 'accepted',
@@ -1649,6 +1655,12 @@ describe('MCP tool handlers', () => {
               } | null;
             };
           };
+          response_detail: string;
+          loop: {
+            state: string;
+            graphImpact: { status: string; staleArtifacts: unknown[] };
+            readTargets: string[];
+          };
           verify_command: string;
           local_files: {
             graph_snapshot: string;
@@ -1659,6 +1671,7 @@ describe('MCP tool handlers', () => {
         };
 
         expect(result.route).toBe('/feed');
+        expect(result.response_detail).toBe('compact');
         expect(result.page_id).toBe('feed');
         expect(result.visual_target).toContain('3-column');
         expect(result.directives).toContain('Keep infinite scroll loading visible');
@@ -1724,6 +1737,12 @@ describe('MCP tool handlers', () => {
         expect(result.typed_graph.changed_file_context.impact?.ids.sourceArtifacts).toEqual([
           'src:src/app/feed/page.tsx',
         ]);
+        expect(result.typed_graph.route_context).not.toHaveProperty('nodes');
+        expect(result.typed_graph.route_context).not.toHaveProperty('edges');
+        expect(result.loop.state).toBe('blocked_missing_graph');
+        expect(result.loop.graphImpact.status).toBe('stale');
+        expect(result.loop.readTargets).toContain('src/app/feed/page.tsx');
+        expect(JSON.stringify(result).length).toBeLessThan(30_000);
         expect(result.verify_command).toBe('decantr verify --brownfield --local-patterns');
         expect(result.local_files.graph_snapshot).toBe('.decantr/graph/graph.snapshot.json');
         expect(result.local_files.visual_manifest).toBe('.decantr/evidence/visual-manifest.json');

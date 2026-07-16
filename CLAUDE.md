@@ -6,7 +6,7 @@ Do not add Co-Authored-By lines to commits.
 
 Decantr is AI Frontend Governance. It is a contract, context, content-corpus, and evidence layer that AI coding assistants use to keep frontend changes coherent in production codebases. Decantr does not generate code -- the AI does.
 
-Current product model: Decantr 3.8.1 is content-first AI Frontend Governance, documented in `docs/llms.txt` and the active `docs/reference/` pages. Files under `docs/programs/` are historical strategy unless a current reference or release note explicitly re-promotes them. A forward-looking successor architecture is tracked in `docs/audit/decantr-meta-alignment.md` (`decantr-meta` project, separate from this monorepo).
+Current product model: Decantr 3.8.2 is content-first AI Frontend Governance, documented in `docs/llms.txt` and the active `docs/reference/` pages. Files under `docs/programs/` are historical strategy unless a current reference or release note explicitly re-promotes them. A forward-looking successor architecture is tracked in `docs/audit/decantr-meta-alignment.md` (`decantr-meta` project, separate from this monorepo).
 
 ## Packages
 
@@ -198,7 +198,9 @@ pnpm clean          # Remove all dist/ directories
 
 Requires Node.js >= 20 and pnpm >= 9.
 
-## CSS Layer Cascade
+## Legacy Decantr CSS Layer Cascade
+
+This section applies only when `adoptionMode` is explicitly `decantr-css` or when maintaining the legacy `@decantr/css` package. Contract-only and style-bridge execution packs, prompts, review rules, and assistant bridges must use host-system language and must not emit `d-*` classes, Decantr token requirements, treatment files, or theme decorator requirements.
 
 All generated CSS uses `@layer` declarations:
 
@@ -244,11 +246,14 @@ The MCP server (`@decantr/mcp-server`) exposes the submitted Decantr 3 **8-tool*
 
 Do not add a ninth content tool in Decantr 3.x. Route new content-corpus actions through `decantr_registry` for directory compatibility.
 
+`decantr_context` task responses are compact by default. Preserve route identity, implementation read targets, authority, graph readiness/ranking summaries, health, stop conditions, and verify command while bounding large context and omitting full nodes/edges. `detail: "full"` is the explicit diagnostic opt-in. Task context must block when graph artifacts are missing or stale.
+
 ## CLI Commands
 
 Authoritative dispatch: `packages/cli/src/index.ts` switch statement. Groups:
 
 **Project lifecycle:** `new`, `init`, `status`, `upgrade`
+**Governance workflows:** `setup`, `scan`, `adopt`, `doctor`, `task`, `verify`, `ci`, `resolve`, `codify`, `connect`, `studio`
 **Content sync:** `sync`, `refresh`
 **Content queries:** `search`, `suggest`, `get`, `list`, `showcase`
 **Validation / drift:** `validate`, `check`, `heal`, `migrate`, `audit`
@@ -264,14 +269,14 @@ Run `decantr help` for current flags and sub-flags. The `check` and `heal` comma
 
 ## Workflow, Adoption, And Adapters
 
-Every scaffold/init path should resolve an explicit policy before registry, adapter, or file-generation work:
+Every scaffold/init path should resolve an explicit policy before content, adapter, or file-generation work:
 
 | Axis | Values | Default / rule |
 |------|--------|----------------|
 | `workflowMode` | `greenfield-scaffold`, `greenfield-contract-only`, `brownfield-attach`, `hybrid-compose` | Blank greenfield tooling-only flows must stay greenfield, not brownfield. `--existing` aliases brownfield attach. |
 | `adoptionMode` | `contract-only`, `style-bridge`, `decantr-css` | Defaults to `contract-only`; Decantr CSS requires explicit `--adoption=decantr-css`. |
 | `contentSource` | `none`, `official`, `custom`, `cache` | Official corpus content is optional for brownfield and contract-only flows. |
-| `assistantBridge` | `none`, `preview`, `apply` | Preview writes `.decantr/context/assistant-bridge.md`; apply is explicit and idempotent. |
+| `assistantBridge` | `none`, `preview`, `apply` | Preview writes `.decantr/context/assistant-bridge.md`; apply is explicit, workflow-specific, and upgrades marked blocks in place. |
 | `projectScope` | `single-app`, `workspace-app` | Monorepos store both workspace root and app root; non-interactive root runs require `--project` when ambiguous. |
 
 Adapter capabilities are `bootstrap`, `attach`, `styling`, and `verify`.
@@ -282,9 +287,19 @@ Adapter capabilities are `bootstrap`, `attach`, `styling`, and `verify`.
 
 Assistant rule-file bridge behavior is deliberately conservative:
 
-- Brownfield never mutates CLAUDE/Cursor/agent rule files unless `--assistant-bridge=apply` or `decantr rules apply` is explicit.
+- No workflow mutates CLAUDE/Cursor/agent rule files unless `--assistant-bridge=apply` or `decantr rules apply` is explicit.
 - Preview mode writes the suggested bridge into `.decantr/context/assistant-bridge.md`.
-- Cursor gets a dedicated `.cursor/rules/decantr.mdc`; other supported rule files receive marked blocks that can be updated idempotently.
+- Contract-only Greenfield bridges cite Essence, narrative context, and the Contract capsule; corpus-backed Greenfield/Hybrid bridges cite execution packs; Brownfield bridges cite observed analysis/doctrine artifacts and available narrative context. Cursor gets a dedicated `.cursor/rules/decantr.mdc`; other supported rule files receive updatable marked blocks.
+
+Adoption safety invariants:
+
+- Shared discovery lives in `@decantr/verifier`. Formal TanStack source files outrank generated trees; React Router object routes resolve nested paths and lazy implementation files; Vue Router object routes are formal evidence; pathname-only routes are medium confidence; app scans inherit workspace-level assistant rules.
+- Greenfield `init` writes the first typed graph. Explicit `--workflow=greenfield` controls defaults even inside an existing technology scaffold and must not inherit Brownfield personality, shell, commands, or authority from incidental host files.
+- Graph construction uses shared route discovery for route/page implementation provenance even when `.decantr/analysis.json` is absent.
+- `decantr task` and MCP task activation require a current graph and lead read targets with the discovered implementation source. A blocked CLI task emits structured remediation but exits nonzero.
+- `decantr codify --accept --confirm-reviewed` accepts local patterns/rules only. A style bridge requires the additional `--accept-style-bridge` flag because it changes adoption mode.
+- Brownfield project CI with a saved baseline reports inherited findings but gates only new findings through `baselineGate`. Generated baseline diff output must not feed graph source hashing.
+- When Prettier or Oxfmt is present, adoption/scaffolding records generated Decantr artifacts in `.prettierignore`, including app-prefixed entries for workspace-root formatters.
 
 ## Documentation
 

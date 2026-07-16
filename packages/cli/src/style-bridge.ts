@@ -425,7 +425,7 @@ export function createStyleBridgeProposal(input: {
     ],
     nextSteps: [
       'Review token and class hints. Replace generic hints with the exact project tokens/classes the team owns.',
-      'Run decantr codify --accept to promote the proposal to .decantr/style-bridge.json.',
+      'Run decantr codify --accept --confirm-reviewed --accept-style-bridge to promote the proposal and explicitly activate style-bridge adoption.',
       'Use decantr task <route> before LLM edits so the style bridge appears in task context.',
       'Run decantr ci or decantr verify after edits to keep local law and Project Health visible.',
     ],

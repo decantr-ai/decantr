@@ -59,7 +59,7 @@ export async function cmdAnalyze(
   const dependencies = scanDependencies(projectRoot);
 
   console.log(`${DIM}Scanning ambient project context...${RESET}`);
-  const ambient = scanAmbientContext(projectRoot);
+  const ambient = scanAmbientContext(projectRoot, workspace?.workspaceRoot ?? projectRoot);
   const doctrine = createDoctrineMap(ambient);
 
   const initSeed = createBrownfieldInitSeed(project, layout, styling);
@@ -72,7 +72,8 @@ export async function cmdAnalyze(
   const reportDisplayPath = projectLabel
     ? `${projectLabel}/.decantr/brownfield-report.md`
     : '.decantr/brownfield-report.md';
-  const recommendedAttachCommand = `decantr init${projectFlag} --existing --accept-proposal`;
+  const proposalFlag = project.existingEssence ? '--merge-proposal' : '--accept-proposal';
+  const recommendedAttachCommand = `decantr init${projectFlag} --existing ${proposalFlag}`;
   const proposal = createBrownfieldProposal({
     project,
     routes,
@@ -107,7 +108,7 @@ export async function cmdAnalyze(
     dependencies,
     decantr: {
       workflow: 'brownfield-adoption',
-      registryOptional: true,
+      contentOptional: true,
       attach: {
         entrypoint: 'decantr analyze',
         contractOnly: true,
@@ -121,7 +122,7 @@ export async function cmdAnalyze(
           'decantr add',
           'decantr remove',
           'decantr theme switch',
-          'decantr registry',
+          'decantr content',
           'decantr upgrade',
         ],
       },

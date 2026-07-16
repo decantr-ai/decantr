@@ -655,11 +655,11 @@ export function createBrownfieldCodifyProposal(
       'Avoid static inline styles for reusable visual treatment.',
       'When adding a new route, map it to an existing local pattern before inventing a new visual variant.',
       'When adding a theme variant, update .decantr/theme-inventory.json and this local pattern pack.',
-      'Map hosted Decantr patterns into project-owned local law before making them enforceable.',
+      'Map official corpus patterns into project-owned local law before making them enforceable.',
     ],
     nextSteps: [
       'Edit this proposal with real component paths and token/class recipes.',
-      'Run decantr codify --accept after review.',
+      'Run decantr codify --accept --confirm-reviewed after review.',
       'Use decantr task <route> before LLM edits so local law appears in task context.',
       'Run decantr verify --brownfield --local-patterns after edits.',
       'For Hybrid adoption, start with warn-level local rules and raise severities only after the team agrees the law is stable.',
@@ -779,7 +779,7 @@ export function writeHostedPatternMappingProposal(
       : [
           'Review this proposal with the team.',
           'Add project-owned component paths, token hints, class recipes, and exceptions.',
-          'Run decantr codify --accept after review.',
+          'Run decantr codify --accept --confirm-reviewed after review.',
           'Use decantr task <route> before LLM edits so local law appears in task context.',
         ],
   };
@@ -851,7 +851,7 @@ export function writeHostedPatternMappingProposal(
     ...new Set([
       ...(patternPack.nextSteps ?? []),
       'Fill the corpus mapping with project-owned component paths, token/class recipes, variants, and exceptions.',
-      'Run decantr codify --accept only after the mapping reflects the existing app.',
+      'Run decantr codify --accept --confirm-reviewed only after the mapping reflects the existing app.',
       'Use decantr verify --brownfield --local-patterns after edits to keep mapped local law visible.',
     ]),
   ];

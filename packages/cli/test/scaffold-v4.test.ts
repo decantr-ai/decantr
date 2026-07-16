@@ -12,6 +12,7 @@ import {
   refreshDerivedFiles,
   scaffoldMinimal,
   scaffoldProject,
+  updateFormatterIgnore,
 } from '../src/scaffold.js';
 
 /** Minimal mock RegistryClient that returns null for all fetches. */
@@ -188,6 +189,37 @@ describe('V4 scaffold', () => {
     expect(essence.blueprint.sections[0].pages).toHaveLength(1);
     expect(essence.meta).toBeDefined();
     expect(essence.meta.guard.mode).toBe('guided');
+  });
+
+  it('adds generated governance artifacts to Prettier-compatible ignores', () => {
+    writeFileSync(
+      join(testDir, 'package.json'),
+      JSON.stringify({
+        scripts: { format: 'oxfmt --check .' },
+        devDependencies: { oxfmt: '^0.23.0' },
+      }),
+    );
+
+    expect(updateFormatterIgnore(testDir)).toBe(true);
+    expect(readFileSync(join(testDir, '.prettierignore'), 'utf-8')).toContain(
+      '.decantr/\nDECANTR.md\ndecantr.essence.json',
+    );
+    expect(updateFormatterIgnore(testDir)).toBe(false);
+  });
+
+  it('adds scoped app artifacts to a workspace formatter ignore', () => {
+    const appRoot = join(testDir, 'apps', 'web');
+    mkdirSync(appRoot, { recursive: true });
+    writeFileSync(
+      join(testDir, 'package.json'),
+      JSON.stringify({ devDependencies: { prettier: '^3.0.0' } }),
+    );
+
+    expect(updateFormatterIgnore(appRoot, testDir)).toBe(true);
+    const ignore = readFileSync(join(testDir, '.prettierignore'), 'utf-8');
+    expect(ignore).toContain('apps/web/.decantr/');
+    expect(ignore).toContain('apps/web/DECANTR.md');
+    expect(ignore).toContain('apps/web/decantr.essence.json');
   });
 
   it('scaffoldMinimal and scaffoldProject both produce V4', async () => {

@@ -743,6 +743,9 @@ export async function cmdMagic(
   if (result.gitignoreUpdated) {
     console.log(`   ${dim('.gitignore updated')}`);
   }
+  if (result.formatterIgnoreUpdated) {
+    console.log(`   ${dim('.prettierignore updated for generated Decantr artifacts')}`);
+  }
 
   // Quality summary
   const contextDir = join(projectRoot, '.decantr', 'context');

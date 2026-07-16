@@ -1,5 +1,6 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, extname, join, relative, resolve } from 'node:path';
+import * as ts from 'typescript';
 
 export type DiscoveryConfidenceLevel = 'high' | 'medium' | 'low';
 export type DiscoveryPackageManager = 'npm' | 'pnpm' | 'yarn' | 'bun' | 'unknown';
@@ -145,6 +146,7 @@ export interface ProjectDiscovery {
 
 interface PackageJson {
   name?: string;
+  private?: boolean;
   homepage?: string;
   packageManager?: string;
   scripts?: Record<string, string>;
@@ -261,9 +263,19 @@ function hasWorkspaceMarker(dir: string): boolean {
 }
 
 function findWorkspaceRoot(startDir: string): string {
+  const appRoot = resolve(startDir);
   let current = resolve(startDir);
   while (true) {
     if (hasWorkspaceMarker(current)) return current;
+    const appPath = relative(current, appRoot).replace(/\\/g, '/');
+    const packageJson = readPackageJson(current).value;
+    if (
+      appPath.startsWith('apps/') &&
+      packageJson &&
+      (packageJson.private === true || existsSync(join(current, '.git')))
+    ) {
+      return current;
+    }
     const parent = dirname(current);
     if (parent === current) return resolve(startDir);
     current = parent;
@@ -622,6 +634,16 @@ function collectPathnameBranchRoutes(
   );
   if (signals.length > beforeCount || hasPathnameSignal) {
     collectRouteLiterals(
+      new RegExp(
+        `\\b(?:const|let|var)?\\s*${ROUTE_VARIABLE_NAMES}\\b\\s*=\\s*[^;\\n]{0,160}["'\`](\\/[^"'\`]*)["'\`]`,
+        'g',
+      ),
+      content,
+      file,
+      signals,
+      'pathname-branch',
+    );
+    collectRouteLiterals(
       /\b(?:href|to)\s*=\s*(?:"([^"]+)"|'([^']+)'|{\s*"([^"]+)"\s*}|{\s*'([^']+)'\s*}|{\s*`([^`]+)`\s*})/g,
       content,
       file,
@@ -631,20 +653,250 @@ function collectPathnameBranchRoutes(
   }
 }
 
+function unwrapExpression(expression: ts.Expression): ts.Expression {
+  let current = expression;
+  while (
+    ts.isParenthesizedExpression(current) ||
+    ts.isAsExpression(current) ||
+    ts.isTypeAssertionExpression(current) ||
+    ts.isSatisfiesExpression(current) ||
+    ts.isNonNullExpression(current)
+  ) {
+    current = current.expression;
+  }
+  return current;
+}
+
+function propertyNameText(name: ts.PropertyName | undefined): string | null {
+  if (!name) return null;
+  if (ts.isIdentifier(name) || ts.isPrivateIdentifier(name)) return name.text;
+  if (ts.isStringLiteralLike(name) || ts.isNumericLiteral(name)) return name.text;
+  return null;
+}
+
+function expressionPath(expression: ts.Expression): string | null {
+  const current = unwrapExpression(expression);
+  if (ts.isIdentifier(current)) return current.text;
+  if (ts.isPropertyAccessExpression(current)) {
+    const parent = expressionPath(current.expression);
+    return parent ? `${parent}.${current.name.text}` : null;
+  }
+  if (ts.isElementAccessExpression(current) && current.argumentExpression) {
+    const parent = expressionPath(current.expression);
+    const key = unwrapExpression(current.argumentExpression);
+    if (parent && (ts.isStringLiteralLike(key) || ts.isNumericLiteral(key))) {
+      return `${parent}.${key.text}`;
+    }
+  }
+  return null;
+}
+
+function collectStaticRouteValues(sourceFiles: ts.SourceFile[]): Map<string, string> {
+  const values = new Map<string, string>();
+
+  function collect(prefix: string, expression: ts.Expression): void {
+    const current = unwrapExpression(expression);
+    if (ts.isStringLiteralLike(current)) {
+      values.set(prefix, current.text);
+      return;
+    }
+    if (!ts.isObjectLiteralExpression(current)) return;
+    for (const property of current.properties) {
+      if (!ts.isPropertyAssignment(property)) continue;
+      const key = propertyNameText(property.name);
+      if (key) collect(`${prefix}.${key}`, property.initializer);
+    }
+  }
+
+  for (const sourceFile of sourceFiles) {
+    sourceFile.forEachChild((node) => {
+      if (!ts.isVariableStatement(node)) return;
+      for (const declaration of node.declarationList.declarations) {
+        if (!ts.isIdentifier(declaration.name) || !declaration.initializer) continue;
+        collect(declaration.name.text, declaration.initializer);
+      }
+    });
+  }
+  return values;
+}
+
+function resolveStaticRouteValue(
+  expression: ts.Expression,
+  values: Map<string, string>,
+): string | undefined {
+  const current = unwrapExpression(expression);
+  if (ts.isStringLiteralLike(current)) return current.text;
+  const path = expressionPath(current);
+  return path ? values.get(path) : undefined;
+}
+
+function joinNestedRoute(parentPath: string | null, routePath: string): string {
+  if (routePath.startsWith('/')) return routePath;
+  if (!routePath) return parentPath || '/';
+  const parent = parentPath && parentPath !== '/' ? parentPath.replace(/\/$/, '') : '';
+  return `${parent}/${routePath}`;
+}
+
+function resolveLocalImportFile(
+  projectRoot: string,
+  sourceFile: string,
+  importPath: string,
+): string | null {
+  if (!importPath.startsWith('.')) return null;
+  const base = resolve(dirname(join(projectRoot, sourceFile)), importPath);
+  const candidates = [
+    base,
+    ...['.tsx', '.ts', '.jsx', '.js', '.mjs', '.cjs'].map((extension) => `${base}${extension}`),
+    ...['.tsx', '.ts', '.jsx', '.js'].map((extension) => join(base, `index${extension}`)),
+  ];
+  const match = candidates.find((candidate) => existsSync(candidate));
+  return match ? relative(projectRoot, match).replace(/\\/g, '/') : null;
+}
+
+function routeImplementationFile(
+  projectRoot: string,
+  sourceFile: string,
+  routeObject: ts.ObjectLiteralExpression,
+): string {
+  let importPath: string | null = null;
+  const visit = (node: ts.Node): void => {
+    if (importPath) return;
+    if (
+      ts.isCallExpression(node) &&
+      node.expression.kind === ts.SyntaxKind.ImportKeyword &&
+      node.arguments.length > 0
+    ) {
+      const argument = unwrapExpression(node.arguments[0] as ts.Expression);
+      if (ts.isStringLiteralLike(argument)) importPath = argument.text;
+      return;
+    }
+    ts.forEachChild(node, visit);
+  };
+  for (const property of routeObject.properties) {
+    if (ts.isPropertyAssignment(property) && propertyNameText(property.name) === 'children')
+      continue;
+    visit(property);
+  }
+  return importPath
+    ? resolveLocalImportFile(projectRoot, sourceFile, importPath) || sourceFile
+    : sourceFile;
+}
+
+function collectReactRouterObjectRoutes(
+  projectRoot: string,
+  file: string,
+  sourceFile: ts.SourceFile,
+  values: Map<string, string>,
+): DiscoveryRouteSignal[] {
+  const signals: DiscoveryRouteSignal[] = [];
+  const arrays = new Map<string, ts.ArrayLiteralExpression>();
+
+  sourceFile.forEachChild((node) => {
+    if (!ts.isVariableStatement(node)) return;
+    for (const declaration of node.declarationList.declarations) {
+      if (!ts.isIdentifier(declaration.name) || !declaration.initializer) continue;
+      const initializer = unwrapExpression(declaration.initializer);
+      if (ts.isArrayLiteralExpression(initializer)) arrays.set(declaration.name.text, initializer);
+    }
+  });
+
+  const resolveArray = (
+    expression: ts.Expression | undefined,
+  ): ts.ArrayLiteralExpression | null => {
+    if (!expression) return null;
+    const current = unwrapExpression(expression);
+    if (ts.isArrayLiteralExpression(current)) return current;
+    return ts.isIdentifier(current) ? arrays.get(current.text) || null : null;
+  };
+
+  const parseArray = (array: ts.ArrayLiteralExpression, parentPath: string | null): void => {
+    for (const element of array.elements) {
+      const current = unwrapExpression(element as ts.Expression);
+      if (!ts.isObjectLiteralExpression(current)) continue;
+      let routePath: string | undefined;
+      let indexRoute = false;
+      let children: ts.ArrayLiteralExpression | null = null;
+      for (const property of current.properties) {
+        if (!ts.isPropertyAssignment(property)) continue;
+        const key = propertyNameText(property.name);
+        if (key === 'path') routePath = resolveStaticRouteValue(property.initializer, values);
+        if (key === 'index') indexRoute = property.initializer.kind === ts.SyntaxKind.TrueKeyword;
+        if (key === 'children') children = resolveArray(property.initializer);
+      }
+      const fullPath =
+        routePath !== undefined
+          ? joinNestedRoute(parentPath, routePath)
+          : indexRoute && parentPath
+            ? parentPath
+            : null;
+      if (fullPath) {
+        addRouteSignal(signals, {
+          path: fullPath,
+          file: routeImplementationFile(projectRoot, file, current),
+          kind: 'react-router',
+          confidence: 'high',
+          taskable: true,
+          evidence:
+            indexRoute || routePath === ''
+              ? 'React Router index declaration'
+              : 'React Router object declaration',
+        });
+      }
+      if (children) parseArray(children, fullPath || parentPath);
+    }
+  };
+
+  const routerFactories = new Set([
+    'createBrowserRouter',
+    'createHashRouter',
+    'createMemoryRouter',
+    'useRoutes',
+  ]);
+  const visit = (node: ts.Node): void => {
+    if (ts.isCallExpression(node)) {
+      const expression = unwrapExpression(node.expression);
+      const factory = ts.isIdentifier(expression) ? expression.text : null;
+      if (factory && routerFactories.has(factory)) {
+        const routes = resolveArray(node.arguments[0]);
+        if (routes) parseArray(routes, null);
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sourceFile);
+  return signals;
+}
+
 function detectSourceRouteSignals(
   projectRoot: string,
   identity: DiscoveryProjectIdentity,
 ): DiscoveryRouteSignal[] {
-  const signals: DiscoveryRouteSignal[] = [];
+  const formalSignals: DiscoveryRouteSignal[] = [];
+  const fallbackSignals: DiscoveryRouteSignal[] = [];
   const files = walkFiles(projectRoot, { extensions: SOURCE_EXTENSIONS });
+  const parsedFiles = files.map((file) => {
+    const content = readTextFile(join(projectRoot, file)) || '';
+    return {
+      content,
+      file,
+      sourceFile: ts.createSourceFile(
+        file,
+        content,
+        ts.ScriptTarget.Latest,
+        true,
+        file.endsWith('x') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+      ),
+    };
+  });
+  const staticValues = collectStaticRouteValues(parsedFiles.map(({ sourceFile }) => sourceFile));
   const hasTanstack = Boolean(
     identity.dependencies['@tanstack/react-router'] ||
       identity.dependencies['@tanstack/router-core'],
   );
 
-  for (const file of files) {
-    const content = readTextFile(join(projectRoot, file));
+  for (const { content, file, sourceFile } of parsedFiles) {
     if (!content) continue;
+    const isGeneratedFile = /(?:^|\/)[^/]*\.gen\.[cm]?[tj]sx?$/i.test(file);
     const isTanstackFile =
       content.includes('@tanstack/react-router') ||
       content.includes('createFileRoute') ||
@@ -654,19 +906,26 @@ function detectSourceRouteSignals(
         (/\brouteTree\b/.test(content) || /routeTree\.gen\.[cm]?[tj]sx?$/.test(file)));
     const isReactRouterFile =
       content.includes('react-router-dom') ||
-      content.includes('react-router') ||
+      /from\s*["']react-router["']|require\(\s*["']react-router["']\s*\)/.test(content) ||
       content.includes('<Routes') ||
       content.includes('createBrowserRouter') ||
       content.includes('createHashRouter') ||
       content.includes('RouterProvider') ||
       content.includes('HashRouter') ||
       content.includes('BrowserRouter');
+    const isVueRouterFile =
+      content.includes('vue-router') ||
+      content.includes('createRouter') ||
+      content.includes('createWebHistory') ||
+      content.includes('createWebHashHistory');
 
-    if (isTanstackFile) {
-      collectRouteLiterals(TANSTACK_FILE_ROUTE_RE, content, file, signals, 'tanstack-router');
-      collectRouteLiterals(OBJECT_ROUTE_PATH_RE, content, file, signals, 'tanstack-router');
+    if (isTanstackFile && !isGeneratedFile) {
+      collectRouteLiterals(TANSTACK_FILE_ROUTE_RE, content, file, formalSignals, 'tanstack-router');
+      if (/\bcreateRoute\s*\(/.test(content)) {
+        collectRouteLiterals(OBJECT_ROUTE_PATH_RE, content, file, formalSignals, 'tanstack-router');
+      }
       if (/\bcreateRootRoute(?:WithContext)?\s*\(/.test(content)) {
-        addRouteSignal(signals, {
+        addRouteSignal(formalSignals, {
           path: '/',
           file,
           kind: 'tanstack-router',
@@ -678,11 +937,24 @@ function detectSourceRouteSignals(
     }
 
     if (isReactRouterFile) {
-      collectRouteLiterals(JSX_ROUTE_PATH_RE, content, file, signals, 'react-router');
-      collectRouteLiterals(OBJECT_ROUTE_PATH_RE, content, file, signals, 'react-router');
+      const objectRoutes = collectReactRouterObjectRoutes(
+        projectRoot,
+        file,
+        sourceFile,
+        staticValues,
+      );
+      formalSignals.push(...objectRoutes);
+      collectRouteLiterals(JSX_ROUTE_PATH_RE, content, file, formalSignals, 'react-router');
+      if (objectRoutes.length === 0) {
+        collectRouteLiterals(OBJECT_ROUTE_PATH_RE, content, file, formalSignals, 'react-router');
+      }
     }
 
-    collectPathnameBranchRoutes(content, file, signals);
+    if (isVueRouterFile) {
+      collectRouteLiterals(OBJECT_ROUTE_PATH_RE, content, file, formalSignals, 'vue-router');
+    }
+
+    collectPathnameBranchRoutes(content, file, fallbackSignals);
 
     const hasRouteSpecSignal =
       content.includes('@wasp.sh/spec') ||
@@ -693,13 +965,13 @@ function detectSourceRouteSignals(
         /\broute\s*\(\s*["'`][^"'`]*["'`]\s*,\s*["'`](\/[^"'`]*)["'`]\s*,\s*page\s*\(/g,
         content,
         file,
-        signals,
+        formalSignals,
         'source-declared',
       );
     }
   }
 
-  return signals;
+  return formalSignals.length > 0 ? formalSignals : fallbackSignals;
 }
 
 function htmlRouteFromFile(file: string): string {
@@ -831,7 +1103,26 @@ function discoverRoutes(projectRoot: string, identity: DiscoveryProjectIdentity)
   const taskable = new Map<string, DiscoveryRoute>();
   for (const signal of selectedSignals) {
     if (!signal.taskable) continue;
-    if (taskable.has(signal.path)) continue;
+    const existing = taskable.get(signal.path);
+    const signalRank =
+      (signal.confidence === 'high' ? 20 : signal.confidence === 'medium' ? 10 : 0) +
+      (signal.kind === 'pathname-branch' ? 0 : 20) +
+      (signal.evidence.includes('index declaration') ? 5 : 0);
+    const existingSignal = existing
+      ? selectedSignals.find(
+          (candidate) => candidate.path === existing.path && candidate.file === existing.file,
+        )
+      : null;
+    const existingRank = existingSignal
+      ? (existingSignal.confidence === 'high'
+          ? 20
+          : existingSignal.confidence === 'medium'
+            ? 10
+            : 0) +
+        (existingSignal.kind === 'pathname-branch' ? 0 : 20) +
+        (existingSignal.evidence.includes('index declaration') ? 5 : 0)
+      : -1;
+    if (existing && signalRank <= existingRank) continue;
     taskable.set(signal.path, {
       path: signal.path,
       file: signal.file,
@@ -842,8 +1133,11 @@ function discoverRoutes(projectRoot: string, identity: DiscoveryProjectIdentity)
   }
   const routeSignals = selectedSignals.slice(0, MAX_REPORT_ROUTES);
   const taskableRoutes = [...taskable.values()].slice(0, MAX_REPORT_ROUTES);
+  const fallbackOnly =
+    selectedSignals.length > 0 &&
+    selectedSignals.every((signal) => signal.kind === 'pathname-branch');
   const confidence: DiscoveryConfidenceLevel =
-    taskableRoutes.length >= 3 ? 'high' : taskableRoutes.length > 0 ? 'medium' : 'low';
+    taskableRoutes.length === 0 ? 'low' : fallbackOnly ? 'medium' : 'high';
   return {
     strategy,
     routeSignals,
@@ -851,12 +1145,19 @@ function discoverRoutes(projectRoot: string, identity: DiscoveryProjectIdentity)
     routeSignalCount: selectedSignals.length,
     taskableRouteCount: taskableRoutes.length,
     confidence,
-    limitations:
-      taskableRoutes.length === 0
+    limitations: [
+      ...(taskableRoutes.length === 0
         ? ['No taskable route declarations were discovered from static source evidence.']
-        : selectedSignals.length > taskableRoutes.length
-          ? ['Some duplicate or non-taskable route signals were collapsed before task context.']
-          : [],
+        : []),
+      ...(fallbackOnly
+        ? [
+            'Routes were inferred from pathname/navigation branches because no formal route declaration was found.',
+          ]
+        : []),
+      ...(selectedSignals.length > taskableRoutes.length
+        ? ['Some duplicate or non-taskable route signals were collapsed before task context.']
+        : []),
+    ],
   };
 }
 
@@ -1038,8 +1339,23 @@ function discoverStyling(
   };
 }
 
-function findAssistantRules(projectRoot: string): string[] {
-  return RULE_FILES.filter((file) => existsSync(join(projectRoot, file)));
+function findAssistantRules(appRoot: string, workspaceRoot: string): string[] {
+  const rules: string[] = [];
+  let current = resolve(appRoot);
+  const stop = resolve(workspaceRoot);
+  while (true) {
+    for (const file of RULE_FILES) {
+      const absolute = join(current, file);
+      if (!existsSync(absolute)) continue;
+      const discovered = relative(appRoot, absolute).replace(/\\/g, '/');
+      if (!rules.includes(discovered)) rules.push(discovered);
+    }
+    if (current === stop) break;
+    const parent = dirname(current);
+    if (parent === current || !current.startsWith(`${stop}/`)) break;
+    current = parent;
+  }
+  return rules;
 }
 
 function calculateConfidence(input: {
@@ -1063,8 +1379,10 @@ function calculateConfidence(input: {
     reasons.push('TypeScript source evidence found');
   }
   if (input.routes.taskableRouteCount > 0) {
-    score += 20;
-    reasons.push(`${input.routes.taskableRouteCount} taskable route(s) found`);
+    score += input.routes.confidence === 'high' ? 20 : 10;
+    reasons.push(
+      `${input.routes.taskableRouteCount} taskable route(s) found with ${input.routes.confidence} route confidence`,
+    );
   }
   if (input.components.componentCount > 1) {
     score += 10;
@@ -1074,7 +1392,8 @@ function calculateConfidence(input: {
     score += 10;
     reasons.push(`${input.styling.approach} styling signal found`);
   }
-  const clamped = Math.max(5, Math.min(98, score));
+  const confidenceCap = input.routes.confidence === 'medium' ? 84 : 98;
+  const clamped = Math.max(5, Math.min(confidenceCap, score));
   return {
     level: clamped >= 75 ? 'high' : clamped >= 45 ? 'medium' : 'low',
     score: clamped,
@@ -1090,7 +1409,7 @@ export function discoverProject(projectRoot: string): ProjectDiscovery {
   const routes = discoverRoutes(appRoot, project);
   const components = discoverComponents(appRoot, routes);
   const styling = discoverStyling(appRoot, project);
-  const assistant = { ruleFiles: findAssistantRules(appRoot) };
+  const assistant = { ruleFiles: findAssistantRules(appRoot, workspaceRoot) };
   const confidence = calculateConfidence({ project, routes, components, styling });
   const limitations = [...routes.limitations, ...components.limitations];
   return {

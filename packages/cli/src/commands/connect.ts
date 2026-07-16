@@ -113,7 +113,7 @@ Before editing any route, use Decantr task context:
 
 Use the returned authority block, read targets, local law, evidence, graph impact, stop conditions, and verify command as the working contract. If runtime source and Decantr context disagree, stop and report drift instead of guessing which side wins.
 
-After editing, run \`decantr verify --brownfield --local-patterns${projectSuffix}\`. If Decantr reports \`human_resolution_required\`, run \`decantr resolve${projectSuffix}\` and follow the explicit resolution action.
+After editing, run the verify command returned by task context. If Decantr reports \`human_resolution_required\`, run \`decantr resolve${projectSuffix}\` and follow the explicit resolution action.
 
 Preserve the detected framework (${input.detected.framework}), package manager (${input.detected.packageManager}), routing, styling, data boundaries, and build conventions unless the user explicitly approves a reviewed migration. Do not install \`@decantr/css\` or rewrite styling unless the Decantr adoption lane says \`decantr-css\` or the task explicitly asks for it.
 `;

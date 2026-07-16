@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -51,11 +51,13 @@ import {
   scanProject as scanProjectReadOnly,
   type VerificationFinding,
 } from '@decantr/verifier';
+import { scanRoutes } from './analyzers/routes.js';
 import { scanStyling } from './analyzers/styling.js';
 import { writeArtifactReadme } from './artifacts.js';
 import {
   applyAssistantBridge,
   buildAssistantBridgeContent,
+  readAssistantBridgeContext,
   writeAssistantBridgePreview,
 } from './assistant-bridge.js';
 import { clearCredentials, getCredentials, saveCredentials } from './auth.js';
@@ -134,6 +136,7 @@ import {
   scaffoldMinimal,
   scaffoldProject,
   type ThemeData,
+  updateFormatterIgnore,
   writeExecutionPackBundleArtifacts,
   type ZoneInput,
 } from './scaffold.js';
@@ -289,10 +292,10 @@ function extractPatternName(item: unknown): string {
 
 function generateGreenfieldPrompt(ctx: PromptContext): string {
   const lines: string[] = [];
-  const usesDecantrCss = ctx.adoptionMode === 'decantr-css' || !ctx.adoptionMode;
+  const usesDecantrCss = ctx.adoptionMode === 'decantr-css';
   const hasCompiledPacks = ctx.hasCompiledPacks ?? true;
 
-  lines.push('Build this greenfield application using the Decantr design system.');
+  lines.push('Build this greenfield application to the Decantr governance contract.');
   lines.push('');
   if (ctx.blueprint) lines.push(`Blueprint: ${ctx.blueprint}`);
   if (ctx.archetype) lines.push(`Primary archetype: ${ctx.archetype}`);
@@ -317,7 +320,7 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
     );
   } else {
     lines.push(
-      'Compiled execution-pack files are not present in this scaffold. Treat narrative Decantr context as the temporary source of truth and run `decantr refresh` after fixing the reported validation issue.',
+      'Compiled execution-pack files are not present in this scaffold. Treat narrative Decantr context as the temporary source of truth and run `decantr refresh` when official content is available.',
     );
   }
   lines.push(
@@ -327,7 +330,9 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
   lines.push('Read in this order:');
   if (hasCompiledPacks) {
     lines.push(
-      '1. .decantr/context/scaffold-pack.md — the canonical compiled contract. Contains route plan, shell layouts, navigation, Required Theme Decorators, and project-wide execution rules.',
+      usesDecantrCss
+        ? '1. .decantr/context/scaffold-pack.md — the canonical compiled contract. Contains route plan, shell layouts, navigation, required theme decorators, and project-wide execution rules.'
+        : '1. .decantr/context/scaffold-pack.md — the canonical compiled contract. Contains route plan, shell layouts, navigation, design intent, and project-wide execution rules.',
     );
     lines.push(
       '2. Before section work, read the matching .decantr/context/section-*-pack.md first, then .decantr/context/section-*.md only for extra slot/layout detail.',
@@ -339,7 +344,9 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
       '4. .decantr/context/scaffold.md for broader topology, route map, and voice guidance after the compact packs are understood.',
     );
     lines.push(
-      '5. DECANTR.md as a lookup reference for atoms, treatments, decorators, interaction implementations, and guard rules. Do not let narrative docs override compiled packs.',
+      usesDecantrCss
+        ? '5. DECANTR.md as a lookup reference for atoms, treatments, decorators, interaction implementations, and guard rules. Do not let narrative docs override compiled packs.'
+        : '5. DECANTR.md as a lookup reference for adoption boundaries, interaction requirements, and guard rules. Do not let narrative docs override compiled packs.',
     );
     lines.push('');
     lines.push('═══ INTERACTIONS ARE CONTRACT, NOT GUIDANCE ═══');
@@ -348,7 +355,9 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
       'Each page pack lists "Interactions (MUST implement each)" per pattern. Implement the actual behavior, not visible text saying it exists. Use DECANTR.md only to look up the canonical implementation shape when needed.',
     );
     lines.push(
-      'Examples: pointer handlers for dragging/panning, onWheel for zoom, onKeyDown + tabIndex for keyboard navigation, IntersectionObserver for scroll reveal, state updates for real-time indicators, and d-* motion classes where the contract calls for animation.',
+      usesDecantrCss
+        ? 'Examples: pointer handlers for dragging/panning, onWheel for zoom, onKeyDown + tabIndex for keyboard navigation, IntersectionObserver for scroll reveal, state updates for real-time indicators, and d-* motion classes where the contract calls for animation.'
+        : 'Examples: pointer handlers for dragging/panning, onWheel for zoom, onKeyDown plus tabIndex for keyboard navigation, IntersectionObserver for scroll reveal, and state updates for real-time indicators.',
     );
     lines.push('');
     lines.push(
@@ -363,21 +372,20 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
       '2. The matching .decantr/context/section-*.md file before implementing each section.',
     );
     lines.push(
-      '3. DECANTR.md for atoms, treatments, decorators, interaction shapes, and guard rules.',
+      usesDecantrCss
+        ? '3. DECANTR.md for atoms, treatments, decorators, interaction shapes, and guard rules.'
+        : '3. DECANTR.md for adoption boundaries, interaction shapes, and guard rules.',
     );
     lines.push(
-      '4. Run `decantr refresh` and switch to compiled pack files once validation passes.',
+      '4. Run `decantr refresh` and switch to compiled pack files when official content is available.',
     );
     lines.push('');
   }
   lines.push('═══ STYLING ADOPTION ═══');
   lines.push('');
-  if (ctx.adoptionMode === 'contract-only') {
+  if (usesDecantrCss) {
     lines.push(
-      'This project is contract-only. Use Decantr packs for design intent and governance, but implement through the app runtime and styling system already present or explicitly chosen for this project.',
-    );
-    lines.push(
-      'Do not install @decantr/css or add Decantr style files unless the adoption mode changes.',
+      'Use @decantr/css atoms via `css(...)` for layout, spacing, sizing, flex/grid, position, and typography sizing. Static visual values should not live in inline style props.',
     );
   } else if (ctx.adoptionMode === 'style-bridge') {
     lines.push(
@@ -385,7 +393,10 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
     );
   } else {
     lines.push(
-      'Use @decantr/css atoms via `css(...)` for layout, spacing, sizing, flex/grid, position, and typography sizing. Static visual values should not live in inline style props.',
+      'This project is contract-only. Use the Decantr contract and available project context for design intent and governance, then implement through the app runtime and styling system already present or explicitly chosen for this project.',
+    );
+    lines.push(
+      'Do not install @decantr/css or add Decantr style files unless the adoption mode changes.',
     );
   }
   if (usesDecantrCss) {
@@ -406,17 +417,24 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
   } else {
     lines.push('');
     lines.push(
-      'When packs mention atoms, treatments, decorators, or shell class names, treat them as Decantr vocabulary and map the intent into the selected runtime. Keep the literal class names only if this project has a compatible implementation.',
+      'Translate pack design intent through the selected component library, tokens, variants, and styling conventions. Do not copy Decantr CSS class names into a host-styled project.',
     );
   }
   lines.push('');
   lines.push('Inline `style={{...}}` is ONLY acceptable for:');
-  lines.push(
-    '  1. CSS custom-property writes the contract requires (`--d-stagger-index`, theme color vars, etc.)',
-  );
-  lines.push(
-    '  2. Truly dynamic geometry no atom can express (computed transforms, drag positions, live chart geometry).',
-  );
+  if (usesDecantrCss) {
+    lines.push(
+      '  1. CSS custom-property writes the contract requires (`--d-stagger-index`, theme color vars, etc.)',
+    );
+    lines.push(
+      '  2. Truly dynamic geometry no atom can express (computed transforms, drag positions, live chart geometry).',
+    );
+  } else {
+    lines.push('  1. Runtime custom-property writes already owned by the project styling system.');
+    lines.push(
+      '  2. Truly dynamic geometry (computed transforms, drag positions, live chart geometry).',
+    );
+  }
   lines.push('');
   if (usesDecantrCss) {
     lines.push(
@@ -424,11 +442,15 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
     );
   } else {
     lines.push(
-      'If a component accumulates static inline visual styles, migrate them into the project styling system or mapped Decantr bridge variables. `decantr check` flags inline-style drift.',
+      'If a component accumulates static inline visual styles, migrate them into the project styling system. `decantr check` flags inline-style drift.',
     );
   }
   lines.push('');
-  lines.push('═══ TREATMENT SURFACE — USE WHAT EXISTS ═══');
+  lines.push(
+    usesDecantrCss
+      ? '═══ TREATMENT SURFACE — USE WHAT EXISTS ═══'
+      : '═══ PROJECT STYLING AUTHORITY — REUSE WHAT EXISTS ═══',
+  );
   lines.push('');
   if (usesDecantrCss) {
     lines.push(
@@ -448,24 +470,36 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
     );
   } else {
     lines.push(
-      'The treatment names in the packs describe reusable UI roles. Map shells, cards, controls, overlays, motion, typography, and data-viz roles into the project styling system instead of inventing unrelated component language.',
+      'Reuse the selected system for shells, cards, controls, overlays, motion, typography, and data visualization instead of inventing parallel component language.',
     );
   }
   lines.push('');
-  lines.push('Consult DECANTR.md only when you need the full table or exact data-* attributes.');
+  lines.push(
+    usesDecantrCss
+      ? 'Consult DECANTR.md only when you need the full table or exact data-* attributes.'
+      : 'Consult DECANTR.md for governance boundaries and interaction requirements; the project styling system owns implementation syntax.',
+  );
   lines.push('');
-  lines.push('═══ THEME DECORATOR CONTRACT — APPLY OR THE THEME DOES NOT LAND ═══');
-  lines.push('');
-  if (hasCompiledPacks) {
-    lines.push(
-      'Each theme ships namespaced decorator classes (`clean-card`, `lum-glass`, `carbon-canvas`, `paper-card`, etc.). Apply the scaffold-pack.md "Required Theme Decorators" as additive classes alongside d-* treatments so the theme lands as more than token colors.',
-    );
-    lines.push(
-      'Section packs may point back to the scaffold-pack table; scaffold-pack.md is authoritative.',
-    );
+  if (usesDecantrCss) {
+    lines.push('═══ THEME DECORATOR CONTRACT — APPLY OR THE THEME DOES NOT LAND ═══');
+    lines.push('');
+    if (hasCompiledPacks) {
+      lines.push(
+        'Apply the scaffold-pack.md "Required Theme Decorators" as additive classes alongside d-* treatments so the theme lands as more than token colors.',
+      );
+      lines.push(
+        'Section packs may point back to the scaffold-pack table; scaffold-pack.md is authoritative.',
+      );
+    } else {
+      lines.push(
+        'Use DECANTR.md and section context to apply the declared theme decorators, then rerun `decantr refresh` to restore the authoritative table.',
+      );
+    }
   } else {
+    lines.push('═══ THEME INTENT ═══');
+    lines.push('');
     lines.push(
-      'Each theme ships namespaced decorator classes (`clean-card`, `lum-glass`, `carbon-canvas`, `paper-card`, etc.). Use DECANTR.md and section context to apply the theme, then rerun `decantr refresh` to restore the authoritative decorator table.',
+      'Translate the declared theme personality, contrast, density, shape, and emphasis through the project-owned styling system. Decantr does not prescribe CSS classes in this adoption mode.',
     );
   }
   lines.push('');
@@ -481,19 +515,23 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
   } else {
     lines.push('- Auth pages use a centered shell with a focused centered-card form surface.');
     lines.push(
-      '- Command palette uses an accessible modal/palette structure; rows include Lucide icon, label, and keyboard hint where the product contract calls for it.',
+      '- Command palette uses an accessible modal/palette structure; rows include an icon from the project-selected library, a label, and a keyboard hint where the product contract calls for it.',
     );
   }
   lines.push(
-    '- Use lucide-react for ALL iconography (already in package.json). Pick semantic icons (Bot, Activity, Database, Search) over generic ones. Do NOT inline SVGs for icons that have Lucide equivalents.',
+    usesDecantrCss
+      ? '- Use lucide-react for iconography when it is included by the scaffold. Pick semantic icons over generic ones and do not inline SVGs when Lucide has an equivalent.'
+      : '- Use the project-selected icon library consistently. Do not add a second icon library unless the contract or host architecture explicitly requires it.',
   );
   lines.push(
     hasCompiledPacks
-      ? '- Section Directives in section packs are execution rules for layout proportions, treatment stacks, copy conventions, and pattern fitness.'
-      : '- Section context files are execution rules for layout proportions, treatment stacks, copy conventions, and pattern fitness until compiled packs are restored.',
+      ? '- Section Directives in section packs are execution rules for layout proportions, visual roles, copy conventions, and pattern fitness.'
+      : '- Section context files are execution rules for layout proportions, visual roles, copy conventions, and pattern fitness until compiled packs are restored.',
   );
   lines.push(
-    '- Filter chip rows / tab strips use `d-step-chip[data-step-state]`, not bare `d-interactive` buttons.',
+    usesDecantrCss
+      ? '- Filter chip rows / tab strips use `d-step-chip[data-step-state]`, not bare `d-interactive` buttons.'
+      : '- Filter chip rows and tab strips reuse the project-owned chip, tab, or segmented-control primitive with explicit selected state.',
   );
   lines.push(
     '- Do not render Decantr guard prose, implementation notes, keyboard shortcut hints, or treatment/debug labels as product UI unless a route/shell contract explicitly declares that text as user-facing.',
@@ -532,7 +570,7 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
   lines.push(
     usesDecantrCss
       ? '- Use the existing Decantr tokens, treatments, and decorators instead of inventing a new visual system.'
-      : '- Map Decantr tokens, treatments, and decorators into the selected runtime instead of inventing an unrelated visual system.',
+      : '- Use the selected runtime and styling authority to realize the contract instead of inventing an unrelated visual system.',
   );
   lines.push(
     '- If package.json, app entry files, or router/runtime files are absent, create them for the declared target.',
@@ -540,7 +578,7 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
   lines.push(
     usesDecantrCss
       ? '- Colors, spacing, borders, shadows, gradients, and transitions should come from atoms, treatments, decorators, or CSS variables.'
-      : '- Colors, spacing, borders, shadows, gradients, and transitions should come from the project styling system or mapped Decantr variables.',
+      : '- Colors, spacing, borders, shadows, gradients, and transitions should come from the project styling system and its semantic tokens.',
   );
   lines.push(
     '- Let shells own spacing, centering, and scroll containers unless the route contract says otherwise.',
@@ -551,9 +589,11 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
   lines.push(
     '- Treat declared hotkeys as interaction bindings by default, not visible navigation label text, unless the shell or route contract explicitly calls for shown shortcut hints.',
   );
-  lines.push(
-    '- If a required decorator class is missing from generated CSS, report the contract gap instead of inventing a parallel system.',
-  );
+  if (usesDecantrCss) {
+    lines.push(
+      '- If a required decorator class is missing from generated CSS, report the contract gap instead of inventing a parallel system.',
+    );
+  }
   lines.push(
     '- Do not modify generated context files unless the task is explicitly to regenerate or refresh Decantr context.',
   );
@@ -754,90 +794,6 @@ function resolveUserPath(inputPath: string, cwd: string = process.cwd()): string
   return isAbsolute(inputPath) ? inputPath : resolve(cwd, inputPath);
 }
 
-function extractHostedAssetPaths(indexHtml: string): string[] {
-  const assetPaths = new Set<string>();
-
-  for (const match of indexHtml.matchAll(/<(?:script|link)[^>]+(?:src|href)="([^"]+)"/g)) {
-    const assetPath = match[1];
-    const assetsIndex = assetPath.indexOf('/assets/');
-    if (assetsIndex === -1) continue;
-    assetPaths.add(assetPath.slice(assetsIndex));
-  }
-
-  return [...assetPaths];
-}
-
-function readHostedDistSnapshot(
-  distPath?: string,
-): { indexHtml: string; assets?: Record<string, string> } | undefined {
-  const resolvedDistPath = distPath ? resolveUserPath(distPath) : join(process.cwd(), 'dist');
-  const indexPath = join(resolvedDistPath, 'index.html');
-  if (!existsSync(indexPath)) {
-    return undefined;
-  }
-
-  const indexHtml = readFileSync(indexPath, 'utf-8');
-  const assetPaths = extractHostedAssetPaths(indexHtml);
-  const assets: Record<string, string> = {};
-
-  for (const assetPath of assetPaths) {
-    const assetFilePath = join(resolvedDistPath, assetPath.replace(/^[/\\]+/, ''));
-    if (existsSync(assetFilePath)) {
-      assets[assetPath] = readFileSync(assetFilePath, 'utf-8');
-    }
-  }
-
-  return {
-    indexHtml,
-    assets,
-  };
-}
-
-function isHostedSourceSnapshotFile(path: string): boolean {
-  if (/\.d\.ts$/i.test(path)) return false;
-  return /\.(?:[cm]?[jt]sx?)$/i.test(path);
-}
-
-function readHostedSourceSnapshot(
-  sourcePath?: string,
-): { files: Record<string, string> } | undefined {
-  if (!sourcePath) return undefined;
-
-  const resolvedSourcePath = resolveUserPath(sourcePath);
-  if (!existsSync(resolvedSourcePath)) {
-    return undefined;
-  }
-
-  const files: Record<string, string> = {};
-  const ignoredDirNames = new Set([
-    'node_modules',
-    '.git',
-    '.decantr',
-    'dist',
-    'build',
-    'coverage',
-  ]);
-  const rootPrefix = basename(resolvedSourcePath);
-
-  const walk = (absoluteDir: string, relativeDir: string) => {
-    for (const entry of readdirSync(absoluteDir, { withFileTypes: true })) {
-      if (ignoredDirNames.has(entry.name)) continue;
-      const absolutePath = join(absoluteDir, entry.name);
-      const relativePath = join(relativeDir, entry.name).replace(/\\/g, '/');
-      if (entry.isDirectory()) {
-        walk(absolutePath, relativePath);
-        continue;
-      }
-      if (!entry.isFile()) continue;
-      if (!isHostedSourceSnapshotFile(relativePath)) continue;
-      files[relativePath] = readFileSync(absolutePath, 'utf-8');
-    }
-  };
-
-  walk(resolvedSourcePath, rootPrefix);
-  return Object.keys(files).length > 0 ? { files } : undefined;
-}
-
 async function getShowcaseBenchmarkView(
   view: 'manifest' | 'shortlist' | 'verification' = 'shortlist',
 ) {
@@ -1031,7 +987,7 @@ async function printHostedExecutionPackBundle(
   }
 
   const typedBundle = bundle as ExecutionPackBundleResponse;
-  console.log(heading('Hosted Execution Packs'));
+  console.log(heading('Official Content Execution Packs'));
   console.log(`  Source essence: ${resolvedPath}`);
   console.log(`  Essence version: ${typedBundle.sourceEssenceVersion}`);
   console.log(`  Generated: ${typedBundle.generatedAt}`);
@@ -1174,7 +1130,7 @@ async function printHostedSelectedExecutionPack(
   }
 
   const typedSelected = selected as SelectedExecutionPackResponse;
-  console.log(heading('Hosted Execution Pack'));
+  console.log(heading('Official Content Execution Pack'));
   console.log(`  Source essence: ${resolvedPath}`);
   console.log(`  Generated: ${typedSelected.generatedAt}`);
   console.log(`  Pack type: ${typedSelected.selector.packType}`);
@@ -1224,7 +1180,7 @@ async function printHostedExecutionPackManifest(
     return;
   }
 
-  console.log(heading('Hosted Pack Manifest'));
+  console.log(heading('Official Content Pack Manifest'));
   console.log(`  Source essence: ${resolvedPath}`);
   console.log(`  Generated: ${manifest.generatedAt}`);
   console.log(`  Version: ${manifest.version}`);
@@ -1319,104 +1275,6 @@ async function hydrateHostedReviewPackIfMissing(
   } catch {
     return { attempted: true, hydrated: false };
   }
-}
-
-async function printHostedFileCritique(
-  sourcePath: string,
-  namespace?: string,
-  jsonOutput: boolean = false,
-  essencePath?: string,
-  treatmentsPath?: string,
-) {
-  const client = getPublicAPIClient();
-  const resolvedSourcePath = resolveUserPath(sourcePath);
-  const resolvedEssencePath = essencePath
-    ? resolveUserPath(essencePath)
-    : join(process.cwd(), 'decantr.essence.json');
-  const resolvedTreatmentsPath = treatmentsPath
-    ? resolveUserPath(treatmentsPath)
-    : join(process.cwd(), 'src', 'styles', 'treatments.css');
-
-  if (!existsSync(resolvedSourcePath)) {
-    throw new Error(`Source file not found at ${resolvedSourcePath}`);
-  }
-
-  if (!existsSync(resolvedEssencePath)) {
-    throw new Error(`Essence file not found at ${resolvedEssencePath}`);
-  }
-
-  const code = readFileSync(resolvedSourcePath, 'utf-8');
-  const essence = JSON.parse(readFileSync(resolvedEssencePath, 'utf-8')) as EssenceFile;
-  const treatmentsCss = existsSync(resolvedTreatmentsPath)
-    ? readFileSync(resolvedTreatmentsPath, 'utf-8')
-    : undefined;
-
-  const report = await client.critiqueFile(
-    {
-      essence,
-      filePath: sourcePath,
-      code,
-      treatmentsCss,
-    },
-    namespace ? { namespace } : undefined,
-  );
-
-  if (jsonOutput) {
-    console.log(JSON.stringify(report, null, 2));
-    return;
-  }
-
-  console.log(heading('Hosted File Critique'));
-  console.log(`  Source file: ${resolvedSourcePath}`);
-  console.log(`  Essence: ${resolvedEssencePath}`);
-  if (treatmentsCss) {
-    console.log(`  Treatments: ${resolvedTreatmentsPath}`);
-  }
-  printFileCritiqueReport(report);
-}
-
-async function printHostedProjectAudit(
-  namespace?: string,
-  jsonOutput: boolean = false,
-  essencePath?: string,
-  distPath?: string,
-  sourcesPath?: string,
-) {
-  const client = getPublicAPIClient();
-  const resolvedEssencePath = essencePath
-    ? resolveUserPath(essencePath)
-    : join(process.cwd(), 'decantr.essence.json');
-
-  if (!existsSync(resolvedEssencePath)) {
-    throw new Error(`Essence file not found at ${resolvedEssencePath}`);
-  }
-
-  const essence = JSON.parse(readFileSync(resolvedEssencePath, 'utf-8')) as EssenceFile;
-  const dist = readHostedDistSnapshot(distPath);
-  const sources = readHostedSourceSnapshot(sourcesPath);
-  const report = await client.auditProject(
-    {
-      essence,
-      dist,
-      sources,
-    },
-    namespace ? { namespace } : undefined,
-  );
-
-  if (jsonOutput) {
-    console.log(JSON.stringify(report, null, 2));
-    return;
-  }
-
-  console.log(heading('Hosted Project Audit'));
-  console.log(`  Essence: ${resolvedEssencePath}`);
-  console.log(
-    `  Dist snapshot: ${dist ? (distPath ? resolveUserPath(distPath) : join(process.cwd(), 'dist')) : 'none'}`,
-  );
-  console.log(
-    `  Source snapshot: ${sources && sourcesPath ? resolveUserPath(sourcesPath) : 'none'}`,
-  );
-  printProjectAuditReport(report as unknown as ProjectAuditReport);
 }
 
 // ── Commands ──
@@ -2257,13 +2115,21 @@ async function applyAcceptedBrownfieldProposal(input: {
       projectRoot: input.projectRoot,
       detected: input.detected,
       workflowMode: 'brownfield-attach',
+      adoptionMode: 'contract-only',
       assistantBridge: input.assistantBridge,
     });
   }
   const appliedRuleFiles =
     input.assistantBridge === 'apply'
-      ? applyAssistantBridge(input.projectRoot, input.detected)
+      ? applyAssistantBridge(input.projectRoot, input.detected, {
+          workflowMode: 'brownfield-attach',
+          adoptionMode: 'contract-only',
+        })
       : [];
+  const formatterIgnoreUpdated = updateFormatterIgnore(
+    input.projectRoot,
+    input.workspaceInfo.workspaceRoot,
+  );
 
   console.log(success('\nBrownfield proposal accepted.\n'));
   const projectLabel =
@@ -2290,6 +2156,9 @@ async function applyAcceptedBrownfieldProposal(input: {
   }
   if (appliedRuleFiles.length > 0) {
     console.log(`    ${dim(`Rule bridge applied: ${appliedRuleFiles.join(', ')}`)}`);
+  }
+  if (formatterIgnoreUpdated) {
+    console.log(`    ${dim('.prettierignore updated for generated Decantr artifacts')}`);
   }
   if (backupPath) {
     console.log(`    ${dim(`Backup: ${backupPath}`)}`);
@@ -2420,7 +2289,7 @@ async function cmdInit(args: InitArgs) {
     policy.contentSource === 'none' &&
     (policy.workflowMode === 'brownfield-attach' ||
       policy.workflowMode === 'greenfield-contract-only');
-  const shouldUseRegistry = !preferContractOnly || policy.registryRequired;
+  const shouldUseRegistry = !preferContractOnly || policy.contentRequired;
 
   let offlineSeed = {
     seeded: false,
@@ -2483,6 +2352,7 @@ async function cmdInit(args: InitArgs) {
         adoptionMode: policy.adoptionMode,
         contentSource: policy.contentSource,
         assistantBridge: policy.assistantBridge,
+        workspaceRoot: workspaceInfo.workspaceRoot,
       });
       writeArtifactReadme(projectRoot);
 
@@ -2494,6 +2364,11 @@ async function cmdInit(args: InitArgs) {
       if (result.gitignoreUpdated) {
         console.log(`    ${dim('.gitignore updated')}`);
       }
+      if (result.formatterIgnoreUpdated) {
+        console.log(`    ${dim('.prettierignore updated for generated Decantr artifacts')}`);
+      }
+      await cmdGraph(projectRoot, { displayRoot: process.cwd() });
+      if (process.exitCode && process.exitCode !== 0) return;
       console.log('');
       console.log('  Next steps:');
       console.log(`    1. Run ${cyan('decantr sync')} when online`);
@@ -2566,10 +2441,12 @@ async function cmdInit(args: InitArgs) {
 
   if (preferContractOnly) {
     const flags = parseFlags(args as Record<string, unknown>, detected);
+    flags.workflowMode = policy.workflowMode;
     options = mergeWithDefaults(flags, detected, workflowSeed ?? undefined);
   } else if (args.yes || selectedBlueprint !== 'default') {
     // Non-interactive mode or simplified selection: use flags with defaults
     const flags = parseFlags(args as Record<string, unknown>, detected);
+    flags.workflowMode = policy.workflowMode;
     flags.blueprint = selectedBlueprint !== 'default' ? selectedBlueprint : flags.blueprint;
     options = mergeWithDefaults(flags, detected, workflowSeed ?? undefined);
   } else {
@@ -2845,11 +2722,15 @@ async function cmdInit(args: InitArgs) {
       projectRoot,
       detected,
       workflowMode: policy.workflowMode,
+      adoptionMode: policy.adoptionMode,
       assistantBridge: policy.assistantBridge,
     });
   }
   if (policy.assistantBridge === 'apply') {
-    appliedRuleFiles = applyAssistantBridge(projectRoot, detected);
+    appliedRuleFiles = applyAssistantBridge(projectRoot, detected, {
+      workflowMode: policy.workflowMode,
+      adoptionMode: policy.adoptionMode,
+    });
   }
 
   if (args.telemetry) enableCliTelemetry(projectRoot);
@@ -2864,6 +2745,9 @@ async function cmdInit(args: InitArgs) {
 
   if (result.gitignoreUpdated) {
     console.log(`    ${dim('.gitignore updated')}`);
+  }
+  if (result.formatterIgnoreUpdated) {
+    console.log(`    ${dim('.prettierignore updated for generated Decantr artifacts')}`);
   }
   if (assistantBridgePath) {
     console.log(`    ${cyan('.decantr/context/assistant-bridge.md')} Assistant bridge preview`);
@@ -2884,7 +2768,11 @@ async function cmdInit(args: InitArgs) {
     );
   }
 
+  await cmdGraph(projectRoot, { displayRoot: process.cwd() });
+  if (process.exitCode && process.exitCode !== 0) return;
+
   const hasCompiledPacks = existsSync(join(projectRoot, '.decantr', 'context', 'scaffold-pack.md'));
+  const decantrCssAdoption = policy.adoptionMode === 'decantr-css';
 
   console.log('');
   console.log('  Next steps:');
@@ -2897,21 +2785,23 @@ async function cmdInit(args: InitArgs) {
     );
     console.log('    3. Read the matching section and page packs before implementing each route');
     console.log(
-      '    4. Use DECANTR.md as a lookup reference for atoms, treatments, and guard rules',
+      decantrCssAdoption
+        ? '    4. Use DECANTR.md for the active Decantr CSS runtime and guard rules'
+        : '    4. Use DECANTR.md for governance boundaries, interaction requirements, and styling authority',
     );
     console.log('    5. Build the shell and route structure first, then implement the pages');
     console.log('    6. Run decantr check and decantr audit after implementation');
     console.log('    7. Review the official corpus at decantr.ai/reference/content-health.md');
   } else {
-    console.log('    1. Fix the validation issue reported above');
-    console.log('    2. Run decantr refresh to restore compiled execution packs');
+    console.log('    1. Read .decantr/context/scaffold.md and the matching section context');
+    console.log('    2. Run decantr refresh when official execution packs are available');
     console.log(
-      '    3. Until packs exist, read .decantr/context/scaffold.md and section context files',
+      decantrCssAdoption
+        ? '    3. Use DECANTR.md for the active Decantr CSS runtime and guard rules'
+        : '    3. Use DECANTR.md for governance boundaries, interaction requirements, and styling authority',
     );
-    console.log(
-      '    4. Use DECANTR.md as a lookup reference for atoms, treatments, and guard rules',
-    );
-    console.log('    5. Run decantr check and decantr audit after implementation');
+    console.log('    4. Run decantr task <route> "<intent>" before route-level edits');
+    console.log('    5. Run decantr verify after implementation');
   }
   console.log('');
   console.log('  Commands:');
@@ -3597,7 +3487,7 @@ function ensureAllowedFlags(
 
 function compilePacksCommandForProject(projectArg?: string): string {
   const essencePath = projectArg ? `${projectArg}/decantr.essence.json` : 'decantr.essence.json';
-  return `decantr registry compile-packs ${essencePath} --write-context`;
+  return `decantr content compile-packs ${essencePath} --write-context`;
 }
 
 function firstWorkspaceCandidate(workspaceInfo: ReturnType<typeof resolveWorkspaceInfo>): string {
@@ -4231,7 +4121,7 @@ async function cmdAdoptWorkflow(args: string[]): Promise<void> {
     `init --existing ${proposalFlag} as contract-only Brownfield`,
   ];
   if (hydratePacks) {
-    steps.push('hydrate hosted execution packs into the app context');
+    steps.push('hydrate official content execution packs into the app context');
   }
   steps.push('write typed Contract graph baseline');
   if (runVerify) {
@@ -4297,12 +4187,12 @@ async function cmdAdoptWorkflow(args: string[]): Promise<void> {
       console.log(`${YELLOW}Pack hydration skipped:${RESET} ${(e as Error).message}`);
       console.log(
         dim(
-          `Run ${compilePacksCommandForProject(projectArg)} after adoption if you want hosted page/review packs.`,
+          `Run ${compilePacksCommandForProject(projectArg)} after adoption if you want official page/review packs.`,
         ),
       );
     }
   } else if (flagBoolean(flags, 'offline') || process.env.DECANTR_OFFLINE === 'true') {
-    console.log(dim('Skipping hosted pack hydration in offline mode.'));
+    console.log(dim('Skipping official content-pack hydration in offline mode.'));
   }
 
   await cmdGraph(projectRoot, { displayRoot: process.cwd() });
@@ -4332,7 +4222,7 @@ async function cmdAdoptWorkflow(args: string[]): Promise<void> {
     `  ${cyan(withProject('decantr codify --from-audit --style-bridge', projectArg))}  Propose project-owned UI law and style bridge`,
   );
   console.log(
-    `  ${cyan(withProject('decantr codify --accept', projectArg))}              Accept reviewed local patterns, rules, and bridge`,
+    `  ${cyan(withProject('decantr codify --accept --confirm-reviewed', projectArg))}              Accept reviewed local patterns and rules`,
   );
   console.log(
     `  ${cyan(withProject('decantr task <route> "<change>"', projectArg))}      Give your LLM route-specific context before edits`,
@@ -4450,7 +4340,7 @@ async function cmdVerifyWorkflow(args: string[]): Promise<void> {
       if (!quietOutput) {
         console.log('');
         console.log(
-          `${YELLOW}Local pattern pack missing.${RESET} Run ${cyan(withProject('decantr codify --from-audit', projectArg))}, review the proposal, then run ${cyan(withProject('decantr codify --accept', projectArg))}.`,
+          `${YELLOW}Local pattern pack missing.${RESET} Run ${cyan(withProject('decantr codify --from-audit', projectArg))}, review the proposal, then run ${cyan(withProject('decantr codify --accept --confirm-reviewed', projectArg))}.`,
         );
       }
       process.exitCode = process.exitCode || 1;
@@ -4586,10 +4476,17 @@ function createTaskAuthoritySummary(input: {
       input.adoptionMode === 'contract-only'
         ? 'Use the project-chosen styling system.'
         : 'Use Decantr CSS where generated by the adapter.';
+    activeAuthorities.splice(
+      0,
+      activeAuthorities.length,
+      'Essence V4 contract',
+      'generated task context',
+      'selected project runtime',
+    );
   }
 
   if (hasLocalLaw) activeAuthorities.push('accepted local patterns/rules');
-  if (input.hasPackManifest) activeAuthorities.push('hosted execution packs as guidance');
+  if (input.hasPackManifest) activeAuthorities.push('official content packs as guidance');
 
   const framework = detected.framework ?? 'unknown';
   const runtimeBoundary = `Detected ${framework}; do not introduce another frontend runtime inside this route unless the task is explicitly a reviewed migration or isolated integration plan.`;
@@ -4757,6 +4654,20 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
   const projectJson = readJsonIfPresent<{
     initialized?: { workflowMode?: string; adoptionMode?: string };
   }>(join(workspaceInfo.appRoot, '.decantr', 'project.json'));
+  const taskVerifyCommand = projectJson?.initialized?.workflowMode?.startsWith('greenfield')
+    ? withProject('decantr verify', projectArg)
+    : projectJson?.initialized?.workflowMode === 'hybrid-compose'
+      ? withProject('decantr verify --local-patterns', projectArg)
+      : withProject('decantr verify --brownfield --local-patterns', projectArg);
+  const analysis = readJsonIfPresent<{
+    routes?: { routes?: Array<{ path?: string; file?: string }> };
+  }>(join(workspaceInfo.appRoot, '.decantr', 'analysis.json'));
+  let routeSourceFile = analysis?.routes?.routes?.find((entry) => entry.path === route)?.file;
+  if (!routeSourceFile) {
+    routeSourceFile = scanRoutes(workspaceInfo.appRoot).routes.find(
+      (entry) => entry.path === route,
+    )?.file;
+  }
   const pagePack = manifest?.pages?.find((entry) => entry.id === target.page);
   const sectionPack = manifest?.sections?.find((entry) => entry.id === target.section);
   const visualManifest = readJsonIfPresent<{
@@ -4789,7 +4700,41 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
       summary?: { nodes?: number; edges?: number; findings?: number; evidence?: number };
     } & GraphSnapshot
   >(graphSnapshotPath);
+  let graphStaleArtifacts: string[] = [];
+  try {
+    const currentArtifacts = buildGraphArtifacts(workspaceInfo.appRoot);
+    graphStaleArtifacts =
+      currentArtifacts?.staleArtifacts.map((path) =>
+        displayProjectPath(
+          workspaceInfo,
+          relativeGraphArtifactPath(currentArtifacts.projectRoot, path),
+        ),
+      ) ?? [];
+  } catch {
+    graphStaleArtifacts = [displayProjectPath(workspaceInfo, '.decantr/graph')];
+  }
+  const graphCurrent = Boolean(graphSnapshot) && graphStaleArtifacts.length === 0;
   const routeGraphContext = buildGraphRouteContext(graphSnapshot, route, { task: taskSummary });
+  if (!routeSourceFile && routeGraphContext) {
+    const routeSourceNodeIds = new Set(
+      routeGraphContext.edges
+        .filter(
+          (edge) =>
+            edge.src === routeGraphContext.routeNode.id &&
+            edge.relation === 'NODE_DERIVED_FROM_SOURCE' &&
+            edge.dst.startsWith('src:'),
+        )
+        .map((edge) => edge.dst),
+    );
+    const routeSourceNode = routeGraphContext.nodes.find(
+      (node) =>
+        routeSourceNodeIds.has(node.id) &&
+        graphPayloadString(node.payload, 'kind') === 'route-source',
+    );
+    routeSourceFile = routeSourceNode
+      ? graphPayloadString(routeSourceNode.payload, 'path')
+      : undefined;
+  }
   const routePatterns = page?.layout?.map(extractPatternName) ?? [];
   const localLaw = createLocalLawTaskSummary(workspaceInfo.appRoot);
   const rankedBehaviorObligations = rankBehaviorObligationsForTask(
@@ -4847,6 +4792,9 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
     hasStyleBridge: existsSync(acceptedStyleBridgePath),
   });
   const readTargets = [
+    routeSourceFile && existsSync(join(workspaceInfo.appRoot, routeSourceFile))
+      ? displayProjectPath(workspaceInfo, routeSourceFile)
+      : null,
     pagePack
       ? displayProjectPath(workspaceInfo, join('.decantr/context', pagePack.markdown))
       : null,
@@ -4874,10 +4822,11 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
       ? displayProjectPath(workspaceInfo, '.decantr/graph/graph.snapshot.json')
       : null,
   ].filter((value): value is string => Boolean(value));
+  const uniqueReadTargets = [...new Set(readTargets)];
   const taskLoopState: LoopReadiness['state'] =
-    readTargets.length === 0
+    uniqueReadTargets.length === 0
       ? 'blocked_missing_context'
-      : !routeGraphContext
+      : !routeGraphContext || !graphCurrent
         ? 'blocked_missing_graph'
         : 'ready_to_edit';
   const taskLoop: LoopReadiness = {
@@ -4889,7 +4838,7 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
       taskLoopState === 'ready_to_edit'
         ? 'Task context is ready for an agent edit.'
         : 'Task context is missing required context or graph evidence.',
-    summary: `${route} task context with ${readTargets.length} read target(s), ${routeGraphContext ? routeGraphContext.summary.nodes : 0} graph node(s), and ${changedRoutes.length} changed-route hint(s).`,
+    summary: `${route} task context with ${uniqueReadTargets.length} read target(s), ${routeGraphContext ? routeGraphContext.summary.nodes : 0} graph node(s), and ${changedRoutes.length} changed-route hint(s).`,
     authority: {
       activeLane:
         projectJson?.initialized?.workflowMode === 'brownfield-attach'
@@ -4901,11 +4850,12 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
     },
     evidenceTier: {
       schemaVersion: 2,
-      stage: routeGraphContext ? 'graph' : 'static',
+      stage: graphCurrent && routeGraphContext ? 'graph' : 'static',
       status: taskLoopState === 'ready_to_edit' ? 'healthy' : 'incomplete',
-      capabilities: routeGraphContext
-        ? ['static-audit', 'project-health', 'typed-graph']
-        : ['static-audit', 'project-health'],
+      capabilities:
+        graphCurrent && routeGraphContext
+          ? ['static-audit', 'project-health', 'typed-graph']
+          : ['static-audit', 'project-health'],
       coverage: {
         declaredRoutes: 1,
         runtimeRoutesChecked: 0,
@@ -4915,10 +4865,14 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
         visualArtifactCount: screenshot ? 1 : 0,
       },
       confidence: {
-        level: routeGraphContext ? 'moderate' : 'low',
-        score: routeGraphContext ? 0.64 : 0.32,
+        level: graphCurrent && routeGraphContext ? 'moderate' : 'low',
+        score: graphCurrent && routeGraphContext ? 0.64 : 0.32,
         reasons: [
-          routeGraphContext ? 'route graph context is present' : 'route graph context is missing',
+          graphCurrent && routeGraphContext
+            ? 'current route graph context is present'
+            : graphSnapshot
+              ? 'route graph context is stale'
+              : 'route graph context is missing',
           screenshot
             ? 'visual evidence reference is available'
             : 'no visual evidence reference was found',
@@ -4945,7 +4899,9 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
       title: 'Maker instructions',
       instructions: [
         'Read the listed route, section, scaffold, DECANTR, local-law, and graph targets before editing.',
-        'Preserve the active authority lane and existing production behavior outside this task.',
+        projectJson?.initialized?.workflowMode?.startsWith('greenfield')
+          ? 'Implement the declared contract through the selected project runtime and keep changes within this task.'
+          : 'Preserve the active authority lane and existing production behavior outside this task.',
         'Stop and report drift if source, graph, and contract context disagree.',
       ],
     },
@@ -4957,20 +4913,20 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
         'Do not treat advisory critique as blocking without T1/T2 evidence.',
       ],
     },
-    readTargets,
+    readTargets: uniqueReadTargets,
     graphImpact: {
-      status: routeGraphContext ? 'ready' : graphSnapshot ? 'stale' : 'missing',
+      status: graphCurrent && routeGraphContext ? 'ready' : graphSnapshot ? 'stale' : 'missing',
       snapshotId: routeGraphContext?.snapshotId ?? graphSnapshot?.id ?? null,
       sourceHash: routeGraphContext?.sourceHash ?? graphSnapshot?.source_hash ?? null,
       sourceArtifactCount: routeGraphContext?.summary.sourceArtifacts ?? 0,
-      staleArtifacts: [],
+      staleArtifacts: graphStaleArtifacts,
     },
     stopConditions: [
       'Runtime source and Decantr context disagree.',
       'The route graph cannot resolve a source file affected by the edit.',
       'A fix requires contract/source/local-law mutation outside the explicit workflow.',
     ],
-    verifyCommand: withProject('decantr verify --brownfield --local-patterns', projectArg),
+    verifyCommand: taskVerifyCommand,
   };
 
   const context = {
@@ -4980,7 +4936,7 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
     page: target.page,
     shell: page?.shell ?? section?.shell ?? null,
     patterns: routePatterns,
-    read: readTargets,
+    read: uniqueReadTargets,
     graph:
       contractCapsule || graphSnapshot
         ? {
@@ -5040,8 +4996,12 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
     changedFiles: currentChangedFiles,
     changedRoutes,
     loop: taskLoop,
-    verifyCommand: withProject('decantr verify --brownfield --local-patterns', projectArg),
+    verifyCommand: taskVerifyCommand,
   };
+
+  if (context.loop.status === 'blocked') {
+    process.exitCode = 1;
+  }
 
   if (flagBoolean(flags, 'json')) {
     console.log(JSON.stringify(context, null, 2));
@@ -5259,6 +5219,8 @@ async function cmdCodifyWorkflow(args: string[]): Promise<void> {
         'map-pattern',
         'hosted-pattern',
         'accept',
+        'confirm-reviewed',
+        'accept-style-bridge',
       ],
       'codify',
     )
@@ -5268,7 +5230,21 @@ async function cmdCodifyWorkflow(args: string[]): Promise<void> {
   const workspaceInfo = resolveWorkflowProject(flags, 'codify');
   if (!workspaceInfo) return;
 
-  if (flagBoolean(flags, 'accept')) {
+  if (flagBoolean(flags, 'accept') || flagBoolean(flags, 'accept-style-bridge')) {
+    if (!flagBoolean(flags, 'confirm-reviewed')) {
+      console.error(
+        error(
+          'Codify acceptance requires `--confirm-reviewed` after you inspect and edit the proposal files.',
+        ),
+      );
+      console.error(
+        dim(
+          'Run `decantr codify --accept --confirm-reviewed` only after the proposal reflects project-owned evidence.',
+        ),
+      );
+      process.exitCode = 1;
+      return;
+    }
     if (
       !existsSync(localPatternsProposalPath(workspaceInfo.appRoot)) &&
       !existsSync(localRulesProposalPath(workspaceInfo.appRoot)) &&
@@ -5283,7 +5259,23 @@ async function cmdCodifyWorkflow(args: string[]): Promise<void> {
       return;
     }
     const result = acceptBrownfieldLocalLaw(workspaceInfo.appRoot);
-    const bridgeAcceptedPath = acceptStyleBridge(workspaceInfo.appRoot);
+    const hasBridgeProposal = existsSync(styleBridgeProposalPath(workspaceInfo.appRoot));
+    const acceptBridge = flagBoolean(flags, 'accept-style-bridge');
+    const bridgeAcceptedPath = acceptBridge ? acceptStyleBridge(workspaceInfo.appRoot) : null;
+    if (
+      !result.patternAcceptedPath &&
+      !result.rulesAcceptedPath &&
+      hasBridgeProposal &&
+      !acceptBridge
+    ) {
+      console.error(
+        error(
+          'The only pending proposal is a style bridge. Accepting it changes the adoption mode and requires `--accept-style-bridge`.',
+        ),
+      );
+      process.exitCode = 1;
+      return;
+    }
     if (result.patternAcceptedPath) {
       console.log(success(`Accepted local pattern pack: ${result.patternAcceptedPath}`));
     }
@@ -5292,6 +5284,12 @@ async function cmdCodifyWorkflow(args: string[]): Promise<void> {
     }
     if (bridgeAcceptedPath) {
       console.log(success(`Accepted style bridge: ${bridgeAcceptedPath}`));
+    } else if (hasBridgeProposal) {
+      console.log(
+        dim(
+          `Style bridge remains a proposal. Use \`${withProject('decantr codify --accept --confirm-reviewed --accept-style-bridge', projectArg)}\` to activate it explicitly.`,
+        ),
+      );
     }
     console.log(
       dim(
@@ -5354,7 +5352,7 @@ async function cmdCodifyWorkflow(args: string[]): Promise<void> {
     );
     console.log(
       dim(
-        `Fill in project-owned component paths, token/class recipes, variants, and exceptions, then run \`${withProject('decantr codify --accept', projectArg)}\`.`,
+        `Fill in project-owned component paths, token/class recipes, variants, and exceptions, then run \`${withProject('decantr codify --accept --confirm-reviewed', projectArg)}\`.`,
       ),
     );
     return;
@@ -5402,7 +5400,7 @@ async function cmdCodifyWorkflow(args: string[]): Promise<void> {
   }
   console.log(
     dim(
-      `Review the proposal files, add real component paths/token/class recipes, map hosted pattern ideas into project-owned law, then run \`${withProject('decantr codify --accept', projectArg)}\`.`,
+      `Review the proposal files, add real component paths/token/class recipes, map official content ideas into project-owned law, then run \`${withProject('decantr codify --accept --confirm-reviewed', projectArg)}\`.`,
     ),
   );
 }
@@ -5535,7 +5533,8 @@ ${BOLD}Usage:${RESET}
   decantr ci [--project <path>] [--workspace] [--fail-on error|warn|none]
   decantr doctor [--project <path>] [--workspace] [--json]
   decantr connect cursor [--project <path>] [--preview]
-  decantr codify [--from-audit] [--style-bridge] [--map-pattern <slug>] [--accept] [--project <path>]
+  decantr codify [--from-audit] [--style-bridge] [--map-pattern <slug>] [--project <path>]
+  decantr codify --accept --confirm-reviewed [--accept-style-bridge] [--project <path>]
   decantr studio [--port 4319] [--host 127.0.0.1] [--report decantr-health.json] [--workspace]
 
 ${formatWhichCommandFirst()}
@@ -5682,7 +5681,7 @@ ${BOLD}Examples:${RESET}
   decantr ci init --project apps/web
   decantr codify --from-audit
   decantr codify --map-pattern hero --project apps/web
-  decantr codify --accept
+  decantr codify --accept --confirm-reviewed
   decantr content check --ci --fail-on error
   decantr magic "AI chatbot with dark cyber theme — bold and futuristic"
   decantr init
@@ -5729,11 +5728,11 @@ ${BOLD}Workflow Model:${RESET}
   ${cyan('Brownfield adoption')}    decantr adopt --yes
   ${cyan('Brownfield preview')}     decantr scan -> decantr adopt --yes
   ${cyan('Brownfield monorepo')}    decantr adopt --project apps/web --yes
-  ${cyan('Daily LLM work')}          decantr task <route> "<change>" -> decantr verify --brownfield --local-patterns
+  ${cyan('Daily LLM work')}          decantr graph -> decantr task <route> "<change>" -> returned verify command
   ${cyan('Cursor activation')}       decantr connect cursor -> Cursor Agent calls decantr_context action=task
   ${cyan('Drift resolution')}        decantr resolve -> codify/init/graph/repair source explicitly
   ${cyan('Typed contract graph')}    decantr graph -> agent session loads .decantr/graph/contract-capsule.json
-  ${cyan('Project-owned law')}       decantr codify --from-audit -> edit proposal -> decantr codify --accept
+  ${cyan('Project-owned law')}       decantr codify --from-audit -> edit proposal -> decantr codify --accept --confirm-reviewed
   ${cyan('Hybrid composition')}     decantr add/remove, decantr theme switch, decantr content, decantr upgrade
 
 ${BOLD}Bootstrap adapters:${RESET}
@@ -5976,7 +5975,7 @@ ${BOLD}Options:${RESET}
   --baseline          Save a health baseline (default)
   --no-baseline       Skip baseline save
   --no-verify         Skip the verification step
-  --no-packs          Skip hosted execution-pack hydration
+  --no-packs          Skip official content-pack hydration
   --ci, --init-ci     Install the Decantr CI gate after adoption
   --telemetry         Enable the local preference; delivery requires DECANTR_TELEMETRY_ENDPOINT
   --merge-proposal    Merge the observed proposal into an existing essence
@@ -6021,9 +6020,9 @@ ${BOLD}Usage:${RESET}
   decantr task <route> ["task summary"] [--project <path>] [--since origin/main] [--json]
 
 ${BOLD}Behavior:${RESET}
-  Includes accepted local law and behavior obligations, plus the typed contract capsule path when
-  .decantr/graph exists. Run decantr graph first when you want graph-backed agent context in
-  CLI-only workflows.
+  Requires current .decantr/graph artifacts. Read targets begin with the discovered route
+  implementation source, then include compact graph context, accepted local law, behavior
+  obligations, evidence, stop conditions, and the workflow-aware verify command.
 
 ${BOLD}Examples:${RESET}
   decantr task /feed "add saved recipe actions"
@@ -6061,8 +6060,9 @@ ${BOLD}decantr codify${RESET} — Propose or accept project-owned Brownfield UI 
 
 ${BOLD}Usage:${RESET}
   decantr codify [--from-audit] [--style-bridge] [--project <path>]
-  decantr codify --map-pattern <registry-pattern-slug> [--project <path>]
-  decantr codify --accept [--project <path>]
+  decantr codify --map-pattern <content-pattern-slug> [--project <path>]
+  decantr codify --accept --confirm-reviewed [--project <path>]
+  decantr codify --accept --confirm-reviewed --accept-style-bridge [--project <path>]
 
 ${BOLD}Examples:${RESET}
   decantr codify
@@ -6070,7 +6070,7 @@ ${BOLD}Examples:${RESET}
   decantr codify --style-bridge
   decantr codify --from-audit --style-bridge
   decantr codify --map-pattern hero --project apps/web
-  decantr codify --accept
+  decantr codify --accept --confirm-reviewed
   decantr verify --brownfield --local-patterns
 `);
 }
@@ -7028,11 +7028,13 @@ async function main() {
       const workspaceInfo = resolveWorkflowProject(flags, 'rules');
       if (!workspaceInfo) break;
       const detected = detectProject(workspaceInfo.appRoot);
+      const bridgeContext = readAssistantBridgeContext(workspaceInfo.appRoot);
       if (subcommand === 'preview') {
         console.log(
           buildAssistantBridgeContent({
             detected,
-            workflowMode: 'brownfield-attach',
+            workflowMode: bridgeContext.workflowMode,
+            adoptionMode: bridgeContext.adoptionMode,
             assistantBridge: 'preview',
           }),
         );

@@ -1144,7 +1144,7 @@ describe('registry commands (e2e)', () => {
     expect(pagePack.data.pageId).toBe('home');
   });
 
-  it('registry compile-packs can write hosted pack artifacts into .decantr/context', async () => {
+  it('registry compatibility compile-packs writes official content artifacts into .decantr/context', async () => {
     const server = createServer((req, res) => {
       let _body = '';
       req.on('data', (chunk) => {
@@ -1408,7 +1408,7 @@ describe('registry commands (e2e)', () => {
     const sectionPackPath = join(contextDir, 'section-dashboard-pack.md');
     const mutationPackPath = join(contextDir, 'mutation-modify-pack.md');
 
-    expect(output).toContain('Hosted Execution Packs');
+    expect(output).toContain('Official Content Execution Packs');
     expect(output).toContain('Context bundle:');
     expect(existsSync(manifestPath)).toBe(true);
     expect(existsSync(scaffoldPackPath)).toBe(true);
@@ -1464,10 +1464,7 @@ describe('registry commands (e2e)', () => {
     await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', () => resolve()));
     const { port } = server.address() as AddressInfo;
 
-    writeFileSync(
-      join(testDir, 'decantr.essence.json'),
-      JSON.stringify(makeV4Essence(), null, 2),
-    );
+    writeFileSync(join(testDir, 'decantr.essence.json'), JSON.stringify(makeV4Essence(), null, 2));
     writeFileSync(
       join(testDir, 'Home.tsx'),
       '<button style={{ color: "#ff00ff" }}>Click me</button>\n',
@@ -1616,10 +1613,7 @@ describe('registry commands (e2e)', () => {
     await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', () => resolve()));
     const { port } = server.address() as AddressInfo;
 
-    writeFileSync(
-      join(testDir, 'decantr.essence.json'),
-      JSON.stringify(makeV4Essence(), null, 2),
-    );
+    writeFileSync(join(testDir, 'decantr.essence.json'), JSON.stringify(makeV4Essence(), null, 2));
     mkdirSync(join(testDir, 'dist', 'assets'), { recursive: true });
     mkdirSync(join(testDir, 'src', 'pages'), { recursive: true });
     writeFileSync(

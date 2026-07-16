@@ -29,6 +29,7 @@ import {
   auditComponentReuse,
   type ComponentReuseAudit,
   collectProjectSourceFiles,
+  discoverProject,
 } from '@decantr/verifier';
 import {
   localPatternsPath,
@@ -83,6 +84,8 @@ interface GraphArtifactBuild {
   capsule: ContractCapsule;
   staleArtifacts: string[];
 }
+
+type ProjectRouteDiscovery = ReturnType<typeof discoverProject>['routes'];
 
 interface GraphSnapshotSelection {
   selector: string;
@@ -171,18 +174,6 @@ interface EvidenceBundleArtifact {
     }
   >;
   findings?: EvidenceBundleFinding[];
-}
-
-interface HealthBaselineDiffArtifact {
-  savedAt?: string | null;
-  statusChanged?: boolean;
-  scoreDelta?: number | null;
-  addedFindings?: string[];
-  resolvedFindings?: string[];
-  changedFiles?: string[];
-  changedRoutes?: string[];
-  changedScreenshots?: string[];
-  contractDrift?: string[];
 }
 
 interface BrownfieldAnalysisRoute {
@@ -339,20 +330,6 @@ function evidenceBundleSourceHash(bundle: EvidenceBundleArtifact): string {
       evidence: finding.evidence,
       commands: finding.commands,
     })),
-  });
-}
-
-function healthBaselineDiffSourceHash(diff: HealthBaselineDiffArtifact): string {
-  return hashJson({
-    savedAt: diff.savedAt ?? null,
-    statusChanged: diff.statusChanged ?? false,
-    scoreDelta: diff.scoreDelta ?? null,
-    addedFindings: diff.addedFindings ?? [],
-    resolvedFindings: diff.resolvedFindings ?? [],
-    changedFiles: diff.changedFiles ?? [],
-    changedRoutes: diff.changedRoutes ?? [],
-    changedScreenshots: diff.changedScreenshots ?? [],
-    contractDrift: diff.contractDrift ?? [],
   });
 }
 
@@ -646,6 +623,7 @@ function addEdge(edges: Map<string, GraphEdge>, edge: GraphEdge): void {
 function sourceArtifacts(
   projectRoot: string,
   componentReuseAudit: ComponentReuseAudit | null = null,
+  routeDiscovery?: ProjectRouteDiscovery,
 ): SourceArtifact[] {
   const sources: SourceArtifact[] = [];
   const essencePath = join(projectRoot, 'decantr.essence.json');
@@ -719,6 +697,24 @@ function sourceArtifacts(
         },
       });
     }
+  }
+
+  for (const route of routeDiscovery?.taskableRoutes ?? []) {
+    const routeFile = projectRelativePath(projectRoot, route.file);
+    if (!routeFile) continue;
+    const routeFilePath = join(projectRoot, routeFile);
+    if (!pathIsFile(routeFilePath)) continue;
+    sources.push({
+      id: `src:${routeFile}`,
+      kind: 'route-source',
+      path: routeFile,
+      hash: hashFile(routeFilePath),
+      payload: {
+        route: route.path,
+        hasLayout: route.hasLayout,
+        strategy: routeDiscovery?.strategy,
+      },
+    });
   }
 
   for (const declaration of componentReuseAudit?.declarations ?? []) {
@@ -866,38 +862,6 @@ function sourceArtifacts(
     }
   }
 
-  const healthBaselineDiffPath = join(projectRoot, '.decantr', 'health-baseline-diff.json');
-  const healthBaselineDiff = readJsonFile<HealthBaselineDiffArtifact>(healthBaselineDiffPath);
-  if (healthBaselineDiff) {
-    for (const changedFile of healthBaselineDiff.changedFiles ?? []) {
-      const sourcePath = existingProjectRelativePath(projectRoot, changedFile);
-      if (!sourcePath) continue;
-      if (sources.some((source) => source.id === `src:${sourcePath}`)) continue;
-      sources.push({
-        id: `src:${sourcePath}`,
-        kind: 'baseline-changed-source',
-        path: sourcePath,
-        hash: hashFile(join(projectRoot, sourcePath)),
-        payload: {
-          role: 'baseline-changed-file',
-        },
-      });
-    }
-
-    sources.push({
-      id: 'src:.decantr/health-baseline-diff.json',
-      kind: 'health-baseline-diff',
-      path: '.decantr/health-baseline-diff.json',
-      hash: healthBaselineDiffSourceHash(healthBaselineDiff),
-      payload: {
-        changedFiles: healthBaselineDiff.changedFiles?.length ?? 0,
-        changedRoutes: healthBaselineDiff.changedRoutes?.length ?? 0,
-        changedScreenshots: healthBaselineDiff.changedScreenshots?.length ?? 0,
-        contractDrift: healthBaselineDiff.contractDrift?.length ?? 0,
-      },
-    });
-  }
-
   return dedupeSourceArtifacts(sources);
 }
 
@@ -936,18 +900,12 @@ function firstFindingSourceArtifactId(
   return null;
 }
 
-function routeForScreenshotPath(
-  visualManifest: VisualManifest | null,
-  screenshot: string,
-): string | null {
-  return visualManifest?.routes?.find((route) => route.screenshot === screenshot)?.route ?? null;
-}
-
 function augmentProjectGraph(
   snapshot: GraphSnapshot,
   projectRoot: string,
   sources: SourceArtifact[],
   componentReuseAudit: ComponentReuseAudit | null = null,
+  routeDiscovery?: ProjectRouteDiscovery,
 ): GraphSnapshot {
   const nodes = new Map(snapshot.nodes.map((node) => [node.id, node]));
   const edges = new Map(snapshot.edges.map((edge) => [graphEdgeKey(edge), edge]));
@@ -1405,113 +1363,34 @@ function augmentProjectGraph(
     }
   }
 
-  const healthBaselineDiff = readJsonFile<HealthBaselineDiffArtifact>(
-    join(projectRoot, '.decantr', 'health-baseline-diff.json'),
-  );
-  if (healthBaselineDiff) {
-    const sourceId = 'src:.decantr/health-baseline-diff.json';
-    const manifestForScreenshotRoutes = readJsonFile<VisualManifest>(
-      join(projectRoot, '.decantr', 'evidence', 'visual-manifest.json'),
-    );
-
-    for (const route of healthBaselineDiff.changedRoutes ?? []) {
-      const evidenceId = `ev:baseline:route:${graphSlug(route, 'route')}`;
-      const routeId = `rt:${route}`;
-      const anchorId = nodes.has(routeId) ? routeId : snapshot.project_id;
-      addNode(nodes, {
-        id: evidenceId,
-        type: 'Evidence',
-        payload: {
-          kind: 'baseline-route-impact',
-          route,
-        },
-      });
+  for (const route of routeDiscovery?.taskableRoutes ?? []) {
+    const routeFile = projectRelativePath(projectRoot, route.file);
+    if (!routeFile || !nodes.has(`src:${routeFile}`)) continue;
+    const routeId = `rt:${route.path}`;
+    if (nodes.has(routeId)) {
       addEdge(edges, {
-        src: evidenceId,
-        dst: sourceId,
+        src: routeId,
+        dst: `src:${routeFile}`,
         relation: 'NODE_DERIVED_FROM_SOURCE',
-      });
-      addEdge(edges, {
-        src: evidenceId,
-        dst: anchorId,
-        relation: 'EVIDENCE_CAPTURED_FOR',
-        payload: { kind: 'baseline-route-impact' },
+        payload: {
+          role: 'route-implementation',
+          strategy: routeDiscovery?.strategy,
+          hasLayout: route.hasLayout,
+        },
       });
     }
 
-    for (const changedFile of healthBaselineDiff.changedFiles ?? []) {
-      const sourcePath = projectRelativePath(projectRoot, changedFile);
-      if (!sourcePath) continue;
-      const sourceArtifactId = `src:${sourcePath}`;
-      if (!nodes.has(sourceArtifactId)) continue;
-      const evidenceId = `ev:baseline:file:${graphSlug(sourcePath, 'file')}`;
-      addNode(nodes, {
-        id: evidenceId,
-        type: 'Evidence',
-        payload: {
-          kind: 'baseline-file-impact',
-          file: sourcePath,
-        },
-      });
+    for (const edge of [...edges.values()]) {
+      if (edge.relation !== 'PAGE_ROUTED_AT_ROUTE' || edge.dst !== routeId) continue;
       addEdge(edges, {
-        src: evidenceId,
-        dst: sourceId,
+        src: edge.src,
+        dst: `src:${routeFile}`,
         relation: 'NODE_DERIVED_FROM_SOURCE',
-      });
-      addEdge(edges, {
-        src: evidenceId,
-        dst: sourceArtifactId,
-        relation: 'EVIDENCE_CAPTURED_FOR',
-        payload: { kind: 'baseline-file-impact' },
-      });
-    }
-
-    for (const [index, screenshot] of (healthBaselineDiff.changedScreenshots ?? []).entries()) {
-      const route = routeForScreenshotPath(manifestForScreenshotRoutes, screenshot);
-      const routeId = route ? `rt:${route}` : null;
-      const evidenceId = `ev:baseline:screenshot:${index + 1}`;
-      addNode(nodes, {
-        id: evidenceId,
-        type: 'Evidence',
         payload: {
-          kind: 'baseline-screenshot-drift',
-          screenshot,
-          route,
+          role: 'page-implementation',
+          route: route.path,
+          strategy: routeDiscovery?.strategy,
         },
-      });
-      addEdge(edges, {
-        src: evidenceId,
-        dst: sourceId,
-        relation: 'NODE_DERIVED_FROM_SOURCE',
-      });
-      addEdge(edges, {
-        src: evidenceId,
-        dst: routeId && nodes.has(routeId) ? routeId : snapshot.project_id,
-        relation: 'EVIDENCE_CAPTURED_FOR',
-        payload: { kind: 'baseline-screenshot-drift', route },
-      });
-    }
-
-    for (const [index, drift] of (healthBaselineDiff.contractDrift ?? []).entries()) {
-      const evidenceId = `ev:baseline:contract:${index + 1}`;
-      addNode(nodes, {
-        id: evidenceId,
-        type: 'Evidence',
-        payload: {
-          kind: 'baseline-contract-drift',
-          text: drift,
-        },
-      });
-      addEdge(edges, {
-        src: evidenceId,
-        dst: sourceId,
-        relation: 'NODE_DERIVED_FROM_SOURCE',
-      });
-      addEdge(edges, {
-        src: evidenceId,
-        dst: snapshot.project_id,
-        relation: 'EVIDENCE_CAPTURED_FOR',
-        payload: { kind: 'baseline-contract-drift' },
       });
     }
   }
@@ -1556,7 +1435,8 @@ export function buildGraphArtifacts(
     projectRoot,
     collectProjectSourceFiles(projectRoot),
   );
-  const sources = sourceArtifacts(projectRoot, componentReuseAudit);
+  const routeDiscovery = discoverProject(projectRoot).routes;
+  const sources = sourceArtifacts(projectRoot, componentReuseAudit, routeDiscovery);
   const combinedSourceHash = sourceHash(sources);
   const previousSnapshot = readJsonFile<GraphSnapshot>(paths.snapshot);
   const previousDiff = readJsonFile<GraphDiff>(paths.diff);
@@ -1575,7 +1455,13 @@ export function buildGraphArtifacts(
     createdAt,
     sourceArtifact: sources[0],
   });
-  const snapshot = augmentProjectGraph(baseSnapshot, projectRoot, sources, componentReuseAudit);
+  const snapshot = augmentProjectGraph(
+    baseSnapshot,
+    projectRoot,
+    sources,
+    componentReuseAudit,
+    routeDiscovery,
+  );
   const diff =
     sourceUnchanged && previousDiff?.to === snapshot.id
       ? previousDiff

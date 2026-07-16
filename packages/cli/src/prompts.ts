@@ -431,11 +431,13 @@ export function mergeWithDefaults(
   detected: DetectedProject,
   workflowSeed?: InitWorkflowSeed,
 ): InitOptions {
+  const explicitGreenfield = flags.workflowMode?.startsWith('greenfield') === true;
   const existingProject =
-    flags.existing ||
-    workflowSeed?.existing ||
-    detected.existingEssence ||
-    hasExistingProjectFootprint(detected);
+    !explicitGreenfield &&
+    (flags.existing ||
+      workflowSeed?.existing ||
+      detected.existingEssence ||
+      hasExistingProjectFootprint(detected));
   return {
     blueprint: flags.blueprint,
     archetype: flags.archetype,
@@ -455,7 +457,9 @@ export function mergeWithDefaults(
     personality:
       flags.personality || (existingProject ? ['observed brownfield product'] : ['professional']),
     features: flags.features || [],
-    existing: flags.existing || workflowSeed?.existing || detected.existingEssence,
+    existing:
+      !explicitGreenfield &&
+      Boolean(flags.existing || workflowSeed?.existing || detected.existingEssence),
     workflowMode: flags.workflowMode || workflowSeed?.workflowMode,
     adoptionMode: flags.adoptionMode || workflowSeed?.adoptionMode,
     contentSource: flags.contentSource || workflowSeed?.contentSource,

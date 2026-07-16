@@ -377,6 +377,29 @@ describe('verifier schema contracts', () => {
     assertMatchesVerifierSchema('decantr-ci-report.v1.json', report);
   });
 
+  it('publishes the Brownfield baseline gate in the v2 CI schema', () => {
+    const schema = JSON.parse(
+      readFileSync(new URL('../schema/decantr-ci-report.v2.json', import.meta.url), 'utf-8'),
+    ) as {
+      oneOf: Array<{
+        properties?: Record<string, { const?: string; required?: string[] }>;
+        required?: string[];
+      }>;
+    };
+    const projectReport = schema.oneOf.find(
+      (variant) => variant.properties?.mode?.const === 'project',
+    );
+
+    expect(projectReport?.required).toContain('baselineGate');
+    expect(projectReport?.properties?.baselineGate?.required).toEqual([
+      'applied',
+      'baselinePath',
+      'savedAt',
+      'inheritedFindingIds',
+      'newFindings',
+    ]);
+  });
+
   it('accepts evidence bundles matching the published schema', () => {
     const bundle = {
       $schema: 'https://decantr.ai/schemas/evidence-bundle.v1.json',

@@ -108,8 +108,9 @@ describe('generateSectionContext', () => {
       }),
     );
 
-    expect(result).toContain('**Theme intent references:**');
     expect(result).toContain('existing styling authority');
+    expect(result).not.toContain('Theme intent references');
+    expect(result).not.toContain('decorator');
     expect(result).not.toContain('**Atoms:**');
     expect(result).not.toContain('_grid _aic');
     expect(result).not.toContain('d-surface');

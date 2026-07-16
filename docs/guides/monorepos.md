@@ -12,9 +12,9 @@ pnpm exec decantr adopt --project apps/web --yes
 pnpm exec decantr doctor --project apps/web
 ```
 
-`setup` and `workspace list` are non-mutating orientation commands. Before adoption, `setup` shows app candidates and the one attach command. After at least one app is attached, `setup` becomes a workspace dashboard that points at `doctor`, `task`, `verify`, and `ci init` for the attached app instead of telling you to adopt again. `adopt --project apps/web --yes` writes the Brownfield contract, hydrates content API packs when online, and keeps `.decantr/*` context inside the app, while `.github/workflows/*` and workspace package-manager commands remain rooted at the repository root. Use `--no-packs` or offline mode when pack hydration should be deferred.
+`setup` and `workspace list` are non-mutating orientation commands. Before adoption, `setup` shows app candidates and the attach command. After adoption, it points at the day-two loop. `adopt --project apps/web --yes` writes the Brownfield contract, hydrates content API packs when online, and keeps `.decantr/*` context inside the app. When the workspace uses Prettier or Oxfmt, Decantr adds `apps/web/.decantr/`, `apps/web/DECANTR.md`, and `apps/web/decantr.essence.json` to the root `.prettierignore` so root format checks ignore generated governance artifacts.
 
-Decantr 3.7 introduced the read-only discovery substrate that Decantr 3.8 uses for scan/setup/workspace/adopt/doctor/task/verify/ci/MCP. When you pass `--project apps/web`, discovery walks upward from `apps/web` to find the workspace package manager, but framework, language, routes, components, styling, assistant rules, and limitations come from the selected app. This prevents an Angular sibling, docs app, package library, or workspace root `index.html` from contaminating a React/Vite app scan. `decantr scan --project apps/web --json` emits `scan-report.v2` with both `routeSignalCount` and `taskableRouteCount`, plus component inventory confidence.
+Decantr 3.7 introduced the read-only discovery substrate that Decantr 3.8 uses for scan/setup/workspace/adopt/doctor/task/verify/ci/MCP. When you pass `--project apps/web`, discovery walks upward to find the package manager and repository-level assistant rules, while framework, language, routes, components, and styling stay app-scoped. Formal TanStack route source outranks generated trees, nested React Router objects resolve lazy implementation files, and pathname-only fallback routes carry medium confidence. This prevents sibling apps and root HTML from contaminating the selected app.
 
 ## Root vs App
 
@@ -32,6 +32,8 @@ pnpm exec decantr ci --project apps/web
 ```
 
 The same rule applies to advanced primitives. `health`, `status`, `upgrade`, `add`, `remove`, `theme`, `export`, `suggest`, `magic`, `rules`, and `telemetry` honor `--project <path>` instead of falling back to the workspace root. Task context, local-law summaries, and refresh change summaries print paths you can open from the workspace root. Absolute `--project` paths are resolved from the target app's workspace, not from whichever monorepo you happen to be standing in. If a path does not exist, Decantr fails immediately. If a path points at a component package that is not a deployable app candidate, Brownfield adoption refuses it unless you explicitly opt into that unusual package attach with `--force-package`.
+
+`task` also requires the selected app's typed graph to be current. Its first route read target is the implementation source discovered during analysis, while graph/context artifacts follow it. Regenerate with the app-scoped graph command when task reports missing or stale artifacts.
 
 Use workspace mode only when you intentionally want an aggregate view:
 
@@ -51,6 +53,8 @@ pnpm exec decantr ci --project apps/web
 ```
 
 `ci init` writes a root `.github/workflows/decantr-ci.yml`, detects the package manager, installs dependencies at the workspace root, and runs the pinned local CLI command, for example `pnpm exec decantr ci --project apps/web`. It does not generate `@latest` workflows. If the root package has not pinned Decantr yet, `ci init` prints the exact command to run, such as `pnpm add -D -w @decantr/cli`.
+
+For an adopted Brownfield app with a saved health baseline, the project CI report includes `baselineGate`. Inherited findings stay visible, but only new findings determine the project gate's exit code. Workspace aggregate gates retain their existing aggregate semantics.
 
 If GitHub Actions is not your authoritative CI system, generate a portable snippet:
 
@@ -129,9 +133,10 @@ Commit canonical Decantr files and accepted local law:
 - `.decantr/project.json`
 - `.decantr/README.md`
 - `.decantr/context/*`
-- `.decantr/local-patterns.json` after `decantr codify --accept`
-- `.decantr/rules.json` after `decantr codify --accept`
-- `.decantr/style-bridge.json` after accepting a reviewed style bridge
+- `.decantr/local-patterns.json` after `decantr codify --accept --confirm-reviewed`
+- `.decantr/rules.json` after `decantr codify --accept --confirm-reviewed`
+- `.decantr/style-bridge.json` after `decantr codify --accept --confirm-reviewed --accept-style-bridge`
+- `.prettierignore` when Decantr adds generated-artifact boundaries
 - root `.github/workflows/decantr-ci.yml` or your edited internal pipeline hook
 
 Treat `.decantr/local-patterns.proposal.json`, `.decantr/rules.proposal.json`, `.decantr/style-bridge.proposal.json`, `.decantr/evidence/*`, `.decantr/ci/*`, and `.decantr/health-baseline-diff.json` as review/local/CI artifacts unless your team intentionally archives them.

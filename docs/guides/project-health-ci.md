@@ -37,6 +37,8 @@ npx @decantr/cli verify --json --output decantr-health.json
 
 Use `verify` for the local human/agent loop and `ci` for mandatory automation. Both commands respect the selected adoption lane: contract-only Brownfield apps keep existing source/style authority, Hybrid local law adds accepted project rules, style bridges and Decantr CSS are only enforced where explicitly adopted, and workspace runs isolate each attached app. `ci` emits the v2 CI report with the same loop verdict, evidence tier, and authority resolution as local verification. It includes accepted local-rule findings, accepted `behavior_obligations` findings for statically checkable form/dialog regressions, plus style bridge status in text, markdown, and JSON reports; the human output distinguishes enforceable `.decantr/rules.json` scans from advisory style-bridge mappings. `--fail-on error` keeps warning-level local law visible without blocking, while `--fail-on warn` blocks on those warnings once your team has stabilized them. In monorepos, keep `--project <app-path>` explicit unless you intentionally want a workspace aggregate with `--workspace`.
 
+When an adopted Brownfield app has `.decantr/health-baseline.json`, project CI emits `baselineGate`. Findings recorded in that baseline remain visible as inherited debt, but only newly introduced health findings determine the baseline-aware health exit gate. Local-law and style-bridge failures remain separate, and workspace aggregate runs keep their existing aggregate semantics.
+
 ## Repair With An AI Assistant
 
 ```bash

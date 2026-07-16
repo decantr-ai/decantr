@@ -7,7 +7,7 @@ import {
   rmSync,
   writeFileSync,
 } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type {
   ExecutionPackBase,
@@ -615,6 +615,7 @@ export interface ScaffoldResult {
   contextFiles: string[];
   cssFiles: string[];
   gitignoreUpdated: boolean;
+  formatterIgnoreUpdated: boolean;
 }
 
 function readCliVersion(): string {
@@ -2241,20 +2242,20 @@ const CONTRACT_ONLY_CSS_APPROACH = `## Styling Adoption
 
 This project uses Decantr as a **contract and governance layer only**.
 
-Do not install \`@decantr/css\`, rewrite the styling system, or add generated Decantr CSS files unless the task explicitly changes the adoption mode. Preserve the existing framework styling conventions and map them into the Decantr context before changing implementation files.
+Do not install \`@decantr/css\`, rewrite the styling system, or add generated Decantr CSS files unless the task explicitly changes the adoption mode. Preserve or deliberately select one project-owned styling system and use it consistently.
 
-Use \`.decantr/context/scaffold-pack.md\` and the matching section/page packs to understand visual intent, shell structure, and route contracts. Implement those contracts through the project's current CSS, component library, tokens, or design-system primitives.
+Use the available files in \`.decantr/context/\` to understand visual intent, shell structure, and route contracts. Prefer compiled scaffold/section/page packs when present; otherwise use the narrative scaffold and section context. Implement the contract through the project's selected CSS, component library, tokens, or design-system primitives.
 
 ### Interaction Requirements
 
-Every pattern declares its required interactions in its page-pack \`Interactions\` checklist. A declared interaction must be implemented in source through the project's existing component library, CSS, or event-handler patterns.
+Every interaction declared by local route context or a compiled page pack must be implemented in source through the project's selected component library, CSS, or event-handler patterns.
 
 | Declared interaction | Canonical implementation shape |
 |----------------------|--------------------------------|
 | \`animate-on-mount\` | Entrance animation class or component transition on the pattern root |
 | \`stagger-children\` | Parent stagger class or animation delay driven by child index |
 | \`keyboard-navigation\` | Arrow-key/Enter/Space handlers with visible focus state |
-| \`ripple-click\` | \`d-ripple\` or an equivalent click feedback class on the interactive surface |`;
+| \`ripple-click\` | Project-native click feedback on the interactive surface |`;
 
 const STYLE_BRIDGE_CSS_APPROACH = `## Styling Adoption
 
@@ -2273,7 +2274,7 @@ Every pattern declares its required interactions in its page-pack \`Interactions
 | \`animate-on-mount\` | Entrance animation class or component transition on the pattern root |
 | \`stagger-children\` | Parent stagger class or animation delay driven by child index |
 | \`keyboard-navigation\` | Arrow-key/Enter/Space handlers with visible focus state |
-| \`ripple-click\` | \`d-ripple\` or an equivalent click feedback class on the interactive surface |`;
+| \`ripple-click\` | Project-native click feedback on the interactive surface |`;
 
 function getCssApproachContent(adoptionMode?: AdoptionMode): string {
   if (adoptionMode === 'contract-only') return CONTRACT_ONLY_CSS_APPROACH;
@@ -2316,9 +2317,36 @@ function generateDecantrMdV4(params: {
   >;
 }): string {
   const template = loadTemplate('DECANTR.md.template');
+  const isGreenfield = params.workflowMode?.startsWith('greenfield') === true;
+  const authorityOrder = isGreenfield
+    ? [
+        '1. `decantr.essence.json` is the intended structural contract for routes, sections, DNA, guard mode, and product shape.',
+        '2. Generated task and route context applies that contract to the current edit.',
+        '3. The selected runtime, dependencies, component library, and styling system own implementation syntax.',
+        '4. Accepted project-owned local law applies where present; official corpus content remains guidance until explicitly adopted.',
+      ].join('\n')
+    : [
+        '1. The existing production source is the observed implementation truth.',
+        '2. Accepted `.decantr/local-patterns.json`, `.decantr/rules.json`, and `.decantr/style-bridge.json` are project-owned local law where present.',
+        '3. `decantr.essence.json` is the structural contract for routes, sections, DNA, guard mode, and intended product shape.',
+        '4. Official corpus patterns and execution packs are guidance unless the project maps them into accepted local law.',
+      ].join('\n');
+  const sectionContextGuidance =
+    params.workflowMode === 'greenfield-contract-only' ||
+    (params.workflowMode === 'brownfield-attach' && params.adoptionMode === 'contract-only')
+      ? 'Read `.decantr/context/section-{name}.md` for the section contract before implementation. If a compiled `section-{name}-pack.md` is later hydrated, prefer that more specific pack when the two sources differ. Do not invent section features, shells, or themes outside the local contract.'
+      : 'Read `.decantr/context/section-{name}-pack.md` for the compact compiled section contract. Then read `.decantr/context/section-{name}.md` for fuller context. Prefer the compiled section pack if the two sources differ, and do not invent section features, shells, or themes outside the contract.';
+  const routeContextGuidance =
+    params.workflowMode === 'greenfield-contract-only' ||
+    (params.workflowMode === 'brownfield-attach' && params.adoptionMode === 'contract-only')
+      ? 'Use the route source, narrative context, and Contract capsule listed by `decantr task`. If a compiled `page-{name}-pack.md` is later hydrated, prefer it over broader narrative context when they differ.'
+      : 'Read `.decantr/context/page-{name}-pack.md` for the most local compiled route contract before editing a specific page. Route-local packs should win over broader narrative docs when there is any mismatch.';
   const body = renderTemplate(template, {
     GUARD_MODE: params.guardMode,
     CSS_APPROACH: params.cssApproach,
+    AUTHORITY_ORDER: authorityOrder,
+    SECTION_CONTEXT_GUIDANCE: sectionContextGuidance,
+    ROUTE_CONTEXT_GUIDANCE: routeContextGuidance,
     WORKFLOW_MODE:
       params.workflowMode === 'brownfield-attach'
         ? 'brownfield attach'
@@ -2917,6 +2945,60 @@ function updateGitignore(projectRoot: string): boolean {
   }
 }
 
+function usesPrettierCompatibleIgnore(projectRoot: string): boolean {
+  if (existsSync(join(projectRoot, '.prettierignore'))) return true;
+  const configFiles = [
+    '.oxfmtrc.json',
+    '.oxfmtrc.jsonc',
+    '.prettierrc',
+    '.prettierrc.json',
+    'prettier.config.js',
+    'prettier.config.mjs',
+    'prettier.config.cjs',
+  ];
+  if (configFiles.some((file) => existsSync(join(projectRoot, file)))) return true;
+  try {
+    const packageJson = readFileSync(join(projectRoot, 'package.json'), 'utf-8');
+    return /(?:^|["'\s])(?:oxfmt|prettier)(?:["'\s:@]|$)/i.test(packageJson);
+  } catch {
+    return false;
+  }
+}
+
+function appendFormatterIgnoreEntries(ignoreRoot: string, entries: string[]): boolean {
+  const ignorePath = join(ignoreRoot, '.prettierignore');
+  const current = existsSync(ignorePath) ? readFileSync(ignorePath, 'utf-8') : '';
+  const lines = new Set(current.split(/\r?\n/).map((line) => line.trim()));
+  const missing = entries.filter((entry) => !lines.has(entry));
+  if (missing.length === 0) return false;
+  const separator = current.length > 0 && !current.endsWith('\n') ? '\n' : '';
+  appendFileSync(
+    ignorePath,
+    `${separator}${current.length > 0 ? '\n' : ''}# Decantr generated governance artifacts\n${missing.join('\n')}\n`,
+  );
+  return true;
+}
+
+export function updateFormatterIgnore(
+  projectRoot: string,
+  workspaceRoot: string = projectRoot,
+): boolean {
+  let updated = false;
+  const roots = [...new Set([projectRoot, workspaceRoot])];
+  for (const ignoreRoot of roots) {
+    if (!usesPrettierCompatibleIgnore(ignoreRoot)) continue;
+    const projectPath = relative(ignoreRoot, projectRoot).replace(/\\/g, '/');
+    const prefix = projectPath && projectPath !== '.' ? `${projectPath}/` : '';
+    updated =
+      appendFormatterIgnoreEntries(ignoreRoot, [
+        `${prefix}.decantr/`,
+        `${prefix}DECANTR.md`,
+        `${prefix}decantr.essence.json`,
+      ]) || updated;
+  }
+  return updated;
+}
+
 /**
  * Scaffold a new Decantr project.
  *
@@ -3010,6 +3092,10 @@ export async function scaffoldProject(
 
   // Update .gitignore
   const gitignoreUpdated = updateGitignore(projectRoot);
+  const formatterIgnoreUpdated = updateFormatterIgnore(
+    projectRoot,
+    options.workspaceRoot || projectRoot,
+  );
 
   return {
     essencePath,
@@ -3018,6 +3104,7 @@ export async function scaffoldProject(
     contextFiles,
     cssFiles: refreshResult.cssFiles,
     gitignoreUpdated,
+    formatterIgnoreUpdated,
   };
 }
 
@@ -3032,6 +3119,7 @@ export function scaffoldMinimal(
     adoptionMode?: AdoptionMode;
     contentSource?: ContentSource;
     assistantBridge?: AssistantBridgeMode;
+    workspaceRoot?: string;
   } = {},
 ): ScaffoldResult {
   const decantrDir = join(projectRoot, '.decantr');
@@ -3238,6 +3326,10 @@ When available, use the eight consolidated Decantr tools:
 
   // Update .gitignore
   const gitignoreUpdated = updateGitignore(projectRoot);
+  const formatterIgnoreUpdated = updateFormatterIgnore(
+    projectRoot,
+    options.workspaceRoot || projectRoot,
+  );
 
   return {
     essencePath,
@@ -3246,6 +3338,7 @@ When available, use the eight consolidated Decantr tools:
     contextFiles: [],
     cssFiles: [],
     gitignoreUpdated,
+    formatterIgnoreUpdated,
   };
 }
 
@@ -3366,6 +3459,7 @@ async function generatePackContexts(
   projectRoot: string,
   contextDir: string,
   essence: EssenceV4,
+  adoptionMode: AdoptionMode,
 ): Promise<GeneratedPackContexts> {
   const emptyResult: GeneratedPackContexts = {
     paths: [],
@@ -3383,6 +3477,7 @@ async function generatePackContexts(
     const bundle: ExecutionPackBundle = await compileExecutionPackBundle(essence, {
       contentRoot: cacheRoot,
       overridePaths,
+      stylingMode: adoptionMode === 'decantr-css' ? 'decantr-css' : 'host',
     });
 
     const writtenArtifacts = writeExecutionPackBundleArtifacts(contextDir, bundle);
@@ -3787,19 +3882,35 @@ export async function refreshDerivedFiles(
       personality,
       sections: sectionSummaries.length > 0 ? sectionSummaries : undefined,
       features: allFeatures.length > 0 ? allFeatures : undefined,
-      decorators: earlyDecoratorList.length > 0 ? earlyDecoratorList : undefined,
-      decoratorDefinitions: themeData?.decorator_definitions as
-        | Record<
-            string,
-            { intent?: string; css?: Record<string, string>; pairs_with?: string; usage?: string[] }
-          >
-        | undefined,
+      decorators:
+        effectiveAdoptionMode === 'decantr-css' && earlyDecoratorList.length > 0
+          ? earlyDecoratorList
+          : undefined,
+      decoratorDefinitions:
+        effectiveAdoptionMode === 'decantr-css'
+          ? (themeData?.decorator_definitions as
+              | Record<
+                  string,
+                  {
+                    intent?: string;
+                    css?: Record<string, string>;
+                    pairs_with?: string;
+                    usage?: string[];
+                  }
+                >
+              | undefined)
+          : undefined,
     }),
   );
 
   const contextFiles: string[] = [];
 
-  const packContexts = await generatePackContexts(projectRoot, contextDir, essence);
+  const packContexts = await generatePackContexts(
+    projectRoot,
+    contextDir,
+    essence,
+    effectiveAdoptionMode,
+  );
 
   const scaffoldTaskPath = join(contextDir, 'task-scaffold.md');
   writeFileSync(
@@ -4444,14 +4555,10 @@ function generateQuickStart(input: SectionContextInput): string[] {
   // Reference". F2/Phase 1 found the table was being duplicated 10× across
   // context files, so 1.7.21 keeps the pointer here and lets the pack carry
   // the strong contract.
-  if (decorators.length > 0) {
+  if (usesDecantrCss && decorators.length > 0) {
     const count = decorators.length;
-    const label = usesDecantrCss ? 'Theme decorators' : 'Theme intent references';
-    const noun = usesDecantrCss
-      ? `class${count === 1 ? '' : 'es'}`
-      : `reference${count === 1 ? '' : 's'}`;
     lines.push(
-      `**${label}:** ${count} ${noun} — see \`section-${section.id}-pack.md\` for the intent and apply-to contract`,
+      `**Theme decorators:** ${count} class${count === 1 ? '' : 'es'} — see \`section-${section.id}-pack.md\` for the intent and apply-to contract`,
     );
   }
   // Personality utilities — theme-agnostic CSS classes triggered by personality
@@ -4461,7 +4568,7 @@ function generateQuickStart(input: SectionContextInput): string[] {
   const personalityUtils: string[] = [];
   if (pLower.includes('neon') || pLower.includes('glow')) personalityUtils.push('neon-glow');
   if (pLower.includes('mono') || pLower.includes('monospace')) personalityUtils.push('mono-data');
-  if (personalityUtils.length > 0) {
+  if (usesDecantrCss && personalityUtils.length > 0) {
     lines.push(`**Personality utilities:** ${personalityUtils.map((c) => `\`.${c}\``).join(', ')}`);
   }
 
@@ -4556,6 +4663,7 @@ export function generateSectionContext(input: SectionContextInput): string {
     adoptionMode,
   } = input;
   const lines: string[] = [];
+  const usesDecantrCss = adoptionMode === 'decantr-css';
 
   // Header
   lines.push(`# Section: ${section.id}`);
@@ -4594,7 +4702,7 @@ export function generateSectionContext(input: SectionContextInput): string {
     const labelTreatment = shellInfo.guidance.section_label_treatment;
     const sectionDensity = shellInfo.guidance.section_density;
 
-    if (labelTreatment) {
+    if (labelTreatment && usesDecantrCss) {
       lines.push('## Section Label Treatment');
       lines.push('');
       lines.push(`Apply \`${labelTreatment}\` to section headers in this shell.`);
@@ -4643,7 +4751,9 @@ export function generateSectionContext(input: SectionContextInput): string {
   );
   lines.push('');
   lines.push(
-    'Full palette tokens, spacing-guide table, and decorator reference live in `DECANTR.md` (project root). These values are identical across sections in this scaffold unless a DNA override above changes density.',
+    usesDecantrCss
+      ? 'Full palette tokens, spacing-guide table, and decorator reference live in `DECANTR.md` (project root). These values are identical across sections in this scaffold unless a DNA override above changes density.'
+      : 'Theme intent and density constraints live in `DECANTR.md` (project root). Translate them through the project-owned styling system unless a DNA override above changes density.',
   );
   if (sectionDensityOverride) {
     // If the section overrides density, emit JUST the spacing guide to make
@@ -4675,16 +4785,10 @@ export function generateSectionContext(input: SectionContextInput): string {
     | undefined;
   const totalDecoratorCount =
     (decoratorDefs && Object.keys(decoratorDefs).length) || decorators.length;
-  if (totalDecoratorCount > 0) {
-    if (adoptionMode !== 'decantr-css') {
-      lines.push(
-        `**Theme intent:** ${totalDecoratorCount} \`${themeName}-*\` decorator reference(s) exist, but this project is contract-only. Translate the intent into the app's current styling system instead of applying Decantr decorator classes directly.`,
-      );
-    } else {
-      lines.push(
-        `**Theme decorators:** ${totalDecoratorCount} \`${themeName}-*\` classes — full Class/Intent/Apply-to table in \`section-${section.id}-pack.md\` (preferred) and DECANTR.md "Decorator Quick Reference". MUST apply.`,
-      );
-    }
+  if (usesDecantrCss && totalDecoratorCount > 0) {
+    lines.push(
+      `**Theme decorators:** ${totalDecoratorCount} \`${themeName}-*\` classes — full Class/Intent/Apply-to table in \`section-${section.id}-pack.md\` (preferred) and DECANTR.md "Decorator Quick Reference". MUST apply.`,
+    );
     lines.push('');
   }
   if (themeHints) {

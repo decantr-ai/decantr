@@ -238,6 +238,14 @@ interface HealthBaselineComparison {
   contractDrift: string[];
 }
 
+export interface HealthBaselineGate {
+  applied: boolean;
+  baselinePath: string;
+  savedAt: string | null;
+  inheritedFindingIds: string[];
+  newFindings: Array<{ id: string; severity: VerificationSeverity }>;
+}
+
 interface PlaywrightLike {
   chromium: {
     launch(options: { headless: boolean }): Promise<{
@@ -754,7 +762,7 @@ function commandsForFinding(source: ProjectHealthFindingSource): string[] {
     case 'pack':
       return [
         'decantr refresh',
-        'decantr registry get-pack review --write-context',
+        'decantr content get-pack review --write-context',
         'decantr health',
       ];
     case 'runtime':
@@ -840,7 +848,7 @@ function commandContextForProject(projectRoot: string): ProjectCommandContext {
   return {
     projectPath,
     buildCommand: buildCommandForProject(workspaceInfo.workspaceRoot, projectPath),
-    compilePacksCommand: `decantr registry compile-packs ${essencePath} --write-context`,
+    compilePacksCommand: `decantr content compile-packs ${essencePath} --write-context`,
     verifyCommand: `decantr verify${projectFlag}`,
     ciCommand: `decantr ci${projectFlag} --fail-on error`,
     promptCommand: (id: string) => `decantr health${projectFlag} --prompt ${id}`,
@@ -851,7 +859,7 @@ function rewriteHealthCommand(command: string, context: ProjectCommandContext): 
   if (command === 'npm run build') return context.buildCommand;
 
   let rewritten = command.replace(
-    /decantr registry compile-packs decantr\.essence\.json --write-context/g,
+    /decantr (?:content|registry) compile-packs decantr\.essence\.json --write-context/g,
     context.compilePacksCommand,
   );
 
@@ -889,7 +897,7 @@ function rewriteSuggestedFixForProject(
 ): string | undefined {
   if (!suggestedFix) return suggestedFix;
   return suggestedFix.replace(
-    /decantr registry compile-packs decantr\.essence\.json --write-context/g,
+    /decantr (?:content|registry) compile-packs decantr\.essence\.json --write-context/g,
     context.compilePacksCommand,
   );
 }
@@ -2020,6 +2028,50 @@ function baselineDiffPath(projectRoot: string): string {
   return join(projectRoot, '.decantr', 'health-baseline-diff.json');
 }
 
+export function evaluateHealthBaselineGate(
+  projectRoot: string,
+  report: ProjectHealthReport,
+): HealthBaselineGate {
+  const path = baselinePath(projectRoot);
+  const baseline = readJsonFile<HealthBaseline>(path);
+  const brownfield = report.summary.workflowMode === 'brownfield-attach';
+  if (!baseline || !brownfield) {
+    return {
+      applied: false,
+      baselinePath: path,
+      savedAt: baseline?.generatedAt ?? null,
+      inheritedFindingIds: [],
+      newFindings: report.findings.map((finding) => ({
+        id: finding.id,
+        severity: finding.severity,
+      })),
+    };
+  }
+
+  const baselineIds = new Set(baseline.findings.map((finding) => finding.id));
+  return {
+    applied: true,
+    baselinePath: path,
+    savedAt: baseline.generatedAt,
+    inheritedFindingIds: report.findings
+      .filter((finding) => baselineIds.has(finding.id))
+      .map((finding) => finding.id)
+      .sort(),
+    newFindings: report.findings
+      .filter((finding) => !baselineIds.has(finding.id))
+      .map((finding) => ({ id: finding.id, severity: finding.severity })),
+  };
+}
+
+export function shouldFailHealthBaselineGate(
+  gate: HealthBaselineGate,
+  failOn: HealthFailOn,
+): boolean {
+  if (failOn === 'none') return false;
+  if (gate.newFindings.some((finding) => finding.severity === 'error')) return true;
+  return failOn === 'warn' && gate.newFindings.some((finding) => finding.severity === 'warn');
+}
+
 function screenshotHashes(projectRoot: string): Array<{ path: string; hash: string | null }> {
   const manifest = readJsonFile<VisualManifest>(
     join(projectRoot, '.decantr', 'evidence', 'visual-manifest.json'),
@@ -2807,6 +2859,7 @@ export async function cmdHealth(
     designTokensPath: options.designTokensPath,
   };
   let report = await createProjectHealthReport(projectRoot, reportOptions);
+  const baselineGate = evaluateHealthBaselineGate(projectRoot, report);
   const baselineComparison = options.sinceBaseline
     ? compareHealthBaseline(projectRoot, report)
     : null;
@@ -2900,6 +2953,11 @@ export async function cmdHealth(
     } else if (!options.ci && options.output) {
       console.log(`${GREEN}Saved Decantr health baseline:${RESET} ${path}`);
     }
+    if (!options.ci && report.summary.workflowMode === 'brownfield-attach') {
+      console.log(
+        `${DIM}Existing findings are now inherited Brownfield debt; CI gates findings introduced after this baseline.${RESET}`,
+      );
+    }
   }
 
   if (baselineComparisonPath && !options.ci && options.output) {
@@ -2908,7 +2966,10 @@ export async function cmdHealth(
     );
   }
 
-  if (options.ci && shouldFailHealth(report, failOn)) {
+  const healthFailed = baselineGate.applied
+    ? shouldFailHealthBaselineGate(baselineGate, failOn)
+    : shouldFailHealth(report, failOn);
+  if (options.ci && healthFailed) {
     if (failOn !== 'none') {
       await sendProjectHealthCiFailedTelemetry({
         ci: true,

@@ -360,10 +360,10 @@ function deriveAdoptionLane(input: {
         'Essence V4 contract',
         hasStyleBridge ? 'accepted style bridge' : 'no style bridge',
         hasLocalLaw ? 'accepted local law' : 'reviewed Hybrid choices',
-        input.packManifestPresent ? 'hosted execution packs' : 'optional hosted packs',
+        input.packManifestPresent ? 'official execution packs' : 'optional official content packs',
       ],
       nextChoice:
-        'Use task/verify for daily work and keep any hosted pattern adoption mapped into project-owned law.',
+        'Use task/verify for daily work and map any official corpus pattern into project-owned law before enforcing it.',
     };
   }
   if (input.workflowMode === 'brownfield-attach') {
@@ -408,11 +408,11 @@ function deriveAdoptionLane(input: {
           'Essence V4 contract',
           'accepted local patterns/rules',
           input.packManifestPresent
-            ? 'hosted execution packs as guidance'
-            : 'optional hosted packs',
+            ? 'official content packs as guidance'
+            : 'optional official content packs',
         ],
         nextChoice:
-          'Use task before edits and verify --local-patterns after edits; map hosted patterns into local law before enforcing them.',
+          'Use task before edits and verify --local-patterns after edits; map official corpus patterns into local law before enforcing them.',
       };
     }
     return {
@@ -629,8 +629,8 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
       severity: 'warn',
       message: 'Generated context packs are missing or incomplete.',
       nextCommand: projectPath
-        ? `decantr registry compile-packs ${projectPath}/decantr.essence.json --write-context`
-        : 'decantr registry compile-packs decantr.essence.json --write-context',
+        ? `decantr content compile-packs ${projectPath}/decantr.essence.json --write-context`
+        : 'decantr content compile-packs decantr.essence.json --write-context',
     });
   }
 
@@ -640,8 +640,8 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
       severity: 'warn',
       message: `Generated pack manifest references ${missingPackReferences.length} missing file(s).`,
       nextCommand: projectPath
-        ? `decantr registry compile-packs ${projectPath}/decantr.essence.json --write-context`
-        : 'decantr registry compile-packs decantr.essence.json --write-context',
+        ? `decantr content compile-packs ${projectPath}/decantr.essence.json --write-context`
+        : 'decantr content compile-packs decantr.essence.json --write-context',
     });
   }
 
@@ -671,7 +671,7 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
       severity: 'warn',
       message:
         'One or more attached workspace projects have missing or incomplete generated context packs.',
-      nextCommand: 'decantr registry compile-packs <app-path>/decantr.essence.json --write-context',
+      nextCommand: 'decantr content compile-packs <app-path>/decantr.essence.json --write-context',
     });
   }
 
@@ -695,8 +695,8 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
         'This app declares style-bridge adoption, but .decantr/style-bridge.json is missing.',
       nextCommand: styleBridgeProposalPresent
         ? projectPath
-          ? `decantr codify --accept --project ${projectPath}`
-          : 'decantr codify --accept'
+          ? `decantr codify --accept --confirm-reviewed --accept-style-bridge --project ${projectPath}`
+          : 'decantr codify --accept --confirm-reviewed --accept-style-bridge'
         : projectPath
           ? `decantr codify --style-bridge --project ${projectPath}`
           : 'decantr codify --style-bridge',
@@ -776,13 +776,16 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
     );
     if (workflowMode === 'brownfield-attach' && !localPatternsPresent) {
       appendUnique(recommendedNextCommands, `decantr codify --from-audit${projectFlag}`);
-      appendUnique(recommendedNextCommands, `decantr codify --accept${projectFlag}`);
+      appendUnique(
+        recommendedNextCommands,
+        `decantr codify --accept --confirm-reviewed${projectFlag}`,
+      );
     }
     if (adoptionMode === 'style-bridge' && !styleBridgePresent) {
       appendUnique(
         recommendedNextCommands,
         styleBridgeProposalPresent
-          ? `decantr codify --accept${projectFlag}`
+          ? `decantr codify --accept --confirm-reviewed --accept-style-bridge${projectFlag}`
           : `decantr codify --style-bridge${projectFlag}`,
       );
     }

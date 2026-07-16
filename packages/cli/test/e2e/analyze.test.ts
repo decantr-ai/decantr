@@ -99,7 +99,7 @@ describe('analyze command', () => {
       shell?: string;
       theme?: string;
       existing?: boolean;
-      registryOptional?: boolean;
+      contentOptional?: boolean;
       adoptionMode?: string;
     };
     const intelligence = JSON.parse(readFileSync(intelligencePath, 'utf-8')) as {
@@ -128,7 +128,7 @@ describe('analyze command', () => {
     expect(seed.target).toBe('react');
     expect(seed.shell).toBe('sidebar-main');
     expect(seed.existing).toBe(true);
-    expect(seed.registryOptional).toBe(true);
+    expect(seed.contentOptional).toBe(true);
     expect(intelligence.workflow).toBe('brownfield-attach');
     expect(intelligence.styling?.themeInventoryPath).toBe('.decantr/theme-inventory.json');
     expect(intelligence.evidence?.screenshotsLocalOnly).toBe(true);
@@ -252,6 +252,28 @@ describe('analyze command', () => {
     expect(analysis.styling?.cssVariables?.length ?? 0).toBeGreaterThan(0);
     expect(analysis.layout?.shellPattern).toContain('sidebar-main');
     expect(analysis.dependencies?.ui).toContain('react-router-dom');
+  });
+
+  it('recommends proposal merge when the project already has an essence', () => {
+    writeFileSync(
+      join(testDir, 'package.json'),
+      JSON.stringify({ name: 'attached-app', dependencies: { react: '^19.0.0' } }, null, 2),
+    );
+    writeFileSync(join(testDir, 'decantr.essence.json'), '{}\n');
+
+    const output = execSync(`node ${cliPath} analyze`, {
+      cwd: testDir,
+      env: { ...process.env, DECANTR_OFFLINE: 'true' },
+      stdio: 'pipe',
+    }).toString();
+    const analysis = JSON.parse(
+      readFileSync(join(testDir, '.decantr', 'analysis.json'), 'utf-8'),
+    ) as { decantr?: { attach?: { recommendedCommand?: string } } };
+
+    expect(output).toContain('decantr init --existing --merge-proposal');
+    expect(analysis.decantr?.attach?.recommendedCommand).toBe(
+      'decantr init --existing --merge-proposal',
+    );
   });
 
   it('inventories mature Next.js brownfield doctrine without importing Decantr defaults', () => {

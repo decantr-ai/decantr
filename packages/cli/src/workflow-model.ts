@@ -25,7 +25,7 @@ export interface WorkflowPolicy {
   assistantBridge: AssistantBridgeMode;
   projectScope: ProjectScope;
   hasAnalysisArtifacts: boolean;
-  registryRequired: boolean;
+  contentRequired: boolean;
 }
 
 export interface WorkflowInitDefaults {
@@ -47,7 +47,7 @@ export interface BrownfieldInitSeed extends WorkflowInitDefaults {
   version: 1;
   workflow: 'brownfield-adoption';
   contractOnly: true;
-  registryOptional: true;
+  contentOptional: true;
   notes: string[];
 }
 
@@ -101,7 +101,7 @@ export function resolveWorkflowPolicy(input: {
   const requestedWorkflow = normalizeWorkflowFlag(input.requestedWorkflow);
   const requestedAdoption = normalizeAdoptionMode(input.requestedAdoption);
   const requestedAssistantBridge = normalizeAssistantBridge(input.requestedAssistantBridge);
-  const hasRegistryContent = Boolean(
+  const hasOfficialContent = Boolean(
     input.requestedBlueprint || input.requestedArchetype || input.requestedTheme,
   );
   const hasAnalysisArtifacts = Boolean(input.workflowSeed);
@@ -113,21 +113,21 @@ export function resolveWorkflowPolicy(input: {
   } else if (requestedWorkflow === 'brownfield' || input.explicitExisting || input.workflowSeed) {
     workflowMode = 'brownfield-attach';
   } else if (requestedWorkflow === 'greenfield') {
-    workflowMode = hasRegistryContent ? 'greenfield-scaffold' : 'greenfield-contract-only';
+    workflowMode = hasOfficialContent ? 'greenfield-scaffold' : 'greenfield-contract-only';
   } else if (input.command === 'new') {
-    workflowMode = hasRegistryContent ? 'greenfield-scaffold' : 'greenfield-contract-only';
-  } else if (existingFootprint && hasRegistryContent) {
+    workflowMode = hasOfficialContent ? 'greenfield-scaffold' : 'greenfield-contract-only';
+  } else if (existingFootprint && hasOfficialContent) {
     workflowMode = 'hybrid-compose';
-  } else if (existingFootprint && !hasRegistryContent) {
+  } else if (existingFootprint && !hasOfficialContent) {
     workflowMode = 'brownfield-attach';
   } else {
-    workflowMode = hasRegistryContent ? 'greenfield-scaffold' : 'greenfield-contract-only';
+    workflowMode = hasOfficialContent ? 'greenfield-scaffold' : 'greenfield-contract-only';
   }
 
   const adoptionMode: AdoptionMode =
     requestedAdoption ?? input.workflowSeed?.adoptionMode ?? 'contract-only';
 
-  const contentSource: ContentSource = hasRegistryContent
+  const contentSource: ContentSource = hasOfficialContent
     ? input.offline
       ? 'cache'
       : 'official'
@@ -147,7 +147,7 @@ export function resolveWorkflowPolicy(input: {
     assistantBridge,
     projectScope: input.projectScope ?? 'single-app',
     hasAnalysisArtifacts,
-    registryRequired: hasRegistryContent,
+    contentRequired: hasOfficialContent,
   };
 }
 
@@ -172,7 +172,7 @@ export function createBrownfieldInitSeed(
     version: 1,
     workflow: 'brownfield-adoption',
     contractOnly: true,
-    registryOptional: true,
+    contentOptional: true,
     workflowMode: 'brownfield-attach',
     adoptionMode: 'contract-only',
     contentSource: 'none',
@@ -188,7 +188,7 @@ export function createBrownfieldInitSeed(
     notes: [
       'Use decantr init --existing to attach Decantr contract and context files to this project.',
       'Official corpus content is optional during brownfield adoption.',
-      'Use decantr add/remove, decantr theme switch, and registry commands later for hybrid composition.',
+      'Use decantr add/remove, decantr theme switch, and content commands later for hybrid composition.',
     ],
   };
 }

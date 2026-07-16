@@ -1,5 +1,5 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { basename, extname, join, relative, sep } from 'node:path';
+import { basename, dirname, extname, join, relative, resolve, sep } from 'node:path';
 
 export type AmbientContextRole =
   | 'assistant-specific'
@@ -99,6 +99,18 @@ const CONTEXT_DIRECTORIES = new Set([
   'supabase',
 ]);
 
+const INHERITED_AUTHORITY_FILES = [
+  'AGENTS.md',
+  'CLAUDE.md',
+  'GEMINI.md',
+  'copilot-instructions.md',
+  '.github/copilot-instructions.md',
+  '.cursorrules',
+  '.windsurfrules',
+];
+
+const INHERITED_AUTHORITY_DIRECTORIES = ['.agents', '.claude/rules', '.codex', '.cursor/rules'];
+
 function shouldSkipDir(name: string): boolean {
   return SKIP_DIRS.has(name);
 }
@@ -138,6 +150,7 @@ function classifyContext(
   const normalized = normalizedPath(relPath);
   const lower = normalized.toLowerCase();
   const name = basename(normalized);
+  const lowerName = name.toLowerCase();
 
   if (lower === 'decantr.essence.json') {
     return {
@@ -179,16 +192,20 @@ function classifyContext(
     lower === '.claude' ||
     lower === '.codex' ||
     lower === '.cursor' ||
-    lower === 'claude.md' ||
-    lower === 'agents.md' ||
-    lower === 'gemini.md' ||
-    lower === 'copilot-instructions.md' ||
+    lowerName === 'claude.md' ||
+    lowerName === 'agents.md' ||
+    lowerName === 'gemini.md' ||
+    lowerName === 'copilot-instructions.md' ||
     lower === '.cursorrules' ||
     lower === '.windsurfrules' ||
     lower.startsWith('.claude/') ||
     lower.startsWith('.agents/') ||
     lower.startsWith('.codex/') ||
-    lower.startsWith('.cursor/rules/')
+    lower.startsWith('.cursor/rules/') ||
+    lower.includes('/.claude/') ||
+    lower.includes('/.agents/') ||
+    lower.includes('/.codex/') ||
+    lower.includes('/.cursor/rules/')
   ) {
     return {
       role: 'assistant-specific',
@@ -355,6 +372,45 @@ function walk(projectRoot: string, dir: string, items: AmbientContextItem[], dep
   }
 }
 
+function collectInheritedAuthority(
+  projectRoot: string,
+  workspaceRoot: string,
+  items: AmbientContextItem[],
+): void {
+  const appRoot = resolve(projectRoot);
+  const stop = resolve(workspaceRoot);
+  if (appRoot === stop || !appRoot.startsWith(`${stop}${sep}`)) return;
+
+  let current = dirname(appRoot);
+  while (true) {
+    for (const path of INHERITED_AUTHORITY_FILES) {
+      const absolute = join(current, path);
+      if (!existsSync(absolute)) continue;
+      const stats = statSync(absolute);
+      if (!stats.isFile()) continue;
+      const relPath = normalizedPath(relative(appRoot, absolute));
+      const classified = classifyContext(relPath);
+      items.push({
+        path: relPath,
+        type: 'file',
+        role: classified.role,
+        confidence: classified.confidence,
+        sizeBytes: stats.size,
+        safeToCite: isSafeToCite(relPath),
+        reason: `${classified.reason}; inherited from workspace scope`,
+      });
+    }
+    for (const path of INHERITED_AUTHORITY_DIRECTORIES) {
+      const absolute = join(current, path);
+      if (existsSync(absolute)) walk(appRoot, absolute, items, 0);
+    }
+    if (current === stop) break;
+    const parent = dirname(current);
+    if (parent === current) break;
+    current = parent;
+  }
+}
+
 function summarize(items: AmbientContextItem[]): Record<AmbientContextRole, number> {
   const summary: Record<AmbientContextRole, number> = {
     'assistant-specific': 0,
@@ -468,9 +524,13 @@ function detectStaleRisks(projectRoot: string, items: AmbientContextItem[]): str
   return [...pathRisks, ...detectDecantrEssenceStaleRisk(projectRoot, items)];
 }
 
-export function scanAmbientContext(projectRoot: string): AmbientContextInventory {
+export function scanAmbientContext(
+  projectRoot: string,
+  workspaceRoot: string = projectRoot,
+): AmbientContextInventory {
   const items: AmbientContextItem[] = [];
   walk(projectRoot, projectRoot, items, 0);
+  collectInheritedAuthority(projectRoot, workspaceRoot, items);
 
   const deduped = [...new Map(items.map((item) => [item.path, item])).values()].sort((a, b) =>
     a.path.localeCompare(b.path),

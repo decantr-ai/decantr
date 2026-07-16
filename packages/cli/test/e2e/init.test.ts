@@ -90,7 +90,9 @@ describe('init command', () => {
       expect(content).toContain('Before editing any route, run `decantr task <route> "<intent>"`');
       expect(content).toContain('Authority order for this project:');
       expect(content).toContain('decantr task <route> "<intent>"');
-      expect(content).toContain('decantr verify --brownfield');
+      expect(content).toContain('decantr verify                        # Run the workflow-aware');
+      expect(content).toContain('`decantr_context` -- Load scaffold/page/task context');
+      expect(content).not.toContain('decantr_check_drift');
       expect(content).toContain('decantr ci init');
       expect(content).not.toContain('decantr health init-ci');
     },
@@ -131,9 +133,12 @@ describe('init command', () => {
         'After implementation, run `decantr check`',
       );
       expect(output).toContain('INTERACTIONS ARE CONTRACT, NOT GUIDANCE');
-      expect(output).toContain('TREATMENT SURFACE — USE WHAT EXISTS');
+      expect(output).toContain('PROJECT STYLING AUTHORITY — REUSE WHAT EXISTS');
       expect(output).toContain('HARD RULES (NON-NEGOTIABLE)');
       expect(output).toContain('Do not render Decantr guard prose');
+      expect(output).not.toContain('d-step-chip');
+      expect(output).not.toContain('Required Theme Decorators');
+      expect(output).not.toContain('Use lucide-react for ALL iconography');
 
       expect(content).toContain('This project is using Decantr in **greenfield scaffold** mode.');
       expect(content).toContain(
@@ -160,6 +165,72 @@ describe('init command', () => {
       });
 
       expect(existsSync(join(testDir, '.decantr'))).toBe(true);
+    },
+    INIT_TIMEOUT_MS,
+  );
+
+  it(
+    'keeps an explicit greenfield lane greenfield inside an existing TanStack runtime',
+    () => {
+      writeFileSync(
+        join(testDir, 'package.json'),
+        JSON.stringify(
+          {
+            name: 'greenfield-host',
+            private: true,
+            dependencies: {
+              '@tanstack/react-router': '^1.132.0',
+              react: '^19.0.0',
+            },
+            devDependencies: { '@biomejs/biome': '^2.4.0' },
+          },
+          null,
+          2,
+        ) + '\n',
+      );
+      mkdirSync(join(testDir, 'src', 'routes'), { recursive: true });
+      writeFileSync(
+        join(testDir, 'src', 'routes', 'index.tsx'),
+        "import { createFileRoute } from '@tanstack/react-router';\nexport const Route = createFileRoute('/')({ component: () => <main>Home</main> });\n",
+      );
+
+      const output = execSync(
+        `node ${cliPath} init --workflow=greenfield --adoption=contract-only --assistant-bridge=preview --offline --yes`,
+        {
+          cwd: testDir,
+          env: { ...process.env, DECANTR_OFFLINE: 'true' },
+          stdio: 'pipe',
+        },
+      ).toString();
+      const essence = JSON.parse(readFileSync(join(testDir, 'decantr.essence.json'), 'utf-8')) as {
+        dna: { personality: string[] };
+        blueprint: { sections: Array<{ shell?: string }> };
+      };
+      const decantr = readFileSync(join(testDir, 'DECANTR.md'), 'utf-8');
+      const task = JSON.parse(
+        execSync(`node ${cliPath} task / "build the home route" --json`, {
+          cwd: testDir,
+          env: { ...process.env, DECANTR_OFFLINE: 'true' },
+          stdio: 'pipe',
+        }).toString(),
+      ) as {
+        read: string[];
+        authority: { activeAuthorities: string[] };
+        loop: { state: string };
+        verifyCommand: string;
+      };
+
+      expect(essence.dna.personality).toEqual(['professional']);
+      expect(essence.blueprint.sections[0]?.shell).toBe('sidebar-main');
+      expect(output).not.toContain('Fix the validation issue reported above');
+      expect(output).not.toContain('atoms, treatments');
+      expect(decantr).not.toContain('observed brownfield product');
+      expect(decantr).not.toContain('In Brownfield and Hybrid workflows');
+      expect(existsSync(join(testDir, '.decantr', 'graph', 'graph.snapshot.json'))).toBe(true);
+      expect(task.read[0]).toBe('src/routes/index.tsx');
+      expect(task.authority.activeAuthorities[0]).toBe('Essence V4 contract');
+      expect(task.loop.state).toBe('ready_to_edit');
+      expect(task.verifyCommand).toBe('decantr verify');
     },
     INIT_TIMEOUT_MS,
   );

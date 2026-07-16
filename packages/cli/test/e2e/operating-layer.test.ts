@@ -297,7 +297,7 @@ describe('operating layer commands', () => {
 
     expect(output).toContain('Hybrid local law');
     expect(output).toContain('accepted local patterns/rules');
-    expect(output).toContain('map hosted patterns into local law');
+    expect(output).toContain('map official corpus patterns into local law');
   });
 
   it('codifies a Hybrid style bridge and surfaces it in doctor, task, suggest, and CI', () => {
@@ -326,9 +326,31 @@ describe('operating layer commands', () => {
       '--from-audit',
       '--style-bridge',
     ]);
-    const acceptOutput = runCli(testDir, ['codify', '--project', 'apps/web', '--accept']);
+    expect(() => runCli(testDir, ['codify', '--project', 'apps/web', '--accept'])).toThrow();
+    const localAcceptOutput = runCli(testDir, [
+      'codify',
+      '--project',
+      'apps/web',
+      '--accept',
+      '--confirm-reviewed',
+    ]);
+    const projectAfterLocalAccept = JSON.parse(
+      readFileSync(join(testDir, 'apps', 'web', '.decantr', 'project.json'), 'utf-8'),
+    ) as { initialized?: { adoptionMode?: string } };
+    expect(projectAfterLocalAccept.initialized?.adoptionMode).toBe('contract-only');
+    expect(localAcceptOutput).toContain('Style bridge remains a proposal');
+    expect(existsSync(join(testDir, 'apps', 'web', '.decantr', 'style-bridge.json'))).toBe(false);
+    const acceptOutput = runCli(testDir, [
+      'codify',
+      '--project',
+      'apps/web',
+      '--accept',
+      '--confirm-reviewed',
+      '--accept-style-bridge',
+    ]);
     const doctor = runCli(testDir, ['doctor', '--project', 'apps/web']);
     const setup = runCli(join(testDir, 'apps', 'web'), ['setup']);
+    runCli(testDir, ['graph', '--project', 'apps/web']);
     const task = JSON.parse(
       runCli(testDir, [
         'task',
@@ -494,9 +516,7 @@ describe('operating layer commands', () => {
 
     expect(output).toContain('Manifest references: 1 missing');
     expect(output).toContain('Generated pack manifest references 1 missing file');
-    expect(output).toContain(
-      'registry compile-packs apps/web/decantr.essence.json --write-context',
-    );
+    expect(output).toContain('content compile-packs apps/web/decantr.essence.json --write-context');
   });
 
   it('does not make hosted pack hydration the doctor next step for contract-only apps', () => {
@@ -511,7 +531,7 @@ describe('operating layer commands', () => {
 
     expect(output).not.toContain('Generated context packs are missing or incomplete');
     expect(output).not.toContain(
-      'registry compile-packs apps/web/decantr.essence.json --write-context',
+      'content compile-packs apps/web/decantr.essence.json --write-context',
     );
     expect(output).toContain('decantr codify --from-audit --project apps/web');
   });
@@ -526,11 +546,10 @@ describe('operating layer commands', () => {
 
     const output = runCli(testDir, ['verify', '--project', 'apps/web']);
 
-    expect(output).toContain(
-      'registry compile-packs apps/web/decantr.essence.json --write-context',
-    );
+    expect(output).toContain('content compile-packs apps/web/decantr.essence.json --write-context');
     expect(output).toContain('decantr ci --project apps/web --fail-on error');
     expect(output).not.toContain('registry compile-packs decantr.essence.json --write-context');
+    expect(output).not.toContain('content compile-packs decantr.essence.json --write-context');
   });
 
   it('generates root GitHub CI with the pinned package-manager command', () => {
@@ -654,6 +673,7 @@ describe('operating layer commands', () => {
     expect(essence.blueprint.routes['/settings']).toEqual({ section: 'app', page: 'settings' });
     expect(existsSync(join(testDir, 'decantr.essence.json'))).toBe(false);
 
+    runCli(testDir, ['graph', '--project', 'apps/web']);
     const task = JSON.parse(
       runCli(testDir, [
         'task',
@@ -917,9 +937,14 @@ describe('operating layer commands', () => {
       'utf-8',
     );
 
-    const task = JSON.parse(
-      runCli(testDir, ['task', '/', 'tighten the home surface', '--project', 'apps/web', '--json']),
-    );
+    let taskOutput = '';
+    try {
+      runCli(testDir, ['task', '/', 'tighten the home surface', '--project', 'apps/web', '--json']);
+      throw new Error('Expected stale task context to exit nonzero.');
+    } catch (error) {
+      taskOutput = (error as { stdout?: Buffer }).stdout?.toString() ?? '';
+    }
+    const task = JSON.parse(taskOutput);
 
     expect(task.graph.capsule.cacheKey).toContain('decantr-contract:fnv1a32:');
     expect(task.graph.capsule.contractHash).toMatch(/^fnv1a32:/);
@@ -934,6 +959,8 @@ describe('operating layer commands', () => {
     expect(task.graph.changedFileContext.resolvedNodeIds).toContain('src:src/app/page.tsx');
     expect(task.graph.changedFileContext.impact.ids.routes).toContain('rt:/');
     expect(task.read).toContain('apps/web/.decantr/graph/contract-capsule.json');
+    expect(task.loop.state).toBe('blocked_missing_graph');
+    expect(task.loop.blockingReasons).toContain('Route graph context is missing or stale.');
   });
 
   it('rejects unsupported flags on codify before writing proposals', () => {
@@ -953,7 +980,14 @@ describe('operating layer commands', () => {
 
   it('keeps codify follow-up commands scoped to the selected project', () => {
     const proposalOutput = runCli(testDir, ['codify', '--project', 'apps/web', '--from-audit']);
-    const acceptOutput = runCli(testDir, ['codify', '--project', 'apps/web', '--accept']);
+    const acceptOutput = runCli(testDir, [
+      'codify',
+      '--project',
+      'apps/web',
+      '--accept',
+      '--confirm-reviewed',
+    ]);
+    runCli(testDir, ['graph', '--project', 'apps/web']);
     const task = JSON.parse(
       runCli(testDir, [
         'task',
@@ -968,7 +1002,9 @@ describe('operating layer commands', () => {
       localLaw: { patternsPath: string | null; rulesPath: string | null };
     };
 
-    expect(proposalOutput).toContain('decantr codify --accept --project apps/web');
+    expect(proposalOutput).toContain(
+      'decantr codify --accept --confirm-reviewed --project apps/web',
+    );
     expect(proposalOutput).toContain('Hybrid authority guidance');
     expect(acceptOutput).toContain('Hybrid local law is now active');
     expect(acceptOutput).toContain(
