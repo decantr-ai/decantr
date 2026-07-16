@@ -1021,6 +1021,15 @@ function scanStaticHtmlRouteSignals(projectRoot: string): DiscoveryRouteSignal[]
   return signals;
 }
 
+function routeSignalRank(signal: DiscoveryRouteSignal): number {
+  return (
+    (signal.confidence === 'high' ? 20 : signal.confidence === 'medium' ? 10 : 0) +
+    (signal.kind === 'pathname-branch' ? 0 : 20) +
+    (signal.evidence.includes('index declaration') ? 5 : 0) -
+    (signal.evidence === 'TanStack root route' ? 5 : 0)
+  );
+}
+
 function discoverRoutes(projectRoot: string, identity: DiscoveryProjectIdentity): DiscoveryRoutes {
   const fileRouteSignals: DiscoveryRouteSignal[] = [];
   const nextAppSignals = ['src/app', 'app'].flatMap((dir) =>
@@ -1104,24 +1113,13 @@ function discoverRoutes(projectRoot: string, identity: DiscoveryProjectIdentity)
   for (const signal of selectedSignals) {
     if (!signal.taskable) continue;
     const existing = taskable.get(signal.path);
-    const signalRank =
-      (signal.confidence === 'high' ? 20 : signal.confidence === 'medium' ? 10 : 0) +
-      (signal.kind === 'pathname-branch' ? 0 : 20) +
-      (signal.evidence.includes('index declaration') ? 5 : 0);
+    const signalRank = routeSignalRank(signal);
     const existingSignal = existing
       ? selectedSignals.find(
           (candidate) => candidate.path === existing.path && candidate.file === existing.file,
         )
       : null;
-    const existingRank = existingSignal
-      ? (existingSignal.confidence === 'high'
-          ? 20
-          : existingSignal.confidence === 'medium'
-            ? 10
-            : 0) +
-        (existingSignal.kind === 'pathname-branch' ? 0 : 20) +
-        (existingSignal.evidence.includes('index declaration') ? 5 : 0)
-      : -1;
+    const existingRank = existingSignal ? routeSignalRank(existingSignal) : -1;
     if (existing && signalRank <= existingRank) continue;
     taskable.set(signal.path, {
       path: signal.path,

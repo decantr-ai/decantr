@@ -1,21 +1,22 @@
 # Decantr Docs
 
-The Decantr 3 public docs now treat the reference pages, guides, schemas, release notes, and release runbooks as the current source of truth. Historical program docs remain useful background, but the active user-facing model is Decantr 3.8.2: Contract, Context, Evidence, Authority Resolution, typed graph impact, Studio Control Room, Brownfield control loop, ranked monorepo project targeting, and the official `@decantr/content` corpus.
+The Decantr 3 public docs now treat the reference pages, guides, schemas, release notes, and release runbooks as the current source of truth. The active shipped model is Decantr 3.8.2: Contract, Context, Evidence, Authority Resolution, typed graph impact, Studio Control Room, Brownfield control loop, ranked monorepo project targeting, and the official `@decantr/content` corpus.
 
 The current operating contract also includes shared source-accurate route discovery, current-graph task activation, compact-by-default MCP task payloads, reviewed codify acceptance, baseline-aware Brownfield CI, workflow-specific assistant bridges, host-formatter boundaries for generated artifacts, and contract-only styling by default. Active reference pages describe these behaviors; older release/program documents are historical snapshots.
 
-The Decantr 3.0 AI Frontend Governance reset is captured in `programs/2026-05-21-ai-frontend-governance-reset-plan.md`. Treat it as historical strategy unless a current reference page or release note re-promotes a decision.
+The active successor program is `programs/2026-07-16-decantr-3-9-adoption-proof-program.md`. It defines work for 3.9 and does not describe shipped 3.8 behavior. The Decantr 3.0 reset in `programs/2026-05-21-ai-frontend-governance-reset-plan.md` and other older program files remain historical strategy unless a current reference page or release note re-promotes a decision.
 
 For quick setup help, showcase feedback, and live community discussion, join the [Decantr Discord](https://discord.gg/WeDpBd4xFU). GitHub issues, pull requests, and these docs remain the canonical home for bugs, feature requests, and durable decisions.
 
 ## Active Docs
 
 - `programs/`
-  - Historical product strategy, program structure, and planning checkpoints.
+  - Active successor program plus historical product strategy, program structure, and planning checkpoints.
+  - Current program: `programs/2026-07-16-decantr-3-9-adoption-proof-program.md`.
   - Important background: `programs/2026-05-21-ai-frontend-governance-reset-plan.md` and `programs/2026-05-15-hybrid-fortification-plan.md`.
 - `audit/`
   - Baseline audits, keep/cut decisions, package surface review, and platform contract findings.
-  - Latest external adoption report: `audit/2026-07-10-external-adoption-hardening.md`.
+  - Latest external adoption report: `audit/2026-07-16-decantr-3-8-2-post-publish-adoption.md`.
 - `specs/`
   - Active implementation specs for the reset program.
 - `architecture/decisions/`
@@ -47,6 +48,8 @@ For quick setup help, showcase feedback, and live community discussion, join the
   - Operational rollout and verification procedures for hosted surfaces.
   - Includes package release strategy and hosted rollout runbooks.
   - Current release closeout source of truth: `runbooks/release-stewardship.md`.
+  - Current adoption proof: `runbooks/post-publish-adoption-proof.md`.
+  - Decantr 3.8 patch boundary: `runbooks/decantr-3-8-maintenance.md`.
   - Registry portal deployment runbooks are historical after the 3.8 de-registry migration; current hosted work is the Fly content API.
 
 Historical phase specs retained for architecture context:

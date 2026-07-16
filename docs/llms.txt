@@ -8,6 +8,8 @@ Decantr 3.8.2 is content-first and governance-first. The official corpus lives i
 
 `@decantr/css` is a legacy optional adapter. Greenfield and Brownfield defaults are contract-only unless `--adoption=decantr-css` is explicit.
 
+Decantr 3.8 is patch-only: shipped-contract defects, security corrections, host compatibility, documentation drift, and release-operational repairs. The active unreleased 3.9 program focuses on measured adoption truth, source-precise task context, PR-ready governance deltas, content provenance, and reproducible packed/public npm trials. Do not treat the 3.9 program as shipped behavior.
+
 ## Docs
 
 - [Homepage](https://decantr.ai/): Product overview for AI Frontend Governance.
@@ -24,6 +26,10 @@ Decantr 3.8.2 is content-first and governance-first. The official corpus lives i
 - [Content API reference](https://decantr.ai/reference/registry-public-api.html): Historical filename; current content/search/schema/intelligence/showcase/pack API surface.
 - [Security and permissions](https://decantr.ai/reference/security-permissions.md): Installed package permissions, telemetry defaults, MCP boundaries, and upload posture.
 - [Package support matrix](https://decantr.ai/reference/package-support-matrix.md): Stable, legacy, internal, and experimental package status.
+- [3.8 maintenance policy](https://decantr.ai/runbooks/decantr-3-8-maintenance.md): Allowed patch work, prohibited expansion, and patch gates.
+- [Post-publish adoption proof](https://decantr.ai/runbooks/post-publish-adoption-proof.md): Public npm, pinned Brownfield, current Greenfield, host-build, and source-integrity release gates.
+- [3.8.2 post-publish adoption audit](https://decantr.ai/audit/2026-07-16-decantr-3-8-2-post-publish-adoption.md): Measured external trial, limitations, and TanStack root-route defect.
+- [3.9 adoption-proof program](https://decantr.ai/programs/2026-07-16-decantr-3-9-adoption-proof-program.md): Active successor program and quantitative release gates; not shipped 3.8 behavior.
 
 ## Operational Notes
 

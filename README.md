@@ -136,9 +136,12 @@ pnpm audit:package-permissions
 pnpm audit:content-package
 pnpm showcase:verify:shortlist
 pnpm benchmark:realworld-corpus -- --config scripts/realworld-corpus.first-mile.json --cli packages/cli/dist/index.js --out /tmp/decantr-realworld-corpus-3.8
+pnpm benchmark:post-publish-adoption -- --cli-package @decantr/cli@3.8.2 --out /tmp/decantr-post-publish-3.8.2
 pnpm release:verify
 pnpm release:closeout
 ```
+
+Decantr 3.8 is in patch-only maintenance under [docs/runbooks/decantr-3-8-maintenance.md](docs/runbooks/decantr-3-8-maintenance.md). The active 3.9 work is the measured adoption-proof program in [docs/programs/2026-07-16-decantr-3-9-adoption-proof-program.md](docs/programs/2026-07-16-decantr-3-9-adoption-proof-program.md); it is a development plan, not shipped behavior.
 
 ### Release stewardship
 
