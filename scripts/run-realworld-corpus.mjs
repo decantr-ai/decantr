@@ -143,6 +143,7 @@ Config shape:
       {
         "id": "dub",
         "repo": "https://github.com/dubinc/dub.git",
+        "ref": "0123456789abcdef0123456789abcdef01234567",
         "projectPath": "apps/web",
         "route": "/dashboard",
         "runtimeProof": false,
@@ -164,6 +165,7 @@ function readCandidates(configPath) {
   return parsed.candidates.map((candidate) => ({
     id: safeId(candidate.id ?? basename(String(candidate.repo ?? 'repo'), '.git')),
     repo: String(candidate.repo ?? ''),
+    ref: typeof candidate.ref === 'string' ? candidate.ref : null,
     projectPath: typeof candidate.projectPath === 'string' ? candidate.projectPath : null,
     route: typeof candidate.route === 'string' ? candidate.route : null,
     runtimeProof: Boolean(candidate.runtimeProof),
@@ -275,6 +277,32 @@ function cloneRepo(candidate, repoDir, options) {
   }
   rmSync(repoDir, { recursive: true, force: true });
   mkdirSync(dirname(repoDir), { recursive: true });
+  if (candidate.ref) {
+    const steps = [
+      ['init', repoDir],
+      ['-C', repoDir, 'remote', 'add', 'origin', candidate.repo],
+      ['-C', repoDir, 'fetch', '--depth', '1', 'origin', candidate.ref],
+      ['-C', repoDir, 'checkout', '--detach', 'FETCH_HEAD'],
+    ];
+    const results = [];
+    for (const args of steps) {
+      const result = runProcess('git', args, dirname(repoDir), options.cloneTimeoutMs);
+      results.push(result);
+      if (result.status !== 0) break;
+    }
+    const failed = results.find((result) => result.status !== 0);
+    return {
+      ok: !failed,
+      reused: false,
+      status: failed?.status ?? 0,
+      signal: failed?.signal ?? null,
+      timedOut: results.some((result) => result.timedOut),
+      durationMs: results.reduce((sum, result) => sum + result.durationMs, 0),
+      stdout: results.map((result) => result.stdout).filter(Boolean).join('\n'),
+      stderr: results.map((result) => result.stderr).filter(Boolean).join('\n'),
+      error: failed?.error ?? '',
+    };
+  }
   const result = runProcess(
     'git',
     ['clone', '--depth', '1', '--single-branch', candidate.repo, repoDir],
@@ -471,6 +499,14 @@ function runProject(candidate, options, roots) {
     writeFileSync(join(projectLogDir, 'clone.stderr.txt'), clone.stderr || clone.error, 'utf-8');
     return project;
   }
+
+  const head = runProcess(
+    'git',
+    ['-C', repoDir, 'rev-parse', 'HEAD'],
+    dirname(repoDir),
+    options.cloneTimeoutMs,
+  );
+  project.resolvedCommit = head.status === 0 ? head.stdout.trim() : null;
 
   if (candidate.projectPath && !existsSync(join(repoDir, candidate.projectPath))) {
     const command = syntheticFailureCommand(
@@ -747,13 +783,13 @@ function renderMarkdown(report) {
     '',
     '## Projects',
     '',
-    '| Project | Project Path | Kind | Route Count | Selected Route | Unexpected Failures | Verify | Findings | Crash Signatures |',
-    '| --- | --- | --- | ---: | --- | --- | --- | ---: | --- |',
+    '| Project | Ref | Project Path | Kind | Route Count | Selected Route | Unexpected Failures | Verify | Findings | Crash Signatures |',
+    '| --- | --- | --- | --- | ---: | --- | --- | --- | ---: | --- |',
   );
 
   for (const project of report.projects) {
     lines.push(
-      `| ${project.id} | ${project.projectPath ? `\`${project.projectPath}\`` : 'root'} | ${project.kind} | ${project.scanRouteCount} | \`${project.selectedRoute ?? 'n/a'}\` | ${project.unexpectedFailures.join(', ') || 'none'} | ${project.verify?.status ?? 'n/a'} / ${project.verify?.score ?? 'n/a'} | ${project.verify?.findingCount ?? 0} | ${project.crashSignatures.join(', ') || 'none'} |`,
+      `| ${project.id} | \`${project.ref ?? 'default branch'}\` | ${project.projectPath ? `\`${project.projectPath}\`` : 'root'} | ${project.kind} | ${project.scanRouteCount} | \`${project.selectedRoute ?? 'n/a'}\` | ${project.unexpectedFailures.join(', ') || 'none'} | ${project.verify?.status ?? 'n/a'} / ${project.verify?.score ?? 'n/a'} | ${project.verify?.findingCount ?? 0} | ${project.crashSignatures.join(', ') || 'none'} |`,
     );
   }
 
@@ -761,6 +797,8 @@ function renderMarkdown(report) {
   for (const project of report.projects) {
     lines.push(`### ${project.id}`, '');
     lines.push(`- Repo: ${project.repo}`);
+    lines.push(`- Requested ref: ${project.ref ?? 'default branch'}`);
+    lines.push(`- Resolved commit: ${project.resolvedCommit ?? 'unavailable'}`);
     lines.push(`- Project path: ${project.projectPath ?? 'root'}`);
     lines.push(`- Expected setup burden: ${project.expected}`);
     lines.push(`- Notes: ${project.notes || 'n/a'}`);

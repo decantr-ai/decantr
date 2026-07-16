@@ -508,6 +508,15 @@ describe('scanProject', () => {
       "import react from '@vitejs/plugin-react'; export default { plugins: [react()] };\n",
     );
     writeFileSync(
+      join(projectRoot, 'apps', 'react-console', 'src', 'routes', '__root.tsx'),
+      [
+        "import { createRootRoute } from '@tanstack/react-router';",
+        'export const Route = createRootRoute({ component: RootLayout });',
+        'function RootLayout() { return <main />; }',
+        '',
+      ].join('\n'),
+    );
+    writeFileSync(
       join(projectRoot, 'apps', 'react-console', 'src', 'routes', 'index.tsx'),
       [
         "import { createFileRoute } from '@tanstack/react-router';",
@@ -582,6 +591,9 @@ describe('scanProject', () => {
     expect(report.routes.taskableRouteCount).toBeGreaterThanOrEqual(2);
     expect(report.routes.items.map((route) => route.path)).toEqual(
       expect.arrayContaining(['/', '/reports']),
+    );
+    expect(report.routes.items.find((route) => route.path === '/')?.file).toBe(
+      'src/routes/index.tsx',
     );
     expect(report.routes.items.map((route) => route.path)).not.toContain('/angular-only');
     expect(report.routes.items.map((route) => route.path)).not.toContain(

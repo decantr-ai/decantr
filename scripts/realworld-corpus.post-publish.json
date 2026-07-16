@@ -1,0 +1,25 @@
+{
+  "candidates": [
+    {
+      "id": "tanstack-start-dashboard",
+      "repo": "https://github.com/Kiranism/tanstack-start-dashboard.git",
+      "ref": "433a5a073c944d25dcd59922b4de7193bde3c03e",
+      "route": "/dashboard/overview",
+      "runtimeProof": false,
+      "kind": "tanstack-start-react-dashboard",
+      "expected": "medium",
+      "notes": "Current TanStack Start, React 19, file-based routing, Tailwind, shadcn/ui, and Oxfmt Brownfield target."
+    },
+    {
+      "id": "bulletproof-react-vite",
+      "repo": "https://github.com/alan2207/bulletproof-react.git",
+      "ref": "9506629ed003a561c6627735480cce4994244bb4",
+      "projectPath": "apps/react-vite",
+      "route": "/app/discussions",
+      "runtimeProof": false,
+      "kind": "react-vite-monorepo-app",
+      "expected": "medium",
+      "notes": "React/Vite/Yarn workspace target with nested React Router routes, ESLint, and inherited repository assistant rules."
+    }
+  ]
+}

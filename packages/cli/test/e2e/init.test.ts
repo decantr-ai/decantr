@@ -190,6 +190,10 @@ describe('init command', () => {
       );
       mkdirSync(join(testDir, 'src', 'routes'), { recursive: true });
       writeFileSync(
+        join(testDir, 'src', 'routes', '__root.tsx'),
+        "import { createRootRoute } from '@tanstack/react-router';\nexport const Route = createRootRoute({ component: () => <main>Root</main> });\n",
+      );
+      writeFileSync(
         join(testDir, 'src', 'routes', 'index.tsx'),
         "import { createFileRoute } from '@tanstack/react-router';\nexport const Route = createFileRoute('/')({ component: () => <main>Home</main> });\n",
       );

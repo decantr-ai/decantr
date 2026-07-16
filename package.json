@@ -53,7 +53,7 @@
     "audit:blueprint-governance": "node scripts/audit-blueprint-governance.mjs",
     "audit:content-package": "pnpm --filter @decantr/content validate && pnpm --filter @decantr/content test",
     "audit:blueprint-matrix": "pnpm --filter @decantr/essence-spec --filter @decantr/content --filter @decantr/registry --filter @decantr/core --filter @decantr/cli build && node scripts/audit-blueprint-matrix.mjs",
-    "audit:content-contract": "node scripts/audit-content-contract-quality.mjs",
+    "audit:content-contract": "node scripts/audit-content-contract-quality.mjs --all",
     "showcase:build": "node scripts/build-showcases.mjs",
     "showcase:build:shortlist": "SHOWCASE_GOLDEN_ONLY=1 node scripts/build-showcases.mjs",
     "showcase:validate": "node scripts/validate-showcase-manifest.mjs",
@@ -64,6 +64,7 @@
     "showcase": "pnpm run showcase:build && pnpm run showcase:validate && pnpm run showcase:verify:shortlist",
     "benchmark:proof-field": "node scripts/run-proof-field-report.mjs",
     "benchmark:realworld-corpus": "node scripts/run-realworld-corpus.mjs",
+    "benchmark:post-publish-adoption": "node scripts/run-realworld-corpus.mjs --config scripts/realworld-corpus.post-publish.json",
     "npm-surface:normalize": "node scripts/normalize-npm-dist-tags.mjs --write"
   },
   "devDependencies": {

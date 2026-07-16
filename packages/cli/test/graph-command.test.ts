@@ -953,6 +953,10 @@ describe('graph command artifacts', () => {
   it('uses shared route discovery as graph provenance without brownfield analysis', () => {
     mkdirSync(join(testDir, 'src', 'routes'), { recursive: true });
     writeFileSync(
+      join(testDir, 'src', 'routes', '__root.tsx'),
+      "import { createRootRoute } from '@tanstack/react-router';\nexport const Route = createRootRoute({ component: () => <main>Root</main> });\n",
+    );
+    writeFileSync(
       join(testDir, 'src', 'routes', 'index.tsx'),
       "import { createFileRoute } from '@tanstack/react-router';\nexport const Route = createFileRoute('/')({ component: () => <main>Home</main> });\n",
     );
@@ -976,6 +980,16 @@ describe('graph command artifacts', () => {
         expect.objectContaining({
           src: 'rt:/',
           dst: 'src:src/routes/index.tsx',
+          relation: 'NODE_DERIVED_FROM_SOURCE',
+          payload: expect.objectContaining({ role: 'route-implementation' }),
+        }),
+      ]),
+    );
+    expect(artifacts?.snapshot.edges).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          src: 'rt:/',
+          dst: 'src:src/routes/__root.tsx',
           relation: 'NODE_DERIVED_FROM_SOURCE',
           payload: expect.objectContaining({ role: 'route-implementation' }),
         }),
