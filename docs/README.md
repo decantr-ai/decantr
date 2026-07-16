@@ -16,7 +16,8 @@ For quick setup help, showcase feedback, and live community discussion, join the
   - Important background: `programs/2026-05-21-ai-frontend-governance-reset-plan.md` and `programs/2026-05-15-hybrid-fortification-plan.md`.
 - `audit/`
   - Baseline audits, keep/cut decisions, package surface review, and platform contract findings.
-  - Latest external adoption report: `audit/2026-07-16-decantr-3-8-2-post-publish-adoption.md`.
+  - Latest external adoption report: `audit/2026-07-16-decantr-3-8-3-post-publish-adoption.md`.
+  - Defect-discovery predecessor: `audit/2026-07-16-decantr-3-8-2-post-publish-adoption.md`.
 - `specs/`
   - Active implementation specs for the reset program.
 - `architecture/decisions/`

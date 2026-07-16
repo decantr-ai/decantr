@@ -30,6 +30,7 @@ Decantr 3.8 is patch-only: shipped-contract defects, security corrections, host 
 - [Post-publish adoption proof](https://decantr.ai/runbooks/post-publish-adoption-proof.md): Public npm, pinned Brownfield, current Greenfield, host-build, and source-integrity release gates.
 - [3.8.2 post-publish adoption audit](https://decantr.ai/audit/2026-07-16-decantr-3-8-2-post-publish-adoption.md): Measured external trial, limitations, and TanStack root-route defect.
 - [3.8.3 release note](https://decantr.ai/releases/2026-07-16-decantr-3-8-3-route-source-precision.md): Narrow delivery-wave correction for TanStack page-source precedence.
+- [3.8.3 post-publish adoption audit](https://decantr.ai/audit/2026-07-16-decantr-3-8-3-post-publish-adoption.md): Public npm install, pinned Brownfield host gates, current TanStack Greenfield proof, source ownership, and limitations.
 - [3.9 adoption-proof program](https://decantr.ai/programs/2026-07-16-decantr-3-9-adoption-proof-program.md): Active successor program and quantitative release gates; not shipped 3.8 behavior.
 
 ## Operational Notes
