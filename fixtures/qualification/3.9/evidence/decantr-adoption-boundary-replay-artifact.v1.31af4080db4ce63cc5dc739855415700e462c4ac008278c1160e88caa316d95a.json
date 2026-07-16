@@ -1,17 +1,10 @@
 {
   "schemaVersion": "decantr-adoption-boundary-replay-artifact.v1",
-  "generatedAt": "2026-07-16T20:28:48.086Z",
+  "generatedAt": "2026-07-16T20:46:01.896Z",
   "command": [
     "/opt/homebrew/Cellar/node/25.8.2/bin/node",
     "scripts/run-3-9-machine-qualification.mjs",
-    "--runs",
-    "30",
-    "--work-dir",
-    "/tmp/decantr-3.9-machine-smoke",
-    "--reuse-targets",
-    "--skip-build",
-    "--write-packet",
-    "--keep"
+    "--write-packet"
   ],
   "exitCode": 0,
   "environment": {
@@ -19,7 +12,7 @@
     "cpu": "arm64 Apple M5",
     "nodeVersion": "v25.8.2",
     "packageManagerVersion": "10.33.0",
-    "exactSourceRef": "compatibility-manifest.json@sha256:ac0b051f0298024185803d4077ce6da29ce2f9a9b77cf4c3a38f4fa8ef815b24;targets:a9b369e87fe3bd224bc109fc2aa3d756ef63be2995d505750567e5a4757fd26f;harness-sha256:7892617398ca0a6984b541d0d1030b77e24b1fc6ebc37b5c031ed31faf612f83;package-set-sha256:d0e93b51d2a9f4315ff863c4cdd5183a1e8d9cfb7a98007b3f753979e722ea67",
+    "exactSourceRef": "compatibility-manifest.json@sha256:2c2470b80b2fa732e8bc96f6a62f1b9d94b38d8d73021ad388e2e8eff57131b5;targets:a9b369e87fe3bd224bc109fc2aa3d756ef63be2995d505750567e5a4757fd26f;harness-sha256:7892617398ca0a6984b541d0d1030b77e24b1fc6ebc37b5c031ed31faf612f83;package-set-sha256:6b00a02ff60678a848f6beb5ef21678bbdd99db17933642f5a8c1a6c27068874",
     "exactPackageVersions": {
       "@decantr/content": "3.9.0",
       "@decantr/registry": "3.9.0",
@@ -47,7 +40,7 @@
       },
       "@decantr/mcp-server": {
         "file": "decantr-mcp-server-3.9.0.tgz",
-        "sha256": "57a78ee59cefb96c6e0265a0b068ed1af81b4f733f1df3b34745a8fc243d7731"
+        "sha256": "3abe0fd255a85703d8d5bde57f675969404cf23aac6f71407aed341e4993b772"
       },
       "@decantr/cli": {
         "file": "decantr-cli-3.9.0.tgz",
@@ -60,7 +53,7 @@
       "targetId": "tanstack-start-dashboard",
       "exhaustive": true,
       "beforeTreeSha256": "5aba8ae42a72caed3ec7a7d56019b6afd91a020094d12f690a44634ed3219ce5",
-      "afterTreeSha256": "c432a66620d5f6b30a384e8f6274a68450b149f58b3620b89cdb633dc5961fda",
+      "afterTreeSha256": "4c7c6e041b190497d380ca652887f3a95827e68289fc1df4f1f9691d17f7a006",
       "changedPaths": [
         {
           "path": ".decantr/README.md",
@@ -72,21 +65,21 @@
         {
           "path": ".decantr/ambient-context.json",
           "beforeSha256": null,
-          "afterSha256": "7508aecd1c135a5c4b6084f1a3a75ffced0f4827690a242e4e1c95038a0eb4ca",
+          "afterSha256": "ed3e7ca5d83d4ff7f2d4754591c0456a26471ef7f95c59718736aa42781f711c",
           "classification": "generated-governance-artifact",
           "owner": "decantr"
         },
         {
           "path": ".decantr/analysis.json",
           "beforeSha256": null,
-          "afterSha256": "9c5051c64561527db3cf3a14bcc112ae27de58234d829dd6adc338da3efed938",
+          "afterSha256": "35363f1e5cc7f274664f2025b304af4d0221beb7aff3b7095aa884b567136d14",
           "classification": "generated-governance-artifact",
           "owner": "decantr"
         },
         {
           "path": ".decantr/brownfield-intelligence.json",
           "beforeSha256": null,
-          "afterSha256": "2cfa342075295cc14cccaefbcfffb66596c64f9ff543d149512d17b6713e32e9",
+          "afterSha256": "227cf562ba97f99b9bdb7ca91d4fab8b21a05dddb6d642625fe6abfce8432829",
           "classification": "generated-governance-artifact",
           "owner": "decantr"
         },
@@ -142,7 +135,7 @@
         {
           "path": ".decantr/doctrine-map.json",
           "beforeSha256": null,
-          "afterSha256": "912515faba99562e0129511be72265f1b4edb47eb0bb90544cc4d03d580ff91a",
+          "afterSha256": "51ed7f6b1dec12621af7bafc6ca02f60bf25e68755a0925a76eaa121d3163241",
           "classification": "generated-governance-artifact",
           "owner": "decantr"
         },
@@ -156,7 +149,7 @@
         {
           "path": ".decantr/graph/contract-capsule.json",
           "beforeSha256": null,
-          "afterSha256": "67e34b6218384779ae9f223e05c623dc124e925eeb69b4defccae808ddf37526",
+          "afterSha256": "5f9ca591e5047a362701f9ef3ab1e7c57c8835d45a45e0db5141511485dc7d6c",
           "classification": "generated-governance-artifact",
           "owner": "decantr"
         },
@@ -170,28 +163,28 @@
         {
           "path": ".decantr/graph/graph.manifest.json",
           "beforeSha256": null,
-          "afterSha256": "8eb36867ba84de86df2d54d670f6fa215bdb18a01b96a86fdcb35e1add3c1a02",
+          "afterSha256": "b6527e50098569eca98ca5cfd2c1cb5dadea3ec02eb6a7496787f8bf27ff8567",
           "classification": "generated-governance-artifact",
           "owner": "decantr"
         },
         {
           "path": ".decantr/graph/graph.snapshot.json",
           "beforeSha256": null,
-          "afterSha256": "35f6a5c562205bd1c1973527c4978153ac5cedd857bd6d08564e2cbc996cd771",
+          "afterSha256": "390b6cf6b31fc949ba46009c0b0851a55864f3347490b0607122c1f312999869",
           "classification": "generated-governance-artifact",
           "owner": "decantr"
         },
         {
           "path": ".decantr/graph/snapshots/graph-674f19ce6e4d.json",
           "beforeSha256": null,
-          "afterSha256": "35f6a5c562205bd1c1973527c4978153ac5cedd857bd6d08564e2cbc996cd771",
+          "afterSha256": "390b6cf6b31fc949ba46009c0b0851a55864f3347490b0607122c1f312999869",
           "classification": "generated-governance-artifact",
           "owner": "decantr"
         },
         {
           "path": ".decantr/health-baseline.json",
           "beforeSha256": null,
-          "afterSha256": "2460b8fb743e80089a4cfecdf911b26ad4484dc0d92f22579a5063861acc6c84",
+          "afterSha256": "c4abe4382ee8176915c18d521647d5c748afeb3d27ba12c7134ea4a4952f92d1",
           "classification": "generated-governance-artifact",
           "owner": "decantr"
         },
@@ -205,21 +198,21 @@
         {
           "path": ".decantr/observed-essence.proposal.json",
           "beforeSha256": null,
-          "afterSha256": "7020cd23047d01e2e816b458d446860a1e96a82606d57e884b54dd4151c16350",
+          "afterSha256": "b8306f24537d8466813742d83e66e24290914924ee8e17b0506aea56010f1e76",
           "classification": "generated-governance-artifact",
           "owner": "decantr"
         },
         {
           "path": ".decantr/project.json",
           "beforeSha256": null,
-          "afterSha256": "80235e4b5f8869b2ae4bcf608a8aa9f5e4dfc17c60d437039c30162ec66794cb",
+          "afterSha256": "77077e0557fc845dd3f19abb01d832ce8f399c7c5b40ab0496dc86c5e9b1dfc4",
           "classification": "generated-governance-artifact",
           "owner": "decantr"
         },
         {
           "path": ".decantr/theme-inventory.json",
           "beforeSha256": null,
-          "afterSha256": "b681098069cbb3bb5d4329517e19b2c01062875e786b6f1af4b8dbf3a48ab1e5",
+          "afterSha256": "bd6884da74a3359904651fa1f3d63f0b6a7c502c5e015de848c417b369bd938e",
           "classification": "generated-governance-artifact",
           "owner": "decantr"
         },
@@ -253,7 +246,7 @@
       "targetId": "bulletproof-react-vite",
       "exhaustive": true,
       "beforeTreeSha256": "1fe916ee3761af5f549dad7d261dbf566597af6f529447bae3dbc7895acb2f56",
-      "afterTreeSha256": "3f2d9062f80c48202642ca895e8aec176f66f181331d1f1487b39ff491f01e73",
+      "afterTreeSha256": "88e31faba24b80028e6d31ac7093ac448f9cb254f0750dbd944c37a8cea55883",
       "changedPaths": [
         {
           "path": ".decantr/README.md",
@@ -265,21 +258,21 @@
         {
           "path": ".decantr/ambient-context.json",
           "beforeSha256": null,
-          "afterSha256": "08856077f481882e5e31ad356ffeb1864b00f284c3f3cb0852514dd1e305665e",
+          "afterSha256": "edb2a8553cc5345dc2bc428ab52afe6837f4c9dba8f859fd427b18c28666a5ab",
           "classification": "generated-governance-artifact",
           "owner": "decantr"
         },
         {
           "path": ".decantr/analysis.json",
           "beforeSha256": null,
-          "afterSha256": "d116a63bd1a4f9ad5b2de94590fd88755782c0ec71942597eeafd8684be1c88b",
+          "afterSha256": "d10cef9f2e033cf709e04c926a7c651c688205bfefe6aeafc79d0bb913c5e7ba",
           "classification": "generated-governance-artifact",
           "owner": "decantr"
         },
         {
           "path": ".decantr/brownfield-intelligence.json",
           "beforeSha256": null,
-          "afterSha256": "fcb8e5440765471b1c3d18a67fd069c5e1095eaa9fda8c4260d8bba3e1104e67",
+          "afterSha256": "5c7a84694a7b2c5264e34d5b7f99f16005db5c3bfee9bf2c77a868313f76fda0",
           "classification": "generated-governance-artifact",
           "owner": "decantr"
         },
@@ -342,7 +335,7 @@
         {
           "path": ".decantr/doctrine-map.json",
           "beforeSha256": null,
-          "afterSha256": "8f35e832b03390c10e1b73b691d0bf9d1eb84334b5f52e8543eb9458a794b7e5",
+          "afterSha256": "f43a173c2082a13a11291ddd54ca9f2a1259a9dadaf842d8b146bdca8f4d5119",
           "classification": "generated-governance-artifact",
           "owner": "decantr"
         },
@@ -356,7 +349,7 @@
         {
           "path": ".decantr/graph/contract-capsule.json",
           "beforeSha256": null,
-          "afterSha256": "cbddaac6726c725db0fda209133629f130626a1c0885f4a97f90a614d066674b",
+          "afterSha256": "ec2d61fc2793842c18f8f297f315c610dec1976bf3ba35d062e2c7ce9e16a9fc",
           "classification": "generated-governance-artifact",
           "owner": "decantr"
         },
@@ -370,28 +363,28 @@
         {
           "path": ".decantr/graph/graph.manifest.json",
           "beforeSha256": null,
-          "afterSha256": "9dd2f1317dd5467705ec92142294c61656103d62da0b45efe0edd88b5b8bee23",
+          "afterSha256": "79f58902085329a3323dc23dc07d697e89acdfc52e8bf0905ced540844752f9c",
           "classification": "generated-governance-artifact",
           "owner": "decantr"
         },
         {
           "path": ".decantr/graph/graph.snapshot.json",
           "beforeSha256": null,
-          "afterSha256": "e6c9ec3af74db7eabbc7cf0df4ca7619d52fce88ea81505b9c99a9f6065e3035",
+          "afterSha256": "45e95e723cf751e73acdb60e04150f0a8eb7f5d1eaffc6d77aa3d777ffa919d8",
           "classification": "generated-governance-artifact",
           "owner": "decantr"
         },
         {
           "path": ".decantr/graph/snapshots/graph-e2c47439f9fb.json",
           "beforeSha256": null,
-          "afterSha256": "e6c9ec3af74db7eabbc7cf0df4ca7619d52fce88ea81505b9c99a9f6065e3035",
+          "afterSha256": "45e95e723cf751e73acdb60e04150f0a8eb7f5d1eaffc6d77aa3d777ffa919d8",
           "classification": "generated-governance-artifact",
           "owner": "decantr"
         },
         {
           "path": ".decantr/health-baseline.json",
           "beforeSha256": null,
-          "afterSha256": "0c90537a48f7499e7771bbf55e39331b9d4d74ec551faac2a98e846fb99ca438",
+          "afterSha256": "35bc92aeb098ff385aa5b2b860b9f31d3567cd0d318432bce71f0676b10be5d4",
           "classification": "generated-governance-artifact",
           "owner": "decantr"
         },
@@ -405,21 +398,21 @@
         {
           "path": ".decantr/observed-essence.proposal.json",
           "beforeSha256": null,
-          "afterSha256": "80b19578cea22f82e4e4a8aa4c1746a20f8681abd11f86a96412e1de871e0adf",
+          "afterSha256": "d116bfa9a007cef3761982bc15f3e9ef0bd8ebd26d5a8fd1d96bbec33de45efa",
           "classification": "generated-governance-artifact",
           "owner": "decantr"
         },
         {
           "path": ".decantr/project.json",
           "beforeSha256": null,
-          "afterSha256": "c360e6163e6153478e65fddf8c7801b30d171ee4de834bdb9d37894c5de75eb1",
+          "afterSha256": "2c3497d3c156d8c6ce5ac6dc2bf4014f8dcf2fd0557d5f105f8fd7c86aece133",
           "classification": "generated-governance-artifact",
           "owner": "decantr"
         },
         {
           "path": ".decantr/theme-inventory.json",
           "beforeSha256": null,
-          "afterSha256": "486658778640a91aba34a58f0c8b35def2ec5fab5398f4fd7ee31030fefc4937",
+          "afterSha256": "2a65afe2b687ae200fa33aa49f705ce880bbd6c00f0f03c521ee82e3e82ee955",
           "classification": "generated-governance-artifact",
           "owner": "decantr"
         },
@@ -453,7 +446,7 @@
       "targetId": "tanstack-start-greenfield",
       "exhaustive": true,
       "beforeTreeSha256": "5507b6497c2dd3e0298ddc9b291a135d620b5799a30659eb5935e6c6ea513784",
-      "afterTreeSha256": "0e7e4df3bed7a281e928377d4ac3ff5d3e0a838be7c51a03a295cc8d722ef0ed",
+      "afterTreeSha256": "085e71149e20341ea85cc841eedd47df15e8500f795a38f4c20aa8a2f7be97bd",
       "changedPaths": [
         {
           "path": ".cursor/rules/decantr.mdc",
@@ -500,7 +493,7 @@
         {
           "path": ".decantr/graph/contract-capsule.json",
           "beforeSha256": null,
-          "afterSha256": "33a0260529ba54b1002e119a651a0202ec132d74d5ad1d5686665b1ccab98a60",
+          "afterSha256": "98f5172e024365cfaf7300a32517c0c7f845f6fef0db67dc20dd7eee8230f4c0",
           "classification": "generated-governance-artifact",
           "owner": "decantr"
         },
@@ -514,35 +507,35 @@
         {
           "path": ".decantr/graph/graph.manifest.json",
           "beforeSha256": null,
-          "afterSha256": "a2a47e8b61be860a788e040c05689e0d27be4695b666c7cedd18b041a1a7bd0b",
+          "afterSha256": "f342cacfd64e7d72ebe39aef6a0dbc88da8aab9c05ded210b44f012ab3f7e688",
           "classification": "generated-governance-artifact",
           "owner": "decantr"
         },
         {
           "path": ".decantr/graph/graph.snapshot.json",
           "beforeSha256": null,
-          "afterSha256": "73d0240a79090e94e70c66372fe22edb23543429b56b8eae05149aab8f7a5ec2",
+          "afterSha256": "089703725b854a8559ae23d59e881fd02b06bb05ea5fbc544a9d3c581ba41f7b",
           "classification": "generated-governance-artifact",
           "owner": "decantr"
         },
         {
           "path": ".decantr/graph/snapshots/graph-37d84a0cff9f.json",
           "beforeSha256": null,
-          "afterSha256": "73d0240a79090e94e70c66372fe22edb23543429b56b8eae05149aab8f7a5ec2",
+          "afterSha256": "089703725b854a8559ae23d59e881fd02b06bb05ea5fbc544a9d3c581ba41f7b",
           "classification": "generated-governance-artifact",
           "owner": "decantr"
         },
         {
           "path": ".decantr/health-baseline.json",
           "beforeSha256": null,
-          "afterSha256": "5d83de3ecc97356d111a6023cf57941a8786b1059cbdadc4beb57425f4e0c28b",
+          "afterSha256": "2afa6bbf74458c3cbbf157c4bde7cdb9d52e969b3fd96317a963475ced3df29c",
           "classification": "generated-governance-artifact",
           "owner": "decantr"
         },
         {
           "path": ".decantr/project.json",
           "beforeSha256": null,
-          "afterSha256": "241d2dd691e9521cbea1d52b161cafec6006af055e1616584677e0fa6676df3f",
+          "afterSha256": "e95f8236589290dca97d386d520c2cf18f95e0d3aa3ebb88012184a11adf76bd",
           "classification": "generated-governance-artifact",
           "owner": "decantr"
         },
@@ -575,8 +568,8 @@
   ],
   "behaviorBinding": {
     "schemaVersion": "decantr-behavior-evidence-binding.v1",
-    "packageSetSha256": "d0e93b51d2a9f4315ff863c4cdd5183a1e8d9cfb7a98007b3f753979e722ea67",
-    "behaviorSha256": "0c2e5fd4039c899314cb49c23943689c4b25e57103f9c7bec11a9b7603b0a432",
-    "boundEvidenceSha256": "8f144df2003d5f8cc952b7de7c0b4c2c3b520741c9dc34fcd8614267544bb6ab"
+    "packageSetSha256": "6b00a02ff60678a848f6beb5ef21678bbdd99db17933642f5a8c1a6c27068874",
+    "behaviorSha256": "108eb7921afba4cc0a3af35c68c4c56601865944938d83fc7f8a7cb313b60d8d",
+    "boundEvidenceSha256": "91573ed540318968ae751166248da71ff6b24cea2f32ab8660a37fcaf24bf2a1"
   }
 }
