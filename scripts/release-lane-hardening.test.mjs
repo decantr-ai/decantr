@@ -310,11 +310,20 @@ process.exit(64);
   writeFileSync(
     fakeNpm,
     `#!/usr/bin/env node
-import { existsSync, readFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { basename, join } from 'node:path';
 const args = process.argv.slice(2);
 const metadata = process.env.DECANTR_TEST_NPM_METADATA && existsSync(process.env.DECANTR_TEST_NPM_METADATA)
   ? JSON.parse(readFileSync(process.env.DECANTR_TEST_NPM_METADATA, 'utf8'))
   : null;
+if (args[0] === 'pack') {
+  const destination = args[args.indexOf('--pack-destination') + 1];
+  mkdirSync(destination, { recursive: true });
+  const target = join(destination, basename(process.env.DECANTR_TEST_TARBALL));
+  copyFileSync(process.env.DECANTR_TEST_TARBALL, target);
+  console.log(JSON.stringify([{ filename: target }]));
+  process.exit(0);
+}
 if (args[0] === 'view' && args[2] === 'versions') {
   console.log(JSON.stringify(metadata ? [metadata.version] : []));
   process.exit(0);
