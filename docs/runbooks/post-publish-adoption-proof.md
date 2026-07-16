@@ -16,9 +16,9 @@ Use this runbook after an npm release and before describing that release as adop
 From the Decantr monorepo:
 
 ```bash
-OUT=/tmp/decantr-post-publish-3.8.2
+OUT=/tmp/decantr-post-publish-3.8.3
 pnpm benchmark:post-publish-adoption -- \
-  --cli-package @decantr/cli@3.8.2 \
+  --cli-package @decantr/cli@3.8.3 \
   --out "$OUT/brownfield"
 ```
 
@@ -35,7 +35,7 @@ The gate passes only when both projects have taskable routes, no unexpected comm
 Generate a current TanStack Start control with an exact generator version:
 
 ```bash
-OUT=/tmp/decantr-post-publish-3.8.2
+OUT=/tmp/decantr-post-publish-3.8.3
 npx --yes @tanstack/cli@0.69.6 create greenfield-tanstack \
   --framework React \
   --package-manager npm \
@@ -51,7 +51,7 @@ npm install \
   --no-package-lock \
   --no-audit \
   --no-fund \
-  @decantr/cli@3.8.2
+  @decantr/cli@3.8.3
 ```
 
 Run the installed binary without adding it to the generated application's dependencies:

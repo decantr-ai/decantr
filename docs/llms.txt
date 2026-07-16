@@ -4,7 +4,7 @@
 
 ## Current Product Model
 
-Decantr 3.8.2 is content-first and governance-first. The official corpus lives in `@decantr/content` inside the monorepo and feeds schemas, search, resolution, content health, and execution-pack compilation. The public `registry.decantr.ai` marketplace/portal is retired. `@decantr/registry`, `decantr registry ...`, and MCP `decantr_registry` remain Decantr 3.x compatibility names for content-corpus and pack-resolution workflows.
+Decantr 3.8.3 is content-first and governance-first. The official corpus lives in `@decantr/content` inside the monorepo and feeds schemas, search, resolution, content health, and execution-pack compilation. The public `registry.decantr.ai` marketplace/portal is retired. `@decantr/registry`, `decantr registry ...`, and MCP `decantr_registry` remain Decantr 3.x compatibility names for content-corpus and pack-resolution workflows.
 
 `@decantr/css` is a legacy optional adapter. Greenfield and Brownfield defaults are contract-only unless `--adoption=decantr-css` is explicit.
 
@@ -29,6 +29,7 @@ Decantr 3.8 is patch-only: shipped-contract defects, security corrections, host 
 - [3.8 maintenance policy](https://decantr.ai/runbooks/decantr-3-8-maintenance.md): Allowed patch work, prohibited expansion, and patch gates.
 - [Post-publish adoption proof](https://decantr.ai/runbooks/post-publish-adoption-proof.md): Public npm, pinned Brownfield, current Greenfield, host-build, and source-integrity release gates.
 - [3.8.2 post-publish adoption audit](https://decantr.ai/audit/2026-07-16-decantr-3-8-2-post-publish-adoption.md): Measured external trial, limitations, and TanStack root-route defect.
+- [3.8.3 release note](https://decantr.ai/releases/2026-07-16-decantr-3-8-3-route-source-precision.md): Narrow delivery-wave correction for TanStack page-source precedence.
 - [3.9 adoption-proof program](https://decantr.ai/programs/2026-07-16-decantr-3-9-adoption-proof-program.md): Active successor program and quantitative release gates; not shipped 3.8 behavior.
 
 ## Operational Notes

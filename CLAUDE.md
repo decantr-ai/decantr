@@ -6,7 +6,7 @@ Do not add Co-Authored-By lines to commits.
 
 Decantr is AI Frontend Governance. It is a contract, context, content-corpus, and evidence layer that AI coding assistants use to keep frontend changes coherent in production codebases. Decantr does not generate code -- the AI does.
 
-Current product model: Decantr 3.8.2 is content-first AI Frontend Governance, documented in `docs/llms.txt` and the active `docs/reference/` pages. Decantr 3.8 is patch-only under `docs/runbooks/decantr-3-8-maintenance.md`. The active successor program is `docs/programs/2026-07-16-decantr-3-9-adoption-proof-program.md`; it defines unreleased adoption-proof work, while older program files remain historical strategy unless a current reference or release note explicitly re-promotes them. A forward-looking successor architecture is tracked in `docs/audit/decantr-meta-alignment.md` (`decantr-meta` project, separate from this monorepo).
+Current product model: Decantr 3.8.3 is content-first AI Frontend Governance, documented in `docs/llms.txt` and the active `docs/reference/` pages. Decantr 3.8 is patch-only under `docs/runbooks/decantr-3-8-maintenance.md`. The active successor program is `docs/programs/2026-07-16-decantr-3-9-adoption-proof-program.md`; it defines unreleased adoption-proof work, while older program files remain historical strategy unless a current reference or release note explicitly re-promotes them. A forward-looking successor architecture is tracked in `docs/audit/decantr-meta-alignment.md` (`decantr-meta` project, separate from this monorepo).
 
 ## Packages
 
