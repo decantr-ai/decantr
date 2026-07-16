@@ -1,13 +1,13 @@
 {
   "schemaVersion": "decantr-route-replay-artifact.v1",
-  "generatedAt": "2026-07-16T20:41:25.000Z",
+  "generatedAt": "2026-07-16T21:32:47.000Z",
   "command": [
     "node",
     "scripts/run-3-9-route-qualification.mjs",
     "--source-mode",
     "pinned-public-repositories",
     "--generated-at",
-    "2026-07-16T20:41:25.000Z"
+    "2026-07-16T21:32:47.000Z"
   ],
   "exitCode": 0,
   "environment": {
@@ -15,7 +15,7 @@
     "cpu": "arm64",
     "nodeVersion": "v25.8.2",
     "packageManagerVersion": "10.33.0",
-    "exactSourceRef": "git:859ccf9ac36aeb0778b0063278dd455b53762128;verifier-dist-sha256:e5bb005c1eec661788d7c85e7cfec10a70c82575e885106eb929b3f9c5fa98f8;harness-sha256:dc899b317afbde9e42937c2b692b9bb9561f638f07b4fb449c02ef19e28dc33f;package-set-sha256:6b00a02ff60678a848f6beb5ef21678bbdd99db17933642f5a8c1a6c27068874",
+    "exactSourceRef": "git:d8a8b5cc427d514ceda43c637c893e2e42596ba9;verifier-dist-sha256:e5bb005c1eec661788d7c85e7cfec10a70c82575e885106eb929b3f9c5fa98f8;harness-sha256:dc899b317afbde9e42937c2b692b9bb9561f638f07b4fb449c02ef19e28dc33f;package-set-sha256:f8e36b1c107689bfe37342b9c4db8a24afb34a9190b9f4dc33e4e5c22e1ab5ba",
     "exactPackageVersions": {
       "@decantr/content": "3.9.0",
       "@decantr/registry": "3.9.0",
@@ -27,7 +27,7 @@
     "exactPackageTarballs": {
       "@decantr/content": {
         "file": "decantr-content-3.9.0.tgz",
-        "sha256": "26bb465b18dddafd2f928f50c98599349f6d580a1a6dbc4d8dfa7b71631b0cc3"
+        "sha256": "27b58b6f40eb4a724e3a7ebd6226a8e0c595c0417c786232d5ed5199796933d0"
       },
       "@decantr/registry": {
         "file": "decantr-registry-3.9.0.tgz",
@@ -39,7 +39,7 @@
       },
       "@decantr/verifier": {
         "file": "decantr-verifier-3.9.0.tgz",
-        "sha256": "1958fe568116c19d552305cd886698193b172ece04f1b14eb4085e2bfac117c4"
+        "sha256": "84f682e9b8dff43c8da222f556a9dd9a7572f0f4ea9db614128b8fe5cef60b6b"
       },
       "@decantr/mcp-server": {
         "file": "decantr-mcp-server-3.9.0.tgz",
@@ -3174,8 +3174,8 @@
   },
   "behaviorBinding": {
     "schemaVersion": "decantr-behavior-evidence-binding.v1",
-    "packageSetSha256": "6b00a02ff60678a848f6beb5ef21678bbdd99db17933642f5a8c1a6c27068874",
+    "packageSetSha256": "f8e36b1c107689bfe37342b9c4db8a24afb34a9190b9f4dc33e4e5c22e1ab5ba",
     "behaviorSha256": "c03f54f9929658c3fad7f341f75c99244113750e405ce5b5d5274084f2063eca",
-    "boundEvidenceSha256": "932ad2a25fbe2a680f4ad02d1823c0f6017873259408a3dfd7f48947f79c532b"
+    "boundEvidenceSha256": "832550088f9adbbe6c22669765260b469bf9ba720e3f23ea152a358e6752a97f"
   }
 }
