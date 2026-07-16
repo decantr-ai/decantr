@@ -52,7 +52,7 @@
       "id": "audit",
       "path": "scripts/audit-3-9-qualification-baseline.mjs",
       "kind": "file-sha256",
-      "sha256": "21245f3803090fb39afcafee9ff0d11b1dd381b237a5b6b912f537c0e1f34c20"
+      "sha256": "4f3ec5b82383a628b828332997dcb341ef21aed3419e002430fadc2efc68c7b2"
     },
     {
       "id": "humanReviewHarness",

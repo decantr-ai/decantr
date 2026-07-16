@@ -1,13 +1,13 @@
 {
   "schemaVersion": "decantr-route-replay-artifact.v1",
-  "generatedAt": "2026-07-16T21:32:47.000Z",
+  "generatedAt": "2026-07-16T21:55:54.000Z",
   "command": [
     "node",
     "scripts/run-3-9-route-qualification.mjs",
     "--source-mode",
     "pinned-public-repositories",
     "--generated-at",
-    "2026-07-16T21:32:47.000Z"
+    "2026-07-16T21:55:54.000Z"
   ],
   "exitCode": 0,
   "environment": {
@@ -15,7 +15,7 @@
     "cpu": "arm64",
     "nodeVersion": "v25.8.2",
     "packageManagerVersion": "10.33.0",
-    "exactSourceRef": "git:d8a8b5cc427d514ceda43c637c893e2e42596ba9;verifier-dist-sha256:e5bb005c1eec661788d7c85e7cfec10a70c82575e885106eb929b3f9c5fa98f8;harness-sha256:dc899b317afbde9e42937c2b692b9bb9561f638f07b4fb449c02ef19e28dc33f;package-set-sha256:f8e36b1c107689bfe37342b9c4db8a24afb34a9190b9f4dc33e4e5c22e1ab5ba",
+    "exactSourceRef": "git:9ba91bd43786aae87b6a5c727e06b819a46741a4;verifier-dist-sha256:e5bb005c1eec661788d7c85e7cfec10a70c82575e885106eb929b3f9c5fa98f8;harness-sha256:e74199f59b4de8bc1060591c0e8be1e4779e8b2dff516401c01ba59b08978e83;package-set-sha256:bb6e40cdd1207f2ad5076bce3701b05b55610899632cf53cd58f574b2fdb64f7",
     "exactPackageVersions": {
       "@decantr/content": "3.9.0",
       "@decantr/registry": "3.9.0",
@@ -27,27 +27,27 @@
     "exactPackageTarballs": {
       "@decantr/content": {
         "file": "decantr-content-3.9.0.tgz",
-        "sha256": "27b58b6f40eb4a724e3a7ebd6226a8e0c595c0417c786232d5ed5199796933d0"
+        "sha256": "4a1ef4ffe09bcd793205c7a3b050bf932cb4780cf81422b19a8df0d7e9fa554f"
       },
       "@decantr/registry": {
         "file": "decantr-registry-3.9.0.tgz",
-        "sha256": "735c363a45819700a85194a31b4ad8c07c171b851dd5390d7d845d762c0c9bdf"
+        "sha256": "5100aa0942d4309fd3d38965d1d6782f8c5be70ba43073a5ad102dce859589f4"
       },
       "@decantr/core": {
         "file": "decantr-core-3.9.0.tgz",
-        "sha256": "d3f67d71083a056833ac0ad78b3303775309d7d275bb51bf917c3881a349a6c5"
+        "sha256": "9a3919355ddac3215f545c36cdc406dd5eac17646d98a76c4914fdfc69cbaffd"
       },
       "@decantr/verifier": {
         "file": "decantr-verifier-3.9.0.tgz",
-        "sha256": "84f682e9b8dff43c8da222f556a9dd9a7572f0f4ea9db614128b8fe5cef60b6b"
+        "sha256": "6a40f95a75b7d6504dea8c7c5ca2146dc2080703a9965217a7421d3208db1276"
       },
       "@decantr/mcp-server": {
         "file": "decantr-mcp-server-3.9.0.tgz",
-        "sha256": "3abe0fd255a85703d8d5bde57f675969404cf23aac6f71407aed341e4993b772"
+        "sha256": "3641c90a6c99432d9e53cce426cbf409c5ab2c850526d084520b1ed3aa8616a2"
       },
       "@decantr/cli": {
         "file": "decantr-cli-3.9.0.tgz",
-        "sha256": "ef201800793cb78017fd9173bda6f1de6fca8a1d708afb37b18ca3fe87bdf123"
+        "sha256": "e35a6705df0c7c25ea1f2e5ec4c9fb4e8b1c3f5eb4d47ab5e3adad93569846c4"
       }
     }
   },
@@ -3077,7 +3077,7 @@
   "provenance": {
     "harness": {
       "path": "scripts/run-3-9-route-qualification.mjs",
-      "sha256": "dc899b317afbde9e42937c2b692b9bb9561f638f07b4fb449c02ef19e28dc33f"
+      "sha256": "e74199f59b4de8bc1060591c0e8be1e4779e8b2dff516401c01ba59b08978e83"
     },
     "verifier": {
       "package": "@decantr/verifier",
@@ -3174,8 +3174,8 @@
   },
   "behaviorBinding": {
     "schemaVersion": "decantr-behavior-evidence-binding.v1",
-    "packageSetSha256": "f8e36b1c107689bfe37342b9c4db8a24afb34a9190b9f4dc33e4e5c22e1ab5ba",
+    "packageSetSha256": "bb6e40cdd1207f2ad5076bce3701b05b55610899632cf53cd58f574b2fdb64f7",
     "behaviorSha256": "c03f54f9929658c3fad7f341f75c99244113750e405ce5b5d5274084f2063eca",
-    "boundEvidenceSha256": "832550088f9adbbe6c22669765260b469bf9ba720e3f23ea152a358e6752a97f"
+    "boundEvidenceSha256": "e39d645fe010f33fd4705ed1c8f44e9f46d1c8b53e9ab6f706677acc76093f33"
   }
 }
