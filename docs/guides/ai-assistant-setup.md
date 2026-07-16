@@ -10,9 +10,11 @@ Use the MCP server when your editor or agent supports MCP tools:
 npx @decantr/mcp-server
 ```
 
-The MCP server exposes the eight consolidated Decantr tools for essence reads, vocabulary search, pattern resolution, execution-pack access, critique, project audit, v2 evidence bundles, health-loop guidance, and Brownfield/Hybrid task-time context. It works with MCP-compatible assistants such as Claude Desktop, Cursor, Windsurf, VS Code agent mode, Zed, and Continue.dev.
+The MCP server exposes exactly eight consolidated tools: `decantr_project`, `decantr_contract`, `decantr_context`, `decantr_graph`, `decantr_registry`, `decantr_verify`, `decantr_repair`, and `decantr_contract_write`. `decantr_registry` is a compatibility name backed by `@decantr/content`; Decantr 3.x does not add a ninth content tool. The server works with MCP-compatible assistants such as Claude Desktop, Cursor, Windsurf, VS Code agent mode, Zed, and Continue.dev.
 
-For an existing app, ask the assistant to call `decantr_context` with `{ "action": "task" }` before editing a route. Provide the route and task, for example `{ "action": "task", "route": "/feed", "task": "improve the recipe feed loading and card layout" }`. Task activation requires a current typed graph and returns the discovered implementation file before generated context read targets. The default MCP response is compact and omits full graph nodes/edges plus large context lists; pass `"detail": "full"` only when the client needs that diagnostic payload. Both modes include authority, stop conditions, graph readiness/impact, and the verify command.
+For an existing app, ask the assistant to call `decantr_context` with `{ "action": "task" }` before editing a route. Provide the route and task, for example `{ "action": "task", "route": "/feed", "task": "improve the recipe feed loading and card layout" }`. Task activation requires a current typed graph and adapts one verifier-built `TaskCapsuleV1` into the existing response fields. The discovered implementation file is the required rank-one read target; project identity, graph freshness, authority, changed-file impact, stable findings, content identity/digest provenance, stop conditions, and one verify command stay explicit. The default canonical capsule is bounded to 12,000 UTF-8 bytes and 4,000 deterministic estimated tokens. Pass `"detail": "full"` only when the client needs expanded diagnostic graph/context payloads outside that default capsule budget.
+
+`decantr_project` with `{ "action": "state" }` also exposes `adoption_truth`. It uses the same `AdoptionTruthV1` builder as CLI, CI v3, and Studio, so agents can inspect selected-app provenance and limitations without inventing editor-specific discovery rules.
 
 ## Cursor
 
@@ -72,7 +74,7 @@ npx @decantr/cli task /feed "improve the recipe feed loading and card layout"
 npx @decantr/cli task /feed "improve the recipe feed loading and card layout" --project apps/web
 ```
 
-That output starts with the discovered route implementation source and points to matching packs, local screenshots, accepted local patterns, behavior obligations, changed files, impacted routes, and active authority. It blocks when the typed graph is missing or stale. If behavior obligations appear, preserve them before changing interactive surfaces. After the assistant edits code, run the verify command printed by task context; for a Brownfield app with accepted local law that is typically:
+That output starts with the discovered route implementation source and points to matching packs, local screenshots, accepted local patterns, behavior obligations, changed files, impacted routes, active authority, and official-content provenance. JSON preserves its compatibility fields and adds `taskCapsuleVersion: "task-capsule.v1"`; MCP adds `task_capsule_version: "task-capsule.v1"`. It blocks when the typed graph is missing or stale. If behavior obligations appear, preserve them before changing interactive surfaces. After the assistant edits code, run the verify command printed by task context; for a Brownfield app with accepted local law that is typically:
 
 ```bash
 npx @decantr/cli verify --brownfield --local-patterns
@@ -98,7 +100,7 @@ npx @decantr/cli doctor
 pnpm exec decantr doctor --project apps/web
 ```
 
-`doctor` prints the adoption lane and next-step queue. That is the fastest way for an assistant to tell whether it should preserve contract-only source authority, use accepted Hybrid local law, respect a style bridge, or treat Decantr CSS as active.
+`doctor` prints adoption truth, the adoption lane, limitations, and the next-step queue. That is the fastest way for an assistant to tell whether it should preserve contract-only source authority, use accepted Hybrid local law, respect a style bridge, or treat explicitly adopted legacy Decantr CSS as active.
 
 Use `ci` for the mandatory automation layer. In monorepos, generate the workflow from the repository root and keep the app path explicit:
 
@@ -107,7 +109,14 @@ pnpm exec decantr ci init --project apps/web
 pnpm exec decantr ci --project apps/web
 ```
 
-The generated GitHub workflow runs the pinned local CLI through the detected package manager, such as `pnpm exec decantr ci --project apps/web`. If Decantr is not pinned in the root manifest, `ci init` prints the exact install command before writing the workflow. For Jenkins, Please, Buildkite, GitLab, Azure DevOps, or internal deployment systems, use `decantr ci init --provider generic --project apps/web` and paste the snippet into the authoritative pipeline.
+Those commands remain on the v2 CI schema. For Decantr 3.9 governed-change proof, opt in explicitly:
+
+```bash
+pnpm exec decantr ci init --project apps/web --report-version v3
+pnpm exec decantr ci --project apps/web --since origin/main --report-version v3 --json
+```
+
+The generated GitHub v3 workflow runs the pinned local CLI, fetches full Git history, resolves a comparison base, and passes it with `--since`. It embeds `AdoptionTruthV1` and `GovernanceDeltaV1` alongside existing v2 health evidence. Missing or incompatible proof is `not_proven`; package upgrade alone never switches v2 consumers to v3. For Jenkins, Please, Buildkite, GitLab, Azure DevOps, or internal deployment systems, use `decantr ci init --provider generic --project apps/web --report-version v3` and ensure the authoritative pipeline provides the intended Git history/change scope.
 
 When Hybrid local law is active, `decantr ci` prints `.decantr/rules.json` findings with file and line evidence, and Project Health carries accepted behavior-obligation findings with stable codes such as `A11Y010`, `A11Y011`, `INT010`, and `COMP020`. When a style bridge is active, the same v2 report includes bridge status, mapping count, styling approach, theme modes, evidence tier, authority resolution, and loop readiness so assistants can see the project-owned styling lane in automation output. The output distinguishes enforceable accepted local rules and statically verifiable behavior obligations from advisory style-bridge or content-pattern mappings. Keep `--fail-on error` while the team is still tuning warnings; switch to `--fail-on warn` when those warnings should block pull requests.
 

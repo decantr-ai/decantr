@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { DetectedProject } from '../src/detect.js';
-import { resolveWorkflowPolicy } from '../src/workflow-model.js';
+import { adoptionUsesDecantrRuntimeCss, resolveWorkflowPolicy } from '../src/workflow-model.js';
 
 function detectedProject(overrides: Partial<DetectedProject> = {}): DetectedProject {
   return {
@@ -49,5 +49,11 @@ describe('resolveWorkflowPolicy', () => {
 
     expect(policy.workflowMode).toBe('greenfield-scaffold');
     expect(policy.adoptionMode).toBe('contract-only');
+  });
+
+  it('reserves Decantr runtime CSS ownership for explicit decantr-css adoption', () => {
+    expect(adoptionUsesDecantrRuntimeCss('contract-only')).toBe(false);
+    expect(adoptionUsesDecantrRuntimeCss('style-bridge')).toBe(false);
+    expect(adoptionUsesDecantrRuntimeCss('decantr-css')).toBe(true);
   });
 });

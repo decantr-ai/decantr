@@ -41,6 +41,8 @@ describe('scan command', () => {
     const output = execSync(`node ${cliPath} scan`, { cwd: testDir, encoding: 'utf-8' });
 
     expect(output).toContain('Decantr Scan');
+    expect(output).toContain('Adoption Truth');
+    expect(output).toContain('Selected app:');
     expect(output).toContain('Read-only Brownfield reconnaissance');
     expect(output).toContain('Typed Contract Graph');
     expect(output).toContain('not attached');

@@ -1,7 +1,7 @@
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { CONTENT_TYPE_TO_API_CONTENT_TYPE, type ContentType } from '@decantr/registry';
+import { CONTENT_TYPE_TO_API_CONTENT_TYPE, type ContentType } from '@decantr/content';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { cmdCreate } from '../src/commands/create.js';
 import { validateCustomTheme } from '../src/theme-commands.js';

@@ -45,7 +45,7 @@ export interface IRPatternMeta {
   contained: boolean; // Whether to wrap in Card
   standalone: boolean; // Hero/row patterns skip card wrapping
   code: {
-    // Raw pattern code from registry (Decantr-native)
+    // Raw pattern code from content (Decantr-native)
     imports?: string;
     example?: string;
   } | null;

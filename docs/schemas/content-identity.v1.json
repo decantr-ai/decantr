@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/content-identity.v1.json",
+  "title": "Decantr Content Identity",
+  "type": "object",
+  "required": [
+    "namespace",
+    "type",
+    "id"
+  ],
+  "properties": {
+    "namespace": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "type": {
+      "enum": [
+        "pattern",
+        "theme",
+        "blueprint",
+        "archetype",
+        "shell"
+      ]
+    },
+    "id": {
+      "type": "string",
+      "pattern": "\\S"
+    }
+  },
+  "additionalProperties": false
+}

@@ -6,7 +6,7 @@ Do not add Co-Authored-By lines to commits.
 
 Decantr is AI Frontend Governance. It is a contract, context, content-corpus, and evidence layer that AI coding assistants use to keep frontend changes coherent in production codebases. Decantr does not generate code -- the AI does.
 
-Current product model: Decantr 3.8.3 is content-first AI Frontend Governance, documented in `docs/llms.txt` and the active `docs/reference/` pages. Decantr 3.8 is patch-only under `docs/runbooks/decantr-3-8-maintenance.md`. The active successor program is `docs/programs/2026-07-16-decantr-3-9-adoption-proof-program.md`; it defines unreleased adoption-proof work, while older program files remain historical strategy unless a current reference or release note explicitly re-promotes them. A forward-looking successor architecture is tracked in `docs/audit/decantr-meta-alignment.md` (`decantr-meta` project, separate from this monorepo).
+Current product model: the repository is preparing Decantr 3.9.0, Governed Change Proof, on top of the public 3.8.3 baseline. The 3.9 implementation adds verifier-owned adoption truth, bounded task capsules, governance deltas, and explicit CI v3 while keeping v2 reports as the default. It is not a completed public release until the fail-closed qualification packet, packed-artifact matrix, publication verification, and release closeout all pass. Decantr 3.8 remains patch-only under `docs/runbooks/decantr-3-8-maintenance.md`; 3.9 maintenance boundaries live in `docs/runbooks/decantr-3-9-maintenance.md`. The approved program is `docs/programs/2026-07-16-decantr-3-9-adoption-proof-program.md`; older program files remain historical strategy unless a current reference or release note explicitly re-promotes them. A forward-looking successor architecture is tracked in `docs/audit/decantr-meta-alignment.md` (`decantr-meta` project, separate from this monorepo).
 
 ## Packages
 
@@ -14,12 +14,12 @@ Current product model: Decantr 3.8.3 is content-first AI Frontend Governance, do
 |---------|------|-------------|
 | `@decantr/essence-spec` | `packages/essence-spec/` | Essence v4 schema, validator, guard rules, migration, and TypeScript types |
 | `@decantr/content` | `packages/content/` | Official corpus, schemas, validation, search, resolution, and content health helpers |
-| `@decantr/registry` | `packages/registry/` | Legacy compatibility package for content/API client naming in Decantr 3.x |
-| `@decantr/core` | `packages/core/` | Design Pipeline IR engine |
+| `@decantr/registry` | `packages/registry/` | Thin Decantr 3.x compatibility facade over content-owned implementations and schemas |
+| `@decantr/core` | `packages/core/` | Execution-pack, pipeline, typed graph, route context, and changed-file impact primitives |
 | `@decantr/telemetry` | `packages/telemetry/` | Optional event contracts and caller-controlled sinks; no hosted default collection |
 | `@decantr/mcp-server` | `packages/mcp-server/` | MCP server exposing the submitted 8-tool surface to AI assistants |
 | `@decantr/css` | `packages/css/` | Legacy optional CSS atom adapter; not a default adoption path |
-| `@decantr/verifier` | `packages/verifier/` | Shared verification, critique, and report-schema engine |
+| `@decantr/verifier` | `packages/verifier/` | Shared discovery, verification, canonical governed-change contracts, and report-schema engine |
 | `@decantr/vite-plugin` | `packages/vite-plugin/` | Vite plugin for real-time design drift detection |
 | `@decantr/cli` | `packages/cli/` | CLI for project initialization, content queries, validation, Project Health, and governance workflows |
 
@@ -70,7 +70,7 @@ Official content enriches blueprint/archetype/theme/pattern flows. It is not a h
 - **CLI single items** (`get`): Custom → content API → Cache
 - **CLI lists** (`list`): content API → Cache → merge Custom
 - **CLI `get` fallback**: content API → Cache → Bundled
-- **MCP Server**: content API/corpus reads through the compatibility `RegistryAPIClient`
+- **MCP Server**: content API/corpus reads through content-owned clients while retaining the `decantr_registry` tool name
 - **CLI Bundled**: Offline fallback defaults in `packages/cli/src/bundled/`
 
 ```
@@ -87,7 +87,7 @@ Decantr has no hosted telemetry sink. CLI opt-in records a local preference, but
 
 ## Essence Schemas
 
-- **v4** (`docs/schemas/essence.v4.json`) -- active Decantr V2 sectioned schema with DNA/Blueprint split, `dna_enforcement` / `blueprint_enforcement` fields, per-page `dna_overrides`, and section topology.
+- **v4** (`docs/schemas/essence.v4.json`) -- active Essence V4 sectioned schema with DNA/Blueprint split, `dna_enforcement` / `blueprint_enforcement` fields, per-page `dna_overrides`, and section topology.
 - **v2/v3** (`docs/schemas/essence.v2.json`, `docs/schemas/essence.v3.json`) -- historical migration references only. Active workflows must run `decantr migrate --to v4` before validation, refresh, check, packs, MCP mutation, or hosted compilation.
 
 All resource schemas live in `docs/schemas/`.
@@ -136,6 +136,16 @@ Compact, compiled contracts consumed by AI agents during scaffolding. Generated 
 | pack-manifest | `pack-manifest.v1.json` | Index of generated packs |
 
 Related intelligence schemas: `content-intelligence.v1.json`, `registry-intelligence-summary.v1.json`, `project-audit-report.v1.json`, `file-critique-report.v1.json`, `public-content-{list,record,summary}.v1.json`.
+
+## Governed Change Contracts
+
+`@decantr/verifier` is the sole owner of the additive Decantr 3.9 proof contracts:
+
+- `AdoptionTruthV1` records one selected application plus independently modeled observation, governance, and mutation facts.
+- `TaskCapsuleV1` provides bounded task-time project, route, graph, authority, impact, finding, content-provenance, stop-condition, and verification context. Its canonical/default payload limit is 12,000 UTF-8 bytes with deterministic `ceil(bytes / 3)` token estimation.
+- `GovernanceDeltaV1` classifies new, inherited, resolved, and unclassified finding occurrences against compatible evidence and returns `not_proven` when a baseline or change scope is missing or incompatible.
+
+CLI, MCP, CI v3, and Studio adapt these verifier-built values; they must not define competing discovery or proof shapes. Existing v2 machine reports remain the default throughout 3.9.x. `decantr ci --report-version v3` is the only 3.9 opt-in report upgrade, and `decantr ci init --report-version v3` is required to generate a v3 workflow. No environment variable, package version, or upgrade may select v3 silently.
 
 ## Section Context Enrichments
 
@@ -248,6 +258,8 @@ Do not add a ninth content tool in Decantr 3.x. Route new content-corpus actions
 
 `decantr_context` task responses are compact by default. Preserve route identity, implementation read targets, authority, graph readiness/ranking summaries, health, stop conditions, and verify command while bounding large context and omitting full nodes/edges. `detail: "full"` is the explicit diagnostic opt-in. Task context must block when graph artifacts are missing or stale.
 
+The compact CLI and MCP task adapters are projections of `TaskCapsuleV1`. Preserve existing top-level compatibility fields and the `taskCapsuleVersion` / `task_capsule_version` markers; do not add a second nested copy of the capsule.
+
 ## CLI Commands
 
 Authoritative dispatch: `packages/cli/src/index.ts` switch statement. Groups:
@@ -297,6 +309,9 @@ Adoption safety invariants:
 - Greenfield `init` writes the first typed graph. Explicit `--workflow=greenfield` controls defaults even inside an existing technology scaffold and must not inherit Brownfield personality, shell, commands, or authority from incidental host files.
 - Graph construction uses shared route discovery for route/page implementation provenance even when `.decantr/analysis.json` is absent.
 - `decantr task` and MCP task activation require a current graph and lead read targets with the discovered implementation source. A blocked CLI task emits structured remediation but exits nonzero.
+- `scan`, `adopt`, `doctor`, MCP project state, CI v3, and Studio must consume verifier-owned adoption truth for the selected app. Observation does not imply governance, and a planned write is not a completed mutation.
+- `decantr ci` and generated CI stay on v2 unless `--report-version v3` is explicit. CI v3 carries `AdoptionTruthV1` and `GovernanceDeltaV1`; missing, stale, or incompatible proof remains `not_proven` and non-passing unless `--fail-on none` is explicit.
+- Studio is a read-only renderer. It may read current state or project-mode health/CI v2/CI v3/contract artifacts and recompute in memory, but it must not write project files, run repair/build/package-manager/Git commands, invoke an agent, or upload source.
 - `decantr codify --accept --confirm-reviewed` accepts local patterns/rules only. A style bridge requires the additional `--accept-style-bridge` flag because it changes adoption mode.
 - Brownfield project CI with a saved baseline reports inherited findings but gates only new findings through `baselineGate`. Generated baseline diff output must not feed graph source hashing.
 - When Prettier or Oxfmt is present, adoption/scaffolding records generated Decantr artifacts in `.prettierignore`, including app-prefixed entries for workspace-root formatters.
@@ -307,7 +322,7 @@ Adoption safety invariants:
 |------|---------|
 | `docs/css-scaffolding-guide.md` | Full CSS implementation spec (@layer, theme scoping, variable naming). Generated `DECANTR.md` includes a condensed version. |
 | `docs/programs/` | Active 3.9 adoption-proof program plus historical strategic programs |
-| `docs/runbooks/` | Operational runbooks (releases, deploys, adoption proof, certification, and 3.8 maintenance) |
+| `docs/runbooks/` | Operational runbooks (releases, deploys, adoption proof, certification, and 3.8/3.9 maintenance) |
 | `docs/specs/` | Design specifications for major features |
 | `docs/architecture/` | Architecture diagrams and flow documentation |
 | `docs/audit/` | Audit reports (including `decantr-meta-alignment.md` for successor-project context) |
@@ -322,3 +337,4 @@ Adoption safety invariants:
 - Detection of existing AI rule files (for `decantr init`) is controlled at `packages/cli/src/detect.ts`
 - Release/audit automation lives in `scripts/*.mjs` (30+ scripts covering showcases, package surface, npm, blueprint governance, etc.)
 - Root `config/` carries machine-readable package retirement and surface manifests (`package-retirements.json`, `package-surface.json`)
+- `pnpm audit:packed-content-facade` proves clean tarball installation and legacy content/registry facade identity. `pnpm audit:3-9-qualification:lint` checks packet structure only; only the default `pnpm audit:3-9-qualification` command can grant release qualification.

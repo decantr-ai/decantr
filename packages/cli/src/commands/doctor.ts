@@ -2,7 +2,11 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isV4 } from '@decantr/essence-spec';
-import { collectMissingPackManifestFiles } from '@decantr/verifier';
+import {
+  type AdoptionTruthV1,
+  collectMissingPackManifestFiles,
+  createProjectAdoptionTruthV1,
+} from '@decantr/verifier';
 import { ARTIFACT_README_PATH } from '../artifacts.js';
 import { detectProject } from '../detect.js';
 import { localPatternsPath, localRulesPath } from '../local-law.js';
@@ -85,6 +89,7 @@ interface DoctorReport {
     syncStatus: string | null;
     artifactReadmePresent: boolean;
   };
+  adoptionTruth: AdoptionTruthV1 | null;
   workspace: {
     attachedProjects: string[];
     appCandidates: Array<{ path: string; attached: boolean }>;
@@ -525,6 +530,8 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
   const styleBridgePresent = existsSync(styleBridgePath(appRoot));
   const styleBridgeProposalPresent = existsSync(styleBridgeProposalPath(appRoot));
   const graphArtifacts = inspectGraphArtifacts(appRoot, workspaceRoot);
+  const adoptionTruth =
+    workspaceMode || projectMissing ? null : createProjectAdoptionTruthV1(appRoot);
   const missingPackReferences = workspaceMode
     ? projects.flatMap((project) =>
         collectMissingPackManifestFiles(join(workspaceRoot, project.path)).map(
@@ -824,6 +831,7 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
       syncStatus: projectJson?.sync?.status ?? null,
       artifactReadmePresent,
     },
+    adoptionTruth,
     workspace: {
       attachedProjects: projects.map((project) => project.path),
       appCandidates: candidates,
@@ -872,6 +880,10 @@ function colorForStatus(status: DoctorStatus): string {
 }
 
 function formatDoctorText(report: DoctorReport): string {
+  const governedFactCount =
+    report.adoptionTruth?.facts.filter((fact) => fact.governance.state === 'governed').length ?? 0;
+  const verifiedMutationCount =
+    report.adoptionTruth?.mutationReceipts.filter((receipt) => receipt.complete).length ?? 0;
   const lines = [
     `${BOLD}Decantr Doctor${RESET}`,
     '',
@@ -893,6 +905,13 @@ function formatDoctorText(report: DoctorReport): string {
     `  Style authority: ${report.lane.styleAuthority}`,
     `  Active: ${report.lane.activeAuthorities.join(', ')}`,
     `  Choice: ${report.lane.nextChoice}`,
+    ...(report.adoptionTruth
+      ? [
+          `  Truth: ${governedFactCount}/${report.adoptionTruth.facts.length} governed fact(s), ${verifiedMutationCount} complete mutation receipt(s)`,
+          `  Truth limitations: ${report.adoptionTruth.limitations.length}`,
+          `  Truth next action: ${report.adoptionTruth.nextAction}`,
+        ]
+      : []),
     '',
     `${BOLD}Generated Artifacts:${RESET}`,
     `  Context directory: ${report.generatedArtifacts.contextDirPresent ? 'present' : 'missing'}`,

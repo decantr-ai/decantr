@@ -9,6 +9,7 @@ export type {
   ContractCapsuleRoute,
   ContractCapsuleSourceArtifact,
   ContractCapsuleVocabularyItem,
+  GraphChangedFileImpact,
   GraphDiff,
   GraphDiffOp,
   GraphDiffOpType,
@@ -32,6 +33,7 @@ export type {
   SourceArtifact,
 } from './graph.js';
 export {
+  buildChangedFileGraphImpact,
   buildContractCapsuleFromSnapshot,
   buildGraphImpactContext,
   buildGraphRouteContext,

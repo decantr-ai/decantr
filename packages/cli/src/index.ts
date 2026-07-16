@@ -1,8 +1,43 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  realpathSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  buildGraphImpactContext,
+  buildContentRef,
+  CONTENT_TYPE_TO_API_CONTENT_TYPE,
+  ContentAPIClient,
+  type ContentIntelligenceMetadata,
+  type ContentIntelligenceSource,
+  type ExecutionPackBundleResponse,
+  CONTENT_TYPES as GET_CONTENT_TYPES,
+  getBlueprintPortfolioMetadata,
+  getContentRecord,
+  isApiContentType,
+  isContentIntelligenceSource,
+  isContentType as isGetContentType,
+  isPublicBlueprintSet,
+  API_CONTENT_TYPES as LIST_CONTENT_TYPES,
+  type Pattern,
+  type PatternDiscoveryCandidate,
+  type PublicBlueprintSet,
+  patternToDiscoveryCandidate,
+  type Blueprint as RegistryBlueprint,
+  type ContentIntelligenceSummaryResponse as RegistryIntelligenceSummaryResponse,
+  rankPatternCandidates,
+  type SelectedExecutionPackResponse,
+  type ShowcaseManifestResponse,
+  type ShowcaseShortlistReport,
+  type ShowcaseShortlistResponse,
+} from '@decantr/content';
+import {
+  buildChangedFileGraphImpact,
   buildGraphRouteContext,
   type ExecutionPackBundle,
   type GraphSnapshot,
@@ -11,35 +46,15 @@ import {
 } from '@decantr/core';
 import type { EssenceFile, EssenceV4 } from '@decantr/essence-spec';
 import { evaluateGuard, isV4, validateEssence } from '@decantr/essence-spec';
-import type {
-  ContentIntelligenceMetadata,
-  ContentIntelligenceSource,
-  ExecutionPackBundleResponse,
-  PublicBlueprintSet,
-  Blueprint as RegistryBlueprint,
-  RegistryIntelligenceSummaryResponse,
-  SelectedExecutionPackResponse,
-  ShowcaseManifestResponse,
-  ShowcaseShortlistReport,
-  ShowcaseShortlistResponse,
-} from '@decantr/registry';
 import {
-  CONTENT_TYPE_TO_API_CONTENT_TYPE,
-  CONTENT_TYPES as GET_CONTENT_TYPES,
-  getBlueprintPortfolioMetadata,
-  isApiContentType,
-  isContentIntelligenceSource,
-  isContentType as isGetContentType,
-  isPublicBlueprintSet,
-  API_CONTENT_TYPES as LIST_CONTENT_TYPES,
-  type Pattern,
-  type PatternDiscoveryCandidate,
-  patternToDiscoveryCandidate,
-  RegistryAPIClient,
-  rankPatternCandidates,
-} from '@decantr/registry';
-import {
+  type AdoptionTruthV1,
   auditProject,
+  type CreateTaskCapsuleV1Input,
+  canonicalJsonStringify,
+  canonicalUtf8Bytes,
+  createProjectAdoptionTruthV1,
+  createStableProjectIdentityV1,
+  createTaskCapsuleV1,
   critiqueFile as critiqueProjectFile,
   type FileCritiqueReport,
   LOOP_READINESS_V2_SCHEMA_URL,
@@ -49,8 +64,18 @@ import {
   type ScanGraphPreviewV1,
   type ScanReport,
   scanProject as scanProjectReadOnly,
+  TASK_CAPSULE_TOKEN_ESTIMATE_BYTES_PER_TOKEN,
+  type TaskCapsuleAuthorityLane,
+  type TaskCapsuleFindingV1,
+  type TaskCapsuleOfficialGuidanceV1,
+  type TaskCapsuleReadTargetV1,
   type VerificationFinding,
 } from '@decantr/verifier';
+import {
+  type AdoptionReceipt,
+  captureAdoptionSnapshot,
+  createAdoptionReceipt,
+} from './adoption-receipt.js';
 import { scanRoutes } from './analyzers/routes.js';
 import { scanStyling } from './analyzers/styling.js';
 import { writeArtifactReadme } from './artifacts.js';
@@ -96,15 +121,18 @@ import {
   acceptBrownfieldLocalLaw,
   changedFiles as collectChangedFiles,
   createBrownfieldCodifyProposal,
-  createLocalLawTaskSummary,
   type LocalBehaviorObligationSummary,
   type LocalHostedPatternRef,
+  type LocalLawTaskSummary,
+  type LocalPattern,
+  type LocalPatternPack,
+  type LocalRuleManifest,
   localPatternsPath,
   localPatternsProposalPath,
   localRulesPath,
   localRulesProposalPath,
-  readLocalPatternPack,
   routeImpacts,
+  summarizeLocalPatternBehaviorObligations,
   validateLocalLaw,
   writeBrownfieldCodifyProposal,
   writeHostedPatternMappingProposal,
@@ -143,7 +171,7 @@ import {
 import {
   acceptStyleBridge,
   createStyleBridgeProposal,
-  createStyleBridgeTaskSummary,
+  type StyleBridgeTaskSummary,
   styleBridgeMatches,
   styleBridgePath,
   styleBridgeProposalPath,
@@ -160,6 +188,7 @@ import {
 import {
   type AdoptionMode,
   type AssistantBridgeMode,
+  adoptionUsesDecantrRuntimeCss,
   readBrownfieldInitSeed,
   resolveWorkflowPolicy,
   type WorkflowMode,
@@ -292,7 +321,7 @@ function extractPatternName(item: unknown): string {
 
 function generateGreenfieldPrompt(ctx: PromptContext): string {
   const lines: string[] = [];
-  const usesDecantrCss = ctx.adoptionMode === 'decantr-css';
+  const usesDecantrCss = adoptionUsesDecantrRuntimeCss(ctx.adoptionMode);
   const hasCompiledPacks = ctx.hasCompiledPacks ?? true;
 
   lines.push('Build this greenfield application to the Decantr governance contract.');
@@ -389,7 +418,8 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
     );
   } else if (ctx.adoptionMode === 'style-bridge') {
     lines.push(
-      'This project uses Decantr style-bridge mode. Use generated bridge tokens as a mapping layer onto the selected styling system; @decantr/css is not required.',
+      'This project records style-bridge adoption, but styling remains host-owned. Use only reviewed mappings from an accepted `.decantr/style-bridge.json`; without that artifact, the project-selected styling system is the sole style authority.',
+      'Decantr does not generate or overwrite runtime CSS, token stylesheets, or global styles in style-bridge mode. Do not install @decantr/css or introduce Decantr runtime classes.',
     );
   } else {
     lines.push(
@@ -560,7 +590,7 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
     );
   } else if (ctx.adoptionMode === 'style-bridge') {
     lines.push(
-      '- Import src/styles/tokens.css and src/styles/decantr-bridge.css where appropriate.',
+      '- Keep runtime style imports host-owned. `.decantr/style-bridge.json` is governance context, not an importable CSS runtime.',
     );
   } else {
     lines.push(
@@ -720,7 +750,7 @@ function generateBrownfieldPrompt(ctx: PromptContext): string {
     );
   } else if (ctx.adoptionMode === 'style-bridge') {
     lines.push(
-      '- Use Decantr bridge files as a mapping layer onto the existing styling system; do not install @decantr/css unless explicitly requested.',
+      '- Keep runtime CSS, tokens, and global styles host-owned. Use only reviewed mappings from an accepted .decantr/style-bridge.json; Decantr does not generate bridge CSS in this mode.',
     );
   } else {
     lines.push(
@@ -777,15 +807,15 @@ function generateCuratedPrompt(ctx: PromptContext): string {
     : generateGreenfieldPrompt(ctx);
 }
 
-function getAPIClient(): RegistryAPIClient {
-  return new RegistryAPIClient({
+function getAPIClient(): ContentAPIClient {
+  return new ContentAPIClient({
     baseUrl: process.env.DECANTR_API_URL || process.env.REGISTRY_URL || undefined,
     apiKey: process.env.DECANTR_API_KEY || undefined,
   });
 }
 
-function getPublicAPIClient(): RegistryAPIClient {
-  return new RegistryAPIClient({
+function getPublicAPIClient(): ContentAPIClient {
+  return new ContentAPIClient({
     baseUrl: process.env.DECANTR_API_URL || process.env.REGISTRY_URL || undefined,
   });
 }
@@ -1496,7 +1526,7 @@ function localPatternMatches(
   query: string,
 ): Array<{ id: string; label: string | null; role: string | null; score: number }> {
   if (!projectRoot) return [];
-  const pack = readLocalPatternPack(projectRoot);
+  const pack = readAcceptedLocalPatternPack(projectRoot);
   const patterns = Array.isArray(pack?.patterns) ? pack.patterns : [];
   const queryTerms = query
     .toLowerCase()
@@ -1600,7 +1630,9 @@ async function cmdSuggest(query: string, options: SuggestOptions = {}) {
       ? readSuggestCodeContext(projectRoot, options.route, options.file)
       : '';
   const localMatches = localPatternMatches(projectRoot, [query, code].filter(Boolean).join('\n'));
-  const bridgeMatches = styleBridgeMatches(projectRoot, [query, code].filter(Boolean).join('\n'));
+  const bridgeMatches = readAcceptedStyleBridgeManifest(projectRoot)
+    ? styleBridgeMatches(projectRoot, [query, code].filter(Boolean).join('\n'))
+    : [];
   const candidates = await loadPatternDiscoveryCandidates(registryClient);
   const matches = rankPatternCandidates(
     {
@@ -2010,6 +2042,40 @@ function writeBrownfieldProjectJson(input: {
   writeFileSync(join(decantrDir, 'project.json'), JSON.stringify(projectJson, null, 2) + '\n');
 }
 
+type AdoptionPackHydration = {
+  requested: boolean;
+  status: 'pending' | 'hydrated' | 'failed' | 'skipped' | 'skipped-offline';
+  writtenPathCount: number;
+  limitation: string | null;
+};
+
+function persistAdoptionReceipt(
+  projectRoot: string,
+  receipt: AdoptionReceipt,
+  workflowCompleted: boolean,
+  packHydration: AdoptionPackHydration,
+): boolean {
+  const projectPath = join(projectRoot, '.decantr', 'project.json');
+  const projectJson = readJsonIfPresent<Record<string, unknown>>(projectPath);
+  if (!projectJson) return false;
+  const initialized =
+    projectJson.initialized &&
+    typeof projectJson.initialized === 'object' &&
+    !Array.isArray(projectJson.initialized)
+      ? (projectJson.initialized as Record<string, unknown>)
+      : {};
+  projectJson.initialized = {
+    ...initialized,
+    adoption: {
+      ...receipt,
+      workflowCompleted,
+      packHydration,
+    },
+  };
+  writeFileSync(projectPath, `${JSON.stringify(projectJson, null, 2)}\n`, 'utf-8');
+  return true;
+}
+
 async function applyAcceptedBrownfieldProposal(input: {
   projectRoot: string;
   detected: ReturnType<typeof detectProject>;
@@ -2192,7 +2258,71 @@ async function applyAcceptedBrownfieldProposal(input: {
   }
 }
 
+function receiptHasChanges(receipt: AdoptionReceipt): boolean {
+  return (
+    receipt.changes.created.length > 0 ||
+    receipt.changes.updated.length > 0 ||
+    receipt.changes.deleted.length > 0
+  );
+}
+
 async function cmdInit(args: InitArgs) {
+  if (args.internalSuppressNextSteps) {
+    await cmdInitInternal(args);
+    return;
+  }
+
+  const workspaceInfo = resolveWorkspaceInfo(process.cwd(), args.project);
+  const before = captureAdoptionSnapshot(workspaceInfo.workspaceRoot, {
+    projectRoot: workspaceInfo.appRoot,
+  });
+  let workflowCompleted = false;
+
+  try {
+    await cmdInitInternal(args);
+    workflowCompleted = !process.exitCode || process.exitCode === 0;
+  } finally {
+    try {
+      const receipt = createAdoptionReceipt(
+        before,
+        captureAdoptionSnapshot(workspaceInfo.workspaceRoot, {
+          projectRoot: workspaceInfo.appRoot,
+        }),
+      );
+      if (receiptHasChanges(receipt)) {
+        const stored = persistAdoptionReceipt(workspaceInfo.appRoot, receipt, workflowCompleted, {
+          requested: false,
+          status: 'skipped',
+          writtenPathCount: 0,
+          limitation: null,
+        });
+        if (!stored) {
+          console.log(
+            `${YELLOW}Initialization receipt was not stored:${RESET} .decantr/project.json is unavailable.`,
+          );
+        } else if (receipt.integrity.status === 'verified-untouched') {
+          console.log(
+            success('Initialization source integrity verified; authored host source is unchanged.'),
+          );
+        } else if (receipt.integrity.status === 'source-changed') {
+          console.log(
+            `${YELLOW}Initialization changed authored host source:${RESET} review .decantr/project.json before relying on the result.`,
+          );
+        } else {
+          console.log(
+            `${YELLOW}Initialization source integrity is incomplete:${RESET} ${receipt.limitations.length} capture limitation(s).`,
+          );
+        }
+      }
+    } catch (e) {
+      console.log(
+        `${YELLOW}Initialization receipt could not be completed:${RESET} ${(e as Error).message}`,
+      );
+    }
+  }
+}
+
+async function cmdInitInternal(args: InitArgs) {
   const workspaceInfo = resolveWorkspaceInfo(process.cwd(), args.project);
   if (args.yes && workspaceInfo.requiresProjectSelection) {
     printWorkspaceProjectSelection(workspaceInfo, 'init');
@@ -2353,6 +2483,7 @@ async function cmdInit(args: InitArgs) {
         contentSource: policy.contentSource,
         assistantBridge: policy.assistantBridge,
         workspaceRoot: workspaceInfo.workspaceRoot,
+        appRoot: workspaceInfo.appRoot,
       });
       writeArtifactReadme(projectRoot);
 
@@ -3175,12 +3306,14 @@ ${BOLD}Commands:${RESET}
   ${cyan('validate')} <name>      Validate a custom theme
   ${cyan('delete')} <name>        Delete a custom theme
   ${cyan('import')} <path>        Import theme from JSON file
+  ${cyan('switch')} <themeName> [--shape <shape>] [--mode <mode>]
 
 ${BOLD}Examples:${RESET}
   decantr theme create mytheme
   decantr theme list
   decantr theme validate mytheme
   decantr theme import ./external-theme.json
+  decantr theme switch carbon --mode dark
 `);
     return;
   }
@@ -3405,46 +3538,6 @@ function displayProjectPath(
     return relativePath;
   }
   return absolutePath;
-}
-
-function projectRelativeGraphPath(projectRoot: string, filePath: string): string | null {
-  const relativePath = relative(projectRoot, isAbsolute(filePath) ? filePath : resolve(filePath));
-  if (relativePath && !relativePath.startsWith('..') && !isAbsolute(relativePath)) {
-    return relativePath.replace(/\\/g, '/');
-  }
-  return null;
-}
-
-function graphSourceNodeIdForTaskFile(
-  projectRoot: string,
-  snapshot: GraphSnapshot,
-  filePath: string,
-): string | null {
-  const trimmed = filePath.trim();
-  if (!trimmed) return null;
-  if (trimmed.startsWith('src:') && snapshot.nodes.some((node) => node.id === trimmed)) {
-    return trimmed;
-  }
-
-  const candidates = new Set<string>();
-  candidates.add(trimmed.replace(/\\/g, '/').replace(/^\.\//, ''));
-  const cwdRelative = projectRelativeGraphPath(projectRoot, trimmed);
-  if (cwdRelative) candidates.add(cwdRelative);
-  const projectRelative = projectRelativeGraphPath(projectRoot, join(projectRoot, trimmed));
-  if (projectRelative) candidates.add(projectRelative);
-
-  for (const candidate of candidates) {
-    const nodeId = `src:${candidate}`;
-    if (snapshot.nodes.some((node) => node.id === nodeId)) return nodeId;
-  }
-
-  return (
-    snapshot.nodes.find((node) => {
-      if (node.type !== 'SourceArtifact') return false;
-      const path = graphPayloadString(node.payload, 'path');
-      return Boolean(path && (path === trimmed || candidates.has(path)));
-    })?.id ?? null
-  );
 }
 
 function stripProjectArgs(args: string[], startIndex = 1): string[] {
@@ -3838,7 +3931,11 @@ function printScanGraphPreview(preview?: ScanGraphPreviewV1): void {
   console.log('');
 }
 
-function printScanReport(report: ScanReport, projectArg?: string): void {
+function printScanReport(
+  report: ScanReport,
+  projectArg: string | undefined,
+  adoptionTruth: AdoptionTruthV1,
+): void {
   console.log(heading('Decantr Scan'));
   console.log(dim('Read-only Brownfield reconnaissance. No files were written.'));
   console.log('');
@@ -3889,6 +3986,20 @@ function printScanReport(report: ScanReport, projectArg?: string): void {
   );
   console.log(`  CSS variables:  ${report.styling.cssVariableCount}`);
   console.log(`  Dark mode:      ${report.styling.darkMode ? 'yes' : 'no'}`);
+  console.log('');
+
+  const observedFacts = adoptionTruth.facts.filter(
+    (fact) => fact.observation.state === 'found',
+  ).length;
+  const governedFacts = adoptionTruth.facts.filter(
+    (fact) => fact.governance.state === 'governed',
+  ).length;
+  console.log(`${BOLD}Adoption Truth${RESET}`);
+  console.log(`  Selected app:   ${adoptionTruth.project.selectedAppRoot}`);
+  console.log(
+    `  Facts:          ${observedFacts} observed, ${governedFacts} governed, ${adoptionTruth.limitations.length} limitation(s)`,
+  );
+  console.log(`  Next:           ${adoptionTruth.nextAction}`);
   console.log('');
 
   if (report.staticHosting.githubPagesLikely || report.pagesProbe) {
@@ -3957,7 +4068,7 @@ async function cmdScanWorkflow(args: string[]): Promise<void> {
     console.log(JSON.stringify(reportWithGraph, null, 2));
     return;
   }
-  printScanReport(reportWithGraph, projectArg);
+  printScanReport(reportWithGraph, projectArg, createProjectAdoptionTruthV1(workspaceInfo.appRoot));
 }
 
 async function scanRouteHint(projectRoot: string, projectArg?: string): Promise<string | null> {
@@ -4003,9 +4114,11 @@ async function cmdSetupWorkflow(args: string[]): Promise<void> {
   console.log('');
 
   if (detected.existingEssence) {
-    const hasLocalPatterns = existsSync(localPatternsPath(workspaceInfo.appRoot));
-    const hasLocalRules = existsSync(localRulesPath(workspaceInfo.appRoot));
-    const hasStyleBridge = existsSync(styleBridgePath(workspaceInfo.appRoot));
+    const localLaw = createAcceptedLocalLawTaskSummary(workspaceInfo.appRoot);
+    const styleBridge = createAcceptedStyleBridgeTaskSummary(workspaceInfo.appRoot);
+    const hasLocalPatterns = Boolean(localLaw.patternsPath);
+    const hasLocalRules = Boolean(localLaw.rulesPath);
+    const hasStyleBridge = Boolean(styleBridge.path);
     const verifyCommand =
       hasLocalPatterns || hasLocalRules
         ? 'decantr verify --brownfield --local-patterns'
@@ -4149,93 +4262,152 @@ async function cmdAdoptWorkflow(args: string[]): Promise<void> {
     }
   }
 
-  await cmdAnalyze(projectRoot, workspaceInfo, { printNextStep: false });
-  if (process.exitCode && process.exitCode !== 0) return;
-  const initCommand = projectArg
-    ? `decantr init --project ${projectArg} --existing ${proposalFlag}`
-    : `decantr init --existing ${proposalFlag}`;
-  console.log(dim(`Analysis artifacts written; continuing with ${initCommand}.`));
-
-  await cmdInit({
-    existing: true,
-    yes: true,
-    project: flagString(flags, 'project'),
-    'accept-proposal': proposalFlag === '--accept-proposal',
-    'merge-proposal': proposalFlag === '--merge-proposal',
-    'replace-essence': proposalFlag === '--replace-essence',
-    'assistant-bridge': assistantBridge,
-    telemetry: flagBoolean(flags, 'telemetry'),
-    internalSuppressNextSteps: true,
+  const adoptionBefore = captureAdoptionSnapshot(workspaceInfo.workspaceRoot, {
+    projectRoot: workspaceInfo.appRoot,
   });
-  if (process.exitCode && process.exitCode !== 0) return;
+  let workflowCompleted = false;
+  const packHydration: AdoptionPackHydration = {
+    requested: hydratePacks,
+    status: hydratePacks
+      ? 'pending'
+      : flagBoolean(flags, 'offline') || process.env.DECANTR_OFFLINE === 'true'
+        ? 'skipped-offline'
+        : 'skipped',
+    writtenPathCount: 0,
+    limitation: null,
+  };
 
-  if (hydratePacks) {
+  try {
+    await cmdAnalyze(projectRoot, workspaceInfo, { printNextStep: false });
+    if (process.exitCode && process.exitCode !== 0) return;
+    const initCommand = projectArg
+      ? `decantr init --project ${projectArg} --existing ${proposalFlag}`
+      : `decantr init --existing ${proposalFlag}`;
+    console.log(dim(`Analysis artifacts written; continuing with ${initCommand}.`));
+
+    await cmdInit({
+      existing: true,
+      yes: true,
+      project: flagString(flags, 'project'),
+      'accept-proposal': proposalFlag === '--accept-proposal',
+      'merge-proposal': proposalFlag === '--merge-proposal',
+      'replace-essence': proposalFlag === '--replace-essence',
+      'assistant-bridge': assistantBridge,
+      telemetry: flagBoolean(flags, 'telemetry'),
+      internalSuppressNextSteps: true,
+    });
+    if (process.exitCode && process.exitCode !== 0) return;
+
+    if (hydratePacks) {
+      try {
+        const { bundle, contextDir } = await compileHostedExecutionPackBundle(
+          join(projectRoot, 'decantr.essence.json'),
+        );
+        const written = writeHostedExecutionPackContextArtifacts(
+          contextDir,
+          bundle as ExecutionPackBundle,
+        );
+        packHydration.status = 'hydrated';
+        packHydration.writtenPathCount = written.paths.length;
+        console.log(
+          success(
+            `Hydrated Decantr execution packs (${written.paths.length} files) into ${contextDir}.`,
+          ),
+        );
+      } catch (e) {
+        packHydration.status = 'failed';
+        packHydration.limitation = (e as Error).message;
+        console.log(`${YELLOW}Pack hydration skipped:${RESET} ${(e as Error).message}`);
+        console.log(
+          dim(
+            `Run ${compilePacksCommandForProject(projectArg)} after adoption if you want official page/review packs.`,
+          ),
+        );
+      }
+    } else if (flagBoolean(flags, 'offline') || process.env.DECANTR_OFFLINE === 'true') {
+      console.log(dim('Skipping official content-pack hydration in offline mode.'));
+    }
+
+    await cmdGraph(projectRoot, { displayRoot: process.cwd() });
+    if (process.exitCode && process.exitCode !== 0) return;
+
+    if (runVerify) {
+      const { cmdHealth } = await import('./commands/health.js');
+      await cmdHealth(projectRoot, {
+        browser: runBrowser,
+        browserBaseUrl: baseUrl,
+        evidence,
+        output: evidence ? '.decantr/evidence/latest.json' : undefined,
+        saveBaseline,
+      });
+    }
+
+    if (initCi) {
+      const ciArgs = ['ci', 'init'];
+      if (flagString(flags, 'project'))
+        ciArgs.push('--project', flagString(flags, 'project') as string);
+      await cmdCi(ciArgs, process.cwd());
+    }
+
+    workflowCompleted = true;
+    console.log('');
+    console.log(`${BOLD}Brownfield operating loop:${RESET}`);
+    console.log(
+      `  ${cyan(withProject('decantr codify --from-audit --style-bridge', projectArg))}  Propose project-owned UI law and style bridge`,
+    );
+    console.log(
+      `  ${cyan(withProject('decantr codify --accept --confirm-reviewed', projectArg))}              Accept reviewed local patterns and rules`,
+    );
+    console.log(
+      `  ${cyan(withProject('decantr task <route> "<change>"', projectArg))}      Give your LLM route-specific context before edits`,
+    );
+    console.log(
+      `  ${cyan(withProject('decantr verify --brownfield --local-patterns', projectArg))}  Check contract, health, and local law after edits`,
+    );
+    console.log(
+      `  ${cyan(studioCommandForProject(projectArg))}                      Inspect routes, findings, and attention areas visually`,
+    );
+    console.log(
+      `  ${cyan(withProject('decantr verify --since-baseline', projectArg))}      Compare future work against this baseline`,
+    );
+  } finally {
     try {
-      const { bundle, contextDir } = await compileHostedExecutionPackBundle(
-        join(projectRoot, 'decantr.essence.json'),
-      );
-      const written = writeHostedExecutionPackContextArtifacts(
-        contextDir,
-        bundle as ExecutionPackBundle,
-      );
-      console.log(
-        success(
-          `Hydrated Decantr execution packs (${written.paths.length} files) into ${contextDir}.`,
-        ),
-      );
+      const adoptionAfter = captureAdoptionSnapshot(workspaceInfo.workspaceRoot, {
+        projectRoot: workspaceInfo.appRoot,
+      });
+      const receipt = createAdoptionReceipt(adoptionBefore, adoptionAfter);
+      const stored = persistAdoptionReceipt(projectRoot, receipt, workflowCompleted, packHydration);
+      if (receipt.integrity.status === 'source-changed') {
+        console.error(
+          error('Adoption changed authored host source. Review the stored adoption receipt.'),
+        );
+        process.exitCode = process.exitCode || 1;
+      } else if (receipt.integrity.status === 'incomplete') {
+        console.log(
+          `${YELLOW}Adoption source integrity is incomplete:${RESET} ${receipt.limitations.length} capture limitation(s).`,
+        );
+      } else if (stored) {
+        console.log(
+          success('Adoption source integrity verified; authored host source is unchanged.'),
+        );
+        const adoptionTruth = createProjectAdoptionTruthV1(projectRoot);
+        console.log(
+          dim(
+            `Adoption truth: ${adoptionTruth.facts.length} fact(s), ${adoptionTruth.mutationReceipts.length} receipt(s), ${adoptionTruth.limitations.length} limitation(s).`,
+          ),
+        );
+      }
+      if (!stored) {
+        console.log(
+          `${YELLOW}Adoption receipt was not stored:${RESET} .decantr/project.json is unavailable.`,
+        );
+      }
     } catch (e) {
-      console.log(`${YELLOW}Pack hydration skipped:${RESET} ${(e as Error).message}`);
       console.log(
-        dim(
-          `Run ${compilePacksCommandForProject(projectArg)} after adoption if you want official page/review packs.`,
-        ),
+        `${YELLOW}Adoption receipt could not be completed:${RESET} ${(e as Error).message}`,
       );
     }
-  } else if (flagBoolean(flags, 'offline') || process.env.DECANTR_OFFLINE === 'true') {
-    console.log(dim('Skipping official content-pack hydration in offline mode.'));
   }
-
-  await cmdGraph(projectRoot, { displayRoot: process.cwd() });
-  if (process.exitCode && process.exitCode !== 0) return;
-
-  if (runVerify) {
-    const { cmdHealth } = await import('./commands/health.js');
-    await cmdHealth(projectRoot, {
-      browser: runBrowser,
-      browserBaseUrl: baseUrl,
-      evidence,
-      output: evidence ? '.decantr/evidence/latest.json' : undefined,
-      saveBaseline,
-    });
-  }
-
-  if (initCi) {
-    const ciArgs = ['ci', 'init'];
-    if (flagString(flags, 'project'))
-      ciArgs.push('--project', flagString(flags, 'project') as string);
-    await cmdCi(ciArgs, process.cwd());
-  }
-
-  console.log('');
-  console.log(`${BOLD}Brownfield operating loop:${RESET}`);
-  console.log(
-    `  ${cyan(withProject('decantr codify --from-audit --style-bridge', projectArg))}  Propose project-owned UI law and style bridge`,
-  );
-  console.log(
-    `  ${cyan(withProject('decantr codify --accept --confirm-reviewed', projectArg))}              Accept reviewed local patterns and rules`,
-  );
-  console.log(
-    `  ${cyan(withProject('decantr task <route> "<change>"', projectArg))}      Give your LLM route-specific context before edits`,
-  );
-  console.log(
-    `  ${cyan(withProject('decantr verify --brownfield --local-patterns', projectArg))}  Check contract, health, and local law after edits`,
-  );
-  console.log(
-    `  ${cyan(studioCommandForProject(projectArg))}                      Inspect routes, findings, and attention areas visually`,
-  );
-  console.log(
-    `  ${cyan(withProject('decantr verify --since-baseline', projectArg))}      Compare future work against this baseline`,
-  );
 }
 
 async function cmdVerifyWorkflow(args: string[]): Promise<void> {
@@ -4391,7 +4563,7 @@ async function cmdVerifyWorkflow(args: string[]): Promise<void> {
     }
   }
 
-  const styleBridge = createStyleBridgeTaskSummary(workspaceInfo.appRoot);
+  const styleBridge = createAcceptedStyleBridgeTaskSummary(workspaceInfo.appRoot);
   if (!quietOutput && styleBridge.path) {
     console.log('');
     console.log(`${GREEN}Style bridge found:${RESET} ${styleBridge.path}`);
@@ -4415,6 +4587,205 @@ function readJsonIfPresent<T>(path: string): T | null {
   } catch {
     return null;
   }
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((entry) => typeof entry === 'string');
+}
+
+function isOptionalStringArray(value: unknown): boolean {
+  return value === undefined || isStringArray(value);
+}
+
+function isValidTaskBehaviorObligations(value: unknown): boolean {
+  if (value === undefined) return true;
+  if (!isRecord(value) || !Array.isArray(value.obligations)) return false;
+  if (
+    !isOptionalStringArray(value.modalities) ||
+    !isOptionalStringArray(value.states) ||
+    !isOptionalStringArray(value.risk_profile) ||
+    !isOptionalStringArray(value.test_hints)
+  ) {
+    return false;
+  }
+  return value.obligations.every(
+    (obligation) =>
+      isRecord(obligation) &&
+      typeof obligation.id === 'string' &&
+      obligation.id.trim().length > 0 &&
+      (obligation.label === undefined || typeof obligation.label === 'string') &&
+      (obligation.severity === undefined ||
+        obligation.severity === 'info' ||
+        obligation.severity === 'warn' ||
+        obligation.severity === 'error') &&
+      (obligation.evidence === undefined || typeof obligation.evidence === 'string'),
+  );
+}
+
+function isValidTaskLocalPattern(value: unknown): value is LocalPattern {
+  if (!isRecord(value) || typeof value.id !== 'string' || !value.id.trim()) return false;
+  if (
+    !isOptionalStringArray(value.componentPaths) ||
+    !isOptionalStringArray(value.tokenHints) ||
+    !isOptionalStringArray(value.classHints)
+  ) {
+    return false;
+  }
+  if (
+    value.hostedPatternRefs !== undefined &&
+    (!Array.isArray(value.hostedPatternRefs) ||
+      !value.hostedPatternRefs.every(
+        (ref) => isRecord(ref) && typeof ref.slug === 'string' && ref.slug.trim().length > 0,
+      ))
+  ) {
+    return false;
+  }
+  if (value.confidence !== undefined && !isRecord(value.confidence)) return false;
+  if (value.enforcement !== undefined && !isRecord(value.enforcement)) return false;
+  return isValidTaskBehaviorObligations(value.behavior_obligations);
+}
+
+function isAcceptedLocalPatternPack(value: unknown): value is LocalPatternPack {
+  return (
+    isRecord(value) &&
+    Number.isSafeInteger(value.version) &&
+    (value.version as number) > 0 &&
+    value.status === 'accepted' &&
+    Array.isArray(value.patterns) &&
+    value.patterns.every(isValidTaskLocalPattern)
+  );
+}
+
+function isAcceptedLocalRuleManifest(value: unknown): value is LocalRuleManifest {
+  return (
+    isRecord(value) &&
+    Number.isSafeInteger(value.version) &&
+    (value.version as number) > 0 &&
+    value.status === 'accepted' &&
+    Array.isArray(value.rules) &&
+    value.rules.every(
+      (rule) =>
+        isRecord(rule) &&
+        typeof rule.id === 'string' &&
+        rule.id.trim().length > 0 &&
+        typeof rule.enabled === 'boolean' &&
+        (rule.severity === 'info' || rule.severity === 'warn' || rule.severity === 'error') &&
+        typeof rule.description === 'string',
+    )
+  );
+}
+
+function readAcceptedLocalPatternPack(projectRoot: string): LocalPatternPack | null {
+  const value = readJsonIfPresent<unknown>(localPatternsPath(projectRoot));
+  return isAcceptedLocalPatternPack(value) ? value : null;
+}
+
+function createAcceptedLocalLawTaskSummary(projectRoot: string): LocalLawTaskSummary {
+  const patternPack = readAcceptedLocalPatternPack(projectRoot);
+  const ruleValue = readJsonIfPresent<unknown>(localRulesPath(projectRoot));
+  const ruleManifest = isAcceptedLocalRuleManifest(ruleValue) ? ruleValue : null;
+  const behaviorObligations: LocalBehaviorObligationSummary[] = [];
+  const patterns = (patternPack?.patterns ?? []).map((pattern) => {
+    const behavior = summarizeLocalPatternBehaviorObligations(pattern);
+    if (behavior) behaviorObligations.push(behavior);
+    return {
+      id: pattern.id ?? 'unknown',
+      role: typeof pattern.role === 'string' ? pattern.role : null,
+      componentPaths: pattern.componentPaths ?? [],
+      confidenceTier:
+        isRecord(pattern.confidence) && typeof pattern.confidence.tier === 'string'
+          ? pattern.confidence.tier
+          : null,
+      enforcementLevel:
+        isRecord(pattern.enforcement) && typeof pattern.enforcement.level === 'string'
+          ? pattern.enforcement.level
+          : null,
+      hostedPatternRefs: (pattern.hostedPatternRefs ?? []).map((ref) => ref.slug),
+      behaviorObligations: behavior,
+    };
+  });
+  const rules = (ruleManifest?.rules ?? []).map((rule) => ({
+    id: rule.id,
+    severity: rule.severity,
+    enabled: rule.enabled,
+    description: rule.description,
+  }));
+
+  return {
+    patternsPath: patternPack ? '.decantr/local-patterns.json' : null,
+    rulesPath: ruleManifest ? '.decantr/rules.json' : null,
+    patternCount: patterns.length,
+    ruleCount: rules.length,
+    patterns,
+    behaviorObligations,
+    rules,
+  };
+}
+
+type AcceptedStyleBridgeManifest = {
+  version: 1 | 2;
+  status: 'accepted';
+  styling?: { approach?: string; themeModes?: string[] };
+  mappings: Array<{
+    id: string;
+    label?: string;
+    tokenHints?: string[];
+    classHints?: string[];
+    guardrails?: string[];
+  }>;
+};
+
+function isAcceptedStyleBridgeManifest(value: unknown): value is AcceptedStyleBridgeManifest {
+  if (
+    !isRecord(value) ||
+    (value.version !== 1 && value.version !== 2) ||
+    value.status !== 'accepted' ||
+    !Array.isArray(value.mappings)
+  ) {
+    return false;
+  }
+  if (
+    value.styling !== undefined &&
+    (!isRecord(value.styling) ||
+      (value.styling.approach !== undefined && typeof value.styling.approach !== 'string') ||
+      !isOptionalStringArray(value.styling.themeModes))
+  ) {
+    return false;
+  }
+  return value.mappings.every(
+    (mapping) =>
+      isRecord(mapping) &&
+      typeof mapping.id === 'string' &&
+      mapping.id.trim().length > 0 &&
+      (mapping.label === undefined || typeof mapping.label === 'string') &&
+      isOptionalStringArray(mapping.tokenHints) &&
+      isOptionalStringArray(mapping.classHints) &&
+      isOptionalStringArray(mapping.guardrails),
+  );
+}
+
+function readAcceptedStyleBridgeManifest(projectRoot: string): AcceptedStyleBridgeManifest | null {
+  const value = readJsonIfPresent<unknown>(styleBridgePath(projectRoot));
+  return isAcceptedStyleBridgeManifest(value) ? value : null;
+}
+
+function createAcceptedStyleBridgeTaskSummary(projectRoot: string): StyleBridgeTaskSummary {
+  const bridge = readAcceptedStyleBridgeManifest(projectRoot);
+  return {
+    path: bridge ? '.decantr/style-bridge.json' : null,
+    status: bridge?.status ?? null,
+    mappingCount: bridge?.mappings.length ?? 0,
+    stylingApproach: bridge?.styling?.approach ?? null,
+    themeModes: bridge?.styling?.themeModes ?? [],
+    mappings:
+      bridge?.mappings.map((mapping) => ({
+        id: mapping.id,
+        label: mapping.label ?? mapping.id,
+        tokenHints: mapping.tokenHints?.slice(0, 6) ?? [],
+        classHints: mapping.classHints?.slice(0, 4) ?? [],
+        guardrails: mapping.guardrails?.slice(0, 3) ?? [],
+      })) ?? [],
+  };
 }
 
 function mentionsWord(text: string, term: string): boolean {
@@ -4441,7 +4812,7 @@ function createTaskAuthoritySummary(input: {
 } {
   const detected = detectProject(input.projectRoot);
   const hasLocalLaw = input.hasLocalPatterns || input.hasLocalRules;
-  const hasStyleBridge = input.hasStyleBridge || input.adoptionMode === 'style-bridge';
+  const hasStyleBridge = input.hasStyleBridge;
   let lane = 'Brownfield contract-only';
   let sourceAuthority = 'Existing app is authoritative; Decantr supplies contract context.';
   let styleAuthority = 'Use the existing styling system.';
@@ -4460,7 +4831,8 @@ function createTaskAuthoritySummary(input: {
     lane = 'Hybrid style bridge';
     sourceAuthority =
       'Existing app remains authoritative; Decantr intent maps through the style bridge.';
-    styleAuthority = 'Use bridge tokens/classes as a mapping layer onto the app styling system.';
+    styleAuthority =
+      'Use the host-owned tokens/classes named by the accepted style bridge; Decantr does not own runtime CSS.';
     activeAuthorities.push('accepted style bridge');
   } else if (input.workflowMode === 'brownfield-attach' && hasLocalLaw) {
     lane = 'Hybrid local law';
@@ -4472,10 +4844,11 @@ function createTaskAuthoritySummary(input: {
         ? 'Greenfield contract-only'
         : 'Greenfield scaffold';
     sourceAuthority = 'Essence V4 and generated context are authoritative.';
-    styleAuthority =
-      input.adoptionMode === 'contract-only'
-        ? 'Use the project-chosen styling system.'
-        : 'Use Decantr CSS where generated by the adapter.';
+    styleAuthority = adoptionUsesDecantrRuntimeCss(input.adoptionMode)
+      ? 'Use Decantr CSS where explicitly generated by the adapter.'
+      : hasStyleBridge
+        ? 'Use the host styling system through reviewed mappings in the accepted project-owned style bridge.'
+        : 'Use the project-chosen host styling system; no style bridge is authoritative until a reviewed artifact is accepted.';
     activeAuthorities.splice(
       0,
       activeAuthorities.length,
@@ -4486,11 +4859,21 @@ function createTaskAuthoritySummary(input: {
   }
 
   if (hasLocalLaw) activeAuthorities.push('accepted local patterns/rules');
+  if (hasStyleBridge && !activeAuthorities.includes('accepted style bridge')) {
+    activeAuthorities.push('accepted style bridge');
+  }
   if (input.hasPackManifest) activeAuthorities.push('official content packs as guidance');
 
   const framework = detected.framework ?? 'unknown';
   const runtimeBoundary = `Detected ${framework}; do not introduce another frontend runtime inside this route unless the task is explicitly a reviewed migration or isolated integration plan.`;
   const warnings: string[] = [];
+  if (input.adoptionMode === 'style-bridge' && !hasStyleBridge) {
+    warnings.push(
+      input.workflowMode?.startsWith('greenfield')
+        ? 'Style-bridge adoption mode is recorded, but no parsed, valid, accepted style bridge is available. The project-chosen host styling system remains the active style authority.'
+        : 'Style-bridge adoption mode is recorded, but no parsed, valid, accepted style bridge is available. Production source remains the active style authority.',
+    );
+  }
   const task = input.taskSummary;
   const runtimeTerms = [
     'angular',
@@ -4600,6 +4983,153 @@ function rankBehaviorObligationsForTask(
   );
 }
 
+const TASK_CAPSULE_VERSION = 'task-capsule.v1' as const;
+const TASK_PAYLOAD_MAX_CANONICAL_BYTES = 12_000;
+
+function taskWorkspacePath(workspaceRoot: string, appRoot: string, projectPath: string): string {
+  const selectedAppRoot = relative(workspaceRoot, appRoot).replace(/\\/g, '/') || '.';
+  return selectedAppRoot === '.'
+    ? projectPath.replace(/\\/g, '/').replace(/^\.\//, '')
+    : join(selectedAppRoot, projectPath).replace(/\\/g, '/');
+}
+
+function existingTaskContextFile(
+  contextDir: string,
+  reference: string | null | undefined,
+): string | null {
+  if (!reference || isAbsolute(reference)) return null;
+  const contextRoot = resolve(contextDir);
+  const candidate = resolve(contextRoot, reference);
+  const candidateRelative = relative(contextRoot, candidate).replace(/\\/g, '/');
+  if (
+    candidateRelative.length === 0 ||
+    candidateRelative === '..' ||
+    candidateRelative.startsWith('../') ||
+    isAbsolute(candidateRelative)
+  ) {
+    return null;
+  }
+
+  try {
+    if (!statSync(candidate).isFile()) return null;
+    const realContextRoot = realpathSync(contextRoot);
+    const realCandidate = realpathSync(candidate);
+    const realRelative = relative(realContextRoot, realCandidate).replace(/\\/g, '/');
+    return realRelative.length > 0 &&
+      realRelative !== '..' &&
+      !realRelative.startsWith('../') &&
+      !isAbsolute(realRelative)
+      ? candidate
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+function taskContentGuidance(patternIds: string[]): TaskCapsuleOfficialGuidanceV1[] {
+  return [...new Set(patternIds)].flatMap((id, index) => {
+    const record = getContentRecord('pattern', id);
+    if (!record) return [];
+    const ref = buildContentRef({
+      namespace: record.namespace,
+      type: record.type,
+      id: record.id,
+      version: record.version,
+      data: record.data,
+      origin: 'official',
+      resolvedFrom: 'installed-package',
+    });
+    const description = record.data.description;
+    return [
+      {
+        identity: ref.identity,
+        version: ref.version,
+        digest: ref.digest,
+        origin: ref.origin,
+        resolvedFrom: ref.resolvedFrom,
+        summary:
+          typeof description === 'string' && description.trim()
+            ? description.trim()
+            : `Official ${record.type} guidance for ${record.id}.`,
+        rank: index + 1,
+        required: false,
+      },
+    ];
+  });
+}
+
+function taskGraphFindings(
+  routeGraphContext: ReturnType<typeof buildGraphRouteContext>,
+): TaskCapsuleFindingV1[] {
+  if (!routeGraphContext) return [];
+  return routeGraphContext.nodes
+    .filter((node) => node.type === 'Finding')
+    .map((node) => {
+      const severityValue = graphPayloadString(node.payload, 'severity');
+      const severity =
+        severityValue === 'error' || severityValue === 'warn' || severityValue === 'info'
+          ? severityValue
+          : 'warn';
+      const code = graphPayloadString(node.payload, 'code') ?? node.id;
+      return {
+        code,
+        severity,
+        repairId:
+          graphPayloadString(node.payload, 'repair_id') ??
+          graphPayloadString(node.payload, 'repair_plan_id') ??
+          null,
+        graphNodeId: graphPayloadString(node.payload, 'anchored_at') ?? node.id,
+        blocking: severity === 'error',
+        summary: graphPayloadString(node.payload, 'message') ?? code,
+      };
+    });
+}
+
+function trimTaskCompatibilityPayload(payload: Record<string, unknown>): number {
+  const graph = payload.graph as {
+    routeContext?: { nodes?: unknown[]; edges?: unknown[]; ranked?: unknown[] } | null;
+    changedFileContext?: {
+      impact?: { nodes?: unknown[]; edges?: unknown[]; ranked?: unknown[] } | null;
+    } | null;
+  } | null;
+  const localLaw = payload.localLaw as
+    | { behaviorObligations?: unknown[]; patterns?: unknown[]; rules?: unknown[] }
+    | undefined;
+  const styleBridge = payload.styleBridge as { mappings?: unknown[] } | undefined;
+  const loop = payload.loop as
+    | {
+        maker?: { instructions?: unknown[] };
+        checker?: { instructions?: unknown[] };
+      }
+    | undefined;
+  const removable = [
+    graph?.routeContext?.nodes,
+    graph?.routeContext?.edges,
+    graph?.routeContext?.ranked,
+    graph?.changedFileContext?.impact?.nodes,
+    graph?.changedFileContext?.impact?.edges,
+    graph?.changedFileContext?.impact?.ranked,
+    localLaw?.behaviorObligations,
+    localLaw?.patterns,
+    localLaw?.rules,
+    styleBridge?.mappings,
+    loop?.maker?.instructions,
+    loop?.checker?.instructions,
+  ].filter((value): value is unknown[] => Array.isArray(value));
+
+  let madeProgress = true;
+  while (canonicalUtf8Bytes(payload) > TASK_PAYLOAD_MAX_CANONICAL_BYTES && madeProgress) {
+    madeProgress = false;
+    for (const list of removable) {
+      if (list.length === 0) continue;
+      list.pop();
+      madeProgress = true;
+      if (canonicalUtf8Bytes(payload) <= TASK_PAYLOAD_MAX_CANONICAL_BYTES) break;
+    }
+  }
+  return canonicalUtf8Bytes(payload);
+}
+
 async function cmdTaskWorkflow(args: string[]): Promise<void> {
   const { flags, positional } = parseLooseArgs(args);
   const workspaceInfo = resolveWorkflowProject(flags, 'task');
@@ -4668,15 +5198,26 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
       (entry) => entry.path === route,
     )?.file;
   }
-  const pagePack = manifest?.pages?.find((entry) => entry.id === target.page);
+  const pagePack = manifest?.pages?.find(
+    (entry) =>
+      entry.id === target.page && (entry.sectionId === null || entry.sectionId === target.section),
+  );
   const sectionPack = manifest?.sections?.find((entry) => entry.id === target.section);
+  const pagePackMarkdownPath = existingTaskContextFile(contextDir, pagePack?.markdown);
+  const sectionPackMarkdownPath = existingTaskContextFile(contextDir, sectionPack?.markdown);
+  const scaffoldPackMarkdownPath = existingTaskContextFile(
+    contextDir,
+    manifest?.scaffold?.markdown,
+  );
+  const sectionNarrativePath = existingTaskContextFile(contextDir, `section-${target.section}.md`);
+  const scaffoldNarrativePath = existingTaskContextFile(contextDir, 'scaffold.md');
+  const hasValidatedPackContext = Boolean(
+    pagePackMarkdownPath || sectionPackMarkdownPath || scaffoldPackMarkdownPath,
+  );
   const visualManifest = readJsonIfPresent<{
     routes?: Array<{ route: string; screenshot?: string | null }>;
   }>(join(workspaceInfo.appRoot, '.decantr', 'evidence', 'visual-manifest.json'));
   const screenshot = visualManifest?.routes?.find((entry) => entry.route === route)?.screenshot;
-  const localPatternPackPath = localPatternsPath(workspaceInfo.appRoot);
-  const localRuleManifestPath = localRulesPath(workspaceInfo.appRoot);
-  const acceptedStyleBridgePath = styleBridgePath(workspaceInfo.appRoot);
   const graphDir = join(workspaceInfo.appRoot, '.decantr', 'graph');
   const contractCapsulePath = join(graphDir, 'contract-capsule.json');
   const graphSnapshotPath = join(graphDir, 'graph.snapshot.json');
@@ -4736,13 +5277,13 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
       : undefined;
   }
   const routePatterns = page?.layout?.map(extractPatternName) ?? [];
-  const localLaw = createLocalLawTaskSummary(workspaceInfo.appRoot);
+  const localLaw = createAcceptedLocalLawTaskSummary(workspaceInfo.appRoot);
   const rankedBehaviorObligations = rankBehaviorObligationsForTask(
     localLaw.behaviorObligations,
     routePatterns,
     taskSummary,
   );
-  const styleBridge = createStyleBridgeTaskSummary(workspaceInfo.appRoot);
+  const styleBridge = createAcceptedStyleBridgeTaskSummary(workspaceInfo.appRoot);
   const displayedStyleBridge = {
     ...styleBridge,
     path: styleBridge.path ? displayProjectPath(workspaceInfo, styleBridge.path) : null,
@@ -4758,71 +5299,230 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
   const changedSince = flagString(flags, 'since');
   const currentChangedFiles = collectChangedFiles(workspaceInfo.appRoot, changedSince);
   const changedRoutes = routeImpacts(workspaceInfo.appRoot, currentChangedFiles);
-  const changedFileSourceNodes = graphSnapshot
-    ? currentChangedFiles.map((file) => ({
-        file,
-        nodeId: graphSourceNodeIdForTaskFile(workspaceInfo.appRoot, graphSnapshot, file),
-      }))
-    : [];
-  const changedFileSourceNodeIds = [
-    ...new Set(
-      changedFileSourceNodes
-        .map((entry) => entry.nodeId)
-        .filter((nodeId): nodeId is string => Boolean(nodeId)),
-    ),
-  ];
-  const changedFileMissingFiles = graphSnapshot
-    ? changedFileSourceNodes.filter((entry) => !entry.nodeId).map((entry) => entry.file)
-    : currentChangedFiles;
-  const changedFileGraphContext =
-    graphSnapshot && changedFileSourceNodeIds.length > 0
-      ? buildGraphImpactContext(graphSnapshot, changedFileSourceNodeIds, {
-          task: taskSummary,
-          limit: 120,
-        })
-      : null;
+  const changedFileGraphImpact = buildChangedFileGraphImpact(graphSnapshot, currentChangedFiles, {
+    task: taskSummary,
+    limit: 120,
+  });
+  const changedFileSourceNodeIds = changedFileGraphImpact.sourceNodeIds;
+  const changedFileMissingFiles = changedFileGraphImpact.unresolvedFiles;
+  const changedFileGraphContext = changedFileGraphImpact.context;
   const authority = createTaskAuthoritySummary({
     projectRoot: workspaceInfo.appRoot,
     workflowMode: projectJson?.initialized?.workflowMode ?? null,
     adoptionMode: projectJson?.initialized?.adoptionMode ?? null,
-    hasLocalPatterns: existsSync(localPatternPackPath),
-    hasLocalRules: existsSync(localRuleManifestPath),
-    hasPackManifest: Boolean(manifest),
+    hasLocalPatterns: localLaw.patternCount > 0,
+    hasLocalRules: localLaw.ruleCount > 0,
+    hasPackManifest: hasValidatedPackContext,
     taskSummary,
-    hasStyleBridge: existsSync(acceptedStyleBridgePath),
+    hasStyleBridge: Boolean(styleBridge.path),
   });
-  const readTargets = [
-    routeSourceFile && existsSync(join(workspaceInfo.appRoot, routeSourceFile))
-      ? displayProjectPath(workspaceInfo, routeSourceFile)
-      : null,
-    pagePack
-      ? displayProjectPath(workspaceInfo, join('.decantr/context', pagePack.markdown))
-      : null,
-    sectionPack
-      ? displayProjectPath(workspaceInfo, join('.decantr/context', sectionPack.markdown))
-      : null,
-    manifest?.scaffold?.markdown
-      ? displayProjectPath(workspaceInfo, join('.decantr/context', manifest.scaffold.markdown))
-      : null,
-    displayProjectPath(workspaceInfo, '.decantr/context/scaffold.md'),
-    displayProjectPath(workspaceInfo, 'DECANTR.md'),
-    existsSync(localPatternPackPath)
-      ? displayProjectPath(workspaceInfo, '.decantr/local-patterns.json')
-      : null,
-    existsSync(localRuleManifestPath)
-      ? displayProjectPath(workspaceInfo, '.decantr/rules.json')
-      : null,
-    existsSync(acceptedStyleBridgePath)
-      ? displayProjectPath(workspaceInfo, '.decantr/style-bridge.json')
-      : null,
-    contractCapsule
-      ? displayProjectPath(workspaceInfo, '.decantr/graph/contract-capsule.json')
-      : null,
-    routeGraphContext && !contractCapsule
-      ? displayProjectPath(workspaceInfo, '.decantr/graph/graph.snapshot.json')
-      : null,
-  ].filter((value): value is string => Boolean(value));
-  const uniqueReadTargets = [...new Set(readTargets)];
+  if (!routeSourceFile || !existsSync(join(workspaceInfo.appRoot, routeSourceFile))) {
+    console.error(
+      error(
+        `Could not prove the implementation source for ${route}. Run \`decantr scan\` and \`decantr graph\`, then retry.`,
+      ),
+    );
+    process.exitCode = 1;
+    return;
+  }
+  const selectedAppRoot =
+    relative(workspaceInfo.workspaceRoot, workspaceInfo.appRoot).replace(/\\/g, '/') || '.';
+  const routeImplementationPath = taskWorkspacePath(
+    workspaceInfo.workspaceRoot,
+    workspaceInfo.appRoot,
+    routeSourceFile,
+  );
+  const capsuleTargetSpecs: Array<{
+    path: string | null;
+    kind: TaskCapsuleReadTargetV1['kind'];
+    required: boolean;
+  }> = [
+    { path: routeImplementationPath, kind: 'route-implementation', required: true },
+    {
+      path: pagePackMarkdownPath
+        ? taskWorkspacePath(
+            workspaceInfo.workspaceRoot,
+            workspaceInfo.appRoot,
+            relative(workspaceInfo.appRoot, pagePackMarkdownPath),
+          )
+        : null,
+      kind: 'route-layout',
+      required: false,
+    },
+    {
+      path: sectionPackMarkdownPath
+        ? taskWorkspacePath(
+            workspaceInfo.workspaceRoot,
+            workspaceInfo.appRoot,
+            relative(workspaceInfo.appRoot, sectionPackMarkdownPath),
+          )
+        : sectionNarrativePath
+          ? taskWorkspacePath(
+              workspaceInfo.workspaceRoot,
+              workspaceInfo.appRoot,
+              relative(workspaceInfo.appRoot, sectionNarrativePath),
+            )
+          : null,
+      kind: 'route-layout',
+      required: false,
+    },
+    {
+      path: scaffoldPackMarkdownPath
+        ? taskWorkspacePath(
+            workspaceInfo.workspaceRoot,
+            workspaceInfo.appRoot,
+            relative(workspaceInfo.appRoot, scaffoldPackMarkdownPath),
+          )
+        : scaffoldNarrativePath
+          ? taskWorkspacePath(
+              workspaceInfo.workspaceRoot,
+              workspaceInfo.appRoot,
+              relative(workspaceInfo.appRoot, scaffoldNarrativePath),
+            )
+          : null,
+      kind: 'contract',
+      required: false,
+    },
+    {
+      path: existsSync(join(workspaceInfo.appRoot, 'DECANTR.md'))
+        ? taskWorkspacePath(workspaceInfo.workspaceRoot, workspaceInfo.appRoot, 'DECANTR.md')
+        : null,
+      kind: 'local-law',
+      required: false,
+    },
+    {
+      path: displayedLocalLaw.patternsPath,
+      kind: 'local-law',
+      required: false,
+    },
+    {
+      path: displayedLocalLaw.rulesPath,
+      kind: 'local-law',
+      required: false,
+    },
+    {
+      path: displayedStyleBridge.path,
+      kind: 'style-bridge',
+      required: false,
+    },
+    {
+      path: contractCapsule
+        ? taskWorkspacePath(
+            workspaceInfo.workspaceRoot,
+            workspaceInfo.appRoot,
+            '.decantr/graph/contract-capsule.json',
+          )
+        : routeGraphContext
+          ? taskWorkspacePath(
+              workspaceInfo.workspaceRoot,
+              workspaceInfo.appRoot,
+              '.decantr/graph/graph.snapshot.json',
+            )
+          : null,
+      kind: 'graph',
+      required: false,
+    },
+  ];
+  const seenCapsuleTargets = new Set<string>();
+  const capsuleReadTargets = capsuleTargetSpecs.flatMap((target) => {
+    if (!target.path || seenCapsuleTargets.has(target.path)) return [];
+    seenCapsuleTargets.add(target.path);
+    return [{ ...target, path: target.path, rank: seenCapsuleTargets.size }];
+  });
+  const contentGuidance = taskContentGuidance(routePatterns);
+  const hasLocalLawAuthority = localLaw.patternCount > 0 || localLaw.ruleCount > 0;
+  const hasStyleBridgeAuthority = Boolean(styleBridge.path);
+  const activeAuthorityLane: TaskCapsuleAuthorityLane =
+    projectJson?.initialized?.workflowMode?.startsWith('greenfield')
+      ? 'essence-contract'
+      : hasStyleBridgeAuthority
+        ? 'style-bridge'
+        : hasLocalLawAuthority
+          ? 'local-law'
+          : 'production-source';
+  const authorityEntries = [
+    {
+      lane: 'production-source' as const,
+      summary: authority.sourceAuthority,
+      sourcePath: routeImplementationPath,
+    },
+    {
+      lane: 'essence-contract' as const,
+      summary: 'Essence V4 declares the governed route, page, shell, and pattern intent.',
+      sourcePath: taskWorkspacePath(
+        workspaceInfo.workspaceRoot,
+        workspaceInfo.appRoot,
+        'decantr.essence.json',
+      ),
+    },
+    ...(hasLocalLawAuthority
+      ? [
+          {
+            lane: 'local-law' as const,
+            summary: 'Accepted project-owned patterns and rules override advisory guidance.',
+            sourcePath:
+              localLaw.ruleCount > 0 ? displayedLocalLaw.rulesPath : displayedLocalLaw.patternsPath,
+          },
+        ]
+      : []),
+    ...(hasStyleBridgeAuthority
+      ? [
+          {
+            lane: 'style-bridge' as const,
+            summary: authority.styleAuthority,
+            sourcePath: displayedStyleBridge.path,
+          },
+        ]
+      : []),
+    ...(contentGuidance.length > 0
+      ? [
+          {
+            lane: 'official-guidance' as const,
+            summary: 'Official @decantr/content records are advisory below project-owned law.',
+            sourcePath: null,
+          },
+        ]
+      : []),
+  ];
+  const capsuleInput: CreateTaskCapsuleV1Input = {
+    project: {
+      identity: createStableProjectIdentityV1(workspaceInfo.appRoot),
+      workspaceRoot: '.',
+      selectedAppRoot,
+    },
+    task: { request: taskSummary || `Implement the governed ${route} route task.`, route },
+    graph: {
+      snapshotId: graphSnapshot?.id ?? null,
+      sourceHash: graphSnapshot?.source_hash ?? null,
+      freshness: graphCurrent ? 'fresh' : graphSnapshot ? 'stale' : 'missing',
+      limitations: graphStaleArtifacts,
+    },
+    readTargets: capsuleReadTargets,
+    authority: { activeLane: activeAuthorityLane, entries: authorityEntries },
+    impact: {
+      changedFiles: currentChangedFiles.map((path) =>
+        taskWorkspacePath(workspaceInfo.workspaceRoot, workspaceInfo.appRoot, path),
+      ),
+      changedRoutes,
+      nodeIds: [
+        ...changedFileSourceNodeIds,
+        ...(changedFileGraphContext?.ranked.map((node) => node.id) ?? []),
+      ],
+      unresolvedFiles: changedFileMissingFiles.map((path) =>
+        taskWorkspacePath(workspaceInfo.workspaceRoot, workspaceInfo.appRoot, path),
+      ),
+    },
+    findings: taskGraphFindings(routeGraphContext),
+    contentGuidance,
+    stopConditions: [
+      'Runtime source and Decantr context disagree.',
+      'The route graph cannot resolve a source file affected by the edit.',
+      'A fix requires contract/source/local-law mutation outside the explicit workflow.',
+    ],
+    verifyCommand: taskVerifyCommand,
+  };
+  let capsule = createTaskCapsuleV1(capsuleInput);
+  const uniqueReadTargets = capsule.readTargets.map((target) => target.path);
   const taskLoopState: LoopReadiness['state'] =
     uniqueReadTargets.length === 0
       ? 'blocked_missing_context'
@@ -4840,10 +5540,7 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
         : 'Task context is missing required context or graph evidence.',
     summary: `${route} task context with ${uniqueReadTargets.length} read target(s), ${routeGraphContext ? routeGraphContext.summary.nodes : 0} graph node(s), and ${changedRoutes.length} changed-route hint(s).`,
     authority: {
-      activeLane:
-        projectJson?.initialized?.workflowMode === 'brownfield-attach'
-          ? 'production-source'
-          : 'essence-contract',
+      activeLane: capsule.authority.activeLane,
       summary: `${authority.lane}: ${authority.sourceAuthority}`,
       stopRule:
         'If runtime source and Decantr context disagree, stop and report drift instead of guessing.',
@@ -4915,23 +5612,30 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
     },
     readTargets: uniqueReadTargets,
     graphImpact: {
-      status: graphCurrent && routeGraphContext ? 'ready' : graphSnapshot ? 'stale' : 'missing',
-      snapshotId: routeGraphContext?.snapshotId ?? graphSnapshot?.id ?? null,
-      sourceHash: routeGraphContext?.sourceHash ?? graphSnapshot?.source_hash ?? null,
+      status:
+        capsule.graph.freshness === 'fresh'
+          ? 'ready'
+          : capsule.graph.freshness === 'stale'
+            ? 'stale'
+            : 'missing',
+      snapshotId: capsule.graph.snapshotId,
+      sourceHash: capsule.graph.sourceHash,
       sourceArtifactCount: routeGraphContext?.summary.sourceArtifacts ?? 0,
       staleArtifacts: graphStaleArtifacts,
     },
-    stopConditions: [
-      'Runtime source and Decantr context disagree.',
-      'The route graph cannot resolve a source file affected by the edit.',
-      'A fix requires contract/source/local-law mutation outside the explicit workflow.',
-    ],
-    verifyCommand: taskVerifyCommand,
+    stopConditions: capsule.stopConditions,
+    verifyCommand: capsule.verifyCommand,
   };
 
   const context = {
+    taskCapsuleVersion: TASK_CAPSULE_VERSION,
+    taskCapsuleBudget: capsule.budget,
+    taskCapsuleTruncation: capsule.truncation,
+    taskCapsuleDigest: `sha256:${createHash('sha256')
+      .update(canonicalJsonStringify(capsule), 'utf8')
+      .digest('hex')}`,
     route,
-    task: taskSummary || null,
+    task: taskSummary ? capsule.task.request : null,
     section: target.section,
     page: target.page,
     shell: page?.shell ?? section?.shell ?? null,
@@ -4990,14 +5694,80 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
     screenshot: screenshot?.startsWith('.decantr/')
       ? displayProjectPath(workspaceInfo, screenshot)
       : (screenshot ?? null),
-    authority,
+    authority: { ...authority, activeLane: capsule.authority.activeLane },
     localLaw: displayedLocalLaw,
     styleBridge: displayedStyleBridge,
-    changedFiles: currentChangedFiles,
-    changedRoutes,
+    changedFiles: currentChangedFiles.filter((path) =>
+      capsule.impact.changedFiles.includes(
+        taskWorkspacePath(workspaceInfo.workspaceRoot, workspaceInfo.appRoot, path),
+      ),
+    ),
+    changedRoutes: capsule.impact.changedRoutes,
     loop: taskLoop,
-    verifyCommand: taskVerifyCommand,
+    verifyCommand: capsule.verifyCommand,
   };
+
+  let contextBytes = trimTaskCompatibilityPayload(context as unknown as Record<string, unknown>);
+  for (
+    let iteration = 0;
+    contextBytes > TASK_PAYLOAD_MAX_CANONICAL_BYTES && iteration < 12;
+    iteration += 1
+  ) {
+    const overflow = contextBytes - TASK_PAYLOAD_MAX_CANONICAL_BYTES;
+    const nextMaxCanonicalBytes = Math.max(
+      1,
+      Math.min(capsule.budget.maxCanonicalBytes - 1, capsule.budget.canonicalBytes - overflow - 64),
+    );
+    const nextMaxEstimatedTokens = Math.max(
+      1,
+      Math.min(
+        capsule.budget.maxEstimatedTokens,
+        Math.floor(nextMaxCanonicalBytes / TASK_CAPSULE_TOKEN_ESTIMATE_BYTES_PER_TOKEN),
+      ),
+    );
+    try {
+      capsule = createTaskCapsuleV1({
+        ...capsuleInput,
+        budget: {
+          maxCanonicalBytes: nextMaxCanonicalBytes,
+          maxEstimatedTokens: nextMaxEstimatedTokens,
+        },
+      });
+    } catch (error) {
+      throw new Error(
+        `Task payload cannot fit the canonical task capsule within ${TASK_PAYLOAD_MAX_CANONICAL_BYTES} bytes: ${(error as Error).message}`,
+      );
+    }
+
+    context.taskCapsuleBudget = capsule.budget;
+    context.taskCapsuleTruncation = capsule.truncation;
+    context.taskCapsuleDigest = `sha256:${createHash('sha256')
+      .update(canonicalJsonStringify(capsule), 'utf8')
+      .digest('hex')}`;
+    context.task = taskSummary ? capsule.task.request : null;
+    context.read = capsule.readTargets.map((target) => target.path);
+    context.authority.activeLane = capsule.authority.activeLane;
+    context.changedFiles = currentChangedFiles.filter((path) =>
+      capsule.impact.changedFiles.includes(
+        taskWorkspacePath(workspaceInfo.workspaceRoot, workspaceInfo.appRoot, path),
+      ),
+    );
+    context.changedRoutes = capsule.impact.changedRoutes;
+    context.loop.authority.activeLane = capsule.authority.activeLane;
+    context.loop.readTargets = context.read;
+    context.loop.stopConditions = capsule.stopConditions;
+    context.loop.verifyCommand = capsule.verifyCommand;
+    context.verifyCommand = capsule.verifyCommand;
+    contextBytes = trimTaskCompatibilityPayload(context as unknown as Record<string, unknown>);
+  }
+  if (contextBytes > TASK_PAYLOAD_MAX_CANONICAL_BYTES) {
+    throw new Error(
+      `Task compatibility payload exceeds ${TASK_PAYLOAD_MAX_CANONICAL_BYTES} canonical UTF-8 bytes after deterministic pruning.`,
+    );
+  }
+  if (taskSummary && context.task !== capsule.task.request) {
+    throw new Error('Task compatibility payload diverged from the canonical TaskCapsule request.');
+  }
 
   if (context.loop.status === 'blocked') {
     process.exitCode = 1;
@@ -5013,7 +5783,7 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
   console.log(`  Section/page: ${context.section}/${context.page}`);
   if (context.shell) console.log(`  Shell: ${context.shell}`);
   if (context.patterns.length > 0) console.log(`  Patterns: ${context.patterns.join(', ')}`);
-  if (taskSummary) console.log(`  Task: ${taskSummary}`);
+  if (context.task) console.log(`  Task: ${context.task}`);
   console.log('');
   console.log(`${BOLD}Read before editing:${RESET}`);
   for (const path of context.read) {
@@ -5258,10 +6028,37 @@ async function cmdCodifyWorkflow(args: string[]): Promise<void> {
       process.exitCode = 1;
       return;
     }
-    const result = acceptBrownfieldLocalLaw(workspaceInfo.appRoot);
     const hasBridgeProposal = existsSync(styleBridgeProposalPath(workspaceInfo.appRoot));
     const acceptBridge = flagBoolean(flags, 'accept-style-bridge');
+    const bridgeEssenceValue = acceptBridge
+      ? readJsonIfPresent<EssenceFile>(join(workspaceInfo.appRoot, 'decantr.essence.json'))
+      : null;
+    if (acceptBridge && (!bridgeEssenceValue || !isV4(bridgeEssenceValue))) {
+      console.error(
+        error(
+          'Style bridge acceptance requires an attached Essence v4 project so authority context can be regenerated immediately.',
+        ),
+      );
+      process.exitCode = 1;
+      return;
+    }
+
+    const result = acceptBrownfieldLocalLaw(workspaceInfo.appRoot);
     const bridgeAcceptedPath = acceptBridge ? acceptStyleBridge(workspaceInfo.appRoot) : null;
+    if (bridgeAcceptedPath && bridgeEssenceValue && isV4(bridgeEssenceValue)) {
+      const registryClient = new RegistryClient({
+        cacheDir: join(workspaceInfo.appRoot, '.decantr', 'cache'),
+        offline: true,
+        projectRoot: workspaceInfo.appRoot,
+      });
+      await refreshDerivedFiles(
+        workspaceInfo.appRoot,
+        bridgeEssenceValue,
+        registryClient,
+        undefined,
+        { forceAssistantBridge: true },
+      );
+    }
     if (
       !result.patternAcceptedPath &&
       !result.rulesAcceptedPath &&
@@ -5284,6 +6081,11 @@ async function cmdCodifyWorkflow(args: string[]): Promise<void> {
     }
     if (bridgeAcceptedPath) {
       console.log(success(`Accepted style bridge: ${bridgeAcceptedPath}`));
+      console.log(
+        success(
+          'Regenerated DECANTR.md and .decantr/context/assistant-bridge.md with accepted bridge authority.',
+        ),
+      );
     } else if (hasBridgeProposal) {
       console.log(
         dim(
@@ -5510,7 +6312,7 @@ async function cmdContentCorpusWorkflow(
     return;
   }
   console.error(
-    `${RED}Usage: decantr ${commandName} summary [--namespace <namespace>] [--json] | decantr ${commandName} compile-packs [path] [--namespace <namespace>] [--json] [--write-context] | decantr ${commandName} get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] [--write-context]${RESET}`,
+    `${RED}Usage: decantr ${commandName} summary [--namespace <namespace>] [--json] | decantr ${commandName} compile-packs [path] [--namespace <namespace>] [--json] [--write-context] | decantr ${commandName} get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] [--write-context] | decantr ${commandName} get-pack page --route <route> [--namespace <namespace>] [--json] [--essence <path>]${RESET}`,
   );
   process.exitCode = 1;
 }
@@ -5560,6 +6362,7 @@ ${BOLD}Advanced primitives:${RESET}
   decantr content summary [--namespace <namespace>] [--json]
   decantr content compile-packs [path] [--namespace <namespace>] [--json] [--write-context]
   decantr content get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] [--write-context]
+  decantr content get-pack page --route <route> [--namespace <namespace>] [--json] [--essence <path>]
   decantr health [--format text|json|markdown] [--ci] [--fail-on error|warn|none]
   decantr health --evidence [--browser] [--base-url <url>] [--design-tokens <path>]
   decantr health --diagnostics [--json|--markdown]
@@ -5577,7 +6380,7 @@ ${BOLD}Advanced primitives:${RESET}
   decantr rules preview [--project=<path>]
   decantr rules apply [--project=<path>]
   decantr validate [path]
-  decantr theme <subcommand>
+  decantr theme switch <themeName> [--shape <shape>] [--mode <mode>]
   decantr create <type> <name>
   decantr publish <type> <name>
   decantr login
@@ -5642,7 +6445,7 @@ ${BOLD}Advanced commands:${RESET}
   ${cyan('list')}        List items by type
   ${cyan('showcase')}    Inspect audited showcase benchmark metadata
   ${cyan('validate')}    Validate an Essence v4 file
-  ${cyan('theme')}       Manage custom themes (create, list, validate, delete, import)
+  ${cyan('theme')}       Manage custom themes and switch the active Essence theme
   ${cyan('create')}      Create a custom content item (pattern, theme, blueprint, etc.)
   ${cyan('publish')}     Legacy retired hosted publishing command
   ${cyan('login')}       Legacy API-key helper for compatibility scripts
@@ -5719,6 +6522,8 @@ ${BOLD}Examples:${RESET}
   decantr content compile-packs decantr.essence.json --write-context
   decantr content get-pack manifest --namespace @official --json
   decantr content get-pack review --namespace @official --write-context
+  decantr content get-pack page --route /feed --namespace @official --json
+  decantr theme switch carbon --mode dark
   decantr create pattern my-card
 
 ${BOLD}Workflow Model:${RESET}
@@ -5940,6 +6745,7 @@ ${BOLD}Usage:${RESET}
   decantr theme validate <name>
   decantr theme delete <name>
   decantr theme import <path>
+  decantr theme switch <themeName> [--shape <shape>] [--mode <mode>]
 `);
 }
 
@@ -6084,12 +6890,14 @@ ${BOLD}Usage:${RESET}
   decantr content summary [--namespace <namespace>] [--json]
   decantr content compile-packs [path] [--namespace <namespace>] [--json] [--write-context]
   decantr content get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] [--write-context]
+  decantr content get-pack page --route <route> [--namespace <namespace>] [--json] [--essence <path>]
   decantr content create <type> <name>
 
 ${BOLD}Examples:${RESET}
   decantr content check --ci --fail-on error
   decantr content summary --namespace @official --json
   decantr content compile-packs decantr.essence.json --write-context
+  decantr content get-pack page --route /feed --namespace @official --json
   decantr content create pattern my-card
 `);
 }

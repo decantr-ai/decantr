@@ -7,6 +7,8 @@ Experimental Vite plugin for local Decantr guard feedback during Vite developmen
 
 This package is useful when you already have a Vite app with `decantr.essence.json` and want faster feedback while editing. It is not part of the main Decantr product nucleus and is excluded from the default release wave unless explicitly requested.
 
+Decantr 3.9 does not version-bump this experimental package solely for alignment; canonical adoption truth, task capsules, and governance deltas are owned by `@decantr/verifier` and surfaced through the CLI/MCP/Studio workflow instead.
+
 ## Install
 
 ```bash

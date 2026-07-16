@@ -1,0 +1,1410 @@
+{
+  "schemaVersion": "decantr-3.9-human-finding-corpus-workbook.v1",
+  "status": "draft",
+  "qualificationClaim": false,
+  "frozenAt": null,
+  "legacyFindingLabelsImported": false,
+  "cases": [],
+  "judgments": [
+    {
+      "judgmentId": "judgment-001",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-002",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-003",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-004",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-005",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-006",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-007",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-008",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-009",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-010",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-011",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-012",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-013",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-014",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-015",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-016",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-017",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-018",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-019",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-020",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-021",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-022",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-023",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-024",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-025",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-026",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-027",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-028",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-029",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-030",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-031",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-032",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-033",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-034",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-035",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-036",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-037",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-038",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-039",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-040",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-041",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-042",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-043",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-044",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-045",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-046",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-047",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-048",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-049",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-050",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-051",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-052",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-053",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-054",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-055",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-056",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-057",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-058",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-059",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-060",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-061",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-062",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-063",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-064",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-065",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-066",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-067",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-068",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-069",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-070",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-071",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-072",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-073",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-074",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-075",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-076",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-077",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-078",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-079",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-080",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-081",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-082",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-083",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-084",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-085",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-086",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-087",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-088",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-089",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-090",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-091",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-092",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-093",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-094",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-095",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-096",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-097",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-098",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-099",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-100",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-101",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-102",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-103",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-104",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-105",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-106",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-107",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-108",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-109",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-110",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-111",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-112",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-113",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-114",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-115",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-116",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-117",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-118",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-119",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-120",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-121",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-122",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-123",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-124",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-125",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-126",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-127",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-128",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-129",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-130",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-131",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-132",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-133",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-134",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-135",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-136",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-137",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-138",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-139",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-140",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-141",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-142",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-143",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-144",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-145",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-146",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-147",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-148",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-149",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-150",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-151",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-152",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-153",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-154",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-155",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-156",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-157",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-158",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-159",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-160",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-161",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-162",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-163",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-164",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-165",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-166",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-167",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-168",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-169",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-170",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-171",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-172",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-173",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-174",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-175",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-176",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-177",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-178",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-179",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-180",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-181",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-182",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-183",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-184",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-185",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-186",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-187",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-188",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-189",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-190",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-191",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-192",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-193",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-194",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-195",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-196",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-197",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-198",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-199",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    },
+    {
+      "judgmentId": "judgment-200",
+      "caseId": null,
+      "source": null,
+      "code": null,
+      "codeKind": null
+    }
+  ]
+}

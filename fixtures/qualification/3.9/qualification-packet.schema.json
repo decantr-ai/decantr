@@ -1,0 +1,1349 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/qualification-packet.v2.json",
+  "title": "Decantr 3.9 Release Qualification Packet",
+  "description": "Fail-closed packet for human-adjudicated route/finding corpora and retained replay evidence. A schema-valid packet is not necessarily qualified.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "packetId",
+    "programVersion",
+    "baselineRelease",
+    "packetStatus",
+    "qualificationClaim",
+    "legacyInputs",
+    "reviewers",
+    "routeCorpus",
+    "findingCorpus",
+    "findingReplays",
+    "routeReplay",
+    "adoptionBoundaryReplay",
+    "machineReplay"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "decantr-qualification-packet.v2"
+    },
+    "packetId": {
+      "const": "decantr-3.9-release-qualification"
+    },
+    "programVersion": {
+      "const": "3.9"
+    },
+    "baselineRelease": {
+      "const": "3.8.3"
+    },
+    "packetStatus": {
+      "enum": ["incomplete", "complete"]
+    },
+    "qualificationClaim": {
+      "type": "boolean"
+    },
+    "legacyInputs": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "$ref": "#/$defs/legacyInput"
+      }
+    },
+    "reviewers": {
+      "type": "array",
+      "maxItems": 2,
+      "items": {
+        "$ref": "#/$defs/humanReviewer"
+      }
+    },
+    "routeCorpus": {
+      "$ref": "#/$defs/routeCorpus"
+    },
+    "findingCorpus": {
+      "$ref": "#/$defs/findingCorpus"
+    },
+    "findingReplays": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["public383", "candidate390"],
+      "properties": {
+        "public383": {
+          "$ref": "#/$defs/findingReplay"
+        },
+        "candidate390": {
+          "$ref": "#/$defs/findingReplay"
+        }
+      }
+    },
+    "routeReplay": {
+      "$ref": "#/$defs/routeReplay"
+    },
+    "adoptionBoundaryReplay": {
+      "$ref": "#/$defs/adoptionBoundaryReplay"
+    },
+    "machineReplay": {
+      "$ref": "#/$defs/machineReplay"
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "gitObjectId": {
+      "type": "string",
+      "pattern": "^(?:[a-f0-9]{40}|[a-f0-9]{64})$"
+    },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+    },
+    "stableId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:[._-][a-z0-9]+)*$"
+    },
+    "packageTarball": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file", "sha256"],
+      "properties": {
+        "file": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[^/\\\\]+\\.tgz$"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "legacyInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "status", "countsTowardQualification"],
+      "properties": {
+        "path": {
+          "enum": ["route-source-labels.json", "finding-labels.json"]
+        },
+        "status": {
+          "const": "legacy-unqualified"
+        },
+        "countsTowardQualification": {
+          "const": false
+        }
+      }
+    },
+    "humanReviewer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reviewerId",
+        "kind",
+        "name",
+        "stableIdentity",
+        "attestation",
+        "attestedAt",
+        "signedReviewEvidence"
+      ],
+      "properties": {
+        "reviewerId": {
+          "$ref": "#/$defs/stableId"
+        },
+        "kind": {
+          "const": "human"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 3
+        },
+        "stableIdentity": {
+          "type": "string",
+          "minLength": 3
+        },
+        "attestation": {
+          "const": "I attest that I am a human reviewer, performed this review independently, and did not represent an agent or automated evidence pass as a person."
+        },
+        "attestedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "signedReviewEvidence": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["kind", "commit", "path", "sha256", "signer", "keyFingerprint"],
+              "properties": {
+                "kind": {
+                  "const": "git-commit"
+                },
+                "commit": {
+                  "$ref": "#/$defs/gitObjectId"
+                },
+                "path": {
+                  "$ref": "#/$defs/relativePath"
+                },
+                "sha256": {
+                  "$ref": "#/$defs/sha256"
+                },
+                "signer": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "keyFingerprint": {
+                  "type": "string",
+                  "minLength": 8
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "kind",
+                "path",
+                "sha256",
+                "signaturePath",
+                "signatureSha256",
+                "allowedSignersPath",
+                "allowedSignersSha256",
+                "namespace",
+                "principal"
+              ],
+              "properties": {
+                "kind": {
+                  "const": "detached-signature"
+                },
+                "path": {
+                  "$ref": "#/$defs/relativePath"
+                },
+                "sha256": {
+                  "$ref": "#/$defs/sha256"
+                },
+                "signaturePath": {
+                  "$ref": "#/$defs/relativePath"
+                },
+                "signatureSha256": {
+                  "$ref": "#/$defs/sha256"
+                },
+                "allowedSignersPath": {
+                  "$ref": "#/$defs/relativePath"
+                },
+                "allowedSignersSha256": {
+                  "$ref": "#/$defs/sha256"
+                },
+                "namespace": {
+                  "const": "decantr-3.9-human-review"
+                },
+                "principal": {
+                  "type": "string",
+                  "minLength": 3
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "sourceEvidence": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "repository", "commit", "sourcePath", "blobHash"],
+          "properties": {
+            "kind": {
+              "const": "source-snapshot"
+            },
+            "repository": {
+              "type": "string",
+              "minLength": 1
+            },
+            "commit": {
+              "$ref": "#/$defs/gitObjectId"
+            },
+            "sourcePath": {
+              "$ref": "#/$defs/relativePath"
+            },
+            "blobHash": {
+              "$ref": "#/$defs/gitObjectId"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "workingDirectory",
+            "command",
+            "expectedExitCode",
+            "oraclePath",
+            "oracleSha256",
+            "capturedOutputPath",
+            "capturedOutputSha256"
+          ],
+          "properties": {
+            "kind": {
+              "const": "executable-oracle"
+            },
+            "workingDirectory": {
+              "$ref": "#/$defs/relativePath"
+            },
+            "command": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "expectedExitCode": {
+              "type": "integer"
+            },
+            "oraclePath": {
+              "$ref": "#/$defs/relativePath"
+            },
+            "oracleSha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "capturedOutputPath": {
+              "$ref": "#/$defs/relativePath"
+            },
+            "capturedOutputSha256": {
+              "$ref": "#/$defs/sha256"
+            }
+          }
+        }
+      ]
+    },
+    "routeForbiddenSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "category", "declaration"],
+      "properties": {
+        "source": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "category": {
+          "enum": ["layout", "generated-tree", "sibling-app"]
+        },
+        "declaration": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "routeExpectedOutputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["exhaustive", "orderedSources", "requiredFirstSource", "forbiddenFirstSources"],
+      "properties": {
+        "exhaustive": {
+          "const": true
+        },
+        "orderedSources": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/relativePath"
+          }
+        },
+        "requiredFirstSource": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "forbiddenFirstSources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/routeForbiddenSource"
+          }
+        }
+      }
+    },
+    "routeCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "clusterId",
+        "lane",
+        "targetId",
+        "framework",
+        "route",
+        "expectedOutputs",
+        "sourceEvidence"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "clusterId": {
+          "$ref": "#/$defs/stableId"
+        },
+        "lane": {
+          "enum": ["greenfield", "brownfield", "hybrid"]
+        },
+        "targetId": {
+          "$ref": "#/$defs/stableId"
+        },
+        "framework": {
+          "type": "string",
+          "minLength": 1
+        },
+        "route": {
+          "type": "string",
+          "pattern": "^/"
+        },
+        "expectedOutputs": {
+          "$ref": "#/$defs/routeExpectedOutputs"
+        },
+        "sourceEvidence": {
+          "$ref": "#/$defs/sourceEvidence"
+        }
+      }
+    },
+    "routeCorpus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "requiredPositiveCaseCount",
+        "requiredForbiddenAssertionCount",
+        "cases"
+      ],
+      "properties": {
+        "status": {
+          "enum": ["missing", "complete"]
+        },
+        "requiredPositiveCaseCount": {
+          "const": 84
+        },
+        "requiredForbiddenAssertionCount": {
+          "const": 24
+        },
+        "cases": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/routeCase"
+          }
+        }
+      }
+    },
+    "findingOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "code", "codeKind", "decision", "severity", "actionable", "rationale"],
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "codeKind": {
+          "enum": ["finding-id", "diagnostic-code"]
+        },
+        "decision": {
+          "enum": ["emit", "suppress"]
+        },
+        "severity": {
+          "type": ["string", "null"],
+          "enum": ["warning", "error", null]
+        },
+        "actionable": {
+          "type": "boolean"
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "findingOutputSet": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["exhaustive", "outputs"],
+      "properties": {
+        "exhaustive": {
+          "const": true
+        },
+        "outputs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/findingOutput"
+          }
+        }
+      }
+    },
+    "findingReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reviewerId", "reviewedAt", "expectedOutputs", "rationale"],
+      "properties": {
+        "reviewerId": {
+          "$ref": "#/$defs/stableId"
+        },
+        "reviewedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expectedOutputs": {
+          "$ref": "#/$defs/findingOutputSet"
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "findingAdjudication": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["adjudicatorReviewerId", "adjudicatedAt", "expectedOutputs", "resolution"],
+      "properties": {
+        "adjudicatorReviewerId": {
+          "$ref": "#/$defs/stableId"
+        },
+        "adjudicatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expectedOutputs": {
+          "$ref": "#/$defs/findingOutputSet"
+        },
+        "resolution": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "findingCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "clusterId",
+        "lane",
+        "targetId",
+        "input",
+        "sourceEvidence",
+        "reviews",
+        "adjudication"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "clusterId": {
+          "$ref": "#/$defs/stableId"
+        },
+        "lane": {
+          "enum": ["greenfield", "brownfield", "hybrid"]
+        },
+        "targetId": {
+          "$ref": "#/$defs/stableId"
+        },
+        "input": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourceEvidence": {
+          "$ref": "#/$defs/sourceEvidence"
+        },
+        "reviews": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "$ref": "#/$defs/findingReview"
+          }
+        },
+        "adjudication": {
+          "$ref": "#/$defs/findingAdjudication"
+        }
+      }
+    },
+    "findingCorpus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "requiredJudgmentCount", "requiredHumanReviewerCount", "cases"],
+      "properties": {
+        "status": {
+          "enum": ["missing", "complete"]
+        },
+        "requiredJudgmentCount": {
+          "const": 200
+        },
+        "requiredHumanReviewerCount": {
+          "const": 2
+        },
+        "cases": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/findingCase"
+          }
+        }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "os",
+        "cpu",
+        "nodeVersion",
+        "packageManagerVersion",
+        "exactSourceRef",
+        "exactPackageVersions",
+        "exactPackageTarballs"
+      ],
+      "properties": {
+        "os": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cpu": {
+          "type": "string",
+          "minLength": 1
+        },
+        "nodeVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "packageManagerVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "exactSourceRef": {
+          "type": "string",
+          "minLength": 1
+        },
+        "exactPackageVersions": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "exactPackageTarballs": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "$ref": "#/$defs/packageTarball"
+          }
+        }
+      }
+    },
+    "behaviorBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "packageSetSha256",
+        "behaviorSha256",
+        "boundEvidenceSha256"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "decantr-behavior-evidence-binding.v1"
+        },
+        "packageSetSha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "behaviorSha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "boundEvidenceSha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256",
+        "mediaType",
+        "generatedAt",
+        "command",
+        "exitCode",
+        "environment",
+        "behaviorBinding"
+      ],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "mediaType": {
+          "const": "application/json"
+        },
+        "generatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "command": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "exitCode": {
+          "type": "integer"
+        },
+        "environment": {
+          "$ref": "#/$defs/environment"
+        },
+        "behaviorBinding": {
+          "$ref": "#/$defs/behaviorBinding"
+        }
+      }
+    },
+    "outputIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "codeKind", "code"],
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "codeKind": {
+          "enum": ["finding-id", "diagnostic-code"]
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "findingReplayCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "caseId",
+        "clusterId",
+        "exhaustive",
+        "emitted",
+        "notEmitted",
+        "unexpectedOutputs"
+      ],
+      "properties": {
+        "caseId": {
+          "$ref": "#/$defs/stableId"
+        },
+        "clusterId": {
+          "$ref": "#/$defs/stableId"
+        },
+        "exhaustive": {
+          "const": true
+        },
+        "emitted": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/outputIdentity"
+          }
+        },
+        "notEmitted": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/outputIdentity"
+          }
+        },
+        "unexpectedOutputs": {
+          "type": "array",
+          "maxItems": 0,
+          "items": {
+            "$ref": "#/$defs/outputIdentity"
+          }
+        }
+      }
+    },
+    "metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["successes", "denominator", "estimate", "wilson95"],
+      "properties": {
+        "successes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "denominator": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "estimate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "wilson95": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["confidence", "lower", "upper"],
+          "properties": {
+            "confidence": {
+              "const": 0.95
+            },
+            "lower": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "upper": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        }
+      }
+    },
+    "replayMetrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["confusionMatrix", "precision", "recall"],
+      "properties": {
+        "confusionMatrix": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "truePositive",
+            "falsePositive",
+            "falseNegative",
+            "trueNegative",
+            "judgmentTotal"
+          ],
+          "properties": {
+            "truePositive": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "falsePositive": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "falseNegative": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "trueNegative": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "judgmentTotal": {
+              "const": 200
+            }
+          }
+        },
+        "precision": {
+          "$ref": "#/$defs/metric"
+        },
+        "recall": {
+          "$ref": "#/$defs/metric"
+        }
+      }
+    },
+    "findingReplay": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "release", "artifact", "cases", "metrics"],
+      "properties": {
+        "status": {
+          "enum": ["missing", "complete"]
+        },
+        "release": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["version", "installationSource", "packageVersions"],
+          "properties": {
+            "version": {
+              "enum": ["3.8.3", "3.9.0"]
+            },
+            "installationSource": {
+              "enum": ["public-npm", "packed-or-public-npm"]
+            },
+            "packageVersions": {
+              "type": ["object", "null"],
+              "additionalProperties": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "artifact": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/artifact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cases": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/findingReplayCase"
+          }
+        },
+        "metrics": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/replayMetrics"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "routeReplayCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["caseId", "clusterId", "exhaustive", "orderedSources"],
+      "properties": {
+        "caseId": {
+          "$ref": "#/$defs/stableId"
+        },
+        "clusterId": {
+          "$ref": "#/$defs/stableId"
+        },
+        "exhaustive": {
+          "const": true
+        },
+        "orderedSources": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/relativePath"
+          }
+        }
+      }
+    },
+    "routeReplay": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "releaseVersion", "corpusSha256", "artifact", "cases"],
+      "properties": {
+        "status": {
+          "enum": ["missing", "complete"]
+        },
+        "releaseVersion": {
+          "const": "3.9.0"
+        },
+        "corpusSha256": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/sha256"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "artifact": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/artifact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cases": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/routeReplayCase"
+          }
+        }
+      }
+    },
+    "changedPath": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "classification", "owner", "beforeSha256", "afterSha256"],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "classification": {
+          "enum": [
+            "generated-governance-artifact",
+            "assistant-bridge-artifact",
+            "assistant-governance-document",
+            "project-contract",
+            "narrow-ignore-entry",
+            "narrow-formatter-ignore-entry",
+            "host-generated"
+          ]
+        },
+        "owner": {
+          "enum": ["decantr", "host-generator"]
+        },
+        "beforeSha256": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/sha256"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "afterSha256": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/sha256"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "adoptionBoundaryTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "targetId",
+        "exhaustive",
+        "beforeTreeSha256",
+        "afterTreeSha256",
+        "changedPaths",
+        "unclassifiedPaths",
+        "authoredApplicationSourceChanges",
+        "studioWrites"
+      ],
+      "properties": {
+        "targetId": {
+          "enum": [
+            "tanstack-start-dashboard",
+            "bulletproof-react-vite",
+            "tanstack-start-greenfield"
+          ]
+        },
+        "exhaustive": {
+          "const": true
+        },
+        "beforeTreeSha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "afterTreeSha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "changedPaths": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/changedPath"
+          }
+        },
+        "unclassifiedPaths": {
+          "type": "array",
+          "maxItems": 0
+        },
+        "authoredApplicationSourceChanges": {
+          "type": "array",
+          "maxItems": 0
+        },
+        "studioWrites": {
+          "type": "array",
+          "maxItems": 0
+        }
+      }
+    },
+    "adoptionBoundaryReplay": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "artifact", "targets"],
+      "properties": {
+        "status": {
+          "enum": ["missing", "complete"]
+        },
+        "artifact": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/artifact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "targets": {
+          "type": "array",
+          "maxItems": 3,
+          "items": {
+            "$ref": "#/$defs/adoptionBoundaryTarget"
+          }
+        }
+      }
+    },
+    "machineLatencySample": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sampleId",
+        "targetId",
+        "commandId",
+        "temporaryProjectStateId",
+        "durationMs",
+        "exitCode",
+        "command",
+        "exactSourceRef"
+      ],
+      "properties": {
+        "sampleId": { "$ref": "#/$defs/stableId" },
+        "targetId": {
+          "enum": [
+            "tanstack-start-dashboard",
+            "bulletproof-react-vite",
+            "tanstack-start-greenfield"
+          ]
+        },
+        "commandId": {
+          "enum": ["scan-latency", "contract-only-attach-latency", "task-preparation-latency"]
+        },
+        "temporaryProjectStateId": { "$ref": "#/$defs/stableId" },
+        "durationMs": { "type": "integer", "minimum": 0 },
+        "exitCode": { "const": 0 },
+        "command": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "exactSourceRef": { "type": "string", "minLength": 1 }
+      }
+    },
+    "machineTargetResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "targetId",
+        "adoptionAgreement",
+        "immediateCi",
+        "taskCapsuleBudget",
+        "determinism",
+        "contentResolution",
+        "studioModes",
+        "reproducibility"
+      ],
+      "properties": {
+        "targetId": {
+          "enum": [
+            "tanstack-start-dashboard",
+            "bulletproof-react-vite",
+            "tanstack-start-greenfield"
+          ]
+        },
+        "adoptionAgreement": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["cliSha256", "mcpSha256", "ciV3Sha256", "studioSha256"],
+          "properties": {
+            "cliSha256": { "$ref": "#/$defs/sha256" },
+            "mcpSha256": { "$ref": "#/$defs/sha256" },
+            "ciV3Sha256": { "$ref": "#/$defs/sha256" },
+            "studioSha256": { "$ref": "#/$defs/sha256" }
+          }
+        },
+        "immediateCi": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["applicable", "v2NewFindingCount", "v3NewFindingCount"],
+          "properties": {
+            "applicable": { "type": "boolean" },
+            "v2NewFindingCount": { "type": ["integer", "null"], "minimum": 0 },
+            "v3NewFindingCount": { "type": ["integer", "null"], "minimum": 0 }
+          }
+        },
+        "taskCapsuleBudget": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["canonicalBytes", "tokenEstimateV1", "cliPayloadBytes", "mcpPayloadBytes"],
+          "properties": {
+            "canonicalBytes": { "type": "integer", "minimum": 1 },
+            "tokenEstimateV1": { "type": "integer", "minimum": 1 },
+            "cliPayloadBytes": { "type": "integer", "minimum": 1 },
+            "mcpPayloadBytes": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "determinism": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["runCount", "contractDigests", "deltaDigests"],
+          "properties": {
+            "runCount": { "type": "integer", "minimum": 2 },
+            "contractDigests": {
+              "type": "array",
+              "minItems": 2,
+              "items": { "$ref": "#/$defs/sha256" }
+            },
+            "deltaDigests": {
+              "type": "array",
+              "minItems": 2,
+              "items": { "$ref": "#/$defs/sha256" }
+            }
+          }
+        },
+        "contentResolution": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["bundledDigest", "networkDeniedDigest"],
+          "properties": {
+            "bundledDigest": { "$ref": "#/$defs/sha256" },
+            "networkDeniedDigest": { "$ref": "#/$defs/sha256" }
+          }
+        },
+        "studioModes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["currentProject", "workspace", "savedV2", "savedV3"],
+          "properties": {
+            "currentProject": { "const": true },
+            "workspace": { "const": true },
+            "savedV2": { "const": true },
+            "savedV3": { "const": true }
+          }
+        },
+        "reproducibility": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["exactSourceRef", "commandIds", "temporaryStateCount"],
+          "properties": {
+            "exactSourceRef": { "type": "string", "minLength": 1 },
+            "commandIds": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "temporaryStateCount": { "type": "integer", "minimum": 30 }
+          }
+        }
+      }
+    },
+    "machineReplay": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "artifact",
+        "latencySamples",
+        "targetResults",
+        "mcp",
+        "v2Compatibility",
+        "reportCompatibility",
+        "workspaceCi"
+      ],
+      "properties": {
+        "status": { "enum": ["missing", "complete"] },
+        "artifact": {
+          "oneOf": [{ "$ref": "#/$defs/artifact" }, { "type": "null" }]
+        },
+        "latencySamples": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/machineLatencySample" }
+        },
+        "targetResults": {
+          "type": "array",
+          "maxItems": 3,
+          "items": { "$ref": "#/$defs/machineTargetResult" }
+        },
+        "mcp": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["tools"],
+              "properties": {
+                "tools": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["name", "actions"],
+                    "properties": {
+                      "name": { "type": "string", "minLength": 1 },
+                      "actions": {
+                        "type": "array",
+                        "uniqueItems": true,
+                        "items": { "type": "string", "minLength": 1 }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            { "type": "null" }
+          ]
+        },
+        "v2Compatibility": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["schemaIds", "goldenOutputTestsPassed", "defaultReportSchema"],
+              "properties": {
+                "schemaIds": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": { "type": "string", "minLength": 1 }
+                },
+                "goldenOutputTestsPassed": { "const": true },
+                "defaultReportSchema": {
+                  "const": "https://decantr.ai/schemas/decantr-ci-report.v2.json"
+                }
+              }
+            },
+            { "type": "null" }
+          ]
+        },
+        "reportCompatibility": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["defaultV2", "explicitV3", "taskCapsuleV1"],
+              "properties": {
+                "defaultV2": { "const": true },
+                "explicitV3": { "const": true },
+                "taskCapsuleV1": { "const": true }
+              }
+            },
+            { "type": "null" }
+          ]
+        },
+        "workspaceCi": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["projectMode", "workspaceMode"],
+              "properties": {
+                "projectMode": { "const": true },
+                "workspaceMode": { "const": true }
+              }
+            },
+            { "type": "null" }
+          ]
+        }
+      }
+    }
+  }
+}

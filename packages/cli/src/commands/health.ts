@@ -9,13 +9,19 @@ import {
   auditProject,
   buildProjectHealthRepairPlan,
   type ContractAssertion,
+  canonicalJsonStringify,
   createAuthorityResolution,
   createContractAssertions,
   createEvidenceBundle,
   createEvidenceTier,
   createLoopReadiness,
+  createStableProjectIdentityV1,
   deriveVerificationDiagnostic,
   type EvidenceBundle,
+  fingerprintFindingOccurrence,
+  GOVERNANCE_FINDING_FINGERPRINT_VERSION,
+  type GovernanceFindingLocationV1,
+  type GovernanceFindingOccurrenceInputV1,
   type GraphAnchorSnapshot,
   KNOWN_VERIFICATION_DIAGNOSTICS,
   type PackManifest,
@@ -208,21 +214,70 @@ interface VisualManifest {
   routes: VisualManifestRoute[];
 }
 
-interface HealthBaseline {
-  version: 1;
+interface HealthBaselineFindingV2 {
+  id: string;
+  fingerprint: string;
+  fingerprintVersion: typeof GOVERNANCE_FINDING_FINGERPRINT_VERSION;
+  code: string;
+  rule: string | null;
+  source: ProjectHealthFindingSource;
+  category: string;
+  severity: VerificationSeverity;
+  message: string;
+  file: string | null;
+  route: string | null;
+  target: string | null;
+  location: GovernanceFindingLocationV1 | null;
+  repairTarget: string | null;
+  annotation: GovernanceFindingOccurrenceInputV1['annotation'];
+  authorityLane?: ProjectHealthFinding['authorityLane'];
+  resolutionActions?: ProjectHealthFinding['resolutionActions'];
+  graph?: VerificationGraphAnchor;
+  repair?: VerificationRepairAction;
+  repairPlan?: ProjectHealthFinding['repairPlan'];
+}
+
+interface HealthBaselineV2 {
+  version: 2;
+  projectIdentity: string;
   generatedAt: string;
   status: ProjectHealthStatus;
   score: number;
-  findings: Array<{
-    id: string;
-    severity: VerificationSeverity;
-    source: ProjectHealthFindingSource;
-    message: string;
-  }>;
+  findings: HealthBaselineFindingV2[];
   routes: string[];
   packs: ProjectHealthReport['packs'];
   screenshots: Array<{ path: string; hash: string | null }>;
   changedFilesCommand: string;
+}
+
+interface LegacyHealthBaselineFinding {
+  id: string;
+  severity: VerificationSeverity;
+  source: ProjectHealthFindingSource;
+  message: string;
+}
+
+interface ParsedHealthBaseline {
+  compatible: boolean;
+  version: 1 | 2 | null;
+  projectIdentity: string | null;
+  generatedAt: string | null;
+  status: ProjectHealthStatus | null;
+  score: number | null;
+  routes: string[];
+  packs: ProjectHealthReport['packs'] | null;
+  screenshots: Array<{ path: string; hash: string | null }>;
+  findingsV2: HealthBaselineFindingV2[];
+  legacyFindings: LegacyHealthBaselineFinding[];
+  occurrenceEvidenceComplete: boolean;
+  limitations: string[];
+}
+
+interface ClassifiedHealthBaselineFindings {
+  inherited: ProjectHealthFinding[];
+  new: ProjectHealthFinding[];
+  resolved: HealthBaselineFindingV2[];
+  limitations: string[];
 }
 
 interface HealthBaselineComparison {
@@ -236,6 +291,7 @@ interface HealthBaselineComparison {
   changedRoutes: string[];
   changedScreenshots: string[];
   contractDrift: string[];
+  limitations: string[];
 }
 
 export interface HealthBaselineGate {
@@ -2028,14 +2084,572 @@ function baselineDiffPath(projectRoot: string): string {
   return join(projectRoot, '.decantr', 'health-baseline-diff.json');
 }
 
+function isJsonRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function isVerificationSeverity(value: unknown): value is VerificationSeverity {
+  return value === 'error' || value === 'warn' || value === 'info';
+}
+
+function isProjectHealthStatus(value: unknown): value is ProjectHealthStatus {
+  return value === 'healthy' || value === 'warning' || value === 'error';
+}
+
+function parseFindingLocation(value: unknown): GovernanceFindingLocationV1 | null | undefined {
+  if (value === null) return null;
+  if (!isJsonRecord(value) || !Number.isInteger(value.line) || Number(value.line) < 1) {
+    return undefined;
+  }
+  for (const key of ['column', 'endLine', 'endColumn'] as const) {
+    const entry = value[key];
+    if (entry !== undefined && (!Number.isInteger(entry) || Number(entry) < 1)) return undefined;
+  }
+  return {
+    line: Number(value.line),
+    ...(value.column === undefined ? {} : { column: Number(value.column) }),
+    ...(value.endLine === undefined ? {} : { endLine: Number(value.endLine) }),
+    ...(value.endColumn === undefined ? {} : { endColumn: Number(value.endColumn) }),
+  };
+}
+
+function nullableStringProperty(
+  record: Record<string, unknown>,
+  key: string,
+): { valid: boolean; value: string | null } {
+  if (!(key in record)) return { valid: false, value: null };
+  const value = record[key];
+  return value === null || typeof value === 'string'
+    ? { valid: true, value }
+    : { valid: false, value: null };
+}
+
+function findingOccurrenceInput(
+  finding: ProjectHealthFinding,
+): GovernanceFindingOccurrenceInputV1 | null {
+  const code = finding.code?.trim();
+  if (!code) return null;
+  const record = finding as ProjectHealthFinding & {
+    location?: unknown;
+    route?: unknown;
+  };
+  const location = 'location' in record ? parseFindingLocation(record.location) : null;
+  if (location === undefined) return null;
+  const route =
+    typeof record.route === 'string'
+      ? record.route
+      : typeof finding.graph?.route === 'string'
+        ? finding.graph.route
+        : null;
+  return {
+    code,
+    ruleId: finding.rule ?? '',
+    source: finding.source,
+    category: finding.category,
+    severity: finding.severity,
+    message: finding.message,
+    authorityLane: governanceAuthorityLane(finding.authorityLane),
+    graphAnchor: finding.graph ?? null,
+    repairId: finding.repair?.id ?? null,
+    repairTarget: findingRepairTarget(finding),
+    annotation: findingAnnotation(finding.file ?? null, location),
+    file: finding.file ?? null,
+    route,
+    target: finding.target ?? null,
+    location,
+  };
+}
+
+function governanceAuthorityLane(
+  authorityLane: string | undefined,
+): GovernanceFindingOccurrenceInputV1['authorityLane'] {
+  if (
+    authorityLane === 'production-source' ||
+    authorityLane === 'local-law' ||
+    authorityLane === 'style-bridge' ||
+    authorityLane === 'essence-contract'
+  ) {
+    return authorityLane;
+  }
+  return authorityLane === 'registry-guidance' || authorityLane === 'official-guidance'
+    ? 'official-guidance'
+    : 'unknown';
+}
+
+function findingAnnotation(
+  file: string | null,
+  location: GovernanceFindingLocationV1 | null,
+): GovernanceFindingOccurrenceInputV1['annotation'] {
+  return {
+    path: file,
+    startLine: location?.line ?? null,
+    startColumn: location?.column ?? null,
+    endLine: location?.endLine ?? null,
+    endColumn: location?.endColumn ?? null,
+  };
+}
+
+function parseFindingAnnotation(
+  value: unknown,
+  fallback: GovernanceFindingOccurrenceInputV1['annotation'],
+): GovernanceFindingOccurrenceInputV1['annotation'] {
+  if (!isJsonRecord(value)) return fallback;
+  const path = value.path === null || typeof value.path === 'string' ? value.path : undefined;
+  const coordinates = ['startLine', 'startColumn', 'endLine', 'endColumn'] as const;
+  if (path === undefined) return fallback;
+  for (const key of coordinates) {
+    const coordinate = value[key];
+    if (coordinate !== null && !Number.isInteger(coordinate)) return fallback;
+  }
+  return {
+    path,
+    startLine: value.startLine as number | null,
+    startColumn: value.startColumn as number | null,
+    endLine: value.endLine as number | null,
+    endColumn: value.endColumn as number | null,
+  };
+}
+
+function findingRepairTarget(finding: ProjectHealthFinding): string | null {
+  const actionTarget = finding.repairPlan?.actions.find(
+    (action) => typeof action.target === 'string' && !action.target.startsWith('/'),
+  )?.target;
+  if (actionTarget) return actionTarget;
+  const payload = finding.repair?.payload;
+  for (const key of ['target', 'file', 'path']) {
+    const value = payload?.[key];
+    if (typeof value === 'string' && value && !value.startsWith('/')) return value;
+  }
+  return finding.file ?? null;
+}
+
+function legacyFindingKey(
+  finding: Pick<ProjectHealthFinding, 'id' | 'severity' | 'source' | 'message'>,
+): string {
+  return canonicalJsonStringify({
+    id: finding.id,
+    message: finding.message,
+    severity: finding.severity,
+    source: finding.source,
+  });
+}
+
+function findingHasOccurrenceAnchor(finding: ProjectHealthFinding): boolean {
+  const record = finding as ProjectHealthFinding & {
+    location?: unknown;
+    route?: unknown;
+  };
+  return Boolean(
+    finding.file?.trim() ||
+      finding.target?.trim() ||
+      (typeof record.route === 'string' && record.route.trim()) ||
+      finding.graph?.route?.trim() ||
+      ('location' in record && record.location !== null && record.location !== undefined),
+  );
+}
+
+function deterministicPrettyJson(value: unknown): string {
+  return `${JSON.stringify(JSON.parse(canonicalJsonStringify(value)), null, 2)}\n`;
+}
+
+function parseHealthBaselineFindingV2(
+  value: unknown,
+  index: number,
+  limitations: string[],
+): HealthBaselineFindingV2 | null {
+  if (!isJsonRecord(value)) {
+    limitations.push(`Baseline v2 finding ${index} is not an object.`);
+    return null;
+  }
+  const id = typeof value.id === 'string' && value.id.trim() ? value.id : null;
+  const code = typeof value.code === 'string' && value.code.trim() ? value.code : null;
+  const source = typeof value.source === 'string' && value.source.trim() ? value.source : null;
+  const category =
+    typeof value.category === 'string' && value.category.trim() ? value.category : null;
+  const message = typeof value.message === 'string' && value.message.trim() ? value.message : null;
+  const severity = isVerificationSeverity(value.severity) ? value.severity : null;
+  const rule = nullableStringProperty(value, 'rule');
+  const file = nullableStringProperty(value, 'file');
+  const target = nullableStringProperty(value, 'target');
+  const location =
+    'location' in value ? parseFindingLocation(value.location) : (undefined as undefined);
+  if (
+    !id ||
+    !code ||
+    !source ||
+    !category ||
+    !message ||
+    !severity ||
+    !rule.valid ||
+    !file.valid ||
+    !target.valid ||
+    location === undefined
+  ) {
+    limitations.push(
+      `Baseline v2 finding ${index} lacks complete code/rule/source/category/severity/message/file/target/location occurrence evidence.`,
+    );
+    return null;
+  }
+  const routeValue = value.route;
+  const route = routeValue === null || typeof routeValue === 'string' ? routeValue : null;
+  const graph = isJsonRecord(value.graph)
+    ? (value.graph as unknown as VerificationGraphAnchor)
+    : null;
+  const repair = isJsonRecord(value.repair)
+    ? (value.repair as unknown as VerificationRepairAction)
+    : null;
+  const repairTargetProperty = nullableStringProperty(value, 'repairTarget');
+  const repairTarget = repairTargetProperty.valid ? repairTargetProperty.value : file.value;
+  const annotation = parseFindingAnnotation(
+    value.annotation,
+    findingAnnotation(file.value, location),
+  );
+  const occurrence: GovernanceFindingOccurrenceInputV1 = {
+    code,
+    ruleId: rule.value ?? '',
+    source,
+    category,
+    severity,
+    message,
+    authorityLane: governanceAuthorityLane(
+      typeof value.authorityLane === 'string' ? value.authorityLane : undefined,
+    ),
+    graphAnchor: graph,
+    repairId: repair?.id ?? null,
+    repairTarget,
+    annotation,
+    file: file.value,
+    route,
+    target: target.value,
+    location,
+  };
+  const fingerprint = fingerprintFindingOccurrence(occurrence);
+  if (value.fingerprint !== fingerprint) {
+    limitations.push(
+      `Baseline v2 finding ${index} fingerprint was missing or inconsistent; it was recomputed from retained occurrence evidence.`,
+    );
+  }
+  if (value.fingerprintVersion !== GOVERNANCE_FINDING_FINGERPRINT_VERSION) {
+    limitations.push(
+      `Baseline v2 finding ${index} fingerprint version was missing or unsupported; verifier fingerprint version ${GOVERNANCE_FINDING_FINGERPRINT_VERSION} was used.`,
+    );
+  }
+  return {
+    id,
+    fingerprint,
+    fingerprintVersion: GOVERNANCE_FINDING_FINGERPRINT_VERSION,
+    code,
+    rule: rule.value,
+    source: source as ProjectHealthFindingSource,
+    category,
+    severity,
+    message,
+    file: file.value,
+    route,
+    target: target.value,
+    location,
+    repairTarget,
+    annotation,
+    ...(typeof value.authorityLane === 'string'
+      ? { authorityLane: value.authorityLane as ProjectHealthFinding['authorityLane'] }
+      : {}),
+    ...(Array.isArray(value.resolutionActions)
+      ? { resolutionActions: value.resolutionActions as ProjectHealthFinding['resolutionActions'] }
+      : {}),
+    ...(graph ? { graph } : {}),
+    ...(repair ? { repair } : {}),
+    ...(isJsonRecord(value.repairPlan)
+      ? { repairPlan: value.repairPlan as unknown as ProjectHealthFinding['repairPlan'] }
+      : {}),
+  };
+}
+
+function readHealthBaseline(
+  path: string,
+  expectedProjectIdentity: string,
+): ParsedHealthBaseline | null {
+  if (!existsSync(path)) return null;
+  const value = readJsonFile<unknown>(path);
+  const limitations: string[] = [];
+  if (!isJsonRecord(value)) {
+    return {
+      compatible: false,
+      version: null,
+      projectIdentity: null,
+      generatedAt: null,
+      status: null,
+      score: null,
+      routes: [],
+      packs: null,
+      screenshots: [],
+      findingsV2: [],
+      legacyFindings: [],
+      occurrenceEvidenceComplete: false,
+      limitations: ['Health baseline could not be read as a JSON object.'],
+    };
+  }
+
+  const generatedAt = typeof value.generatedAt === 'string' ? value.generatedAt : null;
+  const status = isProjectHealthStatus(value.status) ? value.status : null;
+  const score =
+    typeof value.score === 'number' && Number.isFinite(value.score) ? value.score : null;
+  const routes = Array.isArray(value.routes)
+    ? [
+        ...new Set(value.routes.filter((route): route is string => typeof route === 'string')),
+      ].sort()
+    : [];
+  const packs = isJsonRecord(value.packs)
+    ? (value.packs as unknown as ProjectHealthReport['packs'])
+    : null;
+  const screenshots = Array.isArray(value.screenshots)
+    ? value.screenshots
+        .filter(
+          (entry): entry is { path: string; hash: string | null } =>
+            isJsonRecord(entry) &&
+            typeof entry.path === 'string' &&
+            (entry.hash === null || typeof entry.hash === 'string'),
+        )
+        .map((entry) => ({ path: entry.path, hash: entry.hash }))
+        .sort((left, right) => (left.path < right.path ? -1 : left.path > right.path ? 1 : 0))
+    : [];
+
+  if (value.version === 2) {
+    const projectIdentity =
+      typeof value.projectIdentity === 'string' && value.projectIdentity.trim()
+        ? value.projectIdentity.trim()
+        : null;
+    if (!projectIdentity) {
+      limitations.push('Baseline v2 project identity is missing.');
+    } else if (projectIdentity !== expectedProjectIdentity) {
+      limitations.push('Baseline v2 belongs to a different project.');
+    }
+    let occurrenceEvidenceComplete = Array.isArray(value.findings);
+    if (!Array.isArray(value.findings)) {
+      limitations.push('Baseline v2 findings are missing or are not an array.');
+    }
+    const parsedFindings = (Array.isArray(value.findings) ? value.findings : [])
+      .map((finding, index) => {
+        const parsed = parseHealthBaselineFindingV2(finding, index, limitations);
+        if (!parsed) occurrenceEvidenceComplete = false;
+        return parsed;
+      })
+      .filter((finding): finding is HealthBaselineFindingV2 => Boolean(finding))
+      .sort((left, right) =>
+        left.fingerprint < right.fingerprint
+          ? -1
+          : left.fingerprint > right.fingerprint
+            ? 1
+            : canonicalJsonStringify(left) < canonicalJsonStringify(right)
+              ? -1
+              : canonicalJsonStringify(left) > canonicalJsonStringify(right)
+                ? 1
+                : 0,
+      );
+    const findingsByFingerprint = new Map<string, HealthBaselineFindingV2>();
+    for (const finding of parsedFindings) {
+      if (findingsByFingerprint.has(finding.fingerprint)) {
+        limitations.push(
+          `Baseline v2 contains duplicate occurrence fingerprint ${finding.fingerprint}; one occurrence was retained.`,
+        );
+      } else {
+        findingsByFingerprint.set(finding.fingerprint, finding);
+      }
+    }
+    return {
+      compatible: projectIdentity === expectedProjectIdentity,
+      version: 2,
+      projectIdentity,
+      generatedAt,
+      status,
+      score,
+      routes,
+      packs,
+      screenshots,
+      findingsV2: [...findingsByFingerprint.values()],
+      legacyFindings: [],
+      occurrenceEvidenceComplete,
+      limitations: [...new Set(limitations)].sort(),
+    };
+  }
+
+  if (value.version === undefined || value.version === 1) {
+    if (value.version === undefined) {
+      limitations.push('Unversioned health baseline was read as legacy v1 evidence.');
+    }
+    limitations.push(
+      'Legacy health baseline evidence lacks code, rule, category, file, target, and location; only exact unanchored legacy records can be inherited, and resolved findings are not proven.',
+    );
+    if (!Array.isArray(value.findings)) {
+      limitations.push('Legacy health baseline findings are missing or are not an array.');
+    }
+    const legacyFindings = (Array.isArray(value.findings) ? value.findings : [])
+      .map((finding, index): LegacyHealthBaselineFinding | null => {
+        if (
+          !isJsonRecord(finding) ||
+          typeof finding.id !== 'string' ||
+          !isVerificationSeverity(finding.severity) ||
+          typeof finding.source !== 'string' ||
+          typeof finding.message !== 'string'
+        ) {
+          limitations.push(`Legacy health baseline finding ${index} has incomplete evidence.`);
+          return null;
+        }
+        return {
+          id: finding.id,
+          severity: finding.severity,
+          source: finding.source as ProjectHealthFindingSource,
+          message: finding.message,
+        };
+      })
+      .filter((finding): finding is LegacyHealthBaselineFinding => Boolean(finding))
+      .sort((left, right) => {
+        const leftKey = legacyFindingKey(left);
+        const rightKey = legacyFindingKey(right);
+        return leftKey < rightKey ? -1 : leftKey > rightKey ? 1 : 0;
+      });
+    return {
+      compatible: true,
+      version: 1,
+      projectIdentity: null,
+      generatedAt,
+      status,
+      score,
+      routes,
+      packs,
+      screenshots,
+      findingsV2: [],
+      legacyFindings,
+      occurrenceEvidenceComplete: false,
+      limitations: [...new Set(limitations)].sort(),
+    };
+  }
+
+  return {
+    compatible: false,
+    version: null,
+    projectIdentity: null,
+    generatedAt,
+    status,
+    score,
+    routes,
+    packs,
+    screenshots,
+    findingsV2: [],
+    legacyFindings: [],
+    occurrenceEvidenceComplete: false,
+    limitations: [`Unsupported health baseline version: ${String(value.version)}.`],
+  };
+}
+
+function classifyHealthBaselineFindings(
+  baseline: ParsedHealthBaseline,
+  findings: ProjectHealthFinding[],
+): ClassifiedHealthBaselineFindings {
+  const limitations = [...baseline.limitations];
+  const current = findings
+    .map((finding) => {
+      const occurrence = findingOccurrenceInput(finding);
+      return {
+        finding,
+        occurrence,
+        fingerprint: occurrence ? fingerprintFindingOccurrence(occurrence) : null,
+      };
+    })
+    .sort((left, right) => {
+      const leftKey = left.fingerprint ?? legacyFindingKey(left.finding);
+      const rightKey = right.fingerprint ?? legacyFindingKey(right.finding);
+      return leftKey < rightKey ? -1 : leftKey > rightKey ? 1 : 0;
+    });
+
+  if (!baseline.compatible) {
+    return { inherited: [], new: current.map((entry) => entry.finding), resolved: [], limitations };
+  }
+
+  if (baseline.version === 2) {
+    const baselineByFingerprint = new Map(
+      baseline.findingsV2.map((finding) => [finding.fingerprint, finding]),
+    );
+    const inherited: ProjectHealthFinding[] = [];
+    const newFindings: ProjectHealthFinding[] = [];
+    for (const entry of current) {
+      const baselineFinding = entry.fingerprint
+        ? baselineByFingerprint.get(entry.fingerprint)
+        : undefined;
+      if (baselineFinding) {
+        const rank = { info: 1, warn: 2, error: 3 } as const;
+        if (rank[entry.finding.severity] > rank[baselineFinding.severity]) {
+          newFindings.push(entry.finding);
+          limitations.push(
+            `Finding ${entry.finding.id} escalated from ${baselineFinding.severity} to ${entry.finding.severity}.`,
+          );
+        } else {
+          inherited.push(entry.finding);
+        }
+      } else {
+        newFindings.push(entry.finding);
+        if (!entry.fingerprint) {
+          limitations.push(
+            `Current finding ${entry.finding.id} has incomplete occurrence evidence and was conservatively classified as new.`,
+          );
+        }
+      }
+    }
+    const currentEvidenceComplete = current.every((entry) => Boolean(entry.fingerprint));
+    const currentFingerprints = new Set(
+      current
+        .map((entry) => entry.fingerprint)
+        .filter((fingerprint): fingerprint is string => Boolean(fingerprint)),
+    );
+    const resolved =
+      baseline.occurrenceEvidenceComplete && currentEvidenceComplete
+        ? baseline.findingsV2.filter((finding) => !currentFingerprints.has(finding.fingerprint))
+        : [];
+    if (!baseline.occurrenceEvidenceComplete || !currentEvidenceComplete) {
+      limitations.push(
+        'Resolved findings were not classified because baseline or current occurrence evidence is incomplete.',
+      );
+    }
+    return {
+      inherited,
+      new: newFindings,
+      resolved,
+      limitations: [...new Set(limitations)].sort(),
+    };
+  }
+
+  const legacyCounts = new Map<string, number>();
+  for (const finding of baseline.legacyFindings) {
+    const key = legacyFindingKey(finding);
+    legacyCounts.set(key, (legacyCounts.get(key) ?? 0) + 1);
+  }
+  const inherited: ProjectHealthFinding[] = [];
+  const newFindings: ProjectHealthFinding[] = [];
+  for (const entry of current) {
+    const key = legacyFindingKey(entry.finding);
+    const remaining = legacyCounts.get(key) ?? 0;
+    if (!findingHasOccurrenceAnchor(entry.finding) && remaining > 0) {
+      inherited.push(entry.finding);
+      legacyCounts.set(key, remaining - 1);
+    } else {
+      newFindings.push(entry.finding);
+    }
+  }
+  return {
+    inherited,
+    new: newFindings,
+    resolved: [],
+    limitations: [...new Set(limitations)].sort(),
+  };
+}
+
 export function evaluateHealthBaselineGate(
   projectRoot: string,
   report: ProjectHealthReport,
 ): HealthBaselineGate {
   const path = baselinePath(projectRoot);
-  const baseline = readJsonFile<HealthBaseline>(path);
+  const baseline = readHealthBaseline(path, createStableProjectIdentityV1(projectRoot));
   const brownfield = report.summary.workflowMode === 'brownfield-attach';
-  if (!baseline || !brownfield) {
+  if (!baseline?.compatible || !brownfield) {
     return {
       applied: false,
       baselinePath: path,
@@ -2048,18 +2662,16 @@ export function evaluateHealthBaselineGate(
     };
   }
 
-  const baselineIds = new Set(baseline.findings.map((finding) => finding.id));
+  const classification = classifyHealthBaselineFindings(baseline, report.findings);
   return {
     applied: true,
     baselinePath: path,
     savedAt: baseline.generatedAt,
-    inheritedFindingIds: report.findings
-      .filter((finding) => baselineIds.has(finding.id))
-      .map((finding) => finding.id)
-      .sort(),
-    newFindings: report.findings
-      .filter((finding) => !baselineIds.has(finding.id))
-      .map((finding) => ({ id: finding.id, severity: finding.severity })),
+    inheritedFindingIds: classification.inherited.map((finding) => finding.id).sort(),
+    newFindings: classification.new.map((finding) => ({
+      id: finding.id,
+      severity: finding.severity,
+    })),
   };
 }
 
@@ -2130,21 +2742,94 @@ function routeImpactsFromChangedFiles(
   return [...impacted].sort();
 }
 
-function createHealthBaseline(projectRoot: string, report: ProjectHealthReport): HealthBaseline {
+function createHealthBaselineFinding(finding: ProjectHealthFinding): HealthBaselineFindingV2 {
+  const record = finding as ProjectHealthFinding & {
+    location?: unknown;
+    route?: unknown;
+  };
+  const parsedLocation = 'location' in record ? parseFindingLocation(record.location) : null;
+  const location = parsedLocation ?? null;
+  const repairTarget = findingRepairTarget(finding);
+  const occurrence =
+    findingOccurrenceInput(finding) ??
+    ({
+      code: finding.code?.trim() || finding.id,
+      ruleId: finding.rule ?? '',
+      source: finding.source,
+      category: finding.category,
+      severity: finding.severity,
+      message: finding.message,
+      authorityLane: governanceAuthorityLane(finding.authorityLane),
+      graphAnchor: finding.graph ?? null,
+      repairId: finding.repair?.id ?? null,
+      repairTarget,
+      annotation: findingAnnotation(finding.file ?? null, location),
+      file: finding.file ?? null,
+      route:
+        typeof record.route === 'string'
+          ? record.route
+          : typeof finding.graph?.route === 'string'
+            ? finding.graph.route
+            : null,
+      target: finding.target ?? null,
+      location,
+    } satisfies GovernanceFindingOccurrenceInputV1);
   return {
-    version: 1,
-    generatedAt: new Date().toISOString(),
+    id: finding.id,
+    fingerprint: fingerprintFindingOccurrence(occurrence),
+    fingerprintVersion: GOVERNANCE_FINDING_FINGERPRINT_VERSION,
+    code: occurrence.code,
+    rule: occurrence.ruleId ?? null,
+    source: finding.source,
+    category: finding.category,
+    severity: finding.severity,
+    message: finding.message,
+    file: occurrence.file ?? null,
+    route: occurrence.route ?? null,
+    target: occurrence.target ?? null,
+    location: occurrence.location ?? null,
+    repairTarget: occurrence.repairTarget,
+    annotation: occurrence.annotation,
+    ...(finding.authorityLane ? { authorityLane: finding.authorityLane } : {}),
+    ...(finding.resolutionActions ? { resolutionActions: finding.resolutionActions } : {}),
+    ...(finding.graph ? { graph: finding.graph } : {}),
+    ...(finding.repair ? { repair: finding.repair } : {}),
+    ...(finding.repairPlan ? { repairPlan: finding.repairPlan } : {}),
+  };
+}
+
+function createHealthBaseline(projectRoot: string, report: ProjectHealthReport): HealthBaselineV2 {
+  const sortedFindings = report.findings
+    .map(createHealthBaselineFinding)
+    .sort((left, right) =>
+      left.fingerprint < right.fingerprint
+        ? -1
+        : left.fingerprint > right.fingerprint
+          ? 1
+          : canonicalJsonStringify(left) < canonicalJsonStringify(right)
+            ? -1
+            : canonicalJsonStringify(left) > canonicalJsonStringify(right)
+              ? 1
+              : 0,
+    );
+  const findingsByFingerprint = new Map<string, HealthBaselineFindingV2>();
+  for (const finding of sortedFindings) {
+    if (!findingsByFingerprint.has(finding.fingerprint)) {
+      findingsByFingerprint.set(finding.fingerprint, finding);
+    }
+  }
+  return {
+    version: 2,
+    projectIdentity: createStableProjectIdentityV1(projectRoot),
+    generatedAt: report.generatedAt,
     status: report.status,
     score: report.score,
-    findings: report.findings.map((finding) => ({
-      id: finding.id,
-      severity: finding.severity,
-      source: finding.source,
-      message: finding.message,
-    })),
-    routes: report.routes.declared,
+    findings: [...findingsByFingerprint.values()],
+    routes: [...new Set(report.routes.declared)].sort(),
     packs: report.packs,
-    screenshots: screenshotHashes(projectRoot),
+    screenshots: screenshotHashes(projectRoot).sort((left, right) =>
+      left.path < right.path ? -1 : left.path > right.path ? 1 : 0,
+    ),
     changedFilesCommand: 'git diff --name-only + --cached',
   };
 }
@@ -2152,11 +2837,7 @@ function createHealthBaseline(projectRoot: string, report: ProjectHealthReport):
 function saveHealthBaseline(projectRoot: string, report: ProjectHealthReport): string {
   const path = baselinePath(projectRoot);
   mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(
-    path,
-    JSON.stringify(createHealthBaseline(projectRoot, report), null, 2) + '\n',
-    'utf-8',
-  );
+  writeFileSync(path, deterministicPrettyJson(createHealthBaseline(projectRoot, report)), 'utf-8');
   return path;
 }
 
@@ -2165,25 +2846,33 @@ function compareHealthBaseline(
   report: ProjectHealthReport,
 ): HealthBaselineComparison {
   const path = baselinePath(projectRoot);
-  const baseline = readJsonFile<HealthBaseline>(path);
-  const currentFindingIds = new Set(report.findings.map((finding) => finding.id));
-  const baselineFindingIds = new Set(baseline?.findings.map((finding) => finding.id) ?? []);
+  const baseline = readHealthBaseline(path, createStableProjectIdentityV1(projectRoot));
+  const classification = baseline
+    ? classifyHealthBaselineFindings(baseline, report.findings)
+    : {
+        inherited: [],
+        new: [...report.findings],
+        resolved: [],
+        limitations: ['Health baseline is missing; finding continuity could not be classified.'],
+      };
+  const compatibleBaseline = baseline?.compatible ? baseline : null;
   const changedFiles = changedFilesSinceBaseline(projectRoot);
   const currentScreenshots = new Map(
     screenshotHashes(projectRoot).map((entry) => [entry.path, entry.hash]),
   );
   const changedScreenshots =
-    baseline?.screenshots
+    compatibleBaseline?.screenshots
       .filter(
         (entry) =>
           currentScreenshots.has(entry.path) && currentScreenshots.get(entry.path) !== entry.hash,
       )
       .map((entry) => entry.path) ?? [];
+  const currentRoutes = [...new Set(report.routes.declared)].sort();
   const contractDrift = [
-    baseline && baseline.routes.join('\n') !== report.routes.declared.join('\n')
+    compatibleBaseline && compatibleBaseline.routes.join('\n') !== currentRoutes.join('\n')
       ? 'Declared route set changed since baseline.'
       : null,
-    baseline && baseline.packs.generatedAt !== report.packs.generatedAt
+    compatibleBaseline && compatibleBaseline.packs?.generatedAt !== report.packs.generatedAt
       ? 'Execution-pack generation timestamp changed since baseline.'
       : null,
   ].filter((entry): entry is string => Boolean(entry));
@@ -2191,14 +2880,15 @@ function compareHealthBaseline(
   return {
     baselinePath: path,
     savedAt: baseline?.generatedAt ?? null,
-    statusChanged: baseline ? baseline.status !== report.status : false,
-    scoreDelta: baseline ? report.score - baseline.score : null,
-    addedFindings: [...currentFindingIds].filter((id) => !baselineFindingIds.has(id)).sort(),
-    resolvedFindings: [...baselineFindingIds].filter((id) => !currentFindingIds.has(id)).sort(),
+    statusChanged: compatibleBaseline?.status ? compatibleBaseline.status !== report.status : false,
+    scoreDelta: compatibleBaseline?.score == null ? null : report.score - compatibleBaseline.score,
+    addedFindings: classification.new.map((finding) => finding.id).sort(),
+    resolvedFindings: classification.resolved.map((finding) => finding.id).sort(),
     changedFiles,
     changedRoutes: routeImpactsFromChangedFiles(report, changedFiles),
-    changedScreenshots,
+    changedScreenshots: [...new Set(changedScreenshots)].sort(),
     contractDrift,
+    limitations: classification.limitations,
   };
 }
 
@@ -2208,7 +2898,7 @@ function saveHealthBaselineComparison(
 ): string {
   const path = baselineDiffPath(projectRoot);
   mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, JSON.stringify(comparison, null, 2) + '\n', 'utf-8');
+  writeFileSync(path, deterministicPrettyJson(comparison), 'utf-8');
   return path;
 }
 
@@ -2290,6 +2980,7 @@ function formatBaselineComparisonText(comparison: HealthBaselineComparison): str
     `  Route impact: ${comparison.changedRoutes.length > 0 ? comparison.changedRoutes.join(', ') : 'none detected'}`,
     `  Screenshot drift: ${comparison.changedScreenshots.length}`,
     `  Contract drift: ${comparison.contractDrift.length > 0 ? comparison.contractDrift.join(' ') : 'none detected'}`,
+    `  Limitations: ${comparison.limitations.length > 0 ? comparison.limitations.join(' ') : 'none'}`,
   ];
   return `${lines.join('\n')}\n`;
 }

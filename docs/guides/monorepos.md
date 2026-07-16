@@ -14,7 +14,7 @@ pnpm exec decantr doctor --project apps/web
 
 `setup` and `workspace list` are non-mutating orientation commands. Before adoption, `setup` shows app candidates and the attach command. After adoption, it points at the day-two loop. `adopt --project apps/web --yes` writes the Brownfield contract, hydrates content API packs when online, and keeps `.decantr/*` context inside the app. When the workspace uses Prettier or Oxfmt, Decantr adds `apps/web/.decantr/`, `apps/web/DECANTR.md`, and `apps/web/decantr.essence.json` to the root `.prettierignore` so root format checks ignore generated governance artifacts.
 
-Decantr 3.7 introduced the read-only discovery substrate that Decantr 3.8 uses for scan/setup/workspace/adopt/doctor/task/verify/ci/MCP. When you pass `--project apps/web`, discovery walks upward to find the package manager and repository-level assistant rules, while framework, language, routes, components, and styling stay app-scoped. Formal TanStack route source outranks generated trees, nested React Router objects resolve lazy implementation files, and pathname-only fallback routes carry medium confidence. This prevents sibling apps and root HTML from contaminating the selected app.
+Decantr 3.7 introduced the read-only discovery substrate that Decantr 3.9 now projects through `AdoptionTruthV1` for scan/setup/workspace/adopt/doctor/opt-in CI v3/MCP/Studio. When you pass `--project apps/web`, discovery walks upward to find the package manager and repository-level assistant rules, while framework, language, routes, components, and styling stay app-scoped. Formal TanStack route source outranks generated trees, nested React Router objects resolve lazy implementation files, and pathname-only fallback routes carry medium confidence. The contract records provenance and limitations for those facts instead of allowing sibling apps or root HTML to contaminate the selected app.
 
 ## Root vs App
 
@@ -33,7 +33,9 @@ pnpm exec decantr ci --project apps/web
 
 The same rule applies to advanced primitives. `health`, `status`, `upgrade`, `add`, `remove`, `theme`, `export`, `suggest`, `magic`, `rules`, and `telemetry` honor `--project <path>` instead of falling back to the workspace root. Task context, local-law summaries, and refresh change summaries print paths you can open from the workspace root. Absolute `--project` paths are resolved from the target app's workspace, not from whichever monorepo you happen to be standing in. If a path does not exist, Decantr fails immediately. If a path points at a component package that is not a deployable app candidate, Brownfield adoption refuses it unless you explicitly opt into that unusual package attach with `--force-package`.
 
-`task` also requires the selected app's typed graph to be current. Its first route read target is the implementation source discovered during analysis, while graph/context artifacts follow it. Regenerate with the app-scoped graph command when task reports missing or stale artifacts.
+`task` also requires the selected app's typed graph to be current. Its first route read target is the implementation source resolved by shared discovery, while graph/context artifacts follow it. Regenerate with the app-scoped graph command when task reports missing or stale artifacts.
+
+In 3.9, CLI and MCP task compatibility fields come from one `TaskCapsuleV1`. Its project identity is clone-independent, every exposed path is workspace-relative, the implementation source is the required rank-one target, and changed-file graph impact is scoped back to the selected app. The compact canonical capsule has a 12,000-byte / 4,000 deterministic-token ceiling.
 
 Use workspace mode only when you intentionally want an aggregate view:
 
@@ -55,6 +57,16 @@ pnpm exec decantr ci --project apps/web
 `ci init` writes a root `.github/workflows/decantr-ci.yml`, detects the package manager, installs dependencies at the workspace root, and runs the pinned local CLI command, for example `pnpm exec decantr ci --project apps/web`. It does not generate `@latest` workflows. If the root package has not pinned Decantr yet, `ci init` prints the exact command to run, such as `pnpm add -D -w @decantr/cli`.
 
 For an adopted Brownfield app with a saved health baseline, the project CI report includes `baselineGate`. Inherited findings stay visible, but only new findings determine the project gate's exit code. Workspace aggregate gates retain their existing aggregate semantics.
+
+That is the default v2 behavior. Governed-change CI v3 is explicit:
+
+```bash
+pnpm exec decantr ci --project apps/web --since origin/main --report-version v3 --json
+pnpm exec decantr ci --workspace --since origin/main --report-version v3 --json
+pnpm exec decantr ci init --project apps/web --report-version v3
+```
+
+Each v3 workspace project carries its own `AdoptionTruthV1` and `GovernanceDeltaV1`; the aggregate gate counts passing, failing, and `not_proven` projects deterministically. A missing/stale/incompatible baseline or unresolved change evidence remains non-passing unless `--fail-on none` is explicit. Existing workflows and commands remain v2 until `--report-version v3` is supplied.
 
 If GitHub Actions is not your authoritative CI system, generate a portable snippet:
 
@@ -91,7 +103,7 @@ When you are not sure whether an app is already attached, start with `doctor`:
 pnpm exec decantr doctor --project apps/web
 ```
 
-`doctor` reports the essence version, workflow mode, adoption mode, adoption lane, generated context state, local pattern/rule files, design authority signals, visual evidence, CI wiring, and an ordered next-step queue. If an app has accepted local law, a style bridge, or Decantr CSS active, doctor calls that Hybrid lane out explicitly so a monorepo teammate does not have to infer authority from scattered files. If an app is still on an older essence shape, run the explicit migrator:
+`doctor` reports the essence version, workflow mode, adoption mode, adoption lane, generated context state, local pattern/rule files, design authority signals, visual evidence, CI wiring, and an ordered next-step queue. If an app has accepted local law, a style bridge, or the legacy Decantr CSS adapter active, doctor calls that Hybrid lane out explicitly so a monorepo teammate does not have to infer authority from scattered files. If an app is still on an older essence shape, run the explicit migrator:
 
 Workspace discovery favors deployable UI apps. Server-only API packages and React component libraries under `packages/*` are not suggested as Brownfield app candidates unless they expose a frontend app config such as Next, Vite, SvelteKit, Angular, or Astro.
 

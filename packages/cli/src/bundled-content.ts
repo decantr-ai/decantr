@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { ApiContentType } from '@decantr/registry';
+import type { ApiContentType } from '@decantr/content';
 
 export interface BundledContentEntry<T = Record<string, unknown>> {
   id: string;

@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { release as osRelease } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const harnessPath = fileURLToPath(import.meta.url);
+const repoRoot = resolve(dirname(harnessPath), '..');
 const defaultCli = join(repoRoot, 'packages', 'cli', 'dist', 'index.js');
 
 const DEFAULT_CANDIDATES = [
@@ -86,6 +89,7 @@ function parseArgs(argv) {
     commandTimeoutMs: 120_000,
     cloneTimeoutMs: 240_000,
     budgetMultiplier: 1,
+    repeat: 1,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -114,6 +118,9 @@ function parseArgs(argv) {
       options.cloneTimeoutMs = Number(argv[++index] ?? options.cloneTimeoutMs);
     } else if (arg === '--budget-multiplier') {
       options.budgetMultiplier = Number(argv[++index] ?? options.budgetMultiplier);
+    } else if (arg === '--repeat') {
+      const value = argv[++index];
+      options.repeat = value === undefined ? Number.NaN : Number(value);
     } else if (arg === '--help' || arg === '-h') {
       printHelp();
       process.exit(0);
@@ -124,6 +131,9 @@ function parseArgs(argv) {
 
   if (!options.cliPath && !options.cliPackage) {
     options.cliPackage = '@decantr/cli@latest';
+  }
+  if (!Number.isInteger(options.repeat) || options.repeat <= 0) {
+    throw new Error('--repeat must be a positive integer');
   }
 
   return options;
@@ -136,6 +146,7 @@ function printHelp() {
   node scripts/run-realworld-corpus.mjs --config corpus.json --keep-repos
   node scripts/run-realworld-corpus.mjs --config scripts/realworld-corpus.hard-mode.json --budget-multiplier 1.5
   node scripts/run-realworld-corpus.mjs --config corpus.json --limit 5
+  node scripts/run-realworld-corpus.mjs --config corpus.json --repeat 20
 
 Config shape:
   {
@@ -154,6 +165,7 @@ Config shape:
     ]
   }`);
   console.log('\nCustom configs run every candidate by default; pass --limit to sample.');
+  console.log('--repeat N runs every target N times in isolated fresh checkouts.');
 }
 
 function readCandidates(configPath) {
@@ -173,6 +185,17 @@ function readCandidates(configPath) {
     expected: String(candidate.expected ?? 'unknown'),
     notes: String(candidate.notes ?? ''),
   }));
+}
+
+function assertUniqueCandidateIds(candidates) {
+  const seen = new Set();
+  for (const candidate of candidates) {
+    if (!candidate.id) throw new Error('Every corpus candidate must have a non-empty id');
+    if (seen.has(candidate.id)) {
+      throw new Error(`Corpus candidate ids must be unique: ${candidate.id}`);
+    }
+    seen.add(candidate.id);
+  }
 }
 
 function commandBudgetMs(options, id) {
@@ -265,7 +288,7 @@ function runProcess(cmd, args, cwd, timeoutMs) {
 }
 
 function cloneRepo(candidate, repoDir, options) {
-  if (existsSync(repoDir) && !options.forceClone) {
+  if (existsSync(repoDir) && !options.forceClone && options.repeat === 1) {
     return {
       ok: true,
       reused: true,
@@ -273,6 +296,7 @@ function cloneRepo(candidate, repoDir, options) {
       durationMs: 0,
       stdout: '',
       stderr: '',
+      commands: [],
     };
   }
   rmSync(repoDir, { recursive: true, force: true });
@@ -287,7 +311,7 @@ function cloneRepo(candidate, repoDir, options) {
     const results = [];
     for (const args of steps) {
       const result = runProcess('git', args, dirname(repoDir), options.cloneTimeoutMs);
-      results.push(result);
+      results.push({ ...result, argv: ['git', ...args], cwd: dirname(repoDir) });
       if (result.status !== 0) break;
     }
     const failed = results.find((result) => result.status !== 0);
@@ -301,11 +325,13 @@ function cloneRepo(candidate, repoDir, options) {
       stdout: results.map((result) => result.stdout).filter(Boolean).join('\n'),
       stderr: results.map((result) => result.stderr).filter(Boolean).join('\n'),
       error: failed?.error ?? '',
+      commands: results.map(({ argv, cwd }) => ({ argv, cwd })),
     };
   }
+  const args = ['clone', '--depth', '1', '--single-branch', candidate.repo, repoDir];
   const result = runProcess(
     'git',
-    ['clone', '--depth', '1', '--single-branch', candidate.repo, repoDir],
+    args,
     dirname(repoDir),
     options.cloneTimeoutMs,
   );
@@ -313,18 +339,144 @@ function cloneRepo(candidate, repoDir, options) {
     ...result,
     ok: result.status === 0,
     reused: false,
+    commands: [{ argv: ['git', ...args], cwd: dirname(repoDir) }],
   };
 }
 
-function parseJsonFromOutput(stdout) {
+const JSON_SCHEMA_EXPECTATIONS = {
+  'scan-json': 'ScanReportV2',
+  'workspace-list-json': 'workspace list report',
+  'graph-json': 'graph summary',
+  'graph-route-json': 'route graph summary',
+  'task-json': 'task context',
+  'verify-json': 'Project Health report',
+  'ci-json': 'CI report',
+};
+
+function parseJsonOutput(stdout) {
+  const trimmed = stdout.trim();
+  if (!trimmed) return { ok: false, value: null, error: 'stdout was empty' };
+
+  const candidates = [trimmed];
   const start = stdout.indexOf('{');
   const end = stdout.lastIndexOf('}');
-  if (start === -1 || end === -1 || end <= start) return null;
-  try {
-    return JSON.parse(stdout.slice(start, end + 1));
-  } catch {
-    return null;
+  if (start !== -1 && end > start) {
+    const objectCandidate = stdout.slice(start, end + 1);
+    if (objectCandidate !== trimmed) candidates.push(objectCandidate);
   }
+
+  let lastError = 'stdout did not contain a JSON object';
+  for (const candidate of candidates) {
+    try {
+      return { ok: true, value: JSON.parse(candidate), error: null };
+    } catch (error) {
+      lastError = String(error?.message ?? error);
+    }
+  }
+  return { ok: false, value: null, error: lastError };
+}
+
+function parseJsonFromOutput(stdout) {
+  const parsed = parseJsonOutput(stdout);
+  return parsed.ok ? parsed.value : null;
+}
+
+function isRecord(value) {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function validateJsonSchema(id, value) {
+  const errors = [];
+  if (!isRecord(value)) return ['output must be a JSON object'];
+
+  const requireRecord = (field) => {
+    if (!isRecord(value[field])) errors.push(`${field} must be an object`);
+  };
+  const requireArray = (field) => {
+    if (!Array.isArray(value[field])) errors.push(`${field} must be an array`);
+  };
+  const requireString = (field) => {
+    if (typeof value[field] !== 'string' || value[field].length === 0) {
+      errors.push(`${field} must be a non-empty string`);
+    }
+  };
+
+  if (id === 'scan-json') {
+    if (value.schemaVersion !== 'scan-report.v2') {
+      errors.push('schemaVersion must equal scan-report.v2');
+    }
+    requireRecord('project');
+    requireRecord('routes');
+    if (isRecord(value.routes) && !Array.isArray(value.routes.items)) {
+      errors.push('routes.items must be an array');
+    }
+  } else if (id === 'workspace-list-json') {
+    requireArray('projects');
+    requireArray('candidates');
+  } else if (id === 'graph-json' || id === 'graph-route-json') {
+    requireRecord('snapshot');
+    if (isRecord(value.snapshot) && typeof value.snapshot.id !== 'string') {
+      errors.push('snapshot.id must be a string');
+    }
+    if (value.wrote !== true) errors.push('wrote must equal true');
+    if (id === 'graph-route-json') {
+      if (!isRecord(value.routeContext)) {
+        errors.push('routeContext must be an object');
+      } else {
+        if (typeof value.routeContext.route !== 'string') {
+          errors.push('routeContext.route must be a string');
+        }
+        if (value.routeContext.found !== true) {
+          errors.push('routeContext.found must equal true');
+        }
+      }
+    }
+  } else if (id === 'task-json') {
+    requireString('route');
+    requireArray('read');
+    requireRecord('loop');
+    requireString('verifyCommand');
+    if (isRecord(value.loop) && typeof value.loop.state !== 'string') {
+      errors.push('loop.state must be a string');
+    }
+  } else if (id === 'verify-json') {
+    requireString('$schema');
+    requireString('status');
+    if (typeof value.score !== 'number' || !Number.isFinite(value.score)) {
+      errors.push('score must be a finite number');
+    }
+    requireRecord('summary');
+    requireArray('findings');
+    requireRecord('loop');
+    if (isRecord(value.loop) && typeof value.loop.state !== 'string') {
+      errors.push('loop.state must be a string');
+    }
+  } else if (id === 'ci-json') {
+    requireString('$schema');
+    requireString('mode');
+    requireString('status');
+    requireRecord('loop');
+    if (isRecord(value.loop) && typeof value.loop.state !== 'string') {
+      errors.push('loop.state must be a string');
+    }
+    if (value.mode === 'project') {
+      requireRecord('health');
+      if (isRecord(value.health)) {
+        if (typeof value.health.status !== 'string') {
+          errors.push('health.status must be a string');
+        }
+        if (typeof value.health.score !== 'number' || !Number.isFinite(value.health.score)) {
+          errors.push('health.score must be a finite number');
+        }
+        if (!Array.isArray(value.health.findings)) {
+          errors.push('health.findings must be an array');
+        }
+      }
+    } else if (value.mode === 'workspace') requireRecord('workspace');
+    else errors.push('mode must equal project or workspace');
+  }
+
+  return errors;
 }
 
 function extractRoutes(scanJson) {
@@ -389,7 +541,8 @@ function crashSignatures(output) {
 }
 
 function summarizeVerify(parsed) {
-  const findings = Array.isArray(parsed?.findings) ? parsed.findings : [];
+  const health = isRecord(parsed?.health) ? parsed.health : parsed;
+  const findings = Array.isArray(health?.findings) ? health.findings : [];
   const ruleCounts = new Map();
   for (const finding of findings) {
     const key = String(finding.rule ?? finding.code ?? finding.id ?? 'unknown');
@@ -397,9 +550,9 @@ function summarizeVerify(parsed) {
   }
   return {
     status: parsed?.status ?? null,
-    score: parsed?.score ?? null,
-    loopState: parsed?.loop?.state ?? null,
-    graphReady: parsed?.graph?.ready ?? null,
+    score: health?.score ?? null,
+    loopState: parsed?.loop?.state ?? health?.loop?.state ?? null,
+    graphReady: health?.graph?.ready ?? health?.graph?.current ?? null,
     findingCount: findings.length,
     ruleCounts: [...ruleCounts.entries()]
       .sort((a, b) => a[0].localeCompare(b[0]))
@@ -411,10 +564,39 @@ function runDecantrCommand(options, cwd, id, args, expectNonzero = false, scope 
   const spec = commandSpec(options, args);
   const result = runProcess(spec.cmd, spec.args, cwd, options.commandTimeoutMs);
   const combinedOutput = `${result.stdout}\n${result.stderr}`;
-  const ok = expectNonzero ? result.status !== 0 : result.status === 0;
+  const exitExpectationMet = expectNonzero
+    ? Number.isInteger(result.status) && result.status !== 0
+    : result.status === 0;
+  const schemaExpectation = expectNonzero ? null : (JSON_SCHEMA_EXPECTATIONS[id] ?? null);
+  const functionalFailureReasons = [];
+  let jsonValid = null;
+  let jsonError = null;
+  let schemaValid = null;
+  let schemaErrors = [];
+
+  if (!exitExpectationMet) {
+    functionalFailureReasons.push(expectNonzero ? 'expected-nonzero-exit' : 'nonzero-exit');
+  }
+  if (schemaExpectation && result.status === 0) {
+    const parsed = parseJsonOutput(result.stdout);
+    jsonValid = parsed.ok;
+    jsonError = parsed.error;
+    if (!parsed.ok) {
+      functionalFailureReasons.push('invalid-json');
+    } else {
+      schemaErrors = validateJsonSchema(id, parsed.value);
+      schemaValid = schemaErrors.length === 0;
+      if (!schemaValid) functionalFailureReasons.push('schema-expectation');
+    }
+  }
+
+  const ok = exitExpectationMet && functionalFailureReasons.length === 0;
+  const budgetMs = commandBudgetMs(options, id);
   const command = {
     id,
     args,
+    argv: [spec.cmd, ...spec.args],
+    cwd,
     scope,
     command: [spec.cmd, ...spec.args].join(' '),
     expectNonzero,
@@ -423,12 +605,19 @@ function runDecantrCommand(options, cwd, id, args, expectNonzero = false, scope 
     signal: result.signal,
     timedOut: result.timedOut,
     durationMs: result.durationMs,
-    budgetMs: commandBudgetMs(options, id),
-    slow: result.durationMs > commandBudgetMs(options, id),
+    budgetMs,
+    slow: result.durationMs > budgetMs,
     stdout: result.stdout,
     stderr: result.stderr,
     error: result.error,
     crashSignatures: crashSignatures(combinedOutput),
+    schemaExpectation,
+    jsonValid,
+    jsonError,
+    schemaValid,
+    schemaErrors,
+    functionalFailure: !ok,
+    functionalFailureReasons,
   };
   return {
     ...command,
@@ -454,6 +643,8 @@ function syntheticFailureCommand(options, id, message, scope = 'app-scoped') {
   const command = {
     id,
     args: [],
+    argv: [],
+    cwd: null,
     scope,
     command: '(harness preflight)',
     expectNonzero: false,
@@ -468,6 +659,13 @@ function syntheticFailureCommand(options, id, message, scope = 'app-scoped') {
     stderr: message,
     error: message,
     crashSignatures: [],
+    schemaExpectation: null,
+    jsonValid: null,
+    jsonError: null,
+    schemaValid: null,
+    schemaErrors: [],
+    functionalFailure: true,
+    functionalFailureReasons: ['preflight-failure'],
   };
   return {
     ...command,
@@ -475,14 +673,24 @@ function syntheticFailureCommand(options, id, message, scope = 'app-scoped') {
   };
 }
 
-function runProject(candidate, options, roots) {
-  const repoDir = join(roots.reposDir, candidate.id);
-  const projectLogDir = join(roots.logsDir, candidate.id);
+function runProject(candidate, options, roots, runNumber = 1) {
+  const repoDir =
+    options.repeat === 1
+      ? join(roots.reposDir, candidate.id)
+      : join(roots.reposDir, candidate.id, `run-${runNumber}`);
+  const projectLogDir =
+    options.repeat === 1
+      ? join(roots.logsDir, candidate.id)
+      : join(roots.logsDir, candidate.id, `run-${runNumber}`);
+  rmSync(projectLogDir, { recursive: true, force: true });
   mkdirSync(projectLogDir, { recursive: true });
 
   const clone = cloneRepo(candidate, repoDir, options);
   const project = {
     ...candidate,
+    targetId: candidate.id,
+    runNumber,
+    runId: `${candidate.id}:run-${runNumber}`,
     repoDir,
     clone,
     selectedRoute: candidate.route ?? null,
@@ -491,6 +699,7 @@ function runProject(candidate, options, roots) {
     verify: null,
     ci: null,
     unexpectedFailures: [],
+    functionalFailures: [],
     crashSignatures: [],
   };
 
@@ -517,6 +726,7 @@ function runProject(candidate, options, roots) {
     project.commands.push(command);
     writeCommandLog(projectLogDir, command);
     project.unexpectedFailures = [command.id];
+    project.functionalFailures = [command.id];
     project.unexpectedFailureDetails = [
       {
         id: command.id,
@@ -524,6 +734,7 @@ function runProject(candidate, options, roots) {
         failureCategory: command.failureCategory,
         status: command.status,
         durationMs: command.durationMs,
+        functionalFailureReasons: command.functionalFailureReasons,
       },
     ];
     return project;
@@ -605,6 +816,9 @@ function runProject(candidate, options, roots) {
   project.unexpectedFailures = project.commands
     .filter((command) => !command.ok)
     .map((command) => command.id);
+  project.functionalFailures = project.commands
+    .filter((command) => command.functionalFailure)
+    .map((command) => command.id);
   project.unexpectedFailureDetails = project.commands
     .filter((command) => !command.ok)
     .map((command) => ({
@@ -613,6 +827,7 @@ function runProject(candidate, options, roots) {
       failureCategory: command.failureCategory,
       status: command.status,
       durationMs: command.durationMs,
+      functionalFailureReasons: command.functionalFailureReasons,
     }));
   project.crashSignatures = [
     ...new Set(project.commands.flatMap((command) => command.crashSignatures)),
@@ -621,7 +836,8 @@ function runProject(candidate, options, roots) {
   return project;
 }
 
-function aggregate(projects) {
+function aggregate(projects, repeat = 1) {
+  const targetIds = [...new Set(projects.map((project) => project.targetId ?? project.id))];
   const commandCount = projects.reduce((sum, project) => sum + project.commands.length, 0);
   const unexpectedFailures = projects.reduce(
     (sum, project) => sum + project.unexpectedFailures.length,
@@ -630,7 +846,11 @@ function aggregate(projects) {
   const crashProjects = projects.filter((project) => project.crashSignatures.length > 0);
   const routeMisses = projects.filter((project) => project.scanRouteCount === 0);
   const commands = projects.flatMap((project) =>
-    project.commands.map((command) => ({ ...command, projectId: project.id })),
+    project.commands.map((command) => ({
+      ...command,
+      projectId: project.targetId ?? project.id,
+      runNumber: project.runNumber ?? 1,
+    })),
   );
   const failureCategories = Object.fromEntries(FAILURE_CATEGORIES.map((category) => [category, 0]));
   for (const command of commands) {
@@ -639,27 +859,42 @@ function aggregate(projects) {
         (failureCategories[command.failureCategory] ?? 0) + 1;
     }
   }
+  const promotedRuns = projects.filter(
+    (project) =>
+      project.clone.ok &&
+      project.scanRouteCount > 0 &&
+      project.crashSignatures.length === 0 &&
+      project.unexpectedFailures.length === 0,
+  );
+  const promotedTargets = targetIds.filter((targetId) => {
+    const runs = projects.filter((project) => (project.targetId ?? project.id) === targetId);
+    return runs.length === repeat && runs.every((project) => promotedRuns.includes(project));
+  });
+  const functionalFailureCount = commands.filter((command) => command.functionalFailure).length;
+
   return {
-    projectCount: projects.length,
+    projectCount: targetIds.length,
+    targetCount: targetIds.length,
+    runCount: projects.length,
+    repeat,
     commandCount,
     unexpectedFailures,
+    functionalFailureCount,
+    failedRunCount: projects.filter((project) => project.unexpectedFailures.length > 0).length,
+    batchStatus: unexpectedFailures > 0 ? 'failed' : 'passed',
     crashProjectCount: crashProjects.length,
+    crashRunCount: crashProjects.length,
     routeMissCount: routeMisses.length,
     rootSmokeCommandCount: commands.filter((command) => command.scope === 'root-smoke').length,
     appScopedCommandCount: commands.filter((command) => command.scope === 'app-scoped').length,
     slowCommandCount: commands.filter((command) => command.slow).length,
     failureCategories,
-    promotedProjectCount: projects.filter(
-      (project) =>
-        project.clone.ok &&
-        project.scanRouteCount > 0 &&
-        project.crashSignatures.length === 0 &&
-        project.unexpectedFailures.length === 0,
-    ).length,
+    promotedProjectCount: promotedTargets.length,
+    promotedRunCount: promotedRuns.length,
   };
 }
 
-function percentile(values, p) {
+function nearestRankPercentile(values, p) {
   if (values.length === 0) return 0;
   const sorted = [...values].sort((a, b) => a - b);
   const index = Math.min(sorted.length - 1, Math.ceil((p / 100) * sorted.length) - 1);
@@ -668,47 +903,199 @@ function percentile(values, p) {
 
 function summarizeTimings(projects) {
   const commands = projects.flatMap((project) =>
-    project.commands.map((command) => ({ ...command, projectId: project.id })),
+    project.commands.map((command) => ({
+      ...command,
+      targetId: project.targetId ?? project.id,
+      runNumber: project.runNumber ?? 1,
+    })),
   );
-  const durations = commands.map((command) => command.durationMs);
-  const byCommand = new Map();
+  const byTargetCommand = new Map();
   for (const command of commands) {
-    const current = byCommand.get(command.id) ?? [];
+    const key = JSON.stringify([command.targetId, command.id]);
+    const current = byTargetCommand.get(key) ?? [];
     current.push(command);
-    byCommand.set(command.id, current);
+    byTargetCommand.set(key, current);
   }
-  const commandDurations = [...byCommand.entries()]
-    .map(([id, entries]) => {
+  const commandDurations = [...byTargetCommand.values()]
+    .map((entries) => {
       const entryDurations = entries.map((entry) => entry.durationMs);
       return {
-        id,
+        targetId: entries[0].targetId,
+        id: entries[0].id,
+        scope: entries[0].scope,
         count: entries.length,
         budgetMs: entries[0]?.budgetMs ?? null,
-        p50Ms: percentile(entryDurations, 50),
-        p95Ms: percentile(entryDurations, 95),
+        samplesMs: entryDurations,
+        samples: entries.map((entry) => ({
+          runNumber: entry.runNumber,
+          durationMs: entry.durationMs,
+          status: entry.status,
+          ok: entry.ok,
+          slow: entry.slow,
+        })),
+        p50Ms: nearestRankPercentile(entryDurations, 50),
+        p95Ms: nearestRankPercentile(entryDurations, 95),
         maxMs: Math.max(...entryDurations),
         slowCount: entries.filter((entry) => entry.slow).length,
+        failureCount: entries.filter((entry) => !entry.ok).length,
       };
     })
-    .sort((a, b) => b.p95Ms - a.p95Ms || a.id.localeCompare(b.id));
+    .sort((a, b) => a.targetId.localeCompare(b.targetId) || a.id.localeCompare(b.id));
 
   return {
-    totalMs: durations.reduce((sum, value) => sum + value, 0),
-    p50Ms: percentile(durations, 50),
-    p95Ms: percentile(durations, 95),
-    maxMs: durations.length > 0 ? Math.max(...durations) : 0,
+    totalMs: commands.reduce((sum, command) => sum + command.durationMs, 0),
+    percentileMethod: 'nearest-rank',
+    grouping: 'target-command',
+    pooledAcrossTargets: false,
+    byTargetCommand: commandDurations,
+    // Kept as an unpooled compatibility alias for existing report consumers.
     byCommand: commandDurations,
     slowCommands: commands
       .filter((command) => command.slow)
       .sort((a, b) => b.durationMs - a.durationMs)
       .slice(0, 20)
       .map((command) => ({
-        project: command.projectId,
+        project: command.targetId,
+        runNumber: command.runNumber,
         id: command.id,
         scope: command.scope,
         durationMs: command.durationMs,
         budgetMs: command.budgetMs,
       })),
+  };
+}
+
+function fileSha256(path) {
+  try {
+    return createHash('sha256').update(readFileSync(path)).digest('hex');
+  } catch {
+    return null;
+  }
+}
+
+function findPackageManifest(artifactPath) {
+  let current = dirname(resolve(artifactPath));
+  while (true) {
+    const packagePath = join(current, 'package.json');
+    if (existsSync(packagePath)) {
+      try {
+        return { path: packagePath, value: JSON.parse(readFileSync(packagePath, 'utf-8')) };
+      } catch {
+        return { path: packagePath, value: null };
+      }
+    }
+    const parent = dirname(current);
+    if (parent === current) return null;
+    current = parent;
+  }
+}
+
+function collectToolVersion(name, cmd, args) {
+  const result = runProcess(cmd, args, repoRoot, 10_000);
+  const version = (result.stdout || result.stderr).trim().split('\n')[0] || null;
+  return {
+    name,
+    argv: [cmd, ...args],
+    cwd: repoRoot,
+    status: result.status,
+    version,
+    error: result.error || null,
+  };
+}
+
+function cliArtifactIdentity(options) {
+  const artifactPath = resolve(options.resolvedCliPath ?? options.cliPath);
+  const packageManifest = findPackageManifest(artifactPath);
+  const versionResult = runProcess(
+    process.execPath,
+    [artifactPath, '--version'],
+    repoRoot,
+    options.commandTimeoutMs,
+  );
+  const sha256 = fileSha256(artifactPath);
+  const reportedVersion = (versionResult.stdout || versionResult.stderr).trim().split('\n')[0] || null;
+  const packageName = packageManifest?.value?.name ?? null;
+  const packageVersion = packageManifest?.value?.version ?? null;
+  return {
+    source: options.cliPackage ? 'npm-package' : 'file',
+    requested: options.cliPackage ?? resolve(options.cliPath),
+    resolvedPath: artifactPath,
+    sha256,
+    identity: `${packageName ?? 'file'}@${packageVersion ?? reportedVersion ?? 'unknown'}#sha256:${sha256 ?? 'unavailable'}`,
+    reportedVersion,
+    packageName,
+    packageVersion,
+    packageManifestPath: packageManifest?.path ?? null,
+    packageManifestSha256: packageManifest ? fileSha256(packageManifest.path) : null,
+    versionCommand: {
+      argv: [process.execPath, artifactPath, '--version'],
+      cwd: repoRoot,
+      status: versionResult.status,
+      stderr: versionResult.stderr || null,
+      error: versionResult.error || null,
+    },
+  };
+}
+
+function buildReproducibilityManifest(options, candidates, projects, generatedAt) {
+  const cli = cliArtifactIdentity(options);
+  return {
+    schemaVersion: 1,
+    generatedAt,
+    repeat: options.repeat,
+    harness: {
+      path: harnessPath,
+      sha256: fileSha256(harnessPath),
+      cwd: process.cwd(),
+      argv: [process.execPath, harnessPath, ...process.argv.slice(2)],
+    },
+    cli,
+    runtime: {
+      platform: process.platform,
+      arch: process.arch,
+      osRelease: osRelease(),
+      node: {
+        version: process.version,
+        executable: process.execPath,
+        argv: [process.execPath, '--version'],
+      },
+    },
+    tools: [
+      collectToolVersion('git', 'git', ['--version']),
+      collectToolVersion('npm', 'npm', ['--version']),
+      collectToolVersion('pnpm', 'pnpm', ['--version']),
+    ],
+    targets: candidates.map((candidate) => {
+      const runs = projects.filter(
+        (project) => (project.targetId ?? project.id) === candidate.id,
+      );
+      return {
+        id: candidate.id,
+        repository: candidate.repo,
+        requestedRef: candidate.ref,
+        resolvedRefs: [...new Set(runs.map((run) => run.resolvedCommit).filter(Boolean))],
+        projectPath: candidate.projectPath,
+        configuredRoute: candidate.route,
+        runs: runs.map((run) => ({
+          runNumber: run.runNumber,
+          runId: run.runId,
+          resolvedRef: run.resolvedCommit ?? null,
+          selectedRoute: run.selectedRoute,
+          repositoryReused: run.clone.reused,
+          repositoryCommands: run.clone.commands ?? [],
+          cliCommands: run.commands.map((command) => ({
+            id: command.id,
+            scope: command.scope,
+            argv: command.argv,
+            cwd: command.cwd,
+            expectedExit: command.expectNonzero ? 'nonzero' : 'zero',
+            schemaExpectation: command.schemaExpectation,
+            status: command.status,
+            durationMs: command.durationMs,
+          })),
+        })),
+      };
+    }),
   };
 }
 
@@ -729,7 +1116,9 @@ function renderMarkdown(report) {
     '',
     '## Summary',
     '',
-    `- Projects: ${report.summary.projectCount}`,
+    `- Targets: ${report.summary.targetCount}`,
+    `- Repeats per target: ${report.summary.repeat}`,
+    `- Isolated runs: ${report.summary.runCount}`,
     `- Commands: ${report.summary.commandCount}`,
     `- Root-smoke commands: ${report.summary.rootSmokeCommandCount}`,
     `- App-scoped commands: ${report.summary.appScopedCommandCount}`,
@@ -738,22 +1127,23 @@ function renderMarkdown(report) {
     `- Route misses: ${report.summary.routeMissCount}`,
     `- Slow commands: ${report.summary.slowCommandCount}`,
     `- Promoted corpus candidates: ${report.summary.promotedProjectCount}`,
+    `- Functional batch status: ${report.summary.batchStatus}`,
+    `- Functional command failures: ${report.summary.functionalFailureCount}`,
     `- Recommended next version: ${report.honesty.recommendedNextVersion}`,
     '',
     '## Timing',
     '',
     `- Total command time: ${report.timings.totalMs}ms`,
-    `- Command p50: ${report.timings.p50Ms}ms`,
-    `- Command p95: ${report.timings.p95Ms}ms`,
-    `- Command max: ${report.timings.maxMs}ms`,
+    '- Percentile method: nearest-rank.',
+    '- Grouping: target x command; samples are never pooled across targets.',
     '',
-    '| Command | Count | Budget | p50 | p95 | Max | Slow |',
-    '| --- | ---: | ---: | ---: | ---: | ---: | ---: |',
+    '| Target | Command | Samples | Raw ms | Budget | p50 | p95 | Max | Slow | Failures |',
+    '| --- | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: |',
   ];
 
-  for (const command of report.timings.byCommand.slice(0, 12)) {
+  for (const command of report.timings.byTargetCommand) {
     lines.push(
-      `| \`${command.id}\` | ${command.count} | ${command.budgetMs ?? 'n/a'} | ${command.p50Ms} | ${command.p95Ms} | ${command.maxMs} | ${command.slowCount} |`,
+      `| ${command.targetId} | \`${command.id}\` | ${command.count} | ${command.samplesMs.join(', ')} | ${command.budgetMs ?? 'n/a'} | ${command.p50Ms} | ${command.p95Ms} | ${command.maxMs} | ${command.slowCount} | ${command.failureCount} |`,
     );
   }
 
@@ -763,7 +1153,7 @@ function renderMarkdown(report) {
   } else {
     for (const command of report.timings.slowCommands.slice(0, 10)) {
       lines.push(
-        `- ${command.project} \`${command.id}\` (${command.scope}) took ${command.durationMs}ms; budget ${command.budgetMs}ms.`,
+        `- ${command.project} run ${command.runNumber} \`${command.id}\` (${command.scope}) took ${command.durationMs}ms; budget ${command.budgetMs}ms.`,
       );
     }
   }
@@ -783,19 +1173,19 @@ function renderMarkdown(report) {
     '',
     '## Projects',
     '',
-    '| Project | Ref | Project Path | Kind | Route Count | Selected Route | Unexpected Failures | Verify | Findings | Crash Signatures |',
-    '| --- | --- | --- | --- | ---: | --- | --- | --- | ---: | --- |',
+    '| Project | Run | Ref | Project Path | Kind | Route Count | Selected Route | Unexpected Failures | Verify | Findings | Crash Signatures |',
+    '| --- | ---: | --- | --- | --- | ---: | --- | --- | --- | ---: | --- |',
   );
 
   for (const project of report.projects) {
     lines.push(
-      `| ${project.id} | \`${project.ref ?? 'default branch'}\` | ${project.projectPath ? `\`${project.projectPath}\`` : 'root'} | ${project.kind} | ${project.scanRouteCount} | \`${project.selectedRoute ?? 'n/a'}\` | ${project.unexpectedFailures.join(', ') || 'none'} | ${project.verify?.status ?? 'n/a'} / ${project.verify?.score ?? 'n/a'} | ${project.verify?.findingCount ?? 0} | ${project.crashSignatures.join(', ') || 'none'} |`,
+      `| ${project.id} | ${project.runNumber} | \`${project.ref ?? 'default branch'}\` | ${project.projectPath ? `\`${project.projectPath}\`` : 'root'} | ${project.kind} | ${project.scanRouteCount} | \`${project.selectedRoute ?? 'n/a'}\` | ${project.unexpectedFailures.join(', ') || 'none'} | ${project.verify?.status ?? 'n/a'} / ${project.verify?.score ?? 'n/a'} | ${project.verify?.findingCount ?? 0} | ${project.crashSignatures.join(', ') || 'none'} |`,
     );
   }
 
   lines.push('', '## Notes', '');
   for (const project of report.projects) {
-    lines.push(`### ${project.id}`, '');
+    lines.push(`### ${project.id} run ${project.runNumber}`, '');
     lines.push(`- Repo: ${project.repo}`);
     lines.push(`- Requested ref: ${project.ref ?? 'default branch'}`);
     lines.push(`- Resolved commit: ${project.resolvedCommit ?? 'unavailable'}`);
@@ -820,6 +1210,17 @@ function renderMarkdown(report) {
     }
     lines.push('');
   }
+
+  lines.push(
+    '## Reproducibility',
+    '',
+    `- Manifest: ${report.reproducibilityManifestPath}`,
+    `- CLI artifact: ${report.reproducibilityManifest.cli.resolvedPath}`,
+    `- CLI SHA-256: ${report.reproducibilityManifest.cli.sha256 ?? 'unavailable'}`,
+    `- CLI reported version: ${report.reproducibilityManifest.cli.reportedVersion ?? 'unavailable'}`,
+    `- Runtime: Node ${report.reproducibilityManifest.runtime.node.version} on ${report.reproducibilityManifest.runtime.platform}/${report.reproducibilityManifest.runtime.arch}`,
+    '',
+  );
 
   lines.push('## Honesty', '');
   for (const limitation of report.honesty.knownLimitations) {
@@ -852,31 +1253,49 @@ function main() {
     typeof options.limit === 'number' && Number.isFinite(options.limit)
       ? allCandidates.slice(0, options.limit)
       : allCandidates;
+  assertUniqueCandidateIds(candidates);
   const cliLabel = options.cliPackage ?? resolve(options.cliPath);
   const projects = [];
   for (const candidate of candidates) {
-    console.log(`[realworld-corpus] ${candidate.id}: cloning/running`);
-    const project = runProject(candidate, options, roots);
-    projects.push(project);
-    console.log(
-      `[realworld-corpus] ${candidate.id}: routes=${project.scanRouteCount} failures=${project.unexpectedFailures.length}`,
-    );
+    for (let runNumber = 1; runNumber <= options.repeat; runNumber += 1) {
+      console.log(
+        `[realworld-corpus] ${candidate.id} run ${runNumber}/${options.repeat}: cloning/running`,
+      );
+      const project = runProject(candidate, options, roots, runNumber);
+      projects.push(project);
+      console.log(
+        `[realworld-corpus] ${candidate.id} run ${runNumber}/${options.repeat}: routes=${project.scanRouteCount} failures=${project.unexpectedFailures.length}`,
+      );
+    }
   }
 
-  const summary = aggregate(projects);
+  const summary = aggregate(projects, options.repeat);
   const timings = summarizeTimings(projects);
+  const generatedAt = new Date().toISOString();
+  const reproducibilityManifestPath = join(
+    roots.reportsDir,
+    'reproducibility-manifest.json',
+  );
+  const reproducibilityManifest = buildReproducibilityManifest(
+    options,
+    candidates,
+    projects,
+    generatedAt,
+  );
   const report = {
-    schemaVersion: 2,
-    generatedAt: new Date().toISOString(),
+    schemaVersion: 3,
+    generatedAt,
     cliLabel,
     outDir,
     summary,
     timings,
+    reproducibilityManifestPath,
+    reproducibilityManifest,
     honesty: {
       recommendedNextVersion: recommendation(summary),
       knownLimitations: [
         summary.routeMissCount > 0
-          ? `${summary.routeMissCount} project(s) produced no taskable routes in scan.`
+          ? `${summary.routeMissCount} isolated run(s) produced no taskable routes in scan.`
           : null,
         summary.unexpectedFailures > 0
           ? `${summary.unexpectedFailures} unexpected command failure(s) need triage.`
@@ -892,6 +1311,11 @@ function main() {
     projects,
   };
 
+  writeFileSync(
+    reproducibilityManifestPath,
+    `${JSON.stringify(reproducibilityManifest, null, 2)}\n`,
+    'utf-8',
+  );
   writeFileSync(
     join(roots.reportsDir, 'aggregate-summary.json'),
     `${JSON.stringify(report, null, 2)}\n`,
@@ -914,6 +1338,8 @@ function main() {
 
   console.log(`Wrote ${join(roots.reportsDir, 'aggregate-summary.json')}`);
   console.log(`Wrote ${join(roots.reportsDir, 'realworld-corpus.md')}`);
+  console.log(`Wrote ${reproducibilityManifestPath}`);
+  if (summary.batchStatus === 'failed') process.exitCode = 1;
 }
 
 try {

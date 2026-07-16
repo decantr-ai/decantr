@@ -33,7 +33,12 @@ function hydrateContentRoot(projectDir: string, contentRoot: string): boolean {
 
 export interface OfflineRegistrySeedResult {
   seeded: boolean;
-  strategy: 'workspace-cache' | 'configured-content-root' | 'workspace-content-root' | 'installed-content-package' | null;
+  strategy:
+    | 'workspace-cache'
+    | 'configured-content-root'
+    | 'workspace-content-root'
+    | 'installed-content-package'
+    | null;
 }
 
 /**

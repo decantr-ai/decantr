@@ -54,10 +54,7 @@ function parseArgs(argv) {
 function resolveContentRoot(explicitRoot) {
   const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
   const repoRoot = resolve(packageRoot, '..', '..');
-  const candidates = [
-    explicitRoot,
-    resolve(repoRoot, 'packages', 'content'),
-  ].filter(Boolean);
+  const candidates = [explicitRoot, resolve(repoRoot, 'packages', 'content')].filter(Boolean);
 
   for (const candidate of candidates) {
     if (existsSync(join(candidate, 'archetypes')) && existsSync(join(candidate, 'blueprints'))) {

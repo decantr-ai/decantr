@@ -1,0 +1,241 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/decantr-ci-report.v3.json",
+  "title": "Decantr CI Report v3",
+  "oneOf": [
+    { "$ref": "#/$defs/projectReport" },
+    { "$ref": "#/$defs/workspaceReport" }
+  ],
+  "$defs": {
+    "projectReport": {
+      "type": "object",
+      "required": [
+        "$schema",
+        "generatedAt",
+        "mode",
+        "projectPath",
+        "failOn",
+        "status",
+        "loop",
+        "authority",
+        "evidenceTier",
+        "health",
+        "baselineGate",
+        "localLaw",
+        "styleBridge",
+        "adoptionTruth",
+        "governanceDelta"
+      ],
+      "properties": {
+        "$schema": { "const": "https://decantr.ai/schemas/decantr-ci-report.v3.json" },
+        "generatedAt": { "type": "string", "format": "date-time" },
+        "mode": { "const": "project" },
+        "projectPath": { "anyOf": [{ "$ref": "#/$defs/relativePath" }, { "type": "null" }] },
+        "failOn": { "$ref": "#/$defs/failOn" },
+        "status": { "$ref": "#/$defs/status" },
+        "loop": { "$ref": "https://decantr.ai/schemas/loop-readiness.v2.json" },
+        "authority": { "$ref": "https://decantr.ai/schemas/authority-resolution.v2.json" },
+        "evidenceTier": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v2.json#/$defs/evidenceTier"
+        },
+        "health": { "$ref": "https://decantr.ai/schemas/project-health-report.v2.json" },
+        "baselineGate": { "$ref": "#/$defs/baselineGate" },
+        "localLaw": { "$ref": "#/$defs/localLaw" },
+        "styleBridge": { "$ref": "#/$defs/styleBridge" },
+        "adoptionTruth": { "$ref": "https://decantr.ai/schemas/adoption-truth.v1.json" },
+        "governanceDelta": { "$ref": "https://decantr.ai/schemas/governance-delta.v1.json" }
+      },
+      "additionalProperties": false
+    },
+    "workspaceReport": {
+      "type": "object",
+      "required": [
+        "$schema",
+        "generatedAt",
+        "mode",
+        "failOn",
+        "status",
+        "loop",
+        "workspace",
+        "projects",
+        "gate"
+      ],
+      "properties": {
+        "$schema": { "const": "https://decantr.ai/schemas/decantr-ci-report.v3.json" },
+        "generatedAt": { "type": "string", "format": "date-time" },
+        "mode": { "const": "workspace" },
+        "failOn": { "$ref": "#/$defs/failOn" },
+        "status": { "$ref": "#/$defs/status" },
+        "loop": {
+          "$ref": "https://decantr.ai/schemas/workspace-health-report.v2.json#/properties/loop"
+        },
+        "workspace": { "$ref": "https://decantr.ai/schemas/workspace-health-report.v2.json" },
+        "projects": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/projectReport" }
+        },
+        "gate": { "$ref": "#/$defs/aggregateGate" }
+      },
+      "additionalProperties": false
+    },
+    "baselineGate": {
+      "type": "object",
+      "required": [
+        "applied",
+        "baselinePath",
+        "savedAt",
+        "inheritedFindingIds",
+        "newFindings"
+      ],
+      "properties": {
+        "applied": { "type": "boolean" },
+        "baselinePath": { "type": "string" },
+        "savedAt": { "type": ["string", "null"], "format": "date-time" },
+        "inheritedFindingIds": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "newFindings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "severity"],
+            "properties": {
+              "id": { "type": "string" },
+              "severity": { "enum": ["error", "warn", "info"] }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "localLaw": {
+      "type": "object",
+      "required": [
+        "checked",
+        "patternsPresent",
+        "rulesPresent",
+        "warnings",
+        "findings",
+        "errorCount",
+        "warnCount"
+      ],
+      "properties": {
+        "checked": { "type": "boolean" },
+        "patternsPresent": { "type": "boolean" },
+        "rulesPresent": { "type": "boolean" },
+        "warnings": { "$ref": "#/$defs/stringArray" },
+        "findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "ruleId",
+              "severity",
+              "file",
+              "line",
+              "column",
+              "message",
+              "suggestedFix"
+            ],
+            "properties": {
+              "ruleId": { "type": "string" },
+              "severity": { "enum": ["info", "warn", "error"] },
+              "file": { "type": "string" },
+              "line": { "type": "integer", "minimum": 1 },
+              "column": { "type": "integer", "minimum": 1 },
+              "message": { "type": "string" },
+              "suggestedFix": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "errorCount": { "type": "integer", "minimum": 0 },
+        "warnCount": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "styleBridge": {
+      "type": "object",
+      "required": [
+        "checked",
+        "present",
+        "status",
+        "mappingCount",
+        "stylingApproach",
+        "themeModes",
+        "warnings"
+      ],
+      "properties": {
+        "checked": { "type": "boolean" },
+        "present": { "type": "boolean" },
+        "status": { "type": ["string", "null"] },
+        "mappingCount": { "type": "integer", "minimum": 0 },
+        "stylingApproach": { "type": ["string", "null"] },
+        "themeModes": { "$ref": "#/$defs/stringArray" },
+        "warnings": { "$ref": "#/$defs/stringArray" }
+      },
+      "additionalProperties": false
+    },
+    "aggregateGate": {
+      "type": "object",
+      "required": [
+        "result",
+        "status",
+        "failOn",
+        "projectCount",
+        "passingProjectCount",
+        "failingProjectCount",
+        "notProvenProjectCount",
+        "projects"
+      ],
+      "properties": {
+        "result": { "$ref": "#/$defs/gateResult" },
+        "status": { "$ref": "#/$defs/gateStatus" },
+        "failOn": { "$ref": "#/$defs/failOn" },
+        "projectCount": { "type": "integer", "minimum": 0 },
+        "passingProjectCount": { "type": "integer", "minimum": 0 },
+        "failingProjectCount": { "type": "integer", "minimum": 0 },
+        "notProvenProjectCount": { "type": "integer", "minimum": 0 },
+        "projects": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "projectPath",
+              "projectIdentity",
+              "result",
+              "status",
+              "blockingCount"
+            ],
+            "properties": {
+              "projectPath": {
+                "anyOf": [{ "$ref": "#/$defs/relativePath" }, { "type": "null" }]
+              },
+              "projectIdentity": { "type": "string", "minLength": 1 },
+              "result": { "$ref": "#/$defs/gateResult" },
+              "status": { "$ref": "#/$defs/gateStatus" },
+              "blockingCount": { "type": "integer", "minimum": 0 }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?:\\.|(?!/)(?![A-Za-z]:/)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\\\]+)$"
+    },
+    "stringArray": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "failOn": { "enum": ["error", "warn", "none"] },
+    "status": { "enum": ["healthy", "warning", "error"] },
+    "gateResult": { "enum": ["pass", "fail", "not_proven"] },
+    "gateStatus": { "enum": ["clean", "blocked", "incomplete"] }
+  }
+}

@@ -3,7 +3,7 @@
 Support status: `supported-secondary`
 Release channel: `stable`
 
-Legacy Decantr 3.x compatibility package for content contracts, schemas, API client naming, ranking helpers, and resolver utilities.
+Legacy Decantr 3.x compatibility facade for content contracts, schemas, API client naming, ranking helpers, and resolver utilities. Runtime implementations and TypeScript contracts are owned by `@decantr/content`; this package only preserves old names and import paths.
 
 Prefer `@decantr/content` for new official corpus integrations. Keep `@decantr/registry` when existing scripts or MCP/directory-compatible code still use registry naming.
 
@@ -15,7 +15,7 @@ npm install @decantr/registry
 
 ## What It Exports
 
-- strong types for patterns, themes, official blueprints, archetypes, shells, and intelligence metadata
+- re-exported types for patterns, themes, official blueprints, archetypes, shells, and intelligence metadata
 - `ContentHealthReport` types for vocabulary supply-chain health artifacts
 - `RegistryAPIClient` for server-side and tool-side content API access
 - `@decantr/registry/client` for web-safe API usage
@@ -46,7 +46,7 @@ Browser-safe usage:
 import { createRegistryClient } from '@decantr/registry/client';
 
 const client = createRegistryClient({ baseUrl: 'https://api.decantr.ai/v1' });
-const summary = await client.getIntelligenceSummary();
+const results = await client.search('dashboard', 'blueprint');
 ```
 
 Pattern discovery usage:
@@ -75,9 +75,20 @@ Blueprint records can include `blueprint_portfolio` metadata. List/search summar
 
 `@decantr/registry` is maintained as a Decantr 3 compatibility package.
 
+- `RegistryAPIClient`, `RegistryAPIError`, and `createRegistryClient` are aliases over the content-owned client runtime
+- `@decantr/registry/client` preserves every runtime and type export from the public 3.8.1 client entrypoint while delegating implementation to `@decantr/content`
+- `RegistryIntelligenceSummaryResponse` and `RegistryIntelligenceSummaryBucket` remain aliases for the preferred content-named response types
 - exported schema paths and documented client entrypoints are expected to remain stable across compatible releases
 - additive response fields may be introduced without breaking the stable contract
 - breaking client, schema, or path changes require a major version
+
+The release boundary is exercised from packed artifacts with:
+
+```bash
+pnpm audit:packed-content-facade
+```
+
+That audit installs `@decantr/content` and `@decantr/registry` tarballs into a clean npm prefix, proves delegated runtime identity and legacy schema parity, compiles the frozen public 3.8.1 `/client` type surface, checks no-`process` construction and `REGISTRY_URL`, and rejects workspace links or retired-host leakage. It does not revive a public registry service.
 
 ## Security And Permissions
 

@@ -18,6 +18,10 @@ export type AdoptionMode = 'contract-only' | 'style-bridge' | 'decantr-css';
 export type ContentSource = 'none' | 'official' | 'custom' | 'cache';
 export type AssistantBridgeMode = 'none' | 'preview' | 'apply';
 
+export function adoptionUsesDecantrRuntimeCss(adoptionMode?: AdoptionMode): boolean {
+  return adoptionMode === 'decantr-css';
+}
+
 export interface WorkflowPolicy {
   workflowMode: WorkflowMode;
   adoptionMode: AdoptionMode;

@@ -466,6 +466,12 @@ describe('MCP tool handlers', () => {
           devDependencies: { typescript: '^6.0.0' },
           packageManager: 'pnpm@10.33.0',
         });
+        writeJson(join(projectDir, '.decantr', 'project.json'), {
+          initialized: {
+            workflowMode: 'brownfield-attach',
+            adoptionMode: 'contract-only',
+          },
+        });
         writeJson(join(projectDir, 'decantr.essence.json'), {
           version: '4.0.0',
           dna: {
@@ -724,6 +730,15 @@ describe('MCP tool handlers', () => {
         });
 
         const state = (await callTool('decantr_get_project_state', {})) as {
+          adoption_truth?: {
+            $schema?: string;
+            facts?: Array<{ id: string }>;
+            project?: { selectedAppRoot?: string };
+          };
+          project_config?: {
+            workflow_mode?: string | null;
+            adoption_mode?: string | null;
+          };
           essence?: { routes?: string[]; active_v4?: boolean };
           discovery?: {
             project?: { framework?: string; package_manager?: string; primary_language?: string };
@@ -758,7 +773,17 @@ describe('MCP tool handlers', () => {
           recommended_next_actions?: Array<{ tool: string; action: string }>;
         };
         expect(state.essence?.active_v4).toBe(true);
+        expect(state.adoption_truth?.$schema).toBe(
+          'https://decantr.ai/schemas/adoption-truth.v1.json',
+        );
+        expect(state.adoption_truth?.facts?.map((fact) => fact.id)).toContain(
+          'adoption.host-source-integrity',
+        );
         expect(state.essence?.routes).toEqual(['/feed']);
+        expect(state.project_config).toMatchObject({
+          workflow_mode: 'brownfield-attach',
+          adoption_mode: 'contract-only',
+        });
         expect(state.discovery?.project?.framework).toBe('nextjs');
         expect(state.discovery?.project?.package_manager).toBe('pnpm');
         expect(state.discovery?.project?.primary_language).toBe('typescript');
@@ -1596,6 +1621,15 @@ describe('MCP tool handlers', () => {
           route: '/feed',
           task: 'improve recipe feed loading',
         })) as {
+          task_capsule_version: string;
+          task_capsule_budget: {
+            maxCanonicalBytes: number;
+            maxEstimatedTokens: number;
+            canonicalBytes: number;
+            estimatedTokens: number;
+          };
+          task_capsule_truncation: { truncated: boolean; truncatedFields: string[] };
+          task_capsule_digest: string;
           route: string;
           page_id: string;
           visual_target: string;
@@ -1632,6 +1666,7 @@ describe('MCP tool handlers', () => {
           };
           authority: {
             lane: string;
+            active_lane: string;
             active_authorities: string[];
             source_authority: string;
             warnings: string[];
@@ -1658,6 +1693,7 @@ describe('MCP tool handlers', () => {
           response_detail: string;
           loop: {
             state: string;
+            authority: { activeLane: string };
             graphImpact: { status: string; staleArtifacts: unknown[] };
             readTargets: string[];
           };
@@ -1671,6 +1707,10 @@ describe('MCP tool handlers', () => {
         };
 
         expect(result.route).toBe('/feed');
+        expect(result.task_capsule_version).toBe('task-capsule.v1');
+        expect(result.task_capsule_budget.canonicalBytes).toBeLessThanOrEqual(12_000);
+        expect(result.task_capsule_budget.estimatedTokens).toBeLessThanOrEqual(4_000);
+        expect(result.task_capsule_digest).toMatch(/^sha256:[a-f0-9]{64}$/);
         expect(result.response_detail).toBe('compact');
         expect(result.page_id).toBe('feed');
         expect(result.visual_target).toContain('3-column');
@@ -1700,6 +1740,8 @@ describe('MCP tool handlers', () => {
         });
         expect(result.local_law.rules[0].id).toBe('no-inline-style');
         expect(result.authority.lane).toBe('Hybrid local law');
+        expect(result.authority.active_lane).toBe('local-law');
+        expect(result.loop.authority.activeLane).toBe(result.authority.active_lane);
         expect(result.authority.active_authorities).toContain('accepted local patterns/rules');
         expect(result.authority.source_authority).toContain('accepted project-owned UI law');
         expect(result.change_impact.changed_file_count).toBeGreaterThanOrEqual(0);
@@ -1741,13 +1783,50 @@ describe('MCP tool handlers', () => {
         expect(result.typed_graph.route_context).not.toHaveProperty('edges');
         expect(result.loop.state).toBe('blocked_missing_graph');
         expect(result.loop.graphImpact.status).toBe('stale');
+        expect(result.loop.readTargets[0]).toBe('src/app/feed/page.tsx');
         expect(result.loop.readTargets).toContain('src/app/feed/page.tsx');
-        expect(JSON.stringify(result).length).toBeLessThan(30_000);
+        expect(Buffer.byteLength(JSON.stringify(result), 'utf8')).toBeLessThanOrEqual(12_000);
         expect(result.verify_command).toBe('decantr verify --brownfield --local-patterns');
         expect(result.local_files.graph_snapshot).toBe('.decantr/graph/graph.snapshot.json');
         expect(result.local_files.visual_manifest).toBe('.decantr/evidence/visual-manifest.json');
         expect(result.local_files.local_patterns).toBe('.decantr/local-patterns.json');
         expect(result.local_files.local_rules).toBe('.decantr/rules.json');
+
+        const longTask = 'improve the governed recipe feed loading state '.repeat(900);
+        const bounded = (await callTool('decantr_prepare_task_context', {
+          route: '/feed',
+          task: longTask,
+          detail: 'full',
+        })) as {
+          task: string;
+          task_capsule_budget: { canonicalBytes: number; estimatedTokens: number };
+          task_capsule_truncation: { truncated: boolean; truncatedFields: string[] };
+          task_capsule_digest: string;
+        };
+        expect(bounded.task.length).toBeLessThan(longTask.length);
+        expect(bounded.task.endsWith('\u2026')).toBe(true);
+        expect(bounded.task_capsule_budget.canonicalBytes).toBeLessThanOrEqual(12_000);
+        expect(bounded.task_capsule_budget.estimatedTokens).toBeLessThanOrEqual(4_000);
+        expect(bounded.task_capsule_truncation).toMatchObject({
+          truncated: true,
+          truncatedFields: ['task.request'],
+        });
+        expect(bounded.task_capsule_digest).toMatch(/^sha256:[a-f0-9]{64}$/);
+        expect(Buffer.byteLength(JSON.stringify(bounded), 'utf8')).toBeLessThanOrEqual(12_000);
+        const repeatedBounded = (await callTool('decantr_prepare_task_context', {
+          route: '/feed',
+          task: longTask,
+          detail: 'full',
+        })) as {
+          task: string;
+          task_capsule_budget: { canonicalBytes: number; estimatedTokens: number };
+          task_capsule_truncation: { truncated: boolean; truncatedFields: string[] };
+          task_capsule_digest: string;
+        };
+        expect(repeatedBounded.task).toBe(bounded.task);
+        expect(repeatedBounded.task_capsule_budget).toEqual(bounded.task_capsule_budget);
+        expect(repeatedBounded.task_capsule_truncation).toEqual(bounded.task_capsule_truncation);
+        expect(repeatedBounded.task_capsule_digest).toBe(bounded.task_capsule_digest);
       } finally {
         rmSync(projectDir, { recursive: true, force: true });
       }
@@ -1816,6 +1895,11 @@ describe('MCP tool handlers', () => {
         );
 
         const evidence = (await callTool('decantr_get_evidence_bundle', {})) as {
+          discovery?: {
+            schema_version?: string;
+            project_path?: string;
+            project?: { framework?: string };
+          };
           provenance?: {
             graphSnapshot?: { present?: boolean; path?: string };
             contractCapsule?: { present?: boolean; path?: string };
@@ -1842,6 +1926,11 @@ describe('MCP tool handlers', () => {
         expect(evidence.provenance?.contractCapsule).toMatchObject({
           path: '.decantr/graph/contract-capsule.json',
           present: false,
+        });
+        expect(evidence.discovery).toMatchObject({
+          schema_version: 'discovery.v1',
+          project_path: '.',
+          project: { framework: 'unknown' },
         });
 
         const findings = (await callTool('decantr_get_findings', {

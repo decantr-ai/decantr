@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "decantr-qualification-missing-evidence.v1",
+  "packet": "qualification-packet.json",
+  "qualificationStatus": "incomplete",
+  "items": [
+    {
+      "id": "HUMAN_REVIEW_IDENTITIES",
+      "state": "missing",
+      "evidencePath": "/reviewers",
+      "blocks": [
+        "finding-precision",
+        "finding-recall"
+      ],
+      "requirement": "Exactly two distinct actual human reviewers must provide signed identity attestations. Agents, automated evidence passes, and test oracles are not reviewers."
+    },
+    {
+      "id": "HUMAN_ADJUDICATED_FINDING_CORPUS",
+      "state": "missing",
+      "evidencePath": "/findingCorpus/cases",
+      "blocks": [
+        "finding-precision",
+        "finding-recall"
+      ],
+      "requirement": "A frozen corpus must contain exactly 200 judgments grouped by explicit clusterId, with exhaustive expected output sets, qualifying source evidence, two independent human reviews, and a human adjudication for every case."
+    },
+    {
+      "id": "PUBLIC_383_FINDING_REPLAY",
+      "state": "missing",
+      "evidencePath": "/findingReplays/public383",
+      "blocks": [
+        "finding-precision",
+        "finding-recall-baseline"
+      ],
+      "requirement": "Replay public npm 3.8.3 against the frozen human corpus and retain exhaustive per-case outputs, raw artifact hashes, a confusion matrix, and separate precision and recall denominators and two-sided 95% Wilson intervals."
+    },
+    {
+      "id": "CANDIDATE_390_FINDING_REPLAY",
+      "state": "missing",
+      "evidencePath": "/findingReplays/candidate390",
+      "blocks": [
+        "finding-precision",
+        "finding-recall"
+      ],
+      "requirement": "Replay final 3.9.0 packed or public artifacts against the same corpus with exhaustive per-case outputs and independently recomputable precision and recall metrics."
+    }
+  ]
+}

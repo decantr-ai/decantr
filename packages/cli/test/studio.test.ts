@@ -1,4 +1,13 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import {
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -13,6 +22,23 @@ let handle: StudioServerHandle | null = null;
 
 function writeJson(path: string, value: unknown): void {
   writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`, 'utf-8');
+}
+
+function workspaceSnapshot(root: string): Record<string, string> {
+  const snapshot: Record<string, string> = {};
+  const walk = (directory: string, prefix = ''): void => {
+    for (const entry of readdirSync(directory).sort()) {
+      const path = join(directory, entry);
+      const relativePath = prefix ? `${prefix}/${entry}` : entry;
+      if (statSync(path).isDirectory()) {
+        walk(path, relativePath);
+      } else {
+        snapshot[relativePath] = createHash('sha256').update(readFileSync(path)).digest('hex');
+      }
+    }
+  };
+  walk(root);
+  return snapshot;
 }
 
 function writeMinimalProject(): void {
@@ -251,6 +277,12 @@ function projectHealthReport(overrides: Record<string, unknown> = {}): Record<st
   };
 }
 
+async function closeStudio(): Promise<void> {
+  if (!handle) return;
+  await new Promise<void>((resolve) => handle?.server.close(() => resolve()));
+  handle = null;
+}
+
 describe('Decantr Studio server', () => {
   beforeEach(() => {
     testDir = mkdtempSync(join(tmpdir(), 'decantr-studio-'));
@@ -258,10 +290,7 @@ describe('Decantr Studio server', () => {
   });
 
   afterEach(async () => {
-    if (handle) {
-      await new Promise<void>((resolve) => handle?.server.close(() => resolve()));
-      handle = null;
-    }
+    await closeStudio();
     rmSync(testDir, { recursive: true, force: true });
   });
 
@@ -286,16 +315,156 @@ describe('Decantr Studio server', () => {
     expect(refreshed.$schema).toBe('https://decantr.ai/schemas/project-health-report.v2.json');
   });
 
+  it('keeps every project-mode Studio route byte-for-byte read-only', async () => {
+    handle = await startStudioServer(testDir, { port: 0 });
+    const before = workspaceSnapshot(testDir);
+    const requests: Array<[string, RequestInit | undefined]> = [
+      ['/', undefined],
+      ['/api/health', undefined],
+      ['/api/studio-state', undefined],
+      ['/api/adoption-truth', undefined],
+      ['/api/governance-delta', undefined],
+      ['/api/control-room', undefined],
+      ['/api/resolve', undefined],
+      ['/api/evidence', undefined],
+      ['/api/graph-impact', undefined],
+      ['/api/task-preview?route=%2F&intent=repair', undefined],
+      ['/api/proof', undefined],
+      ['/api/refresh', { method: 'POST' }],
+    ];
+
+    for (const [path, init] of requests) {
+      const response = await fetch(`${handle.url}${path}`, init);
+      expect(response.status, path).toBeLessThan(500);
+      await response.arrayBuffer();
+      expect(workspaceSnapshot(testDir), path).toEqual(before);
+    }
+  });
+
+  it('keeps live workspace routes byte-for-byte read-only after every request', async () => {
+    handle = await startStudioServer(testDir, { port: 0, workspace: true });
+    const before = workspaceSnapshot(testDir);
+    const requests: Array<[string, RequestInit | undefined]> = [
+      ['/', undefined],
+      ['/api/workspace', undefined],
+      ['/api/workspace/refresh', { method: 'POST' }],
+    ];
+
+    for (const [path, init] of requests) {
+      const response = await fetch(`${handle.url}${path}`, init);
+      expect(response.status, path).toBe(200);
+      await response.arrayBuffer();
+      expect(workspaceSnapshot(testDir), path).toEqual(before);
+    }
+  });
+
   it('serves a read-only Project Health JSON artifact in report mode', async () => {
     writeJson(join(testDir, 'decantr-health.json'), projectHealthReport());
     handle = await startStudioServer(testDir, { port: 0, report: 'decantr-health.json' });
 
     const html = await fetch(handle.url).then((response) => response.text());
     const health = await fetch(`${handle.url}/api/health`).then((response) => response.json());
+    const workspace = await fetch(`${handle.url}/api/workspace`);
 
     expect(html).toContain('Report artifact');
     expect(health.score).toBe(72);
     expect(health.findings).toHaveLength(2);
+    expect(workspace.status).toBe(404);
+  });
+
+  it('renders saved CI v2 and CI v3 reports without reading or writing project state', async () => {
+    const health = projectHealthReport();
+    writeJson(join(testDir, 'decantr-ci-v2.json'), {
+      $schema: 'https://decantr.ai/schemas/decantr-ci-report.v2.json',
+      generatedAt: health.generatedAt,
+      mode: 'project',
+      health,
+    });
+    handle = await startStudioServer(testDir, {
+      port: 0,
+      report: 'decantr-ci-v2.json',
+    });
+    const v2State = await fetch(`${handle.url}/api/studio-state`).then((response) =>
+      response.json(),
+    );
+    expect(v2State).toMatchObject({
+      mode: 'report',
+      source: 'ci-v2',
+      adoptionTruth: null,
+      governanceDelta: null,
+    });
+    await closeStudio();
+
+    handle = await startStudioServer(testDir, { port: 0 });
+    const currentState = await fetch(`${handle.url}/api/studio-state`).then((response) =>
+      response.json(),
+    );
+    await closeStudio();
+    const v3Report = {
+      $schema: 'https://decantr.ai/schemas/decantr-ci-report.v3.json',
+      generatedAt: currentState.generatedAt,
+      mode: 'project',
+      projectPath: null,
+      failOn: currentState.governanceDelta.gate.failOn,
+      status: currentState.health.status,
+      loop: currentState.health.loop,
+      authority: currentState.health.authority,
+      evidenceTier: currentState.health.evidenceTier,
+      health: currentState.health,
+      baselineGate: {
+        applied: false,
+        baselinePath: '.decantr/health-baseline.json',
+        savedAt: null,
+        inheritedFindingIds: [],
+        newFindings: [],
+      },
+      localLaw: {
+        checked: false,
+        patternsPresent: false,
+        rulesPresent: false,
+        warnings: [],
+        findings: [],
+        errorCount: 0,
+        warnCount: 0,
+      },
+      styleBridge: {
+        checked: false,
+        present: false,
+        status: null,
+        mappingCount: 0,
+        stylingApproach: null,
+        themeModes: [],
+        warnings: [],
+      },
+      adoptionTruth: currentState.adoptionTruth,
+      governanceDelta: currentState.governanceDelta,
+    };
+    writeJson(join(testDir, 'decantr-ci-v3.json'), v3Report);
+    handle = await startStudioServer(testDir, {
+      port: 0,
+      report: 'decantr-ci-v3.json',
+    });
+    const before = workspaceSnapshot(testDir);
+    const requests: Array<[string, RequestInit | undefined]> = [
+      ['/', undefined],
+      ['/api/studio-state', undefined],
+      ['/api/health', undefined],
+      ['/api/adoption-truth', undefined],
+      ['/api/governance-delta', undefined],
+      ['/api/task-preview?route=%2F&intent=repair', undefined],
+      ['/api/refresh', { method: 'POST' }],
+    ];
+
+    for (const [path, init] of requests) {
+      const response = await fetch(`${handle.url}${path}`, init);
+      expect(response.status, path).toBe(200);
+      await response.arrayBuffer();
+      expect(workspaceSnapshot(testDir), path).toEqual(before);
+    }
+    const state = await fetch(`${handle.url}/api/studio-state`).then((response) => response.json());
+    expect(state).toMatchObject({ mode: 'report', source: 'ci-v3' });
+    expect(state.adoptionTruth).toEqual(v3Report.adoptionTruth);
+    expect(state.governanceDelta).toEqual(v3Report.governanceDelta);
   });
 
   it('re-reads the report artifact on refresh', async () => {
@@ -334,5 +503,21 @@ describe('Decantr Studio server', () => {
       report: 'decantr-health.json',
     });
     expect(() => parseStudioArgs(['studio', '--report'])).toThrow(/Missing --report value/);
+    expect(() =>
+      parseStudioArgs(['studio', '--report', 'decantr-health.json', '--workspace']),
+    ).toThrow(/cannot be combined/);
+    expect(() =>
+      parseStudioArgs(['studio', '--workspace', '--report=decantr-health.json']),
+    ).toThrow(/cannot be combined/);
+  });
+
+  it('rejects report and workspace mode through the programmatic server API', async () => {
+    await expect(
+      startStudioServer(testDir, {
+        port: 0,
+        report: 'decantr-health.json',
+        workspace: true,
+      }),
+    ).rejects.toThrow(/cannot be combined/);
   });
 });

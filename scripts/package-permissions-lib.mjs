@@ -227,7 +227,7 @@ export function renderSecurityPermissionsMarkdown(permissions, surface) {
     '## Quick Answers',
     '',
     '- Decantr does not collect telemetry by default. CLI telemetry requires explicit opt-in through `--telemetry`, `decantr telemetry link --enable`, or `.decantr/project.json` with `telemetry: true`.',
-    '- Decantr browser evidence and screenshots are local artifacts under `.decantr/evidence/*`; the active Decantr 3.8 API does not accept source or screenshot uploads.',
+    '- Decantr browser evidence and screenshots are local artifacts under `.decantr/evidence/*`; the active Decantr 3.9 API does not accept source or screenshot uploads.',
     '- MCP write tools are explicitly annotated and are contained to the active workspace root.',
     '- Hosted critique/audit source upload fallbacks are retired in the active API. Compatibility flags such as `allow_hosted_upload` do not activate removed routes.',
     '- Published packages use package `files` allowlists and the release audit runs `npm pack --dry-run --json` to prove what ships.',

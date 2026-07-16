@@ -1,0 +1,14 @@
+{
+  "id": "kpi-grid",
+  "name": "KPI Grid (Core)",
+  "version": "1.0.0",
+  "description": "A grid of key performance indicators for core fallback test",
+  "type": "pattern",
+  "category": "metrics",
+  "layout": {
+    "type": "grid",
+    "columns": 4,
+    "gap": "md"
+  },
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json"
+}

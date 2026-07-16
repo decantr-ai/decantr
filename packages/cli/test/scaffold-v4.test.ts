@@ -99,6 +99,52 @@ describe('V4 scaffold', () => {
     expect(essence.meta).toBeDefined();
   });
 
+  it('keeps style-bridge runtime styles host-owned and refreshes assistant context', async () => {
+    const stylesDir = join(testDir, 'src', 'styles');
+    mkdirSync(stylesDir, { recursive: true });
+    const hostStyles = {
+      'tokens.css': ':root { --host-token: #123456; }\n',
+      'global.css': 'body { color: var(--host-token); }\n',
+      'decantr-bridge.css': '/* host-owned legacy file */\n',
+    };
+    for (const [file, content] of Object.entries(hostStyles)) {
+      writeFileSync(join(stylesDir, file), content, 'utf-8');
+    }
+
+    const result = await scaffoldProject(
+      testDir,
+      {
+        ...defaultOptions,
+        workflowMode: 'greenfield-contract-only',
+        adoptionMode: 'style-bridge',
+        assistantBridge: 'preview',
+        workspaceRoot: testDir,
+        appRoot: testDir,
+      },
+      detected,
+      createMockRegistry(),
+    );
+    const assistantBridgePath = join(testDir, '.decantr', 'context', 'assistant-bridge.md');
+    writeFileSync(assistantBridgePath, 'stale assistant context\n', 'utf-8');
+    const essence = JSON.parse(readFileSync(result.essencePath, 'utf-8'));
+
+    const refreshed = await refreshDerivedFiles(testDir, essence, createMockRegistry());
+
+    expect(result.cssFiles).toEqual([]);
+    expect(refreshed.cssFiles).toEqual([]);
+    for (const [file, content] of Object.entries(hostStyles)) {
+      expect(readFileSync(join(stylesDir, file), 'utf-8')).toBe(content);
+    }
+    expect(existsSync(join(stylesDir, 'treatments.css'))).toBe(false);
+    expect(readFileSync(join(testDir, 'DECANTR.md'), 'utf-8')).toContain(
+      'Styling remains host-owned',
+    );
+    const assistantBridge = readFileSync(assistantBridgePath, 'utf-8');
+    expect(assistantBridge).not.toContain('stale assistant context');
+    expect(assistantBridge).toContain('accepted `.decantr/style-bridge.json`');
+    expect(assistantBridge).toContain('does not generate or overwrite runtime CSS');
+  });
+
   it('normalizes blueprint design constraints into valid Essence constraints', () => {
     const normalized = normalizeBlueprintDesignConstraints({
       mode: 'dark_only',
@@ -189,6 +235,26 @@ describe('V4 scaffold', () => {
     expect(essence.blueprint.sections[0].pages).toHaveLength(1);
     expect(essence.meta).toBeDefined();
     expect(essence.meta.guard.mode).toBe('guided');
+  });
+
+  it('scaffoldMinimal stores portable workspace-relative root metadata', () => {
+    const appRoot = join(testDir, 'apps', 'web');
+    mkdirSync(appRoot, { recursive: true });
+
+    scaffoldMinimal(appRoot, {
+      workspaceRoot: testDir,
+      appRoot,
+    });
+
+    const project = JSON.parse(
+      readFileSync(join(appRoot, '.decantr', 'project.json'), 'utf-8'),
+    ) as {
+      detected?: { workspaceRoot?: string; appRoot?: string };
+      initialized?: { projectScope?: string };
+    };
+    expect(project.detected).toMatchObject({ workspaceRoot: '.', appRoot: 'apps/web' });
+    expect(project.initialized?.projectScope).toBe('workspace-app');
+    expect(JSON.stringify(project)).not.toContain(testDir);
   });
 
   it('adds generated governance artifacts to Prettier-compatible ignores', () => {
@@ -604,8 +670,12 @@ describe('V4 scaffold', () => {
     const modifyTask = readFileSync(join(contextDir, 'task-modify.md'), 'utf-8');
     const obsoleteMarkdownPath = join(contextDir, 'page-obsolete-pack.md');
     const obsoleteJsonPath = join(contextDir, 'page-obsolete-pack.json');
+    const obsoleteSectionPath = join(contextDir, 'section-obsolete.md');
+    const unmanagedContextPath = join(contextDir, 'reviewer-notes.md');
     writeFileSync(obsoleteMarkdownPath, '# stale page pack\n', 'utf-8');
     writeFileSync(obsoleteJsonPath, '{}\n', 'utf-8');
+    writeFileSync(obsoleteSectionPath, '# Section: obsolete\n', 'utf-8');
+    writeFileSync(unmanagedContextPath, '# Reviewer notes\n', 'utf-8');
 
     await refreshDerivedFiles(testDir, essence, createMockRegistry());
 
@@ -619,6 +689,24 @@ describe('V4 scaffold', () => {
     expect(modifyTask).toContain('Page `home` -> `.decantr/context/page-home-pack.md`');
     expect(existsSync(obsoleteMarkdownPath)).toBe(false);
     expect(existsSync(obsoleteJsonPath)).toBe(false);
+    expect(existsSync(obsoleteSectionPath)).toBe(false);
+    expect(existsSync(unmanagedContextPath)).toBe(true);
+
+    rmSync(cacheRoot, { recursive: true, force: true });
+    await refreshDerivedFiles(testDir, essence, createMockRegistry());
+
+    expect(existsSync(join(contextDir, 'scaffold-pack.md'))).toBe(false);
+    expect(existsSync(join(contextDir, 'review-pack.md'))).toBe(false);
+    expect(existsSync(join(contextDir, 'pack-manifest.json'))).toBe(false);
+    expect(readFileSync(join(contextDir, 'task-scaffold.md'), 'utf-8')).not.toContain(
+      '## Primary Compiled Contract',
+    );
+    const narrativeAddPage = readFileSync(join(contextDir, 'task-add-page.md'), 'utf-8');
+    const narrativeModify = readFileSync(join(contextDir, 'task-modify.md'), 'utf-8');
+    expect(narrativeAddPage).toContain('accepted local content or the official corpus');
+    expect(narrativeAddPage).not.toContain('exist in the registry');
+    expect(narrativeModify).toContain("project's existing spacing");
+    expect(narrativeModify).not.toContain('_gap');
   });
 
   it('scaffoldProject preserves pathname routing in essence and scaffold packs for nextjs target', async () => {

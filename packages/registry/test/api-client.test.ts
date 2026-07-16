@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { RegistryAPIClient } from '../src/api-client.js';
+import { RegistryAPIClient, RegistryAPIError } from '../src/api-client.js';
 
 const originalFetch = globalThis.fetch;
 
@@ -9,6 +9,26 @@ afterEach(() => {
 });
 
 describe('RegistryAPIClient showcase endpoints', () => {
+  it('surfaces failed responses as legacy RegistryAPIError instances', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ error: 'Pattern not found' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+
+    const client = new RegistryAPIClient({ baseUrl: 'https://api.example.com/v1' });
+    const error = await client.getPattern('@official', 'missing').catch((cause: unknown) => cause);
+
+    expect(error).toBeInstanceOf(RegistryAPIError);
+    expect(error).toMatchObject({
+      name: 'RegistryAPIError',
+      status: 404,
+      message: 'API 404: Pattern not found',
+      details: { error: 'Pattern not found' },
+    });
+  });
+
   it('requests hosted project audit reports', async () => {
     globalThis.fetch = vi.fn().mockResolvedValue(
       new Response(

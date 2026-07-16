@@ -1,7 +1,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { ApiContentType } from '@decantr/registry';
-import { API_CONTENT_TYPES, RegistryAPIClient } from '@decantr/registry';
+import type { ApiContentType } from '@decantr/content';
+import { API_CONTENT_TYPES, ContentAPIClient } from '@decantr/content';
 
 const GREEN = '\x1b[32m';
 const RED = '\x1b[31m';
@@ -21,8 +21,9 @@ export async function cmdRegistryMirror(
   projectRoot: string,
   options: { type?: string } = {},
 ): Promise<void> {
-  const apiUrl = process.env.DECANTR_API_URL || 'https://api.decantr.ai/v1';
-  const apiClient = new RegistryAPIClient({
+  const apiUrl =
+    process.env.DECANTR_API_URL || process.env.REGISTRY_URL || 'https://api.decantr.ai/v1';
+  const apiClient = new ContentAPIClient({
     baseUrl: apiUrl,
     apiKey: process.env.DECANTR_API_KEY || undefined,
   });

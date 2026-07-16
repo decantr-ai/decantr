@@ -113,7 +113,7 @@ Run `decantr task <route> "<intent>"` before editing. Read the files it lists fi
 - Follow the **Styling Adoption** section below before adding dependencies, imports, tokens, or runtime CSS.
 - If a local `package.json` is present, trust its declared Decantr dependencies and the project adoption mode over external assumptions about package availability.
 - Do **not** create a parallel styling runtime or hand-written substitute for a package that the project does not use.
-- Import Decantr generated CSS files only when the adoption section below says this project uses Decantr CSS or a style bridge.
+- Import the legacy Decantr CSS runtime only when the adoption section below explicitly declares `decantr-css`. In `style-bridge` mode, use only the project-owned bridge files named by the local context; a style bridge does not authorize installing `@decantr/css`.
 - Reuse the project-owned components, variants, tokens, and design-system primitives instead of inventing a new visual system. Use Decantr runtime styling only when the adoption section explicitly enables it.
 - Do **not** use inline visual style values or component-scoped `<style>` tags as the primary styling path. Colors, spacing, borders, shadows, gradients, and transitions should come from the project's adopted styling system. Inline styles are only acceptable for truly dynamic geometry that cannot be expressed through the contract.
 - Shells own spacing, centering, and scroll containers. Page components should not duplicate shell responsibilities with extra full-height wrappers, max-width wrappers, or page-local padding unless the route contract explicitly requires it.

@@ -52,7 +52,7 @@ Would you like me to:
 2. Keep the original order [kpi-grid, chart-grid]?
 ```
 
-**Never say "just this once."** The essence is the source of truth.
+**Never say "just this once."** The essence is the structural contract; follow the project authority order in `DECANTR.md` when runtime source, local law, and the contract disagree.
 
 ## Before Modifying
 
@@ -63,7 +63,7 @@ Would you like me to:
 cat decantr.essence.json
 
 # Or use MCP
-decantr_read_essence()
+decantr_contract({ "action": "read_essence" })
 ```
 
 ### 2. Check Constraints
@@ -74,7 +74,7 @@ For the page you're modifying, verify:
 - Shell matches the page's `shell` property
 - Patterns match the page's `layout[]` in order
 - Theme matches `theme.id`
-- Theme decorators match `theme.id`
+- Theme intent is mapped through the styling authority declared in `DECANTR.md`
 
 ### 3. Plan Changes
 
@@ -91,33 +91,25 @@ Before modifying:
 
 - [ ] Page exists in essence structure
 - [ ] I know the layout order for the target page (check `blueprint.sections[].pages[]`)
-- [ ] I will use theme: `{{THEME_ID}}`
+- [ ] I will preserve theme intent: `{{THEME_ID}}`
 - [ ] I will follow density: `{{DENSITY}}`
 
 During modification:
 
-- [ ] Every color/typography change uses the theme
+- [ ] Every color/typography change uses the project's adopted tokens, components, utilities, or variants
 - [ ] Pattern order matches essence exactly
-- [ ] Spacing uses tokens, not arbitrary values
+- [ ] Spacing uses the project's adopted spacing primitives, not arbitrary values
 - [ ] No new pages without essence declaration
 
 After modification:
 
-- [ ] Run `npx @decantr/cli validate`
-- [ ] Run `npx @decantr/cli audit` to check drift
+- [ ] Run `decantr validate decantr.essence.json`
+- [ ] Run `decantr verify` to check drift
 - [ ] Verify no warnings or errors
 
 ## Spacing Enforcement
 
-In strict mode, spacing must match the density profile:
-
-| Density | Content Gap | Use These Tokens |
-|---------|-------------|------------------|
-| compact | `_gap2` | `_gap1`, `_gap2`, `_gap3` |
-| comfortable | `_gap4` | `_gap3`, `_gap4`, `_gap6` |
-| spacious | `_gap6` | `_gap4`, `_gap6`, `_gap8` |
-
-This project uses **{{DENSITY}}** density with `{{CONTENT_GAP}}` content gap.
+This project uses **{{DENSITY}}** density. Express that density through the project's existing spacing tokens, utility classes, component variants, or CSS variables. Do not introduce `d-*` classes, Decantr atom strings, generated Decantr token CSS, or `@decantr/css` unless `DECANTR.md` explicitly declares `decantr-css` adoption.
 
 ## Pattern Order Matters
 
@@ -142,8 +134,8 @@ Swapping `chart-grid` and `data-table` is a Layout guard violation.
 | "Theme mismatch" | Used different theme | Revert to `{{THEME_ID}}` |
 | "Page undefined" | Edited undeclared page | Add page to essence first |
 | "Layout order wrong" | Patterns out of order | Match `layout[]` exactly |
-| "Theme mismatch" | Wrong treatments or decorators | Use `{{THEME_ID}}` theme styling |
-| "Density drift" | Wrong spacing values | Use `{{CONTENT_GAP}}` tokens |
+| "Theme mismatch" | Styling conflicts with the declared intent | Map `{{THEME_ID}}` through the adopted host styling system |
+| "Density drift" | Wrong spacing values | Use the host system's `{{DENSITY}}` spacing primitives |
 
 ## Proposing Essence Changes
 

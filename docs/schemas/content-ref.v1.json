@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/content-ref.v1.json",
+  "title": "Decantr Content Reference",
+  "type": "object",
+  "required": [
+    "identity",
+    "version",
+    "digest",
+    "compatibility",
+    "origin",
+    "resolvedFrom"
+  ],
+  "properties": {
+    "identity": {
+      "$ref": "#/$defs/identity"
+    },
+    "version": {
+      "$ref": "#/$defs/nullableVersion"
+    },
+    "digest": {
+      "$ref": "#/$defs/digest"
+    },
+    "compatibility": {
+      "$ref": "#/$defs/compatibility"
+    },
+    "origin": {
+      "enum": [
+        "official",
+        "local"
+      ]
+    },
+    "resolvedFrom": {
+      "enum": [
+        "installed-package",
+        "workspace-package",
+        "configured-corpus",
+        "cache",
+        "local-override",
+        "api"
+      ]
+    },
+    "overrideOf": {
+      "$ref": "#/$defs/overrideRef"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "origin": {
+            "const": "official"
+          }
+        },
+        "required": [
+          "origin"
+        ]
+      },
+      "then": {
+        "properties": {
+          "version": {
+            "$ref": "#/$defs/version"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "identity": {
+      "type": "object",
+      "required": [
+        "namespace",
+        "type",
+        "id"
+      ],
+      "properties": {
+        "namespace": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "type": {
+          "enum": [
+            "pattern",
+            "theme",
+            "blueprint",
+            "archetype",
+            "shell"
+          ]
+        },
+        "id": {
+          "type": "string",
+          "pattern": "\\S"
+        }
+      },
+      "additionalProperties": false
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-((?:0|[1-9][0-9]*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*)(?:\\.(?:0|[1-9][0-9]*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*))*))?(?:\\+([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?$"
+    },
+    "nullableVersion": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/version"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "compatibility": {
+      "type": "object",
+      "required": [
+        "decantr"
+      ],
+      "properties": {
+        "decantr": {
+          "type": "string",
+          "pattern": "\\S"
+        }
+      },
+      "additionalProperties": false
+    },
+    "overrideRef": {
+      "type": "object",
+      "required": [
+        "identity",
+        "version",
+        "digest"
+      ],
+      "properties": {
+        "identity": {
+          "$ref": "#/$defs/identity"
+        },
+        "version": {
+          "$ref": "#/$defs/nullableVersion"
+        },
+        "digest": {
+          "$ref": "#/$defs/digest"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,6 +1,6 @@
 {
   "name": "decantr-api",
-  "version": "3.8.1",
+  "version": "3.9.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -15,7 +15,6 @@
     "@decantr/content": "workspace:*",
     "@decantr/core": "workspace:*",
     "@decantr/essence-spec": "workspace:*",
-    "@decantr/registry": "workspace:*",
     "@decantr/verifier": "workspace:*",
     "@hono/node-server": "^2.0.3",
     "ajv": "^8.20.0",

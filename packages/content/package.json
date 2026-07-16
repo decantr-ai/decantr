@@ -1,6 +1,6 @@
 {
   "name": "@decantr/content",
-  "version": "3.8.1",
+  "version": "3.9.0",
   "description": "Official Decantr content corpus for AI frontend governance contracts, context, examples, and validation",
   "keywords": [
     "decantr",
@@ -33,6 +33,15 @@
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
+    "./client": {
+      "import": "./dist/client.js",
+      "types": "./dist/client.d.ts"
+    },
+    "./content-types": {
+      "import": "./dist/content-types.js",
+      "types": "./dist/content-types.d.ts"
+    },
+    "./schema/*.json": "./schemas/*.json",
     "./schemas/*.json": "./schemas/*.json",
     "./patterns/*.json": "./patterns/*.json",
     "./themes/*.json": "./themes/*.json",
@@ -71,6 +80,7 @@
     "prepublishOnly": "node ../../scripts/guard-pnpm-publish.mjs && pnpm build && pnpm validate"
   },
   "dependencies": {
+    "@decantr/essence-spec": "workspace:*",
     "ajv": "^8.20.0"
   }
 }

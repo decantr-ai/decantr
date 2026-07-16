@@ -4,6 +4,10 @@ on:
     tags: ['v*']
   workflow_dispatch:
     inputs:
+      release_tag:
+        description: Existing release tag to publish; its commit must be reachable from origin/main
+        required: true
+        type: string
       release_wave:
         description: Release wave to publish
         required: false
@@ -45,14 +49,76 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
+concurrency:
+  group: npm-publish-${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref }}
+  cancel-in-progress: false
+
 jobs:
   publish:
     runs-on: ubuntu-latest
+    environment: npm-production
     permissions:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - name: Check out the release tag
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify trusted release source
+        env:
+          RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
+          WORKFLOW_REF: ${{ github.workflow_ref }}
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]] &&
+             [[ "$WORKFLOW_REF" != "$GITHUB_REPOSITORY/.github/workflows/publish.yml@refs/heads/main" ]]; then
+            echo "Manual publishing must dispatch publish.yml from refs/heads/main; received $WORKFLOW_REF." >&2
+            exit 1
+          fi
+
+          if [[ ! "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Release tag must be a semantic version tag; received $RELEASE_TAG." >&2
+            exit 1
+          fi
+          if [[ "$RELEASE_TAG" =~ ^v3\.9\. ]] && [[ "$RELEASE_TAG" == *-* ]]; then
+            echo "Decantr 3.9 is direct-stable; prerelease tags are not allowed." >&2
+            exit 1
+          fi
+
+          git fetch --no-tags origin '+refs/heads/main:refs/remotes/origin/main'
+          REMOTE_REFS="$(git ls-remote origin refs/heads/main "refs/tags/$RELEASE_TAG" "refs/tags/$RELEASE_TAG^{}")"
+          if [[ -z "$REMOTE_REFS" ]]; then
+            echo "Release tag $RELEASE_TAG is not present on origin." >&2
+            exit 1
+          fi
+
+          TAG_COMMIT="$(git rev-parse "$RELEASE_TAG^{commit}")"
+          HEAD_COMMIT="$(git rev-parse HEAD)"
+          ORIGIN_MAIN_COMMIT="$(git rev-parse origin/main^{commit})"
+          REMOTE_MAIN_COMMIT="$(printf '%s\n' "$REMOTE_REFS" | awk '$2 == "refs/heads/main" { print $1 }')"
+          REMOTE_COMMIT="$(printf '%s\n' "$REMOTE_REFS" | awk '/\^\{\}$/ { print $1 }' | tail -n 1)"
+          if [[ -z "$REMOTE_COMMIT" ]]; then
+            REMOTE_COMMIT="$(printf '%s\n' "$REMOTE_REFS" | awk -v ref="refs/tags/$RELEASE_TAG" '$2 == ref { print $1 }')"
+          fi
+          if [[ -z "$REMOTE_MAIN_COMMIT" ]] || [[ "$ORIGIN_MAIN_COMMIT" != "$REMOTE_MAIN_COMMIT" ]]; then
+            echo "Fetched origin/main and the remote main ref must match." >&2
+            exit 1
+          fi
+
+          if [[ "$HEAD_COMMIT" != "$TAG_COMMIT" ]] || [[ "$REMOTE_COMMIT" != "$TAG_COMMIT" ]]; then
+            echo "Checked-out, local-tag, and origin-tag commits must match." >&2
+            exit 1
+          fi
+          if ! git merge-base --is-ancestor "$TAG_COMMIT" origin/main; then
+            echo "Release tag $RELEASE_TAG is not reachable from origin/main." >&2
+            exit 1
+          fi
+
+          echo "DECANTR_RELEASE_TAG=$RELEASE_TAG" >> "$GITHUB_ENV"
+          echo "DECANTR_RELEASE_VERSION=${RELEASE_TAG#v}" >> "$GITHUB_ENV"
+          echo "DECANTR_RELEASE_COMMIT=$TAG_COMMIT" >> "$GITHUB_ENV"
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
@@ -64,102 +130,134 @@ jobs:
           node -v
           npm -v
           pnpm -v
+      - name: Resolve effective package closure
+        env:
+          REQUESTED_WAVE: ${{ github.event.inputs.release_wave || 'all' }}
+          REQUESTED_ONLY: ${{ github.event.inputs.only_packages || '' }}
+          DIST_TAG_OVERRIDE: ${{ github.event.inputs.dist_tag || '' }}
+          INCLUDE_EXPERIMENTAL: ${{ github.event.inputs.include_experimental || 'false' }}
+        run: |
+          ARGS=(--dry-run --selection-json)
+          if [[ "$REQUESTED_WAVE" != "all" ]]; then
+            ARGS+=("--wave=$REQUESTED_WAVE")
+          fi
+          if [[ -n "$REQUESTED_ONLY" ]]; then
+            ARGS+=("--only=$REQUESTED_ONLY")
+          fi
+          if [[ -n "$DIST_TAG_OVERRIDE" ]]; then
+            ARGS+=("--tag-override=$DIST_TAG_OVERRIDE")
+          fi
+          if [[ "$INCLUDE_EXPERIMENTAL" == "true" ]]; then
+            ARGS+=(--include-experimental)
+          fi
+
+          SELECTION_JSON="$(node scripts/publish-packages.mjs "${ARGS[@]}")"
+          EFFECTIVE_ONLY="$(node -e '
+            const selection = JSON.parse(process.argv[1]);
+            if (!Array.isArray(selection.effectiveOnly) || selection.effectiveOnly.length === 0) process.exit(1);
+            process.stdout.write(selection.effectiveOnly.join(","));
+          ' "$SELECTION_JSON")"
+          echo "DECANTR_ONLY_PACKAGES=$EFFECTIVE_ONLY" >> "$GITHUB_ENV"
+          printf '%s\n' "$SELECTION_JSON" >> "$GITHUB_STEP_SUMMARY"
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm test
       - run: pnpm audit:package-surface
       - run: pnpm audit:release-readiness
+        env:
+          GH_TOKEN: ${{ github.token }}
       - run: pnpm audit:content-package
       - run: pnpm audit:public-api -- --core-only --fail-on-error
       - name: Generate release plan summary
-        env:
-          RELEASE_WAVE: ${{ github.event.inputs.release_wave || 'all' }}
-          ONLY_PACKAGES: ${{ github.event.inputs.only_packages || '' }}
         run: |
-          ARGS=""
-          if [ "$RELEASE_WAVE" != "all" ]; then
-            ARGS="$ARGS --wave=$RELEASE_WAVE"
-          fi
-          if [ -n "$ONLY_PACKAGES" ]; then
-            ARGS="$ARGS --only=$ONLY_PACKAGES"
-          fi
-          node scripts/release-plan.mjs $ARGS --summary-markdown=/tmp/package-release-plan.md
-          cat /tmp/package-release-plan.md >> "$GITHUB_STEP_SUMMARY"
+          node scripts/release-plan.mjs \
+            "--only=$DECANTR_ONLY_PACKAGES" \
+            --summary-markdown="$RUNNER_TEMP/package-release-plan.md"
+          cat "$RUNNER_TEMP/package-release-plan.md" >> "$GITHUB_STEP_SUMMARY"
       - name: Generate enterprise release evidence
         env:
-          RELEASE_WAVE: ${{ github.event.inputs.release_wave || 'all' }}
-          ONLY_PACKAGES: ${{ github.event.inputs.only_packages || '' }}
           INCLUDE_EXPERIMENTAL: ${{ github.event.inputs.include_experimental || 'false' }}
         run: |
-          ARGS=""
-          if [ "$RELEASE_WAVE" != "all" ]; then
-            ARGS="$ARGS --wave=$RELEASE_WAVE"
+          ARGS=("--only=$DECANTR_ONLY_PACKAGES")
+          if [[ "$INCLUDE_EXPERIMENTAL" == "true" ]]; then
+            ARGS+=(--include-experimental)
           fi
-          if [ -n "$ONLY_PACKAGES" ]; then
-            ARGS="$ARGS --only=$ONLY_PACKAGES"
-          fi
-          if [ "$INCLUDE_EXPERIMENTAL" = "true" ]; then
-            ARGS="$ARGS --include-experimental"
-          fi
-          pnpm release:evidence --out=package-release-evidence $ARGS
-          cat package-release-evidence/release-evidence-manifest.md >> "$GITHUB_STEP_SUMMARY"
+          pnpm release:evidence --out="$RUNNER_TEMP/package-release-evidence" "${ARGS[@]}"
+          cat "$RUNNER_TEMP/package-release-evidence/release-evidence-manifest.md" >> "$GITHUB_STEP_SUMMARY"
       - name: Upload enterprise release evidence
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: package-release-evidence
-          path: package-release-evidence/**
+          name: package-release-evidence-${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
+          path: ${{ runner.temp }}/package-release-evidence/**
           if-no-files-found: error
       - name: Publish packages
         env:
-          RELEASE_WAVE: ${{ github.event.inputs.release_wave || 'all' }}
           DIST_TAG_OVERRIDE: ${{ github.event.inputs.dist_tag || '' }}
-          ONLY_PACKAGES: ${{ github.event.inputs.only_packages || '' }}
           INCLUDE_EXPERIMENTAL: ${{ github.event.inputs.include_experimental || 'false' }}
           DRY_RUN_ONLY: ${{ github.event.inputs.dry_run_only || 'false' }}
           DECANTR_PUBLISH_AUTH_STRATEGY: ${{ github.event.inputs.publish_auth_strategy || 'auto' }}
+          DECANTR_RELEASE_STAGING_DIR: ${{ runner.temp }}/decantr-release-staging
+          GH_TOKEN: ${{ github.token }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          ARGS=""
-          if [ "$RELEASE_WAVE" != "all" ]; then
-            ARGS="$ARGS --wave=$RELEASE_WAVE"
+          ARGS=("--only=$DECANTR_ONLY_PACKAGES")
+          if [[ -n "$DIST_TAG_OVERRIDE" ]]; then
+            ARGS+=("--tag-override=$DIST_TAG_OVERRIDE")
           fi
-          if [ -n "$DIST_TAG_OVERRIDE" ]; then
-            ARGS="$ARGS --tag-override=$DIST_TAG_OVERRIDE"
+          if [[ "$INCLUDE_EXPERIMENTAL" == "true" ]]; then
+            ARGS+=(--include-experimental)
           fi
-          if [ -n "$ONLY_PACKAGES" ]; then
-            ARGS="$ARGS --only=$ONLY_PACKAGES"
+          if [[ "$DRY_RUN_ONLY" == "true" ]]; then
+            ARGS+=(--dry-run)
           fi
-          if [ "$INCLUDE_EXPERIMENTAL" = "true" ]; then
-            ARGS="$ARGS --include-experimental"
-          fi
-          if [ "$DRY_RUN_ONLY" = "true" ]; then
-            ARGS="$ARGS --dry-run"
-          fi
-          ARGS="$ARGS --auth-strategy=$DECANTR_PUBLISH_AUTH_STRATEGY"
-          node scripts/publish-packages.mjs $ARGS
+          ARGS+=("--auth-strategy=$DECANTR_PUBLISH_AUTH_STRATEGY")
+          node scripts/publish-packages.mjs "${ARGS[@]}"
+      - name: Upload qualified publish tarballs
+        if: ${{ always() && github.event.inputs.dry_run_only != 'true' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: qualified-publish-tarballs-${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
+          path: ${{ runner.temp }}/decantr-release-staging/**
+          if-no-files-found: error
       - name: Verify published npm packages
         if: ${{ github.event.inputs.dry_run_only != 'true' }}
         env:
-          RELEASE_WAVE: ${{ github.event.inputs.release_wave || 'all' }}
           DIST_TAG_OVERRIDE: ${{ github.event.inputs.dist_tag || '' }}
-          ONLY_PACKAGES: ${{ github.event.inputs.only_packages || '' }}
           INCLUDE_EXPERIMENTAL: ${{ github.event.inputs.include_experimental || 'false' }}
           RELEASE_VERIFICATION_WEBHOOK_URL: ${{ secrets.RELEASE_VERIFICATION_WEBHOOK_URL }}
         run: |
-          ARGS=""
-          if [ "$RELEASE_WAVE" != "all" ]; then
-            ARGS="$ARGS --wave=$RELEASE_WAVE"
+          ARGS=("--only=$DECANTR_ONLY_PACKAGES")
+          if [[ -n "$DIST_TAG_OVERRIDE" ]]; then
+            ARGS+=("--tag-override=$DIST_TAG_OVERRIDE")
           fi
-          if [ -n "$DIST_TAG_OVERRIDE" ]; then
-            ARGS="$ARGS --tag-override=$DIST_TAG_OVERRIDE"
+          if [[ "$INCLUDE_EXPERIMENTAL" == "true" ]]; then
+            ARGS+=(--include-experimental)
           fi
-          if [ -n "$ONLY_PACKAGES" ]; then
-            ARGS="$ARGS --only=$ONLY_PACKAGES"
+          if [[ -n "$RELEASE_VERIFICATION_WEBHOOK_URL" ]]; then
+            ARGS+=(--send-webhook)
           fi
-          if [ "$INCLUDE_EXPERIMENTAL" = "true" ]; then
-            ARGS="$ARGS --include-experimental"
+          node scripts/verify-published-packages.mjs "${ARGS[@]}" --retries=6 --retry-delay=10000
+      - name: Run tag-bound release closeout
+        id: closeout
+        if: ${{ github.event.inputs.dry_run_only != 'true' }}
+        env:
+          DIST_TAG_OVERRIDE: ${{ github.event.inputs.dist_tag || '' }}
+          INCLUDE_EXPERIMENTAL: ${{ github.event.inputs.include_experimental || 'false' }}
+          DECANTR_RELEASE_STAGING_DIR: ${{ runner.temp }}/decantr-release-staging
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ARGS=("--version=$DECANTR_RELEASE_VERSION" "--only=$DECANTR_ONLY_PACKAGES" --json)
+          if [[ -n "$DIST_TAG_OVERRIDE" ]]; then
+            ARGS+=("--tag-override=$DIST_TAG_OVERRIDE")
           fi
-          if [ -n "$RELEASE_VERIFICATION_WEBHOOK_URL" ]; then
-            ARGS="$ARGS --send-webhook"
+          if [[ "$INCLUDE_EXPERIMENTAL" == "true" ]]; then
+            ARGS+=(--include-experimental)
           fi
-          node scripts/verify-published-packages.mjs $ARGS --retries=6 --retry-delay=10000
+          node scripts/audit-release-closeout.mjs "${ARGS[@]}" | tee "$RUNNER_TEMP/release-closeout.json"
+      - name: Upload release closeout evidence
+        if: ${{ always() && steps.closeout.outcome != 'skipped' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: release-closeout-${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
+          path: ${{ runner.temp }}/release-closeout.json
+          if-no-files-found: error

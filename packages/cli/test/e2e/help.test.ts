@@ -73,9 +73,14 @@ describe('command help (e2e)', () => {
     const task = runHelp(testDir, ['task', '--help']);
     const codify = runHelp(testDir, ['codify', '--help']);
     const connect = runHelp(testDir, ['connect', '--help']);
+    const themeSwitch = runHelp(testDir, ['theme', 'switch', '--help']);
 
     expect(rootHelp).toContain('Which command first?');
     expect(rootHelp).toContain('Existing app, read-only preview');
+    expect(rootHelp).toContain('decantr content get-pack page --route <route>');
+    expect(rootHelp).toContain(
+      'decantr theme switch <themeName> [--shape <shape>] [--mode <mode>]',
+    );
     expect(setup).toContain('Which command first?');
     expect(scan).toContain('Which command first?');
     expect(scan).toContain('decantr scan');
@@ -94,16 +99,30 @@ describe('command help (e2e)', () => {
     expect(connect).toContain('decantr connect cursor');
     expect(connect).toContain('.cursor/mcp.json');
     expect(connect).toContain('.cursor/rules/decantr.mdc');
+    expect(themeSwitch).toContain(
+      'decantr theme switch <themeName> [--shape <shape>] [--mode <mode>]',
+    );
     expect(existsSync(join(testDir, '.decantr'))).toBe(false);
     expect(existsSync(join(testDir, '.cursor'))).toBe(false);
   }, 15_000);
 
   it('prints content namespace help without requiring a content repository', () => {
     const output = runHelp(testDir, ['content', '--help']);
+    const pageRoute = runHelp(testDir, [
+      'content',
+      'get-pack',
+      'page',
+      '--route',
+      '/feed',
+      '--help',
+    ]);
 
     expect(output).toContain('decantr content');
     expect(output).toContain('content check');
+    expect(output).toContain('decantr content get-pack page --route <route>');
+    expect(pageRoute).toContain('decantr content get-pack page --route <route>');
     expect(output).not.toContain('Run this command from packages/content');
+    expect(existsSync(join(testDir, '.decantr'))).toBe(false);
   });
 
   it('prints init help without writing project files', () => {

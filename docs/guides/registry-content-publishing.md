@@ -1,8 +1,8 @@
 # Official Content Corpus Contributions
 
-Decantr 3.8 uses an official content corpus, not a public registry marketplace. The active source of truth is `packages/content` in the Decantr monorepo and the preferred package surface is `@decantr/content`.
+Decantr 3.9 uses an official content corpus, not a public registry marketplace. The active source of truth is `packages/content` in the Decantr monorepo and the canonical package surface is `@decantr/content`.
 
-This guide keeps its historical filename for inbound links. Hosted community publishing, registry portal submissions, and live sync-to-registry workflows are retired.
+This guide keeps its historical filename for inbound links. Hosted community publishing, registry portal submissions, and live sync-to-registry workflows are retired. `@decantr/registry`, `decantr registry ...`, `REGISTRY_URL`, and MCP `decantr_registry` survive only as Decantr 3.x compatibility facades/names over content-owned behavior.
 
 ## Active Surfaces
 
@@ -14,7 +14,7 @@ This guide keeps its historical filename for inbound links. Hosted community pub
 
 ## Official Content
 
-`packages/content` contains patterns, themes, blueprints, archetypes, shells, schemas, validation helpers, search helpers, and resolver helpers. Changes land through normal monorepo pull requests and package/API deployment.
+`packages/content` contains patterns, themes, blueprints, archetypes, shells, schemas, validation helpers, API clients, search/resolution/ranking/wiring helpers, and deterministic content provenance. Official references use a typed identity, version when present, a `sha256` digest, origin, and `resolvedFrom` source so task context can distinguish installed/workspace/configured/cache/local/API resolution without treating hosted content as higher authority than accepted local law.
 
 Blueprints may still carry portfolio metadata such as Featured, Certified, All, and Labs. That metadata is for official curation and recommendation quality. It does not imply a public marketplace or community publishing system.
 

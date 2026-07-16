@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Hono } from 'hono';
+import { readdirSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { PUBLIC_SCHEMAS } from '../../src/lib/schema-catalog.js';
 import type { Env } from '../../src/types.js';
 import { createApp } from '../../src/app.js';
@@ -14,6 +16,14 @@ function createTestApp() {
 const expectedSchemaNames = Object.keys(PUBLIC_SCHEMAS).sort();
 
 describe('GET /v1/schema/:name', () => {
+  it('exposes the complete canonical docs schema catalog', () => {
+    const docsSchemaNames = readdirSync(resolve(import.meta.dirname, '../../../../docs/schemas'))
+      .filter((name) => name.endsWith('.json'))
+      .sort();
+
+    expect(expectedSchemaNames).toEqual(docsSchemaNames);
+  });
+
   it('serves every schema catalog entry directly', async () => {
     const app = createTestApp();
 
@@ -35,6 +45,20 @@ describe('GET /v1/schema/:name', () => {
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json.$id).toBe('https://decantr.ai/schemas/registry-intelligence-summary.v1.json');
+  });
+
+  it.each([
+    'adoption-truth.v1.json',
+    'task-capsule.v1.json',
+    'governance-delta.v1.json',
+    'decantr-ci-report.v3.json',
+  ])('serves the Decantr 3.9 governed-change schema %s', async (name) => {
+    const app = createApp();
+    const res = await app.request(`/v1/schema/${name}`);
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.$id).toBe(`https://decantr.ai/schemas/${name}`);
   });
 
   it('returns 404 for unknown schemas', async () => {

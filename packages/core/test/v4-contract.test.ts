@@ -1,13 +1,13 @@
 import { join } from 'node:path';
+import type { Pattern, Theme } from '@decantr/content';
+import { createResolver } from '@decantr/content';
 import type { EssenceV4 } from '@decantr/essence-spec';
-import type { Pattern, Theme as RegistryTheme } from '@decantr/registry';
-import { createResolver } from '@decantr/registry';
 import { describe, expect, it } from 'vitest';
 import { compileExecutionPackBundle, compileRealizationPlan, runPipeline } from '../src/index.js';
 import { resolveEssence, resolveVisualEffects } from '../src/resolve.js';
 import type { IRPageNode, IRPatternNode } from '../src/types.js';
 
-const contentRoot = join(import.meta.dirname, '..', '..', 'registry', 'test', 'fixtures');
+const contentRoot = join(import.meta.dirname, '..', '..', 'content', 'test', 'fixtures');
 const MIGRATION_GUIDANCE = /decantr migrate --to v4/;
 
 function makeSaasEssence(overrides: Partial<EssenceV4> = {}): EssenceV4 {
@@ -327,7 +327,7 @@ describe('first-mile realization plan', () => {
 });
 
 describe('resolveVisualEffects', () => {
-  const baseTheme: RegistryTheme = {
+  const baseTheme: Theme = {
     id: 'test',
     name: 'Test',
     effects: {

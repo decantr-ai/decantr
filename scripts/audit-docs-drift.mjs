@@ -33,6 +33,7 @@ const CHECKS = [
 
 const HISTORICAL_RELEASE_ALLOWLIST = new Set([
   'docs/releases/2026-05-23-decantr-3-next-foundation.md',
+  'docs/runbooks/decantr-3-prerelease.md',
 ]);
 
 function toPosix(path) {
@@ -73,8 +74,13 @@ function packageReadmes() {
 
 const files = [
   'README.md',
+  'CLAUDE.md',
+  'DECANTR.md',
+  'docs/css-scaffolding-guide.md',
   ...packageReadmes(),
+  ...readTextFiles(join(ROOT, 'docs', 'guides'), (rel) => /\.(?:md|html)$/.test(rel)),
   ...readTextFiles(join(ROOT, 'docs', 'reference'), (rel) => /\.(?:md|html)$/.test(rel)),
+  ...readTextFiles(join(ROOT, 'docs', 'runbooks'), (rel) => /\.md$/.test(rel)),
   ...readTextFiles(join(ROOT, 'docs', 'releases'), (rel) => {
     if (!/\.md$/.test(rel)) return false;
     const file = rel.slice(rel.lastIndexOf('/') + 1);

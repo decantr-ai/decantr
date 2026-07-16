@@ -34,11 +34,23 @@ describe('@decantr/content', () => {
   });
 
   it('applies public blueprint filtering from portfolio metadata', () => {
-    const featured = listContentRecords({ type: 'blueprints', blueprintSet: 'featured', limit: 100 });
-    const certified = listContentRecords({ type: 'blueprints', blueprintSet: 'certified', limit: 100 });
+    const featured = listContentRecords({
+      type: 'blueprints',
+      blueprintSet: 'featured',
+      limit: 100,
+    });
+    const certified = listContentRecords({
+      type: 'blueprints',
+      blueprintSet: 'certified',
+      limit: 100,
+    });
 
-    expect(featured.items.every((item) => item.blueprint_portfolio?.visibility === 'featured')).toBe(true);
-    expect(certified.items.every((item) => item.blueprint_portfolio?.artifact.status === 'certified')).toBe(true);
+    expect(
+      featured.items.every((item) => item.blueprint_portfolio?.visibility === 'featured'),
+    ).toBe(true);
+    expect(
+      certified.items.every((item) => item.blueprint_portfolio?.artifact.status === 'certified'),
+    ).toBe(true);
   });
 
   it('validates content data with bundled schemas', () => {

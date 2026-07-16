@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import * as fs from 'node:fs/promises';
 import { join } from 'node:path';
-import type { ComposeEntry, Blueprint as RegistryBlueprint } from '@decantr/registry';
+import type { ComposeEntry, Blueprint as RegistryBlueprint } from '@decantr/content';
 import { detectProject } from '../detect.js';
 import type { InitOptions } from '../prompts.js';
 import { RegistryClient } from '../registry.js';
@@ -400,7 +400,7 @@ export async function cmdMagic(
     return;
   }
 
-  // 3. Create registry client
+  // 3. Create the content client (RegistryClient is the 3.x compatibility name).
   const registryClient = new RegistryClient({
     cacheDir: join(projectRoot, '.decantr', 'cache'),
     apiUrl: options.registry,
@@ -414,7 +414,7 @@ export async function cmdMagic(
   let blueprintData: RegistryBlueprint | undefined;
 
   if (apiAvailable) {
-    console.log(dim('  Searching registry for matching blueprints...'));
+    console.log(dim('  Searching the official content corpus for matching blueprints...'));
     const blueprintsResult = await registryClient.fetchBlueprints();
     const blueprints = blueprintsResult.data.items;
 
@@ -489,6 +489,7 @@ export async function cmdMagic(
     personality,
     features: [],
     existing: false,
+    adoptionMode: 'contract-only',
   };
 
   // Apply blueprint overrides
@@ -545,7 +546,7 @@ export async function cmdMagic(
 
   console.log('');
 
-  // 6. Scaffold — reuse cmdInit's registry fetch + scaffold flow
+  // 6. Scaffold — reuse cmdInit's content fetch + scaffold flow
   let archetypeData: ArchetypeData | undefined;
   let composedSections: ComposeSectionsResult | undefined;
   let routeMap: Record<string, { section: string; page: string }> | undefined;
@@ -755,34 +756,50 @@ export async function cmdMagic(
     sectionCount = files.filter((f: string) => f.startsWith('section-')).length;
   } catch {}
 
-  const treatmentsPath = join(projectRoot, 'src', 'styles', 'treatments.css');
-  let hasLayers = false;
-  try {
-    const css = await fs.readFile(treatmentsPath, 'utf-8');
-    hasLayers = css.includes('@layer');
-  } catch {}
+  const contextNames = (result.contextFiles ?? [])
+    .map((file) => file.split('/').pop())
+    .filter((name): name is string => Boolean(name));
+  const narrativeSectionCount = contextNames.filter(
+    (name) => name.startsWith('section-') && !name.endsWith('-pack.md'),
+  ).length;
+  const sectionPackCount = contextNames.filter(
+    (name) => name.startsWith('section-') && name.endsWith('-pack.md'),
+  ).length;
+  const pagePackCount = contextNames.filter(
+    (name) => name.startsWith('page-') && name.endsWith('-pack.md'),
+  ).length;
+  const hasScaffoldPack = contextNames.includes('scaffold-pack.md');
+  const generatedCssNames = (result.cssFiles ?? [])
+    .map((file) => file.split('/').pop())
+    .filter((name): name is string => Boolean(name));
 
   console.log(`\n${GREEN}${BOLD}Quality summary:${RESET}`);
   console.log(
-    `  Context files:   ${sectionCount} sections + page packs + section packs + scaffold-pack.md + scaffold.md + DECANTR.md`,
+    `  Narrative:       scaffold.md + ${narrativeSectionCount || sectionCount} section context(s) + DECANTR.md`,
   );
-  console.log(`  CSS:             tokens.css + treatments.css + global.css`);
   console.log(
-    `  @layer cascade:  ${hasLayers ? GREEN + 'yes' + RESET : YELLOW + 'missing' + RESET}`,
+    `  Compiled packs:  ${hasScaffoldPack ? 'scaffold 1' : 'none'}${sectionPackCount > 0 ? `, sections ${sectionPackCount}` : ''}${pagePackCount > 0 ? `, pages ${pagePackCount}` : ''}`,
+  );
+  console.log(
+    generatedCssNames.length > 0
+      ? `  Styling:         explicit Decantr CSS (${generatedCssNames.join(', ')})`
+      : '  Styling:         host-owned (contract-only; no generated Decantr CSS)',
   );
 
   console.log('');
   console.log(`${BOLD} Ready!${RESET} Next steps:`);
   console.log(
-    `   1. Read ${cyan('.decantr/context/scaffold-pack.md')} first as the primary compiled contract`,
+    hasScaffoldPack
+      ? `   1. Read ${cyan('.decantr/context/scaffold-pack.md')} first, then use ${cyan('.decantr/context/scaffold.md')} for fuller context`
+      : `   1. Read ${cyan('.decantr/context/scaffold.md')} as the current local app contract`,
   );
+  console.log(`   2. Run ${cyan('decantr task <route> "<intent>"')} before route-level edits`);
   console.log(
-    `   2. Read the matching ${cyan('.decantr/context/section-*-pack.md')} and ${cyan('.decantr/context/page-*-pack.md')} files before section or route work`,
-  );
-  console.log(
-    `   3. Use ${cyan('DECANTR.md')} as a lookup reference for guard rules, CSS atoms, treatments, decorators, and workflow`,
+    `   3. Use ${cyan('DECANTR.md')} for authority, guard, styling-adoption, and workflow rules`,
   );
   console.log(`   4. Build the shell and route structure first, then implement each page`);
-  console.log(`   5. Run ${cyan('decantr check')} and ${cyan('decantr audit')} before you ship`);
+  console.log(
+    `   5. Run ${cyan('decantr verify')} before handoff and ${cyan('decantr ci init')} for CI`,
+  );
   console.log('');
 }

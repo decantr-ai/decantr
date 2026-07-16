@@ -1,0 +1,164 @@
+# Task Context: Modifying Code
+
+**Enforcement Tier: Strict**
+
+You are modifying existing code in a Decantr project. ALL 7 guard rules are enforced exactly.
+
+---
+
+## Enforced Rules
+
+| # | Layer | Rule | Enforcement | Consequence of Violation |
+|---|-------|------|-------------|--------------------------|
+| 1 | DNA | **Theme** | STRICT | ERROR — Code rejected |
+| 2 | DNA | **Density** | STRICT | WARNING — Flagged for review |
+| 3 | DNA | **Accessibility** | STRICT | ERROR — Code rejected |
+| 4 | DNA | **Theme-mode** | STRICT | ERROR — Code rejected |
+| 5 | Blueprint | **Structure** | STRICT | ERROR — Code rejected |
+| 6 | Blueprint | **Layout** | STRICT | ERROR — Pattern order must match exactly |
+| 7 | Blueprint | **Pattern-exists** | STRICT | ERROR — Code rejected |
+
+## Violation Response Protocol
+
+When ANY rule would be violated:
+
+```
+1. STOP   — Do not generate code that violates rules
+2. EXPLAIN — State which rule and why
+3. OFFER  — Propose updating the essence
+4. WAIT   — Only proceed after essence is updated
+```
+
+### Example Responses
+
+**Theme violation:**
+```
+STOP: I cannot use theme "glassmorphism" because the essence specifies
+"existing". This would violate the Theme guard rule.
+
+Would you like me to:
+1. Update the essence to use "glassmorphism" instead?
+2. Keep the current theme "existing"?
+```
+
+**Layout violation:**
+```
+STOP: I cannot reorder the patterns to [chart-grid, kpi-grid] because
+the essence specifies [kpi-grid, chart-grid] for this page.
+This would violate the Layout guard rule.
+
+Would you like me to:
+1. Update the essence with the new pattern order?
+2. Keep the original order [kpi-grid, chart-grid]?
+```
+
+**Never say "just this once."** The essence is the structural contract; follow the project authority order in `DECANTR.md` when runtime source, local law, and the contract disagree.
+
+## Before Modifying
+
+### 1. Read Current State
+
+```bash
+# Read the essence
+cat decantr.essence.json
+
+# Or use MCP
+decantr_contract({ "action": "read_essence" })
+```
+
+### 2. Check Constraints
+
+For the page you're modifying, verify:
+
+- Page ID exists in `blueprint.sections[].pages[]`
+- Shell matches the page's `shell` property
+- Patterns match the page's `layout[]` in order
+- Theme matches `theme.id`
+- Theme intent is mapped through the styling authority declared in `DECANTR.md`
+
+### 3. Plan Changes
+
+Before writing code:
+
+1. List what changes are needed
+2. Check each change against guard rules
+3. If any would violate, STOP and propose essence updates
+4. Only proceed when all changes are compliant
+
+## Checklist
+
+Before modifying:
+
+- [ ] Page exists in essence structure
+- [ ] I know the layout order for the target page (check `blueprint.sections[].pages[]`)
+- [ ] I will preserve theme intent: `existing`
+- [ ] I will follow density: `comfortable`
+
+During modification:
+
+- [ ] Every color/typography change uses the project's adopted tokens, components, utilities, or variants
+- [ ] Pattern order matches essence exactly
+- [ ] Spacing uses the project's adopted spacing primitives, not arbitrary values
+- [ ] No new pages without essence declaration
+
+After modification:
+
+- [ ] Run `decantr validate decantr.essence.json`
+- [ ] Run `decantr verify` to check drift
+- [ ] Verify no warnings or errors
+
+## Spacing Enforcement
+
+This project uses **comfortable** density. Express that density through the project's existing spacing tokens, utility classes, component variants, or CSS variables. Do not introduce `d-*` classes, Decantr atom strings, generated Decantr token CSS, or `@decantr/css` unless `DECANTR.md` explicitly declares `decantr-css` adoption.
+
+## Pattern Order Matters
+
+In strict mode, patterns MUST appear in the order specified in `layout[]`.
+
+If the essence says:
+```json
+"layout": ["kpi-grid", "chart-grid", "data-table"]
+```
+
+Then your code MUST render in that order:
+1. KPI Grid section
+2. Chart Grid section
+3. Data Table section
+
+Swapping `chart-grid` and `data-table` is a Layout guard violation.
+
+## Common Strict Mode Violations
+
+| Violation | What Happened | Fix |
+|-----------|---------------|-----|
+| "Theme mismatch" | Used different theme | Revert to `existing` |
+| "Page undefined" | Edited undeclared page | Add page to essence first |
+| "Layout order wrong" | Patterns out of order | Match `layout[]` exactly |
+| "Theme mismatch" | Styling conflicts with the declared intent | Map `existing` through the adopted host styling system |
+| "Density drift" | Wrong spacing values | Use the host system's `comfortable` spacing primitives |
+
+## Proposing Essence Changes
+
+If a change requires updating the essence:
+
+1. Explain what needs to change and why
+2. Show the before/after for the essence
+3. Wait for user approval
+4. Update the essence file
+5. Then proceed with code changes
+
+```
+To implement your request, I need to update the essence:
+
+Before:
+  "layout": ["kpi-grid", "chart-grid"]
+
+After:
+  "layout": ["hero", "kpi-grid", "chart-grid"]
+
+Shall I make this change?
+```
+
+---
+
+*Task context generated by Decantr CLI*

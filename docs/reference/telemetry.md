@@ -1,6 +1,6 @@
 # Telemetry
 
-Decantr 3.8.x keeps `@decantr/telemetry` as an optional contract and sink package, but hosted product analytics are no longer part of the active registry/API product surface.
+Decantr 3.9 keeps `@decantr/telemetry` as an optional contract and sink package, but hosted product analytics are not part of the active content/API product surface.
 
 The current product direction is content-first governance:
 
@@ -39,4 +39,4 @@ Some package event names still contain `registry.*` or `content.publish.*` for D
 - `DECANTR_TELEMETRY_IDENTITY_API_URL` or `decantr telemetry link --api-url ...` enables private identity linking.
 - `DECANTR_API_URL` remains the content API setting and is never treated as a telemetry identity endpoint.
 
-PostHog projects/dashboards, Supabase telemetry tables or snapshot jobs, registry portal analytics secrets, and webhooks that only supported the retired hosted product are not part of the 3.8.1 operating surface.
+PostHog projects/dashboards, Supabase telemetry tables or snapshot jobs, registry portal analytics secrets, and webhooks that only supported the retired hosted product are not part of the 3.9 operating surface.

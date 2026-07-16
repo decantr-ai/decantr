@@ -1,5 +1,5 @@
+import type { Pattern, ResolvedPreset, Theme } from '@decantr/content';
 import type { ColumnLayout, LayoutItem, PatternRef, StructurePage } from '@decantr/essence-spec';
-import type { Pattern, Theme as RegistryTheme, ResolvedPreset } from '@decantr/registry';
 import { resolveVisualEffects } from './resolve.js';
 import type {
   IRCardWrapping,
@@ -37,11 +37,7 @@ function _getPatternId(item: LayoutItem): string {
   return '';
 }
 
-function shouldWrapInCard(
-  pattern: Pattern,
-  preset: ResolvedPreset,
-  theme: RegistryTheme | null,
-): boolean {
+function shouldWrapInCard(pattern: Pattern, preset: ResolvedPreset, theme: Theme | null): boolean {
   // Hero/row/stack layouts are standalone
   const layout = preset.layout.layout;
   if (layout === 'hero' || layout === 'row') return false;
@@ -62,7 +58,7 @@ function shouldWrapInCard(
   return true;
 }
 
-function buildCardWrapping(pattern: Pattern, theme: RegistryTheme | null): IRCardWrapping {
+function buildCardWrapping(pattern: Pattern, theme: Theme | null): IRCardWrapping {
   const mode = theme?.spatial?.card_wrapping || 'always';
   return {
     mode: mode as IRCardWrapping['mode'],
@@ -75,7 +71,7 @@ function buildPatternNode(
   alias: string,
   resolved: ResolvedPatternEntry | undefined,
   wiring: IRWiring | null,
-  theme: RegistryTheme | null,
+  theme: Theme | null,
   density: { gap: string },
   layer?: IRLayer,
 ): IRPatternNode {
@@ -133,7 +129,7 @@ export function buildPageIR(
   page: StructurePage & { sectionId?: string },
   resolvedPatterns: Map<string, ResolvedPatternEntry>,
   wiring: IRWiring | null,
-  theme: RegistryTheme | null,
+  theme: Theme | null,
   density: { gap: string },
   layer?: IRLayer,
 ): IRPageNode {

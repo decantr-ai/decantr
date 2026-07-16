@@ -1,7 +1,7 @@
+import type { ContentResolver, Theme } from '@decantr/content';
+import { createResolver } from '@decantr/content';
 import type { EssenceFile } from '@decantr/essence-spec';
 import { validateEssence } from '@decantr/essence-spec';
-import type { ContentResolver, Theme as RegistryTheme } from '@decantr/registry';
-import { createResolver } from '@decantr/registry';
 import { buildPageIR } from './ir.js';
 import { resolveEssence } from './resolve.js';
 import type { IRAppNode, IRLayer, IRPageNode, IRShellNode, IRStoreNode } from './types.js';
@@ -29,18 +29,18 @@ export interface PipelineResult {
   /** The framework-agnostic intermediate representation */
   ir: IRAppNode;
   /**
-   * The fully-resolved registry theme record, including `decorator_definitions`
+   * The fully-resolved content theme record, including `decorator_definitions`
    * and other rich theme data not carried in the lite IR `theme` node.
    * Consumers (e.g. pack builders) need this to render decorator contracts
    * into compiled artifacts.
    */
-  registryTheme: RegistryTheme | null;
+  registryTheme: Theme | null;
 }
 
 /**
  * Run the Design Pipeline:
  *   1. Validate Essence against schema + guard rules
- *   2. Resolve all references (patterns, theme, wiring) from registry
+ *   2. Resolve all references (patterns, theme, wiring) from content
  *   3. Build framework-agnostic IR tree
  *   4. Return IR (no code generation — that's the consumer's job)
  */

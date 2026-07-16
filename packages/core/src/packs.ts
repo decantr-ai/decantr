@@ -1,6 +1,6 @@
+import type { ContentResolver } from '@decantr/content';
 import type { EssenceFile, EssenceV4 } from '@decantr/essence-spec';
 import { isV4 } from '@decantr/essence-spec';
-import type { ContentResolver } from '@decantr/registry';
 import { walkIR } from './ir-helpers.js';
 import { runPipeline } from './pipeline.js';
 import type { IRAppNode, IRNode, IRPageNode, IRPatternNode } from './types.js';
@@ -1601,7 +1601,7 @@ export async function compileExecutionPackBundle(
       ? (navMeta.command_palette as CommandPaletteContract)
       : Boolean(navMeta?.command_palette);
 
-  // Compose theme decorator contract from registry data once and reuse for
+  // Compose theme decorator contract from content data once and reuse for
   // both scaffold pack (canonical) and section packs (reference). Filter to
   // entries with the minimum data needed to render a useful row.
   const themeDecorators: ThemeDecoratorEntry[] | undefined = (() => {

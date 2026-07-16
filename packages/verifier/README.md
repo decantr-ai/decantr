@@ -25,6 +25,10 @@ npm install @decantr/verifier
 - `createContractAssertions()` for explicit route, shell, accessibility, context, and design-token assertions derived from Essence/context
 - `createEvidenceBundle()` for privacy-redacted local evidence artifacts used by AI repair loops and CI
 - `createEvidenceTier()`, `createAuthorityResolution()`, and `createLoopReadiness()` for the shared v2 Brownfield control-loop blocks used by CLI, MCP, Studio, and verifier consumers
+- `createAdoptionTruthV1()` for receipt-backed adoption facts whose observation, governance, and mutation states remain independent
+- `createProjectAdoptionTruthV1()` for one read-only, discovery-backed project truth; `createProjectIdentityV1()` provides the clone-independent workspace-relative identity shared by task capsules, CI v3, MCP, and local baselines, while `createStableProjectIdentityV1()` derives the same identity directly from a selected project root
+- `createTaskCapsuleV1()` for structured project, graph, ranked read-target, authority, impact, finding, official-guidance, stop-condition, and exact verification-command context under deterministic 12,000 canonical UTF-8 byte / 4,000 estimated-token limits using conservative `tokenEstimateV1 = ceil(bytes / 3)` accounting; task-request truncation, omitted counts, canonical byte/token measurements, and downstream digests must all derive from this final canonical result
+- `createGovernanceDeltaV1()` and `fingerprintFindingOccurrenceV1()` for Git-scope-independent debt comparison with deterministic new, inherited, resolved, and unclassified finding occurrences plus explicit incomplete-proof gates
 - `resolveGraphAnchorForFinding()` and `anchorFindingsToGraph()` for attaching verifier/Project Health findings to typed Contract graph nodes when a graph snapshot exists
 - `deriveVerificationDiagnostic()` and `KNOWN_VERIFICATION_DIAGNOSTICS` for stable finding codes and typed repair IDs used by Project Health, MCP health, and Evidence Bundles
 - schema-backed report types for project audits, v2 Project Health, v2 Decantr CI reports, v2 Evidence Bundles, v2 Workspace Health, v2 authority resolution, v2 loop readiness, v2 proof field reports, file critiques, and showcase verification
@@ -84,6 +88,9 @@ function isBlocking(report: ProjectHealthReport) {
 
 ## Schema Exports
 
+- `@decantr/verifier/schema/adoption-truth.v1.json`
+- `@decantr/verifier/schema/task-capsule.v1.json`
+- `@decantr/verifier/schema/governance-delta.v1.json`
 - `@decantr/verifier/schema/verification-report.common.v1.json`
 - `@decantr/verifier/schema/verification-report.common.v2.json`
 - `@decantr/verifier/schema/project-audit-report.v1.json`
@@ -91,6 +98,7 @@ function isBlocking(report: ProjectHealthReport) {
 - `@decantr/verifier/schema/project-health-report.v2.json`
 - `@decantr/verifier/schema/decantr-ci-report.v1.json`
 - `@decantr/verifier/schema/decantr-ci-report.v2.json`
+- `@decantr/verifier/schema/decantr-ci-report.v3.json`
 - `@decantr/verifier/schema/evidence-bundle.v1.json`
 - `@decantr/verifier/schema/evidence-bundle.v2.json`
 - `@decantr/verifier/schema/runtime-probe-payload.v2.json`
@@ -104,7 +112,9 @@ function isBlocking(report: ProjectHealthReport) {
 - `@decantr/verifier/schema/file-critique-report.v1.json`
 - `@decantr/verifier/schema/showcase-shortlist-report.v1.json`
 
-The v2 schema assets are the active Decantr 3 contracts for Project Health, CI, Workspace Health, Evidence Bundles, runtime probes, authority resolution, loop readiness, proof field reports, and Brownfield scan reports. v1 health/evidence/scan schemas remain published for stored-artifact compatibility; audit, file-critique, and showcase reports remain v1 until those wires need to change. See [Report Schemas](https://decantr.ai/reference/report-schemas.md).
+The adoption-truth, task-capsule, and governance-delta schemas are additive Decantr 3.9 contract primitives consumed by CLI, MCP, opt-in CI v3, and read-only Studio adapters. `decantr-ci-report.v3` is also additive and must be selected explicitly; v2 remains the default throughout 3.9.x and its schema/exit semantics are unchanged. A missing or incompatible baseline produces unclassified findings and `not_proven` rather than a false empty delta. V1 health/evidence/scan schemas remain published for stored-artifact compatibility; audit, file-critique, and showcase reports remain v1 until those wires need to change. See [Report Schemas](https://decantr.ai/reference/report-schemas.md).
+
+These contracts define deterministic evidence shapes; they do not by themselves prove the Decantr 3.9 quantitative gates. Release qualification remains fail-closed until the frozen route corpus, two-person finding adjudication, public 3.8.3 replay, final 3.9 replay, and adoption/Studio filesystem evidence are complete.
 
 ## Security And Permissions
 

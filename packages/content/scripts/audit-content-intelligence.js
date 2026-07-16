@@ -22,8 +22,8 @@
  *   FAIL_ON_SUMMARY_MISMATCH - Set to "true" to fail when the hosted summary endpoint disagrees with the live crawl
  */
 
-import { mkdirSync, readdirSync, writeFileSync } from 'fs';
-import { dirname } from 'path';
+import { mkdirSync, readdirSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
 import {
   CONTENT_DIRECTORIES,
   DIRECTORY_TO_CONTENT_TYPE,
@@ -31,18 +31,21 @@ import {
 } from './content-contract.js';
 
 const args = process.argv.slice(2);
-const DECANTR_API_URL = process.env.DECANTR_API_URL || process.env.REGISTRY_URL || 'https://api.decantr.ai/v1';
+const DECANTR_API_URL =
+  process.env.DECANTR_API_URL || process.env.REGISTRY_URL || 'https://api.decantr.ai/v1';
 const CONTENT_NAMESPACE = process.env.CONTENT_NAMESPACE || '@official';
 const REPORT_PATH =
   args.find((arg) => arg.startsWith('--report-json='))?.slice('--report-json='.length) || null;
 const SUMMARY_PATH =
-  args.find((arg) => arg.startsWith('--summary-markdown='))?.slice('--summary-markdown='.length) || null;
+  args.find((arg) => arg.startsWith('--summary-markdown='))?.slice('--summary-markdown='.length) ||
+  null;
 const FAIL_ON_MISSING =
   args.includes('--fail-on-missing') || process.env.FAIL_ON_MISSING === 'true';
 const FAIL_ON_FILTER_MISMATCH =
   args.includes('--fail-on-filter-mismatch') || process.env.FAIL_ON_FILTER_MISMATCH === 'true';
 const FAIL_ON_SOURCE_FILTER_MISMATCH =
-  args.includes('--fail-on-source-filter-mismatch') || process.env.FAIL_ON_SOURCE_FILTER_MISMATCH === 'true';
+  args.includes('--fail-on-source-filter-mismatch') ||
+  process.env.FAIL_ON_SOURCE_FILTER_MISMATCH === 'true';
 const FAIL_ON_SUMMARY_MISMATCH =
   args.includes('--fail-on-summary-mismatch') || process.env.FAIL_ON_SUMMARY_MISMATCH === 'true';
 
@@ -69,9 +72,9 @@ function countRepoItems() {
 
   for (const dir of CONTENT_DIRECTORIES) {
     try {
-      repoCounts[DIRECTORY_TO_CONTENT_TYPE[dir]] = readdirSync(dir).filter((file) => (
-        file.endsWith('.json') && !isIgnoredLocalContentFile(file)
-      )).length;
+      repoCounts[DIRECTORY_TO_CONTENT_TYPE[dir]] = readdirSync(dir).filter(
+        (file) => file.endsWith('.json') && !isIgnoredLocalContentFile(file),
+      ).length;
     } catch {
       repoCounts[DIRECTORY_TO_CONTENT_TYPE[dir]] = 0;
     }
@@ -125,7 +128,9 @@ async function fetchHostedSummary() {
   const response = await fetch(`${DECANTR_API_URL}/intelligence/summary?${searchParams}`);
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch intelligence summary: ${response.status} ${await response.text()}`);
+    throw new Error(
+      `Failed to fetch intelligence summary: ${response.status} ${await response.text()}`,
+    );
   }
 
   return response.json();
@@ -149,8 +154,12 @@ function toTypeStats(type, repoCount, liveItems, recommendedItems, sourceFiltere
     .map((item) => item.intelligence?.confidence_score)
     .filter((value) => typeof value === 'number');
   const recommended = intelligenceItems.filter((item) => item.intelligence?.recommended).length;
-  const authored = intelligenceItems.filter((item) => item.intelligence?.source === 'authored').length;
-  const benchmark = intelligenceItems.filter((item) => item.intelligence?.source === 'benchmark').length;
+  const authored = intelligenceItems.filter(
+    (item) => item.intelligence?.source === 'authored',
+  ).length;
+  const benchmark = intelligenceItems.filter(
+    (item) => item.intelligence?.source === 'benchmark',
+  ).length;
   const hybrid = intelligenceItems.filter((item) => item.intelligence?.source === 'hybrid').length;
   const missingSource = intelligenceItems.filter((item) => !item.intelligence?.source).length;
   const authoredViaFilter = sourceFilteredItems.authored.length;
@@ -171,13 +180,19 @@ function toTypeStats(type, repoCount, liveItems, recommendedItems, sourceFiltere
     recommended,
     recommendedViaFilter: recommendedItems.length,
     recommendedFilterMismatch: recommendedItems.length - recommended,
-    smokeGreen: intelligenceItems.filter((item) => item.intelligence?.verification_status === 'smoke-green').length,
-    buildGreen: intelligenceItems.filter((item) => item.intelligence?.verification_status === 'build-green').length,
+    smokeGreen: intelligenceItems.filter(
+      (item) => item.intelligence?.verification_status === 'smoke-green',
+    ).length,
+    buildGreen: intelligenceItems.filter(
+      (item) => item.intelligence?.verification_status === 'build-green',
+    ).length,
     highConfidence: intelligenceItems.filter((item) => {
       const tier = item.intelligence?.confidence_tier;
       return tier === 'high' || tier === 'verified';
     }).length,
-    verifiedConfidence: intelligenceItems.filter((item) => item.intelligence?.confidence_tier === 'verified').length,
+    verifiedConfidence: intelligenceItems.filter(
+      (item) => item.intelligence?.confidence_tier === 'verified',
+    ).length,
     averageQuality: average(qualityScores),
     averageConfidence: average(confidenceScores),
   };
@@ -219,7 +234,9 @@ function buildMarkdownSummary(report) {
     lines.push('');
     lines.push('## Recommended Filter Mismatches');
     for (const mismatch of report.recommendedFilterMismatches) {
-      lines.push(`- ${mismatch.type} — metadata ${mismatch.recommended}, API filter ${mismatch.recommendedViaFilter}`);
+      lines.push(
+        `- ${mismatch.type} — metadata ${mismatch.recommended}, API filter ${mismatch.recommendedViaFilter}`,
+      );
     }
   }
 
@@ -227,7 +244,9 @@ function buildMarkdownSummary(report) {
     lines.push('');
     lines.push('## Intelligence Missing Source');
     for (const item of report.missingSourceByType) {
-      lines.push(`- ${item.type} — ${item.missingSource} live items expose intelligence metadata without a provenance source`);
+      lines.push(
+        `- ${item.type} — ${item.missingSource} live items expose intelligence metadata without a provenance source`,
+      );
     }
   }
 
@@ -237,10 +256,14 @@ function buildMarkdownSummary(report) {
     for (const mismatch of report.sourceFilterMismatches) {
       const parts = [];
       if (mismatch.authored !== mismatch.authoredViaFilter) {
-        parts.push(`authored metadata ${mismatch.authored}, API filter ${mismatch.authoredViaFilter}`);
+        parts.push(
+          `authored metadata ${mismatch.authored}, API filter ${mismatch.authoredViaFilter}`,
+        );
       }
       if (mismatch.benchmark !== mismatch.benchmarkViaFilter) {
-        parts.push(`benchmark metadata ${mismatch.benchmark}, API filter ${mismatch.benchmarkViaFilter}`);
+        parts.push(
+          `benchmark metadata ${mismatch.benchmark}, API filter ${mismatch.benchmarkViaFilter}`,
+        );
       }
       if (mismatch.hybrid !== mismatch.hybridViaFilter) {
         parts.push(`hybrid metadata ${mismatch.hybrid}, API filter ${mismatch.hybridViaFilter}`);
@@ -254,9 +277,13 @@ function buildMarkdownSummary(report) {
     lines.push('## Hosted Summary Mismatches');
     for (const mismatch of report.summaryMismatches) {
       if (mismatch.scope === 'totals') {
-        lines.push(`- totals.${mismatch.field} — crawl ${mismatch.crawl}, hosted summary ${mismatch.summary}`);
+        lines.push(
+          `- totals.${mismatch.field} — crawl ${mismatch.crawl}, hosted summary ${mismatch.summary}`,
+        );
       } else {
-        lines.push(`- ${mismatch.scope}.${mismatch.field} — crawl ${mismatch.crawl}, hosted summary ${mismatch.summary}`);
+        lines.push(
+          `- ${mismatch.scope}.${mismatch.field} — crawl ${mismatch.crawl}, hosted summary ${mismatch.summary}`,
+        );
       }
     }
   }
@@ -367,10 +394,11 @@ async function main() {
       missingSource: stats.missingSource,
     }));
   const sourceFilterMismatches = Object.entries(byType)
-    .filter(([, stats]) =>
-      stats.authored !== stats.authoredViaFilter ||
-      stats.benchmark !== stats.benchmarkViaFilter ||
-      stats.hybrid !== stats.hybridViaFilter,
+    .filter(
+      ([, stats]) =>
+        stats.authored !== stats.authoredViaFilter ||
+        stats.benchmark !== stats.benchmarkViaFilter ||
+        stats.hybrid !== stats.hybridViaFilter,
     )
     .map(([type, stats]) => ({
       type,

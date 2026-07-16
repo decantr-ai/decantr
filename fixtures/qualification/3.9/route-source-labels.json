@@ -1,0 +1,1769 @@
+{
+  "schemaVersion": "decantr-qualification-route-source-labels.v1",
+  "frozenAt": "2026-07-16",
+  "baseline": "3.8.3",
+  "qualificationStatus": "legacy-unqualified",
+  "countsTowardQualification": false,
+  "quarantineReasons": [
+    "Rows were assembled from correlated test declarations rather than retained route replay output.",
+    "Some forbidden declarations were nonexistent or did not compete with the expected source for the same replayed route.",
+    "Line anchors do not establish a source commit/blob identity or executable oracle result."
+  ],
+  "description": "Historical route-source draft retained for auditability. These rows are legacy-unqualified and cannot contribute to Decantr 3.9 qualification gates.",
+  "positiveLabels": [
+    {
+      "id": "route-001",
+      "lane": "brownfield",
+      "project": "verifier-hash-router",
+      "framework": "react-router",
+      "route": "/",
+      "expectedSource": "src/App.tsx",
+      "sourceKind": "implementation",
+      "confidence": "high",
+      "rationale": "HashRouter declares the home page in the selected React source file.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 46,
+        "anchor": "<Route path=\"/\""
+      }
+    },
+    {
+      "id": "route-002",
+      "lane": "brownfield",
+      "project": "verifier-hash-router",
+      "framework": "react-router",
+      "route": "/settings",
+      "expectedSource": "src/App.tsx",
+      "sourceKind": "implementation",
+      "confidence": "high",
+      "rationale": "HashRouter declares settings beside the home page in the same selected app source.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 46,
+        "anchor": "<Route path=\"/settings\""
+      }
+    },
+    {
+      "id": "route-003",
+      "lane": "brownfield",
+      "project": "verifier-next-app-router",
+      "framework": "next-app",
+      "route": "/",
+      "expectedSource": "app/page.tsx",
+      "sourceKind": "page",
+      "confidence": "high",
+      "rationale": "Next App Router maps app/page.tsx to the root page.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 86,
+        "anchor": "join(projectRoot, 'app', 'page.tsx')"
+      }
+    },
+    {
+      "id": "route-004",
+      "lane": "brownfield",
+      "project": "verifier-next-app-router",
+      "framework": "next-app",
+      "route": "/dashboard",
+      "expectedSource": "app/dashboard/page.tsx",
+      "sourceKind": "page",
+      "confidence": "high",
+      "rationale": "Next App Router maps the nested page file to /dashboard.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 90,
+        "anchor": "join(projectRoot, 'app', 'dashboard', 'page.tsx')"
+      }
+    },
+    {
+      "id": "route-005",
+      "lane": "brownfield",
+      "project": "verifier-pathname-branches",
+      "framework": "pathname",
+      "route": "/tickets",
+      "expectedSource": "src/App.tsx",
+      "sourceKind": "implementation",
+      "confidence": "medium",
+      "rationale": "The hand-rolled SPA exposes /tickets from the selected App implementation.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 125,
+        "anchor": "href=\"/tickets\""
+      }
+    },
+    {
+      "id": "route-006",
+      "lane": "brownfield",
+      "project": "verifier-pathname-branches",
+      "framework": "pathname",
+      "route": "/customers",
+      "expectedSource": "src/App.tsx",
+      "sourceKind": "implementation",
+      "confidence": "medium",
+      "rationale": "The hand-rolled SPA branches on /customers in the selected App implementation.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 127,
+        "anchor": "path === \"/customers\""
+      }
+    },
+    {
+      "id": "route-007",
+      "lane": "brownfield",
+      "project": "verifier-wasp-spec",
+      "framework": "wasp",
+      "route": "/",
+      "expectedSource": "main.wasp.ts",
+      "sourceKind": "route-declaration",
+      "confidence": "high",
+      "rationale": "The declarative Wasp specification binds LandingPageRoute to root.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 166,
+        "anchor": "route(\"LandingPageRoute\", \"/\""
+      }
+    },
+    {
+      "id": "route-008",
+      "lane": "brownfield",
+      "project": "verifier-wasp-spec",
+      "framework": "wasp",
+      "route": "/login",
+      "expectedSource": "src/auth/auth.wasp.ts",
+      "sourceKind": "route-declaration",
+      "confidence": "high",
+      "rationale": "The auth Wasp specification binds LoginRoute to /login.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 181,
+        "anchor": "route(\"LoginRoute\", \"/login\""
+      }
+    },
+    {
+      "id": "route-009",
+      "lane": "brownfield",
+      "project": "verifier-wasp-spec",
+      "framework": "wasp",
+      "route": "/signup",
+      "expectedSource": "src/auth/auth.wasp.ts",
+      "sourceKind": "route-declaration",
+      "confidence": "high",
+      "rationale": "The auth Wasp specification binds SignupRoute to /signup.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 182,
+        "anchor": "route(\"SignupRoute\", \"/signup\""
+      }
+    },
+    {
+      "id": "route-010",
+      "lane": "brownfield",
+      "project": "verifier-react-router-wrapper",
+      "framework": "react-router",
+      "route": "/",
+      "expectedSource": "src/PrivateRoutesContainer.tsx",
+      "sourceKind": "implementation",
+      "confidence": "high",
+      "rationale": "The optional wrapper expression expands to the root route.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 220,
+        "anchor": "/(public|contacts|personal)?"
+      }
+    },
+    {
+      "id": "route-011",
+      "lane": "brownfield",
+      "project": "verifier-react-router-wrapper",
+      "framework": "react-router",
+      "route": "/public",
+      "expectedSource": "src/PrivateRoutesContainer.tsx",
+      "sourceKind": "implementation",
+      "confidence": "high",
+      "rationale": "The optional wrapper expression expands to /public.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 220,
+        "anchor": "/(public|contacts|personal)?"
+      }
+    },
+    {
+      "id": "route-012",
+      "lane": "brownfield",
+      "project": "verifier-react-router-wrapper",
+      "framework": "react-router",
+      "route": "/contacts",
+      "expectedSource": "src/PrivateRoutesContainer.tsx",
+      "sourceKind": "implementation",
+      "confidence": "high",
+      "rationale": "The optional wrapper expression expands to /contacts.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 220,
+        "anchor": "/(public|contacts|personal)?"
+      }
+    },
+    {
+      "id": "route-013",
+      "lane": "brownfield",
+      "project": "verifier-react-router-wrapper",
+      "framework": "react-router",
+      "route": "/personal",
+      "expectedSource": "src/PrivateRoutesContainer.tsx",
+      "sourceKind": "implementation",
+      "confidence": "high",
+      "rationale": "The optional wrapper expression expands to /personal.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 220,
+        "anchor": "/(public|contacts|personal)?"
+      }
+    },
+    {
+      "id": "route-014",
+      "lane": "brownfield",
+      "project": "verifier-react-router-wrapper",
+      "framework": "react-router",
+      "route": "/user/settings",
+      "expectedSource": "src/PrivateRoutesContainer.tsx",
+      "sourceKind": "implementation",
+      "confidence": "high",
+      "rationale": "The wrapper contains the concrete settings route.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 221,
+        "anchor": "path=\"/user/settings\""
+      }
+    },
+    {
+      "id": "route-015",
+      "lane": "brownfield",
+      "project": "verifier-react-router-wrapper",
+      "framework": "react-router",
+      "route": "/bankaccounts",
+      "expectedSource": "src/PrivateRoutesContainer.tsx",
+      "sourceKind": "implementation",
+      "confidence": "high",
+      "rationale": "The wrapper normalizes the bankaccounts wildcard suffix to a taskable path.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 222,
+        "anchor": "path=\"/bankaccounts*\""
+      }
+    },
+    {
+      "id": "route-016",
+      "lane": "brownfield",
+      "project": "verifier-next-pages-router",
+      "framework": "next-pages",
+      "route": "/",
+      "expectedSource": "pages/index.tsx",
+      "sourceKind": "page",
+      "confidence": "high",
+      "rationale": "Next Pages Router exposes index.tsx while excluding framework internals.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 255,
+        "anchor": "'index.tsx'"
+      }
+    },
+    {
+      "id": "route-017",
+      "lane": "brownfield",
+      "project": "verifier-sveltekit",
+      "framework": "sveltekit",
+      "route": "/",
+      "expectedSource": "src/routes/+page.svelte",
+      "sourceKind": "page",
+      "confidence": "high",
+      "rationale": "SvelteKit root page is the +page file, not the layout.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 283,
+        "anchor": "'routes', '+page.svelte'"
+      }
+    },
+    {
+      "id": "route-018",
+      "lane": "brownfield",
+      "project": "verifier-sveltekit",
+      "framework": "sveltekit",
+      "route": "/login",
+      "expectedSource": "src/routes/login/+page.svelte",
+      "sourceKind": "page",
+      "confidence": "high",
+      "rationale": "SvelteKit maps the login +page file to /login.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 285,
+        "anchor": "'login', '+page.svelte'"
+      }
+    },
+    {
+      "id": "route-019",
+      "lane": "brownfield",
+      "project": "verifier-sveltekit",
+      "framework": "sveltekit",
+      "route": "/article/:slug",
+      "expectedSource": "src/routes/article/[slug]/+page.svelte",
+      "sourceKind": "page",
+      "confidence": "high",
+      "rationale": "SvelteKit normalizes the dynamic segment and selects its +page file.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 289,
+        "anchor": "'article', '[slug]', '+page.svelte'"
+      }
+    },
+    {
+      "id": "route-020",
+      "lane": "brownfield",
+      "project": "verifier-angular-router",
+      "framework": "angular",
+      "route": "/",
+      "expectedSource": "src/app/app.routes.ts",
+      "sourceKind": "route-declaration",
+      "confidence": "high",
+      "rationale": "The empty Angular route path normalizes to root.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 329,
+        "anchor": "path: \"\""
+      }
+    },
+    {
+      "id": "route-021",
+      "lane": "brownfield",
+      "project": "verifier-angular-router",
+      "framework": "angular",
+      "route": "/login",
+      "expectedSource": "src/app/app.routes.ts",
+      "sourceKind": "route-declaration",
+      "confidence": "high",
+      "rationale": "The Angular route table declares /login.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 330,
+        "anchor": "path: \"login\""
+      }
+    },
+    {
+      "id": "route-022",
+      "lane": "brownfield",
+      "project": "verifier-angular-router",
+      "framework": "angular",
+      "route": "/article/:slug",
+      "expectedSource": "src/app/app.routes.ts",
+      "sourceKind": "route-declaration",
+      "confidence": "high",
+      "rationale": "The Angular route table preserves its dynamic segment.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 331,
+        "anchor": "path: \"article/:slug\""
+      }
+    },
+    {
+      "id": "route-023",
+      "lane": "brownfield",
+      "project": "verifier-static-root",
+      "framework": "static-html",
+      "route": "/",
+      "expectedSource": "index.html",
+      "sourceKind": "static-document",
+      "confidence": "high",
+      "rationale": "The root HTML document is the implementation source for the static route.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 350,
+        "anchor": "join(projectRoot, 'index.html')"
+      }
+    },
+    {
+      "id": "route-024",
+      "lane": "brownfield",
+      "project": "verifier-static-src",
+      "framework": "static-html",
+      "route": "/",
+      "expectedSource": "src/index.html",
+      "sourceKind": "static-document",
+      "confidence": "high",
+      "rationale": "The package-managed src/index.html is the root task source.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 369,
+        "anchor": "join(projectRoot, 'src', 'index.html')"
+      }
+    },
+    {
+      "id": "route-025",
+      "lane": "brownfield",
+      "project": "verifier-static-demos",
+      "framework": "static-html",
+      "route": "/demos",
+      "expectedSource": "demos/index.html",
+      "sourceKind": "static-document",
+      "confidence": "high",
+      "rationale": "The demo index document maps to /demos.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 391,
+        "anchor": "'demos', 'index.html'"
+      }
+    },
+    {
+      "id": "route-026",
+      "lane": "brownfield",
+      "project": "verifier-static-demos",
+      "framework": "static-html",
+      "route": "/demos/accordion/default",
+      "expectedSource": "demos/accordion/default.html",
+      "sourceKind": "static-document",
+      "confidence": "high",
+      "rationale": "The nested accordion document maps to its extensionless task route.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 393,
+        "anchor": "'accordion', 'default.html'"
+      }
+    },
+    {
+      "id": "route-027",
+      "lane": "brownfield",
+      "project": "verifier-static-demos",
+      "framework": "static-html",
+      "route": "/demos/dialog/default",
+      "expectedSource": "demos/dialog/default.html",
+      "sourceKind": "static-document",
+      "confidence": "high",
+      "rationale": "The nested dialog document maps to its extensionless task route.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 397,
+        "anchor": "'dialog', 'default.html'"
+      }
+    },
+    {
+      "id": "route-028",
+      "lane": "brownfield",
+      "project": "verifier-mixed-inline-react-console",
+      "framework": "tanstack",
+      "route": "/",
+      "expectedSource": "src/routes/index.tsx",
+      "sourceKind": "page",
+      "confidence": "high",
+      "rationale": "The selected React app literal page declaration outranks its root layout.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 523,
+        "anchor": "createFileRoute('/')"
+      }
+    },
+    {
+      "id": "route-029",
+      "lane": "brownfield",
+      "project": "verifier-mixed-inline-react-console",
+      "framework": "tanstack",
+      "route": "/reports",
+      "expectedSource": "src/routes/reports.tsx",
+      "sourceKind": "page",
+      "confidence": "high",
+      "rationale": "The selected React app reports page is a formal TanStack route source.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 533,
+        "anchor": "createFileRoute('/reports')"
+      }
+    },
+    {
+      "id": "route-030",
+      "lane": "brownfield",
+      "project": "verifier-nested-react-router",
+      "framework": "react-router",
+      "route": "/",
+      "expectedSource": "src/routes/home.tsx",
+      "sourceKind": "implementation",
+      "confidence": "high",
+      "rationale": "The root constant resolves through the lazy import to home.tsx.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 653,
+        "anchor": "import('./routes/home')"
+      }
+    },
+    {
+      "id": "route-031",
+      "lane": "brownfield",
+      "project": "verifier-nested-react-router",
+      "framework": "react-router",
+      "route": "/auth/login",
+      "expectedSource": "src/routes/login.tsx",
+      "sourceKind": "implementation",
+      "confidence": "high",
+      "rationale": "The auth path constant resolves through the lazy import to login.tsx.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 654,
+        "anchor": "import('./routes/login')"
+      }
+    },
+    {
+      "id": "route-032",
+      "lane": "brownfield",
+      "project": "verifier-nested-react-router",
+      "framework": "react-router",
+      "route": "/app",
+      "expectedSource": "src/routes/app/dashboard.tsx",
+      "sourceKind": "implementation",
+      "confidence": "high",
+      "rationale": "The empty child path resolves to the /app dashboard implementation.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 658,
+        "anchor": "import('./routes/app/dashboard')"
+      }
+    },
+    {
+      "id": "route-033",
+      "lane": "brownfield",
+      "project": "verifier-nested-react-router",
+      "framework": "react-router",
+      "route": "/app/discussions",
+      "expectedSource": "src/routes/app/discussions.tsx",
+      "sourceKind": "implementation",
+      "confidence": "high",
+      "rationale": "The nested discussions constant resolves to its lazy implementation.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 659,
+        "anchor": "import('./routes/app/discussions')"
+      }
+    },
+    {
+      "id": "route-034",
+      "lane": "brownfield",
+      "project": "verifier-nested-react-router",
+      "framework": "react-router",
+      "route": "/app/discussions/:discussionId",
+      "expectedSource": "src/routes/app/discussion.tsx",
+      "sourceKind": "implementation",
+      "confidence": "high",
+      "rationale": "The nested dynamic route resolves to its lazy discussion implementation.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 660,
+        "anchor": "import('./routes/app/discussion')"
+      }
+    },
+    {
+      "id": "route-035",
+      "lane": "brownfield",
+      "project": "verifier-committed-mixed-fixture",
+      "framework": "tanstack",
+      "route": "/",
+      "expectedSource": "apps/react-console/src/routes/index.tsx",
+      "sourceKind": "page",
+      "confidence": "high",
+      "rationale": "The committed mixed-workspace fixture declares root in the selected React app.",
+      "provenance": {
+        "path": "packages/verifier/fixtures/discovery/mixed-angular-react-tanstack/apps/react-console/src/routes/index.tsx",
+        "line": 3,
+        "anchor": "createFileRoute('/')"
+      }
+    },
+    {
+      "id": "route-036",
+      "lane": "brownfield",
+      "project": "verifier-committed-mixed-fixture",
+      "framework": "tanstack",
+      "route": "/reports",
+      "expectedSource": "apps/react-console/src/routes/reports.tsx",
+      "sourceKind": "page",
+      "confidence": "high",
+      "rationale": "The committed mixed-workspace fixture declares reports in the selected React app.",
+      "provenance": {
+        "path": "packages/verifier/fixtures/discovery/mixed-angular-react-tanstack/apps/react-console/src/routes/reports.tsx",
+        "line": 4,
+        "anchor": "createFileRoute('/reports')"
+      }
+    },
+    {
+      "id": "route-037",
+      "lane": "brownfield",
+      "project": "cli-pathname-analyzer",
+      "framework": "pathname",
+      "route": "/tickets",
+      "expectedSource": "src/App.tsx",
+      "sourceKind": "implementation",
+      "confidence": "medium",
+      "rationale": "The CLI analyzer independently preserves the tickets pathname branch.",
+      "provenance": {
+        "path": "packages/cli/test/routes-analyzer.test.ts",
+        "line": 37,
+        "anchor": "href=\"/tickets\""
+      }
+    },
+    {
+      "id": "route-038",
+      "lane": "brownfield",
+      "project": "cli-pathname-analyzer",
+      "framework": "pathname",
+      "route": "/customers",
+      "expectedSource": "src/App.tsx",
+      "sourceKind": "implementation",
+      "confidence": "medium",
+      "rationale": "The CLI analyzer independently preserves the customers pathname branch.",
+      "provenance": {
+        "path": "packages/cli/test/routes-analyzer.test.ts",
+        "line": 38,
+        "anchor": "href=\"/customers\""
+      }
+    },
+    {
+      "id": "route-039",
+      "lane": "brownfield",
+      "project": "cli-pathname-analyzer",
+      "framework": "pathname",
+      "route": "/admin",
+      "expectedSource": "src/App.tsx",
+      "sourceKind": "implementation",
+      "confidence": "medium",
+      "rationale": "The CLI analyzer independently preserves the admin pathname branch.",
+      "provenance": {
+        "path": "packages/cli/test/routes-analyzer.test.ts",
+        "line": 39,
+        "anchor": "href=\"/admin\""
+      }
+    },
+    {
+      "id": "route-040",
+      "lane": "brownfield",
+      "project": "cli-wasp-analyzer",
+      "framework": "wasp",
+      "route": "/",
+      "expectedSource": "main.wasp.ts",
+      "sourceKind": "route-declaration",
+      "confidence": "high",
+      "rationale": "The CLI analyzer reads the root Wasp route specification.",
+      "provenance": {
+        "path": "packages/cli/test/routes-analyzer.test.ts",
+        "line": 80,
+        "anchor": "route(\"LandingPageRoute\", \"/\""
+      }
+    },
+    {
+      "id": "route-041",
+      "lane": "brownfield",
+      "project": "cli-wasp-analyzer",
+      "framework": "wasp",
+      "route": "/admin",
+      "expectedSource": "src/admin/admin.wasp.ts",
+      "sourceKind": "route-declaration",
+      "confidence": "high",
+      "rationale": "The CLI analyzer reads the multiline admin Wasp route.",
+      "provenance": {
+        "path": "packages/cli/test/routes-analyzer.test.ts",
+        "line": 98,
+        "anchor": "\"/admin\""
+      }
+    },
+    {
+      "id": "route-042",
+      "lane": "brownfield",
+      "project": "cli-wasp-analyzer",
+      "framework": "wasp",
+      "route": "/admin/users",
+      "expectedSource": "src/admin/admin.wasp.ts",
+      "sourceKind": "route-declaration",
+      "confidence": "high",
+      "rationale": "The CLI analyzer reads the nested admin users Wasp route.",
+      "provenance": {
+        "path": "packages/cli/test/routes-analyzer.test.ts",
+        "line": 101,
+        "anchor": "\"/admin/users\""
+      }
+    },
+    {
+      "id": "route-043",
+      "lane": "brownfield",
+      "project": "cli-react-router-wrapper",
+      "framework": "react-router",
+      "route": "/",
+      "expectedSource": "src/PrivateRoutesContainer.tsx",
+      "sourceKind": "implementation",
+      "confidence": "high",
+      "rationale": "The CLI wrapper analyzer expands the optional group to root.",
+      "provenance": {
+        "path": "packages/cli/test/routes-analyzer.test.ts",
+        "line": 139,
+        "anchor": "/(public|contacts|personal)?"
+      }
+    },
+    {
+      "id": "route-044",
+      "lane": "brownfield",
+      "project": "cli-react-router-wrapper",
+      "framework": "react-router",
+      "route": "/public",
+      "expectedSource": "src/PrivateRoutesContainer.tsx",
+      "sourceKind": "implementation",
+      "confidence": "high",
+      "rationale": "The CLI wrapper analyzer expands the optional group to public.",
+      "provenance": {
+        "path": "packages/cli/test/routes-analyzer.test.ts",
+        "line": 139,
+        "anchor": "/(public|contacts|personal)?"
+      }
+    },
+    {
+      "id": "route-045",
+      "lane": "brownfield",
+      "project": "cli-react-router-wrapper",
+      "framework": "react-router",
+      "route": "/contacts",
+      "expectedSource": "src/PrivateRoutesContainer.tsx",
+      "sourceKind": "implementation",
+      "confidence": "high",
+      "rationale": "The CLI wrapper analyzer expands the optional group to contacts.",
+      "provenance": {
+        "path": "packages/cli/test/routes-analyzer.test.ts",
+        "line": 139,
+        "anchor": "/(public|contacts|personal)?"
+      }
+    },
+    {
+      "id": "route-046",
+      "lane": "brownfield",
+      "project": "cli-react-router-wrapper",
+      "framework": "react-router",
+      "route": "/personal",
+      "expectedSource": "src/PrivateRoutesContainer.tsx",
+      "sourceKind": "implementation",
+      "confidence": "high",
+      "rationale": "The CLI wrapper analyzer expands the optional group to personal.",
+      "provenance": {
+        "path": "packages/cli/test/routes-analyzer.test.ts",
+        "line": 139,
+        "anchor": "/(public|contacts|personal)?"
+      }
+    },
+    {
+      "id": "route-047",
+      "lane": "brownfield",
+      "project": "cli-react-router-wrapper",
+      "framework": "react-router",
+      "route": "/user/settings",
+      "expectedSource": "src/PrivateRoutesContainer.tsx",
+      "sourceKind": "implementation",
+      "confidence": "high",
+      "rationale": "The CLI wrapper analyzer preserves the concrete settings source.",
+      "provenance": {
+        "path": "packages/cli/test/routes-analyzer.test.ts",
+        "line": 140,
+        "anchor": "path=\"/user/settings\""
+      }
+    },
+    {
+      "id": "route-048",
+      "lane": "brownfield",
+      "project": "cli-react-router-wrapper",
+      "framework": "react-router",
+      "route": "/bankaccounts",
+      "expectedSource": "src/PrivateRoutesContainer.tsx",
+      "sourceKind": "implementation",
+      "confidence": "high",
+      "rationale": "The CLI wrapper analyzer normalizes the bankaccounts wildcard suffix.",
+      "provenance": {
+        "path": "packages/cli/test/routes-analyzer.test.ts",
+        "line": 141,
+        "anchor": "path=\"/bankaccounts*\""
+      }
+    },
+    {
+      "id": "route-049",
+      "lane": "brownfield",
+      "project": "cli-static-src",
+      "framework": "static-html",
+      "route": "/",
+      "expectedSource": "src/index.html",
+      "sourceKind": "static-document",
+      "confidence": "high",
+      "rationale": "The CLI analyzer selects the package-managed static entrypoint.",
+      "provenance": {
+        "path": "packages/cli/test/routes-analyzer.test.ts",
+        "line": 172,
+        "anchor": "'src', 'index.html'"
+      }
+    },
+    {
+      "id": "route-050",
+      "lane": "brownfield",
+      "project": "cli-static-demos",
+      "framework": "static-html",
+      "route": "/demos",
+      "expectedSource": "demos/index.html",
+      "sourceKind": "static-document",
+      "confidence": "high",
+      "rationale": "The CLI analyzer exposes the demo index as a taskable route.",
+      "provenance": {
+        "path": "packages/cli/test/routes-analyzer.test.ts",
+        "line": 187,
+        "anchor": "'demos', 'index.html'"
+      }
+    },
+    {
+      "id": "route-051",
+      "lane": "brownfield",
+      "project": "cli-static-demos",
+      "framework": "static-html",
+      "route": "/demos/accordion/default",
+      "expectedSource": "demos/accordion/default.html",
+      "sourceKind": "static-document",
+      "confidence": "high",
+      "rationale": "The CLI analyzer exposes the nested accordion document.",
+      "provenance": {
+        "path": "packages/cli/test/routes-analyzer.test.ts",
+        "line": 189,
+        "anchor": "'accordion', 'default.html'"
+      }
+    },
+    {
+      "id": "route-052",
+      "lane": "brownfield",
+      "project": "cli-static-demos",
+      "framework": "static-html",
+      "route": "/demos/dialog/default",
+      "expectedSource": "demos/dialog/default.html",
+      "sourceKind": "static-document",
+      "confidence": "high",
+      "rationale": "The CLI analyzer exposes the nested dialog document.",
+      "provenance": {
+        "path": "packages/cli/test/routes-analyzer.test.ts",
+        "line": 193,
+        "anchor": "'dialog', 'default.html'"
+      }
+    },
+    {
+      "id": "route-053",
+      "lane": "brownfield",
+      "project": "cli-next-pages-internals",
+      "framework": "next-pages",
+      "route": "/",
+      "expectedSource": "pages/index.tsx",
+      "sourceKind": "page",
+      "confidence": "high",
+      "rationale": "The CLI analyzer keeps the public index page and rejects framework internals.",
+      "provenance": {
+        "path": "packages/cli/test/routes-analyzer.test.ts",
+        "line": 220,
+        "anchor": "'index.tsx'"
+      }
+    },
+    {
+      "id": "route-054",
+      "lane": "brownfield",
+      "project": "corpus-angular-bootstrap",
+      "framework": "angular",
+      "route": "/",
+      "expectedSource": "src/app/app.routes.ts",
+      "sourceKind": "route-declaration",
+      "confidence": "high",
+      "rationale": "The Brownfield corpus normalizes the empty Angular route to root.",
+      "provenance": {
+        "path": "packages/cli/test/e2e/brownfield-crap-corpus.test.ts",
+        "line": 54,
+        "anchor": "path: ''"
+      }
+    },
+    {
+      "id": "route-055",
+      "lane": "brownfield",
+      "project": "corpus-angular-bootstrap",
+      "framework": "angular",
+      "route": "/admin/users",
+      "expectedSource": "src/app/app.routes.ts",
+      "sourceKind": "route-declaration",
+      "confidence": "high",
+      "rationale": "The Brownfield corpus preserves the nested Angular admin path.",
+      "provenance": {
+        "path": "packages/cli/test/e2e/brownfield-crap-corpus.test.ts",
+        "line": 55,
+        "anchor": "path: 'admin/users'"
+      }
+    },
+    {
+      "id": "route-056",
+      "lane": "brownfield",
+      "project": "corpus-angular-bootstrap",
+      "framework": "angular",
+      "route": "/billing/invoices",
+      "expectedSource": "src/app/app.routes.ts",
+      "sourceKind": "route-declaration",
+      "confidence": "high",
+      "rationale": "The Brownfield corpus preserves the nested Angular billing path.",
+      "provenance": {
+        "path": "packages/cli/test/e2e/brownfield-crap-corpus.test.ts",
+        "line": 56,
+        "anchor": "path: 'billing/invoices'"
+      }
+    },
+    {
+      "id": "route-057",
+      "lane": "brownfield",
+      "project": "corpus-angular-bootstrap",
+      "framework": "angular",
+      "route": "/settings/profile",
+      "expectedSource": "src/app/app.routes.ts",
+      "sourceKind": "route-declaration",
+      "confidence": "high",
+      "rationale": "The Brownfield corpus preserves the nested Angular settings path.",
+      "provenance": {
+        "path": "packages/cli/test/e2e/brownfield-crap-corpus.test.ts",
+        "line": 57,
+        "anchor": "path: 'settings/profile'"
+      }
+    },
+    {
+      "id": "route-058",
+      "lane": "brownfield",
+      "project": "corpus-sveltekit-css",
+      "framework": "sveltekit",
+      "route": "/",
+      "expectedSource": "src/routes/+page.svelte",
+      "sourceKind": "page",
+      "confidence": "high",
+      "rationale": "The Brownfield corpus maps the root SvelteKit page.",
+      "provenance": {
+        "path": "packages/cli/test/e2e/brownfield-crap-corpus.test.ts",
+        "line": 87,
+        "anchor": "'routes', '+page.svelte'"
+      }
+    },
+    {
+      "id": "route-059",
+      "lane": "brownfield",
+      "project": "corpus-sveltekit-css",
+      "framework": "sveltekit",
+      "route": "/dashboard",
+      "expectedSource": "src/routes/(app)/dashboard/+page.svelte",
+      "sourceKind": "page",
+      "confidence": "high",
+      "rationale": "The Brownfield corpus removes the Svelte route group from the public path.",
+      "provenance": {
+        "path": "packages/cli/test/e2e/brownfield-crap-corpus.test.ts",
+        "line": 89,
+        "anchor": "'dashboard', '+page.svelte'"
+      }
+    },
+    {
+      "id": "route-060",
+      "lane": "brownfield",
+      "project": "corpus-sveltekit-css",
+      "framework": "sveltekit",
+      "route": "/reports/:id",
+      "expectedSource": "src/routes/(app)/reports/[id]/+page.svelte",
+      "sourceKind": "page",
+      "confidence": "high",
+      "rationale": "The Brownfield corpus normalizes the dynamic report segment.",
+      "provenance": {
+        "path": "packages/cli/test/e2e/brownfield-crap-corpus.test.ts",
+        "line": 93,
+        "anchor": "'reports', '[id]', '+page.svelte'"
+      }
+    },
+    {
+      "id": "route-061",
+      "lane": "brownfield",
+      "project": "corpus-vue-chakra",
+      "framework": "vue-router",
+      "route": "/",
+      "expectedSource": "src/router/index.ts",
+      "sourceKind": "route-declaration",
+      "confidence": "high",
+      "rationale": "The Vue Router object table declares root.",
+      "provenance": {
+        "path": "packages/cli/test/e2e/brownfield-crap-corpus.test.ts",
+        "line": 127,
+        "anchor": "path: '/'"
+      }
+    },
+    {
+      "id": "route-062",
+      "lane": "brownfield",
+      "project": "corpus-vue-chakra",
+      "framework": "vue-router",
+      "route": "/workspace",
+      "expectedSource": "src/router/index.ts",
+      "sourceKind": "route-declaration",
+      "confidence": "high",
+      "rationale": "The Vue Router object table declares workspace.",
+      "provenance": {
+        "path": "packages/cli/test/e2e/brownfield-crap-corpus.test.ts",
+        "line": 128,
+        "anchor": "path: '/workspace'"
+      }
+    },
+    {
+      "id": "route-063",
+      "lane": "brownfield",
+      "project": "corpus-vue-chakra",
+      "framework": "vue-router",
+      "route": "/admin/roles",
+      "expectedSource": "src/router/index.ts",
+      "sourceKind": "route-declaration",
+      "confidence": "high",
+      "rationale": "The Vue Router object table declares admin roles.",
+      "provenance": {
+        "path": "packages/cli/test/e2e/brownfield-crap-corpus.test.ts",
+        "line": 129,
+        "anchor": "path: '/admin/roles'"
+      }
+    },
+    {
+      "id": "route-064",
+      "lane": "brownfield",
+      "project": "corpus-vue-chakra",
+      "framework": "vue-router",
+      "route": "/content/library",
+      "expectedSource": "src/router/index.ts",
+      "sourceKind": "route-declaration",
+      "confidence": "high",
+      "rationale": "The Vue Router object table declares the content library.",
+      "provenance": {
+        "path": "packages/cli/test/e2e/brownfield-crap-corpus.test.ts",
+        "line": 130,
+        "anchor": "path: '/content/library'"
+      }
+    },
+    {
+      "id": "route-065",
+      "lane": "brownfield",
+      "project": "corpus-nuxt-pages",
+      "framework": "nuxt",
+      "route": "/",
+      "expectedSource": "pages/index.vue",
+      "sourceKind": "page",
+      "confidence": "high",
+      "rationale": "Nuxt maps pages/index.vue to root.",
+      "provenance": {
+        "path": "packages/cli/test/e2e/brownfield-crap-corpus.test.ts",
+        "line": 159,
+        "anchor": "'pages', 'index.vue'"
+      }
+    },
+    {
+      "id": "route-066",
+      "lane": "brownfield",
+      "project": "corpus-nuxt-pages",
+      "framework": "nuxt",
+      "route": "/dashboard",
+      "expectedSource": "pages/dashboard.vue",
+      "sourceKind": "page",
+      "confidence": "high",
+      "rationale": "Nuxt maps the dashboard page file to /dashboard.",
+      "provenance": {
+        "path": "packages/cli/test/e2e/brownfield-crap-corpus.test.ts",
+        "line": 163,
+        "anchor": "'pages', 'dashboard.vue'"
+      }
+    },
+    {
+      "id": "route-067",
+      "lane": "brownfield",
+      "project": "corpus-nuxt-pages",
+      "framework": "nuxt",
+      "route": "/settings/profile",
+      "expectedSource": "pages/settings/profile.vue",
+      "sourceKind": "page",
+      "confidence": "high",
+      "rationale": "Nuxt maps the nested settings file to /settings/profile.",
+      "provenance": {
+        "path": "packages/cli/test/e2e/brownfield-crap-corpus.test.ts",
+        "line": 167,
+        "anchor": "'settings', 'profile.vue'"
+      }
+    },
+    {
+      "id": "route-068",
+      "lane": "brownfield",
+      "project": "corpus-mixed-next-mui",
+      "framework": "next-app",
+      "route": "/dashboard",
+      "expectedSource": "src/app/dashboard/page.tsx",
+      "sourceKind": "page",
+      "confidence": "high",
+      "rationale": "Mixed Next routing prefers the App Router dashboard page for /dashboard.",
+      "provenance": {
+        "path": "packages/cli/test/e2e/brownfield-crap-corpus.test.ts",
+        "line": 199,
+        "anchor": "'app', 'dashboard', 'page.tsx'"
+      }
+    },
+    {
+      "id": "route-069",
+      "lane": "brownfield",
+      "project": "corpus-mixed-next-mui",
+      "framework": "next-pages",
+      "route": "/settings",
+      "expectedSource": "src/pages/settings.tsx",
+      "sourceKind": "page",
+      "confidence": "high",
+      "rationale": "Mixed Next routing preserves the Pages Router settings page.",
+      "provenance": {
+        "path": "packages/cli/test/e2e/brownfield-crap-corpus.test.ts",
+        "line": 203,
+        "anchor": "'pages', 'settings.tsx'"
+      }
+    },
+    {
+      "id": "route-070",
+      "lane": "brownfield",
+      "project": "corpus-mixed-next-mui",
+      "framework": "next-pages",
+      "route": "/admin/users",
+      "expectedSource": "src/pages/admin/users.tsx",
+      "sourceKind": "page",
+      "confidence": "high",
+      "rationale": "Mixed Next routing preserves the nested Pages Router admin page.",
+      "provenance": {
+        "path": "packages/cli/test/e2e/brownfield-crap-corpus.test.ts",
+        "line": 207,
+        "anchor": "'admin', 'users.tsx'"
+      }
+    },
+    {
+      "id": "route-071",
+      "lane": "brownfield",
+      "project": "corpus-monorepo-web",
+      "framework": "next-app",
+      "route": "/dashboard",
+      "expectedSource": "apps/web/src/app/dashboard/page.tsx",
+      "sourceKind": "page",
+      "confidence": "high",
+      "rationale": "App-scoped analysis selects the web dashboard and not the Angular sibling.",
+      "provenance": {
+        "path": "packages/cli/test/e2e/brownfield-crap-corpus.test.ts",
+        "line": 275,
+        "anchor": "'apps', 'web', 'src', 'app', 'dashboard', 'page.tsx'"
+      }
+    },
+    {
+      "id": "route-072",
+      "lane": "brownfield",
+      "project": "cli-next-semantic-analysis",
+      "framework": "next-app",
+      "route": "/",
+      "expectedSource": "src/app/(marketing)/page.tsx",
+      "sourceKind": "page",
+      "confidence": "high",
+      "rationale": "Next route groups are omitted from the public root path.",
+      "provenance": {
+        "path": "packages/cli/test/e2e/analyze.test.ts",
+        "line": 362,
+        "anchor": "'(marketing)', 'page.tsx'"
+      }
+    },
+    {
+      "id": "route-073",
+      "lane": "brownfield",
+      "project": "cli-next-semantic-analysis",
+      "framework": "next-app",
+      "route": "/dashboard",
+      "expectedSource": "src/app/dashboard/page.tsx",
+      "sourceKind": "page",
+      "confidence": "high",
+      "rationale": "The semantic analysis fixture maps dashboard to its page source.",
+      "provenance": {
+        "path": "packages/cli/test/e2e/analyze.test.ts",
+        "line": 366,
+        "anchor": "'dashboard', 'page.tsx'"
+      }
+    },
+    {
+      "id": "route-074",
+      "lane": "brownfield",
+      "project": "cli-next-semantic-analysis",
+      "framework": "next-app",
+      "route": "/dashboard/client-settings/manage-rbac",
+      "expectedSource": "src/app/dashboard/client-settings/manage-rbac/page.tsx",
+      "sourceKind": "page",
+      "confidence": "high",
+      "rationale": "The semantic analysis fixture maps deep RBAC settings to its page source.",
+      "provenance": {
+        "path": "packages/cli/test/e2e/analyze.test.ts",
+        "line": 370,
+        "anchor": "'manage-rbac', 'page.tsx'"
+      }
+    },
+    {
+      "id": "route-075",
+      "lane": "brownfield",
+      "project": "cli-next-semantic-analysis",
+      "framework": "next-app",
+      "route": "/dashboard/reports/environmental",
+      "expectedSource": "src/app/dashboard/reports/environmental/page.tsx",
+      "sourceKind": "page",
+      "confidence": "high",
+      "rationale": "The semantic analysis fixture maps the environmental report page.",
+      "provenance": {
+        "path": "packages/cli/test/e2e/analyze.test.ts",
+        "line": 374,
+        "anchor": "'environmental', 'page.tsx'"
+      }
+    },
+    {
+      "id": "route-076",
+      "lane": "brownfield",
+      "project": "cli-next-semantic-analysis",
+      "framework": "next-app",
+      "route": "/admin/users",
+      "expectedSource": "src/app/admin/users/page.tsx",
+      "sourceKind": "page",
+      "confidence": "high",
+      "rationale": "The semantic analysis fixture maps the admin users page.",
+      "provenance": {
+        "path": "packages/cli/test/e2e/analyze.test.ts",
+        "line": 378,
+        "anchor": "'admin', 'users', 'page.tsx'"
+      }
+    },
+    {
+      "id": "route-077",
+      "lane": "brownfield",
+      "project": "cli-next-semantic-analysis",
+      "framework": "next-app",
+      "route": "/blog/:slug",
+      "expectedSource": "src/app/blog/[slug]/page.tsx",
+      "sourceKind": "page",
+      "confidence": "high",
+      "rationale": "The semantic analysis fixture normalizes the blog dynamic segment.",
+      "provenance": {
+        "path": "packages/cli/test/e2e/analyze.test.ts",
+        "line": 382,
+        "anchor": "'blog', '[slug]', 'page.tsx'"
+      }
+    },
+    {
+      "id": "route-078",
+      "lane": "brownfield",
+      "project": "cli-brownfield-shell-control",
+      "framework": "react-router",
+      "route": "/",
+      "expectedSource": "src/App.tsx",
+      "sourceKind": "implementation",
+      "confidence": "high",
+      "rationale": "The shell-control fixture declares home in App.tsx.",
+      "provenance": {
+        "path": "packages/cli/test/brownfield-check.test.ts",
+        "line": 91,
+        "anchor": "<Route path=\"/\""
+      }
+    },
+    {
+      "id": "route-079",
+      "lane": "brownfield",
+      "project": "cli-brownfield-shell-control",
+      "framework": "react-router",
+      "route": "/pricing",
+      "expectedSource": "src/App.tsx",
+      "sourceKind": "implementation",
+      "confidence": "high",
+      "rationale": "The shell-control fixture declares pricing in App.tsx.",
+      "provenance": {
+        "path": "packages/cli/test/brownfield-check.test.ts",
+        "line": 92,
+        "anchor": "<Route path=\"/pricing\""
+      }
+    },
+    {
+      "id": "route-080",
+      "lane": "brownfield",
+      "project": "cli-brownfield-shell-control",
+      "framework": "react-router",
+      "route": "/settings",
+      "expectedSource": "src/App.tsx",
+      "sourceKind": "implementation",
+      "confidence": "high",
+      "rationale": "The shell-control fixture declares settings in App.tsx.",
+      "provenance": {
+        "path": "packages/cli/test/brownfield-check.test.ts",
+        "line": 93,
+        "anchor": "<Route path=\"/settings\""
+      }
+    },
+    {
+      "id": "route-081",
+      "lane": "brownfield",
+      "project": "cli-brownfield-shell-control",
+      "framework": "react-router",
+      "route": "/support",
+      "expectedSource": "src/App.tsx",
+      "sourceKind": "implementation",
+      "confidence": "high",
+      "rationale": "The shell-control fixture declares support in App.tsx.",
+      "provenance": {
+        "path": "packages/cli/test/brownfield-check.test.ts",
+        "line": 94,
+        "anchor": "<Route path=\"/support\""
+      }
+    },
+    {
+      "id": "route-082",
+      "lane": "brownfield",
+      "project": "public-tanstack-start-dashboard",
+      "framework": "tanstack",
+      "route": "/dashboard/overview",
+      "expectedSource": "src/routes/dashboard/overview.tsx",
+      "sourceKind": "page",
+      "confidence": "high",
+      "rationale": "The completed public 3.8.3 audit records the reviewed dashboard task source.",
+      "provenance": {
+        "path": "docs/audit/2026-07-16-decantr-3-8-3-post-publish-adoption.md",
+        "line": 31,
+        "anchor": "src/routes/dashboard/overview.tsx"
+      }
+    },
+    {
+      "id": "route-083",
+      "lane": "brownfield",
+      "project": "public-bulletproof-react-vite",
+      "framework": "react-router",
+      "route": "/app/discussions",
+      "expectedSource": "apps/react-vite/src/app/routes/app/discussions/discussions.tsx",
+      "sourceKind": "implementation",
+      "confidence": "high",
+      "rationale": "The completed public 3.8.3 audit records the app-scoped discussions task source.",
+      "provenance": {
+        "path": "docs/audit/2026-07-16-decantr-3-8-3-post-publish-adoption.md",
+        "line": 32,
+        "anchor": "apps/react-vite/src/app/routes/app/discussions/discussions.tsx"
+      }
+    },
+    {
+      "id": "route-084",
+      "lane": "greenfield",
+      "project": "public-tanstack-cli-0.69.6",
+      "framework": "tanstack",
+      "route": "/",
+      "expectedSource": "src/routes/index.tsx",
+      "sourceKind": "page",
+      "confidence": "high",
+      "rationale": "The generated public control records the literal root page as first read.",
+      "provenance": {
+        "path": "docs/audit/2026-07-16-decantr-3-8-3-post-publish-adoption.md",
+        "line": 55,
+        "anchor": "src/routes/index.tsx"
+      }
+    }
+  ],
+  "forbiddenAssertions": [
+    {
+      "id": "forbidden-001",
+      "lane": "greenfield",
+      "project": "public-tanstack-cli-0.69.6",
+      "framework": "tanstack",
+      "route": "/",
+      "expectedSource": "src/routes/index.tsx",
+      "category": "layout",
+      "forbiddenSource": "src/routes/__root.tsx",
+      "forbiddenDeclaration": "createRootRoute()",
+      "rationale": "The root layout remains evidence but cannot outrank the literal page.",
+      "provenance": {
+        "path": "docs/audit/2026-07-16-decantr-3-8-3-post-publish-adoption.md",
+        "line": 9,
+        "anchor": "src/routes/__root.tsx"
+      }
+    },
+    {
+      "id": "forbidden-002",
+      "lane": "greenfield",
+      "project": "cli-graph-tanstack",
+      "framework": "tanstack",
+      "route": "/",
+      "expectedSource": "src/routes/index.tsx",
+      "category": "layout",
+      "forbiddenSource": "src/routes/__root.tsx",
+      "forbiddenDeclaration": "createRootRoute()",
+      "rationale": "Graph provenance explicitly rejects the root layout as route implementation.",
+      "provenance": {
+        "path": "packages/cli/test/graph-command.test.ts",
+        "line": 992,
+        "anchor": "dst: 'src:src/routes/__root.tsx'"
+      }
+    },
+    {
+      "id": "forbidden-003",
+      "lane": "greenfield",
+      "project": "cli-init-tanstack",
+      "framework": "tanstack",
+      "route": "/",
+      "expectedSource": "src/routes/index.tsx",
+      "category": "layout",
+      "forbiddenSource": "src/routes/__root.tsx",
+      "forbiddenDeclaration": "createRootRoute()",
+      "rationale": "Greenfield task context must lead with index.tsx rather than the root layout.",
+      "provenance": {
+        "path": "packages/cli/test/e2e/init.test.ts",
+        "line": 234,
+        "anchor": "task.read[0]"
+      }
+    },
+    {
+      "id": "forbidden-004",
+      "lane": "brownfield",
+      "project": "verifier-mixed-inline-react-console",
+      "framework": "tanstack",
+      "route": "/",
+      "expectedSource": "src/routes/index.tsx",
+      "category": "layout",
+      "forbiddenSource": "src/routes/__root.tsx",
+      "forbiddenDeclaration": "createRootRoute()",
+      "rationale": "The selected app root layout cannot displace its literal home page.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 511,
+        "anchor": "'routes', '__root.tsx'"
+      }
+    },
+    {
+      "id": "forbidden-005",
+      "lane": "brownfield",
+      "project": "verifier-mixed-inline-react-console",
+      "framework": "tanstack",
+      "route": "/reports",
+      "expectedSource": "src/routes/reports.tsx",
+      "category": "layout",
+      "forbiddenSource": "src/routes/__root.tsx",
+      "forbiddenDeclaration": "createRootRoute()",
+      "rationale": "The selected app root layout cannot displace the reports implementation.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 511,
+        "anchor": "'routes', '__root.tsx'"
+      }
+    },
+    {
+      "id": "forbidden-006",
+      "lane": "brownfield",
+      "project": "verifier-sveltekit",
+      "framework": "sveltekit",
+      "route": "/",
+      "expectedSource": "src/routes/+page.svelte",
+      "category": "layout",
+      "forbiddenSource": "src/routes/+layout.svelte",
+      "forbiddenDeclaration": "+layout.svelte",
+      "rationale": "The Svelte layout is shared shell evidence, not the root page implementation.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 282,
+        "anchor": "'routes', '+layout.svelte'"
+      }
+    },
+    {
+      "id": "forbidden-007",
+      "lane": "brownfield",
+      "project": "verifier-sveltekit",
+      "framework": "sveltekit",
+      "route": "/login",
+      "expectedSource": "src/routes/login/+page.svelte",
+      "category": "layout",
+      "forbiddenSource": "src/routes/+layout.svelte",
+      "forbiddenDeclaration": "+layout.svelte",
+      "rationale": "The shared Svelte layout cannot become the login task source.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 282,
+        "anchor": "'routes', '+layout.svelte'"
+      }
+    },
+    {
+      "id": "forbidden-008",
+      "lane": "brownfield",
+      "project": "verifier-sveltekit",
+      "framework": "sveltekit",
+      "route": "/article/:slug",
+      "expectedSource": "src/routes/article/[slug]/+page.svelte",
+      "category": "layout",
+      "forbiddenSource": "src/routes/+layout.svelte",
+      "forbiddenDeclaration": "+layout.svelte",
+      "rationale": "The shared Svelte layout cannot become the article task source.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 282,
+        "anchor": "'routes', '+layout.svelte'"
+      }
+    },
+    {
+      "id": "forbidden-009",
+      "lane": "brownfield",
+      "project": "cli-next-semantic-analysis",
+      "framework": "next-app",
+      "route": "/",
+      "expectedSource": "src/app/(marketing)/page.tsx",
+      "category": "layout",
+      "forbiddenSource": "src/app/layout.tsx",
+      "forbiddenDeclaration": "layout.tsx",
+      "rationale": "The Next root layout cannot replace the marketing root page source.",
+      "provenance": {
+        "path": "packages/cli/test/e2e/analyze.test.ts",
+        "line": 358,
+        "anchor": "'app', 'layout.tsx'"
+      }
+    },
+    {
+      "id": "forbidden-010",
+      "lane": "brownfield",
+      "project": "cli-next-semantic-analysis",
+      "framework": "next-app",
+      "route": "/dashboard",
+      "expectedSource": "src/app/dashboard/page.tsx",
+      "category": "layout",
+      "forbiddenSource": "src/app/layout.tsx",
+      "forbiddenDeclaration": "layout.tsx",
+      "rationale": "The Next root layout cannot replace the dashboard page source.",
+      "provenance": {
+        "path": "packages/cli/test/e2e/analyze.test.ts",
+        "line": 358,
+        "anchor": "'app', 'layout.tsx'"
+      }
+    },
+    {
+      "id": "forbidden-011",
+      "lane": "brownfield",
+      "project": "verifier-next-pages-router",
+      "framework": "next-pages",
+      "route": "/",
+      "expectedSource": "pages/index.tsx",
+      "category": "layout",
+      "forbiddenSource": "pages/_app.tsx",
+      "forbiddenDeclaration": "_app.tsx",
+      "rationale": "The Next custom App is framework shell, not the root taskable page.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 255,
+        "anchor": "'_app.tsx'"
+      }
+    },
+    {
+      "id": "forbidden-012",
+      "lane": "brownfield",
+      "project": "verifier-mixed-inline-react-console",
+      "framework": "tanstack",
+      "route": "/",
+      "expectedSource": "src/routes/index.tsx",
+      "category": "generated-tree",
+      "forbiddenSource": "src/routeTree.gen.ts",
+      "forbiddenDeclaration": "/generated-should-not-count",
+      "rationale": "Generated TanStack trees cannot outrank authored root declarations.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 539,
+        "anchor": "'routeTree.gen.ts'"
+      }
+    },
+    {
+      "id": "forbidden-013",
+      "lane": "brownfield",
+      "project": "verifier-mixed-inline-react-console",
+      "framework": "tanstack",
+      "route": "/reports",
+      "expectedSource": "src/routes/reports.tsx",
+      "category": "generated-tree",
+      "forbiddenSource": "src/routeTree.gen.ts",
+      "forbiddenDeclaration": "/generated-should-not-count",
+      "rationale": "Generated TanStack trees cannot outrank the authored reports page.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 540,
+        "anchor": "/generated-should-not-count"
+      }
+    },
+    {
+      "id": "forbidden-014",
+      "lane": "brownfield",
+      "project": "verifier-committed-mixed-fixture",
+      "framework": "tanstack",
+      "route": "/",
+      "expectedSource": "apps/react-console/src/routes/index.tsx",
+      "category": "generated-tree",
+      "forbiddenSource": "apps/react-console/src/routeTree.gen.ts",
+      "forbiddenDeclaration": "/generated-route-tree",
+      "rationale": "The committed generated-tree fixture is negative evidence for root selection.",
+      "provenance": {
+        "path": "packages/verifier/fixtures/discovery/mixed-angular-react-tanstack/apps/react-console/src/routeTree.gen.ts",
+        "line": 2,
+        "anchor": "path: '/generated-route-tree'"
+      }
+    },
+    {
+      "id": "forbidden-015",
+      "lane": "brownfield",
+      "project": "verifier-committed-mixed-fixture",
+      "framework": "tanstack",
+      "route": "/reports",
+      "expectedSource": "apps/react-console/src/routes/reports.tsx",
+      "category": "generated-tree",
+      "forbiddenSource": "apps/react-console/src/routeTree.gen.ts",
+      "forbiddenDeclaration": "/generated-route-tree",
+      "rationale": "The committed generated-tree fixture is negative evidence for reports selection.",
+      "provenance": {
+        "path": "packages/verifier/fixtures/discovery/mixed-angular-react-tanstack/apps/react-console/src/routeTree.gen.ts",
+        "line": 2,
+        "anchor": "path: '/generated-route-tree'"
+      }
+    },
+    {
+      "id": "forbidden-016",
+      "lane": "greenfield",
+      "project": "public-tanstack-cli-0.69.6",
+      "framework": "tanstack",
+      "route": "/",
+      "expectedSource": "src/routes/index.tsx",
+      "category": "generated-tree",
+      "forbiddenSource": "src/routeTree.gen.ts",
+      "forbiddenDeclaration": "generated route tree",
+      "rationale": "The host build may regenerate the tree, but it is not the authored first read.",
+      "provenance": {
+        "path": "docs/audit/2026-07-16-decantr-3-8-3-post-publish-adoption.md",
+        "line": 61,
+        "anchor": "src/routeTree.gen.ts"
+      }
+    },
+    {
+      "id": "forbidden-017",
+      "lane": "brownfield",
+      "project": "verifier-mixed-inline-react-console",
+      "framework": "tanstack",
+      "route": "/",
+      "expectedSource": "src/routes/index.tsx",
+      "category": "sibling-app",
+      "forbiddenSource": "apps/admin-angular/src/app/app.routes.ts",
+      "forbiddenDeclaration": "path: ''",
+      "rationale": "The selected React root cannot resolve through the Angular sibling root declaration.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 474,
+        "anchor": "'admin-angular', 'src', 'app', 'app.routes.ts'"
+      }
+    },
+    {
+      "id": "forbidden-018",
+      "lane": "brownfield",
+      "project": "verifier-mixed-inline-react-console",
+      "framework": "tanstack",
+      "route": "/",
+      "expectedSource": "src/routes/index.tsx",
+      "category": "sibling-app",
+      "forbiddenSource": "apps/admin-angular/src/app/app.routes.ts",
+      "forbiddenDeclaration": "path: 'angular-only'",
+      "rationale": "The selected React root cannot resolve through the Angular-only sibling declaration.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 475,
+        "anchor": "path: 'angular-only'"
+      }
+    },
+    {
+      "id": "forbidden-019",
+      "lane": "brownfield",
+      "project": "verifier-mixed-inline-react-console",
+      "framework": "tanstack",
+      "route": "/reports",
+      "expectedSource": "src/routes/reports.tsx",
+      "category": "sibling-app",
+      "forbiddenSource": "apps/admin-angular/src/app/app.routes.ts",
+      "forbiddenDeclaration": "path: ''",
+      "rationale": "The selected React reports page cannot resolve through the Angular sibling root.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 474,
+        "anchor": "'admin-angular', 'src', 'app', 'app.routes.ts'"
+      }
+    },
+    {
+      "id": "forbidden-020",
+      "lane": "brownfield",
+      "project": "verifier-mixed-inline-react-console",
+      "framework": "tanstack",
+      "route": "/reports",
+      "expectedSource": "src/routes/reports.tsx",
+      "category": "sibling-app",
+      "forbiddenSource": "apps/admin-angular/src/app/app.routes.ts",
+      "forbiddenDeclaration": "path: 'angular-only'",
+      "rationale": "The selected React reports page cannot resolve through the Angular-only sibling route.",
+      "provenance": {
+        "path": "packages/verifier/test/scan.test.ts",
+        "line": 475,
+        "anchor": "path: 'angular-only'"
+      }
+    },
+    {
+      "id": "forbidden-021",
+      "lane": "brownfield",
+      "project": "verifier-committed-mixed-fixture",
+      "framework": "tanstack",
+      "route": "/",
+      "expectedSource": "apps/react-console/src/routes/index.tsx",
+      "category": "sibling-app",
+      "forbiddenSource": "apps/admin-angular/src/app/app.routes.ts",
+      "forbiddenDeclaration": "path: ''",
+      "rationale": "The committed selected app root rejects the sibling Angular root declaration.",
+      "provenance": {
+        "path": "packages/verifier/fixtures/discovery/mixed-angular-react-tanstack/apps/admin-angular/src/app/app.routes.ts",
+        "line": 2,
+        "anchor": "path: ''"
+      }
+    },
+    {
+      "id": "forbidden-022",
+      "lane": "brownfield",
+      "project": "verifier-committed-mixed-fixture",
+      "framework": "tanstack",
+      "route": "/",
+      "expectedSource": "apps/react-console/src/routes/index.tsx",
+      "category": "sibling-app",
+      "forbiddenSource": "apps/admin-angular/src/app/app.routes.ts",
+      "forbiddenDeclaration": "path: 'angular-only'",
+      "rationale": "The committed selected app root rejects the sibling Angular-only declaration.",
+      "provenance": {
+        "path": "packages/verifier/fixtures/discovery/mixed-angular-react-tanstack/apps/admin-angular/src/app/app.routes.ts",
+        "line": 3,
+        "anchor": "path: 'angular-only'"
+      }
+    },
+    {
+      "id": "forbidden-023",
+      "lane": "brownfield",
+      "project": "verifier-committed-mixed-fixture",
+      "framework": "tanstack",
+      "route": "/reports",
+      "expectedSource": "apps/react-console/src/routes/reports.tsx",
+      "category": "sibling-app",
+      "forbiddenSource": "apps/admin-angular/src/app/app.routes.ts",
+      "forbiddenDeclaration": "path: ''",
+      "rationale": "The committed reports page rejects the sibling Angular root declaration.",
+      "provenance": {
+        "path": "packages/verifier/fixtures/discovery/mixed-angular-react-tanstack/apps/admin-angular/src/app/app.routes.ts",
+        "line": 2,
+        "anchor": "path: ''"
+      }
+    },
+    {
+      "id": "forbidden-024",
+      "lane": "brownfield",
+      "project": "verifier-committed-mixed-fixture",
+      "framework": "tanstack",
+      "route": "/reports",
+      "expectedSource": "apps/react-console/src/routes/reports.tsx",
+      "category": "sibling-app",
+      "forbiddenSource": "apps/admin-angular/src/app/app.routes.ts",
+      "forbiddenDeclaration": "path: 'angular-only'",
+      "rationale": "The committed reports page rejects the sibling Angular-only declaration.",
+      "provenance": {
+        "path": "packages/verifier/fixtures/discovery/mixed-angular-react-tanstack/apps/admin-angular/src/app/app.routes.ts",
+        "line": 3,
+        "anchor": "path: 'angular-only'"
+      }
+    }
+  ]
+}

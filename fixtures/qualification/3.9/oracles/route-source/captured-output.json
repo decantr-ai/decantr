@@ -1,0 +1,797 @@
+{
+  "schemaVersion": "decantr-route-source-oracle-output.v1",
+  "oracle": {
+    "framework": "React Router object routes",
+    "competitionCount": 24,
+    "standaloneCount": 11,
+    "implementationFileCount": 59,
+    "distinctImplementationHashCount": 59,
+    "fixtureTreeSha256": "405e09e37fcb7c8fae3597f1c5fabd73f1534a358aa86a282296cbf0414b2d72",
+    "fixtureFiles": [
+      {
+        "path": "package.json",
+        "sha256": "8dc3a58df7c829edd03a980760ddb8a5c92e011ec51b72ec9f0bab0fae91ca77"
+      },
+      {
+        "path": "run-oracle.mjs",
+        "sha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c"
+      },
+      {
+        "path": "src/layouts/competition-01-layout.tsx",
+        "sha256": "ec0cf13f0b9cae908af98aab090903bdd13c4792469b5d7a3caa40197f009d74"
+      },
+      {
+        "path": "src/layouts/competition-02-layout.tsx",
+        "sha256": "8879ea8762b1fadc56e186ebeb0c0d94ed78a861dcb97db41b349e1053814a55"
+      },
+      {
+        "path": "src/layouts/competition-03-layout.tsx",
+        "sha256": "aeaba562816bfa4f543cf3e8c79b82d004a0b1709da1268742bbf2b2cd7e687f"
+      },
+      {
+        "path": "src/layouts/competition-04-layout.tsx",
+        "sha256": "c4de4b7481314950fe70e2656c477603741eefaee4748fd439cd955eb1e31245"
+      },
+      {
+        "path": "src/layouts/competition-05-layout.tsx",
+        "sha256": "a5dc355cf89fc1a8ca1c6faa7db6b38238c008020eeb3d81b980aac4a84ac4c3"
+      },
+      {
+        "path": "src/layouts/competition-06-layout.tsx",
+        "sha256": "a5b2d0b4446af17149bb9ce352d22112c2c41675368307f59d5724d58901e0c7"
+      },
+      {
+        "path": "src/layouts/competition-07-layout.tsx",
+        "sha256": "31e1ff41ceaa16a1cf4a29f652018e99b5fce059285874bbe85425ab101eeb60"
+      },
+      {
+        "path": "src/layouts/competition-08-layout.tsx",
+        "sha256": "647370d834dd90f37866010603294578ff11286d101a2a00c6ba45b563df3d04"
+      },
+      {
+        "path": "src/layouts/competition-09-layout.tsx",
+        "sha256": "92334f9df8aa9ca13ce7310dfcefca7544b14c3b0ae0ea3e3faa3b3062f13543"
+      },
+      {
+        "path": "src/layouts/competition-10-layout.tsx",
+        "sha256": "ea197499d45e7d5d2a05419df0b2510a0a0cf7ae73523e7117c036d6a72fafb7"
+      },
+      {
+        "path": "src/layouts/competition-11-layout.tsx",
+        "sha256": "f0ffea063139052d76aef430cf2a5f1cde4e4590b3dc5c6c58b65fea764b653c"
+      },
+      {
+        "path": "src/layouts/competition-12-layout.tsx",
+        "sha256": "1c9a2e72705039bfd976f55c4826e0a05f88c0978f1f054805e4ea251ad7e680"
+      },
+      {
+        "path": "src/layouts/competition-13-layout.tsx",
+        "sha256": "d972f0839a5c44cfde3d3100ccc230029af008258a930cdcce6d4056f06e3818"
+      },
+      {
+        "path": "src/layouts/competition-14-layout.tsx",
+        "sha256": "90b76cf5617dc90e7554045118e1f538160c5493f7c07ab950f42030b9a69d05"
+      },
+      {
+        "path": "src/layouts/competition-15-layout.tsx",
+        "sha256": "7def816c50447ebb05a2275be6ba06e62ac9f38869b0a0bcb5eb5d22bc9353ad"
+      },
+      {
+        "path": "src/layouts/competition-16-layout.tsx",
+        "sha256": "df81c7dd5b331e00689db1f2370ea6413c6403769413c80cb59cbb4b17b3f5d3"
+      },
+      {
+        "path": "src/layouts/competition-17-layout.tsx",
+        "sha256": "70de02f6ddeaceb7dcda782d27027766f869e7ffbfbed09c7a71c499c37ee3a0"
+      },
+      {
+        "path": "src/layouts/competition-18-layout.tsx",
+        "sha256": "00f2f27321b6101f17328492983845961a5bd719c740f707a1f80871bcb8d3dd"
+      },
+      {
+        "path": "src/layouts/competition-19-layout.tsx",
+        "sha256": "f5a3dce6d426b9286ff2c352bdeac704fd956d925a1c0d9e3a1b259925ee74c8"
+      },
+      {
+        "path": "src/layouts/competition-20-layout.tsx",
+        "sha256": "b73361ee115cc6e06761b6578bb8d76f8de96765b0e2a3fe1c44b6fb56b17f72"
+      },
+      {
+        "path": "src/layouts/competition-21-layout.tsx",
+        "sha256": "735c06d64da42ebb7b88bdbf84b6901c6ec59297dcb37f91f4130b5c2af0d8fb"
+      },
+      {
+        "path": "src/layouts/competition-22-layout.tsx",
+        "sha256": "a743b3674daa0cc3880bccfa80a9d24f550d65bda4f79cf3d4cb4679d7c87172"
+      },
+      {
+        "path": "src/layouts/competition-23-layout.tsx",
+        "sha256": "5cc67a447d8f933f811667da36bc1a49686b0b3b7d42d16e0101dbb6cd7a853c"
+      },
+      {
+        "path": "src/layouts/competition-24-layout.tsx",
+        "sha256": "abe6a2aff13cc61c4952fc2aaf9389b19fb4cbf7eadb3bf23834d2f6d7cfbe49"
+      },
+      {
+        "path": "src/pages/competition-01-page.tsx",
+        "sha256": "1148172188b6adb5a7f7f88726a21190156647966f4af3e244374ba5bf5a4f91"
+      },
+      {
+        "path": "src/pages/competition-02-page.tsx",
+        "sha256": "14763f0d589cf1751d646cf4a2fc2b4a047bc452d5608cc860a74035ad2f5795"
+      },
+      {
+        "path": "src/pages/competition-03-page.tsx",
+        "sha256": "8d237e5d039a532a5754f9fab90a2377b91b7448ace603ffb2e9daa7efc96898"
+      },
+      {
+        "path": "src/pages/competition-04-page.tsx",
+        "sha256": "0c9c4d1cb3d95cbba0cbe3505f2efbd38c3904ef32134513f340f4213f3bd7d8"
+      },
+      {
+        "path": "src/pages/competition-05-page.tsx",
+        "sha256": "51f3d027888abdbe75fb449623826e2046d00d4954605dd89a6d15e90082f4c7"
+      },
+      {
+        "path": "src/pages/competition-06-page.tsx",
+        "sha256": "a18c48231fa988b8f68d33b1f07c8859b9875e54240b88498d85f0672361257d"
+      },
+      {
+        "path": "src/pages/competition-07-page.tsx",
+        "sha256": "fbd0b428b59a054f76704e5f7818ef87471dd8e340306eaa75dc7360d09b1e52"
+      },
+      {
+        "path": "src/pages/competition-08-page.tsx",
+        "sha256": "1a66139f64efef56f8a8732f8bb287bd717930b13694e3d59d1586da2ff31c49"
+      },
+      {
+        "path": "src/pages/competition-09-page.tsx",
+        "sha256": "8fad3815d79c6b77961d71cd69e6518e7d0c726530d384b91b0fac2b1e711823"
+      },
+      {
+        "path": "src/pages/competition-10-page.tsx",
+        "sha256": "ccfb137fe176064f6183d28671609d4461d633663bd4bdc5548f6c60a6a98644"
+      },
+      {
+        "path": "src/pages/competition-11-page.tsx",
+        "sha256": "9e42c7d64d7999a3fb2859c84ef9c1a7dc339da202a3ea1cf1df101b1c71575d"
+      },
+      {
+        "path": "src/pages/competition-12-page.tsx",
+        "sha256": "94af0ddd79f133bcd47fdee361639a7b3a0ec6c445dd40e56b85a6b1b4d34e6f"
+      },
+      {
+        "path": "src/pages/competition-13-page.tsx",
+        "sha256": "157a62116e9d3da140978917e59afda4efba6632bb05790f8196fb10eeb434d9"
+      },
+      {
+        "path": "src/pages/competition-14-page.tsx",
+        "sha256": "34d849eedda8187e1511ae7cff5faa4b4d5500c8bb6d67f3ab6ab802d041853e"
+      },
+      {
+        "path": "src/pages/competition-15-page.tsx",
+        "sha256": "4b121f8350943e3af49efecd1c207d2c35cc6f88ec7015d84ea7f35fb3d50ee3"
+      },
+      {
+        "path": "src/pages/competition-16-page.tsx",
+        "sha256": "bc9ea36883ef6b56605eec06db78bfbee2475f53ebe4b1cd24a0d5703482942f"
+      },
+      {
+        "path": "src/pages/competition-17-page.tsx",
+        "sha256": "94bfdda5f509d40e5628b96b451ba96ab8fce8c35c2b1f08a38a0dfe74edc73a"
+      },
+      {
+        "path": "src/pages/competition-18-page.tsx",
+        "sha256": "e87c381be80c69835f7bbe8295286c0dbe12e76bc15f3cd823d60a8ecef3a9dc"
+      },
+      {
+        "path": "src/pages/competition-19-page.tsx",
+        "sha256": "ec46fd21aa12d62b20bbc07403661278da75470f9cc348adbabf3b08bddbe297"
+      },
+      {
+        "path": "src/pages/competition-20-page.tsx",
+        "sha256": "4cb4218dc692f8f9325f99dabfa2f9c994c8e74181ff84491579958363014eb5"
+      },
+      {
+        "path": "src/pages/competition-21-page.tsx",
+        "sha256": "f653c64371f9985e2034567343cd9d5a2ff64cf020c034f9da135303bbddb674"
+      },
+      {
+        "path": "src/pages/competition-22-page.tsx",
+        "sha256": "04cfb85783223e0f2fbac98e8cdda0501183efbebb1e6c78a2bb6994a7c68b0a"
+      },
+      {
+        "path": "src/pages/competition-23-page.tsx",
+        "sha256": "272ba3766abeb4afb1e12c99b234398bc1de6f5438899d59124509878368a961"
+      },
+      {
+        "path": "src/pages/competition-24-page.tsx",
+        "sha256": "53fa1dbd2ffdc6bfe403ec28aafabea48d421322185438de277e1e4e0862830c"
+      },
+      {
+        "path": "src/pages/standalone-01-page.tsx",
+        "sha256": "2a288b6f21c5aec55de54f26e2df27e50d1268c1a035d262ebf74258b3f27f84"
+      },
+      {
+        "path": "src/pages/standalone-02-page.tsx",
+        "sha256": "1a3cb766b6089a4d44d3da1f4acaf716d19afe45dcc204e2b2908172fd6102df"
+      },
+      {
+        "path": "src/pages/standalone-03-page.tsx",
+        "sha256": "2ba06a01812e12ccee18ced7c0f46227f46b987d4dd94bfca60f0b1f81be4c65"
+      },
+      {
+        "path": "src/pages/standalone-04-page.tsx",
+        "sha256": "70f60121b2664e7a676441fc4d5b81083efa65760248feb634912e7063b78901"
+      },
+      {
+        "path": "src/pages/standalone-05-page.tsx",
+        "sha256": "949f39600baebc2fc62e3ab5ba14217837aee67549b12d37175bdc68d67ca05a"
+      },
+      {
+        "path": "src/pages/standalone-06-page.tsx",
+        "sha256": "dc115a1abdba931b1ea0e41664a5ce5652c6cd0aa2f579b6ca1302f491c58c69"
+      },
+      {
+        "path": "src/pages/standalone-07-page.tsx",
+        "sha256": "e48fbcf861f8881abf8378609c56bb09f03cd8873958e1000cf338f9584a4eeb"
+      },
+      {
+        "path": "src/pages/standalone-08-page.tsx",
+        "sha256": "e20b24c8dea7179f77c1d48653062df79b946b7470cfd39ab236d8c7c8a47260"
+      },
+      {
+        "path": "src/pages/standalone-09-page.tsx",
+        "sha256": "c4c1e37371881827954fb9cc9c0f91c71932e31f9b3f8405c3c43b7598e22900"
+      },
+      {
+        "path": "src/pages/standalone-10-page.tsx",
+        "sha256": "05c3bc2727a4cd5d4cc65e8f2175a10fc7e041b0b773cef91dad5eb1501ff8f3"
+      },
+      {
+        "path": "src/pages/standalone-11-page.tsx",
+        "sha256": "b653f38cca47a9398a9100b6d97e86bacf65ea06129fc99e0049336626b4a9c2"
+      },
+      {
+        "path": "src/router.tsx",
+        "sha256": "0a325c2221cdd2faba8ac81fde14fbab77e62d897d579b968689e7d1c40ce188"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "b657230986529471e8b53b3a89be00efa98dda72a61f8009e437fcd63518eabd"
+      }
+    ]
+  },
+  "verifier": {
+    "package": "@decantr/verifier",
+    "version": "3.9.0",
+    "entrypoint": "packages/verifier/dist/index.js",
+    "entrypointSha256": "bb4ed11f1d832b266f1422a30ec9a3bc8792e0c8737da7d4c9b5b3262c071cd1"
+  },
+  "discovery": {
+    "strategy": "react-router",
+    "routeSignalCount": 59,
+    "taskableRouteCount": 35,
+    "confidence": "high"
+  },
+  "cases": [
+    {
+      "id": "route-oracle-competition-01",
+      "clusterId": "route-oracle-competition-01",
+      "route": "/qualification/competition-01",
+      "orderedSources": [
+        "src/pages/competition-01-page.tsx",
+        "src/layouts/competition-01-layout.tsx"
+      ],
+      "requiredFirstSource": "src/pages/competition-01-page.tsx",
+      "forbiddenFirstSources": [
+        {
+          "source": "src/layouts/competition-01-layout.tsx",
+          "category": "layout",
+          "declaration": "React Router parent layout for /qualification/competition-01 genuinely competed with its index page."
+        }
+      ]
+    },
+    {
+      "id": "route-oracle-competition-02",
+      "clusterId": "route-oracle-competition-02",
+      "route": "/qualification/competition-02",
+      "orderedSources": [
+        "src/pages/competition-02-page.tsx",
+        "src/layouts/competition-02-layout.tsx"
+      ],
+      "requiredFirstSource": "src/pages/competition-02-page.tsx",
+      "forbiddenFirstSources": [
+        {
+          "source": "src/layouts/competition-02-layout.tsx",
+          "category": "layout",
+          "declaration": "React Router parent layout for /qualification/competition-02 genuinely competed with its index page."
+        }
+      ]
+    },
+    {
+      "id": "route-oracle-competition-03",
+      "clusterId": "route-oracle-competition-03",
+      "route": "/qualification/competition-03",
+      "orderedSources": [
+        "src/pages/competition-03-page.tsx",
+        "src/layouts/competition-03-layout.tsx"
+      ],
+      "requiredFirstSource": "src/pages/competition-03-page.tsx",
+      "forbiddenFirstSources": [
+        {
+          "source": "src/layouts/competition-03-layout.tsx",
+          "category": "layout",
+          "declaration": "React Router parent layout for /qualification/competition-03 genuinely competed with its index page."
+        }
+      ]
+    },
+    {
+      "id": "route-oracle-competition-04",
+      "clusterId": "route-oracle-competition-04",
+      "route": "/qualification/competition-04",
+      "orderedSources": [
+        "src/pages/competition-04-page.tsx",
+        "src/layouts/competition-04-layout.tsx"
+      ],
+      "requiredFirstSource": "src/pages/competition-04-page.tsx",
+      "forbiddenFirstSources": [
+        {
+          "source": "src/layouts/competition-04-layout.tsx",
+          "category": "layout",
+          "declaration": "React Router parent layout for /qualification/competition-04 genuinely competed with its index page."
+        }
+      ]
+    },
+    {
+      "id": "route-oracle-competition-05",
+      "clusterId": "route-oracle-competition-05",
+      "route": "/qualification/competition-05",
+      "orderedSources": [
+        "src/pages/competition-05-page.tsx",
+        "src/layouts/competition-05-layout.tsx"
+      ],
+      "requiredFirstSource": "src/pages/competition-05-page.tsx",
+      "forbiddenFirstSources": [
+        {
+          "source": "src/layouts/competition-05-layout.tsx",
+          "category": "layout",
+          "declaration": "React Router parent layout for /qualification/competition-05 genuinely competed with its index page."
+        }
+      ]
+    },
+    {
+      "id": "route-oracle-competition-06",
+      "clusterId": "route-oracle-competition-06",
+      "route": "/qualification/competition-06",
+      "orderedSources": [
+        "src/pages/competition-06-page.tsx",
+        "src/layouts/competition-06-layout.tsx"
+      ],
+      "requiredFirstSource": "src/pages/competition-06-page.tsx",
+      "forbiddenFirstSources": [
+        {
+          "source": "src/layouts/competition-06-layout.tsx",
+          "category": "layout",
+          "declaration": "React Router parent layout for /qualification/competition-06 genuinely competed with its index page."
+        }
+      ]
+    },
+    {
+      "id": "route-oracle-competition-07",
+      "clusterId": "route-oracle-competition-07",
+      "route": "/qualification/competition-07",
+      "orderedSources": [
+        "src/pages/competition-07-page.tsx",
+        "src/layouts/competition-07-layout.tsx"
+      ],
+      "requiredFirstSource": "src/pages/competition-07-page.tsx",
+      "forbiddenFirstSources": [
+        {
+          "source": "src/layouts/competition-07-layout.tsx",
+          "category": "layout",
+          "declaration": "React Router parent layout for /qualification/competition-07 genuinely competed with its index page."
+        }
+      ]
+    },
+    {
+      "id": "route-oracle-competition-08",
+      "clusterId": "route-oracle-competition-08",
+      "route": "/qualification/competition-08",
+      "orderedSources": [
+        "src/pages/competition-08-page.tsx",
+        "src/layouts/competition-08-layout.tsx"
+      ],
+      "requiredFirstSource": "src/pages/competition-08-page.tsx",
+      "forbiddenFirstSources": [
+        {
+          "source": "src/layouts/competition-08-layout.tsx",
+          "category": "layout",
+          "declaration": "React Router parent layout for /qualification/competition-08 genuinely competed with its index page."
+        }
+      ]
+    },
+    {
+      "id": "route-oracle-competition-09",
+      "clusterId": "route-oracle-competition-09",
+      "route": "/qualification/competition-09",
+      "orderedSources": [
+        "src/pages/competition-09-page.tsx",
+        "src/layouts/competition-09-layout.tsx"
+      ],
+      "requiredFirstSource": "src/pages/competition-09-page.tsx",
+      "forbiddenFirstSources": [
+        {
+          "source": "src/layouts/competition-09-layout.tsx",
+          "category": "layout",
+          "declaration": "React Router parent layout for /qualification/competition-09 genuinely competed with its index page."
+        }
+      ]
+    },
+    {
+      "id": "route-oracle-competition-10",
+      "clusterId": "route-oracle-competition-10",
+      "route": "/qualification/competition-10",
+      "orderedSources": [
+        "src/pages/competition-10-page.tsx",
+        "src/layouts/competition-10-layout.tsx"
+      ],
+      "requiredFirstSource": "src/pages/competition-10-page.tsx",
+      "forbiddenFirstSources": [
+        {
+          "source": "src/layouts/competition-10-layout.tsx",
+          "category": "layout",
+          "declaration": "React Router parent layout for /qualification/competition-10 genuinely competed with its index page."
+        }
+      ]
+    },
+    {
+      "id": "route-oracle-competition-11",
+      "clusterId": "route-oracle-competition-11",
+      "route": "/qualification/competition-11",
+      "orderedSources": [
+        "src/pages/competition-11-page.tsx",
+        "src/layouts/competition-11-layout.tsx"
+      ],
+      "requiredFirstSource": "src/pages/competition-11-page.tsx",
+      "forbiddenFirstSources": [
+        {
+          "source": "src/layouts/competition-11-layout.tsx",
+          "category": "layout",
+          "declaration": "React Router parent layout for /qualification/competition-11 genuinely competed with its index page."
+        }
+      ]
+    },
+    {
+      "id": "route-oracle-competition-12",
+      "clusterId": "route-oracle-competition-12",
+      "route": "/qualification/competition-12",
+      "orderedSources": [
+        "src/pages/competition-12-page.tsx",
+        "src/layouts/competition-12-layout.tsx"
+      ],
+      "requiredFirstSource": "src/pages/competition-12-page.tsx",
+      "forbiddenFirstSources": [
+        {
+          "source": "src/layouts/competition-12-layout.tsx",
+          "category": "layout",
+          "declaration": "React Router parent layout for /qualification/competition-12 genuinely competed with its index page."
+        }
+      ]
+    },
+    {
+      "id": "route-oracle-competition-13",
+      "clusterId": "route-oracle-competition-13",
+      "route": "/qualification/competition-13",
+      "orderedSources": [
+        "src/pages/competition-13-page.tsx",
+        "src/layouts/competition-13-layout.tsx"
+      ],
+      "requiredFirstSource": "src/pages/competition-13-page.tsx",
+      "forbiddenFirstSources": [
+        {
+          "source": "src/layouts/competition-13-layout.tsx",
+          "category": "layout",
+          "declaration": "React Router parent layout for /qualification/competition-13 genuinely competed with its index page."
+        }
+      ]
+    },
+    {
+      "id": "route-oracle-competition-14",
+      "clusterId": "route-oracle-competition-14",
+      "route": "/qualification/competition-14",
+      "orderedSources": [
+        "src/pages/competition-14-page.tsx",
+        "src/layouts/competition-14-layout.tsx"
+      ],
+      "requiredFirstSource": "src/pages/competition-14-page.tsx",
+      "forbiddenFirstSources": [
+        {
+          "source": "src/layouts/competition-14-layout.tsx",
+          "category": "layout",
+          "declaration": "React Router parent layout for /qualification/competition-14 genuinely competed with its index page."
+        }
+      ]
+    },
+    {
+      "id": "route-oracle-competition-15",
+      "clusterId": "route-oracle-competition-15",
+      "route": "/qualification/competition-15",
+      "orderedSources": [
+        "src/pages/competition-15-page.tsx",
+        "src/layouts/competition-15-layout.tsx"
+      ],
+      "requiredFirstSource": "src/pages/competition-15-page.tsx",
+      "forbiddenFirstSources": [
+        {
+          "source": "src/layouts/competition-15-layout.tsx",
+          "category": "layout",
+          "declaration": "React Router parent layout for /qualification/competition-15 genuinely competed with its index page."
+        }
+      ]
+    },
+    {
+      "id": "route-oracle-competition-16",
+      "clusterId": "route-oracle-competition-16",
+      "route": "/qualification/competition-16",
+      "orderedSources": [
+        "src/pages/competition-16-page.tsx",
+        "src/layouts/competition-16-layout.tsx"
+      ],
+      "requiredFirstSource": "src/pages/competition-16-page.tsx",
+      "forbiddenFirstSources": [
+        {
+          "source": "src/layouts/competition-16-layout.tsx",
+          "category": "layout",
+          "declaration": "React Router parent layout for /qualification/competition-16 genuinely competed with its index page."
+        }
+      ]
+    },
+    {
+      "id": "route-oracle-competition-17",
+      "clusterId": "route-oracle-competition-17",
+      "route": "/qualification/competition-17",
+      "orderedSources": [
+        "src/pages/competition-17-page.tsx",
+        "src/layouts/competition-17-layout.tsx"
+      ],
+      "requiredFirstSource": "src/pages/competition-17-page.tsx",
+      "forbiddenFirstSources": [
+        {
+          "source": "src/layouts/competition-17-layout.tsx",
+          "category": "layout",
+          "declaration": "React Router parent layout for /qualification/competition-17 genuinely competed with its index page."
+        }
+      ]
+    },
+    {
+      "id": "route-oracle-competition-18",
+      "clusterId": "route-oracle-competition-18",
+      "route": "/qualification/competition-18",
+      "orderedSources": [
+        "src/pages/competition-18-page.tsx",
+        "src/layouts/competition-18-layout.tsx"
+      ],
+      "requiredFirstSource": "src/pages/competition-18-page.tsx",
+      "forbiddenFirstSources": [
+        {
+          "source": "src/layouts/competition-18-layout.tsx",
+          "category": "layout",
+          "declaration": "React Router parent layout for /qualification/competition-18 genuinely competed with its index page."
+        }
+      ]
+    },
+    {
+      "id": "route-oracle-competition-19",
+      "clusterId": "route-oracle-competition-19",
+      "route": "/qualification/competition-19",
+      "orderedSources": [
+        "src/pages/competition-19-page.tsx",
+        "src/layouts/competition-19-layout.tsx"
+      ],
+      "requiredFirstSource": "src/pages/competition-19-page.tsx",
+      "forbiddenFirstSources": [
+        {
+          "source": "src/layouts/competition-19-layout.tsx",
+          "category": "layout",
+          "declaration": "React Router parent layout for /qualification/competition-19 genuinely competed with its index page."
+        }
+      ]
+    },
+    {
+      "id": "route-oracle-competition-20",
+      "clusterId": "route-oracle-competition-20",
+      "route": "/qualification/competition-20",
+      "orderedSources": [
+        "src/pages/competition-20-page.tsx",
+        "src/layouts/competition-20-layout.tsx"
+      ],
+      "requiredFirstSource": "src/pages/competition-20-page.tsx",
+      "forbiddenFirstSources": [
+        {
+          "source": "src/layouts/competition-20-layout.tsx",
+          "category": "layout",
+          "declaration": "React Router parent layout for /qualification/competition-20 genuinely competed with its index page."
+        }
+      ]
+    },
+    {
+      "id": "route-oracle-competition-21",
+      "clusterId": "route-oracle-competition-21",
+      "route": "/qualification/competition-21",
+      "orderedSources": [
+        "src/pages/competition-21-page.tsx",
+        "src/layouts/competition-21-layout.tsx"
+      ],
+      "requiredFirstSource": "src/pages/competition-21-page.tsx",
+      "forbiddenFirstSources": [
+        {
+          "source": "src/layouts/competition-21-layout.tsx",
+          "category": "layout",
+          "declaration": "React Router parent layout for /qualification/competition-21 genuinely competed with its index page."
+        }
+      ]
+    },
+    {
+      "id": "route-oracle-competition-22",
+      "clusterId": "route-oracle-competition-22",
+      "route": "/qualification/competition-22",
+      "orderedSources": [
+        "src/pages/competition-22-page.tsx",
+        "src/layouts/competition-22-layout.tsx"
+      ],
+      "requiredFirstSource": "src/pages/competition-22-page.tsx",
+      "forbiddenFirstSources": [
+        {
+          "source": "src/layouts/competition-22-layout.tsx",
+          "category": "layout",
+          "declaration": "React Router parent layout for /qualification/competition-22 genuinely competed with its index page."
+        }
+      ]
+    },
+    {
+      "id": "route-oracle-competition-23",
+      "clusterId": "route-oracle-competition-23",
+      "route": "/qualification/competition-23",
+      "orderedSources": [
+        "src/pages/competition-23-page.tsx",
+        "src/layouts/competition-23-layout.tsx"
+      ],
+      "requiredFirstSource": "src/pages/competition-23-page.tsx",
+      "forbiddenFirstSources": [
+        {
+          "source": "src/layouts/competition-23-layout.tsx",
+          "category": "layout",
+          "declaration": "React Router parent layout for /qualification/competition-23 genuinely competed with its index page."
+        }
+      ]
+    },
+    {
+      "id": "route-oracle-competition-24",
+      "clusterId": "route-oracle-competition-24",
+      "route": "/qualification/competition-24",
+      "orderedSources": [
+        "src/pages/competition-24-page.tsx",
+        "src/layouts/competition-24-layout.tsx"
+      ],
+      "requiredFirstSource": "src/pages/competition-24-page.tsx",
+      "forbiddenFirstSources": [
+        {
+          "source": "src/layouts/competition-24-layout.tsx",
+          "category": "layout",
+          "declaration": "React Router parent layout for /qualification/competition-24 genuinely competed with its index page."
+        }
+      ]
+    },
+    {
+      "id": "route-oracle-standalone-01",
+      "clusterId": "route-oracle-standalone-01",
+      "route": "/qualification/standalone-01",
+      "orderedSources": [
+        "src/pages/standalone-01-page.tsx"
+      ],
+      "requiredFirstSource": "src/pages/standalone-01-page.tsx",
+      "forbiddenFirstSources": []
+    },
+    {
+      "id": "route-oracle-standalone-02",
+      "clusterId": "route-oracle-standalone-02",
+      "route": "/qualification/standalone-02",
+      "orderedSources": [
+        "src/pages/standalone-02-page.tsx"
+      ],
+      "requiredFirstSource": "src/pages/standalone-02-page.tsx",
+      "forbiddenFirstSources": []
+    },
+    {
+      "id": "route-oracle-standalone-03",
+      "clusterId": "route-oracle-standalone-03",
+      "route": "/qualification/standalone-03",
+      "orderedSources": [
+        "src/pages/standalone-03-page.tsx"
+      ],
+      "requiredFirstSource": "src/pages/standalone-03-page.tsx",
+      "forbiddenFirstSources": []
+    },
+    {
+      "id": "route-oracle-standalone-04",
+      "clusterId": "route-oracle-standalone-04",
+      "route": "/qualification/standalone-04",
+      "orderedSources": [
+        "src/pages/standalone-04-page.tsx"
+      ],
+      "requiredFirstSource": "src/pages/standalone-04-page.tsx",
+      "forbiddenFirstSources": []
+    },
+    {
+      "id": "route-oracle-standalone-05",
+      "clusterId": "route-oracle-standalone-05",
+      "route": "/qualification/standalone-05",
+      "orderedSources": [
+        "src/pages/standalone-05-page.tsx"
+      ],
+      "requiredFirstSource": "src/pages/standalone-05-page.tsx",
+      "forbiddenFirstSources": []
+    },
+    {
+      "id": "route-oracle-standalone-06",
+      "clusterId": "route-oracle-standalone-06",
+      "route": "/qualification/standalone-06",
+      "orderedSources": [
+        "src/pages/standalone-06-page.tsx"
+      ],
+      "requiredFirstSource": "src/pages/standalone-06-page.tsx",
+      "forbiddenFirstSources": []
+    },
+    {
+      "id": "route-oracle-standalone-07",
+      "clusterId": "route-oracle-standalone-07",
+      "route": "/qualification/standalone-07",
+      "orderedSources": [
+        "src/pages/standalone-07-page.tsx"
+      ],
+      "requiredFirstSource": "src/pages/standalone-07-page.tsx",
+      "forbiddenFirstSources": []
+    },
+    {
+      "id": "route-oracle-standalone-08",
+      "clusterId": "route-oracle-standalone-08",
+      "route": "/qualification/standalone-08",
+      "orderedSources": [
+        "src/pages/standalone-08-page.tsx"
+      ],
+      "requiredFirstSource": "src/pages/standalone-08-page.tsx",
+      "forbiddenFirstSources": []
+    },
+    {
+      "id": "route-oracle-standalone-09",
+      "clusterId": "route-oracle-standalone-09",
+      "route": "/qualification/standalone-09",
+      "orderedSources": [
+        "src/pages/standalone-09-page.tsx"
+      ],
+      "requiredFirstSource": "src/pages/standalone-09-page.tsx",
+      "forbiddenFirstSources": []
+    },
+    {
+      "id": "route-oracle-standalone-10",
+      "clusterId": "route-oracle-standalone-10",
+      "route": "/qualification/standalone-10",
+      "orderedSources": [
+        "src/pages/standalone-10-page.tsx"
+      ],
+      "requiredFirstSource": "src/pages/standalone-10-page.tsx",
+      "forbiddenFirstSources": []
+    },
+    {
+      "id": "route-oracle-standalone-11",
+      "clusterId": "route-oracle-standalone-11",
+      "route": "/qualification/standalone-11",
+      "orderedSources": [
+        "src/pages/standalone-11-page.tsx"
+      ],
+      "requiredFirstSource": "src/pages/standalone-11-page.tsx",
+      "forbiddenFirstSources": []
+    }
+  ]
+}

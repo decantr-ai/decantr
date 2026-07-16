@@ -2,7 +2,7 @@
 
 ## Supported Surfaces
 
-Security fixes are prioritized for the published Decantr npm packages, the hosted registry API, the registry portal, and official registry content consumed by `@decantr/cli` or `@decantr/mcp-server`.
+Security fixes are prioritized for the published Decantr npm packages, the official `@decantr/content` corpus and clients, the optional content/reference API, and the local CLI and MCP surfaces that consume them.
 
 ## Package Permissions
 
@@ -12,19 +12,20 @@ That reference distinguishes the published npm packages from internal monorepo s
 
 Key defaults:
 
-- CLI telemetry is disabled unless a project explicitly opts in with `--telemetry`, `decantr telemetry link --enable`, or `.decantr/project.json` containing `telemetry: true`.
-- Browser evidence and screenshots stay local under `.decantr/evidence/*` unless a user explicitly invokes a hosted workflow.
+- Governance is local-first: scan, audit, critique, verification, context generation, and browser evidence read the selected workspace in place.
+- The content/reference API provides optional corpus, schema, search, and execution-pack reads. It does not accept project source code or replace local CLI and MCP verification.
+- CLI telemetry is disabled unless a project explicitly opts in, and delivery still requires a caller-configured endpoint. Decantr does not provide a default hosted telemetry sink.
+- Browser evidence and screenshots stay local under `.decantr/evidence/*`.
 - MCP write tools are explicitly annotated and paths are contained to the active workspace root.
-- Hosted critique/audit source upload fallbacks are opt-in and require `allow_hosted_upload: true` on the MCP surface or an explicit hosted CLI command.
 - Published packages use `files` allowlists, and release audits run `npm pack --dry-run --json` to prove what actually ships.
 
 ## Reporting
 
-Please report suspected vulnerabilities privately through GitHub Security Advisories for `decantr-ai/decantr`. Do not open a public issue for exploitable behavior, secrets, auth bypasses, package publication issues, or hosted analysis data-exposure concerns.
+Please report suspected vulnerabilities privately through GitHub Security Advisories for `decantr-ai/decantr`. Do not open a public issue for exploitable behavior, secrets, auth bypasses, package publication issues, or content API and MCP data-exposure concerns.
 
 ## Artifact Expectations
 
-Release candidates must pass package build/test gates, public API audits, registry portal audits, dependency vulnerability scans, npm package-surface checks, and provenance-enabled npm publish workflows before being promoted as latest.
+Public releases must pass package build/test gates, content and public API audits, dependency vulnerability scans, npm package-surface checks, and provenance-enabled npm publish workflows before being promoted as latest.
 
 Run the package permission audit as part of release confidence:
 

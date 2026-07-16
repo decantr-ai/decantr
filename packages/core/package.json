@@ -1,6 +1,6 @@
 {
   "name": "@decantr/core",
-  "version": "3.8.2",
+  "version": "3.9.0",
   "description": "Decantr core — execution-pack, typed graph, and Contract capsule primitives",
   "keywords": [
     "decantr",
@@ -67,8 +67,8 @@
     "preversion": "pnpm build && pnpm test"
   },
   "dependencies": {
-    "@decantr/essence-spec": "workspace:*",
-    "@decantr/registry": "workspace:*"
+    "@decantr/content": "workspace:*",
+    "@decantr/essence-spec": "workspace:*"
   },
   "devDependencies": {}
 }

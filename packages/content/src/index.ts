@@ -2,30 +2,48 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Ajv2020, { type ValidateFunction } from 'ajv/dist/2020.js';
+import type {
+  ContentIntelligenceMetadata,
+  ContentIntelligenceSummaryBucket,
+  ContentIntelligenceSummaryResponse,
+  ContentListResponse,
+  PublicContentRecord,
+  PublicContentSummary,
+  SearchResponse,
+} from './api-types.js';
+import { CONTENT_PROVENANCE_SCHEMA_FILES, type ContentProvenanceSchema } from './provenance.js';
+import { comparePublicContent, normalizePublicContentSort, sortPublicContent } from './ranking.js';
+import {
+  API_CONTENT_TYPE_TO_CONTENT_TYPE,
+  type ApiContentType,
+  CONTENT_TYPE_TO_API_CONTENT_TYPE,
+  CONTENT_TYPES,
+  type ContentIntelligenceSource,
+  type ContentResolver,
+  type ContentType,
+  type ContentTypeMap,
+  getBlueprintPortfolioMetadata,
+  isContentIntelligenceSource,
+  isContentType,
+  type JsonObject,
+  OFFICIAL_CONTENT_NAMESPACE,
+  type PublicBlueprintSet,
+  type PublicContentSource,
+  type ResolvedContent,
+} from './types.js';
 
-export const CONTENT_TYPES = ['pattern', 'theme', 'blueprint', 'archetype', 'shell'] as const;
-export type ContentType = (typeof CONTENT_TYPES)[number];
+export * from './api-client.js';
+export * from './api-types.js';
+export * from './discovery.js';
+export * from './pattern.js';
+export * from './provenance.js';
+export * from './ranking.js';
+export { createResolver } from './resolver.js';
+export * from './types.js';
+export * from './wiring.js';
 
-export const API_CONTENT_TYPES = ['patterns', 'themes', 'blueprints', 'archetypes', 'shells'] as const;
-export type ApiContentType = (typeof API_CONTENT_TYPES)[number];
-
-export const CONTENT_TYPE_TO_API_CONTENT_TYPE: Record<ContentType, ApiContentType> = {
-  pattern: 'patterns',
-  theme: 'themes',
-  blueprint: 'blueprints',
-  archetype: 'archetypes',
-  shell: 'shells',
-};
-
-export const API_CONTENT_TYPE_TO_CONTENT_TYPE: Record<ApiContentType, ContentType> = {
-  patterns: 'pattern',
-  themes: 'theme',
-  blueprints: 'blueprint',
-  archetypes: 'archetype',
-  shells: 'shell',
-};
-
-export const CONTENT_TYPE_TO_DIRECTORY: Record<ContentType, ApiContentType> = CONTENT_TYPE_TO_API_CONTENT_TYPE;
+export const CONTENT_TYPE_TO_DIRECTORY: Record<ContentType, ApiContentType> =
+  CONTENT_TYPE_TO_API_CONTENT_TYPE;
 
 export const CONTENT_SCHEMA_FILES: Record<ContentType | 'common', string> = {
   common: 'common.v1.json',
@@ -36,101 +54,9 @@ export const CONTENT_SCHEMA_FILES: Record<ContentType | 'common', string> = {
   shell: 'shell.v1.json',
 };
 
-export const OFFICIAL_CONTENT_NAMESPACE = '@official';
 export const OFFICIAL_CONTENT_OWNER_NAME = 'Decantr';
 export const OFFICIAL_CONTENT_OWNER_USERNAME = 'decantr';
 export const OFFICIAL_CONTENT_PUBLISHED_AT = '2026-07-02T00:00:00.000Z';
-
-export const PUBLIC_BLUEPRINT_SETS = ['all', 'featured', 'certified', 'labs'] as const;
-export type PublicBlueprintSet = (typeof PUBLIC_BLUEPRINT_SETS)[number];
-
-export const PUBLIC_CONTENT_SOURCES = ['official', 'community', 'organization'] as const;
-export type PublicContentSource = (typeof PUBLIC_CONTENT_SOURCES)[number];
-
-export const CONTENT_INTELLIGENCE_SOURCES = ['authored', 'benchmark', 'hybrid'] as const;
-export type ContentIntelligenceSource = (typeof CONTENT_INTELLIGENCE_SOURCES)[number];
-
-export type PublicContentSort = 'recommended' | 'recent' | 'name';
-
-export type JsonObject = Record<string, unknown>;
-
-export interface BlueprintPortfolioArtifact {
-  status: 'none' | 'planned' | 'candidate' | 'certified';
-  showcase?: string;
-  notes?: string;
-}
-
-export interface BlueprintPortfolioMetadata {
-  visibility: 'featured' | 'public' | 'labs' | 'hidden';
-  maturity: 'certified-flagship' | 'supported-contract' | 'experimental' | 'fold-candidate' | 'legacy-hidden';
-  rationale: string;
-  recommended_alternative?: string;
-  artifact: BlueprintPortfolioArtifact;
-}
-
-export interface ContentIntelligenceMetadata {
-  source: ContentIntelligenceSource;
-  verification_status: 'unknown' | 'pending' | 'build-green' | 'build-red' | 'smoke-green' | 'smoke-red';
-  last_verified_at?: string | null;
-  target_coverage: string[];
-  benchmark_confidence: 'none' | 'low' | 'medium' | 'high';
-  confidence_tier: 'low' | 'medium' | 'high' | 'verified';
-  golden_usage: 'none' | 'showcase' | 'shortlisted';
-  quality_score: number | null;
-  confidence_score: number | null;
-  recommended: boolean;
-  evidence: string[];
-  recommendation_reasons: string[];
-  recommendation_blockers: string[];
-}
-
-export interface PublicContentSummary {
-  id: string;
-  slug: string;
-  namespace: string;
-  type: ContentType;
-  version?: string;
-  name?: string;
-  description?: string;
-  published_at?: string;
-  owner_name?: string | null;
-  owner_username?: string | null;
-  thumbnail_url?: string | null;
-  blueprint_portfolio?: BlueprintPortfolioMetadata | null;
-  intelligence?: ContentIntelligenceMetadata | null;
-}
-
-export interface PublicContentRecord<TData extends JsonObject = JsonObject> {
-  id: string;
-  slug: string;
-  namespace: string;
-  type: ContentType;
-  version: string;
-  data: TData;
-  visibility: 'public';
-  status: 'published';
-  created_at: string;
-  updated_at: string;
-  published_at: string;
-  owner_name: string;
-  owner_username: string;
-  thumbnail_url: string | null;
-  intelligence?: ContentIntelligenceMetadata | null;
-}
-
-export interface ContentListResponse<T = PublicContentSummary> {
-  items: T[];
-  total: number;
-  limit?: number;
-  offset?: number;
-}
-
-export interface SearchResponse {
-  results: PublicContentSummary[];
-  total: number;
-  limit?: number;
-  offset?: number;
-}
 
 export interface SearchContentOptions {
   q?: string;
@@ -159,38 +85,6 @@ export interface ListContentOptions {
   offset?: number;
 }
 
-export interface ResolvedContent<TData extends JsonObject = JsonObject> {
-  item: TData;
-  source: 'core' | 'local';
-  path: string;
-}
-
-export interface ContentResolver {
-  resolve<T extends ContentType>(type: T, id: string): Promise<ResolvedContent | null>;
-}
-
-export interface RegistryIntelligenceSummaryBucket {
-  total_public_items: number;
-  with_intelligence: number;
-  recommended: number;
-  authored: number;
-  benchmark: number;
-  hybrid: number;
-  missing_source: number;
-  smoke_green: number;
-  build_green: number;
-  high_confidence: number;
-  verified_confidence: number;
-}
-
-export interface RegistryIntelligenceSummaryResponse {
-  $schema: string;
-  generated_at: string;
-  namespace: string | null;
-  totals: RegistryIntelligenceSummaryBucket;
-  by_type: Record<ContentType, RegistryIntelligenceSummaryBucket>;
-}
-
 export interface ContentValidationResult {
   valid: boolean;
   errors: string[];
@@ -198,7 +92,7 @@ export interface ContentValidationResult {
 
 const PACKAGE_ROOT = fileURLToPath(new URL('..', import.meta.url));
 
-let catalogCache: PublicContentRecord[] | null = null;
+let catalogCache: PublicContentRecord<JsonObject, ContentType>[] | null = null;
 let ajvCache: Ajv2020 | null = null;
 let validatorCache: Partial<Record<ContentType, ValidateFunction>> = {};
 
@@ -206,24 +100,12 @@ export function getContentPackageRoot(): string {
   return PACKAGE_ROOT;
 }
 
-export function isContentType(value: unknown): value is ContentType {
-  return typeof value === 'string' && CONTENT_TYPES.includes(value as ContentType);
-}
-
-export function isApiContentType(value: unknown): value is ApiContentType {
-  return typeof value === 'string' && API_CONTENT_TYPES.includes(value as ApiContentType);
-}
-
-export function isPublicBlueprintSet(value: unknown): value is PublicBlueprintSet {
-  return typeof value === 'string' && PUBLIC_BLUEPRINT_SETS.includes(value as PublicBlueprintSet);
-}
-
-export function isPublicContentSource(value: unknown): value is PublicContentSource {
-  return typeof value === 'string' && PUBLIC_CONTENT_SOURCES.includes(value as PublicContentSource);
-}
-
-export function isContentIntelligenceSource(value: unknown): value is ContentIntelligenceSource {
-  return typeof value === 'string' && CONTENT_INTELLIGENCE_SOURCES.includes(value as ContentIntelligenceSource);
+export function getContentPackageVersion(): string {
+  const version = readJson(join(PACKAGE_ROOT, 'package.json')).version;
+  if (typeof version !== 'string' || version.trim().length === 0) {
+    throw new TypeError('@decantr/content package.json is missing version.');
+  }
+  return version;
 }
 
 export function normalizeContentType(value: ContentType | ApiContentType): ContentType {
@@ -235,7 +117,11 @@ export function getContentSchema(type: ContentType | 'common'): JsonObject {
   return readJson(join(PACKAGE_ROOT, 'schemas', CONTENT_SCHEMA_FILES[type]));
 }
 
-export function listContentSchemas(): Array<{ type: ContentType | 'common'; file: string; schema: JsonObject }> {
+export function listContentSchemas(): Array<{
+  type: ContentType | 'common';
+  file: string;
+  schema: JsonObject;
+}> {
   return (['common', ...CONTENT_TYPES] as Array<ContentType | 'common'>).map((type) => ({
     type,
     file: CONTENT_SCHEMA_FILES[type],
@@ -243,7 +129,27 @@ export function listContentSchemas(): Array<{ type: ContentType | 'common'; file
   }));
 }
 
-export function listContentRecords(options: ListContentOptions = {}): ContentListResponse {
+export function getContentProvenanceSchema(type: ContentProvenanceSchema): JsonObject {
+  return readJson(join(PACKAGE_ROOT, 'schemas', CONTENT_PROVENANCE_SCHEMA_FILES[type]));
+}
+
+export function listContentProvenanceSchemas(): Array<{
+  type: ContentProvenanceSchema;
+  file: string;
+  schema: JsonObject;
+}> {
+  return (Object.keys(CONTENT_PROVENANCE_SCHEMA_FILES) as ContentProvenanceSchema[]).map(
+    (type) => ({
+      type,
+      file: CONTENT_PROVENANCE_SCHEMA_FILES[type],
+      schema: getContentProvenanceSchema(type),
+    }),
+  );
+}
+
+export function listContentRecords(
+  options: ListContentOptions = {},
+): ContentListResponse<PublicContentSummary<ContentType>> {
   const limit = normalizeLimit(options.limit);
   const offset = normalizeOffset(options.offset);
   const type = options.type ? normalizeContentType(options.type) : null;
@@ -280,7 +186,9 @@ export function listContentRecords(options: ListContentOptions = {}): ContentLis
   };
 }
 
-export function searchContent(options: SearchContentOptions = {}): SearchResponse {
+export function searchContent(
+  options: SearchContentOptions = {},
+): SearchResponse<PublicContentSummary<ContentType>> {
   const limit = normalizeLimit(options.limit);
   const offset = normalizeOffset(options.offset);
   const query = (options.q ?? '').trim().toLowerCase();
@@ -296,13 +204,17 @@ export function searchContent(options: SearchContentOptions = {}): SearchRespons
     limit: 5000,
     offset: 0,
   }).items;
-  const filtered = query.length === 0
-    ? base
-    : base
-      .map((summary) => ({ summary, score: scoreSearchMatch(summary, query) }))
-      .filter((match) => match.score > 0)
-      .sort((left, right) => right.score - left.score || comparePublicContent(left.summary, right.summary))
-      .map((match) => match.summary);
+  const filtered =
+    query.length === 0
+      ? base
+      : base
+          .map((summary) => ({ summary, score: scoreSearchMatch(summary, query) }))
+          .filter((match) => match.score > 0)
+          .sort(
+            (left, right) =>
+              right.score - left.score || comparePublicContent(left.summary, right.summary),
+          )
+          .map((match) => match.summary);
 
   return {
     total: filtered.length,
@@ -316,20 +228,23 @@ export function getContentRecord(
   type: ContentType | ApiContentType,
   slug: string,
   namespace: string = OFFICIAL_CONTENT_NAMESPACE,
-): PublicContentRecord | null {
+): PublicContentRecord<JsonObject, ContentType> | null {
   if (namespace !== OFFICIAL_CONTENT_NAMESPACE) return null;
   const normalizedType = normalizeContentType(type);
-  return getContentCatalog().find((record) => (
-    record.type === normalizedType
-    && (record.slug === slug || record.id === slug || record.data.id === slug)
-  )) ?? null;
+  return (
+    getContentCatalog().find(
+      (record) =>
+        record.type === normalizedType &&
+        (record.slug === slug || record.id === slug || record.data.id === slug),
+    ) ?? null
+  );
 }
 
 export function resolveContent(
   type: ContentType | ApiContentType,
   slug: string,
   namespace: string = OFFICIAL_CONTENT_NAMESPACE,
-): ResolvedContent | null {
+): ResolvedContent<JsonObject> | null {
   const record = getContentRecord(type, slug, namespace);
   if (!record) return null;
   return {
@@ -339,21 +254,23 @@ export function resolveContent(
   };
 }
 
-export function createContentResolver(namespace: string = OFFICIAL_CONTENT_NAMESPACE): ContentResolver {
+export function createContentResolver(
+  namespace: string = OFFICIAL_CONTENT_NAMESPACE,
+): ContentResolver {
   return {
-    async resolve(type, id) {
-      return resolveContent(type, id, namespace);
+    async resolve<T extends ContentType>(type: T, id: string) {
+      return resolveContent(type, id, namespace) as ResolvedContent<ContentTypeMap[T]> | null;
     },
   };
 }
 
-export function buildContentIntelligenceSummary(namespace: string | null = OFFICIAL_CONTENT_NAMESPACE): RegistryIntelligenceSummaryResponse {
-  const records = namespace && namespace !== OFFICIAL_CONTENT_NAMESPACE
-    ? []
-    : getContentCatalog();
+export function buildContentIntelligenceSummary(
+  namespace: string | null = OFFICIAL_CONTENT_NAMESPACE,
+): ContentIntelligenceSummaryResponse {
+  const records = namespace && namespace !== OFFICIAL_CONTENT_NAMESPACE ? [] : getContentCatalog();
   const byType = Object.fromEntries(
     CONTENT_TYPES.map((type) => [type, createEmptyBucket()]),
-  ) as Record<ContentType, RegistryIntelligenceSummaryBucket>;
+  ) as Record<ContentType, ContentIntelligenceSummaryBucket>;
   const totals = createEmptyBucket();
 
   for (const record of records) {
@@ -370,7 +287,10 @@ export function buildContentIntelligenceSummary(namespace: string | null = OFFIC
   };
 }
 
-export function validateContentData(type: ContentType | ApiContentType, data: unknown): ContentValidationResult {
+export function validateContentData(
+  type: ContentType | ApiContentType,
+  data: unknown,
+): ContentValidationResult {
   const normalizedType = normalizeContentType(type);
   const validator = getValidator(normalizedType);
   const valid = validator(data);
@@ -391,7 +311,7 @@ export function validateOfficialCorpus(): ContentValidationResult {
   return { valid: errors.length === 0, errors };
 }
 
-export function getContentCatalog(): PublicContentRecord[] {
+export function getContentCatalog(): PublicContentRecord<JsonObject, ContentType>[] {
   if (catalogCache) return catalogCache;
 
   catalogCache = CONTENT_TYPES.flatMap((type) => {
@@ -412,10 +332,13 @@ export function clearContentCatalogCache(): void {
   validatorCache = {};
 }
 
-function createRecord(type: ContentType, slug: string, data: JsonObject): PublicContentRecord {
-  const version = typeof data.version === 'string' && data.version.trim().length > 0
-    ? data.version
-    : '1.0.0';
+function createRecord(
+  type: ContentType,
+  slug: string,
+  data: JsonObject,
+): PublicContentRecord<JsonObject, ContentType> {
+  const version =
+    typeof data.version === 'string' && data.version.trim().length > 0 ? data.version : '1.0.0';
   return {
     id: slug,
     slug,
@@ -435,7 +358,9 @@ function createRecord(type: ContentType, slug: string, data: JsonObject): Public
   };
 }
 
-function toPublicSummary(record: PublicContentRecord): PublicContentSummary {
+function toPublicSummary(
+  record: PublicContentRecord<JsonObject, ContentType>,
+): PublicContentSummary<ContentType> {
   return {
     id: record.id,
     slug: record.slug,
@@ -453,36 +378,14 @@ function toPublicSummary(record: PublicContentRecord): PublicContentSummary {
   };
 }
 
-export function getBlueprintPortfolioMetadata(value: unknown): BlueprintPortfolioMetadata | null {
-  const record = asRecord(value);
-  if (!record) return null;
-  const candidate = asRecord(record.blueprint_portfolio) ?? record;
-  const artifact = asRecord(candidate.artifact);
-  if (
-    typeof candidate.visibility !== 'string'
-    || typeof candidate.maturity !== 'string'
-    || typeof candidate.rationale !== 'string'
-    || !artifact
-    || typeof artifact.status !== 'string'
-  ) {
-    return null;
-  }
-
-  return {
-    visibility: normalizePortfolioVisibility(candidate.visibility),
-    maturity: normalizePortfolioMaturity(candidate.maturity),
-    rationale: candidate.rationale,
-    recommended_alternative: getString(candidate.recommended_alternative),
-    artifact: {
-      status: normalizeArtifactStatus(artifact.status),
-      showcase: getString(artifact.showcase),
-      notes: getString(artifact.notes),
-    },
-  };
-}
-
-export function deriveContentIntelligence(type: ContentType, data: JsonObject): ContentIntelligenceMetadata | null {
-  const authored = asRecord(data.content_intelligence) ?? asRecord(data.registry_intelligence) ?? asRecord(data.intelligence);
+export function deriveContentIntelligence(
+  type: ContentType,
+  data: JsonObject,
+): ContentIntelligenceMetadata | null {
+  const authored =
+    asRecord(data.content_intelligence) ??
+    asRecord(data.registry_intelligence) ??
+    asRecord(data.intelligence);
   if (authored && isContentIntelligenceSource(authored.source)) {
     return {
       source: authored.source,
@@ -523,14 +426,13 @@ export function deriveContentIntelligence(type: ContentType, data: JsonObject): 
     recommended,
     evidence: ['blueprint_portfolio'],
     recommendation_reasons: recommended ? [portfolio.rationale] : [],
-    recommendation_blockers: portfolio.visibility === 'hidden'
-      ? ['Blueprint is hidden from public browse surfaces.']
-      : [],
+    recommendation_blockers:
+      portfolio.visibility === 'hidden' ? ['Blueprint is hidden from public browse surfaces.'] : [],
   };
 }
 
 function matchesPublicContentFilters(
-  item: PublicContentSummary,
+  item: PublicContentSummary<ContentType>,
   recommendedOnly: boolean,
   intelligenceSource: ContentIntelligenceSource | undefined,
   blueprintSet: PublicBlueprintSet,
@@ -557,73 +459,7 @@ function matchesPublicContentFilters(
   return true;
 }
 
-export function sortPublicContent<T extends PublicContentSummary>(
-  items: T[],
-  sort: PublicContentSort = 'recommended',
-): T[] {
-  return [...items].sort((left, right) => comparePublicContent(left, right, sort));
-}
-
-export function comparePublicContent(
-  left: PublicContentSummary,
-  right: PublicContentSummary,
-  sort: PublicContentSort = 'recommended',
-): number {
-  if (sort === 'name') {
-    return (left.name ?? left.slug).localeCompare(right.name ?? right.slug);
-  }
-
-  if (sort === 'recent') {
-    const publishedDelta =
-      new Date(right.published_at ?? 0).getTime() - new Date(left.published_at ?? 0).getTime();
-    if (publishedDelta !== 0) return publishedDelta;
-    return left.slug.localeCompare(right.slug);
-  }
-
-  const priorityDelta = getRecommendedPriority(right) - getRecommendedPriority(left);
-  if (priorityDelta !== 0) return priorityDelta;
-  return (left.name ?? left.slug).localeCompare(right.name ?? right.slug);
-}
-
-function getRecommendedPriority(item: PublicContentSummary): number {
-  let score = 0;
-  const portfolio = getBlueprintPortfolioMetadata(item.blueprint_portfolio);
-  if (portfolio?.visibility === 'featured') score += 900;
-  if (portfolio?.artifact.status === 'certified') score += 650;
-  if (portfolio?.artifact.status === 'candidate') score += 120;
-  if (portfolio?.visibility === 'labs' || portfolio?.visibility === 'hidden') score -= 400;
-
-  const intelligence = item.intelligence;
-  if (!intelligence) return score;
-
-  if (intelligence.recommended) score += 500;
-  if (intelligence.golden_usage === 'shortlisted') score += 160;
-  if (intelligence.golden_usage === 'showcase') score += 80;
-  score += verificationScore(intelligence.verification_status);
-  score += confidenceScore(intelligence.benchmark_confidence);
-  score += confidenceTierScore(intelligence.confidence_tier);
-  score += Math.round((intelligence.confidence_score ?? 0) / 2);
-  score += intelligence.quality_score ?? 0;
-  return score;
-}
-
-export function normalizePublicContentSort(value: string | null | undefined): PublicContentSort {
-  switch (value) {
-    case 'popular':
-    case 'recommended':
-      return 'recommended';
-    case 'newest':
-    case 'recent':
-    case 'published':
-      return 'recent';
-    case 'name':
-      return 'name';
-    default:
-      return 'recommended';
-  }
-}
-
-function scoreSearchMatch(summary: PublicContentSummary, query: string): number {
+function scoreSearchMatch(summary: PublicContentSummary<ContentType>, query: string): number {
   const record = getContentRecord(summary.type, summary.slug);
   const data = record?.data ?? {};
   let score = 0;
@@ -664,9 +500,7 @@ function readJson(path: string): JsonObject {
 }
 
 function asRecord(value: unknown): JsonObject | null {
-  return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
-    ? value as JsonObject
-    : null;
+  return value && typeof value === 'object' && !Array.isArray(value) ? (value as JsonObject) : null;
 }
 
 function getString(value: unknown): string | undefined {
@@ -693,7 +527,7 @@ function normalizeOffset(value: unknown): number {
   return Math.max(0, Math.floor(value));
 }
 
-function createEmptyBucket(): RegistryIntelligenceSummaryBucket {
+function createEmptyBucket(): ContentIntelligenceSummaryBucket {
   return {
     total_public_items: 0,
     with_intelligence: 0,
@@ -710,7 +544,7 @@ function createEmptyBucket(): RegistryIntelligenceSummaryBucket {
 }
 
 function applyIntelligenceToBucket(
-  bucket: RegistryIntelligenceSummaryBucket,
+  bucket: ContentIntelligenceSummaryBucket,
   intelligence: ContentIntelligenceMetadata | null,
 ): void {
   bucket.total_public_items += 1;
@@ -744,94 +578,32 @@ function applyIntelligenceToBucket(
   }
 }
 
-function verificationScore(status?: string | null): number {
-  switch (status) {
-    case 'smoke-green':
-      return 200;
-    case 'build-green':
-      return 120;
-    case 'pending':
-      return 20;
-    case 'smoke-red':
-    case 'build-red':
-      return -40;
-    default:
-      return 0;
-  }
-}
-
-function confidenceScore(level?: string | null): number {
-  switch (level) {
-    case 'high':
-      return 120;
-    case 'medium':
-      return 70;
-    case 'low':
-      return 30;
-    default:
-      return 0;
-  }
-}
-
-function confidenceTierScore(tier?: string | null): number {
-  switch (tier) {
-    case 'verified':
-      return 180;
-    case 'high':
-      return 120;
-    case 'medium':
-      return 60;
-    case 'low':
-      return 10;
-    default:
-      return 0;
-  }
-}
-
-function normalizePortfolioVisibility(value: string): BlueprintPortfolioMetadata['visibility'] {
-  if (value === 'featured' || value === 'public' || value === 'labs' || value === 'hidden') return value;
-  return 'public';
-}
-
-function normalizePortfolioMaturity(value: string): BlueprintPortfolioMetadata['maturity'] {
+function normalizeVerificationStatus(
+  value: unknown,
+): ContentIntelligenceMetadata['verification_status'] {
   if (
-    value === 'certified-flagship'
-    || value === 'supported-contract'
-    || value === 'experimental'
-    || value === 'fold-candidate'
-    || value === 'legacy-hidden'
-  ) {
-    return value;
-  }
-  return 'supported-contract';
-}
-
-function normalizeArtifactStatus(value: string): BlueprintPortfolioArtifact['status'] {
-  if (value === 'none' || value === 'planned' || value === 'candidate' || value === 'certified') return value;
-  return 'none';
-}
-
-function normalizeVerificationStatus(value: unknown): ContentIntelligenceMetadata['verification_status'] {
-  if (
-    value === 'unknown'
-    || value === 'pending'
-    || value === 'build-green'
-    || value === 'build-red'
-    || value === 'smoke-green'
-    || value === 'smoke-red'
+    value === 'unknown' ||
+    value === 'pending' ||
+    value === 'build-green' ||
+    value === 'build-red' ||
+    value === 'smoke-green' ||
+    value === 'smoke-red'
   ) {
     return value;
   }
   return 'unknown';
 }
 
-function normalizeBenchmarkConfidence(value: unknown): ContentIntelligenceMetadata['benchmark_confidence'] {
+function normalizeBenchmarkConfidence(
+  value: unknown,
+): ContentIntelligenceMetadata['benchmark_confidence'] {
   if (value === 'none' || value === 'low' || value === 'medium' || value === 'high') return value;
   return 'none';
 }
 
 function normalizeConfidenceTier(value: unknown): ContentIntelligenceMetadata['confidence_tier'] {
-  if (value === 'low' || value === 'medium' || value === 'high' || value === 'verified') return value;
+  if (value === 'low' || value === 'medium' || value === 'high' || value === 'verified')
+    return value;
   return 'low';
 }
 

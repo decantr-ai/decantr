@@ -8,8 +8,8 @@ import type {
   PublicBlueprintSet,
   Shell,
   Theme,
-} from '@decantr/registry';
-import { API_CONTENT_TYPES, RegistryAPIClient } from '@decantr/registry';
+} from '@decantr/content';
+import { API_CONTENT_TYPES, ContentAPIClient } from '@decantr/content';
 
 type RegistryContentMap = {
   patterns: Pattern;
@@ -121,7 +121,7 @@ function normalizeCacheItem<T>(item: T, fallbackId: string): T {
 }
 
 async function fetchAllContent<T extends ApiContentType>(
-  apiClient: RegistryAPIClient,
+  apiClient: ContentAPIClient,
   contentType: T,
   params: {
     namespace?: string;
@@ -185,7 +185,7 @@ export class RegistryClient {
   private apiUrl: string;
   private offline: boolean;
   private projectRoot: string;
-  private apiClient: RegistryAPIClient;
+  private apiClient: ContentAPIClient;
 
   constructor(
     options: {
@@ -201,7 +201,7 @@ export class RegistryClient {
     this.apiUrl =
       options.apiUrl || process.env.DECANTR_API_URL || process.env.REGISTRY_URL || DEFAULT_API_URL;
     this.offline = options.offline || false;
-    this.apiClient = new RegistryAPIClient({
+    this.apiClient = new ContentAPIClient({
       baseUrl: this.apiUrl,
       apiKey: options.apiKey || process.env.DECANTR_API_KEY || undefined,
     });
@@ -434,7 +434,7 @@ export async function syncRegistry(
   synced: string[];
   failed: string[];
 }> {
-  const apiClient = new RegistryAPIClient({ baseUrl: apiUrl });
+  const apiClient = new ContentAPIClient({ baseUrl: apiUrl });
   const synced: string[] = [];
   const failed: string[] = [];
 

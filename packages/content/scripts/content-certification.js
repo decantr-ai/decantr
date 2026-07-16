@@ -4,9 +4,10 @@ export const DEFAULT_CERTIFICATION_TIER = 'enterprise';
 
 export function getContentCertification(item) {
   const certification = item && typeof item === 'object' ? item.certification : null;
-  const tier = certification && CERTIFICATION_TIERS.includes(certification.tier)
-    ? certification.tier
-    : DEFAULT_CERTIFICATION_TIER;
+  const tier =
+    certification && CERTIFICATION_TIERS.includes(certification.tier)
+      ? certification.tier
+      : DEFAULT_CERTIFICATION_TIER;
 
   return {
     tier,
@@ -25,7 +26,8 @@ const DANGEROUS_POLICY_PATTERNS = [
   },
   {
     id: 'unsafe-demo-auth',
-    pattern: /\bno\s+actual\s+auth\b|\bdemo\s+mode\b.*\blocalstorage\b|\blocalstorage\b.*\bdemo\s+flag\b/i,
+    pattern:
+      /\bno\s+actual\s+auth\b|\bdemo\s+mode\b.*\blocalstorage\b|\blocalstorage\b.*\bdemo\s+flag\b/i,
   },
   {
     id: 'hardcoded-secrets',
@@ -33,7 +35,8 @@ const DANGEROUS_POLICY_PATTERNS = [
   },
   {
     id: 'disabled-authorization',
-    pattern: /\bdisabled\s+authorization\b|\bskip\s+authorization\b|\bturn\s+off\s+auth(?:orization)?\b/i,
+    pattern:
+      /\bdisabled\s+authorization\b|\bskip\s+authorization\b|\bturn\s+off\s+auth(?:orization)?\b/i,
   },
   {
     id: 'unsafe-demo-persistence',
@@ -43,7 +46,7 @@ const DANGEROUS_POLICY_PATTERNS = [
 
 export function lintDangerousScaffoldingPolicy(item) {
   const serialized = JSON.stringify(item);
-  return DANGEROUS_POLICY_PATTERNS
-    .filter(({ pattern }) => pattern.test(serialized))
-    .map(({ id }) => id);
+  return DANGEROUS_POLICY_PATTERNS.filter(({ pattern }) => pattern.test(serialized)).map(
+    ({ id }) => id,
+  );
 }

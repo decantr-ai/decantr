@@ -41,6 +41,8 @@ const violations = evaluateGuard(essence, {});
 
 `@decantr/essence-spec` defines the active Essence v4 public contract for Decantr 3. Runtime validation accepts v4 only; older Essence v2/v3 files are supported through `decantr migrate --to v4`.
 
+Decantr 3.9 adds governed-change evidence contracts in `@decantr/verifier`; it does not change Essence V4 or require an `@decantr/essence-spec` version bump solely for alignment.
+
 - additive schema fields may be introduced in compatible minor releases
 - breaking schema or migration behavior changes require a major version
 - deprecation and migration guidance should be documented before removing or replacing a supported essence path

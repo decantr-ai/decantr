@@ -5,7 +5,7 @@ Release channel: `stable`
 
 Low-level Decantr compiler and execution-pack foundation.
 
-Most teams should use `@decantr/cli`, `@decantr/registry`, or `@decantr/mcp-server` directly. `@decantr/core` is part of the supported Decantr public foundation surface, but it is intentionally lower-level than the usual integration entrypoints.
+Most teams should use `@decantr/cli`, `@decantr/content`, or `@decantr/mcp-server` directly. `@decantr/core` is part of the supported Decantr public foundation surface, but it is intentionally lower-level than the usual integration entrypoints. `@decantr/registry` remains only for Decantr 3.x compatibility imports.
 
 ## Install
 
@@ -25,7 +25,7 @@ npm install @decantr/core
 - execution-pack schema URLs
 - markdown rendering for compiled packs
 - IR and pipeline helpers used by higher-level Decantr surfaces
-- Decantr 3 typed graph types, graph constants, Essence/IR-to-graph snapshot derivation, temporal snapshot/diff shapes, source import/reference edges, contract capsule derivation with a bounded source-artifact path index, deterministic hybrid route/impact ranking, behavior-obligation LocalRule projection support through existing graph shapes, evidence/proof ingestion, test-coverage hint edges, node impact context extraction, and an in-memory `GraphStore` adapter
+- Decantr 3 typed graph types, graph constants, Essence/IR-to-graph snapshot derivation, temporal snapshot/diff shapes, source import/reference edges, contract capsule derivation with a bounded source-artifact path index, deterministic hybrid route/impact ranking, canonical changed-file graph impact resolution, behavior-obligation LocalRule projection support through existing graph shapes, evidence/proof ingestion, test-coverage hint edges, node impact context extraction, and an in-memory `GraphStore` adapter
 
 In the current workflow architecture, `@decantr/core` owns the canonical adapter labels used by compiled packs, while runnable greenfield bootstrap adapters are resolved in the CLI on top of those labels.
 

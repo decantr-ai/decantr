@@ -32,22 +32,23 @@
       "runtimeKind": "content-corpus",
       "ships": ["dist", "schemas", "patterns", "themes", "blueprints", "archetypes", "shells", "README.md", "package.json"],
       "filesystem": {
-        "read": ["Package-local official content JSON and schema files for local search, resolution, and validation helpers"],
+        "read": ["Package-local official content JSON and schema files for local search, resolution, and validation helpers", "Explicit local content JSON paths passed to filesystem resolver helpers"],
         "write": [],
         "delete": []
       },
       "network": {
-        "outbound": [],
+        "outbound": ["Configured Decantr API base URL for content search, resolution, and execution-pack helpers"],
         "inbound": false
       },
       "process": {
         "spawn": []
       },
       "telemetry": "none",
-      "hostedUpload": "not-supported",
+      "hostedUpload": "caller-controlled legacy client methods are retained for compatibility, but retired upload routes are not served by the active API",
       "localArtifacts": [],
       "scannerNotes": [
-        "The package reads only its shipped corpus and schemas at runtime.",
+        "Local corpus search and validation read only shipped content unless a caller explicitly configures a filesystem resolver.",
+        "The content API client performs network requests only when a caller invokes it; DECANTR_API_URL is preferred and REGISTRY_URL remains a compatibility fallback.",
         "Validation helpers run locally and do not call the hosted API or upload project source."
       ]
     },
@@ -57,12 +58,12 @@
       "runtimeKind": "library",
       "ships": ["dist", "schema", "README.md", "package.json"],
       "filesystem": {
-        "read": ["Explicit local content JSON paths passed to resolver helpers"],
+        "read": ["Delegated @decantr/content reads for explicit local resolver paths and shipped corpus/schema access"],
         "write": [],
         "delete": []
       },
       "network": {
-        "outbound": ["Configured Decantr API base URL for 3.x compatibility content search, resolve, and content API pack helpers"],
+        "outbound": ["Delegated @decantr/content API client requests for 3.x compatibility content search, resolution, and pack helpers"],
         "inbound": false
       },
       "process": {
@@ -72,8 +73,9 @@
       "hostedUpload": "caller-controlled",
       "localArtifacts": [],
       "scannerNotes": [
-        "Network access is the package's 3.x compatibility API client surface; callers choose the base URL and operation. Retired critique/audit/publish methods remain legacy code paths but are no longer served by the active API.",
-        "New local official-corpus integrations should prefer @decantr/content."
+        "The package contains no independent resolver, ranking, wiring, or API implementation; it re-exports allowlisted @decantr/content compatibility symbols.",
+        "Network access is delegated to the content API client; callers choose the base URL and operation. Retired critique/audit/publish methods remain legacy paths but are no longer served by the active API.",
+        "New integrations should use @decantr/content directly."
       ]
     },
     {
@@ -193,7 +195,7 @@
         "spawn": ["git diff with fixed argv and shell disabled for changed-file/task impact discovery"]
       },
       "telemetry": "none",
-      "hostedUpload": "not-supported in Decantr 3.8; allow_hosted_upload is retained only as a compatibility option and does not activate retired API routes",
+      "hostedUpload": "not-supported in Decantr 3.9; allow_hosted_upload is retained only as a compatibility option and does not activate retired API routes",
       "localArtifacts": ["Read/write tools are contained to the active workspace root"],
       "scannerNotes": [
         "MCP write tools are annotated as write tools and use workspace-root path containment.",
@@ -206,8 +208,8 @@
       "runtimeKind": "cli",
       "ships": ["dist", "src/templates", "src/bundled", "README.md", "package.json"],
       "filesystem": {
-        "read": ["Selected project/workspace files, including project-local Playwright and axe-core packages when browser evidence is explicitly requested", "package manifests", "routing/style/config files", ".decantr artifacts including .decantr/graph typed graph artifacts", "Decantr cache/config files"],
-        "write": ["decantr.essence.json", "DECANTR.md", ".decantr artifacts", ".decantr/drift-log.json through explicit resolve drift-log actions", "generated context packs", ".decantr/graph typed graph artifacts including local snapshot history", "optional CI workflows/snippets", "optional Cursor MCP/rule files through decantr connect cursor", ".prettierignore entries for generated Decantr governance artifacts when a compatible formatter is detected", "optional style/export files", "Decantr config for auth/telemetry when explicitly enabled"],
+        "read": ["Selected project/workspace files, including project-local Playwright and axe-core packages when browser evidence is explicitly requested", "bounded workspace file snapshots during explicit decantr init or decantr adopt for authored-source integrity receipts", "package manifests", "routing/style/config files", ".decantr artifacts including .decantr/graph typed graph artifacts", "Decantr cache/config files"],
+        "write": ["decantr.essence.json", "DECANTR.md", ".decantr artifacts including the adoption receipt stored in .decantr/project.json", ".decantr/drift-log.json through explicit resolve drift-log actions", "generated context packs", ".decantr/graph typed graph artifacts including local snapshot history", "optional CI workflows/snippets", "optional Cursor MCP/rule files through decantr connect cursor", ".prettierignore entries for generated Decantr governance artifacts when a compatible formatter is detected", "optional style/export files", "Decantr config for auth/telemetry when explicitly enabled"],
         "delete": ["Generated Decantr artifacts or explicit command targets such as removed generated context/theme outputs"]
       },
       "network": {
@@ -218,13 +220,14 @@
         "spawn": ["git diff with fixed argv", "package manager/bootstrap commands with argv arrays", "local Studio/browser/dev-server helper flows"]
       },
       "telemetry": "disabled by default; opt-in records a local preference, and delivery occurs only when the caller explicitly configures a private endpoint",
-      "hostedUpload": "not-supported in Decantr 3.8; local verify/audit/scan do not upload source",
+      "hostedUpload": "not-supported in Decantr 3.9; local verify/audit/scan do not upload source",
       "localArtifacts": [".decantr/analysis.json", ".decantr/context/*", ".decantr/graph/*", ".decantr/evidence/*", ".decantr/drift-log.json", ".decantr/local-patterns*.json", ".decantr/rules*.json", ".decantr/style-bridge*.json", ".prettierignore", ".cursor/mcp.json", ".cursor/rules/decantr.mdc"],
       "scannerNotes": [
         "The CLI is intentionally a local project inspector and artifact writer.",
+        "Explicit initialization and Brownfield adoption take bounded before/after hashes without following symlinks so the stored receipt can distinguish Decantr-managed writes from authored source changes.",
         "decantr scan is local read-only reconnaissance; it writes no .decantr directory or report files and does not upload source.",
         "Process execution is limited to fixed command/argv paths; shell execution is avoided in shipped workflow code.",
-        "Visual evidence screenshots remain local in Decantr 3.8.",
+        "Visual evidence screenshots remain local in Decantr 3.9.",
         "Optional axe accessibility evidence loads only a project/workspace-local axe-core package and records local probe summaries.",
         "The CLI has no Decantr-hosted telemetry default; event and identity delivery require separate explicit caller-controlled endpoints."
       ]

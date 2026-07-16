@@ -108,16 +108,35 @@ function readJsonFile<T>(path: string): T | null {
   }
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isStyleBridgeManifest(
+  value: unknown,
+  status: StyleBridgeStatus,
+): value is StyleBridgeManifest {
+  return (
+    isRecord(value) &&
+    (value.version === 1 || value.version === 2) &&
+    value.status === status &&
+    Array.isArray(value.mappings) &&
+    value.mappings.every((mapping) => isRecord(mapping) && typeof mapping.id === 'string')
+  );
+}
+
 function writeJsonFile(path: string, value: unknown): void {
   writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`, 'utf-8');
 }
 
 export function readStyleBridge(projectRoot: string): StyleBridgeManifest | null {
-  return readJsonFile<StyleBridgeManifest>(styleBridgePath(projectRoot));
+  const bridge = readJsonFile<unknown>(styleBridgePath(projectRoot));
+  return isStyleBridgeManifest(bridge, 'accepted') ? bridge : null;
 }
 
 export function readStyleBridgeProposal(projectRoot: string): StyleBridgeManifest | null {
-  return readJsonFile<StyleBridgeManifest>(styleBridgeProposalPath(projectRoot));
+  const proposal = readJsonFile<unknown>(styleBridgeProposalPath(projectRoot));
+  return isStyleBridgeManifest(proposal, 'proposal') ? proposal : null;
 }
 
 function stringArray(value: unknown): string[] {
@@ -254,7 +273,7 @@ export function createStyleBridgeProposal(input: {
     generatedAt,
     source: 'decantr codify --style-bridge',
     purpose:
-      'Project-owned Hybrid style bridge. It maps Decantr design intent to the existing app styling system without installing Decantr CSS or taking over source.',
+      'Project-owned Hybrid style bridge. It maps Decantr design intent to the existing app styling system without generating runtime CSS, installing Decantr CSS, or taking over source.',
     adoption: {
       mode: 'style-bridge',
       workflowMode: 'brownfield-attach',
@@ -420,6 +439,7 @@ export function createStyleBridgeProposal(input: {
     ],
     rules: [
       'The bridge is advisory until accepted; after acceptance, task/doctor/CI should surface it as Hybrid authority.',
+      'The host project owns runtime CSS, tokens, and global styles. Decantr must not generate or overwrite them in style-bridge mode.',
       'The bridge does not make official corpus patterns enforceable. Map corpus concepts into local law first.',
       'Keep deterministic blocking checks in .decantr/rules.json, ESLint, Biome, tests, or visual regression.',
     ],

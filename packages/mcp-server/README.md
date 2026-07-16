@@ -138,7 +138,7 @@ The server exposes a hard 8-tool MCP surface. Pass an `action` to select the rou
 
 | Tool | Description | Example Input |
 |------|-------------|---------------|
-| `decantr_project` | Read local project state, shared discovery summary, and workspace health | `{ "action": "state", "project_path": "apps/web" }` |
+| `decantr_project` | Read local project state, canonical adoption truth, shared discovery summary, and workspace health | `{ "action": "state", "project_path": "apps/web" }` |
 | `decantr_contract` | Read Essence, validate, check drift, generate a skeleton, or read the Contract capsule | `{ "action": "validate", "path": "./decantr.essence.json" }` |
 | `decantr_context` | Read scaffold, section, page, task, shared discovery summary, and execution-pack context | `{ "action": "task", "project_path": "apps/web", "route": "/feed", "task": "improve recipe card loading" }` |
 | `decantr_graph` | Read graph snapshots, query graph nodes/edges, or traverse graph relations | `{ "action": "query", "project_path": "apps/web", "file_path": "src/app/page.tsx", "include_impact": true }` |
@@ -147,7 +147,11 @@ The server exposes a hard 8-tool MCP surface. Pass an `action` to select the rou
 | `decantr_repair` | Return typed findings, repair plans, repair prompts, and v2 health-loop guidance | `{ "action": "health_loop", "project_path": "apps/web" }` |
 | `decantr_contract_write` | Explicit write surface for accepting drift, deferring drift to the drift log, or mutating Essence v4 | `{ "action": "update_essence", "operation": "add_feature", "payload": { "feature": "billing" } }` |
 
-`decantr_context` task responses default to `"detail": "compact"`. Compact mode preserves route identity, implementation read targets, authority, graph readiness/ranking summaries, local law, health state, stop conditions, and verify commands while omitting full graph node/edge arrays and bounding large context lists. Pass `"detail": "full"` only for diagnostic clients that need the complete graph and context payload. Both modes return `response_detail`. Task activation reports `blocked_missing_graph` when graph artifacts are absent or stale rather than serving contradictory route context.
+`decantr_context` task responses default to `"detail": "compact"`. Compact mode projects the verifier-owned `TaskCapsuleV1` into the existing response fields and adds `task_capsule_version: "task-capsule.v1"`. The returned `task` is exactly the canonical capsule request: only `createTaskCapsuleV1()` may truncate it, and `task_capsule_budget`, `task_capsule_truncation`, and `task_capsule_digest` describe that exact result. The compatibility envelope may prune lower-priority duplicated context, but it never truncates `task` independently, and the complete response remains within 12,000 canonical UTF-8 bytes / 4,000 estimated tokens. Pass `"detail": "full"` only for diagnostic clients that need the complete graph and context payload. Both modes return `response_detail`. Task activation reports `blocked_missing_graph` when graph artifacts are absent or stale rather than serving contradictory route context.
+
+Local scaffold, page, and section paths selected by `pack-manifest.json` are read or emitted as task read targets only when they resolve to real files contained under the selected project's `.decantr/context` directory. Missing, escaped, directory, and symlink-escaped references are ignored; existing `scaffold.md` and `section-<id>.md` narrative context remains the local fallback. In Greenfield `style-bridge` adoption, the accepted bridge maps onto the host project's tokens, classes, and styling runtime; it does not activate `@decantr/css`.
+
+`decantr_project` state includes verifier-built `AdoptionTruthV1`. Official corpus actions under the compatibility-named `decantr_registry` tool use `@decantr/content` implementations; there is no ninth `decantr_content` tool.
 
 For the broader product surface and support policy, see the root Decantr docs and package support matrix.
 
@@ -163,13 +167,15 @@ Content-corpus and pack-resolution tools may call the configured Decantr API. So
 
 `@decantr/mcp-server` is stable in the Decantr 3 line for the documented MCP tool surface.
 
-- new tools may be added in compatible releases
+- Decantr 3.9 keeps exactly the eight tools above; a ninth content tool or hidden alias is not compatible with this release line
 - existing documented tool names and envelopes should not break without a major version
 - breaking changes to established tool contracts require a major version and migration note
 
-### 3.4 Tool Surface Migration
+### Decantr 3 Tool Surface
 
-Decantr 3.4 consolidated legacy MCP tool names into the eight action-based tools above. Decantr 3.8.3 keeps that surface, preserves v2 task/evidence/workspace-health/health-loop contracts, and routes official corpus compatibility through `decantr_registry` rather than adding a ninth tool. For example, `decantr_get_project_state` becomes `decantr_project` with `{ "action": "state" }`, `decantr_get_graph_snapshot` becomes `decantr_graph` with `{ "action": "snapshot" }`, and the legacy write tools become `decantr_contract_write` with `{ "action": "accept_drift" }` or `{ "action": "update_essence" }`.
+Decantr 3.4 consolidated legacy MCP tool names into the eight action-based tools above. Decantr 3.9 keeps that inventory, server identity, stdio transport, and existing action names; adds canonical adoption/task proof data through existing actions; and routes official corpus compatibility through `decantr_registry` rather than adding a ninth tool. For example, `decantr_get_project_state` becomes `decantr_project` with `{ "action": "state" }`, `decantr_get_graph_snapshot` becomes `decantr_graph` with `{ "action": "snapshot" }`, and the legacy write tools become `decantr_contract_write` with `{ "action": "accept_drift" }` or `{ "action": "update_essence" }`.
+
+The npm tarball includes `server.json` so MCP directories can read the same stable identity and transport metadata as repository consumers.
 
 ## How It Works
 

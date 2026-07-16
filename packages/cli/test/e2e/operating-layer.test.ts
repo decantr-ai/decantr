@@ -63,6 +63,29 @@ function writeEssence(root: string): void {
   });
 }
 
+function writeTaskRouteSources(root: string): void {
+  const sourceRoot = join(root, 'src');
+  mkdirSync(sourceRoot, { recursive: true });
+  writeFileSync(
+    join(sourceRoot, 'App.tsx'),
+    `import { createBrowserRouter } from 'react-router-dom';
+
+export const router = createBrowserRouter([
+  { path: '/', lazy: () => import('./Home') },
+  { path: '/settings', lazy: () => import('./Settings') },
+]);
+`,
+  );
+  writeFileSync(
+    join(sourceRoot, 'Home.tsx'),
+    'export function Component() { return <main>Home</main>; }\n',
+  );
+  writeFileSync(
+    join(sourceRoot, 'Settings.tsx'),
+    'export function Component() { return <main>Settings</main>; }\n',
+  );
+}
+
 function stripAnsi(value: string): string {
   return value.replace(new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, 'g'), '');
 }
@@ -169,11 +192,29 @@ describe('operating layer commands', () => {
     expect(output).toContain('Adoption Lane:');
     expect(output).toContain('Brownfield contract-only');
     expect(output).toContain('Existing app is authoritative');
+    expect(output).toContain('Truth:');
+    expect(output).toContain('Truth next action:');
     expect(output).toContain('packages/ui');
     expect(output).toContain('Typed graph: stale or missing');
     expect(output).toContain('Typed Contract graph artifacts are missing or stale');
     expect(output).toContain('decantr graph --project apps/web');
     expect(output).toContain('Next steps:');
+  });
+
+  it('projects verifier-owned adoption truth through doctor JSON', () => {
+    const report = JSON.parse(runCli(testDir, ['doctor', '--project', 'apps/web', '--json'])) as {
+      adoptionTruth: {
+        $schema: string;
+        project: { selectedAppRoot: string };
+        facts: Array<{ id: string }>;
+      };
+    };
+
+    expect(report.adoptionTruth.$schema).toBe('https://decantr.ai/schemas/adoption-truth.v1.json');
+    expect(report.adoptionTruth.project.selectedAppRoot).toBe('apps/web');
+    expect(report.adoptionTruth.facts.map((fact) => fact.id)).toContain(
+      'adoption.host-source-integrity',
+    );
   });
 
   it('does not crash when CI scan candidates are directories', () => {
@@ -300,6 +341,66 @@ describe('operating layer commands', () => {
     expect(output).toContain('map official corpus patterns into local law');
   });
 
+  it('rejects proposal and malformed task-authority files', () => {
+    const appRoot = join(testDir, 'apps', 'web');
+    const projectPath = join(appRoot, '.decantr', 'project.json');
+    const project = JSON.parse(readFileSync(projectPath, 'utf-8')) as {
+      initialized?: Record<string, unknown>;
+      [key: string]: unknown;
+    };
+    writeJson(projectPath, {
+      ...project,
+      initialized: { ...project.initialized, adoptionMode: 'style-bridge' },
+    });
+    writeJson(join(appRoot, '.decantr', 'local-patterns.json'), {
+      version: 2,
+      status: 'proposal',
+      patterns: [{ id: 'copied-proposal', componentPaths: ['src/Home.tsx'] }],
+    });
+    writeFileSync(join(appRoot, '.decantr', 'rules.json'), '{ malformed rules json\n', 'utf-8');
+    writeJson(join(appRoot, '.decantr', 'style-bridge.json'), {
+      version: 2,
+      status: 'proposal',
+      mappings: [{ id: 'copied-bridge', tokenHints: ['--surface'] }],
+    });
+    writeTaskRouteSources(appRoot);
+    runCli(testDir, ['graph', '--project', 'apps/web']);
+
+    const task = JSON.parse(
+      runCli(testDir, [
+        'task',
+        '/',
+        'preserve existing source authority',
+        '--project',
+        'apps/web',
+        '--json',
+      ]),
+    ) as {
+      read: string[];
+      authority: {
+        lane: string;
+        activeLane: string;
+        activeAuthorities: string[];
+        warnings: string[];
+      };
+      localLaw: { patternsPath: string | null; rulesPath: string | null; patterns: unknown[] };
+      styleBridge: { path: string | null; mappings: unknown[] };
+    };
+
+    expect(task.authority).toMatchObject({
+      lane: 'Brownfield contract-only',
+      activeLane: 'production-source',
+    });
+    expect(task.authority.activeAuthorities).not.toContain('accepted local patterns/rules');
+    expect(task.authority.activeAuthorities).not.toContain('accepted style bridge');
+    expect(task.authority.warnings.join('\n')).toContain('no parsed, valid, accepted style bridge');
+    expect(task.localLaw).toMatchObject({ patternsPath: null, rulesPath: null, patterns: [] });
+    expect(task.styleBridge).toMatchObject({ path: null, mappings: [] });
+    expect(task.read).not.toContain('apps/web/.decantr/local-patterns.json');
+    expect(task.read).not.toContain('apps/web/.decantr/rules.json');
+    expect(task.read).not.toContain('apps/web/.decantr/style-bridge.json');
+  });
+
   it('codifies a Hybrid style bridge and surfaces it in doctor, task, suggest, and CI', () => {
     mkdirSync(join(testDir, 'apps', 'web', 'src', 'components'), { recursive: true });
     mkdirSync(join(testDir, 'apps', 'web', 'src', 'styles'), { recursive: true });
@@ -348,8 +449,14 @@ describe('operating layer commands', () => {
       '--confirm-reviewed',
       '--accept-style-bridge',
     ]);
+    const acceptedDecantr = readFileSync(join(testDir, 'apps', 'web', 'DECANTR.md'), 'utf-8');
+    const acceptedAssistantBridge = readFileSync(
+      join(testDir, 'apps', 'web', '.decantr', 'context', 'assistant-bridge.md'),
+      'utf-8',
+    );
     const doctor = runCli(testDir, ['doctor', '--project', 'apps/web']);
     const setup = runCli(join(testDir, 'apps', 'web'), ['setup']);
+    writeTaskRouteSources(join(testDir, 'apps', 'web'));
     runCli(testDir, ['graph', '--project', 'apps/web']);
     const task = JSON.parse(
       runCli(testDir, [
@@ -361,7 +468,8 @@ describe('operating layer commands', () => {
         '--json',
       ]),
     ) as {
-      authority: { lane: string; activeAuthorities: string[] };
+      authority: { lane: string; activeLane: string; activeAuthorities: string[] };
+      loop: { authority: { activeLane: string } };
       styleBridge: { path: string | null; mappingCount: number };
     };
     const suggestions = runCli(testDir, [
@@ -380,6 +488,18 @@ describe('operating layer commands', () => {
     expect(proposalOutput).toContain('Wrote style bridge proposal');
     expect(acceptOutput).toContain('Accepted style bridge');
     expect(acceptOutput).toContain('Hybrid style bridge is now active');
+    expect(acceptOutput).toContain(
+      'Regenerated DECANTR.md and .decantr/context/assistant-bridge.md',
+    );
+    expect(acceptedDecantr).toContain('Styling remains host-owned');
+    expect(acceptedDecantr).toContain('accepted `.decantr/style-bridge.json`');
+    expect(acceptedAssistantBridge).toContain('Styling remains host-owned');
+    expect(acceptedAssistantBridge).toContain('accepted `.decantr/style-bridge.json`');
+    expect(existsSync(join(testDir, 'apps', 'web', 'src', 'styles', 'tokens.css'))).toBe(false);
+    expect(existsSync(join(testDir, 'apps', 'web', 'src', 'styles', 'global.css'))).toBe(false);
+    expect(existsSync(join(testDir, 'apps', 'web', 'src', 'styles', 'decantr-bridge.css'))).toBe(
+      false,
+    );
     expect(doctor).toContain('Hybrid style bridge');
     expect(doctor).toContain('Style bridge: present');
     expect(setup).toContain('decantr doctor');
@@ -387,6 +507,8 @@ describe('operating layer commands', () => {
     expect(setup).toContain('decantr ci init');
     expect(setup).not.toContain('codify --from-audit');
     expect(task.authority.lane).toBe('Hybrid style bridge');
+    expect(task.authority.activeLane).toBe('style-bridge');
+    expect(task.loop.authority.activeLane).toBe(task.authority.activeLane);
     expect(task.authority.activeAuthorities).toContain('accepted style bridge');
     expect(task.styleBridge.path).toBe('apps/web/.decantr/style-bridge.json');
     expect(task.styleBridge.mappingCount).toBeGreaterThan(0);
@@ -673,6 +795,7 @@ describe('operating layer commands', () => {
     expect(essence.blueprint.routes['/settings']).toEqual({ section: 'app', page: 'settings' });
     expect(existsSync(join(testDir, 'decantr.essence.json'))).toBe(false);
 
+    writeTaskRouteSources(join(testDir, 'apps', 'web'));
     runCli(testDir, ['graph', '--project', 'apps/web']);
     const task = JSON.parse(
       runCli(testDir, [
@@ -686,6 +809,7 @@ describe('operating layer commands', () => {
     ) as { route: string; section: string; page: string; read: string[] };
     expect(task).toMatchObject({ route: '/settings', section: 'app', page: 'settings' });
     expect(task.read).toContain('apps/web/.decantr/context/scaffold.md');
+    expect(task.read).not.toContain('apps/web/.decantr/context/scaffold-pack.md');
     expect(task.read).toContain('apps/web/DECANTR.md');
   }, 15_000);
 
@@ -946,6 +1070,8 @@ describe('operating layer commands', () => {
     }
     const task = JSON.parse(taskOutput);
 
+    expect(task.taskCapsuleVersion).toBe('task-capsule.v1');
+    expect(task.read[0]).toBe('apps/web/src/app/page.tsx');
     expect(task.graph.capsule.cacheKey).toContain('decantr-contract:fnv1a32:');
     expect(task.graph.capsule.contractHash).toMatch(/^fnv1a32:/);
     expect(task.graph.capsule.contractCacheKey).toBe(task.graph.capsule.cacheKey);
@@ -961,6 +1087,90 @@ describe('operating layer commands', () => {
     expect(task.read).toContain('apps/web/.decantr/graph/contract-capsule.json');
     expect(task.loop.state).toBe('blocked_missing_graph');
     expect(task.loop.blockingReasons).toContain('Route graph context is missing or stale.');
+    expect(Buffer.byteLength(JSON.stringify(task), 'utf8')).toBeLessThanOrEqual(12_000);
+  });
+
+  it('bounds long task requests and exposes canonical capsule qualification metadata', () => {
+    const appRoot = join(testDir, 'apps', 'web');
+    writeTaskRouteSources(appRoot);
+    runCli(testDir, ['graph', '--project', 'apps/web']);
+    const request = 'tighten the governed home interaction '.repeat(900);
+
+    const task = JSON.parse(
+      runCli(testDir, ['task', '/', request, '--project', 'apps/web', '--json']),
+    ) as {
+      task: string;
+      taskCapsuleBudget: {
+        maxCanonicalBytes: number;
+        maxEstimatedTokens: number;
+        canonicalBytes: number;
+        estimatedTokens: number;
+      };
+      taskCapsuleTruncation: {
+        truncated: boolean;
+        truncatedFields: string[];
+        originalCanonicalBytes: number;
+      };
+      taskCapsuleDigest: string;
+    };
+
+    expect(task.task.length).toBeLessThan(request.length);
+    expect(task.taskCapsuleBudget.canonicalBytes).toBeLessThanOrEqual(12_000);
+    expect(task.taskCapsuleBudget.estimatedTokens).toBeLessThanOrEqual(4_000);
+    expect(task.taskCapsuleTruncation.truncated).toBe(true);
+    expect(task.taskCapsuleTruncation.truncatedFields).toContain('task.request');
+    expect(task.taskCapsuleTruncation.originalCanonicalBytes).toBeGreaterThan(
+      task.taskCapsuleBudget.canonicalBytes,
+    );
+    expect(task.taskCapsuleDigest).toMatch(/^sha256:[a-f0-9]{64}$/);
+    expect(Buffer.byteLength(JSON.stringify(task), 'utf8')).toBeLessThanOrEqual(12_000);
+
+    const repeated = JSON.parse(
+      runCli(testDir, ['task', '/', request, '--project', 'apps/web', '--json']),
+    ) as { taskCapsuleDigest: string };
+    expect(repeated.taskCapsuleDigest).toBe(task.taskCapsuleDigest);
+  });
+
+  it('ignores dead or escaped pack manifest targets and falls back to narrative context', () => {
+    const appRoot = join(testDir, 'apps', 'web');
+    const contextDir = join(appRoot, '.decantr', 'context');
+    writeTaskRouteSources(appRoot);
+    runCli(testDir, ['graph', '--project', 'apps/web']);
+    writeFileSync(join(contextDir, 'section-app.md'), '# App section\n');
+    writeFileSync(join(appRoot, '.decantr', 'outside.md'), '# Outside context\n');
+    for (const file of ['scaffold-pack.md', 'section-app-pack.md', 'page-home-pack.md']) {
+      rmSync(join(contextDir, file), { force: true });
+    }
+    writeJson(join(contextDir, 'pack-manifest.json'), {
+      version: '1.0.0',
+      scaffold: { id: 'scaffold', markdown: 'missing-scaffold-pack.md', json: 'missing.json' },
+      sections: [
+        {
+          id: 'app',
+          markdown: '../outside.md',
+          json: 'missing-section.json',
+          pageIds: ['home'],
+        },
+      ],
+      pages: [
+        {
+          id: 'home',
+          markdown: '../../outside.md',
+          json: 'missing-page.json',
+          sectionId: 'app',
+        },
+      ],
+    });
+
+    const task = JSON.parse(
+      runCli(testDir, ['task', '/', 'tighten home', '--project', 'apps/web', '--json']),
+    ) as { read: string[]; authority: { activeAuthorities: string[] } };
+
+    expect(task.read).toContain('apps/web/.decantr/context/scaffold.md');
+    expect(task.read).toContain('apps/web/.decantr/context/section-app.md');
+    expect(task.read.some((path) => path.includes('-pack.md'))).toBe(false);
+    expect(task.read.some((path) => path.includes('outside.md'))).toBe(false);
+    expect(task.authority.activeAuthorities).not.toContain('execution packs as advisory guidance');
   });
 
   it('rejects unsupported flags on codify before writing proposals', () => {
@@ -987,6 +1197,7 @@ describe('operating layer commands', () => {
       '--accept',
       '--confirm-reviewed',
     ]);
+    writeTaskRouteSources(join(testDir, 'apps', 'web'));
     runCli(testDir, ['graph', '--project', 'apps/web']);
     const task = JSON.parse(
       runCli(testDir, [
@@ -998,7 +1209,13 @@ describe('operating layer commands', () => {
         '--json',
       ]),
     ) as {
-      authority: { lane: string; warnings: string[]; activeAuthorities: string[] };
+      authority: {
+        lane: string;
+        activeLane: string;
+        warnings: string[];
+        activeAuthorities: string[];
+      };
+      loop: { authority: { activeLane: string } };
       localLaw: { patternsPath: string | null; rulesPath: string | null };
     };
 
@@ -1011,6 +1228,8 @@ describe('operating layer commands', () => {
       'decantr verify --brownfield --local-patterns --project apps/web',
     );
     expect(task.authority.lane).toBe('Hybrid local law');
+    expect(task.authority.activeLane).toBe('local-law');
+    expect(task.loop.authority.activeLane).toBe(task.authority.activeLane);
     expect(task.authority.activeAuthorities).toContain('accepted local patterns/rules');
     expect(task.authority.warnings.join('\n')).toContain('angular');
     expect(task.authority.warnings.join('\n')).not.toContain('next');

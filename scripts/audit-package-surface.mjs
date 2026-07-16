@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   getPackageSupportMatrixPath,
@@ -21,6 +21,49 @@ findings.push(...validatePackageRetirements(surface, retirements));
 const matrixPath = getPackageSupportMatrixPath(root);
 const renderedMatrix = renderPackageSupportMatrix(surface, retirements);
 const currentMatrix = readFileSync(matrixPath, 'utf8');
+
+const registryIndependentSurfaces = [
+  'packages/core',
+  'packages/verifier',
+  'packages/mcp-server',
+  'packages/cli',
+  'apps/api',
+];
+
+function listSourceFiles(directory) {
+  if (!existsSync(directory)) return [];
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(directory, entry.name);
+    if (entry.isDirectory()) return listSourceFiles(path);
+    return /\.(?:[cm]?[jt]sx?)$/u.test(entry.name) ? [path] : [];
+  });
+}
+
+for (const packagePath of registryIndependentSurfaces) {
+  const packageJsonPath = join(root, packagePath, 'package.json');
+  if (existsSync(packageJsonPath)) {
+    const manifest = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
+    const dependencySections = [
+      manifest.dependencies,
+      manifest.devDependencies,
+      manifest.optionalDependencies,
+      manifest.peerDependencies,
+    ];
+    if (dependencySections.some((dependencies) => dependencies?.['@decantr/registry'])) {
+      findings.push(
+        `${packagePath} must use @decantr/content directly; @decantr/registry is an external compatibility facade only.`,
+      );
+    }
+  }
+
+  for (const sourcePath of listSourceFiles(join(root, packagePath, 'src'))) {
+    if (/['"]@decantr\/registry(?:\/[^'"]*)?['"]/u.test(readFileSync(sourcePath, 'utf8'))) {
+      findings.push(
+        `${sourcePath.replace(`${root}/`, '')} imports @decantr/registry; use @decantr/content or local package ownership instead.`,
+      );
+    }
+  }
+}
 
 for (const pkg of publicPackages) {
   const readmePath = join(root, pkg.path, 'README.md');

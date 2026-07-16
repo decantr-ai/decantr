@@ -1,4 +1,25 @@
 {
+  "releaseLanes": {
+    "3.9": {
+      "initialVersion": "3.9.0",
+      "stableOnly": true,
+      "defaultDistTag": "latest",
+      "requiredGates": [
+        {
+          "id": "packed-content-facade",
+          "label": "Decantr 3.9 packed content-facade gate",
+          "script": "scripts/audit-packed-content-facade.mjs",
+          "phases": ["publish", "closeout"]
+        },
+        {
+          "id": "release-qualification",
+          "label": "Decantr 3.9 qualification gate",
+          "script": "scripts/audit-3-9-qualification-baseline.mjs",
+          "phases": ["readiness", "publish", "closeout"]
+        }
+      ]
+    }
+  },
   "packages": [
     {
       "name": "@decantr/essence-spec",
@@ -51,7 +72,7 @@
       "releaseChannel": "stable",
       "publishOrder": 20,
       "defaultDistTag": "latest",
-      "summary": "Official Decantr content corpus, schemas, local search/resolution helpers, and content validation for AI frontend governance.",
+      "summary": "Canonical Decantr corpus, schemas, provenance, search, resolution, discovery, ranking, and wiring helpers for stack-agnostic AI frontend governance.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,
@@ -91,7 +112,7 @@
       "releaseChannel": "stable",
       "publishOrder": 50,
       "defaultDistTag": "latest",
-      "summary": "Execution-pack compiler primitives, typed graph builders, Contract capsule helpers, and shared Decantr core utilities for advanced package consumers.",
+      "summary": "Execution-pack compiler primitives, typed graph builders, deterministic changed-file graph resolution, Contract capsule helpers, and shared Decantr core utilities.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,
@@ -131,7 +152,7 @@
       "releaseChannel": "stable",
       "publishOrder": 20,
       "defaultDistTag": "latest",
-      "summary": "MCP delivery surface for Decantr Contract context, shared discovery metadata, typed graph artifacts, packs, Brownfield and Hybrid task context with authority, local law, change impact, evidence bundles, workspace health, and repair prompts.",
+      "summary": "Stable eight-tool MCP surface for content-corpus compatibility, Decantr Contract context, Adoption Truth, bounded Task Capsules, typed graph artifacts, packs, evidence, workspace health, and repair prompts.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,
@@ -151,7 +172,7 @@
       "releaseChannel": "stable",
       "publishOrder": 10,
       "defaultDistTag": "latest",
-      "summary": "Shared read-only Brownfield discovery and scan-report v2 engine, verification, critique, source-grounded interaction evidence, contract assertions, Evidence Bundle, Project Health, Decantr CI report, Workspace Health, and report-schema engine.",
+      "summary": "Shared read-only discovery and verification engine for scan report v2, Adoption Truth v1, bounded Task Capsule v1, Governance Delta v1, default CI report v2, opt-in CI report v3, evidence, project health, and workspace health.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,
@@ -171,7 +192,7 @@
       "releaseChannel": "stable",
       "publishOrder": 30,
       "defaultDistTag": "latest",
-      "summary": "Workflow commands for setup/scan/adopt/doctor/task/verify/ci/codify/connect/content, local workflow/adoption policy resolution, adapter-backed bootstrap/attach, scan-report v2 Brownfield discovery previews, Cursor activation, Brownfield intelligence, Hybrid authority lanes, monorepo app targeting, artifact ownership guidance, project-owned local law, content sync, Evidence Bundles, visual manifests, health baselines, workspace health, pinned CI generation, Project Health, Studio, Content Health, and project governance.",
+      "summary": "Workflow commands for content-first setup, scan, adopt, doctor, task, verify, CI, codify, connect, and content operations, including Adoption Truth, bounded Task Capsules, Governance Deltas, default CI v2, opt-in CI v3, monorepo targeting, health baselines, and read-only report-isolated Studio.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,

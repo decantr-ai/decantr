@@ -2,8 +2,16 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import type { ProjectHealthReport } from '@decantr/verifier';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import {
+  createStableProjectIdentityV1,
+  fingerprintFindingOccurrence,
+  GOVERNANCE_FINDING_FINGERPRINT_VERSION,
+  type GovernanceFindingLocationV1,
+  type GovernanceFindingOccurrenceInputV1,
+  type ProjectHealthFinding,
+  type ProjectHealthReport,
+} from '@decantr/verifier';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { COMMAND_SURFACE, commandSurfaceByName } from '../src/command-surface.js';
 import { buildGraphArtifacts } from '../src/commands/graph.js';
 import {
@@ -190,6 +198,85 @@ function writeCurrentGraph(root = testDir): void {
   writeJson(artifacts.paths.manifest, artifacts.manifest);
   writeJson(artifacts.paths.diff, artifacts.diff);
   writeJson(artifacts.paths.capsule, artifacts.capsule);
+}
+
+function baselineTestFinding(
+  file?: string,
+  location?: GovernanceFindingLocationV1,
+): ProjectHealthFinding {
+  return {
+    id: 'audit-shared-occurrence',
+    code: 'TEST001',
+    source: 'audit',
+    category: 'Components',
+    severity: 'warn',
+    message: 'A shared control bypasses the project primitive.',
+    evidence: [],
+    file,
+    rule: 'shared-control',
+    repair: { id: 'use-project-control' },
+    remediation: { summary: 'Use the project control.', prompt: 'Repair it.', commands: [] },
+    ...(location ? { location } : {}),
+  } as ProjectHealthFinding;
+}
+
+function baselineTestOccurrence(
+  file?: string,
+  location?: GovernanceFindingLocationV1,
+): GovernanceFindingOccurrenceInputV1 {
+  return {
+    code: 'TEST001',
+    ruleId: 'shared-control',
+    source: 'audit',
+    category: 'Components',
+    severity: 'warn',
+    message: 'A shared control bypasses the project primitive.',
+    authorityLane: 'unknown',
+    graphAnchor: null,
+    repairId: 'use-project-control',
+    repairTarget: file ?? null,
+    annotation: {
+      path: file ?? null,
+      startLine: location?.line ?? null,
+      startColumn: location?.column ?? null,
+      endLine: location?.endLine ?? null,
+      endColumn: location?.endColumn ?? null,
+    },
+    file: file ?? null,
+    route: null,
+    target: null,
+    location: location ?? null,
+  };
+}
+
+function baselineFindingV2(file: string, location: GovernanceFindingLocationV1) {
+  const occurrence = baselineTestOccurrence(file, location);
+  return {
+    id: 'audit-shared-occurrence',
+    fingerprint: fingerprintFindingOccurrence(occurrence),
+    fingerprintVersion: GOVERNANCE_FINDING_FINGERPRINT_VERSION,
+    code: occurrence.code,
+    rule: occurrence.ruleId,
+    source: occurrence.source,
+    category: occurrence.category,
+    severity: occurrence.severity,
+    message: occurrence.message,
+    file: occurrence.file,
+    route: occurrence.route,
+    target: occurrence.target,
+    location: occurrence.location,
+    repairTarget: occurrence.repairTarget,
+    annotation: occurrence.annotation,
+    repair: { id: occurrence.repairId },
+  };
+}
+
+function baselineGateReport(findings: ProjectHealthFinding[]): ProjectHealthReport {
+  return {
+    projectRoot: testDir,
+    summary: { workflowMode: 'brownfield-attach' },
+    findings,
+  } as unknown as ProjectHealthReport;
 }
 
 describe('Project Health report', () => {
@@ -1122,6 +1209,273 @@ exports.chromium = {
 
     expect(parsed.saveBaseline).toBe(true);
     expect(parsed.sinceBaseline).toBe(true);
+  });
+
+  it('classifies same-code occurrences in different files independently', () => {
+    mkdirSync(join(testDir, '.decantr'), { recursive: true });
+    const location = { line: 12, column: 3 };
+    writeJson(join(testDir, '.decantr', 'health-baseline.json'), {
+      version: 2,
+      projectIdentity: createStableProjectIdentityV1(testDir),
+      generatedAt: '2026-07-16T12:00:00.000Z',
+      status: 'warning',
+      score: 95,
+      findings: [baselineFindingV2('src/components/Alpha.tsx', location)],
+      routes: [],
+      packs: null,
+      screenshots: [],
+    });
+    const report = baselineGateReport([
+      baselineTestFinding('src/components/Alpha.tsx', location),
+      baselineTestFinding('src/components/Beta.tsx', location),
+    ]);
+
+    const gate = evaluateHealthBaselineGate(testDir, report);
+
+    expect(gate.applied).toBe(true);
+    expect(gate.inheritedFindingIds).toEqual(['audit-shared-occurrence']);
+    expect(gate.newFindings).toEqual([{ id: 'audit-shared-occurrence', severity: 'warn' }]);
+    expect(shouldFailHealthBaselineGate(gate, 'warn')).toBe(true);
+  });
+
+  it('reports resolved v2 finding occurrences in the private continuity artifact', async () => {
+    mkdirSync(join(testDir, '.decantr'), { recursive: true });
+    const location = { line: 12, column: 3 };
+    writeJson(join(testDir, '.decantr', 'health-baseline.json'), {
+      version: 2,
+      projectIdentity: createStableProjectIdentityV1(testDir),
+      generatedAt: '2026-07-16T12:00:00.000Z',
+      status: 'warning',
+      score: 95,
+      findings: [baselineFindingV2('src/components/Removed.tsx', location)],
+      routes: [],
+      packs: null,
+      screenshots: [],
+    });
+    writeRegistryCache();
+    writeEssence();
+    writePacks();
+    writeJson(join(testDir, '.decantr', 'project.json'), {
+      initialized: { workflowMode: 'brownfield-attach', adoptionMode: 'contract-only' },
+    });
+
+    await cmdHealth(testDir, {
+      format: 'json',
+      output: 'health-resolved.json',
+      sinceBaseline: true,
+    });
+
+    const comparison = JSON.parse(
+      readFileSync(join(testDir, '.decantr', 'health-baseline-diff.json'), 'utf-8'),
+    ) as { resolvedFindings: string[]; limitations: string[] };
+    expect(comparison.resolvedFindings).toContain('audit-shared-occurrence');
+    expect(comparison.limitations).toEqual([]);
+  });
+
+  it('reads v1 and unversioned baselines with reduced evidence limitations', async () => {
+    mkdirSync(join(testDir, '.decantr'), { recursive: true });
+    const unanchored = baselineTestFinding();
+    const legacyBaseline = {
+      generatedAt: '2026-07-16T12:00:00.000Z',
+      status: 'warning',
+      score: 95,
+      findings: [
+        {
+          id: unanchored.id,
+          severity: unanchored.severity,
+          source: unanchored.source,
+          message: unanchored.message,
+        },
+      ],
+      routes: [],
+      packs: null,
+      screenshots: [],
+    };
+    writeJson(join(testDir, '.decantr', 'health-baseline.json'), {
+      version: 1,
+      ...legacyBaseline,
+    });
+
+    const v1Gate = evaluateHealthBaselineGate(testDir, baselineGateReport([unanchored]));
+    expect(v1Gate.applied).toBe(true);
+    expect(v1Gate.inheritedFindingIds).toEqual([unanchored.id]);
+    expect(v1Gate.newFindings).toEqual([]);
+
+    writeRegistryCache();
+    writeEssence();
+    writePacks();
+    writeJson(join(testDir, '.decantr', 'project.json'), {
+      initialized: { workflowMode: 'brownfield-attach', adoptionMode: 'contract-only' },
+    });
+    const current = await createProjectHealthReport(testDir);
+    writeJson(join(testDir, '.decantr', 'health-baseline.json'), {
+      ...legacyBaseline,
+      findings: current.findings.map((finding) => ({
+        id: finding.id,
+        severity: finding.severity,
+        source: finding.source,
+        message: finding.message,
+      })),
+    });
+
+    await cmdHealth(testDir, {
+      format: 'json',
+      output: 'health-legacy.json',
+      sinceBaseline: true,
+    });
+
+    const comparison = JSON.parse(
+      readFileSync(join(testDir, '.decantr', 'health-baseline-diff.json'), 'utf-8'),
+    ) as { savedAt: string | null; limitations: string[] };
+    expect(comparison.savedAt).toBe('2026-07-16T12:00:00.000Z');
+    expect(comparison.limitations.join(' ')).toContain(
+      'Unversioned health baseline was read as legacy v1 evidence.',
+    );
+    expect(comparison.limitations.join(' ')).toContain('resolved findings are not proven');
+  });
+
+  it('rejects missing and cross-project v2 baseline identities', () => {
+    mkdirSync(join(testDir, '.decantr'), { recursive: true });
+    const location = { line: 12, column: 3 };
+    const baseline = {
+      version: 2,
+      generatedAt: '2026-07-16T12:00:00.000Z',
+      status: 'warning',
+      score: 95,
+      findings: [baselineFindingV2('src/components/Alpha.tsx', location)],
+      routes: [],
+      packs: null,
+      screenshots: [],
+    };
+    const report = baselineGateReport([baselineTestFinding('src/components/Alpha.tsx', location)]);
+
+    writeJson(join(testDir, '.decantr', 'health-baseline.json'), baseline);
+    expect(evaluateHealthBaselineGate(testDir, report)).toMatchObject({
+      applied: false,
+      inheritedFindingIds: [],
+      newFindings: [{ id: 'audit-shared-occurrence', severity: 'warn' }],
+    });
+
+    writeJson(join(testDir, '.decantr', 'health-baseline.json'), {
+      ...baseline,
+      projectIdentity: `project:v1:sha256:${'0'.repeat(64)}`,
+    });
+    expect(evaluateHealthBaselineGate(testDir, report)).toMatchObject({
+      applied: false,
+      inheritedFindingIds: [],
+      newFindings: [{ id: 'audit-shared-occurrence', severity: 'warn' }],
+    });
+  });
+
+  it('blocks a v2 finding whose severity escalates above the baseline', () => {
+    mkdirSync(join(testDir, '.decantr'), { recursive: true });
+    const location = { line: 12, column: 3 };
+    writeJson(join(testDir, '.decantr', 'health-baseline.json'), {
+      version: 2,
+      projectIdentity: createStableProjectIdentityV1(testDir),
+      generatedAt: '2026-07-16T12:00:00.000Z',
+      status: 'warning',
+      score: 95,
+      findings: [baselineFindingV2('src/components/Alpha.tsx', location)],
+      routes: [],
+      packs: null,
+      screenshots: [],
+    });
+    const escalated = {
+      ...baselineTestFinding('src/components/Alpha.tsx', location),
+      severity: 'error' as const,
+    };
+
+    const gate = evaluateHealthBaselineGate(testDir, baselineGateReport([escalated]));
+
+    expect(gate.applied).toBe(true);
+    expect(gate.inheritedFindingIds).toEqual([]);
+    expect(gate.newFindings).toEqual([{ id: 'audit-shared-occurrence', severity: 'error' }]);
+    expect(shouldFailHealthBaselineGate(gate, 'error')).toBe(true);
+  });
+
+  it('does not hide an anchored finding behind incomplete v1 evidence', () => {
+    mkdirSync(join(testDir, '.decantr'), { recursive: true });
+    const finding = baselineTestFinding('src/components/NewOccurrence.tsx', { line: 8 });
+    writeJson(join(testDir, '.decantr', 'health-baseline.json'), {
+      version: 1,
+      generatedAt: '2026-07-16T12:00:00.000Z',
+      status: 'warning',
+      score: 95,
+      findings: [
+        {
+          id: finding.id,
+          severity: finding.severity,
+          source: finding.source,
+          message: finding.message,
+        },
+      ],
+      routes: [],
+      packs: null,
+      screenshots: [],
+    });
+
+    const gate = evaluateHealthBaselineGate(testDir, baselineGateReport([finding]));
+
+    expect(gate.inheritedFindingIds).toEqual([]);
+    expect(gate.newFindings).toEqual([{ id: finding.id, severity: 'warn' }]);
+    expect(shouldFailHealthBaselineGate(gate, 'warn')).toBe(true);
+  });
+
+  it('writes deterministic v2 baselines with complete occurrence evidence', async () => {
+    writeRegistryCache();
+    writeEssence();
+    writePacks();
+    writeJson(join(testDir, '.decantr', 'project.json'), {
+      initialized: { workflowMode: 'brownfield-attach', adoptionMode: 'contract-only' },
+    });
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-07-16T12:00:00.000Z'));
+    try {
+      await cmdHealth(testDir, {
+        format: 'json',
+        output: 'health-deterministic.json',
+        saveBaseline: true,
+      });
+      const first = readFileSync(join(testDir, '.decantr', 'health-baseline.json'), 'utf-8');
+      await cmdHealth(testDir, {
+        format: 'json',
+        output: 'health-deterministic.json',
+        saveBaseline: true,
+      });
+      const second = readFileSync(join(testDir, '.decantr', 'health-baseline.json'), 'utf-8');
+      expect(second).toBe(first);
+
+      const baseline = JSON.parse(first) as {
+        version: number;
+        projectIdentity: string;
+        findings: Array<Record<string, unknown>>;
+      };
+      expect(baseline.version).toBe(2);
+      expect(baseline.projectIdentity).toBe(createStableProjectIdentityV1(testDir));
+      expect(baseline.findings.map((finding) => finding.fingerprint)).toEqual(
+        baseline.findings.map((finding) => finding.fingerprint).sort(),
+      );
+      for (const finding of baseline.findings) {
+        for (const key of [
+          'code',
+          'rule',
+          'source',
+          'category',
+          'severity',
+          'message',
+          'file',
+          'target',
+          'location',
+          'fingerprint',
+          'fingerprintVersion',
+        ]) {
+          expect(finding).toHaveProperty(key);
+        }
+      }
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('writes health baselines and compares changed files, routes, and screenshot hashes', async () => {

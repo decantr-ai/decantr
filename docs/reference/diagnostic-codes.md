@@ -6,6 +6,8 @@ Use `decantr health --diagnostics --json` for a machine-readable catalog, or `de
 
 In v2 Project Health and Evidence Bundle payloads, findings may also carry evidence tier, authority lane, resolution actions, privacy posture, graph anchor, repair plan, and loop verdict metadata. The diagnostic code still identifies the drift class; the loop and authority fields tell an agent whether to edit, verify, repair, regenerate graph/context, or ask a human to resolve source-of-truth drift.
 
+In explicit Decantr 3.9 CI v3, `GovernanceDeltaV1` derives a stable `gfo1:` occurrence fingerprint from normalized finding identity and uses it to partition findings into new, inherited, resolved, and unclassified. The diagnostic code alone is not sufficient identity across files/routes; incomplete or incompatible baseline evidence remains unclassified and produces `not_proven`.
+
 | Family | Meaning |
 | --- | --- |
 | `CONTRACT` | Essence or contract presence/version issues |

@@ -3,23 +3,11 @@ import {
   OFFICIAL_CONTENT_NAMESPACE,
 } from '@decantr/content';
 import type {
-  Archetype,
-  Blueprint,
   ContentResolver,
   ContentType,
-  Pattern,
+  ContentTypeMap,
   ResolvedContent,
-  Shell,
-  Theme,
-} from '@decantr/registry';
-
-type ContentMap = {
-  pattern: Pattern;
-  archetype: Archetype;
-  theme: Theme;
-  blueprint: Blueprint;
-  shell: Shell;
-};
+} from '@decantr/content';
 
 interface PublicContentResolverOptions {
   onResolve?: (event: {
@@ -44,7 +32,7 @@ export function createPublicContentResolver(
     async resolve<T extends ContentType>(
       type: T,
       id: string,
-    ): Promise<ResolvedContent<ContentMap[T]> | null> {
+    ): Promise<ResolvedContent<ContentTypeMap[T]> | null> {
       const startedAt = Date.now();
       const resolved = await localResolver.resolve(type, id);
 
@@ -59,7 +47,7 @@ export function createPublicContentResolver(
         errorCode: resolved ? undefined : 'content_item_not_found',
       });
 
-      return resolved as ResolvedContent<ContentMap[T]> | null;
+      return resolved;
     },
   };
 }

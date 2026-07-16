@@ -1,0 +1,257 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/governance-delta.v1.json",
+  "title": "Decantr Governance Delta v1",
+  "type": "object",
+  "required": ["$schema", "schemaVersion", "generatedAt", "project", "comparisonScope", "changeBase", "debtBaseline", "current", "findings", "summary", "gate", "limitations", "nextAction"],
+  "properties": {
+    "$schema": { "const": "https://decantr.ai/schemas/governance-delta.v1.json" },
+    "schemaVersion": { "const": 1 },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "project": { "$ref": "#/$defs/project" },
+    "comparisonScope": { "$ref": "#/$defs/comparisonScope" },
+    "changeBase": { "$ref": "#/$defs/changeBase" },
+    "debtBaseline": { "$ref": "#/$defs/debtBaseline" },
+    "current": { "$ref": "#/$defs/current" },
+    "findings": {
+      "type": "object",
+      "required": ["new", "inherited", "resolved", "unclassified"],
+      "properties": {
+        "new": { "type": "array", "items": { "$ref": "#/$defs/newFinding" } },
+        "inherited": { "type": "array", "items": { "$ref": "#/$defs/inheritedFinding" } },
+        "resolved": { "type": "array", "items": { "$ref": "#/$defs/resolvedFinding" } },
+        "unclassified": { "type": "array", "items": { "$ref": "#/$defs/unclassifiedFinding" } }
+      },
+      "additionalProperties": false
+    },
+    "changedScreenshots": { "type": "array", "items": { "$ref": "#/$defs/screenshotChange" } },
+    "contractChanges": { "type": "array", "items": { "$ref": "#/$defs/contractChange" } },
+    "contentGuidanceChanges": { "type": "array", "items": { "$ref": "#/$defs/contentChange" } },
+    "summary": {
+      "type": "object",
+      "required": ["currentCount", "newCount", "inheritedCount", "resolvedCount", "unclassifiedCount", "blockingCount"],
+      "properties": {
+        "currentCount": { "type": "integer", "minimum": 0 },
+        "newCount": { "type": "integer", "minimum": 0 },
+        "inheritedCount": { "type": "integer", "minimum": 0 },
+        "resolvedCount": { "type": "integer", "minimum": 0 },
+        "unclassifiedCount": { "type": "integer", "minimum": 0 },
+        "blockingCount": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "gate": {
+      "type": "object",
+      "required": ["result", "status", "failOn", "blockingFingerprints"],
+      "properties": {
+        "result": { "enum": ["pass", "fail", "not_proven"] },
+        "status": { "enum": ["clean", "blocked", "incomplete"] },
+        "failOn": { "enum": ["error", "warn", "info", "none"] },
+        "blockingFingerprints": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/fingerprint" } }
+      },
+      "additionalProperties": false
+    },
+    "limitations": { "$ref": "#/$defs/stringArray" },
+    "nextAction": { "type": "string", "minLength": 1 }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "stringArray": { "type": "array", "items": { "type": "string" } },
+    "nullableString": { "type": ["string", "null"] },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?:\\.|(?!/)(?![A-Za-z]:/)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\\\]+)$"
+    },
+    "nullableRelativePath": { "anyOf": [{ "$ref": "#/$defs/relativePath" }, { "type": "null" }] },
+    "completeness": { "enum": ["complete", "incomplete"] },
+    "freshness": { "enum": ["fresh", "stale", "unknown"] },
+    "fingerprint": { "type": "string", "pattern": "^gfo1:[0-9a-f]{64}$" },
+    "project": {
+      "type": "object",
+      "required": ["identity", "workspaceRoot", "selectedAppRoot"],
+      "properties": {
+        "identity": { "type": "string", "minLength": 1 },
+        "workspaceRoot": { "$ref": "#/$defs/relativePath" },
+        "selectedAppRoot": { "$ref": "#/$defs/relativePath" }
+      },
+      "additionalProperties": false
+    },
+    "comparisonScope": {
+      "type": "object",
+      "required": ["kind", "identity"],
+      "properties": {
+        "kind": { "enum": ["working_tree", "commit_range", "pull_request", "unknown"] },
+        "identity": { "$ref": "#/$defs/nullableString" }
+      },
+      "additionalProperties": false
+    },
+    "artifactIdentity": {
+      "type": "object",
+      "required": ["identity", "hash"],
+      "properties": {
+        "identity": { "$ref": "#/$defs/nullableString" },
+        "hash": { "$ref": "#/$defs/nullableString" }
+      },
+      "additionalProperties": false
+    },
+    "changeBase": {
+      "type": "object",
+      "required": ["identity", "hash", "baseRef", "headRef", "mergeBase", "completeness", "changedFiles", "changedRoutes", "impactedNodeIds", "unresolvedFiles", "limitations"],
+      "properties": {
+        "identity": { "$ref": "#/$defs/nullableString" },
+        "hash": { "$ref": "#/$defs/nullableString" },
+        "baseRef": { "$ref": "#/$defs/nullableString" },
+        "headRef": { "$ref": "#/$defs/nullableString" },
+        "mergeBase": { "$ref": "#/$defs/nullableString" },
+        "completeness": { "$ref": "#/$defs/completeness" },
+        "changedFiles": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/relativePath" } },
+        "changedRoutes": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+        "impactedNodeIds": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+        "unresolvedFiles": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/relativePath" } },
+        "limitations": { "$ref": "#/$defs/stringArray" }
+      },
+      "additionalProperties": false
+    },
+    "debtBaseline": {
+      "type": "object",
+      "required": ["identity", "hash", "projectIdentity", "capturedAt", "completeness", "freshness", "compatibility", "limitations", "findingCount"],
+      "properties": {
+        "identity": { "$ref": "#/$defs/nullableString" },
+        "hash": { "$ref": "#/$defs/nullableString" },
+        "projectIdentity": { "$ref": "#/$defs/nullableString" },
+        "capturedAt": { "type": ["string", "null"], "format": "date-time" },
+        "completeness": { "$ref": "#/$defs/completeness" },
+        "freshness": { "$ref": "#/$defs/freshness" },
+        "compatibility": { "enum": ["compatible", "incompatible", "unknown"] },
+        "limitations": { "$ref": "#/$defs/stringArray" },
+        "findingCount": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "graphState": {
+      "type": "object",
+      "required": ["identity", "sourceHash", "completeness", "freshness", "limitations"],
+      "properties": {
+        "identity": { "$ref": "#/$defs/nullableString" },
+        "sourceHash": { "$ref": "#/$defs/nullableString" },
+        "completeness": { "$ref": "#/$defs/completeness" },
+        "freshness": { "$ref": "#/$defs/freshness" },
+        "limitations": { "$ref": "#/$defs/stringArray" }
+      },
+      "additionalProperties": false
+    },
+    "evidenceState": {
+      "type": "object",
+      "required": ["identity", "hash", "completeness", "freshness", "limitations"],
+      "properties": {
+        "identity": { "$ref": "#/$defs/nullableString" },
+        "hash": { "$ref": "#/$defs/nullableString" },
+        "completeness": { "$ref": "#/$defs/completeness" },
+        "freshness": { "$ref": "#/$defs/freshness" },
+        "limitations": { "$ref": "#/$defs/stringArray" }
+      },
+      "additionalProperties": false
+    },
+    "current": {
+      "type": "object",
+      "required": ["health", "graph", "evidence", "contract", "content", "source"],
+      "properties": {
+        "health": { "$ref": "#/$defs/artifactIdentity" },
+        "graph": { "$ref": "#/$defs/graphState" },
+        "evidence": { "$ref": "#/$defs/evidenceState" },
+        "contract": { "$ref": "#/$defs/artifactIdentity" },
+        "content": { "$ref": "#/$defs/artifactIdentity" },
+        "source": { "$ref": "#/$defs/artifactIdentity" }
+      },
+      "additionalProperties": false
+    },
+    "location": {
+      "type": "object",
+      "required": ["line"],
+      "properties": {
+        "line": { "type": "integer", "minimum": 1 },
+        "column": { "type": "integer", "minimum": 1 },
+        "endLine": { "type": "integer", "minimum": 1 },
+        "endColumn": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": false
+    },
+    "annotation": {
+      "type": "object",
+      "required": ["path", "startLine", "startColumn", "endLine", "endColumn"],
+      "properties": {
+        "path": { "$ref": "#/$defs/nullableRelativePath" },
+        "startLine": { "type": ["integer", "null"], "minimum": 1 },
+        "startColumn": { "type": ["integer", "null"], "minimum": 1 },
+        "endLine": { "type": ["integer", "null"], "minimum": 1 },
+        "endColumn": { "type": ["integer", "null"], "minimum": 1 }
+      },
+      "additionalProperties": false
+    },
+    "finding": {
+      "type": "object",
+      "required": ["code", "ruleId", "source", "category", "severity", "message", "authorityLane", "graphAnchor", "repairId", "repairTarget", "annotation", "fingerprint", "fingerprintVersion", "classification"],
+      "properties": {
+        "code": { "type": "string", "minLength": 1 },
+        "ruleId": { "type": "string", "minLength": 1 },
+        "source": { "type": "string", "minLength": 1 },
+        "category": { "type": "string", "minLength": 1 },
+        "severity": { "enum": ["error", "warn", "info"] },
+        "message": { "type": "string" },
+        "authorityLane": { "enum": ["production-source", "local-law", "style-bridge", "essence-contract", "official-guidance", "unknown"] },
+        "graphAnchor": { "anyOf": [{ "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/graphAnchor" }, { "type": "null" }] },
+        "repairId": { "$ref": "#/$defs/nullableString" },
+        "repairTarget": { "$ref": "#/$defs/nullableString" },
+        "annotation": { "$ref": "#/$defs/annotation" },
+        "file": { "$ref": "#/$defs/nullableRelativePath" },
+        "route": { "$ref": "#/$defs/nullableString" },
+        "target": { "$ref": "#/$defs/nullableString" },
+        "location": { "anyOf": [{ "$ref": "#/$defs/location" }, { "type": "null" }] },
+        "occurrenceKey": { "$ref": "#/$defs/nullableString" },
+        "fingerprint": { "$ref": "#/$defs/fingerprint" },
+        "fingerprintVersion": { "const": 1 },
+        "classification": { "enum": ["new", "inherited", "resolved", "unclassified"] }
+      },
+      "additionalProperties": false
+    },
+    "newFinding": { "$ref": "#/$defs/finding", "properties": { "classification": { "const": "new" } } },
+    "inheritedFinding": { "$ref": "#/$defs/finding", "properties": { "classification": { "const": "inherited" } } },
+    "resolvedFinding": { "$ref": "#/$defs/finding", "properties": { "classification": { "const": "resolved" } } },
+    "unclassifiedFinding": { "$ref": "#/$defs/finding", "properties": { "classification": { "const": "unclassified" } } },
+    "screenshotChange": {
+      "type": "object",
+      "required": ["path", "changeType", "baseHash", "currentHash"],
+      "properties": {
+        "path": { "$ref": "#/$defs/relativePath" },
+        "changeType": { "enum": ["added", "updated", "removed"] },
+        "baseHash": { "$ref": "#/$defs/nullableString" },
+        "currentHash": { "$ref": "#/$defs/nullableString" }
+      },
+      "additionalProperties": false
+    },
+    "contractChange": {
+      "type": "object",
+      "required": ["path", "changeType", "baseHash", "currentHash"],
+      "properties": {
+        "path": { "$ref": "#/$defs/relativePath" },
+        "changeType": { "enum": ["added", "updated", "removed"] },
+        "baseHash": { "$ref": "#/$defs/nullableString" },
+        "currentHash": { "$ref": "#/$defs/nullableString" }
+      },
+      "additionalProperties": false
+    },
+    "contentChange": {
+      "type": "object",
+      "required": ["itemId", "changeType", "baseDigest", "currentDigest", "impact"],
+      "properties": {
+        "itemId": { "type": "string", "minLength": 1 },
+        "changeType": { "enum": ["added", "updated", "removed"] },
+        "baseDigest": { "$ref": "#/$defs/nullableString" },
+        "currentDigest": { "$ref": "#/$defs/nullableString" },
+        "impact": { "enum": ["advisory", "migratory", "behavior_affecting"] }
+      },
+      "additionalProperties": false
+    }
+  }
+}

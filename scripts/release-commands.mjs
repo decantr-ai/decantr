@@ -1,4 +1,6 @@
 import { readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { readArgValue } from './cli-arg-lib.mjs';
 import { getRepoRoot, loadPackageSurface, sortReleaseEntries } from './package-surface-lib.mjs';
@@ -10,6 +12,9 @@ const jsonOutput = args.has('--json');
 const includeExperimental = args.has('--include-experimental');
 const onlyWave = readArgValue(rawArgs, 'wave');
 const tagOverride = readArgValue(rawArgs, 'tag-override') ?? readArgValue(rawArgs, 'tag');
+const stagingDir = readArgValue(rawArgs, 'staging-dir')
+  ?? process.env.DECANTR_RELEASE_STAGING_DIR
+  ?? join(tmpdir(), 'decantr-release-staging');
 const publishAuthStrategy = (
   readArgValue(rawArgs, 'auth-strategy')
   ?? readArgValue(rawArgs, 'publish-auth')
@@ -27,8 +32,6 @@ const onlyNames = new Set(
 
 const root = getRepoRoot();
 const surface = loadPackageSurface(root);
-const npmAuth = readNpmAuthState();
-const repairPlan = planNpmSurfaceRepairs(surface);
 const AUTH_STRATEGIES = new Set(['auto', 'oidc', 'token']);
 
 if (!AUTH_STRATEGIES.has(publishAuthStrategy)) {
@@ -37,28 +40,58 @@ if (!AUTH_STRATEGIES.has(publishAuthStrategy)) {
   process.exit(1);
 }
 
-const selected = sortReleaseEntries(surface.packages).filter((entry) => {
-  if (!entry.publish) return false;
-  if (!includeExperimental && entry.maturity === 'experimental') return false;
-  if (onlyWave && entry.releaseWave !== onlyWave) return false;
-  if (onlyNames.size > 0 && !onlyNames.has(entry.name)) return false;
-  return true;
-});
+function resolvePublishSelection() {
+  const selectionArgs = ['--dry-run', '--selection-json'];
+  if (onlyWave) selectionArgs.push(`--wave=${onlyWave}`);
+  if (onlyNames.size > 0) selectionArgs.push(`--only=${[...onlyNames].join(',')}`);
+  if (includeExperimental) selectionArgs.push('--include-experimental');
+  if (tagOverride) selectionArgs.push(`--tag-override=${tagOverride}`);
 
-function createPublishPackagesCommand(extraArgs = []) {
+  const result = spawnSync(
+    process.execPath,
+    [join(root, 'scripts', 'publish-packages.mjs'), ...selectionArgs],
+    {
+      cwd: root,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+      env: process.env,
+    },
+  );
+  if (result.status !== 0) {
+    if (result.stdout) process.stdout.write(result.stdout);
+    if (result.stderr) process.stderr.write(result.stderr);
+    process.exit(result.status ?? 1);
+  }
+
+  const selection = JSON.parse(result.stdout);
+  const byName = new Map(surface.packages.map((entry) => [entry.name, entry]));
+  return {
+    ...selection,
+    entries: sortReleaseEntries(selection.effectiveOnly.map((name) => byName.get(name))),
+  };
+}
+
+const selection = resolvePublishSelection();
+const selected = selection.entries;
+const npmAuth = readNpmAuthState();
+const repairPlan = planNpmSurfaceRepairs(surface);
+
+function createPublishPackagesCommand(extraArgs = [], options = {}) {
+  const commandOnlyNames = options.onlyNames ?? [...onlyNames];
   const parts = ['node scripts/publish-packages.mjs', ...extraArgs];
-  if (onlyWave) parts.push(`--wave=${onlyWave}`);
-  if (onlyNames.size > 0) parts.push(`--only=${[...onlyNames].join(',')}`);
+  if (onlyWave && options.includeWave !== false) parts.push(`--wave=${onlyWave}`);
+  if (commandOnlyNames.length > 0) parts.push(`--only=${commandOnlyNames.join(',')}`);
   if (includeExperimental) parts.push('--include-experimental');
   if (tagOverride) parts.push(`--tag-override=${tagOverride}`);
   if (publishAuthStrategy !== 'auto') parts.push(`--auth-strategy=${publishAuthStrategy}`);
+  parts.push(`--staging-dir=${stagingDir}`);
   return parts.join(' ');
 }
 
 function createVerifyPublishedPackagesCommand(extraArgs = []) {
   const parts = ['node scripts/verify-published-packages.mjs', ...extraArgs];
-  if (onlyWave) parts.push(`--wave=${onlyWave}`);
-  if (onlyNames.size > 0) parts.push(`--only=${[...onlyNames].join(',')}`);
+  if (onlyWave && onlyNames.size === 0) parts.push(`--wave=${onlyWave}`);
+  if (onlyNames.size > 0) parts.push(`--only=${selection.effectiveOnly.join(',')}`);
   if (includeExperimental) parts.push('--include-experimental');
   if (tagOverride) parts.push(`--tag-override=${tagOverride}`);
   return parts.join(' ');
@@ -71,15 +104,9 @@ const commands = selected.map((entry) => {
   const distTag = tagOverride || entry.defaultDistTag;
   const npmVersions = readNpmVersions(entry.name);
   const versionAlreadyPublished = npmVersions.published && Array.isArray(npmVersions.versions) && npmVersions.versions.includes(version);
-  const provenanceFlag = publishAuthStrategy !== 'token' && (process.env.GITHUB_ACTIONS === 'true' || process.env.CI === 'true')
-    ? ' --provenance'
-    : '';
-  const preflight = versionAlreadyPublished
-    ? `cd ${cwd} && pnpm pack --pack-destination /tmp`
-    : `cd ${cwd} && pnpm publish --access public${provenanceFlag} --tag ${distTag} --no-git-checks --dry-run`;
-  const publish = versionAlreadyPublished
-    ? `cd ${cwd} && pnpm pack --pack-destination /tmp`
-    : `cd ${cwd} && pnpm publish --access public${provenanceFlag} --tag ${distTag} --no-git-checks`;
+  const commandOptions = { onlyNames: [entry.name], includeWave: false };
+  const preflight = createPublishPackagesCommand(['--publish-dry-run'], commandOptions);
+  const publish = createPublishPackagesCommand([], commandOptions);
 
   return {
     name: entry.name,
@@ -131,9 +158,12 @@ const output = {
   filters: {
     wave: onlyWave,
     only: [...onlyNames],
+    effectiveOnly: selection.effectiveOnly,
+    expandedDependencies: selection.expandedDependencies,
     includeExperimental,
     tagOverride,
     publishAuthStrategy,
+    stagingDir,
   },
   wrapperCommands: {
     auth: 'pnpm audit:npm-auth',
@@ -157,9 +187,12 @@ const lines = [
   `- npm auth: ${npmAuth.authenticated ? `authenticated${npmAuth.username ? ` as ${npmAuth.username}` : ''}` : `not authenticated${npmAuth.error ? ` (${npmAuth.error})` : ''}`}`,
   `- Wave filter: ${onlyWave ?? 'all'}`,
   `- Only filter: ${onlyNames.size > 0 ? [...onlyNames].join(', ') : 'all'}`,
+  `- Effective package closure: ${selection.effectiveOnly.join(', ') || 'none'}`,
+  `- Expanded dependencies: ${selection.expandedDependencies.join(', ') || 'none'}`,
   `- Include experimental: ${includeExperimental ? 'yes' : 'no'}`,
   `- Tag override: ${tagOverride ?? 'none'}`,
   `- Publish auth: ${publishAuthStrategy} (${publishAuthStrategy === 'auto' ? 'CI uses OIDC first, then NPM_TOKEN fallback when available' : 'explicit'})`,
+  `- Retained staging directory: ${stagingDir}`,
   `- Auth check: \`npm whoami\``,
   '',
   '## Wrapper Commands',
@@ -169,7 +202,7 @@ const lines = [
   `- publish: \`${output.wrapperCommands.publish}\``,
   `- verify: \`${output.wrapperCommands.verify}\``,
   '',
-  'The wrapper commands are preferred because they audit packed tarball manifests before publishing, then verify the public npm install surface after publishing.',
+  'The wrapper commands stage each package once in a SHA-256-addressed retained set, verify qualification hashes, and publish those exact tarball paths before public npm verification.',
   'CI publishes use GitHub OIDC trusted publishing by default. If a package is missing npm trusted-publisher configuration and `NPM_TOKEN` is available, `auto` retries that package once with token auth and provenance disabled.',
   '',
 ];

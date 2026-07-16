@@ -10,7 +10,7 @@ import type {
   ContentHealthTypeSummary,
   ContentType,
   VerificationSeverity,
-} from '@decantr/registry';
+} from '@decantr/content';
 import type { ErrorObject, ValidateFunction } from 'ajv';
 import Ajv2020 from 'ajv/dist/2020.js';
 
@@ -58,31 +58,31 @@ const CONTENT_DIRECTORIES: ContentDirectoryConfig[] = [
   {
     type: 'pattern',
     directory: 'patterns',
-    schemaSpecifier: '@decantr/registry/schema/pattern.v2.json',
+    schemaSpecifier: '@decantr/content/schema/pattern.v2.json',
     expectedSchema: 'https://decantr.ai/schemas/pattern.v2.json',
   },
   {
     type: 'theme',
     directory: 'themes',
-    schemaSpecifier: '@decantr/registry/schema/theme.v1.json',
+    schemaSpecifier: '@decantr/content/schema/theme.v1.json',
     expectedSchema: 'https://decantr.ai/schemas/theme.v1.json',
   },
   {
     type: 'blueprint',
     directory: 'blueprints',
-    schemaSpecifier: '@decantr/registry/schema/blueprint.v1.json',
+    schemaSpecifier: '@decantr/content/schema/blueprint.v1.json',
     expectedSchema: 'https://decantr.ai/schemas/blueprint.v1.json',
   },
   {
     type: 'archetype',
     directory: 'archetypes',
-    schemaSpecifier: '@decantr/registry/schema/archetype.v2.json',
+    schemaSpecifier: '@decantr/content/schema/archetype.v2.json',
     expectedSchema: 'https://decantr.ai/schemas/archetype.v2.json',
   },
   {
     type: 'shell',
     directory: 'shells',
-    schemaSpecifier: '@decantr/registry/schema/shell.v1.json',
+    schemaSpecifier: '@decantr/content/schema/shell.v1.json',
     expectedSchema: 'https://decantr.ai/schemas/shell.v1.json',
   },
 ];
@@ -103,7 +103,7 @@ function createValidators(): Record<ContentType, ValidateFunction<unknown>> {
     strict: false,
     allowUnionTypes: true,
   });
-  ajv.addSchema(loadJsonSchema('@decantr/registry/schema/common.v1.json'));
+  ajv.addSchema(loadJsonSchema('@decantr/content/schema/common.v1.json'));
 
   return Object.fromEntries(
     CONTENT_DIRECTORIES.map((entry) => [

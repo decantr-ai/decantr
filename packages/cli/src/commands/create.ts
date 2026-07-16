@@ -4,7 +4,7 @@ import {
   CONTENT_TYPE_TO_API_CONTENT_TYPE,
   CONTENT_TYPES,
   type ContentType,
-} from '@decantr/registry';
+} from '@decantr/content';
 import { getThemeSkeleton } from '../theme-templates.js';
 
 const PLURAL = CONTENT_TYPE_TO_API_CONTENT_TYPE;

@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/adoption-truth.v1.json",
+  "title": "Decantr Adoption Truth v1",
+  "type": "object",
+  "required": ["$schema", "schemaVersion", "generatedAt", "project", "facts", "mutationReceipts", "limitations", "nextAction"],
+  "properties": {
+    "$schema": { "const": "https://decantr.ai/schemas/adoption-truth.v1.json" },
+    "schemaVersion": { "const": 1 },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "project": {
+      "type": "object",
+      "required": ["workspaceRoot", "selectedAppRoot", "selectionReason"],
+      "properties": {
+        "workspaceRoot": { "$ref": "#/$defs/relativePath" },
+        "selectedAppRoot": { "$ref": "#/$defs/relativePath" },
+        "selectionReason": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "facts": { "type": "array", "items": { "$ref": "#/$defs/fact" } },
+    "mutationReceipts": { "type": "array", "items": { "$ref": "#/$defs/receipt" } },
+    "limitations": { "type": "array", "items": { "type": "string" } },
+    "nextAction": { "type": "string", "minLength": 1 }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?:\\.|(?!/)(?![A-Za-z]:/)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\\\]+)$"
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["kind", "path", "detail"],
+      "properties": {
+        "kind": { "enum": ["source", "contract", "package_manifest", "assistant_rule", "generated_artifact", "receipt", "inference"] },
+        "path": { "anyOf": [{ "$ref": "#/$defs/relativePath" }, { "type": "null" }] },
+        "detail": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "fact": {
+      "type": "object",
+      "required": ["id", "subject", "observation", "governance", "mutation", "limitations", "nextAction"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "subject": { "type": "string", "minLength": 1 },
+        "observation": {
+          "type": "object",
+          "required": ["state", "confidence", "provenance"],
+          "properties": {
+            "state": { "enum": ["found", "not_found", "unknown", "unsupported"] },
+            "confidence": { "enum": ["low", "medium", "high"] },
+            "provenance": { "type": "array", "items": { "$ref": "#/$defs/provenance" } }
+          },
+          "additionalProperties": false
+        },
+        "governance": {
+          "type": "object",
+          "required": ["state", "authority", "provenance"],
+          "properties": {
+            "state": { "enum": ["governed", "partial", "advisory", "uncovered", "not_applicable"] },
+            "authority": { "type": ["string", "null"] },
+            "provenance": { "type": "array", "items": { "$ref": "#/$defs/provenance" } }
+          },
+          "additionalProperties": false
+        },
+        "mutation": {
+          "type": "object",
+          "required": ["state", "receiptIds"],
+          "properties": {
+            "state": { "enum": ["created", "updated", "untouched", "not_checked", "not_applicable"] },
+            "receiptIds": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } }
+          },
+          "allOf": [
+            { "if": { "properties": { "state": { "enum": ["created", "updated", "untouched"] } } }, "then": { "properties": { "receiptIds": { "minItems": 1 } } } },
+            { "if": { "properties": { "state": { "const": "not_applicable" } } }, "then": { "properties": { "receiptIds": { "maxItems": 0 } } } }
+          ],
+          "additionalProperties": false
+        },
+        "limitations": { "type": "array", "items": { "type": "string" } },
+        "nextAction": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "receipt": {
+      "type": "object",
+      "required": ["id", "operation", "subjects", "outcome", "complete", "createdPaths", "updatedPaths", "deletedPaths", "evidencePaths", "limitations"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "operation": { "type": "string", "minLength": 1 },
+        "subjects": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "outcome": { "enum": ["created", "updated", "untouched"] },
+        "complete": { "type": "boolean" },
+        "createdPaths": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/relativePath" } },
+        "updatedPaths": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/relativePath" } },
+        "deletedPaths": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/relativePath" } },
+        "evidencePaths": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/relativePath" } },
+        "limitations": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    }
+  }
+}

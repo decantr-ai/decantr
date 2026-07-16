@@ -1,0 +1,206 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/task-capsule.v1.json",
+  "title": "Decantr Task Capsule v1",
+  "type": "object",
+  "required": ["$schema", "schemaVersion", "project", "task", "graph", "readTargets", "authority", "impact", "findings", "contentGuidance", "stopConditions", "verifyCommand", "budget", "truncation"],
+  "properties": {
+    "$schema": { "const": "https://decantr.ai/schemas/task-capsule.v1.json" },
+    "schemaVersion": { "const": 1 },
+    "project": { "$ref": "#/$defs/project" },
+    "task": {
+      "type": "object",
+      "required": ["request", "route"],
+      "properties": {
+        "request": { "type": "string" },
+        "route": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "graph": { "$ref": "#/$defs/graph" },
+    "readTargets": {
+      "type": "array",
+      "minItems": 1,
+      "prefixItems": [
+        {
+          "$ref": "#/$defs/readTarget",
+          "properties": {
+            "kind": { "const": "route-implementation" },
+            "rank": { "const": 1 },
+            "required": { "const": true }
+          }
+        }
+      ],
+      "items": { "$ref": "#/$defs/readTarget" }
+    },
+    "authority": { "$ref": "#/$defs/authority" },
+    "impact": { "$ref": "#/$defs/impact" },
+    "findings": { "type": "array", "items": { "$ref": "#/$defs/finding" } },
+    "contentGuidance": { "type": "array", "items": { "$ref": "#/$defs/contentGuidance" } },
+    "stopConditions": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "verifyCommand": { "type": "string", "minLength": 1 },
+    "budget": { "$ref": "#/$defs/budget" },
+    "truncation": { "$ref": "#/$defs/truncation" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?:\\.|(?!/)(?![A-Za-z]:/)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\\\]+)$"
+    },
+    "nullableString": { "type": ["string", "null"] },
+    "authorityLane": {
+      "enum": ["production-source", "local-law", "style-bridge", "essence-contract", "official-guidance", "unknown"]
+    },
+    "project": {
+      "type": "object",
+      "required": ["identity", "workspaceRoot", "selectedAppRoot"],
+      "properties": {
+        "identity": { "type": "string", "minLength": 1 },
+        "workspaceRoot": { "$ref": "#/$defs/relativePath" },
+        "selectedAppRoot": { "$ref": "#/$defs/relativePath" }
+      },
+      "additionalProperties": false
+    },
+    "graph": {
+      "type": "object",
+      "required": ["snapshotId", "sourceHash", "freshness", "limitations"],
+      "properties": {
+        "snapshotId": { "$ref": "#/$defs/nullableString" },
+        "sourceHash": { "$ref": "#/$defs/nullableString" },
+        "freshness": { "enum": ["fresh", "stale", "missing", "unknown"] },
+        "limitations": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "readTarget": {
+      "type": "object",
+      "required": ["path", "kind", "rank", "required"],
+      "properties": {
+        "path": { "$ref": "#/$defs/relativePath" },
+        "kind": { "enum": ["route-implementation", "route-layout", "component", "contract", "local-law", "style-bridge", "graph", "evidence", "content", "other"] },
+        "rank": { "type": "integer", "minimum": 1 },
+        "required": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "authorityEntry": {
+      "type": "object",
+      "required": ["lane", "summary", "sourcePath"],
+      "properties": {
+        "lane": { "$ref": "#/$defs/authorityLane" },
+        "summary": { "type": "string", "minLength": 1 },
+        "sourcePath": {
+          "anyOf": [{ "$ref": "#/$defs/relativePath" }, { "type": "null" }]
+        }
+      },
+      "additionalProperties": false
+    },
+    "authority": {
+      "type": "object",
+      "required": ["activeLane", "entries"],
+      "properties": {
+        "activeLane": { "$ref": "#/$defs/authorityLane" },
+        "entries": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/authorityEntry" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "impact": {
+      "type": "object",
+      "required": ["changedFiles", "changedRoutes", "nodeIds", "unresolvedFiles"],
+      "properties": {
+        "changedFiles": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/relativePath" } },
+        "changedRoutes": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+        "nodeIds": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+        "unresolvedFiles": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/relativePath" } }
+      },
+      "additionalProperties": false
+    },
+    "finding": {
+      "type": "object",
+      "required": ["code", "severity", "repairId", "graphNodeId", "blocking", "summary"],
+      "properties": {
+        "code": { "type": "string", "minLength": 1 },
+        "severity": { "enum": ["error", "warn", "info"] },
+        "repairId": { "$ref": "#/$defs/nullableString" },
+        "graphNodeId": { "$ref": "#/$defs/nullableString" },
+        "blocking": { "type": "boolean" },
+        "summary": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "contentIdentity": {
+      "type": "object",
+      "required": ["namespace", "type", "id"],
+      "properties": {
+        "namespace": { "type": "string", "minLength": 1 },
+        "type": { "enum": ["pattern", "theme", "blueprint", "archetype", "shell"] },
+        "id": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "contentGuidance": {
+      "type": "object",
+      "required": ["identity", "version", "digest", "origin", "resolvedFrom", "summary", "rank", "required"],
+      "properties": {
+        "identity": { "$ref": "#/$defs/contentIdentity" },
+        "version": { "type": ["string", "null"] },
+        "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "origin": { "enum": ["official", "local"] },
+        "resolvedFrom": { "enum": ["installed-package", "workspace-package", "configured-corpus", "cache", "local-override", "api"] },
+        "summary": { "type": "string", "minLength": 1 },
+        "rank": { "type": "integer", "minimum": 1 },
+        "required": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "budget": {
+      "type": "object",
+      "required": ["maxCanonicalBytes", "maxEstimatedTokens", "canonicalBytes", "estimatedTokens"],
+      "properties": {
+        "maxCanonicalBytes": { "type": "integer", "minimum": 1 },
+        "maxEstimatedTokens": { "type": "integer", "minimum": 1 },
+        "canonicalBytes": { "type": "integer", "minimum": 0 },
+        "estimatedTokens": { "type": "integer", "minimum": 0, "description": "tokenEstimateV1: ceil(canonical UTF-8 bytes / 3)." }
+      },
+      "additionalProperties": false
+    },
+    "itemCounts": {
+      "type": "object",
+      "required": ["readTargets", "contentGuidance", "changedFiles", "changedRoutes", "nodeIds", "unresolvedFiles"],
+      "properties": {
+        "readTargets": { "type": "integer", "minimum": 0 },
+        "contentGuidance": { "type": "integer", "minimum": 0 },
+        "changedFiles": { "type": "integer", "minimum": 0 },
+        "changedRoutes": { "type": "integer", "minimum": 0 },
+        "nodeIds": { "type": "integer", "minimum": 0 },
+        "unresolvedFiles": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "truncation": {
+      "type": "object",
+      "required": ["truncated", "reasons", "omittedCounts", "truncatedFields", "originalCounts", "originalCanonicalBytes", "originalEstimatedTokens"],
+      "properties": {
+        "truncated": { "type": "boolean" },
+        "reasons": { "type": "array", "uniqueItems": true, "items": { "enum": ["byte-budget", "token-budget"] } },
+        "omittedCounts": { "$ref": "#/$defs/itemCounts" },
+        "truncatedFields": { "type": "array", "uniqueItems": true, "items": { "const": "task.request" } },
+        "originalCounts": { "$ref": "#/$defs/itemCounts" },
+        "originalCanonicalBytes": { "type": "integer", "minimum": 0 },
+        "originalEstimatedTokens": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,13 +1,6 @@
 {
   "projects": [
     {
-      "id": "registry-portal",
-      "path": "apps/registry",
-      "owner": "decantr",
-      "tags": ["dogfood", "registry", "portal"],
-      "criticality": "high"
-    },
-    {
       "id": "showcase-host",
       "path": "apps/showcase-host",
       "owner": "decantr",

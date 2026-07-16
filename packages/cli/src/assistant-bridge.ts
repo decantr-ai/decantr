@@ -1,6 +1,6 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import type { DetectedProject } from './detect.js';
+import { type DetectedProject, detectProject } from './detect.js';
 import type { AdoptionMode, AssistantBridgeMode, WorkflowMode } from './workflow-model.js';
 
 const START = '<!-- decantr:assistant-bridge:start -->';
@@ -9,6 +9,7 @@ const END = '<!-- decantr:assistant-bridge:end -->';
 interface AssistantBridgeContext {
   workflowMode: WorkflowMode;
   adoptionMode?: AdoptionMode;
+  assistantBridge?: AssistantBridgeMode;
 }
 
 function isWorkflowMode(value: unknown): value is WorkflowMode {
@@ -24,12 +25,20 @@ function isAdoptionMode(value: unknown): value is AdoptionMode {
   return value === 'contract-only' || value === 'style-bridge' || value === 'decantr-css';
 }
 
+function isAssistantBridgeMode(value: unknown): value is AssistantBridgeMode {
+  return value === 'none' || value === 'preview' || value === 'apply';
+}
+
 export function readAssistantBridgeContext(projectRoot: string): AssistantBridgeContext {
   try {
     const project = JSON.parse(
       readFileSync(join(projectRoot, '.decantr', 'project.json'), 'utf-8'),
     ) as {
-      initialized?: { workflowMode?: unknown; adoptionMode?: unknown };
+      initialized?: {
+        workflowMode?: unknown;
+        adoptionMode?: unknown;
+        assistantBridge?: unknown;
+      };
     };
     return {
       workflowMode: isWorkflowMode(project.initialized?.workflowMode)
@@ -37,6 +46,9 @@ export function readAssistantBridgeContext(projectRoot: string): AssistantBridge
         : 'brownfield-attach',
       adoptionMode: isAdoptionMode(project.initialized?.adoptionMode)
         ? project.initialized.adoptionMode
+        : undefined,
+      assistantBridge: isAssistantBridgeMode(project.initialized?.assistantBridge)
+        ? project.initialized.assistantBridge
         : undefined,
     };
   } catch {
@@ -52,7 +64,7 @@ function bridgeBlock(input: AssistantBridgeContext): string {
 
   if (input.workflowMode === 'brownfield-attach') {
     lines.push(
-      'Before implementing Decantr-scoped work, read `decantr.essence.json`, `.decantr/brownfield-report.md`, `.decantr/doctrine-map.json`, `.decantr/ambient-context.json`, `.decantr/context/scaffold.md`, and the route-specific task read targets first. Use compiled packs too when task context lists them.',
+      'Before implementing Decantr-scoped work, read `decantr.essence.json`, `.decantr/context/scaffold.md`, and the route-specific task read targets first. When task context lists Brownfield analysis, doctrine, ambient-context, graph, or compiled-pack files, read those exact files too; never assume an unlisted artifact exists.',
       'Treat Decantr as the reconciled contract layer and the original project docs/rules as cited evidence; if runtime source and Decantr context conflict, stop and report the drift instead of guessing which side wins.',
       'Preserve the existing framework, routing, styling, package manager, data boundaries, and build conventions unless the Decantr contract explicitly records a reviewed change.',
     );
@@ -76,11 +88,17 @@ function bridgeBlock(input: AssistantBridgeContext): string {
     );
   }
 
-  lines.push(
-    `Adoption mode is \`${input.adoptionMode || 'contract-only'}\`. Do not install \`@decantr/css\` or rewrite styling unless that mode is \`decantr-css\` or the task explicitly asks for it.`,
-    END,
-    '',
-  );
+  if (input.adoptionMode === 'style-bridge') {
+    lines.push(
+      'Styling remains host-owned. Only reviewed mappings in an accepted `.decantr/style-bridge.json` are style-bridge authority; Decantr does not generate or overwrite runtime CSS, tokens, or global styles in this mode.',
+      'Do not install `@decantr/css` or introduce Decantr runtime classes unless the adoption mode explicitly changes to `decantr-css`.',
+    );
+  } else {
+    lines.push(
+      `Adoption mode is \`${input.adoptionMode || 'contract-only'}\`. Do not install \`@decantr/css\` or rewrite styling unless that mode is \`decantr-css\` or the task explicitly asks for it.`,
+    );
+  }
+  lines.push(END, '');
   return lines.join('\n');
 }
 
@@ -129,6 +147,24 @@ export function writeAssistantBridgePreview(input: {
   const bridgePath = join(contextDir, 'assistant-bridge.md');
   writeFileSync(bridgePath, buildAssistantBridgeContent(input));
   return bridgePath;
+}
+
+export function refreshAssistantBridgePreview(
+  projectRoot: string,
+  options: { force?: boolean } = {},
+): string | null {
+  const context = readAssistantBridgeContext(projectRoot);
+  const bridgePath = join(projectRoot, '.decantr', 'context', 'assistant-bridge.md');
+  const configured = context.assistantBridge === 'preview' || context.assistantBridge === 'apply';
+  if (!options.force && !configured && !existsSync(bridgePath)) return null;
+
+  return writeAssistantBridgePreview({
+    projectRoot,
+    detected: detectProject(projectRoot),
+    workflowMode: context.workflowMode,
+    adoptionMode: context.adoptionMode,
+    assistantBridge: context.assistantBridge ?? 'preview',
+  });
 }
 
 function upsertMarkdownBlock(path: string, context: AssistantBridgeContext): boolean {

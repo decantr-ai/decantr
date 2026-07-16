@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import type { EssenceV4 } from '@decantr/essence-spec';
 import { describe, expect, it } from 'vitest';
 import {
+  buildChangedFileGraphImpact,
   buildContractCapsuleFromSnapshot,
   buildGraphImpactContext,
   buildGraphRouteContext,
@@ -534,6 +535,26 @@ describe('typed graph foundation', () => {
     expect(projectRuleImpact?.ids.routes).toEqual(['rt:/settings']);
     expect(projectRuleImpact?.ids.pages).toEqual(['pg:settings']);
     expect(projectRuleImpact?.ids.localRules).toEqual(['rule:no-raw-button']);
+
+    const fileImpact = buildChangedFileGraphImpact(
+      snapshot,
+      ['./src/Card.tsx', 'src/Untracked.tsx', 'src/Card.tsx'],
+      { task: 'change card styling' },
+    );
+    expect(fileImpact.changedFiles).toEqual(['src/Card.tsx', 'src/Untracked.tsx']);
+    expect(fileImpact.matchedFiles).toEqual([
+      { file: 'src/Card.tsx', sourceNodeIds: ['src:src/Card.tsx'] },
+    ]);
+    expect(fileImpact.unresolvedFiles).toEqual(['src/Untracked.tsx']);
+    expect(fileImpact.sourceNodeIds).toEqual(['src:src/Card.tsx']);
+    expect(fileImpact.context?.ids.routes).toEqual(['rt:/settings']);
+
+    const missingGraphImpact = buildChangedFileGraphImpact(null, ['src/Card.tsx']);
+    expect(missingGraphImpact).toMatchObject({
+      unresolvedFiles: ['src/Card.tsx'],
+      sourceNodeIds: [],
+      context: null,
+    });
   });
 
   it('normalizes snapshot order and summary counts', () => {

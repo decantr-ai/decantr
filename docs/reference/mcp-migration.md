@@ -1,6 +1,6 @@
 # Decantr MCP Migration
 
-This guide moves assistant integrations from the older resolver-first Decantr MCP habit into the Decantr 3 Contract / Context / Evidence loop.
+This guide moves assistant integrations from the older resolver-first Decantr MCP habit into the Decantr 3.9 Contract / Context / Evidence / Authority loop. The callable surface remains exactly eight tools; governed-change data travels through existing actions and response fields.
 
 ## Target Loop
 
@@ -15,7 +15,7 @@ For an existing app, MCP clients should prefer this sequence:
 7. `decantr_repair` with `{ "action": "health_loop" }`
 8. `decantr_project` with `{ "action": "workspace_health" }` for monorepos
 
-This keeps the assistant grounded in the adopted app contract, route-local context, active authority lane, typed graph anchors, stable diagnostic codes, and repairable evidence before it edits source.
+This keeps the assistant grounded in verifier-owned `AdoptionTruthV1`, the adopted app contract, a bounded `TaskCapsuleV1`, active authority, typed graph anchors, stable diagnostic codes, and repairable evidence before it edits source.
 
 ## What Changes From Older Prompts
 
@@ -67,7 +67,9 @@ Then use MCP for agent-time context:
 }
 ```
 
-`decantr_context` with `action: "task"` requires current graph artifacts and leads its read targets with the discovered route implementation source. The default `detail: "compact"` response preserves authority, ranking summaries, local law, impact, stop conditions, and verify command while omitting full node/edge arrays and bounding large context lists. Use `detail: "full"` only for diagnostic clients that need the expanded payload. Both modes return `response_detail`.
+`decantr_context` with `action: "task"` requires current graph artifacts and adapts one `TaskCapsuleV1` into the existing response fields. It leads with the required rank-one route implementation source and preserves graph freshness, authority, local law, impact, stable findings, content identity/digest provenance, stop conditions, and one verify command. The default canonical capsule is bounded to 12,000 UTF-8 bytes and 4,000 deterministic estimated tokens and returns `task_capsule_version: "task-capsule.v1"`. Use `detail: "full"` only for diagnostics outside that compact budget.
+
+`decantr_project` with `action: "state"` returns the same verifier-built `adoption_truth` projection used by CLI, CI v3, and Studio. Consumers should preserve its confidence, provenance, mutation receipts, and limitations rather than promoting low-confidence facts in prose.
 
 ## Contract Capsule Use
 
@@ -82,12 +84,12 @@ After an edit or failed check:
 - use `decantr_repair` with `action: "health_loop"` for the shared v2 loop verdict, authority resolution, and evidence tier
 - use `decantr_verify` with `action: "evidence_bundle"` for the privacy-redacted v2 artifact that can be saved in CI or used by a dashboard
 
-The v2 Project Health, Evidence Bundle, runtime probe, authority resolution, and loop-readiness schemas are the active 3.5 payloads for MCP loop integrations. See [Report Schemas](report-schemas.md).
+The v2 Project Health, Evidence Bundle, runtime probe, authority resolution, and loop-readiness schemas remain the default 3.9 payloads for MCP loop integrations. `GovernanceDeltaV1` is emitted by explicit CI v3 and rendered by Studio; MCP does not gain a ninth tool or a parallel delta engine. See [Report Schemas](report-schemas.md).
 
 ## Security Boundary
 
-The MCP server reads Decantr contract, context, graph, and selected project files under the active workspace root. Write tools remain explicit and path-contained. Hosted critique and audit upload fallbacks are retired in Decantr 3.8; `allow_hosted_upload` remains a compatibility option but does not activate removed API routes. Local Project Health, graph context, and Evidence Bundle generation remain useful without hosted upload.
+The MCP server reads Decantr contract, context, graph, and selected project files under the active workspace root. Write tools remain explicit and path-contained under `decantr_contract_write`. Hosted critique and audit upload fallbacks remain retired; `allow_hosted_upload` is a compatibility option that does not activate removed API routes. Local Project Health, graph context, Adoption Truth, Task Capsule, and Evidence Bundle generation remain useful without hosted upload.
 
 ## Compatibility Policy
 
-Decantr 3.4 intentionally removed the older direct MCP tool names from the advertised and callable surface. The supported 3.5 contract remains the eight consolidated tools plus explicit `action` routing, with v2 loop/evidence payloads on task, evidence, workspace health, and health-loop actions. Future Decantr 3 releases may add actions compatibly, but the legacy direct names should be treated as migrated, not hidden compatibility entry points.
+Decantr 3.4 intentionally removed the older direct MCP tool names from the advertised and callable surface. Decantr 3.9 still advertises and registers exactly `decantr_project`, `decantr_contract`, `decantr_context`, `decantr_graph`, `decantr_registry`, `decantr_verify`, `decantr_repair`, and `decantr_contract_write`, with explicit `action` routing and v2 loop/evidence compatibility. `decantr_registry` delegates to canonical `@decantr/content` implementations; no `decantr_content` ninth tool or hidden alias is registered.

@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -134,18 +134,23 @@ describe('brownfield monorepo onboarding', () => {
     );
   });
 
-  it('keeps cold adoption local in offline mode and writes app-scoped artifacts', () => {
+  it('keeps cold adoption local and receipts app plus workspace support writes', () => {
     writeFileSync(
       join(testDir, 'apps', 'web', 'src', 'page.tsx'),
       'export default function Page() { return <main />; }\n',
     );
+    writeFileSync(join(testDir, '.prettierignore'), 'dist/\n', 'utf-8');
 
-    const output = runCli(testDir, ['adopt', '--project', 'apps/web', '--yes']);
+    const output = runCli(testDir, ['adopt', '--project', 'apps/web', '--ci', '--yes']);
 
     expect(output).toContain('Skipping official content-pack hydration in offline mode.');
     expect(output).toContain('decantr init --project apps/web --existing --accept-proposal');
     expect(output).toContain('Generated Decantr typed graph artifacts:');
     expect(output).toContain('Brownfield operating loop');
+    expect(output).toContain(
+      'Adoption source integrity verified; authored host source is unchanged.',
+    );
+    expect(output).toContain('Adoption truth:');
     expect(output).toContain('decantr codify --from-audit --style-bridge --project apps/web');
     expect(output).not.toContain('decantr check --brownfield --project apps/web');
     expect(existsSync(join(testDir, 'apps', 'web', 'decantr.essence.json'))).toBe(true);
@@ -156,6 +161,49 @@ describe('brownfield monorepo onboarding', () => {
     expect(
       existsSync(join(testDir, 'apps', 'web', '.decantr', 'graph', 'contract-capsule.json')),
     ).toBe(true);
+    const projectJson = JSON.parse(
+      readFileSync(join(testDir, 'apps', 'web', '.decantr', 'project.json'), 'utf-8'),
+    ) as {
+      initialized?: {
+        adoption?: {
+          scope?: { root?: string; capturedRoots?: string[] };
+          workflowCompleted?: boolean;
+          integrity?: {
+            status?: string;
+            complete?: boolean;
+            hostSourceBeforeHash?: string;
+            hostSourceAfterHash?: string;
+          };
+          changes?: {
+            created?: string[];
+            updated?: string[];
+            deleted?: string[];
+            allowedGenerated?: { created?: string[]; updated?: string[]; deleted?: string[] };
+            hostSource?: { created?: string[]; updated?: string[]; deleted?: string[] };
+            hostOther?: { created?: string[]; updated?: string[]; deleted?: string[] };
+          };
+          packHydration?: { requested?: boolean; status?: string };
+        };
+      };
+    };
+    expect(projectJson.initialized?.adoption).toMatchObject({
+      scope: { root: 'apps/web', capturedRoots: ['.'] },
+      workflowCompleted: true,
+      integrity: { status: 'verified-untouched', complete: true },
+      changes: { hostSource: { created: [], updated: [], deleted: [] } },
+      packHydration: { requested: false, status: 'skipped-offline' },
+    });
+    expect(projectJson.initialized?.adoption?.integrity?.hostSourceAfterHash).toBe(
+      projectJson.initialized?.adoption?.integrity?.hostSourceBeforeHash,
+    );
+    const recordedChanges = projectJson.initialized?.adoption?.changes;
+    expect(recordedChanges?.created).toContain('.github/workflows/decantr-ci.yml');
+    expect(recordedChanges?.updated).toContain('.prettierignore');
+    expect(recordedChanges?.allowedGenerated?.created).toContain(
+      '.github/workflows/decantr-ci.yml',
+    );
+    expect(recordedChanges?.hostOther?.updated).toContain('.prettierignore');
+    expect(existsSync(join(testDir, '.github', 'workflows', 'decantr-ci.yml'))).toBe(true);
     expect(existsSync(join(testDir, 'decantr.essence.json'))).toBe(false);
   });
 });

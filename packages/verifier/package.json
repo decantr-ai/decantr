@@ -1,6 +1,6 @@
 {
   "name": "@decantr/verifier",
-  "version": "3.8.3",
+  "version": "3.9.0",
   "description": "Shared verification, typed findings, graph anchors, Project Health, and evidence schemas for Decantr",
   "keywords": [
     "decantr",
@@ -41,6 +41,7 @@
     "./schema/project-health-report.v2.json": "./schema/project-health-report.v2.json",
     "./schema/decantr-ci-report.v1.json": "./schema/decantr-ci-report.v1.json",
     "./schema/decantr-ci-report.v2.json": "./schema/decantr-ci-report.v2.json",
+    "./schema/decantr-ci-report.v3.json": "./schema/decantr-ci-report.v3.json",
     "./schema/authority-resolution.v2.json": "./schema/authority-resolution.v2.json",
     "./schema/evidence-bundle.v1.json": "./schema/evidence-bundle.v1.json",
     "./schema/evidence-bundle.v2.json": "./schema/evidence-bundle.v2.json",
@@ -52,7 +53,10 @@
     "./schema/workspace-health-report.v1.json": "./schema/workspace-health-report.v1.json",
     "./schema/workspace-health-report.v2.json": "./schema/workspace-health-report.v2.json",
     "./schema/file-critique-report.v1.json": "./schema/file-critique-report.v1.json",
-    "./schema/showcase-shortlist-report.v1.json": "./schema/showcase-shortlist-report.v1.json"
+    "./schema/showcase-shortlist-report.v1.json": "./schema/showcase-shortlist-report.v1.json",
+    "./schema/adoption-truth.v1.json": "./schema/adoption-truth.v1.json",
+    "./schema/task-capsule.v1.json": "./schema/task-capsule.v1.json",
+    "./schema/governance-delta.v1.json": "./schema/governance-delta.v1.json"
   },
   "files": [
     "dist",

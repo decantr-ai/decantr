@@ -1,6 +1,6 @@
 # Content API
 
-This reference keeps the historical filename for link compatibility. The current Decantr API is a Fly-hosted content/reference helper backed by `@decantr/content`, not a public registry portal, account system, upload service, or billing surface.
+This reference keeps the historical filename for link compatibility. The Decantr 3.9 API is a Fly-hosted content/reference helper backed by canonical `@decantr/content` clients, types, schemas, and corpus data. It is not a public registry portal, account system, upload service, or billing surface.
 
 Base URL:
 
@@ -8,7 +8,7 @@ Base URL:
 https://api.decantr.ai/v1
 ```
 
-Prefer `DECANTR_API_URL` for custom deployments. `REGISTRY_URL` remains a legacy environment alias in Decantr 3.x clients.
+Prefer `DECANTR_API_URL` for custom deployments. `REGISTRY_URL` remains a legacy environment alias in Decantr 3.x clients. `@decantr/registry` is a thin compatibility facade over the same content-owned client implementation; it is not a second service or data source.
 
 Canonical response schemas are published at `https://decantr.ai/schemas/`.
 
@@ -92,12 +92,16 @@ Thumbnail storage from the retired registry portal is not served by the content 
 GET /schema/search-response.v1.json
 GET /schema/registry-intelligence-summary.v1.json
 GET /schema/content-health-report.v1.json
+GET /schema/adoption-truth.v1.json
+GET /schema/task-capsule.v1.json
+GET /schema/governance-delta.v1.json
+GET /schema/decantr-ci-report.v3.json
 ```
 
 Purpose:
-- fetch published JSON Schemas backing Decantr contracts and content API responses.
+- fetch the complete 59-schema canonical catalog backing content, Essence, graph, execution-pack, verifier, v2 compatibility, and explicit CI v3 contracts.
 
-All canonical schemas are also browsable at `https://decantr.ai/schemas/`.
+The API catalog and the files browsable at `https://decantr.ai/schemas/` are tested for exact filename parity.
 
 ## Execution Pack Compile
 
@@ -182,7 +186,7 @@ Legacy `decantr registry ...` aliases remain callable for scripts.
 - `decantr_context` with `execution_pack` actions for compiled pack context.
 - `decantr_verify` and `decantr_repair` for local verification evidence and repair loops.
 
-`decantr_registry` is a compatibility tool name; Decantr 3.x does not add a ninth MCP content tool.
+`decantr_registry` is a compatibility tool name backed by content-owned implementations; Decantr 3.x advertises and registers exactly eight MCP tools and does not add a ninth content tool.
 
 ## Notes
 

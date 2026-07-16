@@ -10,6 +10,19 @@ import {
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type {
+  ArchetypeRole,
+  ComposeEntry,
+  PatternReference,
+  PatternReferenceObject,
+  Archetype as RegistryArchetype,
+  Blueprint as RegistryBlueprint,
+  LayoutItem as RegistryLayoutItem,
+  Pattern as RegistryPattern,
+  Shell as RegistryShell,
+  Theme as RegistryTheme,
+} from '@decantr/content';
+import { API_CONTENT_TYPES } from '@decantr/content';
+import type {
   ExecutionPackBase,
   ExecutionPackBundle,
   ExecutionPackManifest,
@@ -28,19 +41,7 @@ import type {
   SpatialTokenHints,
 } from '@decantr/essence-spec';
 import { computeSpatialTokens } from '@decantr/essence-spec';
-import type {
-  ArchetypeRole,
-  ComposeEntry,
-  PatternReference,
-  PatternReferenceObject,
-  Archetype as RegistryArchetype,
-  Blueprint as RegistryBlueprint,
-  LayoutItem as RegistryLayoutItem,
-  Pattern as RegistryPattern,
-  Shell as RegistryShell,
-  Theme as RegistryTheme,
-} from '@decantr/registry';
-import { API_CONTENT_TYPES } from '@decantr/registry';
+import { refreshAssistantBridgePreview } from './assistant-bridge.js';
 import type { DetectedProject } from './detect.js';
 import type { InitOptions } from './prompts.js';
 import type { RegistryClient } from './registry.js';
@@ -51,6 +52,7 @@ import type {
   ContentSource,
   WorkflowMode,
 } from './workflow-model.js';
+import { adoptionUsesDecantrRuntimeCss } from './workflow-model.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -2261,9 +2263,9 @@ const STYLE_BRIDGE_CSS_APPROACH = `## Styling Adoption
 
 This project uses Decantr in **style-bridge** mode.
 
-Decantr may generate lightweight bridge files such as \`src/styles/tokens.css\` and \`src/styles/decantr-bridge.css\`, but \`@decantr/css\` is not required. Treat these files as a mapping layer between Decantr context and the app's existing styling system.
+Styling remains host-owned. Decantr does not generate or overwrite runtime CSS, token stylesheets, global styles, or \`@decantr/css\` artifacts in this mode.
 
-Preserve the current CSS framework/component library. Use Decantr tokens and bridge classes only where they clarify design intent without replacing the app's established styling conventions.
+Only reviewed mappings in an accepted \`.decantr/style-bridge.json\` are style-bridge authority. Until that project-owned artifact exists, use the host app's CSS framework, component library, tokens, and global styles directly. A style bridge never authorizes Decantr runtime classes or a parallel token system.
 
 ### Interaction Requirements
 
@@ -2294,6 +2296,7 @@ function generateDecantrMdV4(params: {
   workflowMode?: WorkflowMode;
   adoptionMode?: AdoptionMode;
   analysisArtifacts?: boolean;
+  compiledPackAvailable?: boolean;
   blueprintId?: string;
   themeName?: string;
   themeMode?: string;
@@ -2341,6 +2344,12 @@ function generateDecantrMdV4(params: {
     (params.workflowMode === 'brownfield-attach' && params.adoptionMode === 'contract-only')
       ? 'Use the route source, narrative context, and Contract capsule listed by `decantr task`. If a compiled `page-{name}-pack.md` is later hydrated, prefer it over broader narrative context when they differ.'
       : 'Read `.decantr/context/page-{name}-pack.md` for the most local compiled route contract before editing a specific page. Route-local packs should win over broader narrative docs when there is any mismatch.';
+  const scaffoldContextGuidance = params.compiledPackAvailable
+    ? 'Read `.decantr/context/scaffold-pack.md` first for the compact compiled contract. Then read `.decantr/context/scaffold.md` for fuller topology, route, and voice context.'
+    : 'Read `.decantr/context/scaffold.md` for the local topology, route, and voice contract. If `.decantr/context/scaffold-pack.md` is later hydrated, prefer that more specific compiled contract when the two differ.';
+  const compiledContextPosition = params.compiledPackAvailable
+    ? 'Treat the compiled execution-pack files as the primary source of truth. Use narrative docs as secondary explanation when the compiled packs are not enough.'
+    : 'Use the narrative scaffold and section context as the current app contract. Compiled execution packs are optional and may be hydrated later.';
   const body = renderTemplate(template, {
     GUARD_MODE: params.guardMode,
     CSS_APPROACH: params.cssApproach,
@@ -2358,11 +2367,11 @@ function generateDecantrMdV4(params: {
     WORKFLOW_GUIDANCE:
       params.workflowMode === 'brownfield-attach'
         ? params.analysisArtifacts
-          ? `This project is using Decantr in **brownfield attach** mode with **${params.adoptionMode || 'contract-only'}** adoption.\n\nRead \`.decantr/analysis.json\` first for the detected framework, routes, styling, layout, and dependency facts.\nThen read \`.decantr/doctrine-map.json\`, \`.decantr/ambient-context.json\`, and \`.decantr/brownfield-report.md\` for ranked source precedence, existing assistant rules, docs, design-system evidence, and unresolved doctrine risks.\nThen read \`.decantr/context/scaffold-pack.md\` and \`.decantr/context/scaffold.md\` to understand the accepted Decantr contract.\n\nTreat Decantr as the reconciled contract layer and the original docs/rules as cited evidence. Preserve the current framework, package manager, router, styling system, data boundaries, and working runtime structure unless the contract gives you a reviewed reason to change them. Official corpus content is optional in this workflow unless the task explicitly asks for it.`
-          : `This project is using Decantr in **brownfield attach** mode with **${params.adoptionMode || 'contract-only'}** adoption.\n\nNo \`.decantr/analysis.json\` or \`.decantr/init-seed.json\` was present when this context was generated. Inventory the current framework, routes, styling, layout, package manager, and rule files before changing runtime code. Then read \`.decantr/context/scaffold-pack.md\` and \`.decantr/context/scaffold.md\` to understand the Decantr contract you are layering onto the existing app.\n\nPreserve the current framework, package manager, router, and working runtime structure unless the contract gives you a reviewed reason to change them. Official corpus content is optional in this workflow unless the task explicitly asks for it.`
+          ? `This project is using Decantr in **brownfield attach** mode with **${params.adoptionMode || 'contract-only'}** adoption.\n\nRead \`.decantr/analysis.json\` first for the detected framework, routes, styling, layout, and dependency facts.\nThen read \`.decantr/doctrine-map.json\`, \`.decantr/ambient-context.json\`, and \`.decantr/brownfield-report.md\` for ranked source precedence, existing assistant rules, docs, design-system evidence, and unresolved doctrine risks.\n${scaffoldContextGuidance}\n\nTreat Decantr as the reconciled contract layer and the original docs/rules as cited evidence. Preserve the current framework, package manager, router, styling system, data boundaries, and working runtime structure unless the contract gives you a reviewed reason to change them. Official corpus content is optional in this workflow unless the task explicitly asks for it.`
+          : `This project is using Decantr in **brownfield attach** mode with **${params.adoptionMode || 'contract-only'}** adoption.\n\nNo \`.decantr/analysis.json\` or \`.decantr/init-seed.json\` was present when this context was generated. Inventory the current framework, routes, styling, layout, package manager, and rule files before changing runtime code. ${scaffoldContextGuidance}\n\nPreserve the current framework, package manager, router, and working runtime structure unless the contract gives you a reviewed reason to change them. Official corpus content is optional in this workflow unless the task explicitly asks for it.`
         : params.workflowMode === 'greenfield-contract-only'
-          ? `This project is using Decantr in **greenfield contract-only** mode with **${params.adoptionMode || 'contract-only'}** adoption.\n\nTreat the compiled execution-pack files as the primary source of truth for the app contract, but do not assume Decantr owns the runtime or styling system. Use narrative docs only as secondary explanation when the compiled packs are not enough.\nUse only files present in this workspace as the source of truth. If local scaffold files disagree, stop and report the mismatch instead of relying on external Decantr assumptions or prior examples.\n\nRead \`.decantr/context/scaffold-pack.md\` first for the compact compiled shell, theme, feature, and route contract.\nThen read \`.decantr/context/scaffold.md\` for the fuller app overview, topology, route map, and voice guidance.`
-          : `This project is using Decantr in **greenfield scaffold** mode with **${params.adoptionMode || 'contract-only'}** adoption.\n\nTreat the compiled execution-pack files as the primary source of truth.\nUse narrative docs only as secondary explanation when the compiled packs are not enough.\nUse only files present in this workspace as the source of truth. If local scaffold files disagree, stop and report the mismatch instead of relying on external Decantr assumptions or prior examples.\n\nRead \`.decantr/context/scaffold-pack.md\` first for the compact compiled shell, theme, feature, and route contract.\nThen read \`.decantr/context/scaffold.md\` for the fuller app overview, topology, route map, and voice guidance.\nStart implementation from the shell layouts and shared route structure before filling in section pages.`,
+          ? `This project is using Decantr in **greenfield contract-only** mode with **${params.adoptionMode || 'contract-only'}** adoption.\n\n${compiledContextPosition} Do not assume Decantr owns the runtime or styling system.\nUse only files present in this workspace as the source of truth. If local scaffold files disagree, stop and report the mismatch instead of relying on external Decantr assumptions or prior examples.\n\n${scaffoldContextGuidance}`
+          : `This project is using Decantr in **greenfield scaffold** mode with **${params.adoptionMode || 'contract-only'}** adoption.\n\n${compiledContextPosition}\nUse only files present in this workspace as the source of truth. If local scaffold files disagree, stop and report the mismatch instead of relying on external Decantr assumptions or prior examples.\n\n${scaffoldContextGuidance}\nStart implementation from the shell layouts and shared route structure before filling in section pages.`,
   });
 
   // Build project brief
@@ -2484,6 +2493,10 @@ function generateProjectJson(
   registrySource: 'api' | 'cache',
 ): string {
   const now = new Date().toISOString();
+  const workspaceRoot = options.workspaceRoot || detected.projectRoot || options.appRoot;
+  const appRoot = options.appRoot || detected.projectRoot || workspaceRoot;
+  const relativeAppRoot =
+    workspaceRoot && appRoot ? relative(workspaceRoot, appRoot).replace(/\\/g, '/') || '.' : '.';
 
   const data: Record<string, unknown> = {
     detected: {
@@ -2493,8 +2506,8 @@ function generateProjectJson(
       hasTypeScript: detected.hasTypeScript,
       hasTailwind: detected.hasTailwind,
       existingRuleFiles: detected.existingRuleFiles,
-      workspaceRoot: options.workspaceRoot || detected.projectRoot,
-      appRoot: options.appRoot || detected.projectRoot,
+      workspaceRoot: '.',
+      appRoot: relativeAppRoot,
     },
     overrides: {
       framework: options.target !== detected.framework ? options.target : null,
@@ -2542,7 +2555,8 @@ function buildFlagsString(options: InitOptions): string {
   if (options.adoptionMode) flags.push(`--adoption=${options.adoptionMode}`);
   if (options.assistantBridge) flags.push(`--assistant-bridge=${options.assistantBridge}`);
   if (options.appRoot && options.workspaceRoot && options.appRoot !== options.workspaceRoot) {
-    flags.push(`--project=${options.appRoot}`);
+    const projectPath = relative(options.workspaceRoot, options.appRoot).replace(/\\/g, '/') || '.';
+    flags.push(`--project=${projectPath}`);
   }
   return flags.join(' ');
 }
@@ -3120,6 +3134,7 @@ export function scaffoldMinimal(
     contentSource?: ContentSource;
     assistantBridge?: AssistantBridgeMode;
     workspaceRoot?: string;
+    appRoot?: string;
   } = {},
 ): ScaffoldResult {
   const decantrDir = join(projectRoot, '.decantr');
@@ -3208,6 +3223,9 @@ export function scaffoldMinimal(
 
   // Create .decantr/project.json
   const now = new Date().toISOString();
+  const workspaceRoot = options.workspaceRoot || projectRoot;
+  const appRoot = options.appRoot || projectRoot;
+  const relativeAppRoot = relative(workspaceRoot, appRoot).replace(/\\/g, '/') || '.';
   const projectJson = {
     detected: {
       framework: 'unknown',
@@ -3216,6 +3234,8 @@ export function scaffoldMinimal(
       hasTypeScript: false,
       hasTailwind: false,
       existingRuleFiles: [],
+      workspaceRoot: '.',
+      appRoot: relativeAppRoot,
     },
     overrides: {
       framework: null,
@@ -3239,7 +3259,7 @@ export function scaffoldMinimal(
       adoptionMode: options.adoptionMode || 'contract-only',
       contentSource: options.contentSource || 'none',
       assistantBridge: options.assistantBridge || 'none',
-      projectScope: 'single-app',
+      projectScope: relativeAppRoot === '.' ? 'single-app' : 'workspace-app',
       analysisArtifacts: false,
     },
   };
@@ -3371,7 +3391,7 @@ function writeExecutionPackArtifacts(
 function isManagedExecutionPackArtifact(fileName: string): boolean {
   return (
     fileName === 'pack-manifest.json' ||
-    /^(?:scaffold|review|section-.+-pack|page-.+-pack|mutation-.+-pack)\.(?:md|json)$/.test(
+    /^(?:scaffold-pack|review-pack|section-.+-pack|page-.+-pack|mutation-.+-pack)\.(?:md|json)$/.test(
       fileName,
     )
   );
@@ -3387,6 +3407,26 @@ function removeObsoleteExecutionPackArtifacts(contextDir: string, writtenPaths: 
   for (const entry of readdirSync(contextDir, { withFileTypes: true })) {
     if (!entry.isFile()) continue;
     if (!isManagedExecutionPackArtifact(entry.name)) continue;
+    const fullPath = join(contextDir, entry.name);
+    if (!expected.has(fullPath)) rmSync(fullPath, { force: true });
+  }
+}
+
+function isManagedNarrativeContextArtifact(fileName: string): boolean {
+  return (
+    fileName === 'scaffold.md' ||
+    fileName === 'task-scaffold.md' ||
+    fileName === 'task-add-page.md' ||
+    fileName === 'task-modify.md' ||
+    (/^section-.+\.md$/.test(fileName) && !fileName.endsWith('-pack.md'))
+  );
+}
+
+function removeObsoleteNarrativeContextArtifacts(contextDir: string, writtenPaths: string[]): void {
+  const expected = new Set(writtenPaths);
+
+  for (const entry of readdirSync(contextDir, { withFileTypes: true })) {
+    if (!entry.isFile() || !isManagedNarrativeContextArtifact(entry.name)) continue;
     const fullPath = join(contextDir, entry.name);
     if (!expected.has(fullPath)) rmSync(fullPath, { force: true });
   }
@@ -3468,7 +3508,10 @@ async function generatePackContexts(
   };
 
   const cacheRoot = join(projectRoot, '.decantr', 'cache', '@official');
-  if (!existsSync(cacheRoot)) return emptyResult;
+  if (!existsSync(cacheRoot)) {
+    removeObsoleteExecutionPackArtifacts(contextDir, []);
+    return emptyResult;
+  }
 
   const customRoot = join(projectRoot, '.decantr', 'custom');
   const overridePaths = existsSync(customRoot) ? [customRoot] : undefined;
@@ -3511,6 +3554,7 @@ async function generatePackContexts(
     console.warn(
       `${DIM}   This is a known drift source — fix the underlying issue and re-run \`decantr refresh\`.${RESET}`,
     );
+    removeObsoleteExecutionPackArtifacts(contextDir, []);
     return emptyResult;
   }
 }
@@ -3604,6 +3648,7 @@ export async function refreshDerivedFiles(
     workflowMode?: WorkflowMode;
     adoptionMode?: AdoptionMode;
     analysisArtifacts?: boolean;
+    forceAssistantBridge?: boolean;
   },
 ): Promise<RefreshResult> {
   const decantrDir = join(projectRoot, '.decantr');
@@ -3728,7 +3773,7 @@ export async function refreshDerivedFiles(
 
   // ── Generate CSS files ──
   const stylesDir = join(projectRoot, 'src', 'styles');
-  const shouldWriteCss = effectiveAdoptionMode !== 'contract-only';
+  const shouldWriteCss = adoptionUsesDecantrRuntimeCss(effectiveAdoptionMode);
   if (shouldWriteCss) {
     mkdirSync(stylesDir, { recursive: true });
   }
@@ -3753,7 +3798,6 @@ export async function refreshDerivedFiles(
   );
 
   const tokensPath = join(stylesDir, 'tokens.css');
-  const bridgePath = join(stylesDir, 'decantr-bridge.css');
   const hasRealThemeData = themeData?.seed?.primary || themeData?.palette?.background;
   if (shouldWriteCss && (hasRealThemeData || !existsSync(tokensPath))) {
     // Warn loudly when the blueprint asks for a theme-mode the theme doesn't
@@ -3818,11 +3862,6 @@ export async function refreshDerivedFiles(
     const personalityCSS = generatePersonalityCSS(personality || [], themeData || {});
     treatmentCSS += personalityCSS;
     writeFileSync(treatmentsPath, treatmentCSS);
-  } else if (effectiveAdoptionMode === 'style-bridge') {
-    writeFileSync(
-      bridgePath,
-      `/* Decantr style bridge: map these CSS variables into the existing design system. */\n:root {\n  --decantr-bridge-theme: ${themeName};\n  --decantr-bridge-density: ${densityLevel};\n}\n`,
-    );
   }
 
   const globalPath = join(stylesDir, 'global.css');
@@ -3831,12 +3870,7 @@ export async function refreshDerivedFiles(
     writeFileSync(globalPath, generateGlobalCSS(personality, essence));
   }
 
-  const cssFiles =
-    effectiveAdoptionMode === 'contract-only'
-      ? []
-      : effectiveAdoptionMode === 'style-bridge'
-        ? [tokensPath, bridgePath, globalPath]
-        : [tokensPath, treatmentsPath, globalPath];
+  const cssFiles = shouldWriteCss ? [tokensPath, treatmentsPath, globalPath] : [];
 
   // ── Build decorator list for DECANTR.md and section contexts ──
   const earlyDecoratorList: Array<{ name: string; description: string }> = [];
@@ -3865,6 +3899,14 @@ export async function refreshDerivedFiles(
     }
   }
 
+  const contextFiles: string[] = [];
+  const packContexts = await generatePackContexts(
+    projectRoot,
+    contextDir,
+    essence,
+    effectiveAdoptionMode,
+  );
+
   // ── Generate DECANTR.md ──
   const decantrMdPath = join(projectRoot, 'DECANTR.md');
   writeFileSync(
@@ -3875,6 +3917,7 @@ export async function refreshDerivedFiles(
       workflowMode: effectiveWorkflowMode,
       adoptionMode: effectiveAdoptionMode,
       analysisArtifacts: effectiveAnalysisArtifacts,
+      compiledPackAvailable: packContexts.scaffoldPack !== null,
       blueprintId: storedBlueprintId || getLegacyBlueprintId(essence.meta) || undefined,
       themeName,
       themeMode: mode,
@@ -3903,14 +3946,10 @@ export async function refreshDerivedFiles(
     }),
   );
 
-  const contextFiles: string[] = [];
-
-  const packContexts = await generatePackContexts(
-    projectRoot,
-    contextDir,
-    essence,
-    effectiveAdoptionMode,
-  );
+  const assistantBridgePath = refreshAssistantBridgePreview(projectRoot, {
+    force: options?.forceAssistantBridge,
+  });
+  if (assistantBridgePath) contextFiles.push(assistantBridgePath);
 
   const scaffoldTaskPath = join(contextDir, 'task-scaffold.md');
   writeFileSync(
@@ -4136,6 +4175,8 @@ export async function refreshDerivedFiles(
   if (packContexts.paths.length > 0) {
     contextFiles.push(...packContexts.paths);
   }
+
+  removeObsoleteNarrativeContextArtifacts(contextDir, contextFiles);
 
   return {
     decantrMdPath,
@@ -5037,7 +5078,7 @@ export function generateScaffoldContext(input: ScaffoldContextInput): string {
   // Header
   lines.push(`# Scaffold: ${appName}`);
   lines.push('');
-  lines.push(`**Blueprint:** ${blueprintId}`);
+  lines.push(`**Blueprint:** ${blueprintId || 'custom'}`);
   lines.push(`**Theme:** ${themeName}`);
   lines.push(`**Personality:** ${personality.join(', ')}`);
   lines.push('**Guard mode:** creative (no enforcement during initial scaffolding)');

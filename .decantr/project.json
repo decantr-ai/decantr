@@ -7,15 +7,17 @@
     "hasTailwind": false,
     "existingRuleFiles": [
       "CLAUDE.md"
-    ]
+    ],
+    "workspaceRoot": ".",
+    "appRoot": "."
   },
   "overrides": {
     "framework": "react"
   },
   "sync": {
-    "status": "synced",
-    "lastSync": "2026-04-07T21:13:59.791Z",
-    "registrySource": "api",
+    "status": "needs-sync",
+    "lastSync": "2026-07-16T18:38:36.275Z",
+    "registrySource": "cache",
     "cachedContent": {
       "archetypes": [],
       "patterns": [],
@@ -23,31 +25,16 @@
     }
   },
   "initialized": {
-    "at": "2026-04-07T21:13:59.791Z",
+    "at": "2026-07-16T18:38:36.275Z",
     "via": "cli",
-    "version": "1.0.0",
-    "flags": "--blueprint=workbench --theme=auradecantism --mode=dark --guard=strict"
-  },
-  "blueprintId": "workbench",
-  "voice": {
-    "tone": "Technical and efficient. Speaks to design system engineers.",
-    "avoid": [
-      "Submit",
-      "Click here",
-      "Please enter",
-      "Buy",
-      "Subscribe"
-    ],
-    "errors": "Developer-friendly. Show error codes, stack traces for component render failures, and link to relevant docs.",
-    "loading": "Code skeleton blocks with line-height placeholders. Component preview areas show a subtle grid pattern while loading.",
-    "cta_verbs": [
-      "Inspect",
-      "Browse",
-      "Preview",
-      "Configure",
-      "Export",
-      "Search"
-    ],
-    "empty_states": "Technical and helpful. An empty component list should explain how to register components or link to documentation."
+    "version": "2.13.1",
+    "flags": "--theme=existing --mode=auto --guard=strict --workflow=brownfield-attach --adoption=contract-only --assistant-bridge=preview",
+    "workflowMode": "brownfield-attach",
+    "adoptionMode": "contract-only",
+    "contentSource": "none",
+    "assistantBridge": "preview",
+    "projectScope": "workspace-app",
+    "adapterId": "react-vite",
+    "analysisArtifacts": false
   }
 }

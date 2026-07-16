@@ -1,7 +1,22 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import { isAbsolute, join, resolve } from 'node:path';
-import { PROJECT_HEALTH_REPORT_V2_SCHEMA_URL, type ProjectHealthReport } from '@decantr/verifier';
+import {
+  ADOPTION_TRUTH_V1_SCHEMA_URL,
+  type AdoptionTruthV1,
+  createGovernanceDeltaV1,
+  createProjectAdoptionTruthV1,
+  createStableProjectIdentityV1,
+  DECANTR_CI_REPORT_V2_SCHEMA_URL,
+  DECANTR_CI_REPORT_V3_SCHEMA_URL,
+  GOVERNANCE_DELTA_V1_SCHEMA_URL,
+  type GovernanceAuthorityLaneV1,
+  type GovernanceDeltaV1,
+  type GovernanceFindingOccurrenceInputV1,
+  PROJECT_HEALTH_REPORT_V2_SCHEMA_URL,
+  type ProjectHealthFinding,
+  type ProjectHealthReport,
+} from '@decantr/verifier';
 import { sendStudioHealthRefreshedTelemetry, sendStudioStartedTelemetry } from '../telemetry.js';
 import { createProjectHealthReport } from './health.js';
 import { createWorkspaceHealthReport } from './workspace.js';
@@ -10,6 +25,48 @@ const GREEN = '\x1b[32m';
 const CYAN = '\x1b[36m';
 const RESET = '\x1b[0m';
 const PROJECT_HEALTH_SCHEMA_URL = PROJECT_HEALTH_REPORT_V2_SCHEMA_URL;
+
+type StudioStateSource =
+  | 'current-project'
+  | 'project-health-v2'
+  | 'ci-v2'
+  | 'ci-v3'
+  | 'adoption-truth-v1'
+  | 'governance-delta-v1';
+
+interface StudioTaskPreview {
+  route: string | null;
+  intent: string | null;
+  command: string;
+  notes: string[];
+  projectRoot: string;
+  selectedAppRoot: string;
+  availableRoutes: string[];
+  generatedAt: string;
+}
+
+interface StudioContractState {
+  mode: 'project' | 'report';
+  source: StudioStateSource;
+  generatedAt: string;
+  health: ProjectHealthReport | null;
+  adoptionTruth: AdoptionTruthV1 | null;
+  governanceDelta: GovernanceDeltaV1 | null;
+  taskPreview: StudioTaskPreview;
+  governanceCommands: {
+    verify: string[];
+    repair: string[];
+  };
+  proof: unknown;
+}
+
+interface StudioReportArtifact {
+  source: Exclude<StudioStateSource, 'current-project'>;
+  generatedAt: string;
+  health: ProjectHealthReport | null;
+  adoptionTruth: AdoptionTruthV1 | null;
+  governanceDelta: GovernanceDeltaV1 | null;
+}
 
 export interface StudioCommandOptions {
   host?: string;
@@ -21,6 +78,12 @@ export interface StudioCommandOptions {
 export interface StudioServerHandle {
   server: Server;
   url: string;
+}
+
+function validateStudioOptions(options: StudioCommandOptions): void {
+  if (options.report && options.workspace) {
+    throw new Error('Studio --report cannot be combined with --workspace.');
+  }
 }
 
 function sendJson(res: ServerResponse, status: number, value: unknown): void {
@@ -56,12 +119,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
 
-function readProjectHealthReport(reportPath: string): ProjectHealthReport {
-  const parsed = JSON.parse(readFileSync(reportPath, 'utf-8')) as unknown;
-  if (!isRecord(parsed) || parsed.$schema !== PROJECT_HEALTH_SCHEMA_URL) {
-    throw new Error('Report file is not a Decantr Project Health v2 JSON document.');
-  }
+function readProjectHealthReport(value: unknown): ProjectHealthReport {
+  const parsed = value;
   if (
+    !isRecord(parsed) ||
+    parsed.$schema !== PROJECT_HEALTH_SCHEMA_URL ||
     typeof parsed.generatedAt !== 'string' ||
     typeof parsed.projectRoot !== 'string' ||
     !['healthy', 'warning', 'error'].includes(String(parsed.status)) ||
@@ -78,6 +140,283 @@ function readProjectHealthReport(reportPath: string): ProjectHealthReport {
     throw new Error('Report file is not a Decantr Project Health JSON document.');
   }
   return parsed as ProjectHealthReport;
+}
+
+function readAdoptionTruth(value: unknown): AdoptionTruthV1 {
+  if (
+    !isRecord(value) ||
+    value.$schema !== ADOPTION_TRUTH_V1_SCHEMA_URL ||
+    value.schemaVersion !== 1 ||
+    typeof value.generatedAt !== 'string' ||
+    !isRecord(value.project) ||
+    typeof value.project.workspaceRoot !== 'string' ||
+    typeof value.project.selectedAppRoot !== 'string' ||
+    typeof value.project.selectionReason !== 'string' ||
+    !Array.isArray(value.facts) ||
+    !Array.isArray(value.mutationReceipts) ||
+    !Array.isArray(value.limitations) ||
+    typeof value.nextAction !== 'string'
+  ) {
+    throw new Error('Report file contains an invalid Decantr AdoptionTruthV1 document.');
+  }
+  return value as unknown as AdoptionTruthV1;
+}
+
+function readGovernanceDelta(value: unknown): GovernanceDeltaV1 {
+  if (
+    !isRecord(value) ||
+    value.$schema !== GOVERNANCE_DELTA_V1_SCHEMA_URL ||
+    value.schemaVersion !== 1 ||
+    typeof value.generatedAt !== 'string' ||
+    !isRecord(value.project) ||
+    typeof value.project.identity !== 'string' ||
+    typeof value.project.selectedAppRoot !== 'string' ||
+    !isRecord(value.findings) ||
+    !Array.isArray(value.findings.new) ||
+    !Array.isArray(value.findings.inherited) ||
+    !Array.isArray(value.findings.resolved) ||
+    !Array.isArray(value.findings.unclassified) ||
+    !isRecord(value.summary) ||
+    typeof value.summary.newCount !== 'number' ||
+    typeof value.summary.inheritedCount !== 'number' ||
+    typeof value.summary.resolvedCount !== 'number' ||
+    typeof value.summary.unclassifiedCount !== 'number' ||
+    !isRecord(value.gate) ||
+    !['pass', 'fail', 'not_proven'].includes(String(value.gate.result)) ||
+    !Array.isArray(value.limitations) ||
+    typeof value.nextAction !== 'string'
+  ) {
+    throw new Error('Report file contains an invalid Decantr GovernanceDeltaV1 document.');
+  }
+  return value as unknown as GovernanceDeltaV1;
+}
+
+function readStudioReportArtifact(reportPath: string): StudioReportArtifact {
+  const parsed = JSON.parse(readFileSync(reportPath, 'utf-8')) as unknown;
+  if (!isRecord(parsed)) {
+    throw new Error('Report file is not a Decantr JSON report.');
+  }
+
+  if (parsed.$schema === PROJECT_HEALTH_SCHEMA_URL) {
+    const health = readProjectHealthReport(parsed);
+    return {
+      source: 'project-health-v2',
+      generatedAt: health.generatedAt,
+      health,
+      adoptionTruth: null,
+      governanceDelta: null,
+    };
+  }
+
+  if (parsed.$schema === DECANTR_CI_REPORT_V2_SCHEMA_URL) {
+    if (parsed.mode !== 'project') {
+      throw new Error('Studio --report requires a project-mode Decantr CI v2 report.');
+    }
+    const health = readProjectHealthReport(parsed.health);
+    return {
+      source: 'ci-v2',
+      generatedAt: typeof parsed.generatedAt === 'string' ? parsed.generatedAt : health.generatedAt,
+      health,
+      adoptionTruth: null,
+      governanceDelta: null,
+    };
+  }
+
+  if (parsed.$schema === DECANTR_CI_REPORT_V3_SCHEMA_URL) {
+    if (parsed.mode !== 'project') {
+      throw new Error('Studio --report requires a project-mode Decantr CI v3 report.');
+    }
+    const health = readProjectHealthReport(parsed.health);
+    const adoptionTruth = readAdoptionTruth(parsed.adoptionTruth);
+    const governanceDelta = readGovernanceDelta(parsed.governanceDelta);
+    if (adoptionTruth.project.selectedAppRoot !== governanceDelta.project.selectedAppRoot) {
+      throw new Error('CI v3 report contracts disagree on the selected application.');
+    }
+    if (parsed.failOn !== governanceDelta.gate.failOn) {
+      throw new Error('CI v3 report failOn does not match GovernanceDeltaV1.');
+    }
+    return {
+      source: 'ci-v3',
+      generatedAt: typeof parsed.generatedAt === 'string' ? parsed.generatedAt : health.generatedAt,
+      health,
+      adoptionTruth,
+      governanceDelta,
+    };
+  }
+
+  if (parsed.$schema === ADOPTION_TRUTH_V1_SCHEMA_URL) {
+    const adoptionTruth = readAdoptionTruth(parsed);
+    return {
+      source: 'adoption-truth-v1',
+      generatedAt: adoptionTruth.generatedAt,
+      health: null,
+      adoptionTruth,
+      governanceDelta: null,
+    };
+  }
+
+  if (parsed.$schema === GOVERNANCE_DELTA_V1_SCHEMA_URL) {
+    const governanceDelta = readGovernanceDelta(parsed);
+    return {
+      source: 'governance-delta-v1',
+      generatedAt: governanceDelta.generatedAt,
+      health: null,
+      adoptionTruth: null,
+      governanceDelta,
+    };
+  }
+
+  throw new Error('Report file is not a supported Decantr health, CI v2/v3, or contract report.');
+}
+
+function uniqueCommands(commands: Array<string | null | undefined>): string[] {
+  return [...new Set(commands.filter((command): command is string => Boolean(command?.trim())))];
+}
+
+function governanceCommands(
+  health: ProjectHealthReport | null,
+): StudioContractState['governanceCommands'] {
+  if (!health) return { verify: [], repair: [] };
+  return {
+    verify: uniqueCommands([health.loop?.verifyCommand]),
+    repair: uniqueCommands(
+      health.findings.flatMap((finding) => [
+        ...(finding.repairPlan?.commands ?? []),
+        ...(finding.remediation?.commands ?? []),
+        ...(finding.resolutionActions ?? []).map((action) => action.command),
+      ]),
+    ),
+  };
+}
+
+function workspaceRelativePath(value: string | undefined): string | null {
+  if (!value) return null;
+  const normalized = value.replace(/\\/g, '/').replace(/^\.\//, '');
+  if (isAbsolute(normalized) || normalized.split('/').includes('..')) return null;
+  return normalized || '.';
+}
+
+function governanceAuthorityLane(value: string | undefined): GovernanceAuthorityLaneV1 {
+  if (
+    value === 'production-source' ||
+    value === 'local-law' ||
+    value === 'style-bridge' ||
+    value === 'essence-contract' ||
+    value === 'official-guidance'
+  ) {
+    return value;
+  }
+  return value === 'registry-guidance' ? 'official-guidance' : 'unknown';
+}
+
+function governanceFinding(finding: ProjectHealthFinding): GovernanceFindingOccurrenceInputV1 {
+  const file = workspaceRelativePath(finding.file);
+  const repairTarget =
+    workspaceRelativePath(
+      finding.repairPlan?.actions.find((action) => typeof action.target === 'string')?.target ??
+        finding.file,
+    ) ??
+    finding.target ??
+    null;
+  return {
+    code: finding.code?.trim() || finding.id,
+    ruleId: finding.rule?.trim() || '',
+    source: finding.source,
+    category: finding.category,
+    severity: finding.severity,
+    message: finding.message,
+    authorityLane: governanceAuthorityLane(finding.authorityLane),
+    graphAnchor: finding.graph ?? null,
+    repairId: finding.repair?.id ?? finding.repairPlan?.repairId ?? null,
+    repairTarget,
+    annotation: {
+      path: file,
+      startLine: null,
+      startColumn: null,
+      endLine: null,
+      endColumn: null,
+    },
+    file,
+    route: finding.graph?.route ?? null,
+    target: finding.target ?? null,
+    location: null,
+  };
+}
+
+function createStudioGovernanceDelta(
+  projectRoot: string,
+  health: ProjectHealthReport,
+  adoptionTruth: AdoptionTruthV1,
+): GovernanceDeltaV1 {
+  const graphComplete = health.graph.ready && health.graph.current === true;
+  const graphFreshness =
+    health.graph.current === true ? 'fresh' : health.graph.current === false ? 'stale' : 'unknown';
+  return createGovernanceDeltaV1({
+    generatedAt: health.generatedAt,
+    project: {
+      identity: createStableProjectIdentityV1(projectRoot),
+      workspaceRoot: adoptionTruth.project.workspaceRoot,
+      selectedAppRoot: adoptionTruth.project.selectedAppRoot,
+    },
+    comparisonScope: { kind: 'unknown', identity: null },
+    changeBase: {
+      identity: null,
+      hash: null,
+      baseRef: null,
+      headRef: null,
+      mergeBase: null,
+      completeness: 'incomplete',
+      changedFiles: [],
+      changedRoutes: [],
+      impactedNodeIds: [],
+      unresolvedFiles: [],
+      limitations: ['Studio does not execute Git commands, so no change base was recomputed.'],
+    },
+    debtBaseline: {
+      identity: null,
+      hash: null,
+      projectIdentity: null,
+      capturedAt: null,
+      completeness: 'incomplete',
+      freshness: 'unknown',
+      compatibility: 'unknown',
+      findings: [],
+      limitations: [
+        'No verifier-supplied compatible debt baseline was available to this Studio observation.',
+      ],
+    },
+    current: {
+      health: { identity: `project-health:${health.generatedAt}`, hash: null },
+      graph: {
+        identity: health.graph.snapshotId,
+        sourceHash: health.graph.sourceHash,
+        completeness: graphComplete ? 'complete' : 'incomplete',
+        freshness: graphFreshness,
+        limitations: graphComplete
+          ? []
+          : ['Typed graph evidence is missing, stale, or not proven current.'],
+      },
+      evidence: {
+        identity: `evidence-tier:${health.evidenceTier.stage}`,
+        hash: null,
+        completeness: 'incomplete',
+        freshness: 'unknown',
+        limitations: ['Studio did not run verification; evidence freshness was not recomputed.'],
+      },
+      contract: {
+        identity: health.graph.contractCacheKey,
+        hash: health.graph.contractHash,
+      },
+      content: { identity: null, hash: null },
+      source: { identity: health.graph.sourceHash, hash: health.graph.sourceHash },
+    },
+    currentFindings: health.findings.map(governanceFinding),
+    failOn: health.ci.failOn,
+    limitations: [
+      'This in-memory Studio delta is read-only and cannot classify debt without compatible baseline evidence.',
+    ],
+    nextAction: health.loop.nextActions[0] ?? adoptionTruth.nextAction,
+  });
 }
 
 function studioHtml(reportMode = false): string {
@@ -1205,7 +1544,16 @@ function studioControlRoomPayload(report: ProjectHealthReport) {
   };
 }
 
-function studioTaskPreview(projectRoot: string, route: string | null, intent: string | null) {
+function studioTaskPreview(
+  fallbackProjectRoot: string,
+  state: Pick<StudioContractState, 'generatedAt' | 'health' | 'adoptionTruth' | 'governanceDelta'>,
+  route: string | null,
+  intent: string | null,
+): StudioTaskPreview {
+  const selectedAppRoot =
+    state.adoptionTruth?.project.selectedAppRoot ??
+    state.governanceDelta?.project.selectedAppRoot ??
+    '.';
   return {
     route,
     intent,
@@ -1217,7 +1565,10 @@ function studioTaskPreview(projectRoot: string, route: string | null, intent: st
       'Run this before editing a route.',
       'If runtime source and Decantr context disagree, stop and report drift.',
     ],
-    projectRoot,
+    projectRoot: state.health?.projectRoot ?? fallbackProjectRoot,
+    selectedAppRoot,
+    availableRoutes: state.health?.routes.declared ?? [],
+    generatedAt: state.generatedAt,
   };
 }
 
@@ -1239,6 +1590,55 @@ function readStudioProofReport(projectRoot: string): unknown {
     message: 'No local proof field report was found for this project.',
     searched: candidates,
   };
+}
+
+function reportModeProof(): unknown {
+  return {
+    status: 'not_in_report',
+    message: 'Studio report mode reads only the supplied report artifact.',
+  };
+}
+
+function assembleStudioState(
+  projectRoot: string,
+  input: Omit<StudioContractState, 'taskPreview' | 'governanceCommands'>,
+): StudioContractState {
+  const taskPreview = studioTaskPreview(projectRoot, input, null, null);
+  return {
+    ...input,
+    taskPreview,
+    governanceCommands: governanceCommands(input.health),
+  };
+}
+
+async function createCurrentStudioState(projectRoot: string): Promise<StudioContractState> {
+  const health = await createProjectHealthReport(projectRoot);
+  const adoptionTruth = createProjectAdoptionTruthV1(projectRoot, {
+    generatedAt: health.generatedAt,
+  });
+  const governanceDelta = createStudioGovernanceDelta(projectRoot, health, adoptionTruth);
+  return assembleStudioState(projectRoot, {
+    mode: 'project',
+    source: 'current-project',
+    generatedAt: health.generatedAt,
+    health,
+    adoptionTruth,
+    governanceDelta,
+    proof: readStudioProofReport(projectRoot),
+  });
+}
+
+function createReportStudioState(projectRoot: string, reportPath: string): StudioContractState {
+  const artifact = readStudioReportArtifact(reportPath);
+  return assembleStudioState(projectRoot, {
+    mode: 'report',
+    source: artifact.source,
+    generatedAt: artifact.generatedAt,
+    health: artifact.health,
+    adoptionTruth: artifact.adoptionTruth,
+    governanceDelta: artifact.governanceDelta,
+    proof: reportModeProof(),
+  });
 }
 
 function controlRoomHtml(
@@ -1276,6 +1676,7 @@ function controlRoomHtml(
       line-height: 1.45;
     }
     button { font: inherit; }
+    button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     code {
       display: inline-block;
       max-width: 100%;
@@ -1332,14 +1733,23 @@ function controlRoomHtml(
     .metric strong { font-size: 1.65rem; letter-spacing: 0; }
     .muted { color: var(--muted); }
     .status-healthy { color: var(--good); }
-    .status-warning { color: var(--warn); }
-    .status-error, .status-blocked { color: var(--bad); }
+    .status-warning, .status-incomplete, .status-not-proven { color: var(--warn); }
+    .status-error, .status-blocked, .status-fail { color: var(--bad); }
+    .status-pass, .status-clean { color: var(--good); }
     .list { display: grid; gap: 0.55rem; }
     .row { border-top: 1px solid var(--line); padding-top: 0.55rem; min-width: 0; }
     .row:first-child { border-top: 0; padding-top: 0; }
     .row-title { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
     .pill { border: 1px solid var(--line); border-radius: 999px; padding: 0.1rem 0.45rem; color: var(--muted); font-size: 0.78rem; }
     .pre { white-space: pre-wrap; overflow-wrap: anywhere; color: var(--muted); margin: 0; }
+    .count-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.7rem; }
+    .count { border-left: 2px solid var(--line); padding-left: 0.65rem; min-width: 0; }
+    .count strong { display: block; font-size: 1.35rem; }
+    .count span { color: var(--muted); font-size: 0.78rem; }
+    .command-list { display: grid; gap: 0.55rem; }
+    .command-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.55rem; align-items: center; }
+    .command-row code { display: block; }
+    .copy { min-height: 36px; border: 1px solid var(--line); background: var(--surface-2); color: var(--text); border-radius: 7px; padding: 0 0.65rem; cursor: pointer; }
     .hide { display: none; }
     @media (max-width: 820px) {
       .shell { grid-template-columns: 1fr; }
@@ -1347,6 +1757,9 @@ function controlRoomHtml(
       .tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .panel { grid-column: 1 / -1; }
       .topbar { align-items: stretch; flex-direction: column; }
+      .count-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .command-row { grid-template-columns: 1fr; }
+      .copy { justify-self: start; }
     }
   </style>
 </head>
@@ -1359,6 +1772,9 @@ function controlRoomHtml(
       </div>
       <nav class="tabs" aria-label="Studio views">
         <button class="tab active" data-view="control">Control</button>
+        <button class="tab" data-view="adoption">Adoption</button>
+        <button class="tab" data-view="task">Task Preview</button>
+        <button class="tab" data-view="governance">Governance</button>
         <button class="tab" data-view="routes">Routes</button>
         <button class="tab" data-view="graph">Graph</button>
         <button class="tab" data-view="authority">Authority</button>
@@ -1379,7 +1795,9 @@ function controlRoomHtml(
     </main>
   </div>
   <script>
-    const state = { view: 'control', health: null, control: null, resolve: null, evidence: null, graph: null, proof: null };
+    const compatibilityRoutes = ['/api/health', '/api/control-room', '/api/resolve', '/api/evidence', '/api/graph-impact', '/api/task-preview', '/api/proof'];
+    void compatibilityRoutes;
+    const state = { view: 'control', studio: null, health: null, control: null, resolve: null, evidence: null, graph: null, proof: null };
     const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
     const cls = (status) => 'status-' + String(status || 'warning').replace(/_/g, '-');
     async function getJson(path, options) {
@@ -1388,12 +1806,14 @@ function controlRoomHtml(
       return response.json();
     }
     async function load(refresh = false) {
-      state.health = await getJson(refresh ? '/api/refresh' : '/api/health', refresh ? { method: 'POST' } : undefined);
-      state.control = await getJson('/api/control-room');
-      state.resolve = await getJson('/api/resolve');
-      state.evidence = await getJson('/api/evidence');
-      state.graph = await getJson('/api/graph-impact');
-      state.proof = await getJson('/api/proof');
+      if (refresh) await getJson('/api/refresh', { method: 'POST' });
+      state.studio = await getJson('/api/studio-state');
+      state.health = state.studio.health;
+      state.control = { blockingFindings: (state.health?.findings || []).filter((finding) => finding.severity === 'error' || finding.loopVerdict !== 'verified').slice(0, 12) };
+      state.resolve = state.health?.authority || {};
+      state.evidence = { evidenceTier: state.health?.evidenceTier, findings: state.health?.findings || [] };
+      state.graph = { graph: state.health?.graph, loopImpact: state.health?.loop?.graphImpact, findings: (state.health?.findings || []).filter((finding) => finding.graph) };
+      state.proof = state.studio.proof;
       render();
     }
     function panel(title, body, wide = false) {
@@ -1403,8 +1823,17 @@ function controlRoomHtml(
       if (!items || items.length === 0) return '<p class="muted">' + esc(empty) + '</p>';
       return '<div class="list">' + items.map((item) => '<div class="row">' + item + '</div>').join('') + '</div>';
     }
+    function commandList(commands, empty) {
+      if (!commands || commands.length === 0) return '<p class="muted">' + esc(empty) + '</p>';
+      return '<div class="command-list">' + commands.map((command) => '<div class="command-row"><code>' + esc(command) + '</code><button class="copy" type="button" data-copy-text="' + esc(command) + '" title="Copy command">Copy</button></div>').join('') + '</div>';
+    }
     function renderControl() {
       const report = state.health;
+      if (!report) {
+        const delta = state.studio?.governanceDelta;
+        const truth = state.studio?.adoptionTruth;
+        return panel('Contract Report', '<p><strong>' + esc(delta?.gate?.result || truth?.project?.selectedAppRoot || state.studio?.source) + '</strong></p><p class="muted">' + esc(delta?.nextAction || truth?.nextAction || '') + '</p>', true);
+      }
       const loop = report.loop || {};
       return [
         panel('Project Health', '<div class="metric"><strong class="' + cls(report.status) + '">' + esc(report.score) + '</strong><span>/100</span></div><p class="muted">' + esc(report.status) + ' | ' + esc(report.summary.findingCount) + ' finding(s)</p>'),
@@ -1413,8 +1842,44 @@ function controlRoomHtml(
         panel('Blocking Findings', rows(state.control?.blockingFindings?.map((finding) => '<div class="row-title"><strong>' + esc(finding.id) + '</strong><span class="pill">' + esc(finding.severity) + '</span><span class="pill">' + esc(finding.authorityLane) + '</span></div><p class="muted">' + esc(finding.message) + '</p>'), 'No blocking findings.'), true)
       ].join('');
     }
+    function renderAdoption() {
+      const truth = state.studio?.adoptionTruth;
+      if (!truth) return panel('Adoption Truth', '<p class="muted">This saved v2 report does not contain AdoptionTruthV1.</p>', true);
+      const facts = truth.facts || [];
+      const found = facts.filter((fact) => fact.observation?.state === 'found').length;
+      const governed = facts.filter((fact) => fact.governance?.state === 'governed').length;
+      return [
+        panel('Selected Application', '<p><strong>' + esc(truth.project.selectedAppRoot) + '</strong></p><p class="muted">' + esc(truth.project.selectionReason) + '</p>'),
+        panel('Adoption Coverage', '<div class="count-grid"><div class="count"><strong>' + esc(facts.length) + '</strong><span>Facts</span></div><div class="count"><strong>' + esc(found) + '</strong><span>Found</span></div><div class="count"><strong>' + esc(governed) + '</strong><span>Governed</span></div><div class="count"><strong>' + esc(truth.mutationReceipts?.length || 0) + '</strong><span>Receipts</span></div></div>'),
+        panel('Adoption Facts', rows(facts.map((fact) => '<div class="row-title"><strong>' + esc(fact.subject) + '</strong><span class="pill">' + esc(fact.observation?.state) + '</span><span class="pill">' + esc(fact.governance?.state) + '</span><span class="pill">' + esc(fact.mutation?.state) + '</span></div><p class="muted">' + esc(fact.nextAction) + '</p>'), 'No adoption facts.'), true),
+        panel('Limitations', rows((truth.limitations || []).map((item) => '<span>' + esc(item) + '</span>'), 'No adoption limitations.'), true),
+        panel('Next Action', '<p>' + esc(truth.nextAction) + '</p>', true)
+      ].join('');
+    }
+    function renderTask() {
+      const preview = state.studio?.taskPreview;
+      if (!preview) return panel('Task Preview', '<p class="muted">No task preview is available.</p>', true);
+      return [
+        panel('Selected Application', '<p><strong>' + esc(preview.selectedAppRoot) + '</strong></p><p class="muted">' + esc((preview.availableRoutes || []).join(', ') || 'No declared routes') + '</p>'),
+        panel('Task Command', commandList([preview.command], 'No task command.'), true),
+        panel('Stop Conditions', rows((preview.notes || []).map((note) => '<span>' + esc(note) + '</span>'), 'No task notes.'), true)
+      ].join('');
+    }
+    function renderGovernance() {
+      const delta = state.studio?.governanceDelta;
+      if (!delta) return panel('Governance Delta', '<p class="muted">This saved v2 report does not contain GovernanceDeltaV1.</p>', true);
+      const summary = delta.summary || {};
+      const commands = state.studio.governanceCommands || { verify: [], repair: [] };
+      return [
+        panel('Gate', '<div class="metric"><strong class="' + cls(delta.gate?.result) + '">' + esc(delta.gate?.result) + '</strong><span>' + esc(delta.gate?.status) + ' | fail on ' + esc(delta.gate?.failOn) + '</span></div>'),
+        panel('Finding Delta', '<div class="count-grid"><div class="count"><strong>' + esc(summary.newCount || 0) + '</strong><span>New</span></div><div class="count"><strong>' + esc(summary.inheritedCount || 0) + '</strong><span>Inherited</span></div><div class="count"><strong>' + esc(summary.resolvedCount || 0) + '</strong><span>Resolved</span></div><div class="count"><strong>' + esc(summary.unclassifiedCount || 0) + '</strong><span>Unclassified</span></div></div>'),
+        panel('Limitations', rows((delta.limitations || []).map((item) => '<span>' + esc(item) + '</span>'), 'No governance limitations.'), true),
+        panel('Verify Commands', commandList(commands.verify, 'No exact verify command is present in this report.'), true),
+        panel('Repair Commands', commandList(commands.repair, 'No exact repair command is present in this report.'), true)
+      ].join('');
+    }
     function renderRoutes() {
-      const routes = state.health.routes || {};
+      const routes = state.health?.routes || {};
       const items = (routes.declared || []).map((route) => '<div class="row-title"><strong>' + esc(route) + '</strong><code>decantr task ' + esc(JSON.stringify(route)) + ' "&lt;intent&gt;"</code></div>');
       return [
         panel('Declared Routes', rows(items, 'No declared routes.'), true),
@@ -1422,7 +1887,7 @@ function controlRoomHtml(
       ].join('');
     }
     function renderGraph() {
-      const graph = state.graph?.graph || state.health.graph || {};
+      const graph = state.graph?.graph || state.health?.graph || {};
       const findings = state.graph?.findings || [];
       return [
         panel('Graph Impact', '<p><strong>' + esc(graph.current === false ? 'stale' : graph.ready ? 'ready' : 'missing') + '</strong></p><p class="muted">Snapshot ' + esc(graph.snapshotId || 'none') + ' | sources ' + esc(graph.sourceArtifactCount || 0) + '</p>'),
@@ -1437,7 +1902,7 @@ function controlRoomHtml(
       ].join('');
     }
     function renderEvidence() {
-      const tier = state.evidence?.evidenceTier || state.health.evidenceTier || {};
+      const tier = state.evidence?.evidenceTier || state.health?.evidenceTier || {};
       return [
         panel('Evidence Tier', '<div class="metric"><strong>' + esc(tier.stage) + '</strong><span>' + esc(tier.confidence?.level) + ' ' + esc(tier.confidence?.score) + '</span></div><p class="muted">' + esc((tier.capabilities || []).join(', ')) + '</p>'),
         panel('Coverage', '<pre class="pre">' + esc(JSON.stringify(tier.coverage || {}, null, 2)) + '</pre>'),
@@ -1445,20 +1910,20 @@ function controlRoomHtml(
       ].join('');
     }
     function renderRepairs() {
-      return panel('Repair Plans', rows((state.health.findings || []).map((finding) => '<div class="row-title"><strong>' + esc(finding.id) + '</strong><span class="pill">' + esc(finding.severity) + '</span></div><p class="muted">' + esc(finding.remediation?.summary || finding.message) + '</p><pre class="pre">' + esc((finding.repairPlan?.commands || finding.remediation?.commands || []).join('\\n')) + '</pre>'), 'No repair plans.'), true);
+      return panel('Repair Plans', rows((state.health?.findings || []).map((finding) => '<div class="row-title"><strong>' + esc(finding.id) + '</strong><span class="pill">' + esc(finding.severity) + '</span></div><p class="muted">' + esc(finding.remediation?.summary || finding.message) + '</p>' + commandList(finding.repairPlan?.commands || finding.remediation?.commands || [], 'No exact repair commands.')), 'No repair plans.'), true);
     }
     function renderCi() {
       const proof = state.proof || {};
       return [
-        panel('CI Command', '<code>' + esc(state.health.ci?.recommendedCommand) + '</code><p class="muted">Loop verify: ' + esc(state.health.loop?.verifyCommand) + '</p>', true),
+        panel('CI Command', commandList(state.health?.ci?.recommendedCommand ? [state.health.ci.recommendedCommand] : [], 'No CI command is present.'), true),
         panel('Proof Report', '<pre class="pre">' + esc(JSON.stringify(proof.summary || proof.message || proof, null, 2)) + '</pre>', true)
       ].join('');
     }
     function render() {
-      const titles = { control: 'Control', routes: 'Routes', graph: 'Graph Impact', authority: 'Authority Resolver', evidence: 'Evidence', repairs: 'Repairs', ci: 'CI / Benchmarks' };
+      const titles = { control: 'Control', adoption: 'Adoption Truth', task: 'Task Preview', governance: 'Governance Delta', routes: 'Routes', graph: 'Graph Impact', authority: 'Authority Resolver', evidence: 'Evidence', repairs: 'Repairs', ci: 'CI / Benchmarks' };
       document.getElementById('title').textContent = titles[state.view] || 'Control';
-      document.getElementById('subtitle').textContent = (state.health?.projectRoot || '') + ' | ' + (state.health?.generatedAt || '');
-      const renderers = { control: renderControl, routes: renderRoutes, graph: renderGraph, authority: renderAuthority, evidence: renderEvidence, repairs: renderRepairs, ci: renderCi };
+      document.getElementById('subtitle').textContent = (state.health?.projectRoot || state.studio?.taskPreview?.selectedAppRoot || '') + ' | ' + (state.studio?.generatedAt || '');
+      const renderers = { control: renderControl, adoption: renderAdoption, task: renderTask, governance: renderGovernance, routes: renderRoutes, graph: renderGraph, authority: renderAuthority, evidence: renderEvidence, repairs: renderRepairs, ci: renderCi };
       document.getElementById('content').innerHTML = (renderers[state.view] || renderControl)();
     }
     for (const button of document.querySelectorAll('.tab')) {
@@ -1468,6 +1933,18 @@ function controlRoomHtml(
         render();
       });
     }
+    document.getElementById('content').addEventListener('click', async (event) => {
+      const button = event.target.closest('[data-copy-text]');
+      if (!button) return;
+      const label = button.textContent;
+      try {
+        await navigator.clipboard.writeText(button.dataset.copyText || '');
+        button.textContent = 'Copied';
+      } catch {
+        button.textContent = 'Copy failed';
+      }
+      setTimeout(() => { button.textContent = label; }, 1200);
+    });
     document.getElementById('refresh').addEventListener('click', () => load(true).catch((error) => alert(error.message)));
     load().catch((error) => {
       document.getElementById('subtitle').textContent = 'Load failed';
@@ -1482,9 +1959,28 @@ export function createStudioRequestHandler(
   projectRoot: string,
   options: StudioCommandOptions = {},
 ) {
+  validateStudioOptions(options);
   const reportPath = resolveReportPath(projectRoot, options.report);
-  const loadReport = () =>
-    reportPath ? readProjectHealthReport(reportPath) : createProjectHealthReport(projectRoot);
+  let cachedState: Promise<StudioContractState> | null = null;
+  const loadState = (refresh = false): Promise<StudioContractState> => {
+    if (!cachedState || refresh) {
+      const next = Promise.resolve().then(() =>
+        reportPath
+          ? createReportStudioState(projectRoot, reportPath)
+          : createCurrentStudioState(projectRoot),
+      );
+      cachedState = next;
+      void next.catch(() => {
+        if (cachedState === next) cachedState = null;
+      });
+    }
+    return cachedState;
+  };
+  const loadReport = async (): Promise<ProjectHealthReport> => {
+    const state = await loadState();
+    if (!state.health) throw new Error('This contract report does not contain Project Health v2.');
+    return state.health;
+  };
   const loadWorkspaceReport = () => createWorkspaceHealthReport(projectRoot);
 
   return async function handleStudioRequest(
@@ -1511,6 +2007,28 @@ export function createStudioRequestHandler(
       }
       if (req.method === 'GET' && url.pathname === '/api/health') {
         sendJson(res, 200, await loadReport());
+        return;
+      }
+      if (req.method === 'GET' && url.pathname === '/api/studio-state') {
+        sendJson(res, 200, await loadState());
+        return;
+      }
+      if (req.method === 'GET' && url.pathname === '/api/adoption-truth') {
+        const state = await loadState();
+        if (!state.adoptionTruth) {
+          sendJson(res, 404, { error: 'adoption_truth_not_available' });
+          return;
+        }
+        sendJson(res, 200, state.adoptionTruth);
+        return;
+      }
+      if (req.method === 'GET' && url.pathname === '/api/governance-delta') {
+        const state = await loadState();
+        if (!state.governanceDelta) {
+          sendJson(res, 404, { error: 'governance_delta_not_available' });
+          return;
+        }
+        sendJson(res, 200, state.governanceDelta);
         return;
       }
       if (req.method === 'GET' && url.pathname === '/api/control-room') {
@@ -1554,11 +2072,13 @@ export function createStudioRequestHandler(
         return;
       }
       if (req.method === 'GET' && url.pathname === '/api/task-preview') {
+        const state = await loadState();
         sendJson(
           res,
           200,
           studioTaskPreview(
             projectRoot,
+            state,
             url.searchParams.get('route'),
             url.searchParams.get('intent'),
           ),
@@ -1566,19 +2086,21 @@ export function createStudioRequestHandler(
         return;
       }
       if (req.method === 'GET' && url.pathname === '/api/proof') {
-        sendJson(res, 200, readStudioProofReport(projectRoot));
+        sendJson(res, 200, (await loadState()).proof);
         return;
       }
       if (req.method === 'POST' && url.pathname === '/api/refresh') {
         const startedAt = Date.now();
-        const report = await loadReport();
-        void sendStudioHealthRefreshedTelemetry({
-          durationMs: Date.now() - startedAt,
-          projectRoot,
-          report,
-          trigger: 'api-refresh',
-        });
-        sendJson(res, 200, report);
+        const state = await loadState(true);
+        if (state.health && !reportPath) {
+          void sendStudioHealthRefreshedTelemetry({
+            durationMs: Date.now() - startedAt,
+            projectRoot,
+            report: state.health,
+            trigger: 'api-refresh',
+          });
+        }
+        sendJson(res, 200, state.health ?? state.governanceDelta ?? state.adoptionTruth ?? state);
         return;
       }
       sendNotFound(res);
@@ -1592,6 +2114,7 @@ export async function startStudioServer(
   projectRoot: string = process.cwd(),
   options: StudioCommandOptions = {},
 ): Promise<StudioServerHandle> {
+  validateStudioOptions(options);
   const host = options.host ?? '127.0.0.1';
   const port = options.port ?? 4319;
   const server = createServer(createStudioRequestHandler(projectRoot, options));
@@ -1615,11 +2138,13 @@ export async function cmdStudio(
 ): Promise<void> {
   const handle = await startStudioServer(projectRoot, options);
   const url = new URL(handle.url);
-  void sendStudioStartedTelemetry({
-    host: url.hostname,
-    port: Number.parseInt(url.port, 10),
-    projectRoot,
-  });
+  if (!options.report) {
+    void sendStudioStartedTelemetry({
+      host: url.hostname,
+      port: Number.parseInt(url.port, 10),
+      projectRoot,
+    });
+  }
   console.log(`${GREEN}Decantr Studio is running.${RESET}`);
   console.log(`${CYAN}${handle.url}${RESET}`);
   if (options.report) {
@@ -1661,6 +2186,8 @@ export function parseStudioArgs(args: string[]): StudioCommandOptions {
   if (options.port !== undefined && (!Number.isInteger(options.port) || options.port < 0)) {
     throw new Error('Invalid --port value.');
   }
+
+  validateStudioOptions(options);
 
   return options;
 }

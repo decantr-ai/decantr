@@ -1,0 +1,828 @@
+{
+  "schemaVersion": "decantr-3.9-finding-replay-workbook.v2",
+  "replayId": "candidate390",
+  "status": "not-run",
+  "qualificationClaim": false,
+  "expectedRelease": {
+    "version": "3.9.0",
+    "installationSource": "packed-or-public-npm",
+    "packageVersions": {
+      "@decantr/content": "3.9.0",
+      "@decantr/registry": "3.9.0",
+      "@decantr/core": "3.9.0",
+      "@decantr/verifier": "3.9.0",
+      "@decantr/mcp-server": "3.9.0",
+      "@decantr/cli": "3.9.0"
+    }
+  },
+  "corpusSha256": null,
+  "adjudicationSha256": null,
+  "observedRelease": null,
+  "generatedAt": null,
+  "command": null,
+  "exitCode": null,
+  "environment": null,
+  "caseResults": [],
+  "judgments": [
+    {
+      "judgmentId": "judgment-001",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-002",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-003",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-004",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-005",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-006",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-007",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-008",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-009",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-010",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-011",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-012",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-013",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-014",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-015",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-016",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-017",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-018",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-019",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-020",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-021",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-022",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-023",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-024",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-025",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-026",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-027",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-028",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-029",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-030",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-031",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-032",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-033",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-034",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-035",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-036",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-037",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-038",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-039",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-040",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-041",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-042",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-043",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-044",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-045",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-046",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-047",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-048",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-049",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-050",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-051",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-052",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-053",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-054",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-055",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-056",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-057",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-058",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-059",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-060",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-061",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-062",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-063",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-064",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-065",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-066",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-067",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-068",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-069",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-070",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-071",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-072",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-073",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-074",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-075",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-076",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-077",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-078",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-079",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-080",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-081",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-082",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-083",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-084",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-085",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-086",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-087",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-088",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-089",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-090",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-091",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-092",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-093",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-094",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-095",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-096",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-097",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-098",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-099",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-100",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-101",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-102",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-103",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-104",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-105",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-106",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-107",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-108",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-109",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-110",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-111",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-112",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-113",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-114",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-115",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-116",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-117",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-118",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-119",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-120",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-121",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-122",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-123",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-124",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-125",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-126",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-127",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-128",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-129",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-130",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-131",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-132",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-133",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-134",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-135",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-136",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-137",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-138",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-139",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-140",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-141",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-142",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-143",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-144",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-145",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-146",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-147",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-148",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-149",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-150",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-151",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-152",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-153",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-154",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-155",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-156",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-157",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-158",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-159",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-160",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-161",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-162",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-163",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-164",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-165",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-166",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-167",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-168",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-169",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-170",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-171",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-172",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-173",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-174",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-175",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-176",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-177",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-178",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-179",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-180",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-181",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-182",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-183",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-184",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-185",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-186",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-187",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-188",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-189",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-190",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-191",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-192",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-193",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-194",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-195",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-196",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-197",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-198",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-199",
+      "emitted": null
+    },
+    {
+      "judgmentId": "judgment-200",
+      "emitted": null
+    }
+  ]
+}

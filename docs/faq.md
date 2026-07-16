@@ -39,7 +39,7 @@ pnpm exec decantr doctor --project apps/web
 
 Brownfield adoption is observe-first: Decantr reads what already exists, proposes a contract, and lets you accept or merge it.
 
-After adoption, use `doctor` when you are not sure what Decantr expects next. It reports whether the app is still Brownfield contract-only or has moved into Hybrid local law, style bridge, Decantr CSS, or composition mode.
+After adoption, use `doctor` when you are not sure what Decantr expects next. It reports the same selected application and `AdoptionTruthV1` facts used by MCP, opt-in CI v3, and Studio, including provenance, governance coverage, mutation receipts, limitations, and the ordered next action. It also reports whether the app is still Brownfield contract-only or has moved into Hybrid local law, style bridge, explicit legacy Decantr CSS, or composition mode.
 
 If the app is running and you want local screenshot evidence, run:
 
@@ -61,7 +61,17 @@ npx @decantr/cli verify
 npx @decantr/cli doctor
 ```
 
-`task` now includes the route's active authority: existing app, accepted local law, style bridge, Decantr CSS, content packs as guidance, or Greenfield context. If the prompt asks for a mismatched runtime or Decantr CSS in a contract-only app, the task context warns before the assistant starts coding.
+`task` includes the route's active authority: existing app, accepted local law, style bridge, explicit legacy Decantr CSS, official content guidance, or Greenfield context. In Decantr 3.9 the CLI and MCP compatibility fields are built from one `TaskCapsuleV1`. The implementation source is the required rank-one read target, official guidance includes content identity/digest provenance, and the default canonical capsule stays within 12,000 UTF-8 bytes and 4,000 deterministic estimated tokens. If the prompt asks for a mismatched runtime or Decantr CSS in a contract-only app, the task context warns before the assistant starts coding.
+
+## What does “Governed Change Proof” mean in Decantr 3.9?
+
+It means Decantr separates three questions instead of collapsing them into one health score:
+
+- `AdoptionTruthV1`: what app Decantr selected, what evidence supports each observation, what is governed, and what adoption changed or preserved.
+- `TaskCapsuleV1`: the bounded route/task context an existing coding agent should read before editing.
+- `GovernanceDeltaV1`: what findings are new, inherited, resolved, or unclassified relative to a compatible baseline and Git change scope.
+
+These contracts fail honestly when evidence is incomplete. A missing or incompatible baseline produces `not_proven`; it is not treated as an empty delta or proof that every finding is new.
 
 If product intent changes, update the Decantr contract deliberately, regenerate context, then continue:
 
@@ -167,13 +177,15 @@ cd apps/web
 npx @decantr/cli studio
 ```
 
-Studio is local-only and uses the same Project Health report as:
+Studio is local-only. Current-project mode composes the same Project Health v2 evidence as:
 
 ```bash
 npx @decantr/cli health
 ```
 
-Use Studio when you want a browser view of status, the issue to fix first, the AI prompt before copying it, manual repair guidance, verification commands, route coverage, runtime evidence, pack health, and CI readiness. Use `decantr ci` for enforcement in pull requests. Stop Studio with `Ctrl+C` in the terminal that started it.
+It also renders verifier-owned adoption truth and an in-memory governance delta without changing the Project Health v2 schema.
+
+Use Studio when you want a browser view of Project Health, adoption truth, governance delta, the issue to fix first, manual repair guidance, verification commands, route coverage, runtime evidence, pack health, and CI readiness. Studio is read-only with respect to project files: refresh recomputes or rereads state, but Studio does not run adoption, repair, acceptance, migration, builds, package-manager commands, agents, or verification. Use `decantr ci` for enforcement in pull requests. Stop Studio with `Ctrl+C` in the terminal that started it.
 
 ## Does Decantr automatically fix Project Health findings?
 
@@ -192,11 +204,11 @@ npx @decantr/cli health
 To view a CI-produced JSON report without scanning the project source again:
 
 ```bash
-npx @decantr/cli health --json --output decantr-health.json
-npx @decantr/cli studio --report decantr-health.json
+npx @decantr/cli ci --report-version v3 --json --output decantr-ci-v3.json
+npx @decantr/cli studio --report decantr-ci-v3.json
 ```
 
-Report mode is useful for customer-controlled dashboards or internal reporting pages. It serves the JSON artifact you provide; it does not upload the report to Decantr telemetry.
+Report mode accepts project-mode Project Health v2, CI v2, CI v3, standalone `AdoptionTruthV1`, and standalone `GovernanceDeltaV1` documents. It serves the artifact you provide, does not scan the checkout, and does not upload the report to Decantr telemetry.
 
 ## How do I regenerate Decantr guidance after changing the app contract?
 
@@ -265,6 +277,15 @@ CI can then run:
 npx @decantr/cli ci --fail-on error
 ```
 
+That command remains on `decantr-ci-report.v2`. Opt into governed-change proof only when the pipeline has Git history and a deliberate comparison base:
+
+```bash
+npx @decantr/cli ci --since origin/main --report-version v3 --fail-on error --json
+npx @decantr/cli ci init --report-version v3
+```
+
+CI v3 embeds the existing v2 Project Health evidence plus `AdoptionTruthV1` and `GovernanceDeltaV1`. Missing, stale, or incompatible proof is `not_proven` and fails unless `--fail-on none` is explicit. Package upgrade alone never switches an existing v2 workflow to v3.
+
 ## Is Decantr a code generator?
 
 Not primarily. Decantr is an AI Frontend Governance layer for codebases touched by AI agents. It gives AI tools a clearer Contract, better route-scoped Context, official-corpus vocabulary when useful, and drift evidence with repair guidance. The assistant still writes the code.
@@ -275,7 +296,7 @@ No. `behavior_obligations` are a narrow local-law facet for project-owned intera
 
 Decantr only verifies obligations where static source evidence is strong. It does not replace WCAG expertise, axe, Playwright, Storybook, Chromatic, manual screen-reader checks, or your project tests. Focus trapping, real keyboard paths, temporal UI state, and screen-reader behavior still belong in project-owned tests and review unless there is concrete source evidence Decantr can cite.
 
-## Why are behavior obligations local law instead of Essence or registry data?
+## Why are behavior obligations local law instead of Essence or official content?
 
 Because interaction behavior is usually app-owned. An official corpus pattern can provide useful accessibility and interaction guidance, but it should not override the way a production codebase composes its own Dialog, Button, Form, routing, feature flags, or test harness.
 

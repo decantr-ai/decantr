@@ -1,0 +1,1412 @@
+{
+  "schemaVersion": "decantr-3.9-human-reviewer-workbook.v2",
+  "reviewerSlot": 2,
+  "status": "not-started",
+  "qualificationClaim": false,
+  "corpusSha256": null,
+  "reviewer": null,
+  "reviewedAt": null,
+  "caseRationales": [],
+  "decisions": [
+    {
+      "judgmentId": "judgment-001",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-002",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-003",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-004",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-005",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-006",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-007",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-008",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-009",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-010",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-011",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-012",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-013",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-014",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-015",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-016",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-017",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-018",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-019",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-020",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-021",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-022",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-023",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-024",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-025",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-026",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-027",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-028",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-029",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-030",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-031",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-032",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-033",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-034",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-035",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-036",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-037",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-038",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-039",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-040",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-041",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-042",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-043",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-044",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-045",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-046",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-047",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-048",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-049",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-050",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-051",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-052",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-053",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-054",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-055",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-056",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-057",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-058",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-059",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-060",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-061",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-062",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-063",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-064",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-065",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-066",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-067",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-068",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-069",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-070",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-071",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-072",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-073",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-074",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-075",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-076",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-077",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-078",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-079",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-080",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-081",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-082",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-083",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-084",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-085",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-086",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-087",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-088",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-089",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-090",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-091",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-092",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-093",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-094",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-095",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-096",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-097",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-098",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-099",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-100",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-101",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-102",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-103",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-104",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-105",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-106",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-107",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-108",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-109",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-110",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-111",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-112",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-113",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-114",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-115",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-116",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-117",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-118",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-119",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-120",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-121",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-122",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-123",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-124",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-125",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-126",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-127",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-128",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-129",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-130",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-131",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-132",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-133",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-134",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-135",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-136",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-137",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-138",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-139",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-140",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-141",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-142",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-143",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-144",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-145",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-146",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-147",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-148",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-149",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-150",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-151",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-152",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-153",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-154",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-155",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-156",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-157",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-158",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-159",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-160",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-161",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-162",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-163",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-164",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-165",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-166",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-167",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-168",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-169",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-170",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-171",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-172",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-173",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-174",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-175",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-176",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-177",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-178",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-179",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-180",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-181",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-182",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-183",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-184",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-185",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-186",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-187",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-188",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-189",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-190",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-191",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-192",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-193",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-194",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-195",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-196",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-197",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-198",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-199",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    },
+    {
+      "judgmentId": "judgment-200",
+      "decision": null,
+      "severity": null,
+      "actionable": null,
+      "rationale": null
+    }
+  ]
+}

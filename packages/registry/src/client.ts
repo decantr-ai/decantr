@@ -1,10 +1,3 @@
-export type {
-  RegistryAPIClientOptions,
-  RegistryClient,
-  RegistryClientOptions,
-  SearchResult,
-} from './api-client.js';
-export { createRegistryClient, RegistryAPIClient, RegistryAPIError } from './api-client.js';
 export {
   buildContentIntelligenceSummary as buildCorpusIntelligenceSummary,
   createContentResolver as createCorpusResolver,
@@ -15,60 +8,9 @@ export {
   searchContent as searchCorpusContent,
   validateOfficialCorpus,
 } from '@decantr/content';
-export type { PublicContentSort } from './ranking.js';
-export { comparePublicContent, normalizePublicContentSort, sortPublicContent } from './ranking.js';
 export type {
-  ApiContentType,
-  BlueprintArtifactStatus,
-  BlueprintPortfolioArtifact,
-  BlueprintPortfolioMaturity,
-  BlueprintPortfolioMetadata,
-  BlueprintPortfolioVisibility,
-  ContentBenchmarkConfidence,
-  ContentGoldenUsage,
-  ContentIntelligenceMetadata,
-  ContentIntelligenceSource,
-  ContentItem,
-  ContentListResponse,
-  ContentVerificationStatus,
-  OwnedContentSummary,
-  PublicBlueprintSet,
-  PublicContentRecord,
-  PublicContentSource,
-  PublicContentSummary,
-  PublicUserProfile,
-  PublishPayload,
-  PublishResponse,
-  RegistryIntelligenceSummaryBucket,
-  RegistryIntelligenceSummaryResponse,
-  SearchParams,
-  SearchResponse,
-  ShowcaseManifestEntry,
-  ShowcaseManifestResponse,
-  ShowcaseShortlistReport,
-  ShowcaseShortlistResponse,
-  ShowcaseShortlistSummary,
-  ShowcaseVerificationEntry,
-  UserProfile,
-} from './types.js';
-export {
-  API_CONTENT_TYPE_TO_CONTENT_TYPE,
-  API_CONTENT_TYPES,
-  BLUEPRINT_ARTIFACT_STATUSES,
-  BLUEPRINT_PORTFOLIO_MATURITIES,
-  BLUEPRINT_PORTFOLIO_VISIBILITIES,
-  CONTENT_INTELLIGENCE_SOURCES,
-  CONTENT_TYPE_TO_API_CONTENT_TYPE,
-  CONTENT_TYPES,
-  getBlueprintPortfolioMetadata,
-  isApiContentType,
-  isBlueprintArtifactStatus,
-  isBlueprintPortfolioMaturity,
-  isBlueprintPortfolioVisibility,
-  isContentIntelligenceSource,
-  isContentType,
-  isPublicBlueprintSet,
-  isPublicContentSource,
-  PUBLIC_BLUEPRINT_SETS,
-  PUBLIC_CONTENT_SOURCES,
-} from './types.js';
+  ContentIntelligenceSummaryBucket as RegistryIntelligenceSummaryBucket,
+  ContentIntelligenceSummaryResponse as RegistryIntelligenceSummaryResponse,
+} from '@decantr/content/client';
+export * from '@decantr/content/client';
+export * from './api-client.js';

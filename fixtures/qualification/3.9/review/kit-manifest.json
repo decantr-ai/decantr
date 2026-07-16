@@ -1,0 +1,81 @@
+{
+  "schemaVersion": "decantr-3.9-human-review-kit.v2",
+  "kitStatus": "awaiting-human-evidence",
+  "qualificationClaim": false,
+  "requirements": {
+    "reviewerCount": 2,
+    "judgmentCount": 200,
+    "requiredLanes": [
+      "greenfield",
+      "brownfield",
+      "hybrid"
+    ],
+    "replayOrder": [
+      "public383",
+      "candidate390"
+    ],
+    "baselineRelease": "3.8.3",
+    "candidateRelease": "3.9.0"
+  },
+  "quarantine": {
+    "path": "fixtures/qualification/3.9/finding-labels.json",
+    "requiredStatus": "legacy-unqualified",
+    "countsTowardQualification": false,
+    "importIntoActiveCorpus": false
+  },
+  "contractBindings": [
+    {
+      "id": "qualification-packet-contract",
+      "path": "fixtures/qualification/3.9/qualification-packet.json",
+      "kind": "canonical-json-sha256",
+      "sha256": "d5e9e533b01e47e829b704ef9087f7122ae0ee9dae9d415896044058155a4ac1"
+    },
+    {
+      "id": "schema",
+      "path": "fixtures/qualification/3.9/qualification-packet.schema.json",
+      "kind": "file-sha256",
+      "sha256": "0b43001a2a10ccb7f6df1cc06a285c860c04a3b9fe56f26e18b462c2c8d5383b"
+    },
+    {
+      "id": "compatibility",
+      "path": "fixtures/qualification/3.9/compatibility-manifest.json",
+      "kind": "file-sha256",
+      "sha256": "2c2470b80b2fa732e8bc96f6a62f1b9d94b38d8d73021ad388e2e8eff57131b5"
+    },
+    {
+      "id": "legacyFindings",
+      "path": "fixtures/qualification/3.9/finding-labels.json",
+      "kind": "file-sha256",
+      "sha256": "19fe389a56be185dfd363c0a083c0bda34ac898897a4aa158a4f1da7f08cc5c3"
+    },
+    {
+      "id": "audit",
+      "path": "scripts/audit-3-9-qualification-baseline.mjs",
+      "kind": "file-sha256",
+      "sha256": "21245f3803090fb39afcafee9ff0d11b1dd381b237a5b6b912f537c0e1f34c20"
+    },
+    {
+      "id": "humanReviewHarness",
+      "path": "scripts/prepare-3-9-human-review.mjs",
+      "kind": "file-sha256",
+      "sha256": "16c75bb96c8739f46ffa582165da85624381bfe4a75ee434e33522c98d26f0c8"
+    }
+  ],
+  "worksheets": {
+    "corpus": "fixtures/qualification/3.9/review/corpus.json",
+    "reviewer1": "fixtures/qualification/3.9/review/reviewers/reviewer-1.json",
+    "reviewer2": "fixtures/qualification/3.9/review/reviewers/reviewer-2.json",
+    "adjudication": "fixtures/qualification/3.9/review/adjudication.json",
+    "publicReplay": "fixtures/qualification/3.9/review/replays/public-3.8.3.json",
+    "candidateReplay": "fixtures/qualification/3.9/review/replays/candidate-3.9.0.json"
+  },
+  "signingPayloads": {
+    "reviewer1": "fixtures/qualification/3.9/review/signatures/reviewer-1.payload.json",
+    "reviewer2": "fixtures/qualification/3.9/review/signatures/reviewer-2.payload.json",
+    "adjudication": "fixtures/qualification/3.9/review/signatures/adjudication.payload.json"
+  },
+  "generatedOutputs": {
+    "artifactDirectory": "fixtures/qualification/3.9/review/generated",
+    "packetFragment": "fixtures/qualification/3.9/review/generated/human-review-packet-fragment.json"
+  }
+}

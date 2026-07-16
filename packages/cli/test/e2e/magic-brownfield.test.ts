@@ -51,4 +51,20 @@ describe('magic command in existing projects', () => {
       '"workflow": "brownfield-adoption"',
     );
   });
+
+  it('keeps an offline greenfield scaffold contract-only and reports only existing context', () => {
+    const output = execSync(`node ${cliPath} magic "AI operations workspace" --offline`, {
+      cwd: testDir,
+      env: { ...process.env, DECANTR_OFFLINE: 'true' },
+      stdio: 'pipe',
+    }).toString();
+
+    const decantrMd = readFileSync(join(testDir, 'DECANTR.md'), 'utf-8');
+    expect(output).toContain('host-owned (contract-only; no generated Decantr CSS)');
+    expect(output).toContain('.decantr/context/scaffold.md');
+    expect(output).not.toContain('CSS atoms, treatments, decorators');
+    expect(output).not.toContain('tokens.css + treatments.css + global.css');
+    expect(existsSync(join(testDir, 'src', 'styles', 'treatments.css'))).toBe(false);
+    expect(decantrMd).toContain('- **Adoption mode:** contract-only');
+  });
 });

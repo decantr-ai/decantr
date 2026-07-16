@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { basename, join } from 'node:path';
+import { basename, resolve } from 'node:path';
 import { readArgValue } from './cli-arg-lib.mjs';
-import { getRepoRoot, loadPackageSurface, sortReleaseEntries } from './package-surface-lib.mjs';
+import { getRepoRoot, sortReleaseEntries } from './package-surface-lib.mjs';
 
 const rawArgs = process.argv.slice(2);
 const args = new Set(rawArgs);
@@ -26,45 +25,50 @@ const tokenEnv = readArgValue(rawArgs, 'token-env') || 'COMMUNITY_OPS_DISPATCH_T
 const explicitVersion = readArgValue(rawArgs, 'version');
 const explicitReleaseNotePath = readArgValue(rawArgs, 'release-note');
 const explicitProject = readArgValue(rawArgs, 'project') || 'Decantr';
+const root = process.env.NODE_ENV === 'test' && process.env.DECANTR_RELEASE_TEST_ROOT
+  ? resolve(process.env.DECANTR_RELEASE_TEST_ROOT)
+  : getRepoRoot();
+const releaseVersion = normalizeVersion(explicitVersion);
 
-const root = getRepoRoot();
-const surface = loadPackageSurface(root);
-const releaseVersion = normalizeVersion(explicitVersion || readLocalPackageVersion('@decantr/cli'));
 if (!releaseVersion) {
-  throw new Error('Pass --version=x.y.z or keep packages/cli/package.json on a valid semver release.');
+  throw new Error('Pass an explicit --version=x.y.z release target; announcements cannot fall back to HEAD.');
 }
 
 const releaseTag = `v${releaseVersion}`;
-const releaseNotePath = explicitReleaseNotePath || findReleaseDocForVersion(releaseVersion);
-if (!releaseNotePath) {
-  throw new Error(`No docs/releases note found for ${releaseVersion}. Pass --release-note=docs/releases/...`);
+const commit = runGit(['rev-parse', '--verify', `${releaseTag}^{commit}`], { allowFailure: true })?.trim();
+if (!commit) {
+  throw new Error(`Missing local release tag ${releaseTag}; announcements require tag-bound evidence.`);
 }
 
-const releaseNote = readFileSync(join(root, releaseNotePath), 'utf8');
-const selectedPackages = sortReleaseEntries(surface.packages)
-  .filter((entry) => {
-    if (!entry.publish) return false;
-    if (!includeExperimental && entry.maturity === 'experimental') return false;
-    if (onlyWave && entry.releaseWave !== onlyWave) return false;
-    if (onlyNames.size > 0 && !onlyNames.has(entry.name)) return false;
-    return true;
-  })
-  .map((entry) => {
-    const version = readPackageVersionAtPath(entry.path);
-    return {
-      name: entry.name,
-      npm_url: `https://www.npmjs.com/package/${encodeURIComponent(entry.name)}`,
-      version,
-    };
-  });
+const surface = readJsonAtTag(releaseTag, 'config/package-surface.json');
+const releaseNotePath = explicitReleaseNotePath || findReleaseDocForVersionAtTag(releaseTag, releaseVersion);
+if (!releaseNotePath || !/^docs\/releases\/[^:]+\.md$/.test(releaseNotePath)) {
+  throw new Error(
+    `No tagged docs/releases note found for ${releaseVersion}. Pass --release-note=docs/releases/...`,
+  );
+}
+
+const releaseNote = readTextAtTag(releaseTag, releaseNotePath);
+const releaseNoteBlob = runGit(['rev-parse', `${releaseTag}:${releaseNotePath}`]).trim();
+const selectedEntries = selectReleaseEntries(surface, releaseTag);
+const selectedPackages = selectedEntries.map((entry) => {
+  const version = readPackageJsonAtTag(releaseTag, entry).version;
+  return {
+    name: entry.name,
+    npm_url: `https://www.npmjs.com/package/${encodeURIComponent(entry.name)}`,
+    version,
+  };
+});
 
 if (selectedPackages.length === 0) {
   throw new Error('No publishable packages matched the selected release filters.');
 }
+if (!selectedPackages.some((entry) => entry.version === releaseVersion)) {
+  throw new Error(
+    `No selected package manifest at ${releaseTag} has release version ${releaseVersion}.`,
+  );
+}
 
-const commit =
-  runGit(['rev-parse', `${releaseTag}^{commit}`], { allowFailure: true })?.trim() ||
-  runGit(['rev-parse', 'HEAD']).trim();
 const payload = {
   changelog_markdown: releaseNote,
   commit,
@@ -73,8 +77,9 @@ const payload = {
   packages: selectedPackages,
   project: explicitProject,
   ref: releaseTag,
+  release_note_blob: releaseNoteBlob,
   release_note_path: releaseNotePath,
-  release_note_url: `https://github.com/${sourceRepo}/blob/main/${releaseNotePath}`,
+  release_note_url: `https://github.com/${sourceRepo}/blob/${releaseTag}/${releaseNotePath}`,
   release_url: `https://github.com/${sourceRepo}/releases/tag/${releaseTag}`,
   repo: sourceRepo,
   tag: releaseTag,
@@ -88,13 +93,11 @@ const dispatch = {
   },
 };
 
-if (jsonOutput || !send) {
-  console.log(JSON.stringify(dispatch, null, 2));
-}
+if (jsonOutput || !send) console.log(JSON.stringify(dispatch, null, 2));
 
 if (!send) {
   console.error(
-    'Dry run only. Re-run with --send and set COMMUNITY_OPS_DISPATCH_TOKEN to create the community-ops repository_dispatch event.',
+    'Dry run only. Re-run with --send after tag-bound release closeout passes and set COMMUNITY_OPS_DISPATCH_TOKEN.',
   );
   process.exit(0);
 }
@@ -123,7 +126,7 @@ if (!response.ok) {
     [
       `GitHub repository_dispatch failed ${response.status} ${response.statusText}: ${text.slice(0, 600)}`,
       '',
-      'Fallback: trigger the receiver workflow directly from community-ops with the changelog file attached:',
+      'Fallback: trigger the receiver workflow directly from community-ops with the tagged changelog materialized first:',
       renderReceiverFallbackCommand(),
     ].join('\n'),
   );
@@ -131,45 +134,10 @@ if (!response.ok) {
 
 console.log(`Dispatched ${eventType} for ${explicitProject} ${releaseVersion} to ${targetRepo}.`);
 
-function readLocalPackageVersion(packageName) {
-  const entry = surface.packages.find((item) => item.name === packageName);
-  if (!entry) return null;
-  return readPackageVersionAtPath(entry.path);
-}
-
-function readPackageVersionAtPath(packagePath) {
-  const packageJson = JSON.parse(readFileSync(join(root, packagePath, 'package.json'), 'utf8'));
-  return packageJson.version;
-}
-
 function normalizeVersion(value) {
   if (typeof value !== 'string') return null;
   const trimmed = value.trim().replace(/^v/, '');
   return /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(trimmed) ? trimmed : null;
-}
-
-function findReleaseDocForVersion(version) {
-  const releasesDir = join(root, 'docs', 'releases');
-  if (!existsSync(releasesDir)) return null;
-
-  const [major, minor, patch] = version.split('.');
-  const fullSlug = `${major}-${minor}-${patch}`;
-  const minorSlug = patch === '0' ? `${major}-${minor}` : null;
-  const files = readdirSync(releasesDir).filter((entry) => entry.endsWith('.md'));
-
-  for (const file of files) {
-    if (file.includes(fullSlug) || (minorSlug && file.includes(minorSlug))) {
-      return `docs/releases/${file}`;
-    }
-  }
-
-  for (const file of files) {
-    const content = readFileSync(join(releasesDir, file), 'utf8');
-    if (content.includes(version) || content.includes(`v${version}`)) {
-      return `docs/releases/${file}`;
-    }
-  }
-  return null;
 }
 
 function runGit(gitArgs, options = {}) {
@@ -185,11 +153,113 @@ function runGit(gitArgs, options = {}) {
   }
 }
 
+function readTextAtTag(tag, path) {
+  const contents = runGit(['show', `${tag}:${path}`], { allowFailure: true });
+  if (contents == null) throw new Error(`${tag} does not contain ${path}.`);
+  return contents;
+}
+
+function readJsonAtTag(tag, path) {
+  try {
+    return JSON.parse(readTextAtTag(tag, path));
+  } catch (cause) {
+    throw new Error(`Cannot read ${path} from ${tag}: ${cause.message}`);
+  }
+}
+
+function listReleaseDocsAtTag(tag) {
+  const output = runGit(
+    ['ls-tree', '-r', '--name-only', tag, '--', 'docs/releases'],
+    { allowFailure: true },
+  );
+  return output
+    ? output.split('\n').map((value) => value.trim()).filter((value) => value.endsWith('.md'))
+    : [];
+}
+
+function findReleaseDocForVersionAtTag(tag, version) {
+  const [major, minor, patch] = version.split('.');
+  const fullSlug = `${major}-${minor}-${patch}`;
+  const minorSlug = patch === '0' ? `${major}-${minor}` : null;
+  const files = listReleaseDocsAtTag(tag);
+
+  for (const file of files) {
+    const name = basename(file);
+    if (name.includes(fullSlug) || (minorSlug && name.includes(minorSlug))) return file;
+  }
+  for (const file of files) {
+    const content = readTextAtTag(tag, file);
+    if (content.includes(version) || content.includes(`v${version}`)) return file;
+  }
+  return null;
+}
+
+function readPackageJsonAtTag(tag, entry) {
+  return readJsonAtTag(tag, `${entry.path}/package.json`);
+}
+
+function selectReleaseEntries(tagSurface, tag) {
+  const byName = new Map(tagSurface.packages.map((entry) => [entry.name, entry]));
+  const isEligible = (entry) => (
+    entry.publish === true
+    && (includeExperimental || entry.maturity !== 'experimental')
+  );
+
+  if (onlyNames.size === 0) {
+    return sortReleaseEntries(tagSurface.packages).filter((entry) => {
+      if (!isEligible(entry)) return false;
+      if (onlyWave && entry.releaseWave !== onlyWave) return false;
+      return true;
+    });
+  }
+
+  const selectedNames = new Set();
+  const queue = [];
+  for (const packageName of onlyNames) {
+    const entry = byName.get(packageName);
+    if (!entry) throw new Error(`Unknown package in --only at ${tag}: ${packageName}`);
+    if (!entry.publish) throw new Error(`Package in --only is not publishable at ${tag}: ${packageName}`);
+    if (!includeExperimental && entry.maturity === 'experimental') {
+      throw new Error(`Package in --only requires --include-experimental: ${packageName}`);
+    }
+    if (onlyWave && entry.releaseWave !== onlyWave) {
+      throw new Error(
+        `Package ${packageName} is in release wave ${entry.releaseWave}, not requested wave ${onlyWave}.`,
+      );
+    }
+    selectedNames.add(packageName);
+    queue.push(entry);
+  }
+
+  for (let index = 0; index < queue.length; index += 1) {
+    const entry = queue[index];
+    const packageJson = readPackageJsonAtTag(tag, entry);
+    for (const field of ['dependencies', 'peerDependencies', 'optionalDependencies']) {
+      for (const dependencyName of Object.keys(packageJson[field] ?? {})) {
+        const dependencyEntry = byName.get(dependencyName);
+        if (!dependencyEntry || selectedNames.has(dependencyName)) continue;
+        if (!dependencyEntry.publish) {
+          throw new Error(`${entry.name} depends on internal non-publishable package ${dependencyName}.`);
+        }
+        if (!includeExperimental && dependencyEntry.maturity === 'experimental') {
+          throw new Error(`${entry.name} depends on experimental package ${dependencyName}.`);
+        }
+        selectedNames.add(dependencyName);
+        queue.push(dependencyEntry);
+      }
+    }
+  }
+
+  return sortReleaseEntries(tagSurface.packages.filter((entry) => selectedNames.has(entry.name)));
+}
+
 function renderReceiverFallbackCommand() {
   const packagesArg = selectedPackages
     .map((entry) => `${entry.name}@${entry.version}`)
     .join(',');
+  const taggedNotePath = `/tmp/decantr-${releaseTag}-release-note.md`;
   return [
+    `git show ${shellQuote(`${releaseTag}:${releaseNotePath}`)} > ${shellQuote(taggedNotePath)}`,
     'gh workflow run discord-release.yml \\',
     '  --repo decantr-ai/community-ops \\',
     '  --ref main \\',
@@ -199,7 +269,7 @@ function renderReceiverFallbackCommand() {
     `  -f release_note_path=${shellQuote(releaseNotePath)} \\`,
     `  -f release_url=${shellQuote(`https://github.com/${sourceRepo}/releases/tag/${releaseTag}`)} \\`,
     `  -f packages=${shellQuote(packagesArg)} \\`,
-    `  -F changelog_markdown=@${shellQuote(releaseNotePath)} \\`,
+    `  -F changelog_markdown=@${shellQuote(taggedNotePath)} \\`,
     '  -f dry_run=false',
   ].join('\n');
 }

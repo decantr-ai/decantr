@@ -415,6 +415,17 @@ export interface BuildGraphImpactContextOptions {
   limit?: number;
 }
 
+export interface GraphChangedFileImpact {
+  changedFiles: string[];
+  matchedFiles: Array<{
+    file: string;
+    sourceNodeIds: string[];
+  }>;
+  unresolvedFiles: string[];
+  sourceNodeIds: string[];
+  context: GraphImpactContext | null;
+}
+
 export interface GraphStore {
   open(projectRoot: string): Promise<void>;
   close(): Promise<void>;
@@ -1442,6 +1453,80 @@ export function buildGraphImpactContext(
     ranked,
     nodes,
     edges,
+  };
+}
+
+function normalizeGraphSourcePath(value: string): string {
+  return value
+    .replace(/\\/g, '/')
+    .replace(/^\.\//, '')
+    .replace(/\/{2,}/g, '/')
+    .replace(/\/$/, '');
+}
+
+function graphSourceNodePath(node: GraphNode): string | null {
+  if (node.type !== 'SourceArtifact') return null;
+  const payloadPath = graphPayloadString(node.payload, 'path');
+  const idPath = node.id.startsWith('src:') ? node.id.slice(4) : null;
+  const path = payloadPath ?? idPath;
+  return path ? normalizeGraphSourcePath(path) : null;
+}
+
+function graphSourcePathMatches(sourcePath: string, changedFile: string): boolean {
+  return sourcePath === changedFile || sourcePath.endsWith(`/${changedFile}`);
+}
+
+/**
+ * Resolve Git-changed files to graph source nodes before traversing impact.
+ * Unresolved paths stay explicit so callers cannot mistake missing graph
+ * coverage for an empty governance delta.
+ */
+export function buildChangedFileGraphImpact(
+  snapshot: GraphSnapshot | null | undefined,
+  changedFiles: string[],
+  options: BuildGraphImpactContextOptions = {},
+): GraphChangedFileImpact {
+  const normalizedFiles = [
+    ...new Set(changedFiles.map(normalizeGraphSourcePath).filter(Boolean)),
+  ].sort();
+  if (!snapshot) {
+    return {
+      changedFiles: normalizedFiles,
+      matchedFiles: [],
+      unresolvedFiles: normalizedFiles,
+      sourceNodeIds: [],
+      context: null,
+    };
+  }
+
+  const sourceNodes = snapshot.nodes
+    .filter((node) => node.type === 'SourceArtifact')
+    .map((node) => ({ node, path: graphSourceNodePath(node) }))
+    .filter((entry): entry is { node: GraphNode; path: string } => entry.path !== null);
+  const matchedFiles: GraphChangedFileImpact['matchedFiles'] = [];
+  const unresolvedFiles: string[] = [];
+  const sourceNodeIds = new Set<string>();
+
+  for (const file of normalizedFiles) {
+    const matches = sourceNodes
+      .filter((entry) => graphSourcePathMatches(entry.path, file))
+      .map((entry) => entry.node.id)
+      .sort();
+    if (matches.length === 0) {
+      unresolvedFiles.push(file);
+      continue;
+    }
+    for (const nodeId of matches) sourceNodeIds.add(nodeId);
+    matchedFiles.push({ file, sourceNodeIds: matches });
+  }
+
+  const seeds = [...sourceNodeIds].sort();
+  return {
+    changedFiles: normalizedFiles,
+    matchedFiles,
+    unresolvedFiles,
+    sourceNodeIds: seeds,
+    context: seeds.length > 0 ? buildGraphImpactContext(snapshot, seeds, options) : null,
   };
 }
 

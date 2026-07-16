@@ -5,12 +5,20 @@ import { readFileSync } from 'node:fs';
 const TOOL_SOURCE_PATH = 'packages/mcp-server/src/tools.ts';
 const DOCS_INDEX_PATH = 'docs/index.html';
 const DOCS_ANALYTICS_PATH = 'docs/analytics.js';
+const SECURITY_PATH = 'SECURITY.md';
+const CODEMETA_PATH = 'codemeta.json';
+const CURRENT_PUBLIC_RELEASE = '3.8.3';
+const DEVELOPMENT_RELEASE = '3.9.0';
 const ACTIVE_STORY_PATHS = [
   'README.md',
+  'DECANTR.md',
   'CLAUDE.md',
+  SECURITY_PATH,
+  CODEMETA_PATH,
   'docs/index.html',
   'docs/README.md',
   'docs/llms.txt',
+  'docs/css-scaffolding-guide.md',
   'docs/architecture/scaffolding-flow.md',
   'docs/guides/ai-assistant-setup.md',
   'docs/guides/existing-apps.md',
@@ -18,6 +26,9 @@ const ACTIVE_STORY_PATHS = [
   'docs/reference/project-health.md',
   'docs/reference/telemetry.md',
   'docs/reference/workflow-model.md',
+  'docs/runbooks/decantr-3-prerelease.md',
+  'docs/runbooks/enterprise-artifact-release-checklist.md',
+  'docs/runbooks/release-stewardship.md',
   'docs/schemas/index.html',
   'apps/showcase-host/DECANTR.md',
   'packages/cli/README.md',
@@ -54,6 +65,10 @@ const FORBIDDEN_ACTIVE_STORY_PATTERNS = [
   { pattern: /https?:\/\/api\.decantr\.ai\/v1\/telemetry\/(?:events|guard)/i, message: 'retired hosted telemetry endpoint' },
   { pattern: /calls the hosted `\/v1\/me\/telemetry-link`/i, message: 'retired hosted identity-link copy' },
   { pattern: /adoptionMode[^\n]*\|\|\s*'decantr-css'/i, message: 'Decantr CSS fallback adoption' },
+  { pattern: /All Decantr projects \*\*must\*\* declare CSS/i, message: 'Decantr CSS layers as a universal requirement' },
+  { pattern: /If `package\.json` does not already include `@decantr\/css`, add it/i, message: 'automatic Decantr CSS installation guidance' },
+  { pattern: /npx decantr docs css/i, message: 'nonexistent Decantr CSS docs command' },
+  { pattern: /use this lane for future Decantr 3 prereleases/i, message: 'obsolete reusable prerelease lane' },
 ];
 
 const FORBIDDEN_DOCS_ANALYTICS_PATTERNS = [
@@ -78,6 +93,17 @@ const EXPECTED_PACKAGE_PATHS = {
 };
 
 const EXPECTED_PACKAGES = Object.keys(EXPECTED_PACKAGE_PATHS);
+const CURRENT_PUBLIC_PACKAGE_VERSIONS = {
+  '@decantr/cli': '3.8.3',
+  '@decantr/mcp-server': '3.8.3',
+  '@decantr/content': '3.8.1',
+  '@decantr/essence-spec': '3.8.1',
+  '@decantr/registry': '3.8.1',
+  '@decantr/core': '3.8.2',
+  '@decantr/css': '3.8.1',
+  '@decantr/telemetry': '3.8.1',
+  '@decantr/verifier': '3.8.3',
+};
 
 function extractToolNames(source) {
   return [
@@ -114,12 +140,22 @@ function difference(left, right) {
   return left.filter((value) => !rightSet.has(value));
 }
 
+const missingPublicVersionPolicies = difference(
+  EXPECTED_PACKAGES,
+  Object.keys(CURRENT_PUBLIC_PACKAGE_VERSIONS),
+);
+
 const toolSource = readFileSync(TOOL_SOURCE_PATH, 'utf8');
 const docsIndex = readFileSync(DOCS_INDEX_PATH, 'utf8');
 const docsAnalytics = readFileSync(DOCS_ANALYTICS_PATH, 'utf8');
+const agentBrief = readFileSync('DECANTR.md', 'utf8');
+const securityPolicy = readFileSync(SECURITY_PATH, 'utf8');
+const codemeta = JSON.parse(readFileSync(CODEMETA_PATH, 'utf8'));
+const workspaceManifest = JSON.parse(readFileSync('.decantr/workspace.json', 'utf8'));
 
 const toolNames = unique(extractToolNames(toolSource));
 const docsToolNames = unique(extractDocsToolNames(docsIndex));
+const agentBriefToolNames = unique(extractDocsToolNames(agentBrief));
 const docsPackageNames = unique(extractDocsPackageNames(docsIndex));
 const docsPackageVersions = extractDocsPackageVersions(docsIndex);
 
@@ -127,6 +163,95 @@ const toolHeadingMatch = docsIndex.match(/>(\d+)\s+tools for your AI assistant</
 const packageHeadingMatch = docsIndex.match(/>(?:(\w+)\s+|Content-first\s+)packages, one mission/);
 
 const failures = [];
+
+const missingAgentBriefTools = difference(toolNames, agentBriefToolNames);
+const extraAgentBriefTools = difference(agentBriefToolNames, toolNames);
+if (missingAgentBriefTools.length > 0 || extraAgentBriefTools.length > 0) {
+  failures.push(
+    `DECANTR.md MCP inventory differs from the exact eight-tool surface (missing: ${missingAgentBriefTools.join(', ') || 'none'}; extra: ${extraAgentBriefTools.join(', ') || 'none'}).`,
+  );
+}
+if ((workspaceManifest.projects ?? []).some((project) => project.path === 'apps/registry')) {
+  failures.push('.decantr/workspace.json still declares the retired apps/registry project.');
+}
+
+if (missingPublicVersionPolicies.length > 0) {
+  failures.push(
+    `Current public package versions are missing policy entries: ${missingPublicVersionPolicies.join(', ')}`,
+  );
+}
+
+if (!new RegExp(`Current stable\\s*·\\s*v${CURRENT_PUBLIC_RELEASE.replaceAll('.', '\\.')}`, 'i').test(docsIndex)) {
+  failures.push(`Docs homepage must identify v${CURRENT_PUBLIC_RELEASE} as the current stable release.`);
+}
+
+if (!/Development preview\s*·\s*v3\.9\b/i.test(docsIndex)) {
+  failures.push('Docs homepage must label the 3.9 line as a development preview.');
+}
+
+if (!/3\.9[^\n]{0,240}\bremains unreleased\b/i.test(docsIndex)) {
+  failures.push('Docs homepage must say that the 3.9 development line remains unreleased.');
+}
+
+const developmentVersionPattern = new RegExp(
+  `\\bv?${DEVELOPMENT_RELEASE.replaceAll('.', '\\.')}\\b`,
+  'i',
+);
+
+for (const [index, line] of docsIndex.split(/\r?\n/).entries()) {
+  if (!/\bv?3\.9(?:\.0)?\b/i.test(line)) continue;
+  const presentsReleaseStatus = /\b(?:current|stable|shipping|shipped|released|latest|live)\b/i.test(line);
+  if (!presentsReleaseStatus && !developmentVersionPattern.test(line)) continue;
+  if (/\b(?:development|preview|unreleased)\b/i.test(line)) continue;
+  failures.push(`Docs homepage line ${index + 1} presents the unreleased 3.9 line as current or shipped.`);
+}
+
+if (/MCP\s*·\s*live/i.test(docsIndex)) {
+  failures.push('Docs homepage must not badge the unreleased 3.9 task-capsule surface as live.');
+}
+if (!/<span[^>]*class="badge"[^>]*>\s*3\.9 preview\s*<\/span>/i.test(docsIndex)) {
+  failures.push('Docs homepage must badge the task-capsule surface as a 3.9 preview.');
+}
+
+const securityRequirements = [
+  { pattern: /\blocal-first\b/i, message: 'local-first governance posture' },
+  { pattern: /content\/reference API/i, message: 'optional content/reference API posture' },
+  { pattern: /\bMCP\b/, message: 'MCP security posture' },
+  { pattern: /does not accept project source code/i, message: 'no source-upload posture' },
+];
+
+for (const requirement of securityRequirements) {
+  if (!requirement.pattern.test(securityPolicy)) {
+    failures.push(`${SECURITY_PATH} is missing ${requirement.message}.`);
+  }
+}
+
+const forbiddenSecurityPatterns = [
+  { pattern: /registry\.decantr\.ai/i, message: 'retired registry portal URL' },
+  { pattern: /\bregistry portal\b/i, message: 'retired registry portal surface' },
+  { pattern: /allow_hosted_upload/i, message: 'retired hosted-upload compatibility flag' },
+  { pattern: /hosted[^\n]{0,80}source upload fallback/i, message: 'retired hosted source-upload fallback' },
+];
+
+for (const check of forbiddenSecurityPatterns) {
+  if (check.pattern.test(securityPolicy)) {
+    failures.push(`${SECURITY_PATH} still contains ${check.message}.`);
+  }
+}
+
+const codemetaDescription = codemeta.description ?? '';
+if (!new RegExp(`${CURRENT_PUBLIC_RELEASE.replaceAll('.', '\\.')} is current`, 'i').test(codemetaDescription)) {
+  failures.push(`${CODEMETA_PATH} must identify ${CURRENT_PUBLIC_RELEASE} as current.`);
+}
+if (!/3\.9 is the unreleased development target/i.test(codemetaDescription)) {
+  failures.push(`${CODEMETA_PATH} must identify 3.9 as the unreleased development target.`);
+}
+if (!/\blocal-first\b/i.test(codemetaDescription) || !/content\/reference API/i.test(codemetaDescription) || !/\bMCP\b/.test(codemetaDescription)) {
+  failures.push(`${CODEMETA_PATH} must describe the local-first package, content/API, and MCP posture.`);
+}
+if ((codemeta.relatedLink ?? []).some((link) => /registry\.decantr\.ai/i.test(link))) {
+  failures.push(`${CODEMETA_PATH} still links to the retired registry portal.`);
+}
 
 for (const file of ACTIVE_STORY_PATHS) {
   const text = readFileSync(file, 'utf8');
@@ -218,14 +343,18 @@ if (extraPackages.length > 0) {
 }
 
 for (const [pkg, packageJsonPath] of Object.entries(EXPECTED_PACKAGE_PATHS)) {
-  const packageVersion = JSON.parse(readFileSync(packageJsonPath, 'utf8')).version;
+  const developmentVersion = JSON.parse(readFileSync(packageJsonPath, 'utf8')).version;
+  const currentPublicVersion = CURRENT_PUBLIC_PACKAGE_VERSIONS[pkg];
   const docsVersion = docsPackageVersions[pkg];
   if (!docsVersion) {
     failures.push(`Docs homepage is missing a displayed version for ${pkg}.`);
     continue;
   }
-  if (docsVersion !== packageVersion) {
-    failures.push(`Docs homepage shows ${pkg} as v${docsVersion}, but package.json is v${packageVersion}.`);
+  if (docsVersion !== currentPublicVersion) {
+    const source = docsVersion === developmentVersion
+      ? `the unreleased development manifest version v${developmentVersion}`
+      : `v${docsVersion}`;
+    failures.push(`Docs homepage shows ${pkg} as ${source}, but the current public version is v${currentPublicVersion}.`);
   }
 }
 
@@ -237,4 +366,4 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log(`Docs marketing audit passed: ${toolNames.length} MCP tools and ${EXPECTED_PACKAGES.length} core packages are aligned, including displayed versions.`);
+console.log(`Docs marketing audit passed: v${CURRENT_PUBLIC_RELEASE} remains current, v3.9 remains an unreleased development preview, security/codemeta posture is aligned, and ${toolNames.length} MCP tools plus ${EXPECTED_PACKAGES.length} public package versions match.`);

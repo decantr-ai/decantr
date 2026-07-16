@@ -1,16 +1,16 @@
 import showcaseManifest from '../../../showcase/manifest.json' with { type: 'json' };
 import shortlistVerificationReport from '../../../showcase/reports/shortlist-verification.json' with { type: 'json' };
+import type { ShowcaseManifestEntry } from '@decantr/content';
 import type {
-  ShowcaseManifestEntry,
-  ShowcaseShortlistReport,
-  ShowcaseVerificationEntry,
-} from '@decantr/registry';
+  ShowcaseShortlistVerificationEntry,
+  ShowcaseShortlistVerificationReport,
+} from '@decantr/verifier';
 
 export const SHOWCASE_SHORTLIST_REPORT =
-  shortlistVerificationReport as ShowcaseShortlistReport;
+  shortlistVerificationReport as ShowcaseShortlistVerificationReport;
 
 export const SHOWCASE_VERIFICATION_RESULTS =
-  (SHOWCASE_SHORTLIST_REPORT.results as ShowcaseVerificationEntry[] | undefined) ?? [];
+  (SHOWCASE_SHORTLIST_REPORT.results as ShowcaseShortlistVerificationEntry[] | undefined) ?? [];
 
 export function getShowcasePublicUrl(slug: string): string {
   return `/showcase/${slug}`;
@@ -51,6 +51,6 @@ export function getShowcaseManifestEntry(
 
 export function getShowcaseVerificationEntry(
   slug: string,
-): ShowcaseVerificationEntry | null {
+): ShowcaseShortlistVerificationEntry | null {
   return SHOWCASE_VERIFICATION_MAP.get(slug) ?? null;
 }

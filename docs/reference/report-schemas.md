@@ -4,7 +4,9 @@ Decantr verifier report schemas are published from `packages/verifier/schema`.
 
 ## Compatibility Model
 
-- Decantr emits v2 report contracts for Project Health, CI reports, workspace health, Evidence Bundles, runtime probe payloads, authority resolution, loop readiness, common verification findings, proof field reports, and Brownfield scan reports.
+- Decantr 3.9 continues to emit v2 report contracts by default for Project Health, CI reports, workspace health, Evidence Bundles, runtime probe payloads, authority resolution, loop readiness, common verification findings, proof field reports, and Brownfield scan reports.
+- `decantr-ci-report.v3.json` is opt-in only through `decantr ci --report-version v3` or `decantr ci init --report-version v3`. Package version, environment, and stored config never negotiate it implicitly.
+- `AdoptionTruthV1`, `TaskCapsuleV1`, and `GovernanceDeltaV1` are verifier-owned 3.9 contracts. They compose existing evidence without changing v2 required fields or enums.
 - v1 report schemas remain published as historical references for existing consumers. They are no longer the default payload for 3.5 Project Health, CI, workspace health, or Evidence Bundle commands.
 - Audit, file-critique, and showcase shortlist reports remain on their v1 schemas until those contracts need a wire change.
 - Consumers must branch on the payload `$schema` URL instead of guessing by package version.
@@ -23,6 +25,21 @@ Decantr verifier report schemas are published from `packages/verifier/schema`.
 - `proof-field-report.v2.json`
 - `scan-report.v2.json`
 
+## Decantr 3.9 Governed Change Schemas
+
+- `adoption-truth.v1.json`
+- `task-capsule.v1.json`
+- `governance-delta.v1.json`
+- `decantr-ci-report.v3.json`
+
+`AdoptionTruthV1` records workspace/app selection, independent observation/governance/mutation axes, confidence, workspace-relative provenance, complete mutation receipts, limitations, and one next action. A discovered fact is not automatically governed, and an unreceipted write cannot be reported as created, updated, or untouched.
+
+`TaskCapsuleV1` is task-time context rather than a CI report. It requires a current graph and a rank-one required route implementation read target, then carries authority, changed-file/route/node impact, stable findings, content identities and `sha256` digests, stop conditions, and one verify command. Canonical compact output is limited to 12,000 UTF-8 bytes and `tokenEstimateV1 <= 4,000`, where `tokenEstimateV1` is `ceil(canonicalBytes / 3)`. Existing CLI/MCP task fields remain available and identify the source contract with `taskCapsuleVersion` / `task_capsule_version`; the capsule is not duplicated as a nested payload.
+
+`GovernanceDeltaV1` records comparison scope, Git change base, compatible debt baseline, current health/graph/evidence/contract/content/source identities, and findings partitioned as `new`, `inherited`, `resolved`, or `unclassified` by stable `gfo1:` occurrence fingerprints. Inherited debt does not block the delta gate. Missing, stale, incompatible, or unresolved evidence yields `gate.result: "not_proven"` and `gate.status: "incomplete"` rather than an empty/all-new delta.
+
+The CI v3 project shape embeds existing v2 health evidence plus `AdoptionTruthV1` and `GovernanceDeltaV1`. Workspace v3 contains one project report per selected app and a deterministic aggregate gate with pass/fail/not-proven counts. CI v3 reads but never creates or updates a baseline.
+
 ## Historical And Still-Active v1 Schemas
 
 - `verification-report.common.v1.json`
@@ -37,7 +54,7 @@ Decantr verifier report schemas are published from `packages/verifier/schema`.
 
 `scan-report.v2.json` is the active `decantr scan --json` contract. It carries the shared discovery summary: app scope, workspace package-manager evidence, framework/language, route signal count, taskable route count, component inventory confidence, source directories, styling authority, assistant-rule files, and explicit limitations. `scan-report.v1.json` remains published for stored artifact compatibility.
 
-`decantr-ci-report.v2.json` project payloads include `baselineGate`. The block records whether a saved Brownfield baseline was applied, its path/time, inherited finding IDs, and new finding IDs/severities. Inherited debt remains visible in report status, while only new health findings determine the baseline-aware health exit gate. Workspace payloads do not use this project-only block.
+`decantr-ci-report.v2.json` project payloads include `baselineGate`. The block records whether a saved Brownfield baseline was applied, its path/time, inherited finding IDs, and new finding IDs/severities. Inherited debt remains visible in report status, while only new health findings determine the baseline-aware health exit gate. Workspace payloads do not use this project-only block. This v2 behavior remains the default throughout 3.9.
 
 `project-audit-report.v1.json`, `file-critique-report.v1.json`, and `showcase-shortlist-report.v1.json` remain active for their specific commands. The v1 health, CI, workspace, evidence, and scan files are retained so older integrations can validate stored artifacts.
 
@@ -56,7 +73,7 @@ The tier block records:
 - `coverage`: route counts, runtime route checks, graph-anchored findings, repair-plan coverage, runtime probe count, and visual artifact count.
 - `confidence`: a normalized score, level, and reasons that explain whether the payload is enough for repair, dashboarding, or proof-corpus use.
 
-The v2 Evidence Bundle can also embed a `runtimeProbe` payload and enumerate local artifacts such as visual manifests, screenshots, baseline diffs, repair prompts, and benchmark transcripts. Artifact paths remain local in Decantr 3.8; shared dashboards should consume explicitly exported redacted reports rather than raw source, prompts, screenshots, or local paths.
+The v2 Evidence Bundle can also embed a `runtimeProbe` payload and enumerate local artifacts such as visual manifests, screenshots, baseline diffs, repair prompts, and benchmark transcripts. Artifact paths remain local in Decantr 3.9; shared dashboards should consume explicitly exported redacted reports rather than raw source, prompts, screenshots, or local paths.
 
 `proof-field-report.v2.json` records benchmark corpus runs with honest pass/fail metrics, false positives, graph-anchor coverage, repair-plan coverage, and loop-verdict quality.
 
@@ -77,4 +94,6 @@ Each probe result has a stable `id`, `kind`, `status`, target, route, evidence s
 
 ## Implementation Notes
 
-The v2 schemas are the active Decantr 3.8 control-loop contract. New Project Health, CI, workspace health, evidence, Studio, and MCP loop integrations should consume the v2 shapes directly. Keep v1 validators available for stored artifacts, but do not add new default emitters that silently fall back to v1 health or evidence payloads.
+The v2 schemas remain the default Decantr 3.9 control-loop contracts. New Project Health, workspace health, evidence, and MCP loop integrations should consume the v2 shapes directly. Use CI v3 only when the consumer explicitly needs governed-change proof and can supply/retain the required Git and baseline evidence. Keep v1 validators available for stored artifacts, but do not add default emitters that silently fall back to v1 or silently upgrade v2 consumers to v3.
+
+The committed 3.9 schemas define wire behavior; they do not establish that the separate 84 route, 24 forbidden-source, or 200 human-adjudicated qualification gates passed.

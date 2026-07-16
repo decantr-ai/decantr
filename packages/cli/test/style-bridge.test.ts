@@ -13,6 +13,7 @@ import {
   acceptStyleBridge,
   createStyleBridgeProposal,
   createStyleBridgeTaskSummary,
+  readStyleBridge,
   styleBridgeMatches,
   styleBridgePath,
   writeStyleBridgeProposal,
@@ -131,6 +132,26 @@ describe('hybrid style bridge', () => {
     expect(proposal.styling.darkModeDetected).toBe(true);
     expect(proposal.styling.themeModes).toEqual(['base', 'dark']);
     expect(proposal.styling.themeVariantIds).toEqual(['dark']);
+  });
+
+  it('does not treat an unaccepted manifest at the authority path as a style bridge', () => {
+    writeFileSync(
+      styleBridgePath(testDir),
+      JSON.stringify({
+        version: 2,
+        status: 'proposal',
+        mappings: [{ id: 'surface', tokenHints: ['--surface'] }],
+      }),
+      'utf-8',
+    );
+
+    expect(readStyleBridge(testDir)).toBeNull();
+    expect(createStyleBridgeTaskSummary(testDir)).toMatchObject({
+      path: null,
+      status: null,
+      mappingCount: 0,
+    });
+    expect(styleBridgeMatches(testDir, 'surface tokens')).toEqual([]);
   });
 
   it('extracts Tailwind theme config tokens as bridge token hints', () => {

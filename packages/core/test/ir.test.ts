@@ -1,5 +1,5 @@
+import type { Pattern, ResolvedPreset, Theme } from '@decantr/content';
 import type { StructurePage } from '@decantr/essence-spec';
-import type { Pattern, Theme as RegistryTheme, ResolvedPreset } from '@decantr/registry';
 import { describe, expect, it } from 'vitest';
 import { buildPageIR } from '../src/ir.js';
 import type { IRGridNode, IRPatternNode, IRWiring } from '../src/types.js';
@@ -173,7 +173,7 @@ describe('buildPageIR', () => {
     const pattern = makePattern('kpi-grid');
     const preset = makeResolvedPreset();
     const patterns = new Map([['kpi-grid', { pattern, preset }]]);
-    const theme: RegistryTheme = {
+    const theme: Theme = {
       id: 'test',
       name: 'Test',
       spatial: {

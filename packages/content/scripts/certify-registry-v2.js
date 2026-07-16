@@ -10,10 +10,7 @@
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import Ajv2020 from 'ajv/dist/2020.js';
-import {
-  CONTENT_DIRECTORIES,
-  isIgnoredLocalContentFile,
-} from './content-contract.js';
+import { CONTENT_DIRECTORIES, isIgnoredLocalContentFile } from './content-contract.js';
 
 const ESSENCE_VERSION = '4.0.0';
 const ACTIVE_DECANTR_COMPAT = '>=2.0.0';
@@ -33,7 +30,7 @@ const findings = [];
 
 function readArgValue(name) {
   const prefix = `${name}=`;
-  return args.find(arg => arg.startsWith(prefix))?.slice(prefix.length) || null;
+  return args.find((arg) => arg.startsWith(prefix))?.slice(prefix.length) || null;
 }
 
 function ensureParentDir(path) {
@@ -49,13 +46,16 @@ function isRecord(value) {
 }
 
 function asArray(value) {
-  if (Array.isArray(value)) return value.filter(item => typeof item === 'string' && item.trim().length > 0);
+  if (Array.isArray(value))
+    return value.filter((item) => typeof item === 'string' && item.trim().length > 0);
   if (typeof value === 'string' && value.trim().length > 0) return [value];
   return [];
 }
 
 function uniq(values) {
-  return [...new Set(values.filter(value => typeof value === 'string' && value.trim().length > 0))];
+  return [
+    ...new Set(values.filter((value) => typeof value === 'string' && value.trim().length > 0)),
+  ];
 }
 
 function serializeConstraintValue(value) {
@@ -109,7 +109,9 @@ function listContent(dir) {
   const items = new Map();
   const ignored = [];
 
-  for (const file of readdirSync(join(root, dir)).filter(name => name.endsWith('.json')).sort()) {
+  for (const file of readdirSync(join(root, dir))
+    .filter((name) => name.endsWith('.json'))
+    .sort()) {
     if (isIgnoredLocalContentFile(file)) {
       ignored.push(`${dir}/${file}`);
       continue;
@@ -155,7 +157,8 @@ function normalizeTheme(themeRef, themeCatalog) {
   const themeId = isRecord(themeRef) && typeof themeRef.id === 'string' ? themeRef.id : 'clean';
   const theme = themeCatalog.get(themeId)?.item;
   const mode = isRecord(themeRef) && ALLOWED_MODES.has(themeRef.mode) ? themeRef.mode : 'light';
-  const shape = isRecord(themeRef) && ALLOWED_SHAPES.has(themeRef.shape) ? themeRef.shape : 'rounded';
+  const shape =
+    isRecord(themeRef) && ALLOWED_SHAPES.has(themeRef.shape) ? themeRef.shape : 'rounded';
 
   return {
     theme: {
@@ -173,8 +176,10 @@ function normalizeTheme(themeRef, themeCatalog) {
       base: typeof theme?.radius?.base === 'number' ? theme.radius.base : 8,
     },
     motion: {
-      preference: typeof theme?.motion?.preference === 'string' ? theme.motion.preference : 'standard',
-      duration_scale: typeof theme?.motion?.duration_scale === 'number' ? theme.motion.duration_scale : 1,
+      preference:
+        typeof theme?.motion?.preference === 'string' ? theme.motion.preference : 'standard',
+      duration_scale:
+        typeof theme?.motion?.duration_scale === 'number' ? theme.motion.duration_scale : 1,
       reduce_motion: false,
     },
   };
@@ -205,7 +210,8 @@ function normalizeLayoutItem(value) {
     if (typeof value.at === 'string' && LAYOUT_BREAKPOINTS.has(value.at)) normalized.at = value.at;
     if (isRecord(value.span)) normalized.span = value.span;
     if (Array.isArray(value.breakpoints)) normalized.breakpoints = value.breakpoints;
-    if (value.responsive === 'viewport' || value.responsive === 'container') normalized.responsive = value.responsive;
+    if (value.responsive === 'viewport' || value.responsive === 'container')
+      normalized.responsive = value.responsive;
     return normalized;
   }
 
@@ -230,8 +236,11 @@ function sanitizeCommandPalette(value) {
   }
   if (Array.isArray(value.commands)) {
     palette.commands = value.commands
-      .filter(command => isRecord(command) && typeof command.id === 'string' && typeof command.label === 'string')
-      .map(command => {
+      .filter(
+        (command) =>
+          isRecord(command) && typeof command.id === 'string' && typeof command.label === 'string',
+      )
+      .map((command) => {
         const normalized = { id: command.id, label: command.label };
         for (const key of ['section', 'hotkey', 'action', 'route']) {
           if (typeof command[key] === 'string') normalized[key] = command[key];
@@ -264,8 +273,11 @@ function sanitizeNavigation(value) {
 
   if (Array.isArray(value.hotkeys)) {
     const hotkeys = value.hotkeys
-      .filter(hotkey => isRecord(hotkey) && typeof hotkey.key === 'string' && typeof hotkey.label === 'string')
-      .map(hotkey => {
+      .filter(
+        (hotkey) =>
+          isRecord(hotkey) && typeof hotkey.key === 'string' && typeof hotkey.label === 'string',
+      )
+      .map((hotkey) => {
         const normalized = { key: hotkey.key, label: hotkey.label };
         if (typeof hotkey.route === 'string') normalized.route = hotkey.route;
         if (typeof hotkey.action === 'string') normalized.action = hotkey.action;
@@ -295,12 +307,17 @@ function buildEssenceForBlueprint(blueprintRecord, collections) {
   const features = [];
 
   if (composeEntries.length === 0) {
-    addFinding('error', blueprintPath, 'Blueprint must compose at least one archetype for V2 certification.');
+    addFinding(
+      'error',
+      blueprintPath,
+      'Blueprint must compose at least one archetype for V2 certification.',
+    );
   }
 
   for (const entry of composeEntries) {
     const archetypeId = typeof entry === 'string' ? entry : entry?.archetype;
-    const sectionId = typeof entry === 'object' && typeof entry.prefix === 'string' ? entry.prefix : archetypeId;
+    const sectionId =
+      typeof entry === 'object' && typeof entry.prefix === 'string' ? entry.prefix : archetypeId;
     const archetypeRecord = archetypes.get(archetypeId);
 
     if (!archetypeRecord) {
@@ -309,20 +326,27 @@ function buildEssenceForBlueprint(blueprintRecord, collections) {
     }
 
     const archetype = archetypeRecord.item;
-    const role = typeof entry === 'object' && VALID_ROLES.has(entry.role) ? entry.role : archetype.role;
-    const firstRouteShell = Object.values(blueprint.routes || {}).find(routeEntry => (
-      routeEntry?.archetype === archetypeId && typeof routeEntry.shell === 'string' && routeEntry.shell !== 'inherit'
-    ))?.shell;
-    const firstShell = archetype.pages?.find(page => (
-      typeof page?.shell === 'string' && page.shell !== 'inherit'
-    ))?.shell;
-    const archetypeShell = typeof archetype.shell === 'string' && archetype.shell !== 'inherit'
-      ? archetype.shell
-      : null;
+    const role =
+      typeof entry === 'object' && VALID_ROLES.has(entry.role) ? entry.role : archetype.role;
+    const firstRouteShell = Object.values(blueprint.routes || {}).find(
+      (routeEntry) =>
+        routeEntry?.archetype === archetypeId &&
+        typeof routeEntry.shell === 'string' &&
+        routeEntry.shell !== 'inherit',
+    )?.shell;
+    const firstShell = archetype.pages?.find(
+      (page) => typeof page?.shell === 'string' && page.shell !== 'inherit',
+    )?.shell;
+    const archetypeShell =
+      typeof archetype.shell === 'string' && archetype.shell !== 'inherit' ? archetype.shell : null;
     const resolvedSectionShell = firstRouteShell || firstShell || archetypeShell || 'sidebar-main';
 
     if (!shellCatalog.has(resolvedSectionShell)) {
-      addFinding('error', archetypeRecord.path, `V2 section shell "${resolvedSectionShell}" is missing from shells/.`);
+      addFinding(
+        'error',
+        archetypeRecord.path,
+        `V2 section shell "${resolvedSectionShell}" is missing from shells/.`,
+      );
     }
 
     sectionIdByArchetype.set(archetypeId, sectionId);
@@ -345,9 +369,9 @@ function buildEssenceForBlueprint(blueprintRecord, collections) {
     }
 
     for (const page of archetype.pages || []) {
-      const route = Object.entries(blueprint.routes || {}).find(([, routeEntry]) => (
-        routeEntry?.archetype === archetypeId && routeEntry?.page === page.id
-      ));
+      const route = Object.entries(blueprint.routes || {}).find(
+        ([, routeEntry]) => routeEntry?.archetype === archetypeId && routeEntry?.page === page.id,
+      );
       const routePath = route?.[0];
       const routeShell = route?.[1]?.shell;
       const layout = Array.isArray(page.default_layout)
@@ -355,7 +379,11 @@ function buildEssenceForBlueprint(blueprintRecord, collections) {
         : [];
 
       if (page.shell && page.shell !== 'inherit' && !shellCatalog.has(page.shell)) {
-        addFinding('error', archetypeRecord.path, `Page "${page.id}" references missing shell "${page.shell}".`);
+        addFinding(
+          'error',
+          archetypeRecord.path,
+          `Page "${page.id}" references missing shell "${page.shell}".`,
+        );
       }
 
       const essencePage = {
@@ -365,8 +393,10 @@ function buildEssenceForBlueprint(blueprintRecord, collections) {
       };
       if (routePath) essencePage.route = routePath;
       const shellOverride = page.shell && page.shell !== 'inherit' ? page.shell : routeShell;
-      if (shellOverride && shellOverride !== resolvedSectionShell) essencePage.shell_override = shellOverride;
-      if (Array.isArray(page.directives) && page.directives.length > 0) essencePage.directives = page.directives;
+      if (shellOverride && shellOverride !== resolvedSectionShell)
+        essencePage.shell_override = shellOverride;
+      if (Array.isArray(page.directives) && page.directives.length > 0)
+        essencePage.directives = page.directives;
 
       section.pages.push(essencePage);
     }
@@ -383,7 +413,11 @@ function buildEssenceForBlueprint(blueprintRecord, collections) {
 
     const section = sectionIdByArchetype.get(routeEntry?.archetype);
     if (!section) {
-      addFinding('error', blueprintPath, `Route "${routePath}" references uncomposed archetype "${routeEntry?.archetype}".`);
+      addFinding(
+        'error',
+        blueprintPath,
+        `Route "${routePath}" references uncomposed archetype "${routeEntry?.archetype}".`,
+      );
       continue;
     }
 
@@ -393,7 +427,9 @@ function buildEssenceForBlueprint(blueprintRecord, collections) {
     };
   }
 
-  const routeRemove = new Set(Array.isArray(blueprint.overrides?.features_remove) ? blueprint.overrides.features_remove : []);
+  const routeRemove = new Set(
+    Array.isArray(blueprint.overrides?.features_remove) ? blueprint.overrides.features_remove : [],
+  );
   const theme = normalizeTheme(blueprint.theme, themes);
   const essence = {
     $schema: 'https://decantr.ai/schemas/essence.v4.json',
@@ -423,14 +459,18 @@ function buildEssenceForBlueprint(blueprintRecord, collections) {
         focus_visible: true,
         skip_nav: true,
       },
-      personality: asArray(blueprint.personality).length > 0
-        ? asArray(blueprint.personality)
-        : ['Clear, coherent Decantr V2 interface contract.'],
+      personality:
+        asArray(blueprint.personality).length > 0
+          ? asArray(blueprint.personality)
+          : ['Clear, coherent Decantr V2 interface contract.'],
     },
     blueprint: {
       sections,
-      features: uniq([...features, ...asArray(blueprint.features), ...asArray(blueprint.overrides?.features_add)])
-        .filter(feature => !routeRemove.has(feature)),
+      features: uniq([
+        ...features,
+        ...asArray(blueprint.features),
+        ...asArray(blueprint.overrides?.features_add),
+      ]).filter((feature) => !routeRemove.has(feature)),
       routes,
     },
     meta: {
@@ -461,7 +501,7 @@ function buildEssenceForBlueprint(blueprintRecord, collections) {
 }
 
 function formatSchemaErrors(errors) {
-  return (errors || []).slice(0, 8).map(error => {
+  return (errors || []).slice(0, 8).map((error) => {
     const path = error.instancePath || '/';
     return `${path} ${error.message}`.trim();
   });
@@ -540,20 +580,22 @@ for (const blueprintRecord of collections.blueprints.items.values()) {
 
 const report = {
   certifiedAt: startedAt,
-  status: findings.some(finding => finding.severity === 'error') ? 'failed' : 'passed',
+  status: findings.some((finding) => finding.severity === 'error') ? 'failed' : 'passed',
   essenceVersion: ESSENCE_VERSION,
   requiredDecantrCompat: ACTIVE_DECANTR_COMPAT,
-  byType: Object.fromEntries(CONTENT_DIRECTORIES.map(dir => [
-    dir,
-    {
-      active: collections[dir].items.size,
-      ignored: collections[dir].ignored.length,
-    },
-  ])),
+  byType: Object.fromEntries(
+    CONTENT_DIRECTORIES.map((dir) => [
+      dir,
+      {
+        active: collections[dir].items.size,
+        ignored: collections[dir].ignored.length,
+      },
+    ]),
+  ),
   ignored,
   blueprints: {
     total: blueprintResults.length,
-    certified: blueprintResults.filter(result => result.status === 'certified').length,
+    certified: blueprintResults.filter((result) => result.status === 'certified').length,
     items: blueprintResults,
   },
   findings,
@@ -580,4 +622,6 @@ if (report.status === 'failed') {
   process.exit(1);
 }
 
-console.log(`Registry V2 certification passed: ${report.blueprints.certified}/${report.blueprints.total} blueprints compile to Essence ${ESSENCE_VERSION}.`);
+console.log(
+  `Registry V2 certification passed: ${report.blueprints.certified}/${report.blueprints.total} blueprints compile to Essence ${ESSENCE_VERSION}.`,
+);

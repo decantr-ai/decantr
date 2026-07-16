@@ -24,9 +24,9 @@ Accepted project `behavior_obligations` from `.decantr/local-patterns.json` are 
 
 ## Default Agent Flow
 
-1. Call `decantr_project` with `{ "action": "state" }`.
+1. Call `decantr_project` with `{ "action": "state" }` and inspect its `adoption_truth` projection before trusting app scope or provenance.
 2. If graph artifacts are missing or stale, run `decantr graph --project apps/web`; task activation deliberately blocks until the graph is current.
-3. Before route work, call `decantr_context` with `{ "action": "task", "route": "/feed", "task": "..." }`. The compact default leads with the discovered implementation source and includes authority, ranking/impact summaries, stop conditions, and verify command. Use `"detail": "full"` only for expanded nodes, edges, and context.
+3. Before route work, call `decantr_context` with `{ "action": "task", "route": "/feed", "task": "..." }`. The compact default is adapted from `TaskCapsuleV1`: it leads with the required rank-one implementation source and includes graph freshness, authority, changed-file impact, stable findings, content identity/digest provenance, stop conditions, and one verify command. Its canonical budget is 12,000 UTF-8 bytes / 4,000 deterministic estimated tokens. Use `"detail": "full"` only for expanded diagnostics outside the default capsule budget.
 4. Call `decantr_contract` with `{ "action": "capsule" }` near session start when broader source handles are needed.
 5. Before changing a shared node or known source file, call `decantr_graph` with `{ "action": "query", "node_ids": [...], "include_impact": true }` or a `file_path` query.
 6. After edits, run the verify command returned by task context.
@@ -45,7 +45,7 @@ Use route context when the task is page-scoped:
 }
 ```
 
-The response returns the route, page, shell, composed patterns, components, tokens, local rules, behavior-obligation local rules, style bridge mappings, findings, evidence, provenance, and ranked nodes. Ranking combines deterministic weighted traversal, local personalized PageRank, and task-text boosts so central nodes and task-relevant nodes both rise.
+The response preserves the route, page, shell, composed patterns, components, tokens, local rules, behavior-obligation local rules, style bridge mappings, findings, evidence, provenance, and ranked nodes expected by existing integrations. CLI JSON identifies the canonical source with `taskCapsuleVersion: "task-capsule.v1"`; MCP uses `task_capsule_version: "task-capsule.v1"`. The capsule is not duplicated as a nested payload. Ranking combines deterministic weighted traversal, local personalized PageRank, and task-text boosts so central nodes and task-relevant nodes both rise.
 
 CLI equivalent:
 
@@ -168,7 +168,7 @@ Use `compare_to` when the agent needs the diff between snapshots:
 }
 ```
 
-This is the temporal foundation for proving whether an AI edit introduced, resolved, or moved drift.
+This is graph-local temporal evidence. `GovernanceDeltaV1` composes it with a Git comparison base, compatible health baseline, stable finding occurrences, contract/content/source identities, and evidence freshness. Findings are partitioned into new, inherited, resolved, and unclassified; incomplete or incompatible evidence yields `not_proven` rather than an empty delta. Request that report explicitly with `decantr ci --report-version v3 --since <ref> --json`.
 
 ## Repair Plans
 

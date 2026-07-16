@@ -1,17 +1,17 @@
-import { readdirSync, readFileSync } from 'fs';
-import { basename, join } from 'path';
+import { readdirSync, readFileSync } from 'node:fs';
+import { basename, join } from 'node:path';
 import Ajv2020 from 'ajv/dist/2020.js';
-import {
-  CONTENT_DIRECTORIES,
-  DIRECTORY_TO_SCHEMA_URL,
-  SCHEMA_FILES,
-  isIgnoredLocalContentFile,
-} from './scripts/content-contract.js';
 import {
   CERTIFICATION_TIERS,
   getContentCertification,
   lintDangerousScaffoldingPolicy,
 } from './scripts/content-certification.js';
+import {
+  CONTENT_DIRECTORIES,
+  DIRECTORY_TO_SCHEMA_URL,
+  isIgnoredLocalContentFile,
+  SCHEMA_FILES,
+} from './scripts/content-contract.js';
 
 let errors = 0;
 let warnings = 0;
@@ -42,8 +42,8 @@ let blueprintIds = new Set();
 try {
   blueprintIds = new Set(
     readdirSync('blueprints')
-      .filter(file => file.endsWith('.json') && !isIgnoredLocalContentFile(file))
-      .map(file => basename(file, '.json')),
+      .filter((file) => file.endsWith('.json') && !isIgnoredLocalContentFile(file))
+      .map((file) => basename(file, '.json')),
   );
 } catch {
   blueprintIds = new Set();
@@ -79,28 +79,39 @@ function isRecord(value) {
 }
 
 function isNonEmptyStringArray(value) {
-  return Array.isArray(value) && value.every(item => typeof item === 'string' && item.trim().length > 0);
+  return (
+    Array.isArray(value) &&
+    value.every((item) => typeof item === 'string' && item.trim().length > 0)
+  );
 }
 
 function isRecordOfNonEmptyStrings(value) {
-  return isRecord(value) && Object.values(value).every(item => typeof item === 'string' && item.trim().length > 0);
+  return (
+    isRecord(value) &&
+    Object.values(value).every((item) => typeof item === 'string' && item.trim().length > 0)
+  );
 }
 
 function isDependencyMap(value) {
-  return isRecord(value) && Object.values(value).every(group => isRecordOfNonEmptyStrings(group));
+  return isRecord(value) && Object.values(value).every((group) => isRecordOfNonEmptyStrings(group));
 }
 
 function isPatternReference(value) {
-  return typeof value === 'string'
-    || (isRecord(value) && typeof value.pattern === 'string' && value.pattern.trim().length > 0);
+  return (
+    typeof value === 'string' ||
+    (isRecord(value) && typeof value.pattern === 'string' && value.pattern.trim().length > 0)
+  );
 }
 
 function isLayoutGroup(value) {
-  return isRecord(value)
-    && Array.isArray(value.cols)
-    && value.cols.every(item => isPatternReference(item))
-    && (value.at === undefined || (typeof value.at === 'string' && value.at.trim().length > 0))
-    && (value.span === undefined || (isRecord(value.span) && Object.values(value.span).every(item => typeof item === 'number')));
+  return (
+    isRecord(value) &&
+    Array.isArray(value.cols) &&
+    value.cols.every((item) => isPatternReference(item)) &&
+    (value.at === undefined || (typeof value.at === 'string' && value.at.trim().length > 0)) &&
+    (value.span === undefined ||
+      (isRecord(value.span) && Object.values(value.span).every((item) => typeof item === 'number')))
+  );
 }
 
 function isLayoutItem(value) {
@@ -114,7 +125,7 @@ function isNonEmptyString(value) {
 for (const type of CONTENT_DIRECTORIES) {
   let files;
   try {
-    files = readdirSync(type).filter(f => f.endsWith('.json') && !isIgnoredLocalContentFile(f));
+    files = readdirSync(type).filter((f) => f.endsWith('.json') && !isIgnoredLocalContentFile(f));
   } catch {
     console.log(`  Warning: directory ${type}/ not found`);
     continue;
@@ -147,29 +158,42 @@ for (const type of CONTENT_DIRECTORIES) {
 
       const certification = getContentCertification(content);
       if (!CERTIFICATION_TIERS.includes(certification.tier)) {
-        fail(`${type}/${file}: certification.tier must be one of: ${CERTIFICATION_TIERS.join(', ')}`);
+        fail(
+          `${type}/${file}: certification.tier must be one of: ${CERTIFICATION_TIERS.join(', ')}`,
+        );
       }
       const policyFindings = lintDangerousScaffoldingPolicy(content);
       if (policyFindings.length > 0 && certification.tier === 'enterprise') {
-        fail(`${type}/${file}: enterprise content contains unsafe scaffolding policy: ${policyFindings.join(', ')}`);
+        fail(
+          `${type}/${file}: enterprise content contains unsafe scaffolding policy: ${policyFindings.join(', ')}`,
+        );
       } else if (policyFindings.length > 0) {
         warn(`${type}/${file}: non-enterprise policy finding(s): ${policyFindings.join(', ')}`);
       }
 
       if (type === 'archetypes') {
         if (!content.role || !validRoles.includes(content.role)) {
-          fail(`${type}/${file}: missing or invalid role (must be one of: ${validRoles.join(', ')})`);
+          fail(
+            `${type}/${file}: missing or invalid role (must be one of: ${validRoles.join(', ')})`,
+          );
         }
 
-        if (!Array.isArray(content.pages) || content.pages.some(page => !isRecord(page)
-          || typeof page.id !== 'string'
-          || page.id.trim().length === 0
-          || typeof page.shell !== 'string'
-          || page.shell.trim().length === 0
-          || !Array.isArray(page.default_layout)
-          || page.default_layout.some(item => !isLayoutItem(item))
-          || (page.patterns !== undefined && (!Array.isArray(page.patterns) || page.patterns.some(item => !isPatternReference(item))))
-        )) {
+        if (
+          !Array.isArray(content.pages) ||
+          content.pages.some(
+            (page) =>
+              !isRecord(page) ||
+              typeof page.id !== 'string' ||
+              page.id.trim().length === 0 ||
+              typeof page.shell !== 'string' ||
+              page.shell.trim().length === 0 ||
+              !Array.isArray(page.default_layout) ||
+              page.default_layout.some((item) => !isLayoutItem(item)) ||
+              (page.patterns !== undefined &&
+                (!Array.isArray(page.patterns) ||
+                  page.patterns.some((item) => !isPatternReference(item)))),
+          )
+        ) {
           fail(`${type}/${file}: pages must define id, shell, and valid pattern/layout references`);
         }
 
@@ -206,7 +230,9 @@ for (const type of CONTENT_DIRECTORIES) {
                 continue;
               }
               if (!isNonEmptyStringArray(value)) {
-                fail(`${type}/${file}: suggested_theme.${key} must be an array of non-empty strings`);
+                fail(
+                  `${type}/${file}: suggested_theme.${key} must be an array of non-empty strings`,
+                );
               }
             }
           }
@@ -226,24 +252,39 @@ for (const type of CONTENT_DIRECTORIES) {
           fail(`${type}/${file}: blueprint_portfolio is required`);
         } else {
           if (!BLUEPRINT_PORTFOLIO_VISIBILITIES.includes(portfolio.visibility)) {
-            fail(`${type}/${file}: blueprint_portfolio.visibility must be one of: ${BLUEPRINT_PORTFOLIO_VISIBILITIES.join(', ')}`);
+            fail(
+              `${type}/${file}: blueprint_portfolio.visibility must be one of: ${BLUEPRINT_PORTFOLIO_VISIBILITIES.join(', ')}`,
+            );
           }
           if (!BLUEPRINT_PORTFOLIO_MATURITIES.includes(portfolio.maturity)) {
-            fail(`${type}/${file}: blueprint_portfolio.maturity must be one of: ${BLUEPRINT_PORTFOLIO_MATURITIES.join(', ')}`);
+            fail(
+              `${type}/${file}: blueprint_portfolio.maturity must be one of: ${BLUEPRINT_PORTFOLIO_MATURITIES.join(', ')}`,
+            );
           }
           if (!isNonEmptyString(portfolio.rationale)) {
             fail(`${type}/${file}: blueprint_portfolio.rationale must be a non-empty string`);
           }
 
           const alternative = portfolio.recommended_alternative;
-          if ((portfolio.visibility === 'hidden' || portfolio.maturity === 'fold-candidate' || portfolio.maturity === 'legacy-hidden') && !isNonEmptyString(alternative)) {
-            fail(`${type}/${file}: blueprint_portfolio.recommended_alternative is required for hidden, fold-candidate, or legacy-hidden blueprints`);
+          if (
+            (portfolio.visibility === 'hidden' ||
+              portfolio.maturity === 'fold-candidate' ||
+              portfolio.maturity === 'legacy-hidden') &&
+            !isNonEmptyString(alternative)
+          ) {
+            fail(
+              `${type}/${file}: blueprint_portfolio.recommended_alternative is required for hidden, fold-candidate, or legacy-hidden blueprints`,
+            );
           }
           if (isNonEmptyString(alternative)) {
             if (alternative === content.id) {
-              fail(`${type}/${file}: blueprint_portfolio.recommended_alternative must not point to itself`);
+              fail(
+                `${type}/${file}: blueprint_portfolio.recommended_alternative must not point to itself`,
+              );
             } else if (!blueprintIds.has(alternative)) {
-              fail(`${type}/${file}: blueprint_portfolio.recommended_alternative must point to an existing blueprint id`);
+              fail(
+                `${type}/${file}: blueprint_portfolio.recommended_alternative must point to an existing blueprint id`,
+              );
             }
           }
 
@@ -252,24 +293,38 @@ for (const type of CONTENT_DIRECTORIES) {
             fail(`${type}/${file}: blueprint_portfolio.artifact is required`);
           } else {
             if (!BLUEPRINT_ARTIFACT_STATUSES.includes(artifact.status)) {
-              fail(`${type}/${file}: blueprint_portfolio.artifact.status must be one of: ${BLUEPRINT_ARTIFACT_STATUSES.join(', ')}`);
+              fail(
+                `${type}/${file}: blueprint_portfolio.artifact.status must be one of: ${BLUEPRINT_ARTIFACT_STATUSES.join(', ')}`,
+              );
             }
             if (artifact.showcase !== undefined && !isNonEmptyString(artifact.showcase)) {
-              fail(`${type}/${file}: blueprint_portfolio.artifact.showcase must be a non-empty string when present`);
+              fail(
+                `${type}/${file}: blueprint_portfolio.artifact.showcase must be a non-empty string when present`,
+              );
             }
             if (artifact.notes !== undefined && !isNonEmptyString(artifact.notes)) {
-              fail(`${type}/${file}: blueprint_portfolio.artifact.notes must be a non-empty string when present`);
+              fail(
+                `${type}/${file}: blueprint_portfolio.artifact.notes must be a non-empty string when present`,
+              );
             }
             if (artifact.status === 'certified' && portfolio.maturity !== 'certified-flagship') {
-              fail(`${type}/${file}: blueprint_portfolio.artifact.status=certified requires maturity=certified-flagship`);
+              fail(
+                `${type}/${file}: blueprint_portfolio.artifact.status=certified requires maturity=certified-flagship`,
+              );
             }
             if (portfolio.maturity === 'certified-flagship' && artifact.status !== 'certified') {
-              fail(`${type}/${file}: blueprint_portfolio.maturity=certified-flagship requires artifact.status=certified`);
+              fail(
+                `${type}/${file}: blueprint_portfolio.maturity=certified-flagship requires artifact.status=certified`,
+              );
             }
           }
         }
 
-        if (!isRecord(content.theme) || typeof content.theme.id !== 'string' || content.theme.id.trim().length === 0) {
+        if (
+          !isRecord(content.theme) ||
+          typeof content.theme.id !== 'string' ||
+          content.theme.id.trim().length === 0
+        ) {
           fail(`${type}/${file}: theme.id is required`);
         } else if (Object.hasOwn(content.theme, 'style')) {
           fail(`${type}/${file}: theme.style is legacy; use theme.id`);
@@ -279,17 +334,25 @@ for (const type of CONTENT_DIRECTORIES) {
           fail(`${type}/${file}: routes must be an object`);
         }
 
-        if (content.compose !== undefined && (!Array.isArray(content.compose) || content.compose.some(entry => !(
-          typeof entry === 'string'
-          || (isRecord(entry)
-            && typeof entry.archetype === 'string'
-            && entry.archetype.trim().length > 0
-            && typeof entry.prefix === 'string'
-            && entry.prefix.trim().length > 0
-            && (entry.role === undefined || validRoles.includes(entry.role))
-          )
-        )))) {
-          fail(`${type}/${file}: compose entries must be strings or { archetype, prefix, role? } objects`);
+        if (
+          content.compose !== undefined &&
+          (!Array.isArray(content.compose) ||
+            content.compose.some(
+              (entry) =>
+                !(
+                  typeof entry === 'string' ||
+                  (isRecord(entry) &&
+                    typeof entry.archetype === 'string' &&
+                    entry.archetype.trim().length > 0 &&
+                    typeof entry.prefix === 'string' &&
+                    entry.prefix.trim().length > 0 &&
+                    (entry.role === undefined || validRoles.includes(entry.role)))
+                ),
+            ))
+        ) {
+          fail(
+            `${type}/${file}: compose entries must be strings or { archetype, prefix, role? } objects`,
+          );
         }
 
         if (content.overrides !== undefined) {
@@ -297,10 +360,16 @@ for (const type of CONTENT_DIRECTORIES) {
           if (!isRecord(overrides)) {
             fail(`${type}/${file}: overrides must be an object`);
           } else {
-            if (overrides.features_add !== undefined && !isNonEmptyStringArray(overrides.features_add)) {
+            if (
+              overrides.features_add !== undefined &&
+              !isNonEmptyStringArray(overrides.features_add)
+            ) {
               fail(`${type}/${file}: overrides.features_add must be an array of non-empty strings`);
             }
-            if (overrides.features_remove !== undefined && !Array.isArray(overrides.features_remove)) {
+            if (
+              overrides.features_remove !== undefined &&
+              !Array.isArray(overrides.features_remove)
+            ) {
               fail(`${type}/${file}: overrides.features_remove must be an array`);
             }
             if (overrides.pages_remove !== undefined && !Array.isArray(overrides.pages_remove)) {
@@ -326,14 +395,24 @@ for (const type of CONTENT_DIRECTORIES) {
               typeof navigation.command_palette !== 'boolean' &&
               !isRecord(navigation.command_palette)
             ) {
-              fail(`${type}/${file}: navigation.command_palette must be a boolean or a structured contract object`);
+              fail(
+                `${type}/${file}: navigation.command_palette must be a boolean or a structured contract object`,
+              );
             }
-            if (navigation.hotkeys !== undefined && (!Array.isArray(navigation.hotkeys) || navigation.hotkeys.some(hotkey => !isRecord(hotkey)
-              || typeof hotkey.key !== 'string'
-              || hotkey.key.trim().length === 0
-              || (hotkey.route !== undefined && (typeof hotkey.route !== 'string' || hotkey.route.trim().length === 0))
-              || (hotkey.label !== undefined && (typeof hotkey.label !== 'string' || hotkey.label.trim().length === 0))
-            ))) {
+            if (
+              navigation.hotkeys !== undefined &&
+              (!Array.isArray(navigation.hotkeys) ||
+                navigation.hotkeys.some(
+                  (hotkey) =>
+                    !isRecord(hotkey) ||
+                    typeof hotkey.key !== 'string' ||
+                    hotkey.key.trim().length === 0 ||
+                    (hotkey.route !== undefined &&
+                      (typeof hotkey.route !== 'string' || hotkey.route.trim().length === 0)) ||
+                    (hotkey.label !== undefined &&
+                      (typeof hotkey.label !== 'string' || hotkey.label.trim().length === 0)),
+                ))
+            ) {
               fail(`${type}/${file}: navigation.hotkeys must contain objects with a non-empty key`);
             }
           }
@@ -347,8 +426,13 @@ for (const type of CONTENT_DIRECTORIES) {
             if (seoHints.schema_org !== undefined && !isNonEmptyStringArray(seoHints.schema_org)) {
               fail(`${type}/${file}: seo_hints.schema_org must be an array of non-empty strings`);
             }
-            if (seoHints.meta_priorities !== undefined && !isNonEmptyStringArray(seoHints.meta_priorities)) {
-              fail(`${type}/${file}: seo_hints.meta_priorities must be an array of non-empty strings`);
+            if (
+              seoHints.meta_priorities !== undefined &&
+              !isNonEmptyStringArray(seoHints.meta_priorities)
+            ) {
+              fail(
+                `${type}/${file}: seo_hints.meta_priorities must be an array of non-empty strings`,
+              );
             }
           }
         }
@@ -357,12 +441,15 @@ for (const type of CONTENT_DIRECTORIES) {
           fail(`${type}/${file}: dependencies must be an object of dependency maps`);
         }
 
-        if (content.suggested_themes !== undefined && !isNonEmptyStringArray(content.suggested_themes)) {
+        if (
+          content.suggested_themes !== undefined &&
+          !isNonEmptyStringArray(content.suggested_themes)
+        ) {
           fail(`${type}/${file}: suggested_themes must be an array of non-empty strings`);
         }
 
         const composeIds = Array.isArray(content.compose)
-          ? content.compose.map(e => typeof e === 'string' ? e : e.archetype)
+          ? content.compose.map((e) => (typeof e === 'string' ? e : e.archetype))
           : [];
         const routeEntries = isRecord(content.routes) ? Object.entries(content.routes) : [];
         for (const [path, route] of routeEntries) {
@@ -371,7 +458,9 @@ for (const type of CONTENT_DIRECTORIES) {
             continue;
           }
           if (route.archetype && !composeIds.includes(route.archetype)) {
-            fail(`${type}/${file}: route "${path}" references archetype "${route.archetype}" not in compose`);
+            fail(
+              `${type}/${file}: route "${path}" references archetype "${route.archetype}" not in compose`,
+            );
           }
         }
       }
@@ -382,7 +471,11 @@ for (const type of CONTENT_DIRECTORIES) {
         if (!content.visual_brief && !content.layout_hints) {
           warn(`${type}/${file}: missing both visual_brief and layout_hints`);
         }
-        if (!content.components || !Array.isArray(content.components) || content.components.length === 0) {
+        if (
+          !content.components ||
+          !Array.isArray(content.components) ||
+          content.components.length === 0
+        ) {
           warn(`${type}/${file}: missing or empty components array`);
         }
         if (content.presets) {
@@ -410,7 +503,9 @@ for (const type of CONTENT_DIRECTORIES) {
         if (content.palette) {
           const semanticColors = Object.keys(content.palette);
           if (semanticColors.length < 5) {
-            warn(`${type}/${file}: palette has fewer than 5 semantic colors (${semanticColors.length})`);
+            warn(
+              `${type}/${file}: palette has fewer than 5 semantic colors (${semanticColors.length})`,
+            );
           }
         }
         if (!content.decorators) {
@@ -423,7 +518,6 @@ for (const type of CONTENT_DIRECTORIES) {
           }
         }
       }
-
     } catch (e) {
       fail(`${type}/${file}: invalid JSON - ${e.message}`);
     }

@@ -1,6 +1,6 @@
 # Decantr Content Health
 
-Content Health is the local observability surface for the official Decantr content corpus. It answers: are the content files schema-valid, do blueprints and archetypes point at usable corpus records, where is generation guidance thin, and what should the content author fix first?
+Content Health is the local observability surface for the canonical official Decantr corpus in `@decantr/content`. It answers: are the content files schema-valid, do blueprints and archetypes point at usable corpus records, where is generation guidance thin, and what should the content author fix first?
 
 It is designed for `packages/content`, not customer applications. Customer applications should use [Project Health](project-health.md).
 
@@ -41,6 +41,8 @@ The report includes:
 - quality coverage for pattern visual guidance, interactions, theme decorators, blueprint personality, blueprint voice, and archetype page briefs
 - AI-ready remediation prompts and recommended commands
 
+Decantr 3.9 also treats content identity and provenance as content-owned contracts. Resolved official guidance carries namespace/type/id identity, item version when present, deterministic `sha256` digest, origin, and `resolvedFrom` source. The same official item version should resolve to the same identity/digest online or offline. `@decantr/registry` re-exports content-owned behavior for compatibility; it is not a second corpus or schema owner.
+
 Hard release-blocking issues are errors. Softer coverage gaps, such as missing concrete pattern files for semantic archetype layout names, are warnings so official content can keep expressive layout vocabulary while still making coverage debt visible.
 
 ## CI
@@ -64,7 +66,7 @@ Example GitHub Actions step after the CLI version containing Content Health is p
 
 Content Health is local and does not call the hosted API by default. It tells you whether the corpus is internally healthy before package or API deployment.
 
-Live registry drift and sync-to-registry workflows are retired in Decantr 3.8. The content API should be rebuilt from the `@decantr/content` package, so old drift assumptions should fail during package, build, and deployment checks instead of through a separate publishing lane.
+Live registry drift and sync-to-registry workflows remain retired in Decantr 3.9. The content API is rebuilt from `@decantr/content`, so package, schema parity, packed-facade, build, and deployment checks own drift detection instead of a separate publishing lane.
 
 ## Relationship To Telemetry
 

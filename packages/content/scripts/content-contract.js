@@ -1,10 +1,4 @@
-export const CONTENT_DIRECTORIES = [
-  'patterns',
-  'themes',
-  'blueprints',
-  'archetypes',
-  'shells',
-];
+export const CONTENT_DIRECTORIES = ['patterns', 'themes', 'blueprints', 'archetypes', 'shells'];
 
 export const DIRECTORY_TO_CONTENT_TYPE = {
   patterns: 'pattern',

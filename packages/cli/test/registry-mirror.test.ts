@@ -24,9 +24,9 @@ const mockGetContent = vi.fn().mockImplementation((_type: string, _ns: string, s
   });
 });
 
-vi.mock('@decantr/registry', () => ({
+vi.mock('@decantr/content', () => ({
   API_CONTENT_TYPES: ['patterns', 'themes', 'blueprints', 'archetypes', 'shells'],
-  RegistryAPIClient: vi.fn().mockImplementation(function RegistryAPIClient() {
+  ContentAPIClient: vi.fn().mockImplementation(function ContentAPIClient() {
     return {
       checkHealth: mockCheckHealth,
       listContent: mockListContent,

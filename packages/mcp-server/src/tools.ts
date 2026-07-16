@@ -1,9 +1,22 @@
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import {
+  type ArchetypeRole,
+  buildContentRef,
+  type ComposeEntry,
+  type ContentIntelligenceSource,
+  getContentRecord,
+  isContentIntelligenceSource,
+  type Pattern,
+  patternToDiscoveryCandidate,
+  rankPatternCandidates,
+  resolvePatternPreset,
+} from '@decantr/content';
+import {
+  buildChangedFileGraphImpact,
   buildGraphImpactContext,
   buildGraphRouteContext,
   createMemoryGraphStore,
@@ -25,25 +38,19 @@ import {
 } from '@decantr/core';
 import type { BlueprintPage, EssenceFile, EssenceV4, GuardViolation } from '@decantr/essence-spec';
 import { evaluateGuard, isV4, validateEssence } from '@decantr/essence-spec';
-import type {
-  ArchetypeRole,
-  ComposeEntry,
-  ContentIntelligenceSource,
-  Pattern,
-} from '@decantr/registry';
-import {
-  isContentIntelligenceSource,
-  patternToDiscoveryCandidate,
-  rankPatternCandidates,
-  resolvePatternPreset,
-} from '@decantr/registry';
 import {
   anchorFindingsToGraph,
   buildProjectHealthRepairPlan,
   type ContractAssertion,
+  type CreateTaskCapsuleV1Input,
+  canonicalJsonStringify,
+  canonicalUtf8Bytes,
   createAuthorityResolution,
   createEvidenceTier,
   createLoopReadiness,
+  createProjectAdoptionTruthV1,
+  createStableProjectIdentityV1,
+  createTaskCapsuleV1,
   deriveVerificationDiagnostic,
   discoverProject,
   type EvidenceBundle,
@@ -55,6 +62,11 @@ import {
   type ProjectHealthFindingSource,
   type ProjectHealthReport,
   type ProjectHealthStatus,
+  TASK_CAPSULE_TOKEN_ESTIMATE_BYTES_PER_TOKEN,
+  type TaskCapsuleAuthorityLane,
+  type TaskCapsuleFindingV1,
+  type TaskCapsuleOfficialGuidanceV1,
+  type TaskCapsuleReadTargetV1,
   type VerificationFinding,
   type VerificationRepairAction,
   type VerificationSeverity,
@@ -119,6 +131,66 @@ interface PackManifest {
   sections: Array<PackManifestEntry & { pageIds: string[] }>;
   pages: Array<PackManifestEntry & { sectionId: string | null; sectionRole: string | null }>;
   mutations?: Array<PackManifestEntry & { mutationType: string }>;
+}
+
+interface LocalContextPack {
+  markdownPath: string | null;
+  jsonPath: string | null;
+  markdown: string | null;
+  json: unknown | null;
+}
+
+function isContainedPath(parent: string, candidate: string): boolean {
+  const relativePath = relative(parent, candidate).replace(/\\/g, '/');
+  return (
+    relativePath.length > 0 &&
+    relativePath !== '..' &&
+    !relativePath.startsWith('../') &&
+    !isAbsolute(relativePath)
+  );
+}
+
+function existingContextFile(
+  contextDir: string,
+  reference: string | null | undefined,
+): string | null {
+  if (!reference || isAbsolute(reference)) return null;
+  const contextRoot = resolve(contextDir);
+  const candidate = resolve(contextRoot, reference);
+  if (!isContainedPath(contextRoot, candidate)) return null;
+
+  try {
+    if (!statSync(candidate).isFile()) return null;
+    const realContextRoot = realpathSync(contextRoot);
+    const realCandidate = realpathSync(candidate);
+    return isContainedPath(realContextRoot, realCandidate) ? candidate : null;
+  } catch {
+    return null;
+  }
+}
+
+function readLocalContextPack(
+  contextDir: string,
+  entry: PackManifestEntry | null | undefined,
+): LocalContextPack {
+  let markdownPath = existingContextFile(contextDir, entry?.markdown);
+  let markdown: string | null = null;
+  if (markdownPath) {
+    try {
+      markdown = readFileSync(markdownPath, 'utf-8');
+    } catch {
+      markdownPath = null;
+    }
+  }
+  let jsonPath = existingContextFile(contextDir, entry?.json);
+  const json = jsonPath ? readJsonIfExists<unknown>(jsonPath) : null;
+  if (json === null) jsonPath = null;
+  return {
+    markdownPath,
+    jsonPath,
+    markdown,
+    json,
+  };
 }
 
 function readJsonIfExists<T>(path: string): T | null {
@@ -886,17 +958,12 @@ function buildTaskTypedGraphContext(
   const limitedRouteContext = routeContext
     ? limitGraphSubgraph(routeContext.nodes, routeContext.edges, 120)
     : null;
-  const changedFileNodeIds = [
-    ...new Set(
-      changedFiles
-        .map((file) => graphSourceNodeIdForFile(projectRoot, snapshot, file))
-        .filter((nodeId): nodeId is string => Boolean(nodeId)),
-    ),
-  ];
-  const changedFileImpact =
-    changedFileNodeIds.length > 0
-      ? buildGraphImpactContext(snapshot, changedFileNodeIds, { task, limit: 120 })
-      : null;
+  const changedFileResolution = buildChangedFileGraphImpact(snapshot, changedFiles, {
+    task,
+    limit: 120,
+  });
+  const changedFileNodeIds = changedFileResolution.sourceNodeIds;
+  const changedFileImpact = changedFileResolution.context;
   const limitedChangedFileImpact = changedFileImpact
     ? limitGraphSubgraph(changedFileImpact.nodes, changedFileImpact.edges, 120)
     : null;
@@ -941,9 +1008,7 @@ function buildTaskTypedGraphContext(
         ? {
             changed_files: changedFiles.slice(0, 40),
             resolved_node_ids: changedFileNodeIds,
-            missing_files: changedFiles
-              .filter((file) => !changedFileNodeIds.includes(`src:${file}`))
-              .slice(0, 40),
+            missing_files: changedFileResolution.unresolvedFiles.slice(0, 40),
             impact: changedFileImpact
               ? {
                   ranking: changedFileImpact.ranking,
@@ -1036,7 +1101,18 @@ function stringArray(value: unknown): string[] {
     : [];
 }
 
-function behaviorObligationSummary(pattern: {
+function isRecordValue(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function isOptionalMcpStringArray(value: unknown): boolean {
+  return (
+    value === undefined ||
+    (Array.isArray(value) && value.every((entry) => typeof entry === 'string'))
+  );
+}
+
+type McpTaskLocalPattern = {
   id?: string;
   role?: string;
   componentPaths?: string[];
@@ -1049,7 +1125,127 @@ function behaviorObligationSummary(pattern: {
     obligations?: unknown;
     test_hints?: unknown;
   };
-}) {
+};
+
+type McpTaskLocalPatternFile = {
+  version: number;
+  status: 'accepted';
+  patterns: McpTaskLocalPattern[];
+};
+
+type McpTaskLocalRuleFile = {
+  version: number;
+  status: 'accepted';
+  rules: Array<{ id: string; enabled: boolean; severity: string; description: string }>;
+};
+
+type McpTaskStyleBridgeFile = {
+  version: 1 | 2;
+  status: 'accepted';
+  styling?: { approach?: string; themeModes?: string[] };
+  mappings: Array<{
+    id: string;
+    label?: string;
+    tokenHints?: string[];
+    classHints?: string[];
+    guardrails?: string[];
+  }>;
+};
+
+function hasValidMcpBehaviorObligations(value: unknown): boolean {
+  if (value === undefined) return true;
+  if (!isRecordValue(value) || !Array.isArray(value.obligations)) return false;
+  if (
+    !isOptionalMcpStringArray(value.modalities) ||
+    !isOptionalMcpStringArray(value.states) ||
+    !isOptionalMcpStringArray(value.risk_profile) ||
+    !isOptionalMcpStringArray(value.test_hints)
+  ) {
+    return false;
+  }
+  return value.obligations.every(
+    (obligation) =>
+      isRecordValue(obligation) &&
+      typeof obligation.id === 'string' &&
+      obligation.id.trim().length > 0 &&
+      (obligation.label === undefined || typeof obligation.label === 'string') &&
+      (obligation.severity === undefined ||
+        obligation.severity === 'info' ||
+        obligation.severity === 'warn' ||
+        obligation.severity === 'error') &&
+      (obligation.evidence === undefined || typeof obligation.evidence === 'string'),
+  );
+}
+
+function isAcceptedMcpLocalPatternFile(value: unknown): value is McpTaskLocalPatternFile {
+  return (
+    isRecordValue(value) &&
+    typeof value.version === 'number' &&
+    Number.isSafeInteger(value.version) &&
+    value.version > 0 &&
+    value.status === 'accepted' &&
+    Array.isArray(value.patterns) &&
+    value.patterns.every(
+      (pattern) =>
+        isRecordValue(pattern) &&
+        typeof pattern.id === 'string' &&
+        pattern.id.trim().length > 0 &&
+        isOptionalMcpStringArray(pattern.componentPaths) &&
+        hasValidMcpBehaviorObligations(pattern.behavior_obligations),
+    )
+  );
+}
+
+function isAcceptedMcpLocalRuleFile(value: unknown): value is McpTaskLocalRuleFile {
+  return (
+    isRecordValue(value) &&
+    typeof value.version === 'number' &&
+    Number.isSafeInteger(value.version) &&
+    value.version > 0 &&
+    value.status === 'accepted' &&
+    Array.isArray(value.rules) &&
+    value.rules.every(
+      (rule) =>
+        isRecordValue(rule) &&
+        typeof rule.id === 'string' &&
+        rule.id.trim().length > 0 &&
+        typeof rule.enabled === 'boolean' &&
+        (rule.severity === 'info' || rule.severity === 'warn' || rule.severity === 'error') &&
+        typeof rule.description === 'string',
+    )
+  );
+}
+
+function isAcceptedMcpStyleBridgeFile(value: unknown): value is McpTaskStyleBridgeFile {
+  if (
+    !isRecordValue(value) ||
+    (value.version !== 1 && value.version !== 2) ||
+    value.status !== 'accepted' ||
+    !Array.isArray(value.mappings)
+  ) {
+    return false;
+  }
+  if (
+    value.styling !== undefined &&
+    (!isRecordValue(value.styling) ||
+      (value.styling.approach !== undefined && typeof value.styling.approach !== 'string') ||
+      !isOptionalMcpStringArray(value.styling.themeModes))
+  ) {
+    return false;
+  }
+  return value.mappings.every(
+    (mapping) =>
+      isRecordValue(mapping) &&
+      typeof mapping.id === 'string' &&
+      mapping.id.trim().length > 0 &&
+      (mapping.label === undefined || typeof mapping.label === 'string') &&
+      isOptionalMcpStringArray(mapping.tokenHints) &&
+      isOptionalMcpStringArray(mapping.classHints) &&
+      isOptionalMcpStringArray(mapping.guardrails),
+  );
+}
+
+function behaviorObligationSummary(pattern: McpTaskLocalPattern) {
   const contract = pattern.behavior_obligations;
   if (!contract || !Array.isArray(contract.obligations)) return null;
   const obligations = contract.obligations
@@ -1085,25 +1281,12 @@ function behaviorObligationSummary(pattern: {
 }
 
 function localLawSummary(projectRoot: string) {
-  const patterns = readJsonIfExists<{
-    patterns?: Array<{
-      id?: string;
-      role?: string;
-      componentPaths?: string[];
-      behavior_obligations?: {
-        intent?: string;
-        pattern_role?: string;
-        modalities?: unknown;
-        states?: unknown;
-        risk_profile?: unknown;
-        obligations?: unknown;
-        test_hints?: unknown;
-      };
-    }>;
-  }>(join(projectRoot, '.decantr', 'local-patterns.json'));
-  const rules = readJsonIfExists<{
-    rules?: Array<{ id?: string; enabled?: boolean; severity?: string; description?: string }>;
-  }>(join(projectRoot, '.decantr', 'rules.json'));
+  const patternsValue = readJsonIfExists<unknown>(
+    join(projectRoot, '.decantr', 'local-patterns.json'),
+  );
+  const rulesValue = readJsonIfExists<unknown>(join(projectRoot, '.decantr', 'rules.json'));
+  const patterns = isAcceptedMcpLocalPatternFile(patternsValue) ? patternsValue : null;
+  const rules = isAcceptedMcpLocalRuleFile(rulesValue) ? rulesValue : null;
   const behaviorObligations =
     patterns?.patterns
       ?.map((pattern) => behaviorObligationSummary(pattern))
@@ -1113,7 +1296,7 @@ function localLawSummary(projectRoot: string) {
     patterns_path: patterns ? '.decantr/local-patterns.json' : null,
     rules_path: rules ? '.decantr/rules.json' : null,
     patterns:
-      patterns?.patterns?.map((pattern) => ({
+      patterns?.patterns.map((pattern) => ({
         id: pattern.id ?? 'unknown',
         role: pattern.role ?? null,
         component_paths: pattern.componentPaths ?? [],
@@ -1121,27 +1304,18 @@ function localLawSummary(projectRoot: string) {
       })) ?? [],
     behavior_obligations: behaviorObligations,
     rules:
-      rules?.rules?.map((rule) => ({
-        id: rule.id ?? 'unknown',
-        enabled: rule.enabled ?? false,
-        severity: rule.severity ?? 'warn',
-        description: rule.description ?? null,
+      rules?.rules.map((rule) => ({
+        id: rule.id,
+        enabled: rule.enabled,
+        severity: rule.severity,
+        description: rule.description,
       })) ?? [],
   };
 }
 
 function styleBridgeSummary(projectRoot: string) {
-  const bridge = readJsonIfExists<{
-    status?: string;
-    styling?: { approach?: string; themeModes?: string[] };
-    mappings?: Array<{
-      id?: string;
-      label?: string;
-      tokenHints?: string[];
-      classHints?: string[];
-      guardrails?: string[];
-    }>;
-  }>(join(projectRoot, '.decantr', 'style-bridge.json'));
+  const bridgeValue = readJsonIfExists<unknown>(join(projectRoot, '.decantr', 'style-bridge.json'));
+  const bridge = isAcceptedMcpStyleBridgeFile(bridgeValue) ? bridgeValue : null;
 
   return {
     path: bridge ? '.decantr/style-bridge.json' : null,
@@ -1149,9 +1323,9 @@ function styleBridgeSummary(projectRoot: string) {
     styling_approach: bridge?.styling?.approach ?? null,
     theme_modes: bridge?.styling?.themeModes ?? [],
     mappings:
-      bridge?.mappings?.map((mapping) => ({
-        id: mapping.id ?? 'unknown',
-        label: mapping.label ?? null,
+      bridge?.mappings.map((mapping) => ({
+        id: mapping.id,
+        label: mapping.label ?? mapping.id,
         token_hints: mapping.tokenHints?.slice(0, 6) ?? [],
         class_hints: mapping.classHints?.slice(0, 4) ?? [],
         guardrails: mapping.guardrails?.slice(0, 3) ?? [],
@@ -1173,11 +1347,14 @@ function taskAuthoritySummary(input: {
   task: string;
 }) {
   const hasLocalLaw = input.localLaw.patterns.length > 0 || input.localLaw.rules.length > 0;
-  const hasStyleBridge = Boolean(input.styleBridge.path) || input.adoptionMode === 'style-bridge';
+  const hasStyleBridge = input.adoptionMode === 'style-bridge' && Boolean(input.styleBridge.path);
+  const isGreenfield = Boolean(input.workflowMode?.startsWith('greenfield'));
   let lane = 'Brownfield contract-only';
   let sourceAuthority = 'Existing app is authoritative; Decantr supplies contract context.';
   let styleAuthority = 'Use the existing styling system.';
-  const activeAuthorities = ['existing source', 'Essence V4 contract'];
+  const activeAuthorities = isGreenfield
+    ? ['Essence V4 contract']
+    : ['existing source', 'Essence V4 contract'];
 
   if (input.workflowMode === 'hybrid-compose') {
     lane = 'Hybrid composition';
@@ -1193,27 +1370,46 @@ function taskAuthoritySummary(input: {
     sourceAuthority =
       'Existing app remains authoritative; Decantr intent maps through the style bridge.';
     styleAuthority = 'Use bridge tokens/classes as a mapping layer onto the app styling system.';
-    activeAuthorities.push('accepted style bridge');
   } else if (input.workflowMode === 'brownfield-attach' && hasLocalLaw) {
     lane = 'Hybrid local law';
     sourceAuthority = 'Existing app plus accepted project-owned UI law are authoritative.';
     styleAuthority = 'Use project-owned components, tokens, classes, and accepted local rules.';
   } else if (input.workflowMode?.startsWith('greenfield')) {
-    lane =
-      input.workflowMode === 'greenfield-contract-only'
-        ? 'Greenfield contract-only'
-        : 'Greenfield scaffold';
-    sourceAuthority = 'Essence V4 and generated context are authoritative.';
-    styleAuthority =
-      input.adoptionMode === 'contract-only'
-        ? 'Use the project-chosen styling system.'
-        : 'Use Decantr CSS where generated by the adapter.';
+    if (input.adoptionMode === 'style-bridge' && hasStyleBridge) {
+      lane = 'Greenfield host style bridge';
+      sourceAuthority =
+        'Essence V4 governs structure; the accepted host-owned style bridge governs styling realization.';
+      styleAuthority =
+        'Use the accepted bridge mappings onto project-owned tokens and classes; the host styling runtime remains authoritative.';
+    } else {
+      lane =
+        input.workflowMode === 'greenfield-contract-only'
+          ? 'Greenfield contract-only'
+          : 'Greenfield scaffold';
+      sourceAuthority = 'Essence V4 and generated context are authoritative.';
+      styleAuthority =
+        input.adoptionMode === 'decantr-css'
+          ? 'Use the explicitly adopted Decantr CSS runtime where generated by the adapter.'
+          : 'Use the project-chosen styling system.';
+    }
   }
 
   if (hasLocalLaw) activeAuthorities.push('accepted local patterns/rules');
-  if (input.hasPackManifest) activeAuthorities.push('hosted execution packs as guidance');
+  if (hasStyleBridge) {
+    activeAuthorities.push(
+      isGreenfield ? 'accepted host-owned style bridge' : 'accepted style bridge',
+    );
+  }
+  if (input.hasPackManifest) activeAuthorities.push('execution packs as advisory guidance');
 
   const warnings: string[] = [];
+  if (input.adoptionMode === 'style-bridge' && !hasStyleBridge) {
+    warnings.push(
+      input.workflowMode?.startsWith('greenfield')
+        ? 'Style-bridge adoption mode is recorded, but no parsed, valid, accepted host-owned style bridge is available. Essence V4 and the project-chosen styling system remain authoritative.'
+        : 'Style-bridge adoption mode is recorded, but no parsed, valid, accepted style bridge is available. Production source remains the active style authority.',
+    );
+  }
   const task = input.task;
   for (const term of ['angular', 'vue', 'svelte', 'solid', 'bootstrap', 'shadcn']) {
     if (mentionsWord(task, term)) {
@@ -1240,6 +1436,165 @@ function taskAuthoritySummary(input: {
       'Preserve the current workspace runtime unless the task is explicitly a reviewed migration or isolated integration plan.',
     warnings,
   };
+}
+
+const MCP_TASK_CAPSULE_VERSION = 'task-capsule.v1' as const;
+const MCP_TASK_PAYLOAD_MAX_CANONICAL_BYTES = 12_000;
+
+function mcpTaskWorkspacePath(projectRoot: string, projectPath: string): string {
+  return displayWorkspacePath(join(projectRoot, projectPath));
+}
+
+function mcpTaskContentGuidance(patternIds: string[]): TaskCapsuleOfficialGuidanceV1[] {
+  return [...new Set(patternIds)].flatMap((id, index) => {
+    const record = getContentRecord('pattern', id);
+    if (!record) return [];
+    const ref = buildContentRef({
+      namespace: record.namespace,
+      type: record.type,
+      id: record.id,
+      version: record.version,
+      data: record.data,
+      origin: 'official',
+      resolvedFrom: 'installed-package',
+    });
+    const description = record.data.description;
+    return [
+      {
+        identity: ref.identity,
+        version: ref.version,
+        digest: ref.digest,
+        origin: ref.origin,
+        resolvedFrom: ref.resolvedFrom,
+        summary:
+          typeof description === 'string' && description.trim()
+            ? description.trim()
+            : `Official ${record.type} guidance for ${record.id}.`,
+        rank: index + 1,
+        required: false,
+      },
+    ];
+  });
+}
+
+function mcpTaskGraphFindings(nodes: GraphNode[]): TaskCapsuleFindingV1[] {
+  return nodes
+    .filter((node) => node.type === 'Finding')
+    .map((node) => {
+      const severityValue = graphPayloadString(node.payload, 'severity');
+      const severity =
+        severityValue === 'error' || severityValue === 'warn' || severityValue === 'info'
+          ? severityValue
+          : 'warn';
+      const code = graphPayloadString(node.payload, 'code') ?? node.id;
+      return {
+        code,
+        severity,
+        repairId:
+          graphPayloadString(node.payload, 'repair_id') ??
+          graphPayloadString(node.payload, 'repair_plan_id') ??
+          null,
+        graphNodeId: graphPayloadString(node.payload, 'anchored_at') ?? node.id,
+        blocking: severity === 'error',
+        summary: graphPayloadString(node.payload, 'message') ?? code,
+      };
+    });
+}
+
+function trimMcpTaskCompatibilityPayload(payload: Record<string, unknown>): number {
+  const discovery = payload.discovery as
+    | {
+        project?: { evidence?: unknown[] };
+        routes?: { taskable_routes?: unknown[]; signals?: unknown[] };
+        components?: { directories?: unknown[]; evidence?: unknown[]; limitations?: unknown[] };
+        styling?: { theme_signals?: unknown[] };
+        assistant?: { rule_files?: unknown[] };
+        limitations?: unknown[];
+      }
+    | undefined;
+  const localLaw = payload.local_law as
+    | { patterns?: unknown[]; behavior_obligations?: unknown[]; rules?: unknown[] }
+    | undefined;
+  const styleBridge = payload.style_bridge as { mappings?: unknown[] } | undefined;
+  const health = payload.health_evidence as
+    | {
+        added_findings?: unknown[];
+        resolved_findings?: unknown[];
+        changed_routes?: unknown[];
+        changed_screenshots?: unknown[];
+        contract_drift?: unknown[];
+      }
+    | undefined;
+  const theme = payload.theme_inventory as { modes?: unknown[]; variants?: unknown[] } | undefined;
+  const typedGraph = payload.typed_graph as
+    | {
+        stale_sources?: unknown[];
+        route_context?: { ranked?: unknown[]; nodes?: unknown[]; edges?: unknown[] } | null;
+        changed_file_context?: {
+          impact?: { ranked?: unknown[]; nodes?: unknown[]; edges?: unknown[] } | null;
+        } | null;
+      }
+    | undefined;
+  const loop = payload.loop as
+    | { maker?: { instructions?: unknown[] }; checker?: { instructions?: unknown[] } }
+    | undefined;
+  const removable = [
+    discovery?.project?.evidence,
+    discovery?.routes?.taskable_routes,
+    discovery?.routes?.signals,
+    discovery?.components?.directories,
+    discovery?.components?.evidence,
+    discovery?.components?.limitations,
+    discovery?.styling?.theme_signals,
+    discovery?.assistant?.rule_files,
+    discovery?.limitations,
+    payload.directives,
+    payload.patterns,
+    payload.ranked_patterns,
+    payload.shared_components,
+    localLaw?.patterns,
+    localLaw?.behavior_obligations,
+    localLaw?.rules,
+    styleBridge?.mappings,
+    health?.added_findings,
+    health?.resolved_findings,
+    health?.changed_routes,
+    health?.changed_screenshots,
+    health?.contract_drift,
+    theme?.modes,
+    theme?.variants,
+    typedGraph?.stale_sources,
+    typedGraph?.route_context?.ranked,
+    typedGraph?.route_context?.nodes,
+    typedGraph?.route_context?.edges,
+    typedGraph?.changed_file_context?.impact?.ranked,
+    typedGraph?.changed_file_context?.impact?.nodes,
+    typedGraph?.changed_file_context?.impact?.edges,
+    loop?.maker?.instructions,
+    loop?.checker?.instructions,
+  ].filter((value): value is unknown[] => Array.isArray(value));
+
+  let madeProgress = true;
+  while (canonicalUtf8Bytes(payload) > MCP_TASK_PAYLOAD_MAX_CANONICAL_BYTES && madeProgress) {
+    madeProgress = false;
+    for (const list of removable) {
+      if (list.length === 0) continue;
+      list.pop();
+      madeProgress = true;
+      if (canonicalUtf8Bytes(payload) <= MCP_TASK_PAYLOAD_MAX_CANONICAL_BYTES) break;
+    }
+  }
+
+  for (const key of ['page_pack_excerpt', 'section_context'] as const) {
+    while (
+      canonicalUtf8Bytes(payload) > MCP_TASK_PAYLOAD_MAX_CANONICAL_BYTES &&
+      typeof payload[key] === 'string' &&
+      payload[key].length > 256
+    ) {
+      payload[key] = payload[key].slice(0, Math.max(256, Math.floor(payload[key].length / 2)));
+    }
+  }
+  return canonicalUtf8Bytes(payload);
 }
 
 function extractPatternIdsFromLayoutItem(item: unknown, ids: Set<string>): void {
@@ -3242,6 +3597,10 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
         }>(capsulePath);
         const graphFreshness = inspectMcpGraphFreshness(projectRoot);
         const projectConfig = readJsonIfExists<{
+          initialized?: {
+            workflowMode?: string;
+            adoptionMode?: string;
+          };
           workflowMode?: string;
           adoptionMode?: string;
           telemetry?: boolean;
@@ -3259,10 +3618,12 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
           existsSync(capsulePath);
         const graphReady =
           Boolean(snapshot) && hasGraphArtifacts && graphFreshness.current === true;
+        const adoptionTruth = createProjectAdoptionTruthV1(projectRoot);
 
         return {
           source: 'local_workspace',
           project_root: displayWorkspacePath(projectRoot),
+          adoption_truth: adoptionTruth,
           discovery: mcpDiscoverySummary(projectRoot),
           essence: essence
             ? {
@@ -3294,8 +3655,10 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
               },
           project_config: {
             present: Boolean(projectConfig),
-            workflow_mode: projectConfig?.workflowMode ?? null,
-            adoption_mode: projectConfig?.adoptionMode ?? null,
+            workflow_mode:
+              projectConfig?.initialized?.workflowMode ?? projectConfig?.workflowMode ?? null,
+            adoption_mode:
+              projectConfig?.initialized?.adoptionMode ?? projectConfig?.adoptionMode ?? null,
             telemetry_enabled: projectConfig?.telemetry === true,
           },
           context: {
@@ -3894,7 +4257,8 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
     }
 
     case 'decantr_get_scaffold_context': {
-      const contextDir = join(process.cwd(), '.decantr', 'context');
+      const projectRoot = graphProjectRoot(args);
+      const contextDir = join(projectRoot, '.decantr', 'context');
       const manifestPath = join(contextDir, 'pack-manifest.json');
       const scaffoldContextPath = join(contextDir, 'scaffold.md');
       const taskContextPath = join(contextDir, 'task-scaffold.md');
@@ -3991,25 +4355,38 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
         }
       }
 
+      const scaffoldPack = readLocalContextPack(
+        contextDir,
+        manifest?.scaffold ?? {
+          id: 'scaffold',
+          markdown: 'scaffold-pack.md',
+          json: 'scaffold-pack.json',
+        },
+      );
+      const reviewPack = readLocalContextPack(
+        contextDir,
+        manifest?.review ?? {
+          id: 'review',
+          markdown: 'review-pack.md',
+          json: 'review-pack.json',
+        },
+      );
+      const scaffoldNarrativePath = existingContextFile(contextDir, 'scaffold.md');
+      const taskNarrativePath = existingContextFile(contextDir, 'task-scaffold.md');
+
       return {
         source: 'local' as PackSource,
-        task_context: existsSync(taskContextPath) ? readFileSync(taskContextPath, 'utf-8') : null,
-        scaffold_context: existsSync(scaffoldContextPath)
-          ? readFileSync(scaffoldContextPath, 'utf-8')
-          : existsSync(packMarkdownPath)
-            ? readFileSync(packMarkdownPath, 'utf-8')
-            : null,
+        task_context: taskNarrativePath ? readFileSync(taskNarrativePath, 'utf-8') : null,
+        scaffold_context: scaffoldNarrativePath
+          ? readFileSync(scaffoldNarrativePath, 'utf-8')
+          : scaffoldPack.markdown,
         execution_pack: {
-          markdown: existsSync(packMarkdownPath) ? readFileSync(packMarkdownPath, 'utf-8') : null,
-          json: existsSync(packJsonPath) ? JSON.parse(readFileSync(packJsonPath, 'utf-8')) : null,
+          markdown: scaffoldPack.markdown,
+          json: scaffoldPack.json,
         },
         review_pack: {
-          markdown: existsSync(join(contextDir, 'review-pack.md'))
-            ? readFileSync(join(contextDir, 'review-pack.md'), 'utf-8')
-            : null,
-          json: existsSync(join(contextDir, 'review-pack.json'))
-            ? JSON.parse(readFileSync(join(contextDir, 'review-pack.json'), 'utf-8'))
-            : null,
+          markdown: reviewPack.markdown,
+          json: reviewPack.json,
         },
         pack_manifest: manifest,
         available_sections:
@@ -4029,11 +4406,12 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
       const err = validateStringArg(args, 'section_id');
       if (err) return { error: err };
       const sectionId = args.section_id as string;
+      const projectRoot = graphProjectRoot(args);
 
       // Read the essence
       let essence: EssenceFile;
       try {
-        const result = await readEssenceFile();
+        const result = await readEssenceFile(join(projectRoot, 'decantr.essence.json'));
         essence = result.essence;
       } catch {
         return { error: 'No valid essence file found. Run decantr init first.' };
@@ -4059,20 +4437,24 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
         };
       }
 
-      const packBasePath = join(process.cwd(), '.decantr', 'context', `section-${sectionId}-pack`);
-      const packMarkdownPath = `${packBasePath}.md`;
-      const packJsonPath = `${packBasePath}.json`;
+      const contextDir = join(projectRoot, '.decantr', 'context');
+      const localExecutionPackFiles = readLocalContextPack(contextDir, {
+        id: sectionId,
+        markdown: `section-${sectionId}-pack.md`,
+        json: `section-${sectionId}-pack.json`,
+      });
       const localExecutionPack = {
-        markdown: existsSync(packMarkdownPath) ? readFileSync(packMarkdownPath, 'utf-8') : null,
-        json: existsSync(packJsonPath) ? JSON.parse(readFileSync(packJsonPath, 'utf-8')) : null,
+        markdown: localExecutionPackFiles.markdown,
+        json: localExecutionPackFiles.json,
       };
+      const contextPath = existingContextFile(contextDir, `section-${sectionId}.md`);
       let executionPack = localExecutionPack;
       let executionPackSource: PackSource | null = hasExecutionPackPayload(localExecutionPack)
         ? 'local'
         : null;
       let hostedFallbackError: string | null = null;
 
-      if (!executionPackSource) {
+      if (!executionPackSource && !contextPath) {
         const hosted = await loadHostedSelectedExecutionPackFallback({
           ...args,
           pack_type: 'section',
@@ -4086,8 +4468,7 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
       }
 
       // Read the section context file if it exists
-      const contextPath = join(process.cwd(), '.decantr', 'context', `section-${sectionId}.md`);
-      if (existsSync(contextPath)) {
+      if (contextPath) {
         return {
           section_id: sectionId,
           role: section.role,
@@ -4124,7 +4505,8 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
       const err = validateStringArg(args, 'page_id');
       if (err) return { error: err };
       const pageId = args.page_id as string;
-      const contextDir = join(process.cwd(), '.decantr', 'context');
+      const projectRoot = graphProjectRoot(args);
+      const contextDir = join(projectRoot, '.decantr', 'context');
       const manifestPath = join(contextDir, 'pack-manifest.json');
       let manifest: PackManifest | null = null;
       let manifestSource: PackSource | null = null;
@@ -4210,24 +4592,21 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
       let sectionEntry = resolvedPageEntry.sectionId
         ? (manifest.sections.find((section) => section.id === resolvedPageEntry.sectionId) ?? null)
         : null;
-      const pageMarkdownPath = join(contextDir, resolvedPageEntry.markdown);
-      const pageJsonPath = join(contextDir, resolvedPageEntry.json);
-      const sectionMarkdownPath = sectionEntry ? join(contextDir, sectionEntry.markdown) : null;
-      const sectionJsonPath = sectionEntry ? join(contextDir, sectionEntry.json) : null;
-      const sectionContextPath = resolvedPageEntry.sectionId
-        ? join(contextDir, `section-${resolvedPageEntry.sectionId}.md`)
-        : null;
-
-      const localPagePack = {
-        markdown: existsSync(pageMarkdownPath) ? readFileSync(pageMarkdownPath, 'utf-8') : null,
-        json: existsSync(pageJsonPath) ? JSON.parse(readFileSync(pageJsonPath, 'utf-8')) : null,
-      };
+      const localPageFiles =
+        manifestSource === 'local'
+          ? readLocalContextPack(contextDir, resolvedPageEntry)
+          : readLocalContextPack(contextDir, null);
+      const localPagePack = { markdown: localPageFiles.markdown, json: localPageFiles.json };
+      const localSectionNarrativePath =
+        manifestSource === 'local' && resolvedPageEntry.sectionId
+          ? existingContextFile(contextDir, `section-${resolvedPageEntry.sectionId}.md`)
+          : null;
       let executionPack = localPagePack;
       let executionPackSource: PackSource | null = hasExecutionPackPayload(localPagePack)
         ? 'local'
         : null;
 
-      if (!executionPackSource) {
+      if (!executionPackSource && !localSectionNarrativePath) {
         const hosted = await loadHostedPageSelection();
         if (hosted) {
           manifest = hosted.manifest as PackManifest;
@@ -4243,23 +4622,18 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
         }
       }
 
-      const localSectionPack = sectionEntry
-        ? {
-            markdown:
-              sectionMarkdownPath && existsSync(sectionMarkdownPath)
-                ? readFileSync(sectionMarkdownPath, 'utf-8')
-                : null,
-            json:
-              sectionJsonPath && existsSync(sectionJsonPath)
-                ? JSON.parse(readFileSync(sectionJsonPath, 'utf-8'))
-                : null,
-          }
+      const localSectionFiles =
+        manifestSource === 'local' && sectionEntry
+          ? readLocalContextPack(contextDir, sectionEntry)
+          : null;
+      const localSectionPack = localSectionFiles
+        ? { markdown: localSectionFiles.markdown, json: localSectionFiles.json }
         : null;
       let sectionExecutionPack = localSectionPack;
       let sectionExecutionPackSource: PackSource | null =
         localSectionPack && hasExecutionPackPayload(localSectionPack) ? 'local' : null;
 
-      if (sectionEntry && !sectionExecutionPackSource) {
+      if (sectionEntry && !sectionExecutionPackSource && !localSectionNarrativePath) {
         const hosted = await loadHostedSectionSelection(sectionEntry.id);
         if (hosted) {
           sectionExecutionPack = toHostedExecutionPackPayload(hosted.pack);
@@ -4267,9 +4641,18 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
         }
       }
 
+      const sectionContextPath =
+        manifestSource === 'local' && resolvedPageEntry.sectionId
+          ? (localSectionNarrativePath ??
+            existingContextFile(contextDir, `section-${resolvedPageEntry.sectionId}.md`))
+          : null;
+      const sectionNarrative = sectionContextPath
+        ? readFileSync(sectionContextPath, 'utf-8')
+        : null;
+
       return {
         page_id: pageId,
-        page_context: executionPack.markdown,
+        page_context: executionPack.markdown ?? sectionNarrative,
         section_id: resolvedPageEntry.sectionId,
         section_role: resolvedPageEntry.sectionRole,
         manifest_source: manifestSource,
@@ -4277,10 +4660,7 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
         section_execution_pack_source: sectionExecutionPackSource,
         execution_pack: executionPack,
         section_execution_pack: sectionExecutionPack,
-        section_context:
-          sectionContextPath && existsSync(sectionContextPath)
-            ? readFileSync(sectionContextPath, 'utf-8')
-            : (sectionExecutionPack?.markdown ?? null),
+        section_context: sectionNarrative ?? sectionExecutionPack?.markdown ?? null,
         manifest: {
           page: resolvedPageEntry,
           section: sectionEntry,
@@ -4351,20 +4731,15 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
       const manifest = readJsonIfExists<PackManifest>(join(contextDir, 'pack-manifest.json'));
       const pageManifest = manifest?.pages.find((entry) => entry.id === pageId) ?? null;
       const sectionManifest = manifest?.sections.find((entry) => entry.id === section.id) ?? null;
-      const pagePackJson = pageManifest
-        ? readJsonIfExists<unknown>(join(contextDir, pageManifest.json))
-        : null;
-      const sectionPackJson = sectionManifest
-        ? readJsonIfExists<unknown>(join(contextDir, sectionManifest.json))
-        : null;
-      const pagePackMarkdown =
-        pageManifest && existsSync(join(contextDir, pageManifest.markdown))
-          ? readFileSync(join(contextDir, pageManifest.markdown), 'utf-8')
-          : null;
-      const sectionContextPath = join(contextDir, `section-${section.id}.md`);
-      const sectionContext = existsSync(sectionContextPath)
-        ? readFileSync(sectionContextPath, 'utf-8')
-        : null;
+      const pagePack = readLocalContextPack(contextDir, pageManifest);
+      const sectionPack = readLocalContextPack(contextDir, sectionManifest);
+      const scaffoldPack = readLocalContextPack(contextDir, manifest?.scaffold);
+      const pagePackJson = pagePack.json;
+      const sectionPackJson = sectionPack.json;
+      const pagePackMarkdown = pagePack.markdown;
+      const sectionContextPath = existingContextFile(contextDir, `section-${section.id}.md`);
+      const scaffoldNarrativePath = existingContextFile(contextDir, 'scaffold.md');
+      const sectionContext = sectionContextPath ? readFileSync(sectionContextPath, 'utf-8') : null;
       const pagePackSummary = summarizePackJson(pagePackJson);
       const sectionPackSummary = summarizePackJson(sectionPackJson);
       const visualManifest = readJsonIfExists<{
@@ -4415,9 +4790,31 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
       const analysis = readJsonIfExists<{
         routes?: { routes?: Array<{ path?: string; file?: string }> };
       }>(join(projectRoot, '.decantr', 'analysis.json'));
-      const routeSourceFile = analysis?.routes?.routes?.find(
+      let routeSourceFile = analysis?.routes?.routes?.find(
         (entry) => entry.path === resolvedRoute,
       )?.file;
+      if (!routeSourceFile && resolvedRoute) {
+        const discovery = discoverProject(projectRoot);
+        routeSourceFile = discovery.routes.taskableRoutes.find(
+          (entry) => entry.path === resolvedRoute,
+        )?.file;
+      }
+      if (!routeSourceFile && resolvedRoute === '/') {
+        routeSourceFile = [
+          'src/App.tsx',
+          'src/App.jsx',
+          'src/App.vue',
+          'src/App.svelte',
+          'src/app/page.tsx',
+          'src/app/page.jsx',
+          'app/page.tsx',
+          'app/page.jsx',
+          'pages/index.tsx',
+          'pages/index.jsx',
+          'src/pages/index.tsx',
+          'src/pages/index.jsx',
+        ].find((candidate) => existsSync(join(projectRoot, candidate)));
+      }
       const patternIds = extractPagePatternIds(page);
       const ranked = rankPatternCandidates(
         {
@@ -4429,10 +4826,210 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
         patternIds.map((id) => patternToDiscoveryCandidate({ id, name: id, description: id })),
       );
       const typedGraph = buildTaskTypedGraphContext(projectRoot, resolvedRoute, task, changedFiles);
-      const verifyCommand = projectArg
-        ? `decantr verify --project ${projectArg} --brownfield --local-patterns`
-        : 'decantr verify --brownfield --local-patterns';
+      const workflowMode = projectJson?.initialized?.workflowMode;
+      const verifyCommand = workflowMode?.startsWith('greenfield')
+        ? projectArg
+          ? `decantr verify --project ${projectArg}`
+          : 'decantr verify'
+        : workflowMode === 'hybrid-compose'
+          ? projectArg
+            ? `decantr verify --project ${projectArg} --local-patterns`
+            : 'decantr verify --local-patterns'
+          : projectArg
+            ? `decantr verify --project ${projectArg} --brownfield --local-patterns`
+            : 'decantr verify --brownfield --local-patterns';
       const graphReady = Boolean(typedGraph?.route_context) && typedGraph?.current === true;
+      if (!routeSourceFile || !existsSync(join(projectRoot, routeSourceFile))) {
+        return {
+          error: `Could not prove the implementation source for ${resolvedRoute ?? pageId}. Run decantr scan and decantr graph, then retry.`,
+        };
+      }
+      const selectedAppRoot = relative(process.cwd(), projectRoot).replace(/\\/g, '/') || '.';
+      const routeImplementationPath = mcpTaskWorkspacePath(projectRoot, routeSourceFile);
+      const capsuleTargetSpecs: Array<{
+        path: string | null;
+        kind: TaskCapsuleReadTargetV1['kind'];
+        required: boolean;
+      }> = [
+        { path: routeImplementationPath, kind: 'route-implementation', required: true },
+        {
+          path: pagePack.markdownPath ? displayWorkspacePath(pagePack.markdownPath) : null,
+          kind: 'route-layout',
+          required: false,
+        },
+        {
+          path: sectionPack.markdownPath
+            ? displayWorkspacePath(sectionPack.markdownPath)
+            : sectionContextPath
+              ? displayWorkspacePath(sectionContextPath)
+              : null,
+          kind: 'route-layout',
+          required: false,
+        },
+        {
+          path: scaffoldPack.markdownPath
+            ? displayWorkspacePath(scaffoldPack.markdownPath)
+            : scaffoldNarrativePath
+              ? displayWorkspacePath(scaffoldNarrativePath)
+              : null,
+          kind: 'contract',
+          required: false,
+        },
+        {
+          path: existsSync(join(projectRoot, 'DECANTR.md'))
+            ? mcpTaskWorkspacePath(projectRoot, 'DECANTR.md')
+            : null,
+          kind: 'local-law',
+          required: false,
+        },
+        {
+          path: displayedLocalLaw.patterns_path,
+          kind: 'local-law',
+          required: false,
+        },
+        {
+          path: displayedLocalLaw.rules_path,
+          kind: 'local-law',
+          required: false,
+        },
+        {
+          path: displayedStyleBridge.path,
+          kind: 'style-bridge',
+          required: false,
+        },
+        {
+          path: typedGraph
+            ? mcpTaskWorkspacePath(projectRoot, '.decantr/graph/graph.snapshot.json')
+            : null,
+          kind: 'graph',
+          required: false,
+        },
+      ];
+      const seenCapsuleTargets = new Set<string>();
+      const capsuleReadTargets = capsuleTargetSpecs.flatMap((target) => {
+        if (!target.path || seenCapsuleTargets.has(target.path)) return [];
+        seenCapsuleTargets.add(target.path);
+        return [{ ...target, path: target.path, rank: seenCapsuleTargets.size }];
+      });
+      const contentGuidance = mcpTaskContentGuidance(patternIds);
+      const hasLocalLawAuthority = localLaw.patterns.length > 0 || localLaw.rules.length > 0;
+      const adoptionMode = projectJson?.initialized?.adoptionMode ?? null;
+      const hasStyleBridgeAuthority = adoptionMode === 'style-bridge' && Boolean(styleBridge.path);
+      const hasSelectedPackContext = Boolean(
+        pagePack.markdownPath ||
+          pagePack.jsonPath ||
+          sectionPack.markdownPath ||
+          sectionPack.jsonPath ||
+          scaffoldPack.markdownPath ||
+          scaffoldPack.jsonPath,
+      );
+      const taskAuthority = taskAuthoritySummary({
+        workflowMode: workflowMode ?? null,
+        adoptionMode,
+        localLaw,
+        styleBridge,
+        hasPackManifest: hasSelectedPackContext,
+        task,
+      });
+      const activeAuthorityLane: TaskCapsuleAuthorityLane = hasStyleBridgeAuthority
+        ? 'style-bridge'
+        : workflowMode?.startsWith('greenfield')
+          ? 'essence-contract'
+          : hasLocalLawAuthority
+            ? 'local-law'
+            : 'production-source';
+      const authorityEntries = [
+        {
+          lane: 'production-source' as const,
+          summary: taskAuthority.source_authority,
+          sourcePath: routeImplementationPath,
+        },
+        {
+          lane: 'essence-contract' as const,
+          summary: 'Essence V4 declares the governed route, page, shell, and pattern intent.',
+          sourcePath: mcpTaskWorkspacePath(projectRoot, 'decantr.essence.json'),
+        },
+        ...(hasLocalLawAuthority
+          ? [
+              {
+                lane: 'local-law' as const,
+                summary: 'Accepted project-owned patterns and rules override advisory guidance.',
+                sourcePath:
+                  localLaw.rules.length > 0
+                    ? displayedLocalLaw.rules_path
+                    : displayedLocalLaw.patterns_path,
+              },
+            ]
+          : []),
+        ...(hasStyleBridgeAuthority
+          ? [
+              {
+                lane: 'style-bridge' as const,
+                summary: taskAuthority.style_authority,
+                sourcePath: displayedStyleBridge.path,
+              },
+            ]
+          : []),
+        ...(contentGuidance.length > 0
+          ? [
+              {
+                lane: 'official-guidance' as const,
+                summary: 'Official @decantr/content records are advisory below project-owned law.',
+                sourcePath: null,
+              },
+            ]
+          : []),
+      ];
+      const routeGraphNodes =
+        typedGraph?.route_context && 'nodes' in typedGraph.route_context
+          ? typedGraph.route_context.nodes
+          : [];
+      const staleGraphPaths =
+        typedGraph?.stale_sources.map((source) => mcpTaskWorkspacePath(projectRoot, source.path)) ??
+        [];
+      if (typedGraph && !graphReady && staleGraphPaths.length === 0) {
+        staleGraphPaths.push('Graph manifest freshness could not be proven.');
+      }
+      const capsuleInput: CreateTaskCapsuleV1Input = {
+        project: {
+          identity: createStableProjectIdentityV1(projectRoot),
+          workspaceRoot: '.',
+          selectedAppRoot,
+        },
+        task: {
+          request: task || `Implement the governed ${resolvedRoute ?? pageId} route task.`,
+          route: resolvedRoute,
+        },
+        graph: {
+          snapshotId: typedGraph?.snapshot_id ?? null,
+          sourceHash: typedGraph?.source_hash ?? null,
+          freshness: graphReady ? 'fresh' : typedGraph ? 'stale' : 'missing',
+          limitations: staleGraphPaths,
+        },
+        readTargets: capsuleReadTargets,
+        authority: { activeLane: activeAuthorityLane, entries: authorityEntries },
+        impact: {
+          changedFiles: changedFiles.map((path) => mcpTaskWorkspacePath(projectRoot, path)),
+          changedRoutes,
+          nodeIds: [
+            ...(typedGraph?.changed_file_context?.resolved_node_ids ?? []),
+            ...(typedGraph?.changed_file_context?.impact?.ranked.map((node) => node.id) ?? []),
+          ],
+          unresolvedFiles:
+            typedGraph?.changed_file_context?.missing_files.map((path) =>
+              mcpTaskWorkspacePath(projectRoot, path),
+            ) ?? [],
+        },
+        findings: mcpTaskGraphFindings(routeGraphNodes),
+        contentGuidance,
+        stopConditions: [
+          'Runtime source and Decantr context disagree.',
+          'The route graph cannot resolve a source file affected by the edit.',
+          'A fix requires contract/source/local-law mutation outside the explicit workflow.',
+        ],
+        verifyCommand,
+      };
+      let capsule = createTaskCapsuleV1(capsuleInput);
       const loopState = graphReady ? 'ready_to_edit' : 'blocked_missing_graph';
       const loop = {
         $schema: LOOP_READINESS_V2_SCHEMA_URL,
@@ -4443,12 +5040,9 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
           loopState === 'ready_to_edit'
             ? 'Task context is ready for an agent edit.'
             : 'Task context is missing route graph evidence.',
-        summary: `${resolvedRoute ?? pageId} task context for ${task || 'unspecified task'}.`,
+        summary: `${resolvedRoute ?? pageId} governed task context.`,
         authority: {
-          activeLane:
-            projectJson?.initialized?.workflowMode === 'brownfield-attach'
-              ? 'production-source'
-              : 'essence-contract',
+          activeLane: capsule.authority.activeLane,
           summary:
             'Use production source first in Brownfield, accepted local law/style bridge next, Essence V4 structure after that, and official content packs as advisory.',
           stopRule:
@@ -4505,32 +5099,21 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
             'Treat advisory critique as warning-level unless runtime evidence proves a failure.',
           ],
         },
-        readTargets: [
-          routeSourceFile && existsSync(join(projectRoot, routeSourceFile))
-            ? routeSourceFile
-            : null,
-          pageManifest ? join('.decantr', 'context', pageManifest.markdown) : null,
-          sectionManifest ? join('.decantr', 'context', sectionManifest.markdown) : null,
-          '.decantr/context/scaffold.md',
-          'DECANTR.md',
-          displayedLocalLaw.patterns_path,
-          displayedLocalLaw.rules_path,
-          displayedStyleBridge.path,
-          typedGraph ? '.decantr/graph/graph.snapshot.json' : null,
-        ].filter(Boolean),
+        readTargets: capsule.readTargets.map((target) => target.path),
         graphImpact: {
-          status: graphReady ? 'ready' : typedGraph ? 'stale' : 'missing',
-          snapshotId: typedGraph?.snapshot_id ?? null,
-          sourceHash: typedGraph?.source_hash ?? null,
+          status:
+            capsule.graph.freshness === 'fresh'
+              ? 'ready'
+              : capsule.graph.freshness === 'stale'
+                ? 'stale'
+                : 'missing',
+          snapshotId: capsule.graph.snapshotId,
+          sourceHash: capsule.graph.sourceHash,
           sourceArtifactCount: typedGraph?.route_context?.summary.sourceArtifacts ?? 0,
           staleArtifacts: typedGraph?.stale_sources ?? [],
         },
-        stopConditions: [
-          'Runtime source and Decantr context disagree.',
-          'The route graph cannot resolve a source file affected by the edit.',
-          'A fix requires contract/source/local-law mutation outside the explicit workflow.',
-        ],
-        verifyCommand,
+        stopConditions: capsule.stopConditions,
+        verifyCommand: capsule.verifyCommand,
       };
 
       const compactTypedGraph = typedGraph
@@ -4542,7 +5125,7 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
             project_id: typedGraph.project_id,
             source_hash: typedGraph.source_hash,
             current: typedGraph.current,
-            stale_sources: typedGraph.stale_sources.slice(0, 12),
+            stale_sources: typedGraph.stale_sources.slice(0, 6),
             contract: typedGraph.contract,
             route_context:
               typedGraph.route_context && 'ranking' in typedGraph.route_context
@@ -4551,7 +5134,7 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
                     ranking: typedGraph.route_context.ranking,
                     summary: typedGraph.route_context.summary,
                     ids: typedGraph.route_context.ids,
-                    ranked: typedGraph.route_context.ranked.slice(0, 12),
+                    ranked: typedGraph.route_context.ranked.slice(0, 6),
                     truncated: true,
                   }
                 : typedGraph.route_context,
@@ -4565,7 +5148,7 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
                         ranking: typedGraph.changed_file_context.impact.ranking,
                         summary: typedGraph.changed_file_context.impact.summary,
                         ids: typedGraph.changed_file_context.impact.ids,
-                        ranked: typedGraph.changed_file_context.impact.ranked.slice(0, 12),
+                        ranked: typedGraph.changed_file_context.impact.ranked.slice(0, 6),
                         truncated: true,
                       }
                     : null,
@@ -4578,16 +5161,22 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
           ? displayedLocalLaw
           : {
               ...displayedLocalLaw,
-              patterns: displayedLocalLaw.patterns.slice(0, 8),
-              behavior_obligations: displayedLocalLaw.behavior_obligations.slice(0, 8),
-              rules: displayedLocalLaw.rules.slice(0, 12),
+              patterns: displayedLocalLaw.patterns.slice(0, 4),
+              behavior_obligations: displayedLocalLaw.behavior_obligations.slice(0, 4),
+              rules: displayedLocalLaw.rules.slice(0, 6),
             };
       const returnedStyleBridge =
         detail === 'full'
           ? displayedStyleBridge
-          : { ...displayedStyleBridge, mappings: displayedStyleBridge.mappings.slice(0, 8) };
+          : { ...displayedStyleBridge, mappings: displayedStyleBridge.mappings.slice(0, 4) };
 
-      return {
+      const response = {
+        task_capsule_version: MCP_TASK_CAPSULE_VERSION,
+        task_capsule_budget: capsule.budget,
+        task_capsule_truncation: capsule.truncation,
+        task_capsule_digest: `sha256:${createHash('sha256')
+          .update(canonicalJsonStringify(capsule), 'utf8')
+          .digest('hex')}`,
         response_detail: detail,
         discovery: mcpDiscoverySummary(projectRoot),
         route: resolvedRoute,
@@ -4595,17 +5184,17 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
         section_id: section.id,
         section_role: section.role,
         shell: section.shell,
-        task,
+        task: capsule.task.request,
         visual_target:
           pagePackSummary.visualTarget ??
           sectionPackSummary.visualTarget ??
           essence.dna.personality?.join('. ') ??
           null,
-        directives: pagePackSummary.directives.slice(0, detail === 'full' ? undefined : 20),
+        directives: pagePackSummary.directives.slice(0, detail === 'full' ? undefined : 8),
         patterns: (pagePackSummary.patterns.length > 0
           ? pagePackSummary.patterns
           : patternIds
-        ).slice(0, detail === 'full' ? undefined : 20),
+        ).slice(0, detail === 'full' ? undefined : 8),
         ranked_patterns: ranked.map((match) => ({
           id: match.candidate.slug || match.candidate.id,
           score: match.score,
@@ -4616,9 +5205,9 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
           detail === 'full' ? undefined : 20,
         ),
         section_context:
-          detail === 'full' ? sectionContext : (sectionContext?.slice(0, 4000) ?? null),
+          detail === 'full' ? sectionContext : (sectionContext?.slice(0, 1200) ?? null),
         page_pack_excerpt: pagePackMarkdown
-          ? pagePackMarkdown.slice(0, detail === 'full' ? 12000 : 4000)
+          ? pagePackMarkdown.slice(0, detail === 'full' ? 12000 : 1200)
           : null,
         health_evidence: health
           ? {
@@ -4656,14 +5245,7 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
           : null,
         local_law: returnedLocalLaw,
         style_bridge: returnedStyleBridge,
-        authority: taskAuthoritySummary({
-          workflowMode: projectJson?.initialized?.workflowMode ?? null,
-          adoptionMode: projectJson?.initialized?.adoptionMode ?? null,
-          localLaw,
-          styleBridge,
-          hasPackManifest: Boolean(manifest),
-          task,
-        }),
+        authority: { ...taskAuthority, active_lane: capsule.authority.activeLane },
         change_impact: {
           changed_files: changedFiles.slice(0, 40),
           changed_file_count: changedFiles.length,
@@ -4671,22 +5253,16 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
         },
         typed_graph: detail === 'full' ? typedGraph : compactTypedGraph,
         loop,
-        verify_command: verifyCommand,
+        verify_command: capsule.verifyCommand,
         local_files: {
-          page_pack: displayProjectFile(
-            projectRoot,
-            pageManifest ? join('.decantr', 'context', pageManifest.markdown) : null,
-          ),
-          section_pack: displayProjectFile(
-            projectRoot,
-            sectionManifest ? join('.decantr', 'context', sectionManifest.markdown) : null,
-          ),
+          page_pack: pagePack.markdownPath ? displayWorkspacePath(pagePack.markdownPath) : null,
+          section_pack: sectionPack.markdownPath
+            ? displayWorkspacePath(sectionPack.markdownPath)
+            : null,
           graph_snapshot: existsSync(join(projectRoot, '.decantr', 'graph', 'graph.snapshot.json'))
             ? displayProjectFile(projectRoot, '.decantr/graph/graph.snapshot.json')
             : null,
-          section_context: existsSync(sectionContextPath)
-            ? displayProjectFile(projectRoot, `.decantr/context/section-${section.id}.md`)
-            : null,
+          section_context: sectionContextPath ? displayWorkspacePath(sectionContextPath) : null,
           local_patterns: displayedLocalLaw.patterns_path,
           local_rules: displayedLocalLaw.rules_path,
           style_bridge: displayedStyleBridge.path,
@@ -4697,10 +5273,73 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
             : null,
         },
       };
+      let responseBytes = trimMcpTaskCompatibilityPayload(
+        response as unknown as Record<string, unknown>,
+      );
+      for (
+        let iteration = 0;
+        responseBytes > MCP_TASK_PAYLOAD_MAX_CANONICAL_BYTES && iteration < 12;
+        iteration += 1
+      ) {
+        const overflow = responseBytes - MCP_TASK_PAYLOAD_MAX_CANONICAL_BYTES;
+        const nextMaxCanonicalBytes = Math.max(
+          1,
+          Math.min(
+            capsule.budget.maxCanonicalBytes - 1,
+            capsule.budget.canonicalBytes - overflow - 64,
+          ),
+        );
+        const nextMaxEstimatedTokens = Math.max(
+          1,
+          Math.min(
+            capsule.budget.maxEstimatedTokens,
+            Math.floor(nextMaxCanonicalBytes / TASK_CAPSULE_TOKEN_ESTIMATE_BYTES_PER_TOKEN),
+          ),
+        );
+        try {
+          capsule = createTaskCapsuleV1({
+            ...capsuleInput,
+            budget: {
+              maxCanonicalBytes: nextMaxCanonicalBytes,
+              maxEstimatedTokens: nextMaxEstimatedTokens,
+            },
+          });
+        } catch (error) {
+          throw new Error(
+            `MCP task payload cannot fit the canonical task capsule within ${MCP_TASK_PAYLOAD_MAX_CANONICAL_BYTES} bytes: ${(error as Error).message}`,
+          );
+        }
+
+        response.task_capsule_budget = capsule.budget;
+        response.task_capsule_truncation = capsule.truncation;
+        response.task_capsule_digest = `sha256:${createHash('sha256')
+          .update(canonicalJsonStringify(capsule), 'utf8')
+          .digest('hex')}`;
+        response.task = capsule.task.request;
+        response.authority.active_lane = capsule.authority.activeLane;
+        loop.authority.activeLane = capsule.authority.activeLane;
+        loop.readTargets = capsule.readTargets.map((target) => target.path);
+        loop.stopConditions = capsule.stopConditions;
+        loop.verifyCommand = capsule.verifyCommand;
+        response.verify_command = capsule.verifyCommand;
+        responseBytes = trimMcpTaskCompatibilityPayload(
+          response as unknown as Record<string, unknown>,
+        );
+      }
+      if (responseBytes > MCP_TASK_PAYLOAD_MAX_CANONICAL_BYTES) {
+        throw new Error(
+          `MCP task payload exceeds ${MCP_TASK_PAYLOAD_MAX_CANONICAL_BYTES} canonical UTF-8 bytes after deterministic pruning.`,
+        );
+      }
+      if (response.task !== capsule.task.request) {
+        throw new Error('MCP task payload diverged from the canonical TaskCapsule request.');
+      }
+      return response;
     }
 
     case 'decantr_get_execution_pack': {
-      const contextDir = join(process.cwd(), '.decantr', 'context');
+      const projectRoot = graphProjectRoot(args);
+      const contextDir = join(projectRoot, '.decantr', 'context');
       const manifestPath = join(contextDir, 'pack-manifest.json');
       let manifest: PackManifest | null = null;
       let manifestSource: PackSource | null = null;
@@ -4827,16 +5466,16 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
 
       if (manifestSource === 'local') {
         if (format === 'markdown' || format === 'both') {
-          const markdownPath = join(contextDir, entry.markdown);
-          if (existsSync(markdownPath)) {
+          const markdownPath = existingContextFile(contextDir, entry.markdown);
+          if (markdownPath) {
             localPayload.markdown = readFileSync(markdownPath, 'utf-8');
           }
         }
 
         if (format === 'json' || format === 'both') {
-          const jsonPath = join(contextDir, entry.json);
-          if (existsSync(jsonPath)) {
-            localPayload.json = JSON.parse(readFileSync(jsonPath, 'utf-8'));
+          const jsonPath = existingContextFile(contextDir, entry.json);
+          if (jsonPath) {
+            localPayload.json = readJsonIfExists<unknown>(jsonPath);
           }
         }
       }
@@ -4867,6 +5506,14 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
       manifest = hostedSelectedPack.manifest as PackManifest;
       manifestSource = 'hosted_fallback';
       const hostedPayload = toHostedExecutionPackPayload(hostedSelectedPack.pack);
+      const hostedEntry = findManifestEntryForPack(
+        manifest,
+        packType as 'scaffold' | 'review' | 'section' | 'page' | 'mutation',
+        args.id as string | undefined,
+      );
+      result.source = manifestSource;
+      result.manifest = hostedEntry;
+      result.id = hostedEntry?.id ?? entry.id;
 
       if (format === 'markdown' || format === 'both') {
         result.markdown = hostedPayload.markdown;
@@ -5083,10 +5730,7 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
       try {
         const projectRoot = resolveMcpProjectRoot(args.project_path);
         const state = await getMcpHealthState(projectRoot);
-        return {
-          ...state.evidence,
-          discovery: mcpDiscoverySummary(projectRoot),
-        };
+        return { ...state.evidence, discovery: mcpDiscoverySummary(projectRoot) };
       } catch (error) {
         return { error: (error as Error).message };
       }

@@ -1,6 +1,6 @@
 {
   "name": "@decantr/mcp-server",
-  "version": "3.8.3",
+  "version": "3.9.0",
   "mcpName": "io.github.decantr-ai/mcp-server",
   "description": "MCP server for Decantr — exposes Contract context, typed graph artifacts, and verification evidence to AI coding assistants",
   "keywords": [
@@ -58,9 +58,9 @@
     "preversion": "pnpm build && pnpm test"
   },
   "dependencies": {
+    "@decantr/content": "workspace:*",
     "@decantr/core": "workspace:*",
     "@decantr/essence-spec": "workspace:*",
-    "@decantr/registry": "workspace:*",
     "@decantr/verifier": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.29.0"
   }

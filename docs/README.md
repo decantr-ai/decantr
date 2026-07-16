@@ -1,18 +1,18 @@
 # Decantr Docs
 
-The Decantr 3 public docs now treat the reference pages, guides, schemas, release notes, and release runbooks as the current source of truth. The active shipped model is Decantr 3.8.3: Contract, Context, Evidence, Authority Resolution, typed graph impact, Studio Control Room, Brownfield control loop, ranked monorepo project targeting, and the official `@decantr/content` corpus.
+The Decantr 3 public docs treat active reference pages, guides, schemas, release notes, and release runbooks as the current source of truth. Decantr 3.9 is the **Governed Change Proof** line: Contract, Context, Evidence, explicit Authority, source-grounded `AdoptionTruthV1`, bounded `TaskCapsuleV1`, fail-closed `GovernanceDeltaV1`, typed graph impact, read-only Studio, and the canonical `@decantr/content` corpus.
 
-The current operating contract also includes shared source-accurate route discovery, current-graph task activation, compact-by-default MCP task payloads, reviewed codify acceptance, baseline-aware Brownfield CI, workflow-specific assistant bridges, host-formatter boundaries for generated artifacts, and contract-only styling by default. Active reference pages describe these behaviors; older release/program documents are historical snapshots.
+The operating contract also includes shared source-accurate route discovery, current-graph task activation, compact task payloads with a deterministic byte/token budget, reviewed codify acceptance, v2 reports by default, explicitly selected CI v3 proof, workflow-specific assistant bridges, host-formatter boundaries for generated artifacts, and contract-only styling by default. Studio may render or recompute these contracts but does not write project files or execute repair workflows. Active reference pages describe these behaviors; older release/program documents remain historical snapshots.
 
-The active successor program is `programs/2026-07-16-decantr-3-9-adoption-proof-program.md`. It defines work for 3.9 and does not describe shipped 3.8 behavior. The Decantr 3.0 reset in `programs/2026-05-21-ai-frontend-governance-reset-plan.md` and other older program files remain historical strategy unless a current reference page or release note re-promotes a decision.
+The approved 3.9 scope and qualification standard remain recorded in `programs/2026-07-16-decantr-3-9-adoption-proof-program.md`. Active docs may describe implemented 3.9 contracts, but they must not claim the program's 84 route labels, 24 competing forbidden-source assertions, or 200 human-adjudicated finding judgments passed until replayable evidence and human review exist. The Decantr 3.0 reset in `programs/2026-05-21-ai-frontend-governance-reset-plan.md` and other older program files remain historical strategy unless a current reference page or release note re-promotes a decision.
 
 For quick setup help, showcase feedback, and live community discussion, join the [Decantr Discord](https://discord.gg/WeDpBd4xFU). GitHub issues, pull requests, and these docs remain the canonical home for bugs, feature requests, and durable decisions.
 
 ## Active Docs
 
 - `programs/`
-  - Active successor program plus historical product strategy, program structure, and planning checkpoints.
-  - Current program: `programs/2026-07-16-decantr-3-9-adoption-proof-program.md`.
+  - The approved 3.9 scope/qualification program plus historical product strategy, program structure, and planning checkpoints.
+  - Current qualification source: `programs/2026-07-16-decantr-3-9-adoption-proof-program.md`.
   - Important background: `programs/2026-05-21-ai-frontend-governance-reset-plan.md` and `programs/2026-05-15-hybrid-fortification-plan.md`.
 - `audit/`
   - Baseline audits, keep/cut decisions, package surface review, and platform contract findings.
@@ -34,11 +34,11 @@ For quick setup help, showcase feedback, and live community discussion, join the
 - `benchmarks/`
   - Proof-field and real-world corpus reports used to validate Brownfield command reliability, drift detection, repair-plan coverage, runtime evidence, and loop quality.
   - Latest proof-field report: `benchmarks/2026-06-25-decantr-3-6-proof-field-report.md`.
-- Decantr 3.8.3 control-loop guidance lives in `guides/existing-apps.md`, `guides/monorepos.md`, `guides/project-health-ci.md`, `guides/ai-assistant-setup.md`, `guides/typed-graph-agent-playbook.md`, `reference/workflow-model.md`, `reference/project-health.md`, `reference/report-schemas.md`, `reference/diagnostic-codes.md`, `reference/mcp-migration.md`, and `reference/command-surface.md`: `scan`, `adopt`, Studio Control Room, `doctor`, `task`, `verify`, `resolve`, `ci`, Cursor activation through `connect cursor`, ranked monorepo `--project` onboarding, app-scoped primitives, v2 Project Health/CI/Workspace/Evidence schemas, authority resolution, loop readiness, hybrid graph ranking, pinned root CI workflows, generic CI snippets, project-scoped remediation prompts and read targets, `codify --from-audit --style-bridge`, analyze artifacts, theme inventory, task-time MCP/CLI context, typed route/impact graph context, optional visual manifest, baselines, local pattern proposals, local rule proposals, project-owned `behavior_obligations`, production-UI interaction evidence, semantic static runtime proof, contract-only token-export copy, Brownfield `add page` / `add feature` section aliases, changed-file impact, real-world corpus timing/failure taxonomy, proof-field benchmark reporting, and official content-corpus checks.
+- Decantr 3.9 operating guidance lives in `guides/existing-apps.md`, `guides/monorepos.md`, `guides/project-health-ci.md`, `guides/ai-assistant-setup.md`, `guides/typed-graph-agent-playbook.md`, `reference/workflow-model.md`, `reference/project-health.md`, `reference/report-schemas.md`, `reference/diagnostic-codes.md`, `reference/mcp-migration.md`, and `reference/command-surface.md`: `AdoptionTruthV1`, `TaskCapsuleV1`, `GovernanceDeltaV1`, v2 report compatibility, opt-in CI v3, read-only Studio, exactly eight MCP tools, canonical content provenance, ranked monorepo `--project` targeting, authority resolution, loop readiness, local law/style bridges, typed route/impact graph context, baselines, local browser evidence, and project-scoped repair guidance.
 - Installed-package security posture is captured in `reference/security-permissions.md`. It is generated from `config/package-permissions.json` and distinguishes published npm surfaces from internal monorepo scripts, showcase fixtures, and release automation.
 - `releases/`
   - Short product release notes for shipped user-facing surfaces.
-  - Current release: `releases/2026-07-16-decantr-3-8-3-route-source-precision.md`.
+  - Latest completed release note retained here: `releases/2026-07-16-decantr-3-8-3-route-source-precision.md`.
   - Previous release: `releases/2026-07-16-decantr-3-8-2-external-adoption-hardening.md`.
   - Previous closeout: `releases/2026-07-09-decantr-3-8-1-closeout.md`.
   - 3.6 quality-train note: `releases/2026-06-25-decantr-3-6-0-brownfield-proof-quality.md`.
@@ -51,7 +51,7 @@ For quick setup help, showcase feedback, and live community discussion, join the
   - Includes package release strategy and hosted rollout runbooks.
   - Current release closeout source of truth: `runbooks/release-stewardship.md`.
   - Current adoption proof: `runbooks/post-publish-adoption-proof.md`.
-  - Decantr 3.8 patch boundary: `runbooks/decantr-3-8-maintenance.md`.
+  - Historical Decantr 3.8 patch boundary: `runbooks/decantr-3-8-maintenance.md`.
   - Registry portal deployment runbooks are historical after the 3.8 de-registry migration; current hosted work is the Fly content API.
 
 Historical phase specs retained for architecture context:

@@ -17,7 +17,7 @@ const suppressionsPath = readArgValue('--suppressions') || 'content-health-suppr
 
 function readArgValue(name) {
   const prefix = `${name}=`;
-  return args.find(arg => arg.startsWith(prefix))?.slice(prefix.length) || null;
+  return args.find((arg) => arg.startsWith(prefix))?.slice(prefix.length) || null;
 }
 
 function loadJson(path) {
@@ -26,15 +26,17 @@ function loadJson(path) {
 
 const report = loadJson(reportPath);
 const baseline = loadJson(suppressionsPath);
-const suppressions = new Map((baseline.suppressions || []).map(entry => [entry.id, entry]));
+const suppressions = new Map((baseline.suppressions || []).map((entry) => [entry.id, entry]));
 const activeFindings = Array.isArray(report.findings) ? report.findings : [];
-const activeIds = new Set(activeFindings.map(finding => finding.id));
+const activeIds = new Set(activeFindings.map((finding) => finding.id));
 const findings = [];
 
 for (const finding of activeFindings) {
   if (finding.severity === 'error') continue;
   if (!suppressions.has(finding.id)) {
-    findings.push(`Unsuppressed Content Health warning: ${finding.id} (${finding.file || 'unknown file'})`);
+    findings.push(
+      `Unsuppressed Content Health warning: ${finding.id} (${finding.file || 'unknown file'})`,
+    );
     continue;
   }
 
@@ -61,4 +63,6 @@ if (findings.length > 0) {
   process.exit(1);
 }
 
-console.log(`Content Health suppression audit passed: ${activeFindings.length} finding(s), ${suppressions.size} intentional warning suppression(s).`);
+console.log(
+  `Content Health suppression audit passed: ${activeFindings.length} finding(s), ${suppressions.size} intentional warning suppression(s).`,
+);

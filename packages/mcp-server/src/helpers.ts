@@ -1,9 +1,9 @@
 import { realpathSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
+import { ContentAPIClient } from '@decantr/content';
 import type { EssenceFile, EssenceV4 } from '@decantr/essence-spec';
 import { isV4 } from '@decantr/essence-spec';
-import { RegistryAPIClient } from '@decantr/registry';
 
 const MAX_INPUT_LENGTH = 1000;
 
@@ -31,12 +31,12 @@ export function fuzzyScore(query: string, text: string): number {
   return qi === q.length ? 60 : 0;
 }
 
-let _apiClient: RegistryAPIClient | null = null;
-let _publicApiClient: RegistryAPIClient | null = null;
+let _apiClient: ContentAPIClient | null = null;
+let _publicApiClient: ContentAPIClient | null = null;
 
-export function getAPIClient(): RegistryAPIClient {
+export function getAPIClient(): ContentAPIClient {
   if (!_apiClient) {
-    _apiClient = new RegistryAPIClient({
+    _apiClient = new ContentAPIClient({
       baseUrl: process.env.DECANTR_API_URL || undefined,
       apiKey: process.env.DECANTR_API_KEY || undefined,
     });
@@ -44,9 +44,9 @@ export function getAPIClient(): RegistryAPIClient {
   return _apiClient;
 }
 
-export function getPublicAPIClient(): RegistryAPIClient {
+export function getPublicAPIClient(): ContentAPIClient {
   if (!_publicApiClient) {
-    _publicApiClient = new RegistryAPIClient({
+    _publicApiClient = new ContentAPIClient({
       baseUrl: process.env.DECANTR_API_URL || undefined,
     });
   }

@@ -1,0 +1,383 @@
+{
+  "schemaVersion": "decantr-qualification-compatibility-manifest.v2",
+  "frozenAt": "2026-07-16",
+  "qualificationState": {
+    "status": "incomplete",
+    "releaseQualified": false,
+    "reason": "Compatibility facts are frozen, but the human labels and replay evidence required by the qualification packet are missing."
+  },
+  "baselineRelease": {
+    "version": "3.8.3",
+    "audit": "docs/audit/2026-07-16-decantr-3-8-3-post-publish-adoption.md",
+    "releaseNote": "docs/releases/2026-07-16-decantr-3-8-3-route-source-precision.md",
+    "packageVersions": {
+      "@decantr/content": "3.8.1",
+      "@decantr/registry": "3.8.1",
+      "@decantr/core": "3.8.2",
+      "@decantr/verifier": "3.8.3",
+      "@decantr/mcp-server": "3.8.3",
+      "@decantr/cli": "3.8.3",
+      "@decantr/essence-spec": "3.8.1",
+      "@decantr/css": "3.8.1",
+      "@decantr/telemetry": "3.8.1",
+      "@decantr/vite-plugin": "0.1.1"
+    },
+    "provenance": {
+      "path": "docs/releases/2026-07-16-decantr-3-8-3-route-source-precision.md",
+      "line": 33,
+      "anchor": "@decantr/core"
+    }
+  },
+  "publicReferences": [
+    {
+      "id": "tanstack-start-dashboard",
+      "kind": "brownfield",
+      "repository": "https://github.com/Kiranism/tanstack-start-dashboard.git",
+      "ref": "433a5a073c944d25dcd59922b4de7193bde3c03e",
+      "projectPath": ".",
+      "qualificationRoute": "/dashboard/overview",
+      "provenance": {
+        "path": "scripts/realworld-corpus.post-publish.json",
+        "line": 6,
+        "anchor": "433a5a073c944d25dcd59922b4de7193bde3c03e"
+      }
+    },
+    {
+      "id": "bulletproof-react-vite",
+      "kind": "brownfield",
+      "repository": "https://github.com/alan2207/bulletproof-react.git",
+      "ref": "9506629ed003a561c6627735480cce4994244bb4",
+      "projectPath": "apps/react-vite",
+      "qualificationRoute": "/app/discussions",
+      "provenance": {
+        "path": "scripts/realworld-corpus.post-publish.json",
+        "line": 16,
+        "anchor": "9506629ed003a561c6627735480cce4994244bb4"
+      }
+    },
+    {
+      "id": "tanstack-start-greenfield",
+      "kind": "greenfield-generator",
+      "package": "@tanstack/cli",
+      "version": "0.69.6",
+      "arguments": {
+        "framework": "React",
+        "packageManager": "npm",
+        "toolchain": "Biome",
+        "examples": false,
+        "intentTemplate": null
+      },
+      "qualificationRoute": "/",
+      "provenance": {
+        "path": "docs/audit/2026-07-16-decantr-3-8-3-post-publish-adoption.md",
+        "line": 51,
+        "anchor": "@tanstack/cli@0.69.6"
+      }
+    }
+  ],
+  "v2Compatibility": {
+    "selectionPolicy": "Existing v2 machine reports remain the default; no environment, package-version, or config inference may silently select v3.",
+    "schemas": [
+      {
+        "id": "https://decantr.ai/schemas/scan-report.v2.json",
+        "path": "packages/verifier/schema/scan-report.v2.json",
+        "defaultFor": ["decantr scan --json"]
+      },
+      {
+        "id": "https://decantr.ai/schemas/verification-report.common.v2.json",
+        "path": "packages/verifier/schema/verification-report.common.v2.json",
+        "defaultFor": ["shared verifier finding envelope"]
+      },
+      {
+        "id": "https://decantr.ai/schemas/project-health-report.v2.json",
+        "path": "packages/verifier/schema/project-health-report.v2.json",
+        "defaultFor": ["decantr health --json", "decantr verify --json", "MCP project health"]
+      },
+      {
+        "id": "https://decantr.ai/schemas/decantr-ci-report.v2.json",
+        "path": "packages/verifier/schema/decantr-ci-report.v2.json",
+        "defaultFor": ["decantr ci --json", "decantr ci init"]
+      },
+      {
+        "id": "https://decantr.ai/schemas/workspace-health-report.v2.json",
+        "path": "packages/verifier/schema/workspace-health-report.v2.json",
+        "defaultFor": ["decantr workspace health --json", "MCP workspace health"]
+      },
+      {
+        "id": "https://decantr.ai/schemas/evidence-bundle.v2.json",
+        "path": "packages/verifier/schema/evidence-bundle.v2.json",
+        "defaultFor": ["decantr verify --evidence --json", "MCP evidence_bundle"]
+      },
+      {
+        "id": "https://decantr.ai/schemas/runtime-probe-payload.v2.json",
+        "path": "packages/verifier/schema/runtime-probe-payload.v2.json",
+        "defaultFor": ["runtime probe payload"]
+      },
+      {
+        "id": "https://decantr.ai/schemas/loop-readiness.v2.json",
+        "path": "packages/verifier/schema/loop-readiness.v2.json",
+        "defaultFor": ["project and workspace loop readiness"]
+      },
+      {
+        "id": "https://decantr.ai/schemas/authority-resolution.v2.json",
+        "path": "packages/verifier/schema/authority-resolution.v2.json",
+        "defaultFor": ["authority resolution"]
+      },
+      {
+        "id": "https://decantr.ai/schemas/proof-field-report.v2.json",
+        "path": "packages/verifier/schema/proof-field-report.v2.json",
+        "defaultFor": ["proof field report"]
+      }
+    ],
+    "provenance": {
+      "path": "packages/verifier/src/contracts-v2.ts",
+      "line": 3,
+      "anchor": "VERIFICATION_COMMON_V2_SCHEMA_URL"
+    }
+  },
+  "mcp": {
+    "package": "@decantr/mcp-server",
+    "packageVersion": "3.8.3",
+    "serverIdentity": "io.github.decantr-ai/mcp-server",
+    "transport": "stdio",
+    "toolCount": 8,
+    "tools": [
+      {
+        "name": "decantr_project",
+        "actions": ["state", "workspace_health"]
+      },
+      {
+        "name": "decantr_contract",
+        "actions": ["read_essence", "validate", "check_drift", "create_essence", "capsule"]
+      },
+      {
+        "name": "decantr_context",
+        "actions": ["scaffold", "section", "page", "task", "execution_pack"]
+      },
+      {
+        "name": "decantr_graph",
+        "actions": ["snapshot", "query", "traverse"]
+      },
+      {
+        "name": "decantr_registry",
+        "actions": [
+          "search",
+          "resolve_pattern",
+          "resolve_archetype",
+          "resolve_blueprint",
+          "suggest_patterns",
+          "showcase_benchmarks",
+          "intelligence_summary",
+          "compile_execution_packs"
+        ]
+      },
+      {
+        "name": "decantr_verify",
+        "actions": ["audit_project", "critique", "findings", "evidence_bundle", "health_loop"]
+      },
+      {
+        "name": "decantr_repair",
+        "actions": ["findings", "repair_plan", "repair_prompt", "health_loop"]
+      },
+      {
+        "name": "decantr_contract_write",
+        "actions": ["accept_drift", "update_essence"]
+      }
+    ],
+    "provenance": {
+      "path": "packages/mcp-server/src/tools.ts",
+      "line": 2728,
+      "anchor": "CONSOLIDATED_TOOL_ACTIONS"
+    }
+  },
+  "adoptionWriteBoundary": {
+    "contractOnlyAdoption": {
+      "operation": "decantr adopt --project <path> --yes",
+      "decantrOwnedWrites": [
+        {
+          "pattern": ".decantr/**",
+          "mutations": ["create", "update"],
+          "classification": "generated-governance-artifact"
+        },
+        {
+          "pattern": ".cursor/**",
+          "mutations": ["create", "update"],
+          "classification": "assistant-bridge-artifact"
+        },
+        {
+          "pattern": "DECANTR.md",
+          "mutations": ["create", "update"],
+          "classification": "assistant-governance-document"
+        },
+        {
+          "pattern": "decantr.essence.json",
+          "mutations": ["create", "update"],
+          "classification": "project-contract"
+        }
+      ],
+    "conditionalWrites": [
+      {
+        "pattern": ".gitignore",
+        "allowedChange": "narrow generated/cache entries only",
+        "requiresExactDiffEvidence": true
+      },
+      {
+        "pattern": ".prettierignore",
+        "allowedChange": "narrow generated-governance artifact entries only when Prettier or Oxfmt is detected",
+        "requiresExactDiffEvidence": true
+      }
+    ],
+      "hostGeneratedWrites": [
+        {
+          "pattern": "src/routeTree.gen.ts",
+          "owner": "host-generator",
+          "countsAsDecantrAuthoredSource": false,
+          "requiresGeneratorEvidence": true
+        }
+      ],
+      "forbiddenWrites": [
+        {
+          "scope": "authored-application-source",
+          "allowed": false
+        },
+        {
+          "scope": "host-package-manifest-rewrite",
+          "allowed": false
+        },
+        {
+          "scope": "decantr-css-injection",
+          "allowed": false
+        }
+      ]
+    },
+    "studio": {
+      "mode": "read-only",
+      "allowedWrites": [],
+      "forbiddenWrites": [
+        "application source",
+        "Essence",
+        "local law",
+        "style bridges",
+        "graph artifacts",
+        "report files",
+        "ignore files",
+        "baselines"
+      ],
+      "requiresFilesystemBeforeAfterSnapshot": true
+    },
+    "evidenceProtocol": {
+      "hashAlgorithm": "sha256",
+      "recordBeforeAndAfter": true,
+      "recordEveryChangedPath": true,
+      "classifyHostGeneratedSeparately": true,
+      "failOnUnclassifiedWrite": true,
+      "requiredTargetIds": [
+        "tanstack-start-dashboard",
+        "bulletproof-react-vite",
+        "tanstack-start-greenfield"
+      ]
+    },
+    "provenance": {
+      "path": "docs/audit/2026-07-16-decantr-3-8-3-post-publish-adoption.md",
+      "line": 61,
+      "anchor": "routeTree.gen.ts"
+    }
+  },
+  "measurementProtocol": {
+    "isolatedRunsPerTargetCommand": 30,
+    "processIsolation": "fresh process and fresh temporary project state for every sample",
+    "hostDependencyInstallation": {
+      "includedInDecantrCommandLatency": false,
+      "reportedSeparately": true
+    },
+    "aggregationUnit": ["targetId", "commandId"],
+    "percentiles": {
+      "method": "nearest-rank",
+      "rankFormula": "ceil(percentile * sampleCount)",
+      "reported": [0.5, 0.95],
+      "combineUnlikeCommandsOrTargets": false,
+      "retainRawSamples": true
+    },
+    "retainedEvidence": [
+      "sample ID",
+      "target ID",
+      "command ID",
+      "temporary project state ID",
+      "OS",
+      "CPU",
+      "Node version",
+      "package-manager version",
+      "exact source ref",
+      "exact package versions",
+      "command",
+      "exit code",
+      "raw duration"
+    ],
+    "normalization": {
+      "allowlist": ["timestamps", "temporary absolute paths"],
+      "forbidden": [
+        "finding IDs",
+        "project selection",
+        "ordering",
+        "hashes",
+        "gate results"
+      ]
+    },
+    "latencyGates": [
+      {
+        "id": "scan-latency",
+        "percentile": 0.95,
+        "maximumMilliseconds": 2000,
+        "scope": "per reference app"
+      },
+      {
+        "id": "contract-only-attach-latency",
+        "percentile": 0.95,
+        "maximumMilliseconds": 10000,
+        "scope": "per reference app, excluding host dependency installation"
+      },
+      {
+        "id": "task-preparation-latency",
+        "percentile": 0.95,
+        "maximumMilliseconds": 2000,
+        "scope": "per reference app with a current graph"
+      }
+    ],
+    "findingEvaluation": {
+      "requiredJudgmentCount": 200,
+      "requiredHumanReviewers": 2,
+      "confidenceLevel": 0.95,
+      "intervalMethod": "two-sided Wilson score",
+      "precision": {
+        "gateStatistic": "wilsonLowerBound",
+        "minimum": 0.9,
+        "denominator": "truePositive + falsePositive"
+      },
+      "recall": {
+        "mustReport": true,
+        "maximumRegressionFromPublic383": 0.05,
+        "denominator": "truePositive + falseNegative"
+      }
+    },
+    "provenance": {
+      "path": "docs/programs/2026-07-16-decantr-3-9-adoption-proof-program.md",
+      "line": 292,
+      "anchor": "30 independently initialized runs"
+    }
+  },
+  "baselineReplay": {
+    "status": "missing",
+    "qualificationEligible": false,
+    "findingReplayArtifact": null,
+    "metrics": {
+      "precision": null,
+      "recall": null
+    },
+    "reason": "The completed 3.8.3 public audit explicitly had no human-labeled findings set. Public 3.8.3 must be replayed against a replacement human-adjudicated corpus; the legacy finding-labels.json rows are ineligible.",
+    "provenance": {
+      "path": "docs/audit/2026-07-16-decantr-3-8-3-post-publish-adoption.md",
+      "line": 69,
+      "anchor": "no human-labeled findings set"
+    }
+  }
+}

@@ -38,6 +38,36 @@ describe('assistant bridge', () => {
     expect(content).not.toContain('Brownfield contract');
   });
 
+  it('does not require optional Brownfield artifacts that task context did not list', () => {
+    const content = buildAssistantBridgeContent({
+      detected,
+      workflowMode: 'brownfield-attach',
+      adoptionMode: 'contract-only',
+      assistantBridge: 'preview',
+    });
+
+    expect(content).toContain('.decantr/context/scaffold.md');
+    expect(content).toContain('never assume an unlisted artifact exists');
+    expect(content).not.toContain('.decantr/brownfield-report.md');
+    expect(content).not.toContain('.decantr/doctrine-map.json');
+    expect(content).not.toContain('.decantr/ambient-context.json');
+  });
+
+  it('keeps Greenfield style-bridge guidance on the host styling authority', () => {
+    const content = buildAssistantBridgeContent({
+      detected,
+      workflowMode: 'greenfield-contract-only',
+      adoptionMode: 'style-bridge',
+      assistantBridge: 'preview',
+    });
+
+    expect(content).toContain('Styling remains host-owned');
+    expect(content).toContain('accepted `.decantr/style-bridge.json`');
+    expect(content).toContain('does not generate or overwrite runtime CSS');
+    expect(content).not.toContain('Use Decantr CSS where generated');
+    expect(content).not.toContain('src/styles/tokens.css');
+  });
+
   it('upgrades an existing bridge block to the recorded workflow in place', () => {
     testDir = mkdtempSync(join(tmpdir(), 'decantr-assistant-bridge-'));
     mkdirSync(join(testDir, '.decantr'), { recursive: true });

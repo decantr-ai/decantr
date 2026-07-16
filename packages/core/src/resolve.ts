@@ -1,3 +1,5 @@
+import type { ContentResolver, Pattern, ResolvedPreset, Theme } from '@decantr/content';
+import { detectWirings, resolvePatternPreset } from '@decantr/content';
 import type {
   BlueprintPage,
   ColumnLayout,
@@ -8,13 +10,6 @@ import type {
   StructurePage,
 } from '@decantr/essence-spec';
 import { computeDensity, isV4 } from '@decantr/essence-spec';
-import type {
-  ContentResolver,
-  Pattern,
-  Theme as RegistryTheme,
-  ResolvedPreset,
-} from '@decantr/registry';
-import { detectWirings, resolvePatternPreset } from '@decantr/registry';
 import type {
   IRNavItem,
   IRRoute,
@@ -41,7 +36,7 @@ type ResolvedStructurePage = StructurePage & {
 export interface ResolvedEssence {
   essence: EssenceFile;
   pages: ResolvedPage[];
-  registryTheme: RegistryTheme | null;
+  registryTheme: Theme | null;
   density: { gap: string; level: string };
   theme: IRTheme;
   shell: IRShellConfig;
@@ -164,7 +159,7 @@ function buildNavItems(pages: ResolvedStructurePage[], routes?: IRRoute[]): IRNa
   }));
 }
 
-function buildThemeDecoration(theme: RegistryTheme): IRThemeDecoration | null {
+function buildThemeDecoration(theme: Theme): IRThemeDecoration | null {
   const shell = theme.shell;
   if (!shell) return null;
   // The JSON may have additional fields not in the strict type
@@ -291,7 +286,7 @@ function convertWiring(wiringResults: ReturnType<typeof detectWirings>): IRWirin
 // ─── Visual Effects Resolution ────────────────────────────────
 
 export function resolveVisualEffects(
-  theme: RegistryTheme,
+  theme: Theme,
   pattern: Pattern,
   _slot?: string,
 ): IRVisualEffect | null {
@@ -350,7 +345,7 @@ async function resolveV4Essence(
   const { dna, blueprint, meta } = essence;
 
   // 1. Theme resolution (replaces former recipe resolution)
-  let registryTheme: RegistryTheme | null = null;
+  let registryTheme: Theme | null = null;
   const themeResult = await resolver.resolve('theme', dna.theme.id);
   if (themeResult) {
     registryTheme = themeResult.item;
@@ -420,7 +415,7 @@ async function resolveV4Essence(
 async function resolvePages(
   pages: ResolvedStructurePage[],
   resolver: ContentResolver,
-  registryTheme: RegistryTheme | null,
+  registryTheme: Theme | null,
 ): Promise<ResolvedPage[]> {
   const resolvedPages: ResolvedPage[] = [];
   for (const page of pages) {

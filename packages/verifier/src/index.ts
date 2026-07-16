@@ -34,6 +34,44 @@ import {
   type StyleBridgeDriftAudit,
 } from './style-bridge-drift.js';
 
+export type {
+  AdoptionGovernanceAxisV1,
+  AdoptionGovernanceState,
+  AdoptionMutationAxisV1,
+  AdoptionMutationReceiptV1,
+  AdoptionMutationState,
+  AdoptionObservationAxisV1,
+  AdoptionObservationState,
+  AdoptionTruthConfidence,
+  AdoptionTruthFactV1,
+  AdoptionTruthProvenanceV1,
+  AdoptionTruthV1,
+  AdoptionTruthV1Input,
+} from './adoption-truth.js';
+export { ADOPTION_TRUTH_V1_SCHEMA_URL, createAdoptionTruthV1 } from './adoption-truth.js';
+export type {
+  CreateDecantrCiProjectReportV3Input,
+  CreateDecantrCiWorkspaceReportV3Input,
+  DecantrCiAggregateGateV3,
+  DecantrCiAggregateProjectGateV3,
+  DecantrCiBaselineGateV2,
+  DecantrCiFailOnV3,
+  DecantrCiLocalLawFindingV2,
+  DecantrCiLocalLawSummaryV2,
+  DecantrCiProjectReportV3,
+  DecantrCiReportV3,
+  DecantrCiStatusV3,
+  DecantrCiStyleBridgeSummaryV2,
+  DecantrCiWorkspaceHealthProjectV2,
+  DecantrCiWorkspaceHealthV2,
+  DecantrCiWorkspaceReportV3,
+} from './ci-report-v3.js';
+export {
+  createDecantrCiAggregateGateV3,
+  createDecantrCiProjectReportV3,
+  createDecantrCiWorkspaceReportV3,
+  DECANTR_CI_REPORT_V3_SCHEMA_URL,
+} from './ci-report-v3.js';
 export {
   auditComponentReuse,
   COMPONENT_REUSE_RULE_ID,
@@ -102,6 +140,38 @@ export type {
 } from './discovery.js';
 export { discoverProject } from './discovery.js';
 export type {
+  CreateGovernanceDeltaV1Input,
+  GovernanceAnnotationCoordinatesV1,
+  GovernanceArtifactIdentityV1,
+  GovernanceAuthorityLaneV1,
+  GovernanceBaselineCompatibility,
+  GovernanceComparisonScopeV1,
+  GovernanceContentGuidanceChangeV1,
+  GovernanceContractChangeV1,
+  GovernanceCurrentEvidenceV1,
+  GovernanceCurrentGraphV1,
+  GovernanceCurrentStateV1,
+  GovernanceDebtBaselineV1,
+  GovernanceDeltaV1,
+  GovernanceEvidenceCompleteness,
+  GovernanceEvidenceFreshness,
+  GovernanceFailOn,
+  GovernanceFindingClassification,
+  GovernanceFindingLocationV1,
+  GovernanceFindingOccurrenceInputV1,
+  GovernanceFindingOccurrenceV1,
+  GovernanceGitChangeBaseV1,
+  GovernanceProjectV1,
+  GovernanceScreenshotChangeV1,
+} from './governance-delta.js';
+export {
+  createGovernanceDeltaV1,
+  fingerprintFindingOccurrence,
+  fingerprintFindingOccurrenceV1,
+  GOVERNANCE_DELTA_V1_SCHEMA_URL,
+  GOVERNANCE_FINDING_FINGERPRINT_VERSION,
+} from './governance-delta.js';
+export type {
   GraphAnchorEdge,
   GraphAnchorFindingInput,
   GraphAnchorNode,
@@ -121,6 +191,15 @@ export {
   listKnownInteractions,
   verifyInteractionsInSource,
 } from './interactions.js';
+export type {
+  CreateProjectAdoptionTruthV1Options,
+  ProjectIdentityV1Input,
+} from './project-adoption-truth.js';
+export {
+  createProjectAdoptionTruthV1,
+  createProjectIdentityV1,
+  createStableProjectIdentityV1,
+} from './project-adoption-truth.js';
 export type { BuiltDistAuditOptions, RuntimeAudit } from './runtime.js';
 export { auditBuiltDist, emptyRuntimeAudit } from './runtime.js';
 export type {
@@ -192,17 +271,54 @@ export {
   type StyleBridgeDriftAudit,
   type StyleBridgeDriftFinding,
 } from './style-bridge-drift.js';
+export type {
+  CreateTaskCapsuleV1Input,
+  TaskCapsuleAuthorityEntryV1,
+  TaskCapsuleAuthorityLane,
+  TaskCapsuleAuthorityV1,
+  TaskCapsuleBudgetV1,
+  TaskCapsuleContentIdentityV1,
+  TaskCapsuleContentOrigin,
+  TaskCapsuleContentResolvedFrom,
+  TaskCapsuleContentType,
+  TaskCapsuleFindingV1,
+  TaskCapsuleGraphFreshness,
+  TaskCapsuleGraphV1,
+  TaskCapsuleImpactV1,
+  TaskCapsuleItemCountsV1,
+  TaskCapsuleOfficialGuidanceV1,
+  TaskCapsuleProjectV1,
+  TaskCapsuleReadTargetKind,
+  TaskCapsuleReadTargetV1,
+  TaskCapsuleTruncationV1,
+  TaskCapsuleV1,
+} from './task-capsule.js';
+export {
+  canonicalJsonStringify,
+  canonicalUtf8Bytes,
+  createTaskCapsuleV1,
+  DEFAULT_TASK_CAPSULE_MAX_CANONICAL_BYTES,
+  DEFAULT_TASK_CAPSULE_MAX_ESTIMATED_TOKENS,
+  estimateCanonicalTokens,
+  TASK_CAPSULE_TOKEN_ESTIMATE_BYTES_PER_TOKEN,
+  TASK_CAPSULE_V1_SCHEMA_URL,
+  tokenEstimateV1,
+} from './task-capsule.js';
 
 export const VERIFICATION_SCHEMA_URLS = {
+  adoptionTruth: 'https://decantr.ai/schemas/adoption-truth.v1.json',
   common: VERIFICATION_COMMON_V2_SCHEMA_URL,
   projectAudit: 'https://decantr.ai/schemas/project-audit-report.v1.json',
   projectHealth: PROJECT_HEALTH_REPORT_V2_SCHEMA_URL,
   decantrCi: DECANTR_CI_REPORT_V2_SCHEMA_URL,
+  decantrCiV3: 'https://decantr.ai/schemas/decantr-ci-report.v3.json',
   evidenceBundle: EVIDENCE_BUNDLE_V2_SCHEMA_URL,
   scanReport: 'https://decantr.ai/schemas/scan-report.v2.json',
   workspaceHealth: WORKSPACE_HEALTH_REPORT_V2_SCHEMA_URL,
   fileCritique: 'https://decantr.ai/schemas/file-critique-report.v1.json',
   showcaseShortlist: 'https://decantr.ai/schemas/showcase-shortlist-report.v1.json',
+  taskCapsule: 'https://decantr.ai/schemas/task-capsule.v1.json',
+  governanceDelta: 'https://decantr.ai/schemas/governance-delta.v1.json',
 } as const;
 
 export type VerificationSeverity = 'error' | 'warn' | 'info';

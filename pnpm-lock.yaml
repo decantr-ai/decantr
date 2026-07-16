@@ -52,9 +52,6 @@ importers:
       '@decantr/essence-spec':
         specifier: workspace:*
         version: link:../../packages/essence-spec
-      '@decantr/registry':
-        specifier: workspace:*
-        version: link:../../packages/registry
       '@decantr/verifier':
         specifier: workspace:*
         version: link:../../packages/verifier
@@ -138,9 +135,6 @@ importers:
       '@decantr/essence-spec':
         specifier: workspace:*
         version: link:../essence-spec
-      '@decantr/registry':
-        specifier: workspace:*
-        version: link:../registry
       '@decantr/telemetry':
         specifier: workspace:*
         version: link:../telemetry
@@ -153,18 +147,21 @@ importers:
 
   packages/content:
     dependencies:
+      '@decantr/essence-spec':
+        specifier: workspace:*
+        version: link:../essence-spec
       ajv:
         specifier: ^8.20.0
         version: 8.20.0
 
   packages/core:
     dependencies:
+      '@decantr/content':
+        specifier: workspace:*
+        version: link:../content
       '@decantr/essence-spec':
         specifier: workspace:*
         version: link:../essence-spec
-      '@decantr/registry':
-        specifier: workspace:*
-        version: link:../registry
 
   packages/css:
     devDependencies:
@@ -189,15 +186,15 @@ importers:
 
   packages/mcp-server:
     dependencies:
+      '@decantr/content':
+        specifier: workspace:*
+        version: link:../content
       '@decantr/core':
         specifier: workspace:*
         version: link:../core
       '@decantr/essence-spec':
         specifier: workspace:*
         version: link:../essence-spec
-      '@decantr/registry':
-        specifier: workspace:*
-        version: link:../registry
       '@decantr/verifier':
         specifier: workspace:*
         version: link:../verifier
@@ -210,9 +207,6 @@ importers:
       '@decantr/content':
         specifier: workspace:*
         version: link:../content
-      '@decantr/essence-spec':
-        specifier: workspace:*
-        version: link:../essence-spec
 
   packages/telemetry: {}
 

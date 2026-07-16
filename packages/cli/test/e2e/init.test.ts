@@ -210,6 +210,19 @@ describe('init command', () => {
         dna: { personality: string[] };
         blueprint: { sections: Array<{ shell?: string }> };
       };
+      const project = JSON.parse(
+        readFileSync(join(testDir, '.decantr', 'project.json'), 'utf-8'),
+      ) as {
+        initialized?: {
+          adoption?: {
+            workflowCompleted?: boolean;
+            integrity?: { status?: string; complete?: boolean };
+            changes?: {
+              hostSource?: { created?: string[]; updated?: string[]; deleted?: string[] };
+            };
+          };
+        };
+      };
       const decantr = readFileSync(join(testDir, 'DECANTR.md'), 'utf-8');
       const task = JSON.parse(
         execSync(`node ${cliPath} task / "build the home route" --json`, {
@@ -235,6 +248,11 @@ describe('init command', () => {
       expect(task.authority.activeAuthorities[0]).toBe('Essence V4 contract');
       expect(task.loop.state).toBe('ready_to_edit');
       expect(task.verifyCommand).toBe('decantr verify');
+      expect(project.initialized?.adoption).toMatchObject({
+        workflowCompleted: true,
+        integrity: { status: 'verified-untouched', complete: true },
+        changes: { hostSource: { created: [], updated: [], deleted: [] } },
+      });
     },
     INIT_TIMEOUT_MS,
   );
@@ -525,6 +543,8 @@ describe('init command', () => {
       expect(projectJson.initialized?.adoptionMode).toBe('contract-only');
       expect(projectJson.initialized?.analysisArtifacts).toBe(false);
       expect(existsSync(join(testDir, 'src', 'styles', 'treatments.css'))).toBe(false);
+      expect(existsSync(join(testDir, '.decantr', 'context', 'scaffold-pack.md'))).toBe(false);
+      expect(content).not.toContain('Read `.decantr/context/scaffold-pack.md` first');
       expect(content).not.toContain('If `package.json` does not already depend on `@decantr/css`');
     },
     INIT_TIMEOUT_MS,
@@ -576,24 +596,63 @@ describe('init command', () => {
   );
 
   it(
-    'emits style bridge files without requiring @decantr/css',
+    'keeps style-bridge runtime CSS and tokens host-owned',
     () => {
       writeFileSync(
         join(testDir, 'package.json'),
         JSON.stringify({ name: 'bridge-app', dependencies: { react: '^19.0.0' } }, null, 2),
       );
+      const stylesDir = join(testDir, 'src', 'styles');
+      mkdirSync(stylesDir, { recursive: true });
+      const hostTokens = ':root { --host-primary: #123456; }\n';
+      const hostGlobal = 'body { color: var(--host-primary); }\n';
+      const hostBridge = '/* project-owned compatibility stylesheet */\n';
+      writeFileSync(join(stylesDir, 'tokens.css'), hostTokens, 'utf-8');
+      writeFileSync(join(stylesDir, 'global.css'), hostGlobal, 'utf-8');
+      writeFileSync(join(stylesDir, 'decantr-bridge.css'), hostBridge, 'utf-8');
 
-      execSync(`node ${cliPath} init --existing --yes --offline --adoption=style-bridge`, {
-        cwd: testDir,
-        stdio: 'pipe',
-      });
+      const output = execSync(
+        `node ${cliPath} init --existing --yes --offline --adoption=style-bridge`,
+        {
+          cwd: testDir,
+          stdio: 'pipe',
+        },
+      ).toString();
 
       const content = readFileSync(join(testDir, 'DECANTR.md'), 'utf-8');
-      expect(existsSync(join(testDir, 'src', 'styles', 'tokens.css'))).toBe(true);
-      expect(existsSync(join(testDir, 'src', 'styles', 'decantr-bridge.css'))).toBe(true);
-      expect(existsSync(join(testDir, 'src', 'styles', 'treatments.css'))).toBe(false);
+      expect(readFileSync(join(stylesDir, 'tokens.css'), 'utf-8')).toBe(hostTokens);
+      expect(readFileSync(join(stylesDir, 'global.css'), 'utf-8')).toBe(hostGlobal);
+      expect(readFileSync(join(stylesDir, 'decantr-bridge.css'), 'utf-8')).toBe(hostBridge);
+      expect(existsSync(join(stylesDir, 'treatments.css'))).toBe(false);
       expect(content).toContain('style-bridge');
-      expect(content).toContain('`@decantr/css` is not required');
+      expect(content).toContain('Styling remains host-owned');
+      expect(content).toContain('accepted `.decantr/style-bridge.json`');
+      expect(output).toContain('runtime CSS, tokens, and global styles host-owned');
+      expect(output).not.toContain('Use generated bridge tokens');
+    },
+    INIT_TIMEOUT_MS,
+  );
+
+  it(
+    'does not describe Greenfield style-bridge as Decantr CSS authority',
+    () => {
+      writeFileSync(
+        join(testDir, 'package.json'),
+        JSON.stringify({ name: 'greenfield-bridge-app', dependencies: { react: '^19.0.0' } }),
+      );
+
+      const output = execSync(
+        `node ${cliPath} init --workflow=greenfield --adoption=style-bridge --yes --offline`,
+        { cwd: testDir, stdio: 'pipe' },
+      ).toString();
+
+      expect(output).toContain('style-bridge adoption, but styling remains host-owned');
+      expect(output).toContain('accepted `.decantr/style-bridge.json`');
+      expect(output).not.toContain('Use generated bridge tokens');
+      expect(output).not.toContain('Use Decantr CSS where generated by the adapter');
+      expect(existsSync(join(testDir, 'src', 'styles', 'tokens.css'))).toBe(false);
+      expect(existsSync(join(testDir, 'src', 'styles', 'global.css'))).toBe(false);
+      expect(existsSync(join(testDir, 'src', 'styles', 'decantr-bridge.css'))).toBe(false);
     },
     INIT_TIMEOUT_MS,
   );
@@ -650,12 +709,28 @@ describe('init command', () => {
         readFileSync(join(appDir, '.decantr', 'project.json'), 'utf-8'),
       ) as {
         detected?: { workspaceRoot?: string; appRoot?: string };
-        initialized?: { projectScope?: string };
+        initialized?: {
+          projectScope?: string;
+          adoption?: {
+            scope?: { root?: string };
+            changes?: { created?: string[]; updated?: string[]; deleted?: string[] };
+          };
+        };
       };
 
-      expect(projectJson.detected?.workspaceRoot).toBe(realpathSync(testDir));
-      expect(projectJson.detected?.appRoot).toBe(realpathSync(appDir));
+      expect(projectJson.detected?.workspaceRoot).toBe('.');
+      expect(projectJson.detected?.appRoot).toBe('apps/web');
+      expect(JSON.stringify(projectJson)).not.toContain(realpathSync(testDir));
       expect(projectJson.initialized?.projectScope).toBe('workspace-app');
+      expect(projectJson.initialized?.adoption?.scope?.root).toBe('apps/web');
+      const changes = projectJson.initialized?.adoption?.changes;
+      expect(
+        [
+          ...(changes?.created ?? []),
+          ...(changes?.updated ?? []),
+          ...(changes?.deleted ?? []),
+        ].every((path) => path.startsWith('apps/web/')),
+      ).toBe(true);
     },
     INIT_TIMEOUT_MS,
   );
