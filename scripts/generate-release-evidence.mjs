@@ -1,10 +1,11 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { copyFile, rm } from 'node:fs/promises';
+import { rm } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { basename, isAbsolute, join, relative } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { readArgValue } from './cli-arg-lib.mjs';
+import { canonicalizePackedTarball } from './canonical-package-tarball.mjs';
 import {
   getRepoRoot,
   listPublicPackages,
@@ -192,9 +193,10 @@ function makeProvenanceReference(entry, pkgJson, tarballSha256) {
       tarballSha256,
     },
     expectedPublish: {
-      command: 'pnpm publish --access public --provenance --tag <dist-tag> --no-git-checks',
+      command: 'node scripts/publish-packages.mjs',
       distTag: entry.defaultDistTag,
       requiresGithubOidc: true,
+      publishesCanonicalTarball: true,
     },
     githubActions: {
       repository: process.env.GITHUB_REPOSITORY ?? null,
@@ -445,20 +447,31 @@ async function main() {
     const pkgJson = readPackageJson(entry);
     const pkgDir = join(root, entry.path);
     const evidenceDir = join(outDir, safePackageDirName(entry.name));
+    const rawTarballDir = join(evidenceDir, 'raw-tarballs');
     const tarballDir = join(evidenceDir, 'tarballs');
+    const canonicalWorkDir = join(evidenceDir, 'canonical-work');
     ensureDir(evidenceDir);
+    ensureDir(rawTarballDir);
     ensureDir(tarballDir);
 
-    const packResult = run('pnpm', ['--filter', entry.name, 'pack', '--pack-destination', tarballDir, '--json']);
+    const packResult = run('pnpm', ['--filter', entry.name, 'pack', '--pack-destination', rawTarballDir, '--json']);
     const packOutput = normalizePackOutput(packResult.stdout);
-    const tarballPath = packOutput.filename;
+    const rawTarballPath = isAbsolute(packOutput.filename)
+      ? packOutput.filename
+      : join(root, packOutput.filename);
+    const tarballPath = canonicalizePackedTarball(
+      rawTarballPath,
+      entry.name,
+      canonicalWorkDir,
+      tarballDir,
+    );
     const tarballSha256 = sha256File(tarballPath);
     const tarballName = basename(tarballPath);
+    await rm(rawTarballDir, { recursive: true, force: true });
+    await rm(canonicalWorkDir, { recursive: true, force: true });
 
     if (noTarballs) {
       await rm(tarballPath, { force: true });
-    } else if (!tarballPath.startsWith(tarballDir)) {
-      await copyFile(tarballPath, join(tarballDir, tarballName));
     }
 
     const dependencies = collectDependencies(pkgJson, pkgDir);

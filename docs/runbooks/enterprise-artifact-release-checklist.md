@@ -31,6 +31,8 @@ Use this checklist with [Release Stewardship](release-stewardship.md). Decantr 3
 
 `release:evidence` attempts `pnpm audit --json` first. When npm explicitly reports that pnpm's audit endpoints were retired with HTTP 410, it queries npm's supported bulk advisory endpoint using the installed pnpm dependency graph. Any advisory, malformed response, inventory failure, or transport failure still fails the release evidence gate.
 
+The evidence generator and publish wrapper use the same deterministic canonical tarball helper. The SHA-256 in each package evidence directory therefore identifies the exact archive shape qualified for publication, not an npm-version- or operating-system-specific repack.
+
 Optional private verification notification:
 
 - Set `RELEASE_VERIFICATION_WEBHOOK_URL` to a private release Discord webhook.

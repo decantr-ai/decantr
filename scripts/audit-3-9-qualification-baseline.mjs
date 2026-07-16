@@ -8,7 +8,6 @@ import {
   realpathSync,
   rmSync,
   statSync,
-  writeFileSync,
 } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
@@ -17,6 +16,7 @@ import { tmpdir } from 'node:os';
 import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 import { fileURLToPath } from 'node:url';
+import { canonicalizePackedTarball } from './canonical-package-tarball.mjs';
 
 const EXPECTED_PACKAGE_VERSIONS = {
   '@decantr/content': '3.8.1',
@@ -188,18 +188,6 @@ function stableJson(value) {
       .join(',')}}`;
   }
   return JSON.stringify(value);
-}
-
-function sortJson(value) {
-  if (Array.isArray(value)) return value.map(sortJson);
-  if (value && typeof value === 'object') {
-    return Object.fromEntries(
-      Object.keys(value)
-        .sort()
-        .map((key) => [key, sortJson(value[key])]),
-    );
-  }
-  return value;
 }
 
 function hashJson(value) {
@@ -385,39 +373,6 @@ function parsePackOutput(stdout, cwd) {
   return resolve(cwd, entry.filename);
 }
 
-function canonicalizePackedTarball(rawTarball, packageName, workDir) {
-  const sourceRoot = join(
-    workDir,
-    'canonical-sources',
-    packageName.replace(/^@/u, '').replaceAll('/', '-'),
-  );
-  const outputRoot = join(workDir, 'canonical-tarballs');
-  mkdirSync(sourceRoot, { recursive: true });
-  mkdirSync(outputRoot, { recursive: true });
-  const extract = spawnSync('tar', ['-xzf', rawTarball, '-C', sourceRoot], {
-    encoding: 'utf8',
-    shell: false,
-  });
-  if (extract.error) throw extract.error;
-  if (extract.status !== 0) {
-    throw new Error(`tar extraction failed for ${packageName}: ${extract.stderr}`);
-  }
-  const packageRoot = join(sourceRoot, 'package');
-  const manifestPath = join(packageRoot, 'package.json');
-  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
-  writeFileSync(manifestPath, `${JSON.stringify(sortJson(manifest), null, 2)}\n`, 'utf8');
-  const packed = spawnSync(
-    'npm',
-    ['pack', packageRoot, '--pack-destination', outputRoot, '--json', '--ignore-scripts'],
-    { encoding: 'utf8', shell: false, maxBuffer: 16 * 1024 * 1024 },
-  );
-  if (packed.error) throw packed.error;
-  if (packed.status !== 0) {
-    throw new Error(`canonical npm pack failed for ${packageName}: ${packed.stderr}`);
-  }
-  return parsePackOutput(packed.stdout, outputRoot);
-}
-
 function exactPackageKeys(value) {
   return (
     isRecord(value) && deepEqual(Object.keys(value).sort(), [...CANDIDATE_PACKAGE_WAVE].sort())
@@ -490,7 +445,12 @@ export function verifyCandidatePackageBytes({ repoRoot, retainedTarballs, packPa
           );
         }
         const rawTarball = parsePackOutput(packed.stdout, repoRoot);
-        tarballPath = canonicalizePackedTarball(rawTarball, name, workDir);
+        tarballPath = canonicalizePackedTarball(
+          rawTarball,
+          name,
+          workDir,
+          join(workDir, 'canonical-tarballs'),
+        );
       }
       if (
         !isContained(workDir, tarballPath) ||

@@ -19,6 +19,7 @@ import { readArgValue } from './cli-arg-lib.mjs';
 import { getRepoRoot, loadPackageSurface, sortReleaseEntries } from './package-surface-lib.mjs';
 import { assertNpmPackageWriteAccess, readNpmVersions } from './npm-surface-lib.mjs';
 import { readThreeNineReleasePolicy } from './3-9-release-policy.mjs';
+import { canonicalizePackedTarball } from './canonical-package-tarball.mjs';
 
 const rawArgs = process.argv.slice(2);
 const args = new Set(rawArgs);
@@ -78,53 +79,6 @@ function hashFile(path, algorithm, encoding = 'hex') {
 
 function sha256File(path) {
   return hashFile(path, 'sha256');
-}
-
-function sortJson(value) {
-  if (Array.isArray(value)) return value.map(sortJson);
-  if (value && typeof value === 'object') {
-    return Object.fromEntries(
-      Object.keys(value)
-        .sort()
-        .map((key) => [key, sortJson(value[key])]),
-    );
-  }
-  return value;
-}
-
-function canonicalizePackedTarball(rawTarball, entry, sourceDir, destinationDir) {
-  const packageSourceDir = join(sourceDir, entry.name.replace(/^@/u, '').replaceAll('/', '-'));
-  mkdirSync(packageSourceDir, { recursive: true });
-  const extracted = spawnSync('tar', ['-xzf', rawTarball, '-C', packageSourceDir], {
-    cwd: root,
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
-    env: createPublishEnv(getPrimaryAuthMode()),
-  });
-  if (extracted.status !== 0) {
-    const detail = [extracted.stdout, extracted.stderr].filter(Boolean).join('\n').trim();
-    throw new Error(`Cannot extract the package snapshot for ${entry.name}: ${detail || extracted.status}`);
-  }
-
-  const packageRoot = join(packageSourceDir, 'package');
-  const manifestPath = join(packageRoot, 'package.json');
-  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
-  writeFileSync(manifestPath, `${JSON.stringify(sortJson(manifest), null, 2)}\n`, 'utf8');
-  const packed = spawnSync(
-    'npm',
-    ['pack', packageRoot, '--pack-destination', destinationDir, '--json', '--ignore-scripts'],
-    {
-      cwd: root,
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'pipe'],
-      env: createPublishEnv(getPrimaryAuthMode()),
-    },
-  );
-  if (packed.status !== 0) {
-    const detail = [packed.stdout, packed.stderr].filter(Boolean).join('\n').trim();
-    throw new Error(`Cannot canonicalize the publish tarball for ${entry.name}: ${detail || packed.status}`);
-  }
-  return resolve(destinationDir, parsePackOutput(packed.stdout));
 }
 
 function isContained(parent, child) {
@@ -652,10 +606,8 @@ function stageReleaseTarballs(entries, sourceVerification, releaseEvidence) {
 
   const incomingDir = join(context.runDir, '.incoming');
   const rawIncomingDir = join(context.runDir, '.incoming-raw');
-  const canonicalSourceDir = join(context.runDir, '.canonical-sources');
   mkdirSync(incomingDir, { recursive: true });
   mkdirSync(rawIncomingDir, { recursive: true });
-  mkdirSync(canonicalSourceDir, { recursive: true });
   const packageArtifacts = [];
   try {
     for (const entry of entries) {
@@ -684,8 +636,8 @@ function stageReleaseTarballs(entries, sourceVerification, releaseEvidence) {
       }
       const packedPath = canonicalizePackedTarball(
         rawPackedPath,
-        entry,
-        canonicalSourceDir,
+        entry.name,
+        context.runDir,
         incomingDir,
       );
       auditPackedManifest(entry, packedPath, version);
@@ -731,7 +683,7 @@ function stageReleaseTarballs(entries, sourceVerification, releaseEvidence) {
   } finally {
     rmSync(incomingDir, { recursive: true, force: true });
     rmSync(rawIncomingDir, { recursive: true, force: true });
-    rmSync(canonicalSourceDir, { recursive: true, force: true });
+    rmSync(join(context.runDir, 'canonical-sources'), { recursive: true, force: true });
   }
 
   const manifest = {

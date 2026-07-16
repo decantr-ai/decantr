@@ -16,6 +16,7 @@ import {
 import { arch, cpus, platform, release, tmpdir } from 'node:os';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { canonicalizePackedTarball } from './canonical-package-tarball.mjs';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const fixtureRoot = join(repoRoot, 'fixtures', 'qualification', '3.9');
@@ -163,18 +164,6 @@ function stableJson(value) {
       .join(',')}}`;
   }
   return JSON.stringify(value);
-}
-
-function sortJson(value) {
-  if (Array.isArray(value)) return value.map(sortJson);
-  if (value && typeof value === 'object') {
-    return Object.fromEntries(
-      Object.keys(value)
-        .sort()
-        .map((key) => [key, sortJson(value[key])]),
-    );
-  }
-  return value;
 }
 
 function hashJson(value) {
@@ -398,26 +387,6 @@ function parsePackOutput(stdout, cwd) {
   const entry = Array.isArray(value) ? value[0] : value;
   if (!entry?.filename) throw new Error('pnpm pack did not report a tarball filename.');
   return resolve(cwd, entry.filename);
-}
-
-function canonicalizePackedTarball(rawTarball, packageName, candidateRoot, tarballDir) {
-  const sourceRoot = join(
-    candidateRoot,
-    'canonical-sources',
-    packageName.replace(/^@/u, '').replaceAll('/', '-'),
-  );
-  mkdirSync(sourceRoot, { recursive: true });
-  run('tar', ['-xzf', rawTarball, '-C', sourceRoot], { cwd: repoRoot });
-  const packageRoot = join(sourceRoot, 'package');
-  const manifestPath = join(packageRoot, 'package.json');
-  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
-  writeJson(manifestPath, sortJson(manifest));
-  const packed = run(
-    'npm',
-    ['pack', packageRoot, '--pack-destination', tarballDir, '--json', '--ignore-scripts'],
-    { cwd: repoRoot },
-  );
-  return parsePackOutput(packed.stdout, tarballDir);
 }
 
 function prepareCandidate(options) {

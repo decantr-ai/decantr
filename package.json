@@ -79,6 +79,7 @@
     "@biomejs/biome": "^2.4.15",
     "@types/node": "^25.9.1",
     "entities": "^8.0.0",
+    "tar": "7.5.20",
     "tsup": "^8.0.0",
     "tsx": "^4.22.3",
     "typescript": "^6.0.3",

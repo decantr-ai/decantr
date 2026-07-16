@@ -7,6 +7,7 @@ import {
   mkdtempSync,
   readFileSync,
   rmSync,
+  utimesSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -19,6 +20,7 @@ import {
   THREE_NINE_WAIVED_REQUIREMENTS,
   evaluateThreeNineReleasePolicy,
 } from './3-9-release-policy.mjs';
+import { canonicalizePackedTarball } from './canonical-package-tarball.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const scripts = join(root, 'scripts');
@@ -47,6 +49,75 @@ function git(cwd, args) {
 function hash(value, algorithm, encoding = 'hex') {
   return createHash(algorithm).update(value).digest(encoding);
 }
+
+test('canonical package tarballs ignore source order and timestamps', (t) => {
+  const fixtureRoot = mkdtempSync(join(tmpdir(), 'decantr-canonical-tarball-test-'));
+  t.after(() => rmSync(fixtureRoot, { recursive: true, force: true }));
+
+  function createRawSnapshot(label, manifest, timestamp) {
+    const sourceRoot = join(fixtureRoot, `source-${label}`);
+    const packageRoot = join(sourceRoot, 'package');
+    const distRoot = join(packageRoot, 'dist');
+    mkdirSync(distRoot, { recursive: true });
+    if (label === 'first') {
+      writeFileSync(join(distRoot, 'index.js'), 'export const release = "3.9.0";\n', 'utf8');
+      writeFileSync(join(distRoot, 'meta.json'), '{"stable":true}\n', 'utf8');
+    } else {
+      writeFileSync(join(distRoot, 'meta.json'), '{"stable":true}\n', 'utf8');
+      writeFileSync(join(distRoot, 'index.js'), 'export const release = "3.9.0";\n', 'utf8');
+    }
+    writeJson(join(packageRoot, 'package.json'), manifest);
+    const date = new Date(timestamp);
+    for (const path of [
+      join(distRoot, 'index.js'),
+      join(distRoot, 'meta.json'),
+      join(packageRoot, 'package.json'),
+      distRoot,
+      packageRoot,
+    ]) {
+      utimesSync(path, date, date);
+    }
+    const rawTarball = join(fixtureRoot, `raw-${label}.tgz`);
+    execFileSync('tar', ['-czf', rawTarball, '-C', sourceRoot, 'package'], {
+      env: { ...process.env, COPYFILE_DISABLE: '1' },
+    });
+    return rawTarball;
+  }
+
+  const firstRaw = createRawSnapshot('first', {
+    name: '@decantr/cli',
+    version: '3.9.0',
+    description: 'Canonical release fixture',
+    exports: { '.': './dist/index.js', './meta': './dist/meta.json' },
+  }, '2024-01-01T00:00:00.000Z');
+  const secondRaw = createRawSnapshot('second', {
+    exports: { './meta': './dist/meta.json', '.': './dist/index.js' },
+    description: 'Canonical release fixture',
+    version: '3.9.0',
+    name: '@decantr/cli',
+  }, '2026-07-16T20:00:00.000Z');
+
+  const first = canonicalizePackedTarball(
+    firstRaw,
+    '@decantr/cli',
+    join(fixtureRoot, 'candidate-first'),
+    join(fixtureRoot, 'output-first'),
+  );
+  const second = canonicalizePackedTarball(
+    secondRaw,
+    '@decantr/cli',
+    join(fixtureRoot, 'candidate-second'),
+    join(fixtureRoot, 'output-second'),
+  );
+  const firstBytes = readFileSync(first);
+  const secondBytes = readFileSync(second);
+  assert.deepEqual(firstBytes, secondBytes);
+  assert.equal(hash(firstBytes, 'sha256'), hash(secondBytes, 'sha256'));
+
+  const listed = execFileSync('tar', ['-tzf', first], { encoding: 'utf8' }).trim().split('\n');
+  assert.ok(listed.includes('package/package.json'));
+  assert.deepEqual(listed, [...listed].sort());
+});
 
 test('sole-maintainer policy permits publication without manufacturing qualification', () => {
   const exactPackageTarballs = Object.fromEntries(
@@ -189,6 +260,7 @@ function createPublishIntegrityFixture(t) {
   const npmMetadata = join(fixtureRoot, 'npm-metadata.json');
   const tarballName = 'decantr-cli-3.9.0.tgz';
   const tarballPath = join(fixtureRoot, tarballName);
+  const rawTarballPath = join(fixtureRoot, 'raw-decantr-cli-3.9.0.tgz');
   const tarballSource = join(fixtureRoot, 'tarball-source');
 
   mkdirSync(join(tarballSource, 'package'), { recursive: true });
@@ -196,7 +268,16 @@ function createPublishIntegrityFixture(t) {
     name: '@decantr/cli',
     version: '3.9.0',
   });
-  execFileSync('tar', ['-czf', tarballPath, '-C', tarballSource, 'package']);
+  execFileSync('tar', ['-czf', rawTarballPath, '-C', tarballSource, 'package'], {
+    env: { ...process.env, COPYFILE_DISABLE: '1' },
+  });
+  const canonicalTarballPath = canonicalizePackedTarball(
+    rawTarballPath,
+    '@decantr/cli',
+    join(fixtureRoot, 'fixture-candidate'),
+    fixtureRoot,
+  );
+  assert.equal(canonicalTarballPath, tarballPath);
   const tarballBytes = readFileSync(tarballPath);
   const tarballSha256 = hash(tarballBytes, 'sha256');
   const exactPackageTarballs = Object.fromEntries(
@@ -310,20 +391,11 @@ process.exit(64);
   writeFileSync(
     fakeNpm,
     `#!/usr/bin/env node
-import { copyFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
-import { basename, join } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
 const args = process.argv.slice(2);
 const metadata = process.env.DECANTR_TEST_NPM_METADATA && existsSync(process.env.DECANTR_TEST_NPM_METADATA)
   ? JSON.parse(readFileSync(process.env.DECANTR_TEST_NPM_METADATA, 'utf8'))
   : null;
-if (args[0] === 'pack') {
-  const destination = args[args.indexOf('--pack-destination') + 1];
-  mkdirSync(destination, { recursive: true });
-  const target = join(destination, basename(process.env.DECANTR_TEST_TARBALL));
-  copyFileSync(process.env.DECANTR_TEST_TARBALL, target);
-  console.log(JSON.stringify([{ filename: target }]));
-  process.exit(0);
-}
 if (args[0] === 'view' && args[2] === 'versions') {
   console.log(JSON.stringify(metadata ? [metadata.version] : []));
   process.exit(0);
