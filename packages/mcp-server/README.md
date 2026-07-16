@@ -169,7 +169,7 @@ Content-corpus and pack-resolution tools may call the configured Decantr API. So
 
 ### 3.4 Tool Surface Migration
 
-Decantr 3.4 consolidated legacy MCP tool names into the eight action-based tools above. Decantr 3.8.2 keeps that surface, preserves v2 task/evidence/workspace-health/health-loop contracts, and routes official corpus compatibility through `decantr_registry` rather than adding a ninth tool. For example, `decantr_get_project_state` becomes `decantr_project` with `{ "action": "state" }`, `decantr_get_graph_snapshot` becomes `decantr_graph` with `{ "action": "snapshot" }`, and the legacy write tools become `decantr_contract_write` with `{ "action": "accept_drift" }` or `{ "action": "update_essence" }`.
+Decantr 3.4 consolidated legacy MCP tool names into the eight action-based tools above. Decantr 3.8.3 keeps that surface, preserves v2 task/evidence/workspace-health/health-loop contracts, and routes official corpus compatibility through `decantr_registry` rather than adding a ninth tool. For example, `decantr_get_project_state` becomes `decantr_project` with `{ "action": "state" }`, `decantr_get_graph_snapshot` becomes `decantr_graph` with `{ "action": "snapshot" }`, and the legacy write tools become `decantr_contract_write` with `{ "action": "accept_drift" }` or `{ "action": "update_essence" }`.
 
 ## How It Works
 

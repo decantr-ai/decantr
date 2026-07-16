@@ -136,7 +136,7 @@ pnpm audit:package-permissions
 pnpm audit:content-package
 pnpm showcase:verify:shortlist
 pnpm benchmark:realworld-corpus -- --config scripts/realworld-corpus.first-mile.json --cli packages/cli/dist/index.js --out /tmp/decantr-realworld-corpus-3.8
-pnpm benchmark:post-publish-adoption -- --cli-package @decantr/cli@3.8.2 --out /tmp/decantr-post-publish-3.8.2
+pnpm benchmark:post-publish-adoption -- --cli-package @decantr/cli@3.8.3 --out /tmp/decantr-post-publish-3.8.3
 pnpm release:verify
 pnpm release:closeout
 ```

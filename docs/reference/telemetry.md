@@ -1,6 +1,6 @@
 # Telemetry
 
-Decantr 3.8.2 keeps `@decantr/telemetry` as an optional contract and sink package, but hosted product analytics are no longer part of the active registry/API product surface.
+Decantr 3.8.x keeps `@decantr/telemetry` as an optional contract and sink package, but hosted product analytics are no longer part of the active registry/API product surface.
 
 The current product direction is content-first governance:
 
