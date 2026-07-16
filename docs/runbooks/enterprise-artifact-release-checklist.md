@@ -1,18 +1,19 @@
 # Enterprise Artifact Release Checklist
 
 - `pnpm install --frozen-lockfile`
-- `pnpm audit --json`
-- `pnpm run build:packages`
-- `pnpm --filter decantr-api typecheck`
-- `pnpm --filter decantr-api exec vitest run test/routes/critique.test.ts test/routes/auth.test.ts test/routes/billing.test.ts test/routes/orgs.test.ts test/routes/publish.test.ts`
+- `pnpm build`
+- `pnpm test`
 - `pnpm audit:package-surface`
+- `pnpm audit:package-permissions`
 - `pnpm audit:release-readiness`
+- `pnpm audit:content-package`
 - `pnpm audit:public-api -- --core-only --fail-on-error`
-- `pnpm audit:registry-portal -- --fail-on-error`
 - `pnpm release:evidence --out=package-release-evidence`
 - `node scripts/publish-packages.mjs --publish-dry-run --wave=<wave>`
 - `node scripts/publish-packages.mjs --wave=<wave>` from the pinned publish workflow or local authenticated shell
 - `node scripts/verify-published-packages.mjs --wave=<wave>`
+
+`release:evidence` attempts `pnpm audit --json` first. When npm explicitly reports that pnpm's audit endpoints were retired with HTTP 410, it queries npm's supported bulk advisory endpoint using the installed pnpm dependency graph. Any advisory, malformed response, inventory failure, or transport failure still fails the release evidence gate.
 
 Optional release notification:
 

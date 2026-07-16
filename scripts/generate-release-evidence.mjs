@@ -230,6 +230,170 @@ function parseJsonOrRaw(result) {
   }
 }
 
+function isRetiredPnpmAuditEndpoint(result) {
+  const output = `${result.stdout ?? ''}\n${result.stderr ?? ''}`;
+  return (
+    result.status !== 0 &&
+    output.includes('ERR_PNPM_AUDIT_BAD_RESPONSE') &&
+    output.includes('responded with 410') &&
+    /bulk advisory endpoint/i.test(output)
+  );
+}
+
+function collectRegistryDependencyVersions(projects) {
+  const versionsByName = new Map();
+  const visited = new Set();
+
+  function visit(node) {
+    if (!node || typeof node !== 'object' || visited.has(node)) return;
+    visited.add(node);
+
+    for (const group of ['dependencies', 'devDependencies', 'optionalDependencies']) {
+      const dependencies = node[group];
+      if (!dependencies || typeof dependencies !== 'object') continue;
+
+      for (const [name, dependency] of Object.entries(dependencies)) {
+        if (!dependency || typeof dependency !== 'object') continue;
+
+        const resolved = String(dependency.resolved ?? '');
+        const dependencyPath = String(dependency.path ?? '').replaceAll('\\', '/');
+        const isRegistryDependency =
+          resolved.includes('registry.npmjs.org') || dependencyPath.includes('/node_modules/.pnpm/');
+
+        if (isRegistryDependency && typeof dependency.version === 'string') {
+          const versions = versionsByName.get(name) ?? new Set();
+          versions.add(dependency.version);
+          versionsByName.set(name, versions);
+        }
+
+        visit(dependency);
+      }
+    }
+  }
+
+  for (const project of projects) visit(project);
+
+  return Object.fromEntries(
+    [...versionsByName.entries()]
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([name, versions]) => [name, [...versions].sort()]),
+  );
+}
+
+async function runBulkAdvisoryAudit(pnpmAuditResult) {
+  const inventoryResult = run('pnpm', ['list', '--recursive', '--json', '--depth', 'Infinity'], {
+    allowFailure: true,
+  });
+  if (inventoryResult.status !== 0) {
+    return {
+      ok: false,
+      source: 'npm-bulk-advisory',
+      error: 'Unable to build the installed dependency inventory for npm bulk advisory audit.',
+      pnpmAudit: parseJsonOrRaw(pnpmAuditResult),
+      inventory: parseJsonOrRaw(inventoryResult),
+    };
+  }
+
+  let projects;
+  try {
+    projects = JSON.parse(inventoryResult.stdout);
+  } catch (error) {
+    return {
+      ok: false,
+      source: 'npm-bulk-advisory',
+      error: `Unable to parse the installed dependency inventory: ${error instanceof Error ? error.message : String(error)}`,
+      pnpmAudit: parseJsonOrRaw(pnpmAuditResult),
+    };
+  }
+
+  const dependencies = collectRegistryDependencyVersions(projects);
+  if (Object.keys(dependencies).length === 0) {
+    return {
+      ok: false,
+      source: 'npm-bulk-advisory',
+      error: 'The installed dependency inventory was empty.',
+      pnpmAudit: parseJsonOrRaw(pnpmAuditResult),
+    };
+  }
+
+  try {
+    const response = await fetch('https://registry.npmjs.org/-/npm/v1/security/advisories/bulk', {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json',
+        'user-agent': 'decantr-release-evidence',
+      },
+      body: JSON.stringify(dependencies),
+    });
+    const responseText = await response.text();
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        source: 'npm-bulk-advisory',
+        error: `npm bulk advisory endpoint responded with ${response.status}.`,
+        response: responseText,
+        pnpmAudit: parseJsonOrRaw(pnpmAuditResult),
+      };
+    }
+
+    let advisoriesByPackage;
+    try {
+      advisoriesByPackage = JSON.parse(responseText);
+    } catch (error) {
+      return {
+        ok: false,
+        source: 'npm-bulk-advisory',
+        error: `Unable to parse npm bulk advisory response: ${error instanceof Error ? error.message : String(error)}`,
+        response: responseText,
+        pnpmAudit: parseJsonOrRaw(pnpmAuditResult),
+      };
+    }
+
+    if (!advisoriesByPackage || typeof advisoriesByPackage !== 'object' || Array.isArray(advisoriesByPackage)) {
+      return {
+        ok: false,
+        source: 'npm-bulk-advisory',
+        error: 'npm bulk advisory endpoint returned an unexpected response shape.',
+        response: advisoriesByPackage,
+        pnpmAudit: parseJsonOrRaw(pnpmAuditResult),
+      };
+    }
+
+    const advisoryCount = Object.values(advisoriesByPackage).reduce(
+      (count, advisories) => count + (Array.isArray(advisories) ? advisories.length : 0),
+      0,
+    );
+
+    return {
+      ok: advisoryCount === 0,
+      source: 'npm-bulk-advisory',
+      fallbackReason: 'pnpm audit endpoints retired with HTTP 410',
+      dependencyCount: Object.keys(dependencies).length,
+      advisoryCount,
+      advisories: advisoriesByPackage,
+      pnpmAudit: parseJsonOrRaw(pnpmAuditResult),
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      source: 'npm-bulk-advisory',
+      error: `npm bulk advisory request failed: ${error instanceof Error ? error.message : String(error)}`,
+      pnpmAudit: parseJsonOrRaw(pnpmAuditResult),
+    };
+  }
+}
+
+async function runVulnerabilityAudit() {
+  const pnpmAuditResult = run('pnpm', ['audit', '--json'], { allowFailure: true });
+  if (!isRetiredPnpmAuditEndpoint(pnpmAuditResult)) {
+    return parseJsonOrRaw(pnpmAuditResult);
+  }
+
+  return runBulkAdvisoryAudit(pnpmAuditResult);
+}
+
 async function main() {
   ensureDir(outDir);
 
@@ -245,7 +409,7 @@ async function main() {
     throw new Error('No packages selected for release evidence generation.');
   }
 
-  const auditResult = parseJsonOrRaw(run('pnpm', ['audit', '--json'], { allowFailure: true }));
+  const auditResult = await runVulnerabilityAudit();
   writeFileSync(join(outDir, 'vulnerability-report.json'), `${JSON.stringify(auditResult, null, 2)}\n`, 'utf8');
 
   const licenseResult = parseJsonOrRaw(run('pnpm', ['licenses', 'list', '--json'], { allowFailure: true }));
