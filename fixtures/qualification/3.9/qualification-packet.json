@@ -56,7 +56,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -92,7 +92,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -128,7 +128,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -164,7 +164,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -200,7 +200,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -236,7 +236,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -272,7 +272,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -308,7 +308,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -344,7 +344,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -380,7 +380,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -416,7 +416,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -452,7 +452,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -488,7 +488,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -524,7 +524,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -560,7 +560,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -596,7 +596,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -632,7 +632,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -668,7 +668,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -704,7 +704,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -740,7 +740,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -776,7 +776,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -812,7 +812,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -848,7 +848,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -884,7 +884,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -913,7 +913,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -942,7 +942,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -971,7 +971,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -1000,7 +1000,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -1029,7 +1029,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -1058,7 +1058,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -1087,7 +1087,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -1116,7 +1116,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -1145,7 +1145,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -1174,7 +1174,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -1203,7 +1203,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
+          "capturedOutputSha256": "fc7283f70772edd9e3766af8e29061b94ce7b65e97c8605f6d01f026ad689e69"
         }
       },
       {
@@ -2375,19 +2375,19 @@
   "routeReplay": {
     "status": "complete",
     "releaseVersion": "3.9.0",
-    "corpusSha256": "8f08c103a777fcdadfa9bf183e0704e1e36d15612c34ec4fc67b2de2357240dd",
+    "corpusSha256": "5214472b5a59f7ae59143296383d1a071eed5b9a4f436eb32e3f55d3ff29eb8d",
     "artifact": {
-      "path": "fixtures/qualification/3.9/evidence/decantr-route-replay-artifact.v1.568e4a5f1b33c09893594bf1286a48ab15d9e08c7cedaf8d250652c4a408009e.json",
-      "sha256": "568e4a5f1b33c09893594bf1286a48ab15d9e08c7cedaf8d250652c4a408009e",
+      "path": "fixtures/qualification/3.9/evidence/decantr-route-replay-artifact.v1.2411ccfa135a883bf6fcb2b4701a43e2ca4db190f88aef3385850738dc423e13.json",
+      "sha256": "2411ccfa135a883bf6fcb2b4701a43e2ca4db190f88aef3385850738dc423e13",
       "mediaType": "application/json",
-      "generatedAt": "2026-07-21T17:57:49.000Z",
+      "generatedAt": "2026-07-21T18:06:38.000Z",
       "command": [
         "node",
         "scripts/run-3-9-route-qualification.mjs",
         "--source-mode",
         "pinned-public-repositories",
         "--generated-at",
-        "2026-07-21T17:57:49.000Z"
+        "2026-07-21T18:06:38.000Z"
       ],
       "exitCode": 0,
       "environment": {
@@ -2395,7 +2395,7 @@
         "cpu": "arm64",
         "nodeVersion": "v25.8.2",
         "packageManagerVersion": "10.33.0",
-        "exactSourceRef": "git:7f533360601001ba44aa8f50bd3d48ac786a305f;verifier-dist-sha256:6f084d5070bb5f006402487a893160aa4fd94b747d4d90c011e3a1f7e021a24f;harness-sha256:f54f440953c56e277253192f225594fb7f3b9fe87c9e47975ae4a2ffa0c5eee9;package-set-sha256:51d45262fd2e6e9e7da42cfcdb1549bfa62dafa3273fdc1e7eac1df26a794ef6",
+        "exactSourceRef": "git:2dfc8c571e2491c0c7961f3be2fe2fd4fad73c7f;verifier-dist-sha256:6f084d5070bb5f006402487a893160aa4fd94b747d4d90c011e3a1f7e021a24f;harness-sha256:f54f440953c56e277253192f225594fb7f3b9fe87c9e47975ae4a2ffa0c5eee9;package-set-sha256:51d45262fd2e6e9e7da42cfcdb1549bfa62dafa3273fdc1e7eac1df26a794ef6",
         "exactPackageVersions": {
           "@decantr/content": "3.9.0",
           "@decantr/registry": "3.9.0",
@@ -2434,8 +2434,8 @@
       "behaviorBinding": {
         "schemaVersion": "decantr-behavior-evidence-binding.v1",
         "packageSetSha256": "51d45262fd2e6e9e7da42cfcdb1549bfa62dafa3273fdc1e7eac1df26a794ef6",
-        "behaviorSha256": "fcdea6e030b3c383ed5e4c78756f9a5f62f4447ba4593ce061c3e72701c18982",
-        "boundEvidenceSha256": "221c2bc3c78ada5622e85d1ea50839640fdae3380b6e1aff3717cbd86d511d73"
+        "behaviorSha256": "f3fdd60988050f3209780a1c4a6d1be916218d051ca0fe662e0815d8ccf6591a",
+        "boundEvidenceSha256": "4c85f07a3f3892a401716c1c45f700e9280406caa151660367efe6def968627a"
       }
     },
     "cases": [
