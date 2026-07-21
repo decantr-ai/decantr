@@ -1,13 +1,13 @@
 {
   "schemaVersion": "decantr-route-replay-artifact.v1",
-  "generatedAt": "2026-07-16T21:55:54.000Z",
+  "generatedAt": "2026-07-21T17:57:49.000Z",
   "command": [
     "node",
     "scripts/run-3-9-route-qualification.mjs",
     "--source-mode",
     "pinned-public-repositories",
     "--generated-at",
-    "2026-07-16T21:55:54.000Z"
+    "2026-07-21T17:57:49.000Z"
   ],
   "exitCode": 0,
   "environment": {
@@ -15,7 +15,7 @@
     "cpu": "arm64",
     "nodeVersion": "v25.8.2",
     "packageManagerVersion": "10.33.0",
-    "exactSourceRef": "git:9ba91bd43786aae87b6a5c727e06b819a46741a4;verifier-dist-sha256:e5bb005c1eec661788d7c85e7cfec10a70c82575e885106eb929b3f9c5fa98f8;harness-sha256:e74199f59b4de8bc1060591c0e8be1e4779e8b2dff516401c01ba59b08978e83;package-set-sha256:bb6e40cdd1207f2ad5076bce3701b05b55610899632cf53cd58f574b2fdb64f7",
+    "exactSourceRef": "git:7f533360601001ba44aa8f50bd3d48ac786a305f;verifier-dist-sha256:6f084d5070bb5f006402487a893160aa4fd94b747d4d90c011e3a1f7e021a24f;harness-sha256:f54f440953c56e277253192f225594fb7f3b9fe87c9e47975ae4a2ffa0c5eee9;package-set-sha256:51d45262fd2e6e9e7da42cfcdb1549bfa62dafa3273fdc1e7eac1df26a794ef6",
     "exactPackageVersions": {
       "@decantr/content": "3.9.0",
       "@decantr/registry": "3.9.0",
@@ -27,32 +27,32 @@
     "exactPackageTarballs": {
       "@decantr/content": {
         "file": "decantr-content-3.9.0.tgz",
-        "sha256": "4a1ef4ffe09bcd793205c7a3b050bf932cb4780cf81422b19a8df0d7e9fa554f"
+        "sha256": "1952250ef7a0725cdbede39fa8699c0e3691fb03dcd0d57128c7965dcd1ac2ca"
       },
       "@decantr/registry": {
         "file": "decantr-registry-3.9.0.tgz",
-        "sha256": "5100aa0942d4309fd3d38965d1d6782f8c5be70ba43073a5ad102dce859589f4"
+        "sha256": "5b75073348b2c3578e4debcfc402efb5544653602332b286724ededb24b87d63"
       },
       "@decantr/core": {
         "file": "decantr-core-3.9.0.tgz",
-        "sha256": "9a3919355ddac3215f545c36cdc406dd5eac17646d98a76c4914fdfc69cbaffd"
+        "sha256": "b7a75e40ad6b78ef688c979c96afac19a3eed663a81b5bf9e227459e9ad2357e"
       },
       "@decantr/verifier": {
         "file": "decantr-verifier-3.9.0.tgz",
-        "sha256": "6a40f95a75b7d6504dea8c7c5ca2146dc2080703a9965217a7421d3208db1276"
+        "sha256": "15741a0a4c48222dcfb0ea880968662b61de4a9ee4cacff61acff5829193ea9a"
       },
       "@decantr/mcp-server": {
         "file": "decantr-mcp-server-3.9.0.tgz",
-        "sha256": "3641c90a6c99432d9e53cce426cbf409c5ab2c850526d084520b1ed3aa8616a2"
+        "sha256": "a83b30eb783b3d2695d9d07164bb6c589ecff9b631f9a645f7da1e89fc1802cf"
       },
       "@decantr/cli": {
         "file": "decantr-cli-3.9.0.tgz",
-        "sha256": "e35a6705df0c7c25ea1f2e5ec4c9fb4e8b1c3f5eb4d47ab5e3adad93569846c4"
+        "sha256": "b4e0deeccae5e92ebde21dee3cc13011709da8c4621a4ef235babb057e507d79"
       }
     }
   },
   "releaseVersion": "3.9.0",
-  "routeCorpusSha256": "7e36508c9da6a1be3ef697f884cc92954620c33e3b0b7275aa3ef975ba4de857",
+  "routeCorpusSha256": "8f08c103a777fcdadfa9bf183e0704e1e36d15612c34ec4fc67b2de2357240dd",
   "cases": [
     {
       "caseId": "route-oracle-competition-01",
@@ -792,7 +792,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -828,7 +828,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -864,7 +864,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -900,7 +900,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -936,7 +936,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -972,7 +972,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -1008,7 +1008,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -1044,7 +1044,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -1080,7 +1080,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -1116,7 +1116,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -1152,7 +1152,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -1188,7 +1188,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -1224,7 +1224,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -1260,7 +1260,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -1296,7 +1296,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -1332,7 +1332,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -1368,7 +1368,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -1404,7 +1404,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -1440,7 +1440,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -1476,7 +1476,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -1512,7 +1512,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -1548,7 +1548,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -1584,7 +1584,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -1620,7 +1620,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -1649,7 +1649,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -1678,7 +1678,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -1707,7 +1707,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -1736,7 +1736,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -1765,7 +1765,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -1794,7 +1794,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -1823,7 +1823,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -1852,7 +1852,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -1881,7 +1881,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -1910,7 +1910,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -1939,7 +1939,7 @@
           "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
           "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
           "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-          "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc"
+          "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235"
         }
       },
       {
@@ -3074,17 +3074,329 @@
       }
     ]
   },
+  "angularBrownfield": {
+    "status": "complete",
+    "targetCount": 2,
+    "routeSignalCount": 43,
+    "taskableRouteCount": 35,
+    "componentCount": 62,
+    "sourceBlobCount": 41,
+    "targets": [
+      {
+        "id": "angular-realworld",
+        "repository": "https://github.com/gothinkster/angular-realworld-example-app.git",
+        "commit": "dd99ed2cf39c805d719f943c5d7061a5683d98a8",
+        "projectPath": ".",
+        "framework": "Angular Router",
+        "packageName": "angular-realworld",
+        "routeStrategy": "angular-router",
+        "routeAuthority": "proven",
+        "routeCompleteness": "complete",
+        "routeConfidence": "high",
+        "routeSignalCount": 14,
+        "taskableRouteCount": 10,
+        "routePaths": [
+          "/",
+          "/tag/:tag",
+          "/login",
+          "/register",
+          "/settings",
+          "/profile/:username",
+          "/profile/:username/favorites",
+          "/editor",
+          "/editor/:slug",
+          "/article/:slug"
+        ],
+        "routeSources": [
+          {
+            "sourcePath": "src/app/core/auth/auth.component.ts",
+            "blobHash": "555ab27ca94ba63a3e94d75eb63ab40f3fdd4424"
+          },
+          {
+            "sourcePath": "src/app/features/article/pages/article/article.component.ts",
+            "blobHash": "0219afad18731cd86fff9181765de8fed77f351a"
+          },
+          {
+            "sourcePath": "src/app/features/article/pages/editor/editor.component.ts",
+            "blobHash": "9faed2d1379e2752b41562bf8719ebf88bb82614"
+          },
+          {
+            "sourcePath": "src/app/features/article/pages/home/home.component.ts",
+            "blobHash": "5012888126f64dac657b8dee546b0680e9a24e9e"
+          },
+          {
+            "sourcePath": "src/app/features/profile/components/profile-favorites.component.ts",
+            "blobHash": "a48ee96f14ecd7b7a47fdfe1a2bb645a5ff76ad6"
+          },
+          {
+            "sourcePath": "src/app/features/profile/pages/profile/profile.component.ts",
+            "blobHash": "82d89196c1f4a340b80142e65ea983729d57cc9b"
+          },
+          {
+            "sourcePath": "src/app/features/settings/settings.component.ts",
+            "blobHash": "ead6918849bdce1f09fdccfca054bde55d746ff4"
+          }
+        ],
+        "authorityFiles": [
+          {
+            "sourcePath": "src/app/app.config.ts",
+            "blobHash": "73081d770cd98d57d592f692632e131caf30851a"
+          },
+          {
+            "sourcePath": "src/app/app.routes.ts",
+            "blobHash": "4d897d1d1cb5cd02a1b1fd032fdd4e1e0c22cc95"
+          },
+          {
+            "sourcePath": "src/app/features/profile/profile.routes.ts",
+            "blobHash": "4687b56115ab6624436424a29bfb5f15b1d778c7"
+          },
+          {
+            "sourcePath": "src/main.ts",
+            "blobHash": "2896ea750748f57bfde3d3ecf7e75a571e42f835"
+          }
+        ],
+        "excludedSourceCount": 7,
+        "componentCount": 18,
+        "componentConfidence": "high",
+        "styleApproach": "css",
+        "styleConfidence": "high",
+        "confidenceScore": 98,
+        "projectEvidence": [
+          "Angular config or dependency",
+          "Angular build entry: src/main.ts",
+          "Angular global style entry: realworld/assets/theme/styles.css",
+          "Angular project \"angular-conduit\" selected from angular.json"
+        ],
+        "routeEvidence": [
+          "7 test, mock, fixture, or generated source path(s) excluded",
+          "Angular build entry: src/main.ts",
+          "Angular global style entry: realworld/assets/theme/styles.css",
+          "Angular project \"angular-conduit\" selected from angular.json",
+          "Angular router root is reachable from src/main.ts"
+        ],
+        "styleEvidence": [
+          "Angular build target declares 1 global style entry"
+        ],
+        "limitations": [
+          "Configured Angular style entry is not present inside the selected app: realworld/assets/theme/styles.css",
+          "Some duplicate or non-taskable route signals were collapsed before task context.",
+          "Angular component inventory is static and advisory; runtime-created components are not proven.",
+          "Component inventory is static and advisory, not proof that every reusable component was found."
+        ]
+      },
+      {
+        "id": "sakai-ng",
+        "repository": "https://github.com/primefaces/sakai-ng.git",
+        "commit": "96d71496d685b5c110efd2875abaa2bf89a56ad2",
+        "projectPath": ".",
+        "framework": "Angular Router with PrimeNG",
+        "packageName": "sakai-ng",
+        "routeStrategy": "angular-router",
+        "routeAuthority": "proven",
+        "routeCompleteness": "complete",
+        "routeConfidence": "high",
+        "routeSignalCount": 29,
+        "taskableRouteCount": 25,
+        "routePaths": [
+          "/",
+          "/uikit/button",
+          "/uikit/charts",
+          "/uikit/file",
+          "/uikit/formlayout",
+          "/uikit/input",
+          "/uikit/list",
+          "/uikit/media",
+          "/uikit/message",
+          "/uikit/misc",
+          "/uikit/panel",
+          "/uikit/timeline",
+          "/uikit/table",
+          "/uikit/overlay",
+          "/uikit/tree",
+          "/uikit/menu",
+          "/documentation",
+          "/pages/documentation",
+          "/pages/crud",
+          "/pages/empty",
+          "/landing",
+          "/notfound",
+          "/auth/access",
+          "/auth/error",
+          "/auth/login"
+        ],
+        "routeSources": [
+          {
+            "sourcePath": "src/app/layout/component/app.layout.ts",
+            "blobHash": "40ccf817e80ae07dbe23ee2180db9eb28573aef2"
+          },
+          {
+            "sourcePath": "src/app/pages/auth/access.ts",
+            "blobHash": "4c62f2d333830c360e7cbbcb318ad4a2633c63d6"
+          },
+          {
+            "sourcePath": "src/app/pages/auth/error.ts",
+            "blobHash": "d3fc6f2a2921a40b5de3e20244b870ef38cf33ad"
+          },
+          {
+            "sourcePath": "src/app/pages/auth/login.ts",
+            "blobHash": "0b48f0a10476b7ca03f92ac43e45870d45ba7f37"
+          },
+          {
+            "sourcePath": "src/app/pages/crud/crud.ts",
+            "blobHash": "9c5cfbf212cde972d95f86a6ea2e4ae93db9e0f0"
+          },
+          {
+            "sourcePath": "src/app/pages/documentation/documentation.ts",
+            "blobHash": "a22d8b57c7013f25028768363a320a39c59c393b"
+          },
+          {
+            "sourcePath": "src/app/pages/empty/empty.ts",
+            "blobHash": "f65e698ecee0fcf4eaaf73ef784bcf87e7146a3d"
+          },
+          {
+            "sourcePath": "src/app/pages/landing/landing.ts",
+            "blobHash": "56d3e4609acb468fa0797812880ff90545ebf557"
+          },
+          {
+            "sourcePath": "src/app/pages/notfound/notfound.ts",
+            "blobHash": "07ef44a46ada0d7a04e91a2864406e26097f0e74"
+          },
+          {
+            "sourcePath": "src/app/pages/uikit/buttondemo.ts",
+            "blobHash": "e92a998aaf0946b98170659877c17ea778a2347b"
+          },
+          {
+            "sourcePath": "src/app/pages/uikit/chartdemo.ts",
+            "blobHash": "a6fe4458a1d0107de165b17aaed19d2d82fa56f7"
+          },
+          {
+            "sourcePath": "src/app/pages/uikit/filedemo.ts",
+            "blobHash": "fbc6ad63c3727b237c910695ddc7373dcb6a3585"
+          },
+          {
+            "sourcePath": "src/app/pages/uikit/formlayoutdemo.ts",
+            "blobHash": "a516c0d70c51548c2089de3b4bc31ea9c7b05826"
+          },
+          {
+            "sourcePath": "src/app/pages/uikit/inputdemo.ts",
+            "blobHash": "ec1fc8802f83f19f9f28fd6a60c3d65f213f8c66"
+          },
+          {
+            "sourcePath": "src/app/pages/uikit/listdemo.ts",
+            "blobHash": "14e4cab4d0c5f73433fe305e681989b10c465347"
+          },
+          {
+            "sourcePath": "src/app/pages/uikit/mediademo.ts",
+            "blobHash": "8678eb3bb3a711057bf9b04ad76e0fe9220cc6ac"
+          },
+          {
+            "sourcePath": "src/app/pages/uikit/menudemo.ts",
+            "blobHash": "bb2c8960600a98e8a5624cfaedb7c6839087d072"
+          },
+          {
+            "sourcePath": "src/app/pages/uikit/messagesdemo.ts",
+            "blobHash": "14686e9a912cc63ede3c36b1930a4d1f759ab92f"
+          },
+          {
+            "sourcePath": "src/app/pages/uikit/miscdemo.ts",
+            "blobHash": "eaa384a8b1e5d142aa972525c9bc9e178304d7fc"
+          },
+          {
+            "sourcePath": "src/app/pages/uikit/overlaydemo.ts",
+            "blobHash": "6e78530acaa26bff858fe5862b3305bebd397dd0"
+          },
+          {
+            "sourcePath": "src/app/pages/uikit/panelsdemo.ts",
+            "blobHash": "d5d512ae6489cec25c020b4d2e28b6a8146f4899"
+          },
+          {
+            "sourcePath": "src/app/pages/uikit/tabledemo.ts",
+            "blobHash": "33690bc7bf627afa4cbeb3bdb2f300912e30b961"
+          },
+          {
+            "sourcePath": "src/app/pages/uikit/timelinedemo.ts",
+            "blobHash": "febe03b713f51caaba3d848c39ee1c9860b51621"
+          },
+          {
+            "sourcePath": "src/app/pages/uikit/treedemo.ts",
+            "blobHash": "87c0f20a3f5a5501af68e49866a519d7bec9b8a1"
+          }
+        ],
+        "authorityFiles": [
+          {
+            "sourcePath": "src/app.config.ts",
+            "blobHash": "0e3623bd92ed9e00ba5682e882f7b9e82ea4ab54"
+          },
+          {
+            "sourcePath": "src/app.routes.ts",
+            "blobHash": "96e5ba31ed64648ab46d1615683896bb93beb6af"
+          },
+          {
+            "sourcePath": "src/app/pages/auth/auth.routes.ts",
+            "blobHash": "c1a6fc2ecaf4db0c8f03390096c4e32ea2de7646"
+          },
+          {
+            "sourcePath": "src/app/pages/pages.routes.ts",
+            "blobHash": "6561edc497a3edcea21be330bb105ce7de4f76c2"
+          },
+          {
+            "sourcePath": "src/app/pages/uikit/uikit.routes.ts",
+            "blobHash": "c9ed471d3b6d1e3e8f4b878e68645d8dfc0438df"
+          },
+          {
+            "sourcePath": "src/main.ts",
+            "blobHash": "4d5534576c5a771201a0a4f249c1e20cbcee8127"
+          }
+        ],
+        "excludedSourceCount": 1,
+        "componentCount": 44,
+        "componentConfidence": "high",
+        "styleApproach": "primeng-tailwind-scss",
+        "styleConfidence": "high",
+        "confidenceScore": 98,
+        "projectEvidence": [
+          "Angular config or dependency",
+          "Angular build entry: src/main.ts",
+          "Angular global style entry: src/assets/styles.scss",
+          "Angular global style entry: src/assets/tailwind.css",
+          "Angular project \"sakai-ng\" selected from angular.json",
+          "Tailwind configured in .postcssrc.json"
+        ],
+        "routeEvidence": [
+          "1 test, mock, fixture, or generated source path(s) excluded",
+          "Angular build entry: src/main.ts",
+          "Angular global style entry: src/assets/styles.scss",
+          "Angular global style entry: src/assets/tailwind.css",
+          "Angular project \"sakai-ng\" selected from angular.json",
+          "Angular router root is reachable from src/main.ts"
+        ],
+        "styleEvidence": [
+          "Angular build target declares 2 global style entries",
+          "PrimeNG dependency is present in the selected app",
+          "PrimeNG runtime theme configuration found in production source",
+          "Tailwind configured in .postcssrc.json"
+        ],
+        "limitations": [
+          "Configured Angular style entry is not present inside the selected app: src/assets/styles.scss",
+          "Configured Angular style entry is not present inside the selected app: src/assets/tailwind.css",
+          "Some duplicate or non-taskable route signals were collapsed before task context.",
+          "Angular component inventory is static and advisory; runtime-created components are not proven.",
+          "Component inventory is static and advisory, not proof that every reusable component was found."
+        ]
+      }
+    ]
+  },
   "provenance": {
     "harness": {
       "path": "scripts/run-3-9-route-qualification.mjs",
-      "sha256": "e74199f59b4de8bc1060591c0e8be1e4779e8b2dff516401c01ba59b08978e83"
+      "sha256": "f54f440953c56e277253192f225594fb7f3b9fe87c9e47975ae4a2ffa0c5eee9"
     },
     "verifier": {
       "package": "@decantr/verifier",
       "version": "3.9.0",
       "entrypoint": "@decantr/verifier/dist/index.js",
-      "entrypointSha256": "bb4ed11f1d832b266f1422a30ec9a3bc8792e0c8737da7d4c9b5b3262c071cd1",
-      "distTreeSha256": "e5bb005c1eec661788d7c85e7cfec10a70c82575e885106eb929b3f9c5fa98f8"
+      "entrypointSha256": "d669d2d2c93c85ae45bc3c6751322ce32b6603d196b6d93fa46b5f05a3e31dce",
+      "distTreeSha256": "6f084d5070bb5f006402487a893160aa4fd94b747d4d90c011e3a1f7e021a24f"
     },
     "executableOracle": {
       "kind": "executable-oracle",
@@ -3097,7 +3409,7 @@
       "oraclePath": "fixtures/qualification/3.9/oracles/route-source/run-oracle.mjs",
       "oracleSha256": "ac4a37b6d03563add17a0a9a9b832309fdf0b9511d528610ca4cda43c39f663c",
       "capturedOutputPath": "fixtures/qualification/3.9/oracles/route-source/captured-output.json",
-      "capturedOutputSha256": "b6b7d2c4e4a13b0d884d32fcb2f14720851afffd485adc4f7359c9393a6ababc",
+      "capturedOutputSha256": "5b0b949b2751214ab0e8c1d57ed3c76bf4cda3b5764353ea1751f903f32e6235",
       "fixtureTreeSha256": "405e09e37fcb7c8fae3597f1c5fabd73f1534a358aa86a282296cbf0414b2d72",
       "competitionCount": 24,
       "standaloneCount": 11
@@ -3174,8 +3486,8 @@
   },
   "behaviorBinding": {
     "schemaVersion": "decantr-behavior-evidence-binding.v1",
-    "packageSetSha256": "bb6e40cdd1207f2ad5076bce3701b05b55610899632cf53cd58f574b2fdb64f7",
-    "behaviorSha256": "c03f54f9929658c3fad7f341f75c99244113750e405ce5b5d5274084f2063eca",
-    "boundEvidenceSha256": "e39d645fe010f33fd4705ed1c8f44e9f46d1c8b53e9ab6f706677acc76093f33"
+    "packageSetSha256": "51d45262fd2e6e9e7da42cfcdb1549bfa62dafa3273fdc1e7eac1df26a794ef6",
+    "behaviorSha256": "fcdea6e030b3c383ed5e4c78756f9a5f62f4447ba4593ce061c3e72701c18982",
+    "boundEvidenceSha256": "221c2bc3c78ada5622e85d1ea50839640fdae3380b6e1aff3717cbd86d511d73"
   }
 }

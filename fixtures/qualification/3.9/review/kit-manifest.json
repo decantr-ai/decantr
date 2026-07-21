@@ -34,13 +34,13 @@
       "id": "schema",
       "path": "fixtures/qualification/3.9/qualification-packet.schema.json",
       "kind": "file-sha256",
-      "sha256": "0b43001a2a10ccb7f6df1cc06a285c860c04a3b9fe56f26e18b462c2c8d5383b"
+      "sha256": "dc2d71194f6c213d3f4f291dadba44587e75f5aec4bde4624b790a4afa838402"
     },
     {
       "id": "compatibility",
       "path": "fixtures/qualification/3.9/compatibility-manifest.json",
       "kind": "file-sha256",
-      "sha256": "2c2470b80b2fa732e8bc96f6a62f1b9d94b38d8d73021ad388e2e8eff57131b5"
+      "sha256": "dd1b259adb70fe726bbc88cc85e456c227f87e83952923e13cb4124b7f718a42"
     },
     {
       "id": "legacyFindings",
@@ -52,7 +52,7 @@
       "id": "audit",
       "path": "scripts/audit-3-9-qualification-baseline.mjs",
       "kind": "file-sha256",
-      "sha256": "4f3ec5b82383a628b828332997dcb341ef21aed3419e002430fadc2efc68c7b2"
+      "sha256": "6ac9d48d4dfbc17e11e135ce5d17acf773cdeae71d3e9d741ddf3f54dd92eb26"
     },
     {
       "id": "humanReviewHarness",
