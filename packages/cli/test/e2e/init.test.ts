@@ -224,6 +224,11 @@ describe('init command', () => {
         };
       };
       const decantr = readFileSync(join(testDir, 'DECANTR.md'), 'utf-8');
+      const refresh = execSync(`node ${cliPath} refresh --check`, {
+        cwd: testDir,
+        env: { ...process.env, DECANTR_OFFLINE: 'true' },
+        stdio: 'pipe',
+      }).toString();
       const task = JSON.parse(
         execSync(`node ${cliPath} task / "build the home route" --json`, {
           cwd: testDir,
@@ -243,6 +248,7 @@ describe('init command', () => {
       expect(output).not.toContain('atoms, treatments');
       expect(decantr).not.toContain('observed brownfield product');
       expect(decantr).not.toContain('In Brownfield and Hybrid workflows');
+      expect(refresh).toContain('Generated Decantr context looks fresh');
       expect(existsSync(join(testDir, '.decantr', 'graph', 'graph.snapshot.json'))).toBe(true);
       expect(task.read[0]).toBe('src/routes/index.tsx');
       expect(task.authority.activeAuthorities[0]).toBe('Essence V4 contract');

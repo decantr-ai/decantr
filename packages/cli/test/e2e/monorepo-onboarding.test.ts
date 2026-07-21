@@ -205,5 +205,8 @@ describe('brownfield monorepo onboarding', () => {
     expect(recordedChanges?.hostOther?.updated).toContain('.prettierignore');
     expect(existsSync(join(testDir, '.github', 'workflows', 'decantr-ci.yml'))).toBe(true);
     expect(existsSync(join(testDir, 'decantr.essence.json'))).toBe(false);
+
+    const refreshOutput = runCli(testDir, ['refresh', '--project', 'apps/web', '--check']);
+    expect(refreshOutput).toContain('Generated Decantr context looks fresh');
   });
 });

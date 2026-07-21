@@ -65,7 +65,20 @@ jobs:
         run: /tmp/mcp-publisher login github-oidc
 
       - name: Publish MCP metadata
-        run: /tmp/mcp-publisher publish packages/mcp-server/server.json
+        shell: bash
+        run: |
+          set -uo pipefail
+          output=$(/tmp/mcp-publisher publish packages/mcp-server/server.json 2>&1)
+          status=$?
+          printf '%s\n' "$output"
+          if [ "$status" -eq 0 ]; then
+            exit 0
+          fi
+          if grep -Fq 'cannot publish duplicate version' <<<"$output"; then
+            echo 'The exact MCP version is already published; continuing to public verification.'
+            exit 0
+          fi
+          exit "$status"
 
       - name: Verify MCP Registry listing
         shell: bash

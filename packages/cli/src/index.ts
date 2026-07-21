@@ -2079,6 +2079,18 @@ function persistAdoptionReceipt(
   return true;
 }
 
+async function refreshContextAfterAdoptionReceipt(projectRoot: string): Promise<void> {
+  const essence = readJsonIfPresent<EssenceFile>(join(projectRoot, 'decantr.essence.json'));
+  if (!essence || !isV4(essence)) return;
+
+  const registryClient = new RegistryClient({
+    cacheDir: join(projectRoot, '.decantr', 'cache'),
+    offline: true,
+    projectRoot,
+  });
+  await refreshDerivedFiles(projectRoot, essence, registryClient);
+}
+
 async function applyAcceptedBrownfieldProposal(input: {
   projectRoot: string;
   detected: ReturnType<typeof detectProject>;
@@ -2331,6 +2343,7 @@ async function cmdInit(args: InitArgs) {
           writtenPathCount: 0,
           limitation: null,
         });
+        if (stored) await refreshContextAfterAdoptionReceipt(workspaceInfo.appRoot);
         if (!stored) {
           console.log(
             `${YELLOW}Initialization receipt was not stored:${RESET} .decantr/project.json is unavailable.`,
@@ -4429,6 +4442,7 @@ async function cmdAdoptWorkflow(args: string[]): Promise<void> {
       });
       const receipt = createAdoptionReceipt(adoptionBefore, adoptionAfter);
       const stored = persistAdoptionReceipt(projectRoot, receipt, workflowCompleted, packHydration);
+      if (stored) await refreshContextAfterAdoptionReceipt(projectRoot);
       if (receipt.integrity.status === 'source-changed') {
         console.error(
           error('Adoption changed authored host source. Review the stored adoption receipt.'),
