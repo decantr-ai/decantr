@@ -94,7 +94,7 @@ pnpm --filter @decantr/content test
 pnpm audit:packed-content-facade
 ```
 
-The packed facade audit builds tarballs, installs them into a clean npm consumer with no workspace links, checks content/registry runtime identity and schema parity, compiles the public 3.8.1 registry client type surface, verifies browser-safe construction and the `REGISTRY_URL` compatibility alias, and rejects retired-host or local-path leakage. It is package-boundary evidence, not human finding qualification. Stable 3.9.1 publication may separately use the explicit sole-maintainer release gate, which preserves these machine checks while prohibiting precision, recall, qualification, and adoption-proof claims.
+The packed facade audit builds tarballs, installs them into a clean npm consumer with no workspace links, checks content/registry runtime identity and schema parity, compiles the public 3.8.1 registry client type surface, verifies browser-safe construction and the `REGISTRY_URL` compatibility alias, and rejects retired-host or local-path leakage. It is package-boundary evidence, not human finding qualification. Stable 3.9.2 publication may separately use the explicit sole-maintainer release gate, which preserves these machine checks while prohibiting precision, recall, qualification, and adoption-proof claims.
 
 `decantr content check` is the preferred content-author workflow. `decantr content-health` remains as a backward-compatible primitive.
 

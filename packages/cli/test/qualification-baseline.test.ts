@@ -217,12 +217,12 @@ describe('Decantr 3.9 qualification audit', () => {
             packageManagerVersion: '10.0.0',
             exactSourceRef: 'candidate-test',
             exactPackageVersions: {
-              '@decantr/content': '3.9.1',
-              '@decantr/registry': '3.9.1',
-              '@decantr/core': '3.9.1',
-              '@decantr/verifier': '3.9.1',
-              '@decantr/mcp-server': '3.9.1',
-              '@decantr/cli': '3.9.1',
+              '@decantr/content': '3.9.2',
+              '@decantr/registry': '3.9.2',
+              '@decantr/core': '3.9.2',
+              '@decantr/verifier': '3.9.2',
+              '@decantr/mcp-server': '3.9.2',
+              '@decantr/cli': '3.9.2',
             },
           },
         },
@@ -315,7 +315,7 @@ describe('Decantr 3.9 qualification audit', () => {
   it('fails closed when freshly packed candidate bytes differ from retained hashes', () => {
     const retainedTarballs = Object.fromEntries(
       candidatePackageWave.map((name) => {
-        const file = `${name.replace('@decantr/', 'decantr-')}-3.9.1.tgz`;
+        const file = `${name.replace('@decantr/', 'decantr-')}-3.9.2.tgz`;
         return [name, { file, sha256: sha256(`qualified:${name}`) }];
       }),
     );
@@ -456,7 +456,7 @@ describe('Decantr 3.9 qualification audit', () => {
     const tarballs = Object.fromEntries(
       candidatePackageWave.map((name) => [
         name,
-        { file: `${name.replace('@decantr/', 'decantr-')}-3.9.1.tgz`, sha256: sha256(name) },
+        { file: `${name.replace('@decantr/', 'decantr-')}-3.9.2.tgz`, sha256: sha256(name) },
       ]),
     );
     const behavior = { cases: [{ caseId: 'case-a', emitted: true }] };

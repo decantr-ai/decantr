@@ -1,3 +1,3 @@
 import { Hono } from 'hono';
 export const healthRoutes = new Hono();
-healthRoutes.get('/health', (c) => c.json({ status: 'ok', version: '3.9.1', surface: 'content-api' }));
+healthRoutes.get('/health', (c) => c.json({ status: 'ok', version: '3.9.2', surface: 'content-api' }));

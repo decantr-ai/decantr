@@ -264,7 +264,7 @@
   },
   "verifier": {
     "package": "@decantr/verifier",
-    "version": "3.9.1",
+    "version": "3.9.2",
     "entrypoint": "packages/verifier/dist/index.js",
     "entrypointSha256": "d669d2d2c93c85ae45bc3c6751322ce32b6603d196b6d93fa46b5f05a3e31dce"
   },

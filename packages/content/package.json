@@ -1,6 +1,6 @@
 {
   "name": "@decantr/content",
-  "version": "3.9.1",
+  "version": "3.9.2",
   "description": "Official Decantr content corpus for AI frontend governance contracts, context, examples, and validation",
   "keywords": [
     "decantr",

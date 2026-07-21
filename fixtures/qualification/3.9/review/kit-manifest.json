@@ -15,7 +15,7 @@
       "candidate390"
     ],
     "baselineRelease": "3.8.3",
-    "candidateRelease": "3.9.1"
+    "candidateRelease": "3.9.2"
   },
   "quarantine": {
     "path": "fixtures/qualification/3.9/finding-labels.json",
@@ -28,13 +28,13 @@
       "id": "qualification-packet-contract",
       "path": "fixtures/qualification/3.9/qualification-packet.json",
       "kind": "canonical-json-sha256",
-      "sha256": "3fee731edd6b16c32db1a56f1e0d73a15bb9f1b863edf75345d4e794e009ac0e"
+      "sha256": "83bd72e19992fc51dfe99f9c1d182966d91847f75c0f357183a501934e530252"
     },
     {
       "id": "schema",
       "path": "fixtures/qualification/3.9/qualification-packet.schema.json",
       "kind": "file-sha256",
-      "sha256": "ae1908446ca2673ca08855ab034d176e8baf7bdbea2f9cdcbe17607cdc8f8bbd"
+      "sha256": "9dcdb1ef4816801b0827a4f12b70dda4a9d9608e130b7eddd060eacd3194d348"
     },
     {
       "id": "compatibility",
@@ -52,13 +52,13 @@
       "id": "audit",
       "path": "scripts/audit-3-9-qualification-baseline.mjs",
       "kind": "file-sha256",
-      "sha256": "0f462095b81f99d6ccf6afccf80f5eaa6b92288dddf4a89cbb78a747c61554bd"
+      "sha256": "39bd1c83e5a9a8f25cd108b0412a3d05d9a75b3b9f082336600d2173f816f55a"
     },
     {
       "id": "humanReviewHarness",
       "path": "scripts/prepare-3-9-human-review.mjs",
       "kind": "file-sha256",
-      "sha256": "068a551a895ff779344508b88ac6fb50b8f9b5f03756a0ac7549527a41831af0"
+      "sha256": "5b47c7951ea798de756d54081ede7854a707e1dac5a4ccf8f9c060813918951e"
     }
   ],
   "worksheets": {
@@ -67,7 +67,7 @@
     "reviewer2": "fixtures/qualification/3.9/review/reviewers/reviewer-2.json",
     "adjudication": "fixtures/qualification/3.9/review/adjudication.json",
     "publicReplay": "fixtures/qualification/3.9/review/replays/public-3.8.3.json",
-    "candidateReplay": "fixtures/qualification/3.9/review/replays/candidate-3.9.1.json"
+    "candidateReplay": "fixtures/qualification/3.9/review/replays/candidate-3.9.2.json"
   },
   "signingPayloads": {
     "reviewer1": "fixtures/qualification/3.9/review/signatures/reviewer-1.payload.json",

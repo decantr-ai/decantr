@@ -1,6 +1,6 @@
 {
   "schemaVersion": "decantr-3.9-release-waiver.v1",
-  "releaseVersion": "3.9.1",
+  "releaseVersion": "3.9.2",
   "status": "authorized",
   "mode": "sole-maintainer-unqualified",
   "authorizedAt": "2026-07-21T19:01:51Z",
@@ -9,7 +9,7 @@
     "github": "david-aimi",
     "role": "sole-maintainer"
   },
-  "rationale": "Decantr is operated by one human maintainer, so an exactly two-person human review cannot be completed without inventing identities. Stable 3.9.1 security-patch publication is authorized with human finding qualification explicitly waived and all machine, route, package, provenance, and closeout gates retained.",
+  "rationale": "Decantr is operated by one human maintainer, so an exactly two-person human review cannot be completed without inventing identities. Stable 3.9.2 security-patch publication is authorized with human finding qualification explicitly waived and all machine, route, package, provenance, and closeout gates retained.",
   "acceptedMissingEvidence": [
     "HUMAN_REVIEW_IDENTITIES",
     "HUMAN_ADJUDICATED_FINDING_CORPUS",
