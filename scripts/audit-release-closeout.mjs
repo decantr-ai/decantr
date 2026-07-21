@@ -17,6 +17,10 @@ import { readArgValue } from './cli-arg-lib.mjs';
 import { getRepoRoot, sortReleaseEntries } from './package-surface-lib.mjs';
 import { readNpmDistTags, readNpmVersions } from './npm-surface-lib.mjs';
 import {
+  artifactVerificationModes,
+  resolveArtifactVerificationMode,
+} from './release-closeout-policy.mjs';
+import {
   THREE_NINE_MISSING_EVIDENCE_PATH,
   THREE_NINE_QUALIFICATION_PACKET_PATH,
   THREE_NINE_RELEASE_WAIVER_PATH,
@@ -58,6 +62,7 @@ let expandedDependencies = [];
 let stagingManifestPath = null;
 let stagingManifest = null;
 const STAGING_SCHEMA_VERSION = 'decantr-release-staging.v1';
+const GIT_MAX_BUFFER_BYTES = 64 * 1024 * 1024;
 
 if (!releaseVersion) {
   addCheck('release', 'target version', 'fail', 'Pass an explicit --version=x.y.z release target.');
@@ -276,6 +281,7 @@ function runGit(gitArgs, options = {}) {
       cwd: root,
       encoding: 'utf8',
       stdio: options.stdio || ['ignore', 'pipe', 'pipe'],
+      maxBuffer: options.maxBuffer ?? GIT_MAX_BUFFER_BYTES,
     });
   } catch (error) {
     if (options.allowFailure) return null;
@@ -520,6 +526,11 @@ function loadStagingManifest(path) {
     if (packageArtifact.version !== expectedVersion) {
       throw new Error(`Retained package version mismatch for ${packageArtifact.name}.`);
     }
+    resolveArtifactVerificationMode({
+      packageVersion: expectedVersion,
+      publishStatus: packageArtifact.publish?.status,
+      releaseVersion,
+    });
     const tarball = packageArtifact.tarball;
     if (
       !tarball
@@ -666,6 +677,11 @@ async function verifyNpmProvenance(packageArtifact, dist, sha512Hex) {
 
 async function verifyPublishedArtifact(entry, version) {
   const packageArtifact = stagingManifest.packages.find((candidate) => candidate.name === entry.name);
+  const verificationMode = resolveArtifactVerificationMode({
+    packageVersion: version,
+    publishStatus: packageArtifact.publish?.status,
+    releaseVersion,
+  });
   let retainedBytes;
   try {
     const path = retainedTarballPath(packageArtifact);
@@ -703,22 +719,41 @@ async function verifyPublishedArtifact(entry, version) {
     const publicShasum = hashBuffer(publicBytes, 'sha1');
     const sriValues = typeof dist.integrity === 'string' ? dist.integrity.split(/\s+/u) : [];
     if (
-      publicSha256 !== packageArtifact.tarball.sha256
-      || publicSha512 !== packageArtifact.tarball.sha512
-      || publicShasum !== packageArtifact.tarball.shasum
-      || !sriValues.includes(`sha512-${publicSha512}`)
+      !sriValues.includes(`sha512-${publicSha512}`)
       || dist.shasum !== publicShasum
     ) {
-      throw new Error('public npm bytes, retained hashes, or npm dist integrity metadata do not match');
+      throw new Error('public npm bytes do not match npm dist integrity metadata');
+    }
+    if (
+      verificationMode === artifactVerificationModes.retainedPublicIdentity
+      && (
+        publicSha256 !== packageArtifact.tarball.sha256
+        || publicSha512 !== packageArtifact.tarball.sha512
+        || publicShasum !== packageArtifact.tarball.shasum
+      )
+    ) {
+      throw new Error('public npm bytes do not match the retained release tarball');
     }
     addCheck(
       'npm',
       `${entry.name}@${version} public tarball integrity`,
       'pass',
-      `downloaded bytes match retained sha256:${publicSha256} and npm SHA-512/SHA-1 metadata`,
+      verificationMode === artifactVerificationModes.retainedPublicIdentity
+        ? `downloaded bytes match retained sha256:${publicSha256} and npm SHA-512/SHA-1 metadata`
+        : `pre-existing dependency bytes match npm SHA-512/SHA-1 metadata; the newly staged snapshot is not treated as its historical publish artifact`,
     );
   } catch (cause) {
     addCheck('npm', `${entry.name}@${version} public tarball integrity`, 'fail', cause.message);
+    return;
+  }
+
+  if (verificationMode === artifactVerificationModes.registryIntegrity) {
+    addCheck(
+      'npm',
+      `${entry.name}@${version} provenance`,
+      'pass',
+      'not re-attributed: this dependency version pre-dates the current release publication',
+    );
     return;
   }
 

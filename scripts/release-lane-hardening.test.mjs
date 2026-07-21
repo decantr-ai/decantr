@@ -21,6 +21,10 @@ import {
   evaluateThreeNineReleasePolicy,
 } from './3-9-release-policy.mjs';
 import { canonicalizePackedTarball } from './canonical-package-tarball.mjs';
+import {
+  artifactVerificationModes,
+  resolveArtifactVerificationMode,
+} from './release-closeout-policy.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const scripts = join(root, 'scripts');
@@ -181,6 +185,41 @@ test('sole-maintainer policy permits publication without manufacturing qualifica
   assert.match(expanded.errors.join(' '), /only the four frozen human finding requirements/u);
 });
 
+test('closeout only binds retained bytes to packages attributable to the release', () => {
+  assert.equal(
+    resolveArtifactVerificationMode({
+      packageVersion: '3.9.0',
+      publishStatus: 'published',
+      releaseVersion: '3.9.0',
+    }),
+    artifactVerificationModes.retainedPublicIdentity,
+  );
+  assert.equal(
+    resolveArtifactVerificationMode({
+      packageVersion: '3.9.0',
+      publishStatus: 'already-published',
+      releaseVersion: '3.9.0',
+    }),
+    artifactVerificationModes.retainedPublicIdentity,
+  );
+  assert.equal(
+    resolveArtifactVerificationMode({
+      packageVersion: '3.8.1',
+      publishStatus: 'already-published',
+      releaseVersion: '3.9.0',
+    }),
+    artifactVerificationModes.registryIntegrity,
+  );
+  assert.throws(
+    () => resolveArtifactVerificationMode({
+      packageVersion: '3.9.0',
+      publishStatus: 'pending',
+      releaseVersion: '3.9.0',
+    }),
+    /Unsupported release publish status/u,
+  );
+});
+
 function createTaggedFixture() {
   const directory = mkdtempSync(join(tmpdir(), 'decantr-release-tag-test-'));
   const surface = {
@@ -324,6 +363,7 @@ function createPublishIntegrityFixture(t) {
   writeJson(join(directory, 'fixtures/qualification/3.9/qualification-packet.json'), {
     packetStatus: 'complete',
     qualificationClaim: true,
+    bufferRegressionPadding: 'x'.repeat(2 * 1024 * 1024),
     routeCorpus: { status: 'complete' },
     routeReplay: { status: 'complete' },
     adoptionBoundaryReplay: { status: 'complete' },
@@ -950,6 +990,7 @@ test('publish workflow is protected and verifies the tagged origin/main commit',
   assert.match(workflow, /release-evidence-publish-tarballs/u);
   assert.match(workflow, /DECANTR_RELEASE_STAGING_DIR/u);
   assert.match(workflow, /Run tag-bound release closeout/u);
+  assert.match(workflow, /set -o pipefail[\s\S]*audit-release-closeout\.mjs/u);
   assert.ok(
     workflow.indexOf('pnpm install --frozen-lockfile')
       < workflow.indexOf('Resolve effective package closure'),

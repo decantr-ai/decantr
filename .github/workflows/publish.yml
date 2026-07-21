@@ -247,6 +247,7 @@ jobs:
           DECANTR_RELEASE_STAGING_DIR: ${{ runner.temp }}/decantr-release-staging
           GH_TOKEN: ${{ github.token }}
         run: |
+          set -o pipefail
           ARGS=("--version=$DECANTR_RELEASE_VERSION" "--only=$DECANTR_ONLY_PACKAGES" --json)
           if [[ -n "$DIST_TAG_OVERRIDE" ]]; then
             ARGS+=("--tag-override=$DIST_TAG_OVERRIDE")
