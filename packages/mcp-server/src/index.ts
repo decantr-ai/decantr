@@ -3,7 +3,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { handleTool, TOOLS } from './tools.js';
 
-const VERSION = '3.9.2';
+const VERSION = '3.9.3';
 
 const server = new Server({ name: 'decantr', version: VERSION }, { capabilities: { tools: {} } });
 

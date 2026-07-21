@@ -868,7 +868,7 @@
           "required": ["version", "installationSource", "packageVersions"],
           "properties": {
             "version": {
-              "enum": ["3.8.3", "3.9.2"]
+              "enum": ["3.8.3", "3.9.3"]
             },
             "installationSource": {
               "enum": ["public-npm", "packed-or-public-npm"]
@@ -1147,7 +1147,7 @@
           "enum": ["missing", "complete"]
         },
         "releaseVersion": {
-          "const": "3.9.2"
+          "const": "3.9.3"
         },
         "corpusSha256": {
           "oneOf": [

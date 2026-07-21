@@ -38,12 +38,12 @@ const EXPECTED_PUBLIC_383_REPLAY_VERSIONS = {
 };
 
 const EXPECTED_CANDIDATE_390_REPLAY_VERSIONS = {
-  '@decantr/content': '3.9.2',
-  '@decantr/registry': '3.9.2',
-  '@decantr/core': '3.9.2',
-  '@decantr/verifier': '3.9.2',
-  '@decantr/mcp-server': '3.9.2',
-  '@decantr/cli': '3.9.2',
+  '@decantr/content': '3.9.3',
+  '@decantr/registry': '3.9.3',
+  '@decantr/core': '3.9.3',
+  '@decantr/verifier': '3.9.3',
+  '@decantr/mcp-server': '3.9.3',
+  '@decantr/cli': '3.9.3',
 };
 
 const CANDIDATE_PACKAGE_WAVE = Object.keys(EXPECTED_CANDIDATE_390_REPLAY_VERSIONS);
@@ -1129,7 +1129,7 @@ export async function runAudit(options) {
       adjudicationSha256: sha256(readFileSync(resolve(reviewRoot, 'adjudication.json'))),
       replayWorkbookSha256: {
         public383: sha256(readFileSync(resolve(reviewRoot, 'replays', 'public-3.8.3.json'))),
-        candidate390: sha256(readFileSync(resolve(reviewRoot, 'replays', 'candidate-3.9.2.json'))),
+        candidate390: sha256(readFileSync(resolve(reviewRoot, 'replays', 'candidate-3.9.3.json'))),
       },
       signingPayloadSha256: {
         'reviewer-1': sha256(readFileSync(resolve(reviewRoot, 'signatures', 'reviewer-1.payload.json'))),
@@ -1317,7 +1317,7 @@ export async function runAudit(options) {
             packageVersions: EXPECTED_PUBLIC_383_REPLAY_VERSIONS,
           }
         : {
-            version: '3.9.2',
+            version: '3.9.3',
             installationSource: 'packed-or-public-npm',
             packageVersions: EXPECTED_CANDIDATE_390_REPLAY_VERSIONS,
           };
@@ -1798,7 +1798,7 @@ export async function runAudit(options) {
       );
     if (!candidateArtifactSetValid) {
       error(
-        'qualification-packet.json: route, finding, adoption, and machine behavior must share the exact six qualified 3.9.2 tarball hashes',
+        'qualification-packet.json: route, finding, adoption, and machine behavior must share the exact six qualified 3.9.3 tarball hashes',
       );
     }
 

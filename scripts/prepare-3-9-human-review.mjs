@@ -49,7 +49,7 @@ const paths = {
   reviewer2: resolve(reviewDirectory, 'reviewers', 'reviewer-2.json'),
   adjudication: resolve(reviewDirectory, 'adjudication.json'),
   publicReplay: resolve(reviewDirectory, 'replays', 'public-3.8.3.json'),
-  candidateReplay: resolve(reviewDirectory, 'replays', 'candidate-3.9.2.json'),
+  candidateReplay: resolve(reviewDirectory, 'replays', 'candidate-3.9.3.json'),
 };
 
 const generatedPaths = {
@@ -83,15 +83,15 @@ const expectedReleases = {
     },
   },
   candidate390: {
-    version: '3.9.2',
+    version: '3.9.3',
     installationSource: 'packed-or-public-npm',
     packageVersions: {
-      '@decantr/content': '3.9.2',
-      '@decantr/registry': '3.9.2',
-      '@decantr/core': '3.9.2',
-      '@decantr/verifier': '3.9.2',
-      '@decantr/mcp-server': '3.9.2',
-      '@decantr/cli': '3.9.2',
+      '@decantr/content': '3.9.3',
+      '@decantr/registry': '3.9.3',
+      '@decantr/core': '3.9.3',
+      '@decantr/verifier': '3.9.3',
+      '@decantr/mcp-server': '3.9.3',
+      '@decantr/cli': '3.9.3',
     },
   },
 };
@@ -102,7 +102,7 @@ const worksheetPaths = {
   reviewer2: 'fixtures/qualification/3.9/review/reviewers/reviewer-2.json',
   adjudication: 'fixtures/qualification/3.9/review/adjudication.json',
   publicReplay: 'fixtures/qualification/3.9/review/replays/public-3.8.3.json',
-  candidateReplay: 'fixtures/qualification/3.9/review/replays/candidate-3.9.2.json',
+  candidateReplay: 'fixtures/qualification/3.9/review/replays/candidate-3.9.3.json',
 };
 
 const usage = `Decantr 3.9 human finding review kit
@@ -122,7 +122,7 @@ Workflow:
      including the precomputed disagreement IDs, then sets status=complete. Run
      --write-adjudication-signing-payload, sign it, record signedAdjudicationEvidence, and run
      --seal-adjudication.
-  4. Replay public npm 3.8.3 first and candidate 3.9.2 second. The replay process must fill
+  4. Replay public npm 3.8.3 first and candidate 3.9.3 second. The replay process must fill
      exact observed release/environment data, all 200 emitted booleans, exhaustive case rows,
      and an empty unexpectedOutputs array only after checking raw output.
   5. Run --validate, then --assemble. Assembly fails on incomplete evidence, invalid signatures,
@@ -331,7 +331,7 @@ function createManifest() {
       requiredLanes: LANES,
       replayOrder: ['public383', 'candidate390'],
       baselineRelease: '3.8.3',
-      candidateRelease: '3.9.2',
+      candidateRelease: '3.9.3',
     },
     quarantine: {
       path: dependencyPaths.legacyFindings,
@@ -1333,7 +1333,7 @@ function validateReplay(
   errors,
   { requireComplete = false } = {},
 ) {
-  const context = replayId === 'public383' ? 'public-3.8.3.json' : 'candidate-3.9.2.json';
+  const context = replayId === 'public383' ? 'public-3.8.3.json' : 'candidate-3.9.3.json';
   if (
     !exactKeys(
       replay,
@@ -1534,7 +1534,7 @@ function validateManifest(manifest, errors) {
       requiredLanes: LANES,
       replayOrder: ['public383', 'candidate390'],
       baselineRelease: '3.8.3',
-      candidateRelease: '3.9.2',
+      candidateRelease: '3.9.3',
     })
   ) {
     errors.push('kit-manifest.json requirements changed');

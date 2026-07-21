@@ -33,7 +33,7 @@ const PACKAGE_WAVE = [
   '@decantr/cli',
 ];
 
-const EXPECTED_PACKAGE_VERSIONS = Object.fromEntries(PACKAGE_WAVE.map((name) => [name, '3.9.2']));
+const EXPECTED_PACKAGE_VERSIONS = Object.fromEntries(PACKAGE_WAVE.map((name) => [name, '3.9.3']));
 const EXPECTED_SCHEMA_IDS = [
   'https://decantr.ai/schemas/scan-report.v2.json',
   'https://decantr.ai/schemas/verification-report.common.v2.json',

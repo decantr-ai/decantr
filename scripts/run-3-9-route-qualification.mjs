@@ -26,7 +26,7 @@ const oracleRoot = resolve(
 const qualificationRoot = resolve(repoRoot, 'fixtures/qualification/3.9');
 const packetPath = resolve(qualificationRoot, 'qualification-packet.json');
 const missingEvidencePath = resolve(qualificationRoot, 'missing-evidence.json');
-const releaseVersion = '3.9.2';
+const releaseVersion = '3.9.3';
 const requiredPackagePaths = {
   '@decantr/content': 'packages/content/package.json',
   '@decantr/registry': 'packages/registry/package.json',

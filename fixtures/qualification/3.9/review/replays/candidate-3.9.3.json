@@ -4,15 +4,15 @@
   "status": "not-run",
   "qualificationClaim": false,
   "expectedRelease": {
-    "version": "3.9.2",
+    "version": "3.9.3",
     "installationSource": "packed-or-public-npm",
     "packageVersions": {
-      "@decantr/content": "3.9.2",
-      "@decantr/registry": "3.9.2",
-      "@decantr/core": "3.9.2",
-      "@decantr/verifier": "3.9.2",
-      "@decantr/mcp-server": "3.9.2",
-      "@decantr/cli": "3.9.2"
+      "@decantr/content": "3.9.3",
+      "@decantr/registry": "3.9.3",
+      "@decantr/core": "3.9.3",
+      "@decantr/verifier": "3.9.3",
+      "@decantr/mcp-server": "3.9.3",
+      "@decantr/cli": "3.9.3"
     }
   },
   "corpusSha256": null,
