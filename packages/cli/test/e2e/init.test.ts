@@ -264,6 +264,84 @@ describe('init command', () => {
   );
 
   it(
+    'records bounded Tailwind v4 source isolation and keeps generated context fresh',
+    () => {
+      writeFileSync(
+        join(testDir, 'package.json'),
+        JSON.stringify(
+          {
+            name: 'tailwind-v4-host',
+            private: true,
+            dependencies: {
+              '@tailwindcss/vite': '^4.1.0',
+              '@tanstack/react-router': '^1.132.0',
+              react: '^19.0.0',
+              tailwindcss: '^4.1.0',
+            },
+          },
+          null,
+          2,
+        ) + '\n',
+      );
+      mkdirSync(join(testDir, 'src', 'routes'), { recursive: true });
+      writeFileSync(join(testDir, 'src', 'styles.css'), '@import "tailwindcss";\n', 'utf8');
+      writeFileSync(
+        join(testDir, 'src', 'routes', 'index.tsx'),
+        "import { createFileRoute } from '@tanstack/react-router';\nexport const Route = createFileRoute('/')({ component: () => <main>Home</main> });\n",
+      );
+
+      const output = execSync(
+        `node ${cliPath} init --workflow=greenfield --adoption=contract-only --assistant-bridge=apply --offline --yes`,
+        {
+          cwd: testDir,
+          env: { ...process.env, DECANTR_OFFLINE: 'true' },
+          stdio: 'pipe',
+        },
+      ).toString();
+      const project = JSON.parse(
+        readFileSync(join(testDir, '.decantr', 'project.json'), 'utf8'),
+      ) as {
+        initialized?: {
+          adoption?: {
+            integrity?: { status?: string; complete?: boolean };
+            approvedHostSourceMutations?: Array<{
+              kind?: string;
+              path?: string;
+              verified?: boolean;
+            }>;
+            changes?: { hostSource?: { updated?: string[] } };
+          };
+        };
+      };
+      const stylesheet = readFileSync(join(testDir, 'src', 'styles.css'), 'utf8');
+      const refresh = execSync(`node ${cliPath} refresh --check`, {
+        cwd: testDir,
+        env: { ...process.env, DECANTR_OFFLINE: 'true' },
+        stdio: 'pipe',
+      }).toString();
+
+      expect(stylesheet).toContain('/* decantr:tailwind-source-isolation:start */');
+      expect(stylesheet).toContain('@source not "../.decantr";');
+      expect(output).toContain(
+        'Initialization source integrity verified with bounded Tailwind v4 scan isolation.',
+      );
+      expect(project.initialized?.adoption).toMatchObject({
+        integrity: { status: 'verified-bounded', complete: true },
+        changes: { hostSource: { updated: ['src/styles.css'] } },
+        approvedHostSourceMutations: [
+          {
+            kind: 'tailwind-v4-source-isolation',
+            path: 'src/styles.css',
+            verified: true,
+          },
+        ],
+      });
+      expect(refresh).toContain('Generated Decantr context looks fresh');
+    },
+    INIT_TIMEOUT_MS,
+  );
+
+  it(
     'refuses unproven Angular adoption unless the operator explicitly overrides discovery',
     () => {
       writeFileSync(

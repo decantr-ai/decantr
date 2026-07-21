@@ -17,8 +17,13 @@ export const ADOPTION_RECEIPT_VERSION = 1 as const;
 export const ADOPTION_RECEIPT_HASH_ALGORITHM = 'sha256' as const;
 
 export type AdoptionPathOwnership = 'allowed-generated' | 'host-source' | 'host-other';
-export type AdoptionIntegrityStatus = 'verified-untouched' | 'source-changed' | 'incomplete';
+export type AdoptionIntegrityStatus =
+  | 'verified-untouched'
+  | 'verified-bounded'
+  | 'source-changed'
+  | 'incomplete';
 export type AdoptionCaptureLimitationCode =
+  | 'approved-mutation-mismatch'
   | 'byte-limit'
   | 'capture-mismatch'
   | 'changed-during-capture'
@@ -99,6 +104,7 @@ export interface AdoptionReceipt {
     hostSourceBeforeHash: string;
     hostSourceAfterHash: string;
   };
+  approvedHostSourceMutations: AdoptionApprovedHostSourceMutation[];
   changes: AdoptionPathChanges & {
     allowedGenerated: AdoptionPathChanges;
     /** Compatibility alias for version 1 receipt readers. */
@@ -107,6 +113,21 @@ export interface AdoptionReceipt {
     hostOther: AdoptionPathChanges;
   };
   limitations: AdoptionReceiptLimitation[];
+}
+
+export interface AdoptionHostSourceMutationApproval {
+  kind: 'tailwind-v4-source-isolation';
+  path: string;
+  beforeHash: string;
+  afterHash: string;
+}
+
+export interface AdoptionApprovedHostSourceMutation extends AdoptionHostSourceMutationApproval {
+  verified: boolean;
+}
+
+export interface CreateAdoptionReceiptOptions {
+  approvedHostSourceMutations?: AdoptionHostSourceMutationApproval[];
 }
 
 export const DEFAULT_ADOPTION_CAPTURE_BOUNDS: Readonly<AdoptionCaptureBounds> = Object.freeze({
@@ -619,6 +640,7 @@ function compareReceiptLimitations(
 export function createAdoptionReceipt(
   before: AdoptionSnapshot,
   after: AdoptionSnapshot,
+  options: CreateAdoptionReceiptOptions = {},
 ): AdoptionReceipt {
   if (before.version !== ADOPTION_RECEIPT_VERSION || after.version !== ADOPTION_RECEIPT_VERSION) {
     throw new Error(`Adoption snapshots must use version ${ADOPTION_RECEIPT_VERSION}.`);
@@ -690,15 +712,55 @@ export function createAdoptionReceipt(
     }
   }
 
+  const approvedHostSourceMutations: AdoptionApprovedHostSourceMutation[] = [];
+  const approvedPaths = new Set<string>();
+  for (const approval of options.approvedHostSourceMutations ?? []) {
+    const path = normalizePath(approval.path).replace(/^\.\//, '');
+    const beforeFile = beforeByPath.get(path);
+    const afterFile = afterByPath.get(path);
+    const verified =
+      !approvedPaths.has(path) &&
+      beforeFile?.ownership === 'host-source' &&
+      afterFile?.ownership === 'host-source' &&
+      beforeFile.hash === approval.beforeHash &&
+      afterFile.hash === approval.afterHash &&
+      hostSource.updated.includes(path) &&
+      !hostSource.created.includes(path) &&
+      !hostSource.deleted.includes(path);
+    approvedPaths.add(path);
+    approvedHostSourceMutations.push({ ...approval, path, verified });
+    if (!verified) {
+      limitations.push({
+        phase: 'comparison',
+        code: 'approved-mutation-mismatch',
+        path,
+        message: `The approved ${approval.kind} mutation did not match the captured before/after evidence.`,
+      });
+    }
+  }
+
   const hostSourceChanged =
     hostSource.created.length > 0 || hostSource.updated.length > 0 || hostSource.deleted.length > 0;
+  const hostSourceChangePaths = [
+    ...hostSource.created,
+    ...hostSource.updated,
+    ...hostSource.deleted,
+  ];
+  const verifiedBounded =
+    hostSourceChanged &&
+    approvedHostSourceMutations.length > 0 &&
+    approvedHostSourceMutations.every((approval) => approval.verified) &&
+    hostSourceChangePaths.length === approvedPaths.size &&
+    hostSourceChangePaths.every((path) => approvedPaths.has(path));
   const sortedLimitations = limitations.sort(compareReceiptLimitations);
   const complete = before.complete && after.complete && sortedLimitations.length === 0;
-  const status: AdoptionIntegrityStatus = hostSourceChanged
-    ? 'source-changed'
-    : complete
-      ? 'verified-untouched'
-      : 'incomplete';
+  const status: AdoptionIntegrityStatus = verifiedBounded
+    ? 'verified-bounded'
+    : hostSourceChanged
+      ? 'source-changed'
+      : complete
+        ? 'verified-untouched'
+        : 'incomplete';
 
   return {
     version: ADOPTION_RECEIPT_VERSION,
@@ -717,6 +779,7 @@ export function createAdoptionReceipt(
       hostSourceBeforeHash: hashHostSource(before.files),
       hostSourceAfterHash: hashHostSource(after.files),
     },
+    approvedHostSourceMutations,
     changes: {
       ...changes,
       allowedGenerated,
@@ -726,4 +789,29 @@ export function createAdoptionReceipt(
     },
     limitations: sortedLimitations,
   };
+}
+
+export function receiptHasOnlyApprovedHostSourceMutations(receipt: AdoptionReceipt): boolean {
+  if (
+    receipt.integrity.status !== 'verified-bounded' ||
+    !receipt.integrity.complete ||
+    receipt.approvedHostSourceMutations.length === 0 ||
+    receipt.approvedHostSourceMutations.some((mutation) => !mutation.verified)
+  ) {
+    return false;
+  }
+  const hostPaths = [
+    ...receipt.changes.hostSource.created,
+    ...receipt.changes.hostSource.updated,
+    ...receipt.changes.hostSource.deleted,
+  ].sort(compareText);
+  const approvedPaths = receipt.approvedHostSourceMutations
+    .map((mutation) => mutation.path)
+    .sort(compareText);
+  return (
+    receipt.changes.hostSource.created.length === 0 &&
+    receipt.changes.hostSource.deleted.length === 0 &&
+    hostPaths.length === approvedPaths.length &&
+    hostPaths.every((path, index) => path === approvedPaths[index])
+  );
 }

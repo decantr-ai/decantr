@@ -39,6 +39,7 @@ interface ReceiptEvidence {
   present: boolean;
   complete: boolean;
   verifiedUntouched: boolean;
+  verifiedBounded: boolean;
   sourceChanged: boolean;
   allChanges: PathChanges;
   hostSourceChanges: PathChanges;
@@ -625,6 +626,7 @@ function inspectReceipt(discovery: ProjectDiscovery, projectJson: JsonRead): Rec
     present: false,
     complete: false,
     verifiedUntouched: false,
+    verifiedBounded: false,
     sourceChanged: false,
     allChanges: { created: [], updated: [], deleted: [] },
     hostSourceChanges: { created: [], updated: [], deleted: [] },
@@ -666,12 +668,44 @@ function inspectReceipt(discovery: ProjectDiscovery, projectJson: JsonRead): Rec
     typeof integrity?.hostSourceBeforeHash === 'string' ? integrity.hostSourceBeforeHash : null;
   const afterHash =
     typeof integrity?.hostSourceAfterHash === 'string' ? integrity.hostSourceAfterHash : null;
+  const approvedHostSourceMutations = Array.isArray(adoption.approvedHostSourceMutations)
+    ? adoption.approvedHostSourceMutations
+    : [];
+  const approvedHostSourcePaths: string[] = [];
+  if (status === 'verified-bounded') {
+    if (!Array.isArray(adoption.approvedHostSourceMutations)) {
+      limitations.push('Bounded adoption receipt approvals are missing or invalid.');
+    } else {
+      for (const entry of approvedHostSourceMutations) {
+        const rawPath = isRecord(entry) && typeof entry.path === 'string' ? entry.path : null;
+        const path = rawPath ? receiptEvidencePath(discovery, rawPath, scopeRoot) : null;
+        if (
+          !isRecord(entry) ||
+          entry.kind !== 'tailwind-v4-source-isolation' ||
+          entry.verified !== true ||
+          typeof entry.beforeHash !== 'string' ||
+          typeof entry.afterHash !== 'string' ||
+          !path
+        ) {
+          limitations.push(
+            'Bounded adoption receipt contains an invalid source-mutation approval.',
+          );
+          continue;
+        }
+        approvedHostSourcePaths.push(path);
+      }
+    }
+  }
 
   if (adoption.version !== 1) limitations.push('Adoption receipt version 1 is required.');
   if (!integrity || typeof integrity.complete !== 'boolean') {
     limitations.push('Adoption receipt integrity metadata is missing or invalid.');
   }
-  if (!['verified-untouched', 'source-changed', 'incomplete'].includes(status ?? '')) {
+  if (
+    !['verified-untouched', 'verified-bounded', 'source-changed', 'incomplete'].includes(
+      status ?? '',
+    )
+  ) {
     limitations.push('Adoption receipt integrity status is missing or unsupported.');
   }
   if (adoption.workflowCompleted !== true) {
@@ -707,6 +741,23 @@ function inspectReceipt(discovery: ProjectDiscovery, projectJson: JsonRead): Rec
     beforeHash !== null &&
     beforeHash === afterHash &&
     changeCount(hostSourceChanges) === 0;
+  const hostSourceChangePaths = [
+    ...hostSourceChanges.created,
+    ...hostSourceChanges.updated,
+    ...hostSourceChanges.deleted,
+  ].sort();
+  const approvedPaths = uniqueText(approvedHostSourcePaths);
+  const verifiedBounded =
+    structurallyComplete &&
+    status === 'verified-bounded' &&
+    beforeHash !== null &&
+    afterHash !== null &&
+    beforeHash !== afterHash &&
+    hostSourceChanges.created.length === 0 &&
+    hostSourceChanges.deleted.length === 0 &&
+    hostSourceChanges.updated.length > 0 &&
+    hostSourceChangePaths.length === approvedPaths.length &&
+    hostSourceChangePaths.every((path, index) => path === approvedPaths[index]);
   const sourceChanged =
     structurallyComplete && status === 'source-changed' && changeCount(hostSourceChanges) > 0;
   if (status === 'verified-untouched' && !verifiedUntouched) {
@@ -719,14 +770,20 @@ function inspectReceipt(discovery: ProjectDiscovery, projectJson: JsonRead): Rec
       'The receipt reports source changes without complete matching host-source path evidence.',
     );
   }
+  if (status === 'verified-bounded' && !verifiedBounded) {
+    limitations.push(
+      'The receipt claims verified-bounded source mutation without complete matching Tailwind v4 isolation evidence.',
+    );
+  }
   if (status === 'incomplete') {
     limitations.push('The adoption receipt explicitly marks source-integrity evidence incomplete.');
   }
 
   return {
     present: true,
-    complete: structurallyComplete && (verifiedUntouched || sourceChanged),
+    complete: structurallyComplete && (verifiedUntouched || verifiedBounded || sourceChanged),
     verifiedUntouched,
+    verifiedBounded,
     sourceChanged,
     allChanges,
     hostSourceChanges,
@@ -801,6 +858,7 @@ function hostSourceMutation(
   );
   receipts.push(projected);
   if (receipt.verifiedUntouched) return { state: 'untouched', receiptIds: [projected.id] };
+  if (receipt.verifiedBounded) return { state: projected.outcome, receiptIds: [projected.id] };
   if (receipt.sourceChanged) return { state: projected.outcome, receiptIds: [projected.id] };
   return { state: 'not_checked', receiptIds: [projected.id] };
 }
@@ -1424,9 +1482,11 @@ export function createProjectAdoptionTruthV1(
       limitations: receipt.limitations,
       nextAction: receipt.verifiedUntouched
         ? 'Preserve host-source authority and capture a new receipt for any future adoption pass.'
-        : receipt.sourceChanged
-          ? 'Review every receipt-recorded host-source change before relying on adoption output.'
-          : 'Run a receipt-capable adoption flow before making host-source integrity claims.',
+        : receipt.verifiedBounded
+          ? 'Preserve the receipt-recorded Tailwind v4 source-isolation block and review any future host-source mutation separately.'
+          : receipt.sourceChanged
+            ? 'Review every receipt-recorded host-source change before relying on adoption output.'
+            : 'Run a receipt-capable adoption flow before making host-source integrity claims.',
     }),
   ];
 

@@ -109,9 +109,9 @@ Run each target's own install, build, and source check after Decantr adoption:
 | Bulletproof React app | `npx --yes yarn@1.22.22 install --frozen-lockfile --ignore-scripts` | `npx --yes yarn@1.22.22 build` | `npx --yes yarn@1.22.22 lint` |
 | Generated TanStack app | generator installs dependencies | `npm run build` | `npm run check` |
 
-Capture a pristine greenfield source-check result before adoption. If the post-adoption result fails, compare it with the pristine result and inspect `git diff` before assigning responsibility.
+Capture pristine greenfield source-check and build results before adoption. Hash the emitted client and server assets, then compare those hashes with a clean post-adoption build. If a post-adoption check or build differs, inspect `git diff` and the build manifest before assigning responsibility.
 
-Contract-only adoption may create Decantr governance artifacts and narrowly update ignore files. It must not rewrite application source. Host-generated files such as TanStack's `routeTree.gen.ts` are allowed only when the host build generated them and the audit records that provenance.
+Contract-only adoption may create Decantr governance artifacts and narrowly update ignore files. Authored application source must remain untouched except for Decantr's marked Tailwind v4 source-isolation block in a detected CSS entry. That block may contain only `@source not` directives for dedicated Decantr governance paths, must be reported as an exact approved mutation in `.decantr/project.json`, and must restore the pristine build's emitted asset hashes. Host-generated files such as TanStack's `routeTree.gen.ts` are allowed only when the host build generated them and the audit records that provenance.
 
 ## Required Evidence
 
@@ -127,6 +127,7 @@ Record these facts in the release audit:
 - task capsule byte count, token estimate, truncation state, first read target, stop conditions, and verification command
 - Studio mode exercised and exhaustive before/after filesystem hashes
 - source files changed by Decantr versus by host tooling
+- exact approved Tailwind v4 stylesheet path and before/after hashes, plus pristine/post-adoption emitted asset hash comparison
 - any defect, limitation, or unmeasured claim
 
 Run `pnpm audit:3-9-release-gate` against the public-artifact-backed packet and retain its output with the public audit. Also retain the expected incomplete output from `pnpm audit:3-9-qualification` while the human lane is absent. Do not claim precision/recall without the frozen two-human-reviewer corpus and recomputable confusion matrices. Do not claim a percentile from fewer than 30 independent samples, and do not describe 3.9 as adoption-proven until the dated public audit is reviewed.

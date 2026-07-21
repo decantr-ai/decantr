@@ -325,7 +325,44 @@ function assertNarrowIgnoreChange(path, beforeRoot, afterRoot) {
   }
 }
 
-function classifyChangedPath(change, beforeRoot, afterRoot) {
+function assertBoundedTailwindSourceIsolation(change, beforeRoot, afterRoot, approval) {
+  if (
+    approval?.kind !== 'tailwind-v4-source-isolation' ||
+    approval?.verified !== true ||
+    approval?.beforeHash !== `sha256:${change.beforeSha256}` ||
+    approval?.afterHash !== `sha256:${change.afterSha256}`
+  ) {
+    throw new Error(`${change.path} does not match its bounded Tailwind isolation receipt.`);
+  }
+  const before = readFileSync(join(beforeRoot, change.path), 'utf8');
+  const after = readFileSync(join(afterRoot, change.path), 'utf8');
+  const startMarker = '/* decantr:tailwind-source-isolation:start */';
+  const endMarker = '/* decantr:tailwind-source-isolation:end */';
+  const start = after.indexOf(startMarker);
+  const end = after.indexOf(endMarker, start + startMarker.length);
+  if (start < 0 || end < start || after.indexOf(startMarker, start + startMarker.length) >= 0) {
+    throw new Error(`${change.path} does not contain exactly one complete isolation block.`);
+  }
+  const block = after.slice(start, end + endMarker.length);
+  for (const source of [
+    '.decantr',
+    'DECANTR.md',
+    'decantr.essence.json',
+    '.cursor/rules/decantr.mdc',
+    '.claude/rules/decantr.md',
+  ]) {
+    if (!block.includes(`@source not `) || !block.includes(source)) {
+      throw new Error(`${change.path} isolation block does not exclude ${source}.`);
+    }
+  }
+  const removalStart = after.slice(Math.max(0, start - 2), start) === '\n\n' ? start - 2 : start;
+  const reconstructed = `${after.slice(0, removalStart)}${after.slice(end + endMarker.length)}`;
+  if (reconstructed !== before) {
+    throw new Error(`${change.path} changed outside its bounded Tailwind isolation block.`);
+  }
+}
+
+function classifyChangedPath(change, beforeRoot, afterRoot, approvedHostSourceMutations = new Map()) {
   const path = change.path;
   if (path === '.gitignore') {
     assertNarrowIgnoreChange(path, beforeRoot, afterRoot);
@@ -346,6 +383,19 @@ function classifyChangedPath(change, beforeRoot, afterRoot) {
   }
   if (path.startsWith('.decantr/')) {
     return { ...change, classification: 'generated-governance-artifact', owner: 'decantr' };
+  }
+  if (approvedHostSourceMutations.has(path)) {
+    assertBoundedTailwindSourceIsolation(
+      change,
+      beforeRoot,
+      afterRoot,
+      approvedHostSourceMutations.get(path),
+    );
+    return {
+      ...change,
+      classification: 'bounded-tailwind-source-isolation',
+      owner: 'decantr',
+    };
   }
   return null;
 }
@@ -673,31 +723,56 @@ function prepareAdoptedTargets(options, candidate, targetRoot) {
     const before = treeSnapshot(beforeApp);
     const after = treeSnapshot(afterApp);
     const rawChanges = changedTreePaths(before, after);
+    const project = JSON.parse(readFileSync(join(afterApp, '.decantr', 'project.json'), 'utf8'));
+    const receipt = project?.initialized?.adoption;
+    const approvedHostSourceMutations = new Map(
+      (receipt?.approvedHostSourceMutations ?? []).map((entry) => [entry.path, entry]),
+    );
+    const receiptScope = receipt?.scope?.root && receipt.scope.root !== '.' ? receipt.scope.root : '';
+    const approvedAppSourceMutations = new Map(
+      [...approvedHostSourceMutations.entries()].map(([path, entry]) => [
+        receiptScope && path.startsWith(`${receiptScope}/`)
+          ? path.slice(receiptScope.length + 1)
+          : path,
+        entry,
+      ]),
+    );
     const changedPaths = [];
     const unclassifiedPaths = [];
     for (const change of rawChanges) {
-      const classified = classifyChangedPath(change, beforeApp, afterApp);
+      const classified = classifyChangedPath(
+        change,
+        beforeApp,
+        afterApp,
+        approvedAppSourceMutations,
+      );
       if (classified) changedPaths.push(classified);
       else unclassifiedPaths.push(change.path);
     }
 
-    const project = JSON.parse(readFileSync(join(afterApp, '.decantr', 'project.json'), 'utf8'));
-    const receipt = project?.initialized?.adoption;
     const authoredApplicationSourceChanges = [
       ...(receipt?.changes?.hostSource?.created ?? []),
       ...(receipt?.changes?.hostSource?.updated ?? []),
       ...(receipt?.changes?.hostSource?.deleted ?? []),
     ];
+    const verifiedUntouched =
+      receipt?.integrity?.status === 'verified-untouched' &&
+      authoredApplicationSourceChanges.length === 0;
+    const verifiedBounded =
+      receipt?.integrity?.status === 'verified-bounded' &&
+      authoredApplicationSourceChanges.length > 0 &&
+      authoredApplicationSourceChanges.length === approvedHostSourceMutations.size &&
+      authoredApplicationSourceChanges.every((path) => approvedHostSourceMutations.has(path));
     if (
-      receipt?.integrity?.status !== 'verified-untouched' ||
+      (!verifiedUntouched && !verifiedBounded) ||
       receipt?.integrity?.complete !== true ||
       receipt?.workflowCompleted !== true
     ) {
       throw new Error(
-        `${target.id} did not retain a complete verified-untouched adoption receipt.`,
+        `${target.id} did not retain a complete untouched or bounded adoption receipt.`,
       );
     }
-    if (unclassifiedPaths.length > 0 || authoredApplicationSourceChanges.length > 0) {
+    if (unclassifiedPaths.length > 0) {
       throw new Error(
         `${target.id} adoption exceeded its boundary: unclassified=${unclassifiedPaths.join(',')} source=${authoredApplicationSourceChanges.join(',')}`,
       );
@@ -709,7 +784,8 @@ function prepareAdoptedTargets(options, candidate, targetRoot) {
       afterTreeSha256: after.sha256,
       changedPaths,
       unclassifiedPaths: [],
-      authoredApplicationSourceChanges: [],
+      authoredApplicationSourceChanges,
+      approvedHostSourceMutations: [...approvedHostSourceMutations.values()],
       studioWrites: [],
     });
   }

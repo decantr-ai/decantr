@@ -164,7 +164,7 @@ function writeCurrentGraph(appRoot: string): void {
   });
 }
 
-type ReceiptStatus = 'verified-untouched' | 'source-changed' | 'incomplete';
+type ReceiptStatus = 'verified-untouched' | 'verified-bounded' | 'source-changed' | 'incomplete';
 
 function adoptionReceipt(
   input: {
@@ -175,6 +175,7 @@ function adoptionReceipt(
     updated?: string[];
     deleted?: string[];
     hostSource?: Partial<{ created: string[]; updated: string[]; deleted: string[] }>;
+    approvedHostSourceMutations?: Array<Record<string, unknown>>;
     workflowCompleted?: boolean;
   } = {},
 ): Record<string, unknown> {
@@ -206,6 +207,7 @@ function adoptionReceipt(
       hostSourceBeforeHash: 'sha256:before',
       hostSourceAfterHash: status === 'verified-untouched' ? 'sha256:before' : 'sha256:after',
     },
+    approvedHostSourceMutations: input.approvedHostSourceMutations ?? [],
     changes: {
       created: input.created ?? [],
       updated: input.updated ?? [],
@@ -436,6 +438,36 @@ describe('createProjectAdoptionTruthV1', () => {
     expect(
       truth.mutationReceipts.find((receipt) => receipt.id === 'adoption-receipt:v1:host-source'),
     ).toMatchObject({ complete: true, outcome: 'created', createdPaths: ['src/New.tsx'] });
+  });
+
+  it('keeps an exact bounded Tailwind v4 isolation receipt complete and reviewable', () => {
+    const root = temporaryRoot('source-bounded');
+    writeApp(root, {
+      receipt: adoptionReceipt({
+        status: 'verified-bounded',
+        updated: ['src/styles.css'],
+        hostSource: { updated: ['src/styles.css'] },
+        approvedHostSourceMutations: [
+          {
+            kind: 'tailwind-v4-source-isolation',
+            path: 'src/styles.css',
+            beforeHash: 'sha256:stylesheet-before',
+            afterHash: 'sha256:stylesheet-after',
+            verified: true,
+          },
+        ],
+      }),
+    });
+
+    const truth = createProjectAdoptionTruthV1(root, { generatedAt: GENERATED_AT });
+    const sourceIntegrity = findFact(truth, 'adoption.host-source-integrity');
+
+    expect(sourceIntegrity.mutation.state).toBe('updated');
+    expect(sourceIntegrity.limitations).toEqual([]);
+    expect(sourceIntegrity.nextAction).toContain('Tailwind v4 source-isolation block');
+    expect(
+      truth.mutationReceipts.find((receipt) => receipt.id === 'adoption-receipt:v1:host-source'),
+    ).toMatchObject({ complete: true, outcome: 'updated', updatedPaths: ['src/styles.css'] });
   });
 
   it('recomputes semantic graph source hashes and ignores non-semantic metadata', () => {

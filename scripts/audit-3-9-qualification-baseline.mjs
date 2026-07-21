@@ -830,13 +830,24 @@ function hasAdoptionBoundaryReplay(packet) {
     replay?.status === 'complete' &&
     isRecord(replay.artifact) &&
     deepEqual(targets.map((target) => target.targetId).sort(), [...EXPECTED_TARGET_IDS].sort()) &&
-    targets.every(
-      (target) =>
+    targets.every((target) => {
+      const sourceChanges = array(target.authoredApplicationSourceChanges);
+      const approvals = array(target.approvedHostSourceMutations);
+      const approvalPaths = approvals.map((entry) => entry?.path).filter(Boolean).sort();
+      return (
         target.exhaustive === true &&
         array(target.unclassifiedPaths).length === 0 &&
-        array(target.authoredApplicationSourceChanges).length === 0 &&
-        array(target.studioWrites).length === 0,
-    )
+        array(target.studioWrites).length === 0 &&
+        deepEqual([...sourceChanges].sort(), approvalPaths) &&
+        approvals.every(
+          (entry) =>
+            entry?.kind === 'tailwind-v4-source-isolation' &&
+            entry?.verified === true &&
+            typeof entry?.beforeHash === 'string' &&
+            typeof entry?.afterHash === 'string',
+        )
+      );
+    })
   );
 }
 

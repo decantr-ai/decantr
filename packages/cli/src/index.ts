@@ -74,9 +74,11 @@ import {
   type VerificationFinding,
 } from '@decantr/verifier';
 import {
+  type AdoptionHostSourceMutationApproval,
   type AdoptionReceipt,
   captureAdoptionSnapshot,
   createAdoptionReceipt,
+  receiptHasOnlyApprovedHostSourceMutations,
 } from './adoption-receipt.js';
 import { scanRoutes } from './analyzers/routes.js';
 import { scanStyling } from './analyzers/styling.js';
@@ -179,6 +181,10 @@ import {
   styleBridgeProposalPath,
   writeStyleBridgeProposal,
 } from './style-bridge.js';
+import {
+  applyTailwindSourceIsolation,
+  type TailwindSourceIsolationResult,
+} from './tailwind-source-isolation.js';
 import { getCliTelemetryIdentityStatus, optIn, sendCliCommandTelemetry } from './telemetry.js';
 import {
   createTheme,
@@ -2052,6 +2058,40 @@ type AdoptionPackHydration = {
   limitation: string | null;
 };
 
+interface InitExecutionResult {
+  tailwindSourceIsolation: TailwindSourceIsolationResult;
+}
+
+function printTailwindSourceIsolation(result: TailwindSourceIsolationResult): void {
+  if (result.mutations.length > 0) {
+    console.log(
+      `    ${dim(
+        `Tailwind v4 source scan isolated from generated governance (${result.mutations
+          .map((mutation) => mutation.path)
+          .join(', ')})`,
+      )}`,
+    );
+  }
+  for (const limitation of result.limitations) {
+    console.log(`${YELLOW}Tailwind source isolation limitation:${RESET} ${limitation}`);
+  }
+}
+
+function approvedSourceMutations(
+  workspaceRoot: string,
+  projectRoot: string,
+  result: InitExecutionResult | undefined,
+): AdoptionHostSourceMutationApproval[] {
+  const projectPath = relative(workspaceRoot, projectRoot).replace(/\\/g, '/');
+  const prefix = projectPath && projectPath !== '.' ? `${projectPath}/` : '';
+  return (result?.tailwindSourceIsolation.mutations ?? []).map((mutation) => ({
+    kind: mutation.kind,
+    path: `${prefix}${mutation.path}`,
+    beforeHash: mutation.beforeHash,
+    afterHash: mutation.afterHash,
+  }));
+}
+
 function persistAdoptionReceipt(
   projectRoot: string,
   receipt: AdoptionReceipt,
@@ -2098,7 +2138,7 @@ async function applyAcceptedBrownfieldProposal(input: {
   mode: 'accept' | 'merge' | 'replace';
   assistantBridge: AssistantBridgeMode;
   suppressNextSteps?: boolean;
-}): Promise<void> {
+}): Promise<InitExecutionResult | undefined> {
   const proposal = readBrownfieldProposal(input.projectRoot);
   if (!proposal) {
     console.log(
@@ -2207,6 +2247,10 @@ async function applyAcceptedBrownfieldProposal(input: {
           adoptionMode: 'contract-only',
         })
       : [];
+  const tailwindSourceIsolation = applyTailwindSourceIsolation(
+    input.projectRoot,
+    input.workspaceInfo.workspaceRoot,
+  );
   const formatterIgnoreUpdated = updateFormatterIgnore(
     input.projectRoot,
     input.workspaceInfo.workspaceRoot,
@@ -2241,6 +2285,7 @@ async function applyAcceptedBrownfieldProposal(input: {
   if (formatterIgnoreUpdated) {
     console.log(`    ${dim('.prettierignore updated for generated Decantr artifacts')}`);
   }
+  printTailwindSourceIsolation(tailwindSourceIsolation);
   if (backupPath) {
     console.log(`    ${dim(`Backup: ${backupPath}`)}`);
   }
@@ -2271,6 +2316,7 @@ async function applyAcceptedBrownfieldProposal(input: {
     );
     console.log('');
   }
+  return { tailwindSourceIsolation };
 }
 
 function receiptHasChanges(receipt: AdoptionReceipt): boolean {
@@ -2307,10 +2353,9 @@ function ensureDiscoveryReadyForGovernance(
   return false;
 }
 
-async function cmdInit(args: InitArgs) {
+async function cmdInit(args: InitArgs): Promise<InitExecutionResult | undefined> {
   if (args.internalSuppressNextSteps) {
-    await cmdInitInternal(args);
-    return;
+    return cmdInitInternal(args);
   }
 
   const workspaceInfo = resolveWorkspaceInfo(process.cwd(), args.project);
@@ -2324,9 +2369,10 @@ async function cmdInit(args: InitArgs) {
     projectRoot: workspaceInfo.appRoot,
   });
   let workflowCompleted = false;
+  let executionResult: InitExecutionResult | undefined;
 
   try {
-    await cmdInitInternal(args);
+    executionResult = await cmdInitInternal(args);
     workflowCompleted = !process.exitCode || process.exitCode === 0;
   } finally {
     try {
@@ -2335,6 +2381,13 @@ async function cmdInit(args: InitArgs) {
         captureAdoptionSnapshot(workspaceInfo.workspaceRoot, {
           projectRoot: workspaceInfo.appRoot,
         }),
+        {
+          approvedHostSourceMutations: approvedSourceMutations(
+            workspaceInfo.workspaceRoot,
+            workspaceInfo.appRoot,
+            executionResult,
+          ),
+        },
       );
       if (receiptHasChanges(receipt)) {
         const stored = persistAdoptionReceipt(workspaceInfo.appRoot, receipt, workflowCompleted, {
@@ -2352,6 +2405,12 @@ async function cmdInit(args: InitArgs) {
           console.log(
             success('Initialization source integrity verified; authored host source is unchanged.'),
           );
+        } else if (receiptHasOnlyApprovedHostSourceMutations(receipt)) {
+          console.log(
+            success(
+              'Initialization source integrity verified with bounded Tailwind v4 scan isolation.',
+            ),
+          );
         } else if (receipt.integrity.status === 'source-changed') {
           console.log(
             `${YELLOW}Initialization changed authored host source:${RESET} review .decantr/project.json before relying on the result.`,
@@ -2368,9 +2427,10 @@ async function cmdInit(args: InitArgs) {
       );
     }
   }
+  return executionResult;
 }
 
-async function cmdInitInternal(args: InitArgs) {
+async function cmdInitInternal(args: InitArgs): Promise<InitExecutionResult | undefined> {
   const workspaceInfo = resolveWorkspaceInfo(process.cwd(), args.project);
   if (args.yes && workspaceInfo.requiresProjectSelection) {
     printWorkspaceProjectSelection(workspaceInfo, 'init');
@@ -2426,7 +2486,7 @@ async function cmdInitInternal(args: InitArgs) {
         : null;
 
   if (proposalMode) {
-    await applyAcceptedBrownfieldProposal({
+    const executionResult = await applyAcceptedBrownfieldProposal({
       projectRoot,
       detected,
       workspaceInfo,
@@ -2436,7 +2496,7 @@ async function cmdInitInternal(args: InitArgs) {
     });
     if (args.telemetry) enableCliTelemetry(projectRoot);
     writeArtifactReadme(projectRoot);
-    return;
+    return executionResult;
   }
 
   if (policy.workflowMode === 'brownfield-attach' && detected.existingEssence) {
@@ -2546,6 +2606,11 @@ async function cmdInitInternal(args: InitArgs) {
       if (result.formatterIgnoreUpdated) {
         console.log(`    ${dim('.prettierignore updated for generated Decantr artifacts')}`);
       }
+      const tailwindSourceIsolation = applyTailwindSourceIsolation(
+        projectRoot,
+        workspaceInfo.workspaceRoot,
+      );
+      printTailwindSourceIsolation(tailwindSourceIsolation);
       await cmdGraph(projectRoot, { displayRoot: process.cwd() });
       if (process.exitCode && process.exitCode !== 0) return;
       console.log('');
@@ -2561,7 +2626,7 @@ async function cmdInitInternal(args: InitArgs) {
         `    4. Use ${cyan('decantr create <type> <name>')} to create custom content if needed`,
       );
       if (args.telemetry) enableCliTelemetry(projectRoot);
-      return;
+      return { tailwindSourceIsolation };
     }
 
     if (requestedBlueprint || requestedArchetype) {
@@ -2912,6 +2977,11 @@ async function cmdInitInternal(args: InitArgs) {
     });
   }
 
+  const tailwindSourceIsolation = applyTailwindSourceIsolation(
+    projectRoot,
+    workspaceInfo.workspaceRoot,
+  );
+
   if (args.telemetry) enableCliTelemetry(projectRoot);
   writeArtifactReadme(projectRoot);
 
@@ -2934,6 +3004,7 @@ async function cmdInitInternal(args: InitArgs) {
   if (appliedRuleFiles.length > 0) {
     console.log(`    ${dim(`Rule bridge applied: ${appliedRuleFiles.join(', ')}`)}`);
   }
+  printTailwindSourceIsolation(tailwindSourceIsolation);
 
   if (!existsSync(join(projectRoot, 'package.json'))) {
     console.log('');
@@ -3059,6 +3130,7 @@ async function cmdInitInternal(args: InitArgs) {
   if (registrySource === 'cache') {
     console.log(dim('Run "decantr sync" when online to get the latest official content.'));
   }
+  return { tailwindSourceIsolation };
 }
 
 // ── Status command ──
@@ -4331,6 +4403,7 @@ async function cmdAdoptWorkflow(args: string[]): Promise<void> {
     projectRoot: workspaceInfo.appRoot,
   });
   let workflowCompleted = false;
+  let initExecutionResult: InitExecutionResult | undefined;
   const packHydration: AdoptionPackHydration = {
     requested: hydratePacks,
     status: hydratePacks
@@ -4350,7 +4423,7 @@ async function cmdAdoptWorkflow(args: string[]): Promise<void> {
       : `decantr init --existing ${proposalFlag}`;
     console.log(dim(`Analysis artifacts written; continuing with ${initCommand}.`));
 
-    await cmdInit({
+    initExecutionResult = await cmdInit({
       existing: true,
       yes: true,
       project: flagString(flags, 'project'),
@@ -4440,10 +4513,26 @@ async function cmdAdoptWorkflow(args: string[]): Promise<void> {
       const adoptionAfter = captureAdoptionSnapshot(workspaceInfo.workspaceRoot, {
         projectRoot: workspaceInfo.appRoot,
       });
-      const receipt = createAdoptionReceipt(adoptionBefore, adoptionAfter);
+      const receipt = createAdoptionReceipt(adoptionBefore, adoptionAfter, {
+        approvedHostSourceMutations: approvedSourceMutations(
+          workspaceInfo.workspaceRoot,
+          workspaceInfo.appRoot,
+          initExecutionResult,
+        ),
+      });
       const stored = persistAdoptionReceipt(projectRoot, receipt, workflowCompleted, packHydration);
       if (stored) await refreshContextAfterAdoptionReceipt(projectRoot);
-      if (receipt.integrity.status === 'source-changed') {
+      if (stored && receiptHasOnlyApprovedHostSourceMutations(receipt)) {
+        console.log(
+          success('Adoption source integrity verified with bounded Tailwind v4 scan isolation.'),
+        );
+        const adoptionTruth = createProjectAdoptionTruthV1(projectRoot);
+        console.log(
+          dim(
+            `Adoption truth: ${adoptionTruth.facts.length} fact(s), ${adoptionTruth.mutationReceipts.length} receipt(s), ${adoptionTruth.limitations.length} limitation(s).`,
+          ),
+        );
+      } else if (receipt.integrity.status === 'source-changed') {
         console.error(
           error('Adoption changed authored host source. Review the stored adoption receipt.'),
         );

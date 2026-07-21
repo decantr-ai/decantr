@@ -316,6 +316,7 @@ Adoption safety invariants:
 - `decantr codify --accept --confirm-reviewed` accepts local patterns/rules only. A style bridge requires the additional `--accept-style-bridge` flag because it changes adoption mode.
 - Brownfield project CI with a saved baseline reports inherited findings but gates only new findings through `baselineGate`. Generated baseline diff output must not feed graph source hashing.
 - When Prettier or Oxfmt is present, adoption/scaffolding records generated Decantr artifacts in `.prettierignore`, including app-prefixed entries for workspace-root formatters.
+- When Tailwind v4 is active through a CSS `@import`, adoption/scaffolding may make exactly one class of bounded authored-source mutation: a deterministic marked `@source not` block in detected CSS entry files excluding dedicated Decantr governance paths. The adoption receipt must bind every path and exact before/after hash; any other source change or later mismatch fails source integrity.
 
 ## Documentation
 

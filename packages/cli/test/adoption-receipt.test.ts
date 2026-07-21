@@ -6,7 +6,9 @@ import {
   type AdoptionSnapshotOptions,
   captureAdoptionSnapshot,
   createAdoptionReceipt,
+  receiptHasOnlyApprovedHostSourceMutations,
 } from '../src/adoption-receipt.js';
+import { applyTailwindSourceIsolation } from '../src/tailwind-source-isolation.js';
 
 function write(path: string, content: string): void {
   mkdirSync(dirname(path), { recursive: true });
@@ -115,6 +117,50 @@ describe('adoption receipt', () => {
     expect(receipt.integrity.hostSourceAfterHash).not.toBe(receipt.integrity.hostSourceBeforeHash);
     expect(receipt.changes.updated).toEqual(['src/App.tsx']);
     expect(receipt.changes.hostSource.updated).toEqual(['src/App.tsx']);
+  });
+
+  it('verifies an exact Tailwind v4 scanner-isolation mutation as bounded', () => {
+    write(join(workspaceRoot, 'package.json'), '{"devDependencies":{"tailwindcss":"^4.1.0"}}\n');
+    write(join(workspaceRoot, 'src', 'styles.css'), '@import "tailwindcss";\n');
+    const before = capture();
+
+    const isolation = applyTailwindSourceIsolation(workspaceRoot);
+    const receipt = createAdoptionReceipt(before, capture(), {
+      approvedHostSourceMutations: isolation.mutations,
+    });
+
+    expect(receipt.integrity.status).toBe('verified-bounded');
+    expect(receipt.integrity.complete).toBe(true);
+    expect(receipt.changes.hostSource.updated).toEqual(['src/styles.css']);
+    expect(receipt.approvedHostSourceMutations).toEqual([
+      expect.objectContaining({
+        kind: 'tailwind-v4-source-isolation',
+        path: 'src/styles.css',
+        verified: true,
+      }),
+    ]);
+    expect(receiptHasOnlyApprovedHostSourceMutations(receipt)).toBe(true);
+  });
+
+  it('fails closed when a claimed scanner-isolation hash does not match capture evidence', () => {
+    write(join(workspaceRoot, 'package.json'), '{"devDependencies":{"tailwindcss":"^4.1.0"}}\n');
+    write(join(workspaceRoot, 'src', 'styles.css'), '@import "tailwindcss";\n');
+    const before = capture();
+    const isolation = applyTailwindSourceIsolation(workspaceRoot);
+    const receipt = createAdoptionReceipt(before, capture(), {
+      approvedHostSourceMutations: isolation.mutations.map((mutation) => ({
+        ...mutation,
+        afterHash: 'sha256:not-the-captured-hash',
+      })),
+    });
+
+    expect(receipt.integrity.status).toBe('source-changed');
+    expect(receipt.integrity.complete).toBe(false);
+    expect(receipt.approvedHostSourceMutations[0]?.verified).toBe(false);
+    expect(receipt.limitations).toEqual([
+      expect.objectContaining({ code: 'approved-mutation-mismatch', path: 'src/styles.css' }),
+    ]);
+    expect(receiptHasOnlyApprovedHostSourceMutations(receipt)).toBe(false);
   });
 
   it('detects deletion of a host application-source file', () => {
