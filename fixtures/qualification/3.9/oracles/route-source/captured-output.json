@@ -266,7 +266,7 @@
     "package": "@decantr/verifier",
     "version": "3.9.0",
     "entrypoint": "packages/verifier/dist/index.js",
-    "entrypointSha256": "bb4ed11f1d832b266f1422a30ec9a3bc8792e0c8737da7d4c9b5b3262c071cd1"
+    "entrypointSha256": "d669d2d2c93c85ae45bc3c6751322ce32b6603d196b6d93fa46b5f05a3e31dce"
   },
   "discovery": {
     "strategy": "react-router",

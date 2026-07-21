@@ -910,6 +910,210 @@
         }
       }
     },
+    "angularSourceBlob": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sourcePath", "blobHash"],
+      "properties": {
+        "sourcePath": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "blobHash": {
+          "$ref": "#/$defs/gitObjectId"
+        }
+      }
+    },
+    "angularBrownfieldTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "repository",
+        "commit",
+        "projectPath",
+        "framework",
+        "packageName",
+        "routeStrategy",
+        "routeAuthority",
+        "routeCompleteness",
+        "routeConfidence",
+        "routeSignalCount",
+        "taskableRouteCount",
+        "routePaths",
+        "routeSources",
+        "authorityFiles",
+        "excludedSourceCount",
+        "componentCount",
+        "componentConfidence",
+        "styleApproach",
+        "styleConfidence",
+        "confidenceScore",
+        "projectEvidence",
+        "routeEvidence",
+        "styleEvidence",
+        "limitations"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "repository": {
+          "type": "string",
+          "format": "uri"
+        },
+        "commit": {
+          "$ref": "#/$defs/gitObjectId"
+        },
+        "projectPath": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "framework": {
+          "type": "string",
+          "minLength": 1
+        },
+        "packageName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "routeStrategy": {
+          "const": "angular-router"
+        },
+        "routeAuthority": {
+          "const": "proven"
+        },
+        "routeCompleteness": {
+          "const": "complete"
+        },
+        "routeConfidence": {
+          "const": "high"
+        },
+        "routeSignalCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "taskableRouteCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "routePaths": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^/"
+          }
+        },
+        "routeSources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/angularSourceBlob"
+          }
+        },
+        "authorityFiles": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/angularSourceBlob"
+          }
+        },
+        "excludedSourceCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "componentCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "componentConfidence": {
+          "const": "high"
+        },
+        "styleApproach": {
+          "type": "string",
+          "minLength": 1
+        },
+        "styleConfidence": {
+          "const": "high"
+        },
+        "confidenceScore": {
+          "const": 98
+        },
+        "projectEvidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "routeEvidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "styleEvidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "angularBrownfieldReplay": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "targetCount",
+        "routeSignalCount",
+        "taskableRouteCount",
+        "componentCount",
+        "sourceBlobCount",
+        "targets"
+      ],
+      "properties": {
+        "status": {
+          "const": "complete"
+        },
+        "targetCount": {
+          "const": 2
+        },
+        "routeSignalCount": {
+          "const": 43
+        },
+        "taskableRouteCount": {
+          "const": 35
+        },
+        "componentCount": {
+          "const": 62
+        },
+        "sourceBlobCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "targets": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "$ref": "#/$defs/angularBrownfieldTarget"
+          }
+        }
+      }
+    },
     "routeReplayCase": {
       "type": "object",
       "additionalProperties": false,
@@ -937,7 +1141,7 @@
     "routeReplay": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["status", "releaseVersion", "corpusSha256", "artifact", "cases"],
+      "required": ["status", "releaseVersion", "corpusSha256", "artifact", "cases", "angularBrownfield"],
       "properties": {
         "status": {
           "enum": ["missing", "complete"]
@@ -970,6 +1174,9 @@
           "items": {
             "$ref": "#/$defs/routeReplayCase"
           }
+        },
+        "angularBrownfield": {
+          "$ref": "#/$defs/angularBrownfieldReplay"
         }
       }
     },

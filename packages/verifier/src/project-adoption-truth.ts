@@ -12,7 +12,7 @@ import {
   type AdoptionTruthV1,
   createAdoptionTruthV1,
 } from './adoption-truth.js';
-import { discoverProject, type ProjectDiscovery } from './discovery.js';
+import { discoverProject, evaluateDiscoveryReadiness, type ProjectDiscovery } from './discovery.js';
 
 export interface CreateProjectAdoptionTruthV1Options {
   generatedAt?: string;
@@ -1028,6 +1028,12 @@ export function createProjectAdoptionTruthV1(
       `Taskable ${route.path} route from ${route.source} evidence.`,
     ),
   );
+  for (const path of discovery.routes.authorityFiles) {
+    const evidencePath = appEvidencePath(discovery, path);
+    if (routeProvenance.some((entry) => entry.path === evidencePath)) continue;
+    routeProvenance.push(provenance('source', evidencePath, 'Production route-authority source.'));
+  }
+  const discoveryReadiness = evaluateDiscoveryReadiness(discovery);
   const componentProvenance = discovery.components.items.map((component) =>
     provenance(
       'source',
@@ -1166,7 +1172,11 @@ export function createProjectAdoptionTruthV1(
       id: FACT_ID.routes,
       subject: SUBJECT.routes,
       observation: observation(
-        discovery.routes.taskableRouteCount > 0 ? 'found' : 'not_found',
+        discoveryReadiness.routeScopedContext === 'ready'
+          ? 'found'
+          : discovery.routes.routeSignalCount > 0
+            ? 'unknown'
+            : 'not_found',
         discovery.routes.confidence,
         routeProvenance,
       ),
@@ -1174,9 +1184,9 @@ export function createProjectAdoptionTruthV1(
       mutation: unverifiedMutation(),
       limitations: discovery.routes.limitations,
       nextAction:
-        discovery.routes.taskableRouteCount > 0
+        discoveryReadiness.routeScopedContext === 'ready'
           ? 'Use a discovered taskable route as the task-context scope.'
-          : 'Review selected-app route declarations before preparing route-scoped tasks.',
+          : 'Prove the selected-app production router authority before preparing route-scoped tasks or baselines.',
     }),
     fact({
       id: FACT_ID.components,
@@ -1203,19 +1213,18 @@ export function createProjectAdoptionTruthV1(
       subject: SUBJECT.styling,
       observation: observation(
         discovery.styling.approach === 'unknown' ? 'unknown' : 'found',
-        discovery.styling.approach === 'unknown' ? 'low' : discovery.confidence.level,
+        discovery.styling.confidence,
         stylingProvenance,
       ),
       governance: stylingGovernance,
       mutation: unverifiedMutation(),
       limitations:
         discovery.styling.approach === 'unknown'
-          ? ['Styling authority could not be determined from selected-app evidence.']
-          : discovery.confidence.level === 'low'
-            ? [
-                'A styling signal was found, but overall selected-app discovery confidence remains low.',
-              ]
-            : [],
+          ? [
+              'Styling authority could not be determined from selected-app evidence.',
+              ...discovery.styling.limitations,
+            ]
+          : discovery.styling.limitations,
       nextAction:
         discovery.styling.approach === 'unknown'
           ? 'Identify and codify the project-owned styling authority before visual edits.'

@@ -1,6 +1,14 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, extname, join, relative, resolve } from 'node:path';
 import * as ts from 'typescript';
+import {
+  type AngularApplicationDiscovery,
+  type AngularProjectContext,
+  type AngularRouteAuthority,
+  type AngularRouteCompleteness,
+  discoverAngularApplication,
+  discoverAngularProjectContext,
+} from './angular-discovery.js';
 
 export type DiscoveryConfidenceLevel = 'high' | 'medium' | 'low';
 export type DiscoveryPackageManager = 'npm' | 'pnpm' | 'yarn' | 'bun' | 'unknown';
@@ -70,7 +78,13 @@ export interface DiscoveryRoute {
 export interface DiscoveryComponent {
   name: string;
   file: string;
-  kind: 'exported' | 'default-export' | 'wrapper' | 'pascal-file' | 'route-local';
+  kind:
+    | 'angular-component'
+    | 'exported'
+    | 'default-export'
+    | 'wrapper'
+    | 'pascal-file'
+    | 'route-local';
   confidence: DiscoveryConfidenceLevel;
 }
 
@@ -103,6 +117,11 @@ export interface DiscoveryRoutes {
   routeSignalCount: number;
   taskableRouteCount: number;
   confidence: DiscoveryConfidenceLevel;
+  authority: AngularRouteAuthority;
+  completeness: AngularRouteCompleteness;
+  authorityFiles: string[];
+  excludedSourceCount: number;
+  evidence: string[];
   limitations: string[];
 }
 
@@ -123,6 +142,9 @@ export interface DiscoveryStyling {
   colorTokenCount: number;
   darkMode: boolean;
   themeSignals: string[];
+  confidence: DiscoveryConfidenceLevel;
+  evidence: string[];
+  limitations: string[];
 }
 
 export interface ProjectDiscovery {
@@ -142,6 +164,12 @@ export interface ProjectDiscovery {
     reasons: string[];
   };
   limitations: string[];
+}
+
+export interface DiscoveryReadiness {
+  routeScopedContext: 'ready' | 'not_proven';
+  adoptionBaseline: 'ready' | 'not_proven';
+  reasons: string[];
 }
 
 interface PackageJson {
@@ -169,8 +197,8 @@ const STYLE_EXTENSIONS = new Set(['.css', '.scss', '.sass', '.less']);
 const PAGE_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx', '.vue', '.svelte', '.html']);
 const MAX_FILE_READ_BYTES = 512 * 1024;
 const MAX_WALK_FILES = 8000;
-const MAX_REPORT_ROUTES = 120;
-const MAX_COMPONENT_ITEMS = 160;
+const MAX_REPORT_ROUTES = 1000;
+const MAX_COMPONENT_ITEMS = 1000;
 const ROUTE_ASSET_EXTENSION_RE =
   /\.(?:avif|bmp|css|gif|ico|jpeg|jpg|js|json|map|mp4|pdf|png|svg|webp|woff2?)$/i;
 const ROUTE_VARIABLE_NAMES =
@@ -213,8 +241,8 @@ const SKIP_DIRS = new Set([
   'vendor',
 ]);
 
-const EXCLUDED_COMPONENT_FILE_RE =
-  /(?:^|\/)(?:__tests__|tests?|mocks?|fixtures?|generated|__generated__)(?:\/|$)|(?:\.test|\.spec|\.stories|\.story|\.mock|\.fixture|\.gen|\.d)\.[cm]?[tj]sx?$/i;
+const EXCLUDED_SOURCE_FILE_RE =
+  /(?:^|\/)(?:__tests__|e2e|tests?|mocks?|fixtures?|generated|__generated__)(?:\/|$)|(?:\.test|\.spec|\.vitest|\.e2e|\.cy|\.stories|\.story|\.mock|\.fixture|\.gen|\.d)\.[cm]?[tj]sx?$/i;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -314,6 +342,49 @@ function hasStaticHtmlSurface(projectRoot: string): boolean {
   return STATIC_HTML_ROUTE_DIRS.some((dir) => existsSync(join(projectRoot, dir, 'index.html')));
 }
 
+function detectTailwindAuthority(
+  projectRoot: string,
+  cssFiles?: string[],
+): {
+  found: boolean;
+  evidence: string[];
+} {
+  const configFiles = [
+    'tailwind.config.js',
+    'tailwind.config.ts',
+    'tailwind.config.mjs',
+    'tailwind.config.cjs',
+    'postcss.config.js',
+    'postcss.config.cjs',
+    'postcss.config.mjs',
+    '.postcssrc',
+    '.postcssrc.json',
+    '.postcssrc.js',
+    '.postcssrc.cjs',
+  ];
+  const evidence: string[] = [];
+  for (const file of configFiles) {
+    const path = join(projectRoot, file);
+    if (!existsSync(path)) continue;
+    const content = readTextFile(path, 128 * 1024) ?? '';
+    if (
+      file.startsWith('tailwind.config') ||
+      /(?:@tailwindcss\/postcss|tailwindcss)/u.test(content)
+    ) {
+      evidence.push(`Tailwind configured in ${file}`);
+    }
+  }
+  for (const file of cssFiles ?? walkFiles(projectRoot, { extensions: STYLE_EXTENSIONS })) {
+    const content = readTextFile(join(projectRoot, file), 256 * 1024) ?? '';
+    if (
+      /@(?:tailwind|theme)\b|@import\s+["']tailwindcss["']|@plugin\s+["']tailwindcss/u.test(content)
+    ) {
+      evidence.push(`Tailwind directive found in ${file}`);
+    }
+  }
+  return { found: evidence.length > 0, evidence: [...new Set(evidence)].sort() };
+}
+
 function shouldSkipDir(name: string): boolean {
   return SKIP_DIRS.has(name) || (name.startsWith('.') && name !== '.github');
 }
@@ -387,6 +458,7 @@ function detectPrimaryLanguage(
 function detectProjectIdentity(
   projectRoot: string,
   workspaceRoot: string,
+  angularProject: AngularProjectContext,
 ): DiscoveryProjectIdentity {
   const packageRead = readPackageJson(projectRoot);
   const pkg = packageRead.value;
@@ -421,10 +493,15 @@ function detectProjectIdentity(
     framework = 'svelte';
     frameworkVersion = dependencyVersion(dependencies, ['svelte', '@sveltejs/kit']);
     evidence.push('Svelte/SvelteKit config or dependency');
-  } else if (hasAnyFile(projectRoot, ['angular.json']) || dependencies['@angular/core']) {
+  } else if (
+    angularProject.matched ||
+    hasAnyFile(projectRoot, ['angular.json', 'project.json']) ||
+    dependencies['@angular/core']
+  ) {
     framework = 'angular';
     frameworkVersion = dependencyVersion(dependencies, ['@angular/core']);
     evidence.push('Angular config or dependency');
+    evidence.push(...angularProject.evidence);
   } else if (dependencies['solid-js']) {
     framework = 'solid';
     frameworkVersion = dependencyVersion(dependencies, ['solid-js']);
@@ -449,15 +526,14 @@ function detectProjectIdentity(
   }
 
   const cssFiles = walkFiles(projectRoot, { extensions: STYLE_EXTENSIONS });
-  const hasTailwind =
-    hasAnyFile(projectRoot, [
-      'tailwind.config.js',
-      'tailwind.config.ts',
-      'tailwind.config.mjs',
-      'tailwind.config.cjs',
-    ]) ||
-    Boolean(dependencies.tailwindcss) ||
-    cssFiles.some((file) => readTextFile(join(projectRoot, file), 128 * 1024)?.includes('@theme'));
+  const tailwind = detectTailwindAuthority(projectRoot, cssFiles);
+  const hasTailwind = tailwind.found;
+  evidence.push(...tailwind.evidence);
+  if (dependencies.tailwindcss && !hasTailwind) {
+    evidence.push(
+      'Tailwind dependency is installed but no selected-app configuration or CSS directive proves style authority',
+    );
+  }
 
   return {
     framework,
@@ -563,6 +639,7 @@ function scanFileRoutes(
     if (routeFileNames && !routeFileNames.has(routeFileName)) return [];
     if (routeFileName.startsWith('_')) return [];
     const rel = relative(projectRoot, join(fullBase, file)).replace(/\\/g, '/');
+    if (EXCLUDED_SOURCE_FILE_RE.test(rel)) return [];
     return [
       {
         path: fileRouteFromPath(rel, baseDir),
@@ -896,6 +973,7 @@ function detectSourceRouteSignals(
 
   for (const { content, file, sourceFile } of parsedFiles) {
     if (!content) continue;
+    if (EXCLUDED_SOURCE_FILE_RE.test(file)) continue;
     const isGeneratedFile = /(?:^|\/)[^/]*\.gen\.[cm]?[tj]sx?$/i.test(file);
     const isTanstackFile =
       content.includes('@tanstack/react-router') ||
@@ -1030,7 +1108,11 @@ function routeSignalRank(signal: DiscoveryRouteSignal): number {
   );
 }
 
-function discoverRoutes(projectRoot: string, identity: DiscoveryProjectIdentity): DiscoveryRoutes {
+function discoverRoutes(
+  projectRoot: string,
+  identity: DiscoveryProjectIdentity,
+  angularDiscovery: AngularApplicationDiscovery | null,
+): DiscoveryRoutes {
   const fileRouteSignals: DiscoveryRouteSignal[] = [];
   const nextAppSignals = ['src/app', 'app'].flatMap((dir) =>
     scanFileRoutes(projectRoot, dir, PAGE_EXTENSIONS, new Set(['page'])),
@@ -1054,25 +1136,13 @@ function discoverRoutes(projectRoot: string, identity: DiscoveryProjectIdentity)
     fileRouteSignals.push(...pagesSignals);
   }
 
-  const sourceSignals = detectSourceRouteSignals(projectRoot, identity);
-  const angularSignals: DiscoveryRouteSignal[] = [];
-  if (identity.framework === 'angular') {
-    for (const file of walkFiles(projectRoot, { extensions: new Set(['.ts', '.js']) })) {
-      const content = readTextFile(join(projectRoot, file));
-      if (
-        !content ||
-        !/@angular\/router|RouterModule\.forRoot|provideRouter|\bRoutes\s*=/.test(content)
-      )
-        continue;
-      collectRouteLiterals(
-        /\bpath\s*:\s*["'`]([^"'`]*)["'`]/g,
-        content,
-        file,
-        angularSignals,
-        'angular-router',
-      );
-    }
-  }
+  const sourceSignals =
+    identity.framework === 'angular' ? [] : detectSourceRouteSignals(projectRoot, identity);
+  const angularSignals: DiscoveryRouteSignal[] =
+    angularDiscovery?.routes.signals.map((signal) => ({
+      ...signal,
+      kind: 'angular-router' as const,
+    })) ?? [];
   const htmlSignals = scanStaticHtmlRouteSignals(projectRoot);
 
   let selectedSignals: DiscoveryRouteSignal[] = [];
@@ -1086,7 +1156,7 @@ function discoverRoutes(projectRoot: string, identity: DiscoveryProjectIdentity)
   } else if (identity.framework === 'nextjs' && pagesSignals.length > 0) {
     selectedSignals = pagesSignals;
     strategy = 'pages-router';
-  } else if (identity.framework === 'angular' && angularSignals.length > 0) {
+  } else if (identity.framework === 'angular') {
     selectedSignals = angularSignals;
     strategy = 'angular-router';
   } else if (identity.framework === 'svelte' && fileRouteSignals.length > 0) {
@@ -1130,12 +1200,44 @@ function discoverRoutes(projectRoot: string, identity: DiscoveryProjectIdentity)
     });
   }
   const routeSignals = selectedSignals.slice(0, MAX_REPORT_ROUTES);
-  const taskableRoutes = [...taskable.values()].slice(0, MAX_REPORT_ROUTES);
+  const taskableRoutes = [...taskable.values()];
   const fallbackOnly =
     selectedSignals.length > 0 &&
     selectedSignals.every((signal) => signal.kind === 'pathname-branch');
+  const authority: AngularRouteAuthority =
+    identity.framework === 'angular'
+      ? (angularDiscovery?.routes.authority ?? 'unresolved')
+      : selectedSignals.length === 0
+        ? 'unresolved'
+        : fallbackOnly
+          ? 'inferred'
+          : 'proven';
+  const completeness: AngularRouteCompleteness =
+    identity.framework === 'angular'
+      ? (angularDiscovery?.routes.completeness ?? 'unknown')
+      : selectedSignals.length === 0
+        ? 'unknown'
+        : fallbackOnly
+          ? 'partial'
+          : 'complete';
   const confidence: DiscoveryConfidenceLevel =
-    taskableRoutes.length === 0 ? 'low' : fallbackOnly ? 'medium' : 'high';
+    taskableRoutes.length === 0 || authority !== 'proven'
+      ? 'low'
+      : completeness === 'partial' || fallbackOnly
+        ? 'medium'
+        : 'high';
+  const authorityFiles =
+    identity.framework === 'angular'
+      ? (angularDiscovery?.routes.authorityFiles ?? [])
+      : [...new Set(selectedSignals.map((signal) => signal.file))].slice(0, 24);
+  const evidence =
+    identity.framework === 'angular'
+      ? (angularDiscovery?.routes.evidence ?? [])
+      : selectedSignals.length > 0
+        ? [
+            `${selectedSignals.length} ${fallbackOnly ? 'inferred' : 'formal'} route signal(s) found`,
+          ]
+        : [];
   return {
     strategy,
     routeSignals,
@@ -1143,7 +1245,13 @@ function discoverRoutes(projectRoot: string, identity: DiscoveryProjectIdentity)
     routeSignalCount: selectedSignals.length,
     taskableRouteCount: taskableRoutes.length,
     confidence,
+    authority,
+    completeness,
+    authorityFiles,
+    excludedSourceCount: angularDiscovery?.routes.excludedSourceCount ?? 0,
+    evidence,
     limitations: [
+      ...(angularDiscovery?.routes.limitations ?? []),
       ...(taskableRoutes.length === 0
         ? ['No taskable route declarations were discovered from static source evidence.']
         : []),
@@ -1155,18 +1263,35 @@ function discoverRoutes(projectRoot: string, identity: DiscoveryProjectIdentity)
       ...(selectedSignals.length > taskableRoutes.length
         ? ['Some duplicate or non-taskable route signals were collapsed before task context.']
         : []),
+      ...(routeSignals.length < selectedSignals.length
+        ? [
+            `Route signal output was bounded to ${MAX_REPORT_ROUTES} entries; ${selectedSignals.length - routeSignals.length} additional authoritative signal(s) were omitted from the report.`,
+          ]
+        : []),
     ],
   };
 }
 
-function discoverComponents(projectRoot: string, routes: DiscoveryRoutes): DiscoveryComponents {
+function discoverComponents(
+  projectRoot: string,
+  routes: DiscoveryRoutes,
+  identity: DiscoveryProjectIdentity,
+  angularDiscovery: AngularApplicationDiscovery | null,
+): DiscoveryComponents {
   const sourceFiles = walkFiles(projectRoot, { extensions: SOURCE_EXTENSIONS });
   const items = new Map<string, DiscoveryComponent>();
-  const evidence: string[] = [];
+  const evidence: string[] = [...(angularDiscovery?.components.evidence ?? [])];
+  for (const component of angularDiscovery?.components.items ?? []) {
+    items.set(`${component.file}:${component.name}`, {
+      ...component,
+      kind: 'angular-component',
+    });
+  }
   for (const file of sourceFiles) {
     if (!/\.(tsx|jsx|vue|svelte)$/.test(file) && !/\.(ts|js)$/.test(file)) continue;
-    if (EXCLUDED_COMPONENT_FILE_RE.test(file)) continue;
+    if (EXCLUDED_SOURCE_FILE_RE.test(file)) continue;
     const content = readTextFile(join(projectRoot, file), 256 * 1024) ?? '';
+    if (identity.framework === 'angular' && /@Component\s*\(/u.test(content)) continue;
     if (!/[<][A-Za-z][^>]*>/.test(content) && !/\.(vue|svelte)$/.test(file)) continue;
     const base = file.split('/').pop() ?? file;
     const nameFromFile = base.slice(0, -extname(base).length);
@@ -1215,7 +1340,8 @@ function discoverComponents(projectRoot: string, routes: DiscoveryRoutes): Disco
       });
     }
   }
-  const components = [...items.values()].slice(0, MAX_COMPONENT_ITEMS);
+  const allComponents = [...items.values()];
+  const components = allComponents.slice(0, MAX_COMPONENT_ITEMS);
   const directories = [
     ...new Set(
       components
@@ -1244,9 +1370,18 @@ function discoverComponents(projectRoot: string, routes: DiscoveryRoutes): Disco
     evidence,
     limitations:
       confidence === 'low'
-        ? ['Component inventory is partial because only weak static component signals were found.']
+        ? [
+            ...(angularDiscovery?.components.limitations ?? []),
+            'Component inventory is partial because only weak static component signals were found.',
+          ]
         : [
+            ...(angularDiscovery?.components.limitations ?? []),
             'Component inventory is static and advisory, not proof that every reusable component was found.',
+            ...(allComponents.length > components.length
+              ? [
+                  `Component inventory was bounded to ${MAX_COMPONENT_ITEMS} entries; ${allComponents.length - components.length} additional candidate(s) were omitted.`,
+                ]
+              : []),
           ],
   };
 }
@@ -1276,9 +1411,12 @@ function extractCssEvidence(content: string): {
 function discoverStyling(
   projectRoot: string,
   identity: DiscoveryProjectIdentity,
+  angularProject: AngularProjectContext,
 ): DiscoveryStyling {
   const cssFiles = walkFiles(projectRoot, { extensions: STYLE_EXTENSIONS });
   const themeSignals = new Set<string>();
+  const evidence: string[] = [];
+  const limitations: string[] = [...angularProject.limitations];
   let cssVariableCount = 0;
   let colorTokenCount = 0;
   let darkMode = false;
@@ -1290,8 +1428,22 @@ function discoverStyling(
     'tailwind.config.mjs',
     'tailwind.config.cjs',
   ].find((file) => existsSync(join(projectRoot, file)));
+  const tailwind = detectTailwindAuthority(projectRoot, cssFiles);
+  const hasPrimeNg = Boolean(
+    identity.dependencies.primeng ||
+      identity.dependencies['@primeuix/themes'] ||
+      identity.dependencies.primeflex,
+  );
+  const hasScss =
+    angularProject.styleEntries.some((file) => /\.s[ac]ss$/iu.test(file)) ||
+    cssFiles.some((file) => /\.s[ac]ss$/iu.test(file));
+  const configuredStyleSet = new Set(angularProject.styleFiles);
+  const orderedCssFiles = [
+    ...angularProject.styleFiles,
+    ...cssFiles.filter((file) => !configuredStyleSet.has(file)),
+  ];
 
-  for (const file of cssFiles.slice(0, 100)) {
+  for (const file of orderedCssFiles.slice(0, 200)) {
     const content = readTextFile(join(projectRoot, file), 256 * 1024);
     if (!content) continue;
     const evidence = extractCssEvidence(content);
@@ -1301,11 +1453,44 @@ function discoverStyling(
     for (const signal of evidence.themeSignals) themeSignals.add(signal);
   }
 
-  if (
-    tailwindConfig ||
-    identity.dependencies.tailwindcss ||
-    themeSignals.has('tailwind v4 @theme')
-  ) {
+  if (angularProject.styleEntries.length > 0) {
+    evidence.push(
+      `Angular build target declares ${angularProject.styleEntries.length} global style entr${angularProject.styleEntries.length === 1 ? 'y' : 'ies'}`,
+    );
+    themeSignals.add('Angular global styles');
+  }
+  if (hasPrimeNg) {
+    evidence.push('PrimeNG dependency is present in the selected app');
+    themeSignals.add('PrimeNG');
+    const angularSources = walkFiles(projectRoot, { extensions: new Set(['.ts']) });
+    if (
+      angularSources.some((file) =>
+        /\bprovidePrimeNG\s*\(|\bPrimeNGConfig\b/u.test(
+          readTextFile(join(projectRoot, file), 256 * 1024) ?? '',
+        ),
+      )
+    ) {
+      evidence.push('PrimeNG runtime theme configuration found in production source');
+      themeSignals.add('PrimeNG theme provider');
+    }
+  }
+  evidence.push(...tailwind.evidence);
+  if (identity.dependencies.tailwindcss && !tailwind.found) {
+    limitations.push(
+      'Tailwind is installed but no selected-app config, PostCSS plugin, or CSS directive proves it is active style authority.',
+    );
+  }
+
+  if (identity.framework === 'angular' && hasPrimeNg) {
+    approach = tailwind.found
+      ? hasScss
+        ? 'primeng-tailwind-scss'
+        : 'primeng-tailwind'
+      : hasScss
+        ? 'primeng-scss'
+        : 'primeng';
+    configFile = angularProject.configurationFiles[0] ?? 'package.json';
+  } else if (tailwindConfig || tailwind.found || themeSignals.has('tailwind v4 @theme')) {
     approach = 'tailwind';
     configFile =
       tailwindConfig ?? (themeSignals.has('tailwind v4 @theme') ? 'css @theme' : 'package.json');
@@ -1323,10 +1508,19 @@ function discoverStyling(
     configFile = 'package.json';
   } else if (cssFiles.some((file) => file.endsWith('.module.css'))) {
     approach = 'css-modules';
+  } else if (hasScss) {
+    approach = 'scss';
+    configFile = angularProject.configurationFiles[0] ?? null;
   } else if (cssFiles.length > 0) {
     approach = 'css';
   }
 
+  const confidence: DiscoveryConfidenceLevel =
+    approach === 'unknown'
+      ? 'low'
+      : angularProject.styleEntries.length > 0 || tailwind.found || themeSignals.size > 0
+        ? 'high'
+        : 'medium';
   return {
     approach,
     configFile,
@@ -1334,6 +1528,9 @@ function discoverStyling(
     colorTokenCount,
     darkMode,
     themeSignals: [...themeSignals],
+    confidence,
+    evidence: [...new Set(evidence)].sort(),
+    limitations: [...new Set(limitations)].sort(),
   };
 }
 
@@ -1379,7 +1576,7 @@ function calculateConfidence(input: {
   if (input.routes.taskableRouteCount > 0) {
     score += input.routes.confidence === 'high' ? 20 : 10;
     reasons.push(
-      `${input.routes.taskableRouteCount} taskable route(s) found with ${input.routes.confidence} route confidence`,
+      `${input.routes.taskableRouteCount} taskable route(s) found with ${input.routes.confidence} confidence, ${input.routes.authority} authority, and ${input.routes.completeness} completeness`,
     );
   }
   if (input.components.componentCount > 1) {
@@ -1387,10 +1584,17 @@ function calculateConfidence(input: {
     reasons.push(`${input.components.componentCount} component candidate(s) found`);
   }
   if (input.styling.approach !== 'unknown') {
-    score += 10;
-    reasons.push(`${input.styling.approach} styling signal found`);
+    score += input.styling.confidence === 'high' ? 10 : 5;
+    reasons.push(
+      `${input.styling.approach} styling signal found with ${input.styling.confidence} confidence`,
+    );
   }
-  const confidenceCap = input.routes.confidence === 'medium' ? 84 : 98;
+  const confidenceCap =
+    input.routes.confidence === 'low' || input.routes.authority !== 'proven'
+      ? 44
+      : input.routes.confidence === 'medium' || input.routes.completeness !== 'complete'
+        ? 74
+        : 98;
   const clamped = Math.max(5, Math.min(confidenceCap, score));
   return {
     level: clamped >= 75 ? 'high' : clamped >= 45 ? 'medium' : 'low',
@@ -1403,13 +1607,20 @@ export function discoverProject(projectRoot: string): ProjectDiscovery {
   const appRoot = resolve(projectRoot);
   const workspaceRoot = findWorkspaceRoot(appRoot);
   const projectPath = relative(workspaceRoot, appRoot).replace(/\\/g, '/') || '.';
-  const project = detectProjectIdentity(appRoot, workspaceRoot);
-  const routes = discoverRoutes(appRoot, project);
-  const components = discoverComponents(appRoot, routes);
-  const styling = discoverStyling(appRoot, project);
+  const angularProject = discoverAngularProjectContext(appRoot, workspaceRoot);
+  const project = detectProjectIdentity(appRoot, workspaceRoot, angularProject);
+  const angularDiscovery =
+    project.framework === 'angular'
+      ? discoverAngularApplication(appRoot, workspaceRoot, angularProject)
+      : null;
+  const routes = discoverRoutes(appRoot, project, angularDiscovery);
+  const components = discoverComponents(appRoot, routes, project, angularDiscovery);
+  const styling = discoverStyling(appRoot, project, angularProject);
   const assistant = { ruleFiles: findAssistantRules(appRoot, workspaceRoot) };
   const confidence = calculateConfidence({ project, routes, components, styling });
-  const limitations = [...routes.limitations, ...components.limitations];
+  const limitations = [
+    ...new Set([...routes.limitations, ...components.limitations, ...styling.limitations]),
+  ];
   return {
     schemaVersion: 'discovery.v1',
     generatedAt: new Date().toISOString(),
@@ -1429,7 +1640,39 @@ export function discoverProject(projectRoot: string): ProjectDiscovery {
   };
 }
 
+export function evaluateDiscoveryReadiness(discovery: ProjectDiscovery): DiscoveryReadiness {
+  const reasons: string[] = [];
+  if (discovery.routes.taskableRouteCount === 0) {
+    reasons.push('No taskable production route is proven.');
+  }
+  if (discovery.routes.authority !== 'proven') {
+    reasons.push(`Route authority is ${discovery.routes.authority}, not proven.`);
+  }
+  if (discovery.routes.completeness !== 'complete') {
+    reasons.push(
+      `Route extraction completeness is ${discovery.routes.completeness}, not complete.`,
+    );
+  }
+  const routeScopedContext =
+    discovery.routes.taskableRouteCount > 0 && discovery.routes.authority === 'proven'
+      ? 'ready'
+      : 'not_proven';
+  const adoptionBaseline =
+    routeScopedContext === 'ready' && discovery.routes.completeness === 'complete'
+      ? 'ready'
+      : 'not_proven';
+  return {
+    routeScopedContext,
+    adoptionBaseline,
+    reasons:
+      reasons.length > 0
+        ? reasons
+        : ['Production route authority and complete static extraction are proven.'],
+  };
+}
+
 export const discoveryInternalsForTest = {
+  detectTailwindAuthority,
   findWorkspaceRoot,
   normalizeRouteLiteral,
 };

@@ -186,7 +186,7 @@
     ],
     "provenance": {
       "path": "packages/mcp-server/src/tools.ts",
-      "line": 2728,
+      "line": 2738,
       "anchor": "CONSOLIDATED_TOOL_ACTIONS"
     }
   },
@@ -361,7 +361,7 @@
     },
     "provenance": {
       "path": "docs/programs/2026-07-16-decantr-3-9-adoption-proof-program.md",
-      "line": 292,
+      "line": 300,
       "anchor": "30 independently initialized runs"
     }
   },

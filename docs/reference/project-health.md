@@ -251,7 +251,7 @@ decantr task /feed "add saved recipe actions" --project apps/web
 decantr verify --brownfield --local-patterns --project apps/web
 ```
 
-When the project workflow is `brownfield-attach`, health automatically includes route coverage and drift checks from the observed app inventory. This helps separate "the existing app has not been mapped into the contract yet" from "the implementation drifted away from an accepted Decantr contract."
+When the project workflow is `brownfield-attach`, health automatically includes route coverage and drift checks from the observed app inventory. This helps separate "the existing app has not been mapped into the contract yet" from "the implementation drifted away from an accepted Decantr contract." For Angular, route-scoped health and task context depend on live bootstrap-reachable authority; an inferred route array or partial extraction is not promoted by an old analysis file or a high aggregate scan score.
 
 Brownfield health respects existing-app authority. It reports evidence and remediation, but it does not replace the app's router, style system, docs, rules, or source files.
 
@@ -332,7 +332,7 @@ pnpm exec decantr ci --project apps/web --fail-on error --json --output .decantr
 
 Use `--fail-on error` for the default enterprise-friendly gate: block only invalid audits and blocking findings. Use `--fail-on warn` for stricter repositories that want any warning to fail CI.
 
-For CI v3, the governance gate is also non-passing when the change base, graph/evidence, or compatible private baseline is incomplete. The report uses `not_proven` / `incomplete` rather than silently calling all current findings new. `--fail-on none` is the only explicit opt-out from that proof gate; it should be used for observation, not branch protection.
+For CI v3, the governance gate is also non-passing when the change base, graph/evidence, compatible private baseline, or Angular production route authority is incomplete. The report uses `not_proven` / `incomplete` rather than silently calling all current findings new or gating on inferred routes. `--fail-on none` is the only explicit opt-out from that proof gate; it should be used for observation, not branch protection.
 
 Minimal custom CI step:
 

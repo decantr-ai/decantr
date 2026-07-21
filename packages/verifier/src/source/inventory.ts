@@ -69,10 +69,10 @@ const GENERATED_AND_DEPENDENCY_DIRS = new Set([
   'vendor',
 ]);
 
-const TEST_OR_MOCK_DIR_RE = /(?:^|\/)(?:__mocks__|__tests__|mocks?|specs?|tests?)(?:\/|$)/i;
+const TEST_OR_MOCK_DIR_RE = /(?:^|\/)(?:__mocks__|__tests__|e2e|mocks?|specs?|tests?)(?:\/|$)/i;
 const FIXTURE_DIR_RE = /(?:^|\/)fixtures?(?:\/|$)/i;
 const DECLARATION_FILE_RE = /\.d\.[cm]?ts$/i;
-const TEST_OR_MOCK_FILE_RE = /\.(?:mock|spec|test)\.[cm]?[jt]sx?$/i;
+const TEST_OR_MOCK_FILE_RE = /\.(?:cy|e2e|mock|spec|test|vitest)\.[cm]?[jt]sx?$/i;
 const STORY_FILE_RE = /\.(?:stories|story)\.[cm]?[jt]sx?$/i;
 const FIXTURE_FILE_RE = /\.fixture\.[cm]?[jt]sx?$/i;
 

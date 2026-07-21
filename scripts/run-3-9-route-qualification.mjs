@@ -72,6 +72,103 @@ const repositories = [
       },
     ],
   },
+  {
+    id: 'angular-realworld',
+    repository: 'https://github.com/gothinkster/angular-realworld-example-app.git',
+    commit: 'dd99ed2cf39c805d719f943c5d7061a5683d98a8',
+    option: 'angularRealworldRepo',
+    lane: 'angular-brownfield',
+    targets: [
+      {
+        id: 'angular-realworld',
+        projectPath: '.',
+        framework: 'Angular Router',
+        expected: {
+          packageName: 'angular-realworld',
+          routeSignalCount: 14,
+          taskableRouteCount: 10,
+          componentCount: 18,
+          excludedSourceCount: 7,
+          styleApproach: 'css',
+          routePaths: [
+            '/',
+            '/tag/:tag',
+            '/login',
+            '/register',
+            '/settings',
+            '/profile/:username',
+            '/profile/:username/favorites',
+            '/editor',
+            '/editor/:slug',
+            '/article/:slug',
+          ],
+          authorityFiles: [
+            'src/app/app.config.ts',
+            'src/app/app.routes.ts',
+            'src/app/features/profile/profile.routes.ts',
+            'src/main.ts',
+          ],
+        },
+      },
+    ],
+  },
+  {
+    id: 'sakai-ng',
+    repository: 'https://github.com/primefaces/sakai-ng.git',
+    commit: '96d71496d685b5c110efd2875abaa2bf89a56ad2',
+    option: 'sakaiRepo',
+    lane: 'angular-brownfield',
+    targets: [
+      {
+        id: 'sakai-ng',
+        projectPath: '.',
+        framework: 'Angular Router with PrimeNG',
+        expected: {
+          packageName: 'sakai-ng',
+          routeSignalCount: 29,
+          taskableRouteCount: 25,
+          componentCount: 44,
+          excludedSourceCount: 1,
+          styleApproach: 'primeng-tailwind-scss',
+          routePaths: [
+            '/',
+            '/uikit/button',
+            '/uikit/charts',
+            '/uikit/file',
+            '/uikit/formlayout',
+            '/uikit/input',
+            '/uikit/list',
+            '/uikit/media',
+            '/uikit/message',
+            '/uikit/misc',
+            '/uikit/panel',
+            '/uikit/timeline',
+            '/uikit/table',
+            '/uikit/overlay',
+            '/uikit/tree',
+            '/uikit/menu',
+            '/documentation',
+            '/pages/documentation',
+            '/pages/crud',
+            '/pages/empty',
+            '/landing',
+            '/notfound',
+            '/auth/access',
+            '/auth/error',
+            '/auth/login',
+          ],
+          authorityFiles: [
+            'src/app.config.ts',
+            'src/app.routes.ts',
+            'src/app/pages/auth/auth.routes.ts',
+            'src/app/pages/pages.routes.ts',
+            'src/app/pages/uikit/uikit.routes.ts',
+            'src/main.ts',
+          ],
+        },
+      },
+    ],
+  },
 ];
 
 function parseArgs(argv) {
@@ -79,6 +176,8 @@ function parseArgs(argv) {
     outputDir: resolve(tmpdir(), 'decantr-3.9-route-qualification'),
     tanstackRepo: null,
     bulletproofRepo: null,
+    angularRealworldRepo: null,
+    sakaiRepo: null,
     generatedAt: null,
     json: false,
     keepWorkdir: false,
@@ -102,6 +201,12 @@ function parseArgs(argv) {
       options.bulletproofRepo = resolve(argv[++index] || '');
     else if (arg.startsWith('--bulletproof-repo='))
       options.bulletproofRepo = resolve(arg.slice(19));
+    else if (arg === '--angular-realworld-repo')
+      options.angularRealworldRepo = resolve(argv[++index] || '');
+    else if (arg.startsWith('--angular-realworld-repo='))
+      options.angularRealworldRepo = resolve(arg.slice(25));
+    else if (arg === '--sakai-repo') options.sakaiRepo = resolve(argv[++index] || '');
+    else if (arg.startsWith('--sakai-repo=')) options.sakaiRepo = resolve(arg.slice(13));
     else if (arg === '--generated-at') options.generatedAt = argv[++index] || '';
     else if (arg.startsWith('--generated-at=')) options.generatedAt = arg.slice(15);
     else if (arg === '--source-mode') options.sourceMode = argv[++index] || '';
@@ -115,6 +220,8 @@ function parseArgs(argv) {
       process.stdout.write(`  --output-dir <path>       Artifact output directory\n`);
       process.stdout.write(`  --tanstack-repo <path>    Reuse the exact pinned TanStack checkout\n`);
       process.stdout.write(`  --bulletproof-repo <path> Reuse the exact pinned Bulletproof checkout\n`);
+      process.stdout.write(`  --angular-realworld-repo <path> Reuse the pinned Angular RealWorld checkout\n`);
+      process.stdout.write(`  --sakai-repo <path>       Reuse the exact pinned Sakai Angular checkout\n`);
       process.stdout.write(`  --generated-at <date>     Reproducible artifact timestamp\n`);
       process.stdout.write(`  --skip-build              Pack the existing six-package dist output\n`);
       process.stdout.write(`  --write-packet            Write artifact and completed route sections to the 3.9 packet\n`);
@@ -397,6 +504,86 @@ function publicCasesForTarget(config, target, repo, discoverProject) {
   };
 }
 
+const EXCLUDED_ANGULAR_SOURCE_RE =
+  /(?:^|\/)(?:__tests__|e2e|fixtures?|mocks?|tests?)(?:\/|$)|\.(?:cy|e2e|spec|test|vitest)\.[cm]?[jt]sx?$/iu;
+
+function angularBrownfieldEvidenceForTarget(config, target, repo, discoverProject) {
+  const appRoot = resolve(repo, target.projectPath);
+  if (!existsSync(appRoot)) throw new Error(`Pinned Angular app root is missing: ${target.projectPath}`);
+  const discovery = discoverProject(appRoot);
+  const routePaths = discovery.routes.taskableRoutes.map((route) => route.path);
+  const expected = target.expected;
+  const actualContract = {
+    packageName: discovery.project.packageName,
+    routeSignalCount: discovery.routes.routeSignalCount,
+    taskableRouteCount: discovery.routes.taskableRouteCount,
+    componentCount: discovery.components.componentCount,
+    excludedSourceCount: discovery.routes.excludedSourceCount,
+    styleApproach: discovery.styling.approach,
+    routePaths,
+    authorityFiles: discovery.routes.authorityFiles,
+  };
+  if (stableJson(actualContract) !== stableJson(expected)) {
+    throw new Error(
+      `${target.id} Angular discovery contract changed:\n${JSON.stringify({ expected, actual: actualContract }, null, 2)}`,
+    );
+  }
+  if (
+    discovery.project.framework !== 'angular' ||
+    discovery.routes.strategy !== 'angular-router' ||
+    discovery.routes.authority !== 'proven' ||
+    discovery.routes.completeness !== 'complete' ||
+    discovery.routes.confidence !== 'high' ||
+    discovery.styling.confidence !== 'high' ||
+    discovery.confidence.level !== 'high' ||
+    discovery.confidence.score !== 98
+  ) {
+    throw new Error(`${target.id} did not retain high-confidence, complete Angular authority.`);
+  }
+  if (
+    discovery.routes.taskableRoutes.some(
+      (route) => route.confidence !== 'high' || EXCLUDED_ANGULAR_SOURCE_RE.test(route.file),
+    )
+  ) {
+    throw new Error(`${target.id} selected a low-confidence or excluded task route source.`);
+  }
+
+  const routeSourceFiles = [...new Set(discovery.routes.taskableRoutes.map((route) => route.file))]
+    .sort()
+    .map((sourcePath) => ({ sourcePath, blobHash: gitBlob(repo, config.commit, sourcePath) }));
+  const authorityFiles = discovery.routes.authorityFiles.map((sourcePath) => ({
+    sourcePath,
+    blobHash: gitBlob(repo, config.commit, sourcePath),
+  }));
+  return {
+    id: target.id,
+    repository: config.repository,
+    commit: config.commit,
+    projectPath: target.projectPath,
+    framework: target.framework,
+    packageName: discovery.project.packageName,
+    routeStrategy: discovery.routes.strategy,
+    routeAuthority: discovery.routes.authority,
+    routeCompleteness: discovery.routes.completeness,
+    routeConfidence: discovery.routes.confidence,
+    routeSignalCount: discovery.routes.routeSignalCount,
+    taskableRouteCount: discovery.routes.taskableRouteCount,
+    routePaths,
+    routeSources: routeSourceFiles,
+    authorityFiles,
+    excludedSourceCount: discovery.routes.excludedSourceCount,
+    componentCount: discovery.components.componentCount,
+    componentConfidence: discovery.components.confidence,
+    styleApproach: discovery.styling.approach,
+    styleConfidence: discovery.styling.confidence,
+    confidenceScore: discovery.confidence.score,
+    projectEvidence: discovery.project.evidence,
+    routeEvidence: discovery.routes.evidence,
+    styleEvidence: discovery.styling.evidence,
+    limitations: discovery.limitations,
+  };
+}
+
 function loadOracleCases() {
   const runnerPath = resolve(oracleRoot, 'run-oracle.mjs');
   const capturedPath = resolve(oracleRoot, 'captured-output.json');
@@ -544,8 +731,22 @@ try {
   }
   const publicCases = [];
   const publicProvenance = [];
+  const angularBrownfieldTargets = [];
   for (const config of repositories) {
     const sourceRoot = acquireRepository(config, options, temporaryRoot);
+    if (config.lane === 'angular-brownfield') {
+      for (const target of config.targets) {
+        angularBrownfieldTargets.push(
+          angularBrownfieldEvidenceForTarget(
+            config,
+            target,
+            sourceRoot,
+            verifierModule.discoverProject,
+          ),
+        );
+      }
+      continue;
+    }
     const targets = [];
     for (const target of config.targets) {
       const result = publicCasesForTarget(
@@ -577,6 +778,35 @@ try {
     throw new Error(
       `Pinned public positives must resolve to 49 distinct Git blobs; received ${distinctPublicBlobCount}.`,
     );
+  }
+  const angularBrownfield = {
+    status: 'complete',
+    targetCount: angularBrownfieldTargets.length,
+    routeSignalCount: angularBrownfieldTargets.reduce(
+      (sum, target) => sum + target.routeSignalCount,
+      0,
+    ),
+    taskableRouteCount: angularBrownfieldTargets.reduce(
+      (sum, target) => sum + target.taskableRouteCount,
+      0,
+    ),
+    componentCount: angularBrownfieldTargets.reduce(
+      (sum, target) => sum + target.componentCount,
+      0,
+    ),
+    sourceBlobCount: angularBrownfieldTargets.reduce(
+      (sum, target) => sum + target.routeSources.length + target.authorityFiles.length,
+      0,
+    ),
+    targets: angularBrownfieldTargets,
+  };
+  if (
+    angularBrownfield.targetCount !== 2 ||
+    angularBrownfield.routeSignalCount !== 43 ||
+    angularBrownfield.taskableRouteCount !== 35 ||
+    angularBrownfield.componentCount !== 62
+  ) {
+    throw new Error('Pinned Angular Brownfield replay did not satisfy the frozen 2/43/35/62 contract.');
   }
 
   const oracle = loadOracleCases();
@@ -638,6 +868,7 @@ try {
     routeCorpusSha256,
     cases: replayCases,
     routeCorpus,
+    angularBrownfield,
     provenance: {
       harness: {
         path: relative(repoRoot, scriptPath).replaceAll('\\', '/'),
@@ -677,7 +908,7 @@ try {
   };
   artifactPayload.behaviorBinding = createBehaviorEvidenceBinding(
     environment.exactPackageTarballs,
-    { routeCorpusSha256, cases: replayCases },
+    { routeCorpusSha256, cases: replayCases, angularBrownfield },
   );
   const artifactContents = `${JSON.stringify(artifactPayload, null, 2)}\n`;
   const artifactSha256 = sha256(artifactContents);
@@ -706,6 +937,7 @@ try {
       corpusSha256: routeCorpusSha256,
       artifact,
       cases: replayCases,
+      angularBrownfield,
     },
     coverage: artifactPayload.provenance.coverage,
   };
@@ -739,6 +971,7 @@ try {
         `SHA-256: ${artifactSha256}`,
         'Cases: 84 (49 pinned public blobs, 24 competing oracle routes, 11 standalone oracle routes)',
         'Forbidden-first assertions: 24',
+        'Angular Brownfield supplement: 2 pinned apps, 43 route signals, 35 taskable routes, 62 components',
       ].join('\n') + '\n',
     );
   }

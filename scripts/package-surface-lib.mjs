@@ -407,7 +407,7 @@ export function renderPackageSupportMatrix(surface, retirements) {
     '| `vanilla-vite` | Plain HTML/CSS/JavaScript + Vite | yes | yes | yes | yes | yes | Framework-free runnable starter that proves the contract is not React-shaped. |',
     '| `vue-vite` | Vue 3 + Vite | yes | yes | yes | yes | yes | Boots Vue Router projects and records Vue route/component attach metadata. |',
     '| `sveltekit` | SvelteKit | yes | yes | yes | yes | yes | Boots SvelteKit file-route projects and records route/layout attach metadata. |',
-    '| `angular` | Angular standalone | yes | yes | yes | yes | yes | Boots modern standalone Angular projects and records Angular Router attach metadata. |',
+    '| `angular` | Angular standalone | yes | yes | yes | yes | yes | Boots modern standalone projects; Brownfield attach proves bootstrap-reachable Angular Router authority, nested/lazy routes, component inventory, and selected-app styling before governance. |',
     '| `solid-vite` | Solid + Vite | yes | yes | yes | yes | yes | Boots Solid Vite projects and records Solid route/component attach metadata. |',
     '| `generic-web` | Unsupported or unspecified web targets | no | no | yes | contract-only | basic | Fallback adapter for contract-only Decantr adoption without runtime ownership. |',
     '',

@@ -79,6 +79,7 @@
     "@biomejs/biome": "^2.4.15",
     "@types/node": "^25.9.1",
     "entities": "^8.0.0",
+    "fflate": "0.8.3",
     "tar": "7.5.20",
     "tsup": "^8.0.0",
     "tsx": "^4.22.3",
@@ -99,6 +100,7 @@
       "hono": "4.12.27",
       "undici": "7.28.0",
       "@babel/core": "7.29.6",
+      "body-parser": "2.3.0",
       "esbuild": "0.28.1"
     }
   },

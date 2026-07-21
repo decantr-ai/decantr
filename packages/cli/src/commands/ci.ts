@@ -27,6 +27,8 @@ import {
   createProjectAdoptionTruthV1,
   createStableProjectIdentityV1,
   DECANTR_CI_REPORT_V2_SCHEMA_URL,
+  discoverProject,
+  evaluateDiscoveryReadiness,
   fingerprintFindingOccurrenceV1,
   GOVERNANCE_FINDING_FINGERPRINT_VERSION,
 } from '@decantr/verifier';
@@ -1356,9 +1358,23 @@ async function createProjectCiReportV3(
   const localLaw = summarizeLocalLaw(projectRoot);
   const styleBridge = summarizeStyleBridge(projectRoot);
   const adoptionTruth = createProjectAdoptionTruthV1(projectRoot, { generatedAt });
+  const discovery = discoverProject(projectRoot);
+  const discoveryReadiness = evaluateDiscoveryReadiness(discovery);
   const projectIdentity = createStableProjectIdentityV1(projectRoot);
   const selectedAppRoot = adoptionTruth.project.selectedAppRoot;
   const git = collectGitScope(workspaceRoot, selectedAppRoot, options.since);
+  const current = createCurrentGovernanceState(projectRoot, projectIdentity, health);
+  const enforceDiscoveryProof =
+    discovery.project.framework === 'angular' && discoveryReadiness.adoptionBaseline !== 'ready';
+  if (enforceDiscoveryProof) {
+    current.graph.completeness = 'incomplete';
+    current.graph.limitations = [
+      ...new Set([
+        ...current.graph.limitations,
+        ...discoveryReadiness.reasons.map((reason) => `Discovery sufficiency: ${reason}`),
+      ]),
+    ];
+  }
   const governanceDelta = createGovernanceDeltaV1({
     generatedAt,
     project: {
@@ -1369,12 +1385,14 @@ async function createProjectCiReportV3(
     comparisonScope: git.comparisonScope,
     changeBase: createGitChangeBase(projectRoot, git),
     debtBaseline: readGovernanceBaseline(projectRoot, projectIdentity),
-    current: createCurrentGovernanceState(projectRoot, projectIdentity, health),
+    current,
     currentFindings: health.findings.map((finding) =>
       healthFindingOccurrence(projectRoot, finding),
     ),
     failOn,
-    limitations: [],
+    limitations: enforceDiscoveryProof
+      ? discoveryReadiness.reasons.map((reason) => `Discovery sufficiency: ${reason}`)
+      : [],
     nextAction:
       'Review new and unclassified findings, restore complete proof evidence, then rerun Decantr CI v3.',
   });

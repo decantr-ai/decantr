@@ -102,6 +102,37 @@ const EXPECTED_TARGET_IDS = [
   'tanstack-start-greenfield',
 ];
 
+const EXPECTED_ANGULAR_BROWNFIELD_TARGETS = {
+  'angular-realworld': {
+    repository: 'https://github.com/gothinkster/angular-realworld-example-app.git',
+    commit: 'dd99ed2cf39c805d719f943c5d7061a5683d98a8',
+    packageName: 'angular-realworld',
+    routeSignalCount: 14,
+    taskableRouteCount: 10,
+    componentCount: 18,
+    excludedSourceCount: 7,
+    routeSourceCount: 7,
+    authorityFileCount: 4,
+    styleApproach: 'css',
+    routePathsSha256: '55b540c0a2d376792eab52bdb2f61e646ace24d19cf7f760480e06e50783a933',
+    authorityPathsSha256: '0239d8f454493322d8a5ea8b28f4f282295e439a9ac1b2828079b64e2627453f',
+  },
+  'sakai-ng': {
+    repository: 'https://github.com/primefaces/sakai-ng.git',
+    commit: '96d71496d685b5c110efd2875abaa2bf89a56ad2',
+    packageName: 'sakai-ng',
+    routeSignalCount: 29,
+    taskableRouteCount: 25,
+    componentCount: 44,
+    excludedSourceCount: 1,
+    routeSourceCount: 24,
+    authorityFileCount: 6,
+    styleApproach: 'primeng-tailwind-scss',
+    routePathsSha256: 'c4e9a289f16bd9720d635876ec5d107226ea05c07dfbc749bae4be74b4bbdb60',
+    authorityPathsSha256: '79be1a043b14ff864ec96cd4a7b6b3a0d4249b29ccefc66f6f8d79cb39b6203b',
+  },
+};
+
 const MACHINE_COMMAND_GATES = {
   'scan-latency': 2_000,
   'contract-only-attach-latency': 10_000,
@@ -209,7 +240,11 @@ function artifactBehavior(payload, kind) {
     return { release: payload.release, cases: payload.cases, metrics: payload.metrics };
   }
   if (kind === 'route') {
-    return { routeCorpusSha256: payload.routeCorpusSha256, cases: payload.cases };
+    return {
+      routeCorpusSha256: payload.routeCorpusSha256,
+      cases: payload.cases,
+      angularBrownfield: payload.angularBrownfield,
+    };
   }
   if (kind === 'adoption-boundary') return { targets: payload.targets };
   return {
@@ -703,10 +738,89 @@ export function validateRouteReplayCoverage(routeCorpus, routeReplay) {
   return { valid: errors.length === 0, errors };
 }
 
+function validateAngularBrownfieldReplay(replay) {
+  const errors = [];
+  const evidence = replay?.angularBrownfield;
+  const targets = array(evidence?.targets);
+  if (
+    evidence?.status !== 'complete' ||
+    evidence?.targetCount !== 2 ||
+    evidence?.routeSignalCount !== 43 ||
+    evidence?.taskableRouteCount !== 35 ||
+    evidence?.componentCount !== 62
+  ) {
+    errors.push('Angular Brownfield replay must retain the complete 2/43/35/62 evidence contract');
+  }
+  const expectedIds = Object.keys(EXPECTED_ANGULAR_BROWNFIELD_TARGETS);
+  if (!deepEqual(targets.map((target) => target.id), expectedIds)) {
+    errors.push('Angular Brownfield replay target order or identities changed');
+  }
+  const sourceBlobCount = targets.reduce(
+    (sum, target) => sum + array(target.routeSources).length + array(target.authorityFiles).length,
+    0,
+  );
+  if (evidence?.sourceBlobCount !== sourceBlobCount || sourceBlobCount !== 41) {
+    errors.push('Angular Brownfield replay source-blob count changed');
+  }
+  const excludedSourcePattern =
+    /(?:^|\/)(?:__tests__|e2e|fixtures?|mocks?|tests?)(?:\/|$)|\.(?:cy|e2e|spec|test|vitest)\.[cm]?[jt]sx?$/iu;
+  for (const target of targets) {
+    const expected = EXPECTED_ANGULAR_BROWNFIELD_TARGETS[target.id];
+    if (!expected) continue;
+    const routeSources = array(target.routeSources);
+    const authorityFiles = array(target.authorityFiles);
+    const blobs = [...routeSources, ...authorityFiles];
+    if (
+      target.repository !== expected.repository ||
+      target.commit !== expected.commit ||
+      target.projectPath !== '.' ||
+      target.packageName !== expected.packageName ||
+      target.routeStrategy !== 'angular-router' ||
+      target.routeAuthority !== 'proven' ||
+      target.routeCompleteness !== 'complete' ||
+      target.routeConfidence !== 'high' ||
+      target.routeSignalCount !== expected.routeSignalCount ||
+      target.taskableRouteCount !== expected.taskableRouteCount ||
+      target.componentCount !== expected.componentCount ||
+      target.componentConfidence !== 'high' ||
+      target.excludedSourceCount !== expected.excludedSourceCount ||
+      target.styleApproach !== expected.styleApproach ||
+      target.styleConfidence !== 'high' ||
+      target.confidenceScore !== 98 ||
+      hashJson(target.routePaths) !== expected.routePathsSha256 ||
+      routeSources.length !== expected.routeSourceCount ||
+      authorityFiles.length !== expected.authorityFileCount ||
+      hashJson(authorityFiles.map((entry) => entry.sourcePath)) !== expected.authorityPathsSha256
+    ) {
+      errors.push(`Angular Brownfield replay contract changed for ${target.id}`);
+    }
+    if (
+      blobs.some(
+        (entry) =>
+          typeof entry?.sourcePath !== 'string' ||
+          excludedSourcePattern.test(entry.sourcePath) ||
+          !/^[a-f0-9]{40}$/u.test(entry?.blobHash ?? ''),
+      )
+    ) {
+      errors.push(`Angular Brownfield replay contains invalid or excluded source evidence for ${target.id}`);
+    }
+    if (
+      !array(target.routeEvidence).some((entry) => entry.includes('router root is reachable')) ||
+      !array(target.routeEvidence).some((entry) => entry.includes('source path(s) excluded'))
+    ) {
+      errors.push(`Angular Brownfield replay is missing authority or exclusion evidence for ${target.id}`);
+    }
+  }
+  return { valid: errors.length === 0, errors };
+}
+
 function hasRouteReplay(packet) {
   if (!hasRouteCorpus(packet) || packet?.routeReplay?.status !== 'complete') return false;
   if (!isRecord(packet.routeReplay.artifact)) return false;
-  return validateRouteReplayCoverage(packet.routeCorpus, packet.routeReplay).valid;
+  return (
+    validateRouteReplayCoverage(packet.routeCorpus, packet.routeReplay).valid &&
+    validateAngularBrownfieldReplay(packet.routeReplay).valid
+  );
 }
 
 function hasAdoptionBoundaryReplay(packet) {
@@ -1359,7 +1473,8 @@ export async function runAudit(options) {
         artifactPayload?.releaseVersion !== section.releaseVersion ||
         artifactPayload?.routeCorpusSha256 !== section.corpusSha256 ||
         section.corpusSha256 !== hashJson(packet.routeCorpus) ||
-        !deepEqual(artifactPayload?.routeCorpus, packet.routeCorpus)
+        !deepEqual(artifactPayload?.routeCorpus, packet.routeCorpus) ||
+        !deepEqual(artifactPayload?.angularBrownfield, section.angularBrownfield)
       ) {
         error(`${context}: artifact release or frozen route corpus binding does not match packet results`);
         valid = false;
@@ -1623,6 +1738,10 @@ export async function runAudit(options) {
       for (const issue of routeCoverage.errors) {
         error(`qualification-packet.json.routeReplay: ${issue}`);
       }
+      const angularCoverage = validateAngularBrownfieldReplay(packet.routeReplay);
+      for (const issue of angularCoverage.errors) {
+        error(`qualification-packet.json.routeReplay.angularBrownfield: ${issue}`);
+      }
     }
     const routeSourcesValid = await validateCorpusSourceEvidence(
       packet.routeCorpus?.cases,
@@ -1773,6 +1892,9 @@ export async function runAudit(options) {
     },
     activeCounts: {
       routeCases: array(packet?.routeCorpus?.cases).length,
+      angularBrownfieldTargets: array(packet?.routeReplay?.angularBrownfield?.targets).length,
+      angularTaskableRoutes:
+        packet?.routeReplay?.angularBrownfield?.taskableRouteCount ?? 0,
       findingCases: array(packet?.findingCorpus?.cases).length,
       findingJudgments: array(packet?.findingCorpus?.cases).reduce(
         (sum, item) => sum + array(item.adjudication?.expectedOutputs?.outputs).length,

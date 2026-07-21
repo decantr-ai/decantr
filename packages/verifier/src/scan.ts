@@ -201,7 +201,12 @@ export interface ScanDiscoveryV2 {
   projectEvidence: string[];
   routeSignalCount: number;
   taskableRouteCount: number;
+  routeExcludedSourceCount: number;
   routeConfidence: DiscoveryConfidenceLevel;
+  routeAuthority: ProjectDiscovery['routes']['authority'];
+  routeCompleteness: ProjectDiscovery['routes']['completeness'];
+  routeAuthorityFiles: string[];
+  routeEvidence: string[];
   componentConfidence: DiscoveryConfidenceLevel;
   componentEvidence: string[];
   limitations: string[];
@@ -223,7 +228,12 @@ export interface ScanReportV2 {
   routes: ScanReportV1['routes'] & {
     routeSignalCount: number;
     taskableRouteCount: number;
+    excludedSourceCount: number;
     confidence: DiscoveryConfidenceLevel;
+    authority: ProjectDiscovery['routes']['authority'];
+    completeness: ProjectDiscovery['routes']['completeness'];
+    authorityFiles: string[];
+    evidence: string[];
     signals: ScanRouteSignalV2[];
   };
   components: ScanReportV1['components'] & {
@@ -232,7 +242,11 @@ export interface ScanReportV2 {
     items: ScanComponentV2[];
     limitations: string[];
   };
-  styling: ScanReportV1['styling'];
+  styling: ScanReportV1['styling'] & {
+    confidence: DiscoveryConfidenceLevel;
+    evidence: string[];
+    limitations: string[];
+  };
   staticHosting: ScanReportV1['staticHosting'];
   assistant: ScanReportV1['assistant'];
   graphPreview?: ScanGraphPreviewV1;
@@ -327,7 +341,7 @@ const STATIC_HTML_ROUTE_DIRS = ['demos', 'examples'];
 const MAX_STATIC_HTML_CANDIDATES = 1000;
 const MAX_FILE_READ_BYTES = 512 * 1024;
 const MAX_WALK_FILES = 5000;
-const MAX_REPORT_ROUTES = 80;
+const MAX_REPORT_ROUTES = 1000;
 
 const SKIP_DIRS = new Set([
   '.git',
@@ -1175,6 +1189,7 @@ function buildApplicability(
   detection: ProjectDetection,
   routes: RouteScan,
   components: ScanReportV1['components'],
+  discoveryRoutes: ProjectDiscovery['routes'],
 ): ScanReportV1['applicability'] {
   if (!WEB_FRAMEWORKS.has(detection.framework)) {
     const label =
@@ -1188,6 +1203,20 @@ function buildApplicability(
         detection.primaryLanguage === 'python'
           ? 'This looks like a Python/backend repository rather than a frontend app.'
           : 'Decantr did not find a supported frontend framework or static HTML entrypoint.',
+      ],
+    };
+  }
+
+  if (
+    detection.framework === 'angular' &&
+    (discoveryRoutes.authority !== 'proven' || discoveryRoutes.completeness !== 'complete')
+  ) {
+    return {
+      status: 'partial_fit',
+      label: 'Angular route authority not proven',
+      reasons: [
+        'Angular was detected, but Decantr could not prove a complete route table reachable from the selected app bootstrap.',
+        ...discoveryRoutes.limitations.slice(0, 2),
       ],
     };
   }
@@ -1246,6 +1275,7 @@ function _buildConfidence(
 function buildFindings(input: {
   detection: ProjectDetection;
   routes: RouteScan;
+  discoveryRoutes: ProjectDiscovery['routes'];
   styling: StylingScan;
   hosting: ScanReportV1['staticHosting'];
   assistantRules: string[];
@@ -1253,7 +1283,16 @@ function buildFindings(input: {
   pagesProbe: PublishedSiteProbeV1 | null;
 }): ScanFindingV1[] {
   const findings: ScanFindingV1[] = [];
-  const { detection, routes, styling, hosting, assistantRules, applicability, pagesProbe } = input;
+  const {
+    detection,
+    routes,
+    discoveryRoutes,
+    styling,
+    hosting,
+    assistantRules,
+    applicability,
+    pagesProbe,
+  } = input;
 
   if (!detection.packageJsonPresent && detection.primaryLanguage !== 'html') {
     findings.push({
@@ -1291,7 +1330,22 @@ function buildFindings(input: {
     return findings;
   }
 
-  if (routes.routes.length === 0) {
+  if (discoveryRoutes.authority !== 'proven' || discoveryRoutes.completeness !== 'complete') {
+    findings.push({
+      id: 'route-authority-not-proven',
+      severity: 'warn',
+      title: 'Production route authority is not proven',
+      message:
+        'Decantr will not treat the discovered route surface as a governance baseline until the selected app bootstrap and route graph resolve completely.',
+      evidence: [
+        `authority: ${discoveryRoutes.authority}`,
+        `completeness: ${discoveryRoutes.completeness}`,
+        ...discoveryRoutes.limitations.slice(0, 3),
+      ],
+      recommendation:
+        'Review the route authority files and unresolved expressions before adoption or route-scoped tasks.',
+    });
+  } else if (routes.routes.length === 0) {
     findings.push({
       id: 'route-map-thin',
       severity: 'warn',
@@ -1384,11 +1438,20 @@ function buildFindings(input: {
   return findings;
 }
 
-function buildCommands(applicability: ScanReportV1['applicability']): string[] {
+function buildCommands(
+  applicability: ScanReportV1['applicability'],
+  discovery: ProjectDiscovery,
+): string[] {
   const commands = ['npx @decantr/cli scan'];
-  if (applicability.status === 'strong_fit' || applicability.status === 'partial_fit') {
+  if (
+    applicability.status === 'strong_fit' &&
+    discovery.routes.authority === 'proven' &&
+    discovery.routes.completeness === 'complete'
+  ) {
     commands.push('npx @decantr/cli adopt --yes');
     commands.push('npx @decantr/cli doctor');
+  } else if (applicability.status === 'partial_fit') {
+    commands.push('npx @decantr/cli scan --json');
   }
   return commands;
 }
@@ -1449,7 +1512,12 @@ function scanDiscoverySummary(discovery: ProjectDiscovery): ScanDiscoveryV2 {
     projectEvidence: discovery.project.evidence,
     routeSignalCount: discovery.routes.routeSignalCount,
     taskableRouteCount: discovery.routes.taskableRouteCount,
+    routeExcludedSourceCount: discovery.routes.excludedSourceCount,
     routeConfidence: discovery.routes.confidence,
+    routeAuthority: discovery.routes.authority,
+    routeCompleteness: discovery.routes.completeness,
+    routeAuthorityFiles: discovery.routes.authorityFiles,
+    routeEvidence: discovery.routes.evidence,
     componentConfidence: discovery.components.confidence,
     componentEvidence: discovery.components.evidence,
     limitations: discovery.limitations,
@@ -1479,7 +1547,7 @@ export async function scanProject(
   const assistantRules = discovery.assistant.ruleFiles;
   const staticHosting = scanStaticHosting(projectRoot, detection);
   const pagesProbe = options.pagesProbe ?? null;
-  const applicability = buildApplicability(detection, routes, components);
+  const applicability = buildApplicability(detection, routes, components, discovery.routes);
   const confidence = discovery.confidence;
   const rawInput = options.input ?? { kind: 'local', value: '.' };
   const input =
@@ -1517,7 +1585,12 @@ export async function scanProject(
       items: routes.routes,
       routeSignalCount: discovery.routes.routeSignalCount,
       taskableRouteCount: discovery.routes.taskableRouteCount,
+      excludedSourceCount: discovery.routes.excludedSourceCount,
       confidence: discovery.routes.confidence,
+      authority: discovery.routes.authority,
+      completeness: discovery.routes.completeness,
+      authorityFiles: discovery.routes.authorityFiles,
+      evidence: discovery.routes.evidence,
       signals: discovery.routes.routeSignals.map(routeSignalFromDiscovery),
     },
     components,
@@ -1531,13 +1604,14 @@ export async function scanProject(
     findings: buildFindings({
       detection,
       routes,
+      discoveryRoutes: discovery.routes,
       styling,
       hosting: staticHosting,
       assistantRules,
       applicability,
       pagesProbe,
     }),
-    recommendedCommands: buildCommands(applicability),
+    recommendedCommands: buildCommands(applicability, discovery),
     privacy: {
       sourceUploaded: input.kind !== 'local',
       persistedByDecantr: false,
@@ -1596,7 +1670,12 @@ export function createUnavailableScanReport(input: {
       items: [],
       routeSignalCount: 0,
       taskableRouteCount: 0,
+      excludedSourceCount: 0,
       confidence: 'low',
+      authority: 'unresolved',
+      completeness: 'unknown',
+      authorityFiles: [],
+      evidence: [],
       signals: [],
     },
     components: {
@@ -1615,6 +1694,9 @@ export function createUnavailableScanReport(input: {
       colorTokenCount: 0,
       darkMode: false,
       themeSignals: [],
+      confidence: 'low',
+      evidence: [],
+      limitations: ['Source could not be inspected.'],
     },
     staticHosting: {
       githubPagesLikely: false,
@@ -1634,7 +1716,12 @@ export function createUnavailableScanReport(input: {
       projectEvidence: [],
       routeSignalCount: 0,
       taskableRouteCount: 0,
+      routeExcludedSourceCount: 0,
       routeConfidence: 'low',
+      routeAuthority: 'unresolved',
+      routeCompleteness: 'unknown',
+      routeAuthorityFiles: [],
+      routeEvidence: [],
       componentConfidence: 'low',
       componentEvidence: [],
       limitations: ['Source could not be inspected.'],

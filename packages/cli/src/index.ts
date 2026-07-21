@@ -56,6 +56,8 @@ import {
   createStableProjectIdentityV1,
   createTaskCapsuleV1,
   critiqueFile as critiqueProjectFile,
+  discoverProject,
+  evaluateDiscoveryReadiness,
   type FileCritiqueReport,
   LOOP_READINESS_V2_SCHEMA_URL,
   type LoopReadiness,
@@ -1947,6 +1949,7 @@ interface InitArgs {
   'accept-proposal'?: boolean;
   'merge-proposal'?: boolean;
   'replace-essence'?: boolean;
+  force?: boolean;
   internalSuppressNextSteps?: boolean;
 }
 
@@ -2266,6 +2269,32 @@ function receiptHasChanges(receipt: AdoptionReceipt): boolean {
   );
 }
 
+function ensureDiscoveryReadyForGovernance(
+  projectRoot: string,
+  operation: 'adoption' | 'initialization',
+  force: boolean,
+): boolean {
+  const discovery = discoverProject(projectRoot);
+  // Angular is the first adapter with bootstrap-reachability and completeness proof.
+  // Other framework adapters keep their 3.x compatibility behavior until they expose equal proof.
+  if (discovery.project.framework !== 'angular') return true;
+  const readiness = evaluateDiscoveryReadiness(discovery);
+  if (readiness.adoptionBaseline === 'ready') return true;
+  if (force) {
+    console.log(
+      `${YELLOW}Discovery override:${RESET} proceeding with ${operation} although route authority is not proven.`,
+    );
+    for (const reason of readiness.reasons) console.log(`  ${dim(`- ${reason}`)}`);
+    return true;
+  }
+  console.error(error(`Refusing ${operation}: production route authority is not proven.`));
+  for (const reason of readiness.reasons) console.error(dim(`  - ${reason}`));
+  console.error(dim('Run `decantr scan --json`, resolve the route-source limitations, and retry.'));
+  console.error(dim('Use `--force` only after manually reviewing the incomplete route surface.'));
+  process.exitCode = 1;
+  return false;
+}
+
 async function cmdInit(args: InitArgs) {
   if (args.internalSuppressNextSteps) {
     await cmdInitInternal(args);
@@ -2273,6 +2302,12 @@ async function cmdInit(args: InitArgs) {
   }
 
   const workspaceInfo = resolveWorkspaceInfo(process.cwd(), args.project);
+  if (
+    args.existing &&
+    !ensureDiscoveryReadyForGovernance(workspaceInfo.appRoot, 'initialization', args.force === true)
+  ) {
+    return;
+  }
   const before = captureAdoptionSnapshot(workspaceInfo.workspaceRoot, {
     projectRoot: workspaceInfo.appRoot,
   });
@@ -3969,6 +4004,14 @@ function printScanReport(
   console.log(
     `  Routes:         ${taskableRouteCount} taskable / ${routeSignalCount} signal(s) (${report.routes.strategy}, ${report.routes.confidence})`,
   );
+  console.log(
+    `  Route proof:    ${report.routes.authority} authority / ${report.routes.completeness} extraction`,
+  );
+  if (report.routes.excludedSourceCount > 0) {
+    console.log(
+      `  Excluded:       ${report.routes.excludedSourceCount} test, fixture, mock, or generated source path(s)`,
+    );
+  }
   for (const route of report.routes.items.slice(0, 8)) {
     console.log(`    ${cyan(route.path.padEnd(18))} ${dim(route.file)}`);
   }
@@ -3982,7 +4025,7 @@ function printScanReport(
     console.log(`                  ${dim(report.components.limitations[0])}`);
   }
   console.log(
-    `  Styling:        ${report.styling.approach}${report.styling.configFile ? ` (${report.styling.configFile})` : ''}`,
+    `  Styling:        ${report.styling.approach}${report.styling.configFile ? ` (${report.styling.configFile})` : ''} / ${report.styling.confidence}`,
   );
   console.log(`  CSS variables:  ${report.styling.cssVariableCount}`);
   console.log(`  Dark mode:      ${report.styling.darkMode ? 'yes' : 'no'}`);
@@ -4041,12 +4084,18 @@ function printScanReport(
       'This scan was read-only: no Decantr files, dependencies, scripts, uploads, or reports were created.',
     ),
   );
-  if (report.applicability.status !== 'not_applicable') {
+  if (report.recommendedCommands.includes('npx @decantr/cli adopt --yes')) {
     console.log(
       `When ready to attach Decantr, run ${cyan(withProject('decantr adopt --yes', projectArg))}.`,
     );
     console.log(
       `After adoption, inspect what Decantr found with ${cyan(studioCommandForProject(projectArg))}.`,
+    );
+  } else if (report.applicability.status === 'partial_fit') {
+    console.log(
+      dim(
+        'Adoption is withheld until production route authority and extraction completeness are proven.',
+      ),
     );
   }
 }
@@ -4209,6 +4258,7 @@ async function cmdAdoptWorkflow(args: string[]): Promise<void> {
   const projectRoot = workspaceInfo.appRoot;
   const projectArg = flagString(flags, 'project');
   const dryRun = flagBoolean(flags, 'dry-run');
+  const force = flagBoolean(flags, 'force');
   const yes = flagBoolean(flags, 'yes') || flagBoolean(flags, 'y');
   const baseUrl = flagString(flags, 'base-url');
   const runVerify = flagBoolean(flags, 'verify', true);
@@ -4228,6 +4278,8 @@ async function cmdAdoptWorkflow(args: string[]): Promise<void> {
     : flagBoolean(flags, 'merge-proposal') || hasEssence
       ? '--merge-proposal'
       : '--accept-proposal';
+
+  if (!dryRun && !ensureDiscoveryReadyForGovernance(projectRoot, 'adoption', force)) return;
 
   const steps = [
     'analyze current app and write .decantr/brownfield intelligence',
@@ -5164,6 +5216,30 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
     return;
   }
 
+  const projectJson = readJsonIfPresent<{
+    initialized?: { workflowMode?: string; adoptionMode?: string };
+  }>(join(workspaceInfo.appRoot, '.decantr', 'project.json'));
+  const brownfieldTask = projectJson?.initialized?.workflowMode === 'brownfield-attach';
+  const liveDiscovery = brownfieldTask ? discoverProject(workspaceInfo.appRoot) : null;
+  if (liveDiscovery?.project.framework === 'angular') {
+    const readiness = evaluateDiscoveryReadiness(liveDiscovery);
+    const authoritativeRoute = liveDiscovery.routes.taskableRoutes.find(
+      (entry) => entry.path === route,
+    );
+    if (readiness.routeScopedContext !== 'ready' || !authoritativeRoute) {
+      console.error(error(`Route-scoped task context is not proven for ${route}.`));
+      for (const reason of readiness.reasons) console.error(dim(`  - ${reason}`));
+      if (!authoritativeRoute) {
+        console.error(
+          dim('  - The requested route is absent from current production route authority.'),
+        );
+      }
+      console.error(dim('Run `decantr scan --json` and resolve discovery limitations first.'));
+      process.exitCode = 1;
+      return;
+    }
+  }
+
   const target = essence.blueprint.routes?.[route];
   if (!target) {
     const knownRoutes = Object.keys(essence.blueprint.routes ?? {}).sort();
@@ -5181,9 +5257,6 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
     pages?: Array<{ id: string; markdown: string; json: string; sectionId: string | null }>;
     sections?: Array<{ id: string; markdown: string; json: string }>;
   }>(join(contextDir, 'pack-manifest.json'));
-  const projectJson = readJsonIfPresent<{
-    initialized?: { workflowMode?: string; adoptionMode?: string };
-  }>(join(workspaceInfo.appRoot, '.decantr', 'project.json'));
   const taskVerifyCommand = projectJson?.initialized?.workflowMode?.startsWith('greenfield')
     ? withProject('decantr verify', projectArg)
     : projectJson?.initialized?.workflowMode === 'hybrid-compose'
@@ -5192,12 +5265,16 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
   const analysis = readJsonIfPresent<{
     routes?: { routes?: Array<{ path?: string; file?: string }> };
   }>(join(workspaceInfo.appRoot, '.decantr', 'analysis.json'));
-  let routeSourceFile = analysis?.routes?.routes?.find((entry) => entry.path === route)?.file;
+  let routeSourceFile = liveDiscovery?.routes.taskableRoutes.find(
+    (entry) => entry.path === route,
+  )?.file;
   if (!routeSourceFile) {
+    routeSourceFile = analysis?.routes?.routes?.find((entry) => entry.path === route)?.file;
+  }
+  if (!routeSourceFile)
     routeSourceFile = scanRoutes(workspaceInfo.appRoot).routes.find(
       (entry) => entry.path === route,
     )?.file;
-  }
   const pagePack = manifest?.pages?.find(
     (entry) =>
       entry.id === target.page && (entry.sectionId === null || entry.sectionId === target.section),
@@ -6327,7 +6404,7 @@ ${BOLD}Usage:${RESET}
   decantr setup [--project <path>]
   decantr scan [--project <path>] [--json]
   decantr new <name> [--blueprint=X] [--archetype=X] [--theme=X] [--workflow=greenfield] [--adoption=contract-only|decantr-css] [--telemetry]
-  decantr adopt [--project <path>] [--base-url <url>] [--evidence] [--ci] [--no-packs] [--yes]
+  decantr adopt [--project <path>] [--base-url <url>] [--evidence] [--ci] [--no-packs] [--yes] [--force]
   decantr task <route> ["task summary"] [--project <path>] [--since origin/main] [--json]
   decantr verify [--project <path>] [--brownfield] [--local-patterns] [health options]
   decantr resolve [--project <path>] [--json] [--defer <finding-id>] [--mark-advisory <finding-id>]
@@ -6769,8 +6846,8 @@ function cmdAdoptHelp() {
 ${BOLD}decantr adopt${RESET} — Brownfield one-liner: analyze, attach, hydrate packs, verify, and show the operating loop
 
 ${BOLD}Usage:${RESET}
-  decantr adopt [--project <path>] [--yes] [--dry-run] [--no-packs]
-  decantr adopt [--project <path>] --base-url <url> [--evidence] [--ci] [--yes] [--no-packs]
+  decantr adopt [--project <path>] [--yes] [--dry-run] [--no-packs] [--force]
+  decantr adopt [--project <path>] --base-url <url> [--evidence] [--ci] [--yes] [--no-packs] [--force]
 
 ${BOLD}Options:${RESET}
   --project           App path inside a workspace/monorepo
@@ -6786,6 +6863,7 @@ ${BOLD}Options:${RESET}
   --telemetry         Enable the local preference; delivery requires DECANTR_TELEMETRY_ENDPOINT
   --merge-proposal    Merge the observed proposal into an existing essence
   --replace-essence   Replace an existing essence with backup
+  --force             Continue only after manually reviewing incomplete Angular route proof
 
 ${BOLD}Examples:${RESET}
   decantr adopt --yes
@@ -6828,7 +6906,8 @@ ${BOLD}Usage:${RESET}
 ${BOLD}Behavior:${RESET}
   Requires current .decantr/graph artifacts. Read targets begin with the discovered route
   implementation source, then include compact graph context, accepted local law, behavior
-  obligations, evidence, stop conditions, and the workflow-aware verify command.
+  obligations, evidence, stop conditions, and the workflow-aware verify command. Angular
+  route tasks stop when production route authority or completeness is not proven.
 
 ${BOLD}Examples:${RESET}
   decantr task /feed "add saved recipe actions"
@@ -7176,6 +7255,8 @@ async function main() {
           initArgs['merge-proposal'] = true;
         } else if (arg === '--replace-essence') {
           initArgs['replace-essence'] = true;
+        } else if (arg === '--force') {
+          initArgs.force = true;
         } else if (arg.startsWith('--')) {
           const [key, value] = arg.slice(2).split('=');
           if (value) {

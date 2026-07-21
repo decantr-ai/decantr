@@ -53,6 +53,73 @@ function writeEssence(root: string): void {
 }
 
 describe('MCP task authority integrity', () => {
+  it('fails closed when an Angular route is not bootstrap-reachable', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'decantr-mcp-angular-authority-'));
+    try {
+      process.chdir(root);
+      writeJson(join(root, 'package.json'), {
+        private: true,
+        dependencies: {
+          '@angular/core': '^21.0.0',
+          '@angular/router': '^21.0.0',
+        },
+      });
+      writeJson(join(root, 'angular.json'), {
+        version: 1,
+        projects: {
+          app: {
+            root: '',
+            sourceRoot: 'src',
+            architect: { build: { options: { browser: 'src/main.ts' } } },
+          },
+        },
+      });
+      writeEssence(root);
+      writeJson(join(root, '.decantr', 'project.json'), {
+        initialized: { workflowMode: 'brownfield-attach', adoptionMode: 'contract-only' },
+      });
+      mkdirSync(join(root, 'src'), { recursive: true });
+      writeFileSync(
+        join(root, 'src', 'main.ts'),
+        "import { bootstrapApplication } from '@angular/platform-browser';\nbootstrapApplication(class App {});\n",
+        'utf-8',
+      );
+      writeFileSync(
+        join(root, 'src', 'routes.ts'),
+        "import type { Routes } from '@angular/router';\nexport const routes: Routes = [{ path: '', component: Page }];\n",
+        'utf-8',
+      );
+      writeFileSync(
+        join(root, 'src', 'settings-menu.vitest.ts'),
+        "export const links = [{ path: 'admin' }];\n",
+        'utf-8',
+      );
+
+      const result = (await callTool('decantr_prepare_task_context', {
+        route: '/',
+        task: 'change the production home route',
+      })) as {
+        error: string;
+        code: string;
+        route_authority: string;
+        route_completeness: string;
+        limitations: string[];
+      };
+
+      expect(result).toMatchObject({
+        code: 'DISCOVERY_NOT_PROVEN',
+        route_authority: 'inferred',
+        route_completeness: 'unknown',
+      });
+      expect(result.error).toContain('Route-scoped task context is not proven');
+      expect(result.limitations.join('\n')).toContain(
+        'no selected-app bootstrap path proved that they are production router authority',
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('does not activate copied proposals or malformed final authority files', async () => {
     const root = mkdtempSync(join(tmpdir(), 'decantr-mcp-task-authority-'));
     try {

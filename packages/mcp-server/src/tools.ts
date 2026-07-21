@@ -54,6 +54,7 @@ import {
   deriveVerificationDiagnostic,
   discoverProject,
   type EvidenceBundle,
+  evaluateDiscoveryReadiness,
   KNOWN_VERIFICATION_DIAGNOSTICS,
   LOOP_READINESS_V2_SCHEMA_URL,
   PROJECT_HEALTH_REPORT_V2_SCHEMA_URL,
@@ -318,7 +319,13 @@ function mcpDiscoverySummary(projectRoot: string) {
       strategy: discovery.routes.strategy,
       route_signal_count: discovery.routes.routeSignalCount,
       taskable_route_count: discovery.routes.taskableRouteCount,
+      route_excluded_source_count: discovery.routes.excludedSourceCount,
       confidence: discovery.routes.confidence,
+      authority: discovery.routes.authority,
+      completeness: discovery.routes.completeness,
+      authority_files: discovery.routes.authorityFiles,
+      evidence: discovery.routes.evidence,
+      readiness: evaluateDiscoveryReadiness(discovery),
       taskable_routes: discovery.routes.taskableRoutes.slice(0, 20).map((route) => ({
         path: route.path,
         file: route.file,
@@ -343,6 +350,9 @@ function mcpDiscoverySummary(projectRoot: string) {
     },
     styling: {
       approach: discovery.styling.approach,
+      confidence: discovery.styling.confidence,
+      evidence: discovery.styling.evidence,
+      limitations: discovery.styling.limitations,
       config_file: discovery.styling.configFile,
       css_variable_count: discovery.styling.cssVariableCount,
       color_token_count: discovery.styling.colorTokenCount,
@@ -4727,6 +4737,30 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
             )?.[0]) ??
         null;
 
+      const projectJson = readJsonIfExists<{
+        initialized?: { workflowMode?: string; adoptionMode?: string };
+      }>(join(projectRoot, '.decantr', 'project.json'));
+      const brownfieldTask = projectJson?.initialized?.workflowMode === 'brownfield-attach';
+      const liveDiscovery = brownfieldTask ? discoverProject(projectRoot) : null;
+      if (liveDiscovery?.project.framework === 'angular' && resolvedRoute) {
+        const readiness = evaluateDiscoveryReadiness(liveDiscovery);
+        const authoritativeRoute = liveDiscovery.routes.taskableRoutes.find(
+          (entry) => entry.path === resolvedRoute,
+        );
+        if (readiness.routeScopedContext !== 'ready' || !authoritativeRoute) {
+          return {
+            error: `Route-scoped task context is not proven for ${resolvedRoute}.`,
+            code: 'DISCOVERY_NOT_PROVEN',
+            route: resolvedRoute,
+            readiness,
+            route_authority: liveDiscovery.routes.authority,
+            route_completeness: liveDiscovery.routes.completeness,
+            authority_files: liveDiscovery.routes.authorityFiles,
+            limitations: liveDiscovery.routes.limitations,
+          };
+        }
+      }
+
       const contextDir = join(projectRoot, '.decantr', 'context');
       const manifest = readJsonIfExists<PackManifest>(join(contextDir, 'pack-manifest.json'));
       const pageManifest = manifest?.pages.find((entry) => entry.id === pageId) ?? null;
@@ -4782,17 +4816,19 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
         ...styleBridge,
         path: displayProjectFile(projectRoot, styleBridge.path),
       };
-      const projectJson = readJsonIfExists<{
-        initialized?: { workflowMode?: string; adoptionMode?: string };
-      }>(join(projectRoot, '.decantr', 'project.json'));
       const changedFiles = changedFilesForTask(projectRoot);
       const changedRoutes = impactedRoutesForFiles(projectRoot, changedFiles);
       const analysis = readJsonIfExists<{
         routes?: { routes?: Array<{ path?: string; file?: string }> };
       }>(join(projectRoot, '.decantr', 'analysis.json'));
-      let routeSourceFile = analysis?.routes?.routes?.find(
-        (entry) => entry.path === resolvedRoute,
-      )?.file;
+      let routeSourceFile =
+        liveDiscovery?.routes.taskableRoutes.find((entry) => entry.path === resolvedRoute)?.file ??
+        null;
+      if (!routeSourceFile) {
+        routeSourceFile = analysis?.routes?.routes?.find(
+          (entry) => entry.path === resolvedRoute,
+        )?.file;
+      }
       if (!routeSourceFile && resolvedRoute) {
         const discovery = discoverProject(projectRoot);
         routeSourceFile = discovery.routes.taskableRoutes.find(

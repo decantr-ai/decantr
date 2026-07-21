@@ -130,6 +130,7 @@ export type {
   DiscoveryFramework,
   DiscoveryPackageManager,
   DiscoveryPrimaryLanguage,
+  DiscoveryReadiness,
   DiscoveryRoute,
   DiscoveryRouteSignal,
   DiscoveryRouteSignalKind,
@@ -138,7 +139,7 @@ export type {
   DiscoveryStyling,
   ProjectDiscovery,
 } from './discovery.js';
-export { discoverProject } from './discovery.js';
+export { discoverProject, evaluateDiscoveryReadiness } from './discovery.js';
 export type {
   CreateGovernanceDeltaV1Input,
   GovernanceAnnotationCoordinatesV1,

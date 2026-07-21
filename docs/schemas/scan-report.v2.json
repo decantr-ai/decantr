@@ -133,7 +133,12 @@
         "items",
         "routeSignalCount",
         "taskableRouteCount",
+        "excludedSourceCount",
         "confidence",
+        "authority",
+        "completeness",
+        "authorityFiles",
+        "evidence",
         "signals"
       ],
       "properties": {
@@ -158,8 +163,26 @@
           "type": "integer",
           "minimum": 0
         },
+        "excludedSourceCount": {
+          "type": "integer",
+          "minimum": 0
+        },
         "confidence": {
           "$ref": "#/$defs/confidenceLevel"
+        },
+        "authority": {
+          "type": "string",
+          "enum": ["proven", "inferred", "unresolved"]
+        },
+        "completeness": {
+          "type": "string",
+          "enum": ["complete", "partial", "unknown"]
+        },
+        "authorityFiles": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "evidence": {
+          "$ref": "#/$defs/stringArray"
         },
         "signals": {
           "type": "array",
@@ -241,7 +264,12 @@
         "projectEvidence",
         "routeSignalCount",
         "taskableRouteCount",
+        "routeExcludedSourceCount",
         "routeConfidence",
+        "routeAuthority",
+        "routeCompleteness",
+        "routeAuthorityFiles",
+        "routeEvidence",
         "componentConfidence",
         "componentEvidence",
         "limitations"
@@ -275,8 +303,26 @@
           "type": "integer",
           "minimum": 0
         },
+        "routeExcludedSourceCount": {
+          "type": "integer",
+          "minimum": 0
+        },
         "routeConfidence": {
           "$ref": "#/$defs/confidenceLevel"
+        },
+        "routeAuthority": {
+          "type": "string",
+          "enum": ["proven", "inferred", "unresolved"]
+        },
+        "routeCompleteness": {
+          "type": "string",
+          "enum": ["complete", "partial", "unknown"]
+        },
+        "routeAuthorityFiles": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "routeEvidence": {
+          "$ref": "#/$defs/stringArray"
         },
         "componentConfidence": {
           "$ref": "#/$defs/confidenceLevel"

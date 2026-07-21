@@ -4,6 +4,14 @@ Date: 2026-07-16
 
 Status: Approved implementation program for the Decantr 3.9 line. The shipped baseline is Decantr 3.8.3 until 3.9.0 publication and closeout. Requirements and target behavior below are not shipped behavior until public package verification proves them.
 
+## 2026-07-21 Authority Addendum
+
+An Angular Brownfield trial exposed a critical assumption in the original program: a common governance contract does not imply that one generic source parser can prove every framework. Decantr remains stack-agnostic at the Essence, adoption-truth, task-capsule, governance-delta, graph, and Project Health layers. Source authority is established by framework-specific adapters.
+
+The 3.9 Angular adapter is therefore part of the release boundary. It must select the configured Angular app and bootstrap, resolve bootstrap-reachable router roots and nested/lazy route arrays with the TypeScript compiler, exclude non-production source, separate structural route scopes from taskable rendered pages, inventory Angular components, and derive styling from selected-app build/runtime evidence. Route authority, extraction completeness, taskability, provenance, exclusions, and limitations are independent gates; aggregate confidence cannot override them.
+
+Angular adoption and existing-app initialization fail closed unless route authority is proven and complete, with `--force` reserved for an explicit reviewed override. Angular route tasks and CI v3 continue to fail closed when current live authority is insufficient. The frozen 84-case route corpus is not rewritten to accommodate this change; a supplemental replay against pinned Angular RealWorld and Sakai commits is bound to the same candidate tarballs and required by the route evidence audit. See `docs/architecture/decisions/2026-07-21-framework-authority-adapters.md` and `docs/audit/2026-07-21-decantr-3-9-angular-brownfield-authority.md`.
+
 ## Program Decision
 
 Decantr 3.9 will prove a governed change from project selection through task context and verification without expanding the product into an agent, marketplace, or hosted control plane.

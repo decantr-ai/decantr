@@ -258,6 +258,84 @@ describe('init command', () => {
   );
 
   it(
+    'refuses unproven Angular adoption unless the operator explicitly overrides discovery',
+    () => {
+      writeFileSync(
+        join(testDir, 'package.json'),
+        JSON.stringify(
+          {
+            name: 'unproven-angular-app',
+            private: true,
+            dependencies: {
+              '@angular/core': '^21.0.0',
+              '@angular/router': '^21.0.0',
+            },
+          },
+          null,
+          2,
+        ) + '\n',
+      );
+      writeFileSync(
+        join(testDir, 'angular.json'),
+        JSON.stringify(
+          {
+            version: 1,
+            projects: {
+              app: {
+                root: '',
+                sourceRoot: 'src',
+                architect: { build: { options: { browser: 'src/main.ts' } } },
+              },
+            },
+          },
+          null,
+          2,
+        ) + '\n',
+      );
+      mkdirSync(join(testDir, 'src', 'app'), { recursive: true });
+      writeFileSync(
+        join(testDir, 'src', 'main.ts'),
+        "import { bootstrapApplication } from '@angular/platform-browser';\nbootstrapApplication(class App {});\n",
+      );
+      writeFileSync(
+        join(testDir, 'src', 'app', 'routes.ts'),
+        "import type { Routes } from '@angular/router';\nexport const routes: Routes = [{ path: '', component: Page }];\n",
+      );
+
+      let refusal = '';
+      try {
+        execSync(`node ${cliPath} adopt --yes --offline --no-verify --no-baseline`, {
+          cwd: testDir,
+          env: { ...process.env, DECANTR_OFFLINE: 'true' },
+          stdio: 'pipe',
+        });
+        throw new Error('Expected Angular adoption to refuse unproven route authority.');
+      } catch (error) {
+        refusal = `${(error as { stdout?: Buffer }).stdout?.toString() ?? ''}\n${
+          (error as { stderr?: Buffer }).stderr?.toString() ?? ''
+        }`;
+      }
+
+      expect(refusal).toContain('Refusing adoption: production route authority is not proven.');
+      expect(refusal).toContain('Use `--force` only after manually reviewing');
+      expect(existsSync(join(testDir, '.decantr'))).toBe(false);
+
+      const forced = execSync(
+        `node ${cliPath} adopt --force --yes --offline --no-verify --no-baseline`,
+        {
+          cwd: testDir,
+          env: { ...process.env, DECANTR_OFFLINE: 'true' },
+          stdio: 'pipe',
+        },
+      ).toString();
+
+      expect(forced).toContain('Discovery override:');
+      expect(existsSync(join(testDir, 'decantr.essence.json'))).toBe(true);
+    },
+    INIT_TIMEOUT_MS,
+  );
+
+  it(
     'uses local content sources for offline blueprint init instead of silently falling back to defaults',
     () => {
       const output = execSync(
@@ -338,6 +416,7 @@ describe('init command', () => {
             private: true,
             dependencies: {
               '@angular/core': '^19.0.0',
+              '@angular/router': '^19.0.0',
             },
           },
           null,
@@ -349,11 +428,54 @@ describe('init command', () => {
         JSON.stringify(
           {
             version: 1,
-            projects: {},
+            projects: {
+              app: {
+                root: '',
+                sourceRoot: 'src',
+                architect: { build: { options: { browser: 'src/main.ts' } } },
+              },
+            },
           },
           null,
           2,
         ) + '\n',
+      );
+      mkdirSync(join(testDir, 'src', 'app'), { recursive: true });
+      writeFileSync(
+        join(testDir, 'src', 'main.ts'),
+        [
+          "import { bootstrapApplication } from '@angular/platform-browser';",
+          "import { appConfig } from './app/app.config';",
+          'bootstrapApplication(class App {}, appConfig);',
+          '',
+        ].join('\n'),
+      );
+      writeFileSync(
+        join(testDir, 'src', 'app', 'app.config.ts'),
+        [
+          "import { provideRouter } from '@angular/router';",
+          "import { routes } from './app.routes';",
+          'export const appConfig = { providers: [provideRouter(routes)] };',
+          '',
+        ].join('\n'),
+      );
+      writeFileSync(
+        join(testDir, 'src', 'app', 'app.routes.ts'),
+        [
+          "import type { Routes } from '@angular/router';",
+          "import { HomeComponent } from './home.component';",
+          "export const routes: Routes = [{ path: '', component: HomeComponent }];",
+          '',
+        ].join('\n'),
+      );
+      writeFileSync(
+        join(testDir, 'src', 'app', 'home.component.ts'),
+        [
+          "import { Component } from '@angular/core';",
+          "@Component({ selector: 'app-home', standalone: true, template: '<main>Home</main>' })",
+          'export class HomeComponent {}',
+          '',
+        ].join('\n'),
       );
 
       execSync(`node ${cliPath} analyze`, {

@@ -322,6 +322,46 @@ describe('scanProject', () => {
     );
     mkdirSync(join(projectRoot, 'src', 'app'), { recursive: true });
     writeFileSync(
+      join(projectRoot, 'angular.json'),
+      JSON.stringify({
+        version: 1,
+        projects: {
+          frontend: {
+            root: '',
+            sourceRoot: 'src',
+            architect: {
+              build: {
+                options: {
+                  browser: 'src/main.ts',
+                  styles: ['src/styles.scss'],
+                  tsConfig: 'tsconfig.json',
+                },
+              },
+            },
+          },
+        },
+      }),
+    );
+    writeFileSync(join(projectRoot, 'tsconfig.json'), JSON.stringify({ compilerOptions: {} }));
+    writeFileSync(
+      join(projectRoot, 'src', 'main.ts'),
+      [
+        'import { bootstrapApplication } from "@angular/platform-browser";',
+        'import { appConfig } from "./app/app.config";',
+        'bootstrapApplication(class App {}, appConfig);',
+        '',
+      ].join('\n'),
+    );
+    writeFileSync(
+      join(projectRoot, 'src', 'app', 'app.config.ts'),
+      [
+        'import { provideRouter } from "@angular/router";',
+        'import { routes } from "./app.routes";',
+        'export const appConfig = { providers: [provideRouter(routes)] };',
+        '',
+      ].join('\n'),
+    );
+    writeFileSync(
       join(projectRoot, 'src', 'app', 'app.routes.ts'),
       [
         'import { Routes } from "@angular/router";',
@@ -334,6 +374,19 @@ describe('scanProject', () => {
         '',
       ].join('\n'),
     );
+    for (const name of ['home', 'login', 'article']) {
+      writeFileSync(
+        join(projectRoot, 'src', 'app', `${name}.ts`),
+        [
+          'import { Component } from "@angular/core";',
+          `@Component({ templateUrl: "./${name}.html" })`,
+          `export class ${name[0]?.toUpperCase()}${name.slice(1)}Component {}`,
+          '',
+        ].join('\n'),
+      );
+      writeFileSync(join(projectRoot, 'src', 'app', `${name}.html`), `<main>${name}</main>\n`);
+    }
+    writeFileSync(join(projectRoot, 'src', 'styles.scss'), ':root { --brand: #123456; }\n');
     writeFileSync(join(projectRoot, 'src', 'index.html'), '<!doctype html><app-root></app-root>\n');
 
     const report = await scanProject(projectRoot);
@@ -341,8 +394,273 @@ describe('scanProject', () => {
 
     expect(report.project.framework).toBe('angular');
     expect(report.routes.strategy).toBe('angular-router');
+    expect(report.routes.authority).toBe('proven');
+    expect(report.routes.completeness).toBe('complete');
+    expect(report.routes.confidence).toBe('high');
     expect(paths).toEqual(expect.arrayContaining(['/', '/login', '/article/:slug']));
     expect(paths).not.toContain('/**');
+    expect(report.components.items.map((component) => component.name)).toEqual(
+      expect.arrayContaining(['HomeComponent', 'LoginComponent', 'ArticleComponent']),
+    );
+  });
+
+  it('fails closed when Angular route arrays are not reachable from the selected bootstrap', async () => {
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      JSON.stringify({
+        name: 'frontend',
+        dependencies: {
+          '@angular/core': '^21.0.0',
+          '@angular/router': '^21.0.0',
+        },
+      }),
+    );
+    mkdirSync(join(projectRoot, 'src', 'app'), { recursive: true });
+    writeFileSync(
+      join(projectRoot, 'angular.json'),
+      JSON.stringify({
+        version: 1,
+        projects: {
+          app1: {
+            root: '',
+            sourceRoot: 'src',
+            architect: { build: { options: { browser: 'src/main.ts' } } },
+          },
+        },
+      }),
+    );
+    writeFileSync(
+      join(projectRoot, 'src', 'main.ts'),
+      'import { bootstrapApplication } from "@angular/platform-browser"; bootstrapApplication(class App {});\n',
+    );
+    writeFileSync(
+      join(projectRoot, 'src', 'app', 'routes.ts'),
+      [
+        'import { Routes } from "@angular/router";',
+        'export const routes: Routes = [{ path: "real-but-unrooted", component: Page }];',
+        '',
+      ].join('\n'),
+    );
+    writeFileSync(
+      join(projectRoot, 'src', 'app', 'settings-menu.vitest.ts'),
+      [
+        'import { Routes } from "@angular/router";',
+        'export const fixtureRoutes: Routes = [',
+        '  { path: "admin", component: Fixture },',
+        '  { path: "assign", component: Fixture },',
+        '  { path: "tool-configuration", component: Fixture },',
+        '];',
+        '',
+      ].join('\n'),
+    );
+
+    const report = await scanProject(projectRoot);
+
+    expect(report.routes.authority).toBe('inferred');
+    expect(report.routes.completeness).toBe('unknown');
+    expect(report.routes.taskableRouteCount).toBe(0);
+    expect(report.routes.excludedSourceCount).toBeGreaterThan(0);
+    expect(report.routes.signals.map((signal) => signal.path)).toContain('/real-but-unrooted');
+    expect(report.routes.signals.map((signal) => signal.path)).not.toEqual(
+      expect.arrayContaining(['/admin', '/assign', '/tool-configuration']),
+    );
+    expect(report.applicability.status).toBe('partial_fit');
+    expect(report.confidence.score).toBeLessThanOrEqual(44);
+    expect(report.recommendedCommands).not.toContain('npx @decantr/cli adopt --yes');
+    expect(report.findings.some((finding) => finding.id === 'route-authority-not-proven')).toBe(
+      true,
+    );
+  });
+
+  it('marks bootstrap-reachable Angular routes partial when their implementation cannot resolve', async () => {
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      JSON.stringify({
+        name: 'angular-unresolved-component',
+        dependencies: {
+          '@angular/core': '^21.0.0',
+          '@angular/router': '^21.0.0',
+        },
+      }),
+    );
+    mkdirSync(join(projectRoot, 'src', 'app'), { recursive: true });
+    writeFileSync(
+      join(projectRoot, 'angular.json'),
+      JSON.stringify({
+        version: 1,
+        projects: {
+          app: {
+            root: '',
+            sourceRoot: 'src',
+            architect: { build: { options: { browser: 'src/main.ts' } } },
+          },
+        },
+      }),
+    );
+    writeFileSync(
+      join(projectRoot, 'src', 'main.ts'),
+      [
+        'import { bootstrapApplication } from "@angular/platform-browser";',
+        'import { appConfig } from "./app/app.config";',
+        'bootstrapApplication(class App {}, appConfig);',
+        '',
+      ].join('\n'),
+    );
+    writeFileSync(
+      join(projectRoot, 'src', 'app', 'app.config.ts'),
+      [
+        'import { provideRouter } from "@angular/router";',
+        'import { routes } from "./app.routes";',
+        'export const appConfig = { providers: [provideRouter(routes)] };',
+        '',
+      ].join('\n'),
+    );
+    writeFileSync(
+      join(projectRoot, 'src', 'app', 'app.routes.ts'),
+      [
+        'import { Routes } from "@angular/router";',
+        'export const routes: Routes = [',
+        '  { path: "missing", loadComponent: () => import("./missing.component") },',
+        '];',
+        '',
+      ].join('\n'),
+    );
+
+    const report = await scanProject(projectRoot);
+
+    expect(report.routes.authority).toBe('proven');
+    expect(report.routes.completeness).toBe('partial');
+    expect(report.routes.taskableRouteCount).toBe(0);
+    expect(report.routes.signals).toContainEqual(
+      expect.objectContaining({ path: '/missing', taskable: false, confidence: 'medium' }),
+    );
+    expect(report.routes.authorityFiles).toEqual(
+      expect.arrayContaining(['src/main.ts', 'src/app/app.config.ts', 'src/app/app.routes.ts']),
+    );
+    expect(report.discovery?.limitations.join('\n')).toContain(
+      'Angular lazy component could not be resolved',
+    );
+    expect(report.confidence.score).toBeLessThanOrEqual(74);
+    expect(report.recommendedCommands).not.toContain('npx @decantr/cli adopt --yes');
+  });
+
+  it('resolves a 100-route Angular table and preserves PrimeNG/SCSS style authority', async () => {
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      JSON.stringify({
+        name: 'frontend',
+        dependencies: {
+          '@angular/core': '^21.0.0',
+          '@angular/router': '^21.0.0',
+          primeng: '^21.0.0',
+          tailwindcss: '^4.1.0',
+        },
+      }),
+    );
+    mkdirSync(join(projectRoot, 'src', 'app'), { recursive: true });
+    writeFileSync(
+      join(projectRoot, 'angular.json'),
+      JSON.stringify({
+        version: 1,
+        projects: {
+          app1: {
+            root: '',
+            sourceRoot: 'src',
+            architect: {
+              build: {
+                options: {
+                  browser: 'src/main.ts',
+                  styles: ['src/styles.scss'],
+                  tsConfig: 'tsconfig.json',
+                },
+              },
+            },
+          },
+        },
+      }),
+    );
+    writeFileSync(join(projectRoot, 'tsconfig.json'), JSON.stringify({ compilerOptions: {} }));
+    writeFileSync(
+      join(projectRoot, 'src', 'main.ts'),
+      [
+        'import { bootstrapApplication } from "@angular/platform-browser";',
+        'import { appConfig } from "./app/app.config";',
+        'bootstrapApplication(class App {}, appConfig);',
+        '',
+      ].join('\n'),
+    );
+    writeFileSync(
+      join(projectRoot, 'src', 'app', 'app.config.ts'),
+      [
+        'import { provideRouter } from "@angular/router";',
+        'import { providePrimeNG } from "primeng/config";',
+        'import { routes } from "./routes";',
+        'export const appConfig = { providers: [provideRouter(routes), providePrimeNG({})] };',
+        '',
+      ].join('\n'),
+    );
+    const routeRows = Array.from(
+      { length: 100 },
+      (_, index) => `  { path: "route-${index}", component: PageComponent },`,
+    );
+    writeFileSync(
+      join(projectRoot, 'src', 'app', 'routes.ts'),
+      [
+        'import { Routes } from "@angular/router";',
+        'import { PageComponent } from "./page.component";',
+        'export const routes: Routes = [',
+        ...routeRows,
+        '];',
+        ...Array.from({ length: 1400 }, (_, index) => `// route policy line ${index}`),
+        '',
+      ].join('\n'),
+    );
+    writeFileSync(
+      join(projectRoot, 'src', 'app', 'page.component.ts'),
+      [
+        'import { Component } from "@angular/core";',
+        '@Component({ selector: "app-page", templateUrl: "./page.component.html" })',
+        'export class PageComponent {}',
+        '',
+      ].join('\n'),
+    );
+    writeFileSync(join(projectRoot, 'src', 'app', 'page.component.html'), '<main>Page</main>\n');
+    writeFileSync(
+      join(projectRoot, 'src', 'app', 'settings-menu.vitest.ts'),
+      'export const navigation = [{ path: "admin" }, { path: "assign" }];\n',
+    );
+    writeFileSync(join(projectRoot, 'src', 'styles.scss'), '$brand: #123456;\n');
+
+    const report = await scanProject(projectRoot);
+
+    expect(report.project.packageName).toBe('frontend');
+    expect(report.project.evidence).toContain('Angular project "app1" selected from angular.json');
+    expect(report.project.hasTailwind).toBe(false);
+    expect(report.routes.taskableRouteCount).toBe(100);
+    expect(report.routes.items).toHaveLength(100);
+    expect(report.routes.items.map((route) => route.path)).toEqual(
+      expect.arrayContaining(['/route-0', '/route-99']),
+    );
+    expect(report.routes.items.map((route) => route.path)).not.toEqual(
+      expect.arrayContaining(['/admin', '/assign']),
+    );
+    expect(report.routes.items.every((route) => route.file === 'src/app/page.component.ts')).toBe(
+      true,
+    );
+    expect(report.routes.authority).toBe('proven');
+    expect(report.routes.completeness).toBe('complete');
+    expect(report.styling.approach).toBe('primeng-scss');
+    expect(report.styling.confidence).toBe('high');
+    expect(report.styling.limitations).toContain(
+      'Tailwind is installed but no selected-app config, PostCSS plugin, or CSS directive proves it is active style authority.',
+    );
+    expect(report.components.items).toContainEqual({
+      name: 'PageComponent',
+      file: 'src/app/page.component.ts',
+      kind: 'angular-component',
+      confidence: 'high',
+    });
+    expect(report.applicability.status).toBe('strong_fit');
   });
 
   it('handles static HTML projects', async () => {

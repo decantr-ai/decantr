@@ -1,8 +1,8 @@
 # Decantr 3.9.0 Governed Change Proof
 
-Date: 2026-07-16
+Date: 2026-07-21
 
-Release status: authorized for direct stable publication under the explicit sole-maintainer waiver; public release remains incomplete until packed/public artifact verification and release closeout pass. This release is not human-qualified or adoption-proven.
+Release status: stable 3.9.0 under the explicit sole-maintainer waiver. This release is machine-qualified for its declared package, route, Angular Brownfield, and behavior lanes; it is not human-qualified or adoption-proven.
 
 ## Product Change
 
@@ -22,6 +22,10 @@ The release keeps production source first, accepted project-owned local law and 
 - First-party content clients, resolver types, ranking, discovery, wiring, schemas, and provenance are owned by `@decantr/content`.
 - `@decantr/registry` delegates to content-owned implementations while preserving documented Decantr 3.x import paths, client aliases, schema paths, and environment compatibility.
 - The packed content facade audit installs tarballs in a clean npm prefix, checks runtime/schema delegation, verifies `REGISTRY_URL`, rejects workspace links, and scans for retired-host/local-path leakage.
+- Angular Brownfield discovery now selects the configured app/build entry, follows bootstrap-reachable TypeScript imports to `provideRouter` or `RouterModule.forRoot`, resolves nested and lazy route arrays, maps rendered pages to implementation files, inventories `@Component` classes, and excludes test/fixture/mock/E2E/generated source.
+- Route authority, extraction completeness, taskability, excluded-source counts, style confidence, evidence, and limitations are separate facts. Structural lazy boundaries are not taskable pages, unresolved components force partial extraction, and aggregate confidence is capped instead of laundering incomplete authority.
+- Angular style discovery gives selected-app Angular build styles and PrimeNG/Sass/Tailwind runtime/config evidence precedence over dependency presence. Installing Tailwind alone no longer makes it style authority.
+- Angular `adopt` and existing-app `init` refuse unproven route authority before mutation unless `--force` is explicit. CLI/MCP route tasks fail closed, and CI v3 emits `not_proven`, when live production route authority is insufficient.
 
 ## Compatibility
 
@@ -48,7 +52,7 @@ The release keeps production source first, accepted project-owned local law and 
 
 The original 84-route/24-forbidden/200-finding draft remains quarantined as `legacy-unqualified` and does not count toward release gates.
 
-The executable qualification lane now produces content-addressed candidate evidence for 84 unique ordered route cases, including 24 genuine competing forbidden-first sources, plus 270 isolated machine samples across three frozen targets. The same machine lane records exhaustive adoption and Studio filesystem boundaries, exact package/tarball identities, cross-surface agreement, immediate CI, capsule budgets, determinism, offline content parity, all Studio modes, exact MCP/v2 compatibility, workspace CI, and reproducibility. These artifacts must be regenerated from the committed candidate and revalidated before human review begins; their existence does not make `qualificationClaim` true.
+The executable qualification lane now produces content-addressed candidate evidence for 84 unique ordered route cases, including 24 genuine competing forbidden-first sources, plus 270 isolated machine samples across three frozen targets. The frozen route corpus remains unchanged. A supplemental packed-artifact Angular Brownfield replay pins Angular RealWorld and PrimeFaces Sakai at exact Git commits and requires 43 route signals, 35 taskable rendered pages, 62 components, complete bootstrap authority, style evidence, production-source exclusions, and Git blob provenance. The same machine lane records exhaustive adoption and Studio filesystem boundaries, exact package/tarball identities, cross-surface agreement, immediate CI, capsule budgets, determinism, offline content parity, all Studio modes, exact MCP/v2 compatibility, workspace CI, and reproducibility. These artifacts do not make `qualificationClaim` true.
 
 The remaining human-owned blockers are:
 
@@ -70,6 +74,8 @@ pnpm test
 pnpm audit:package-surface
 pnpm audit:package-permissions
 pnpm audit:packed-content-facade
+pnpm qualification:3-9:route
+pnpm qualification:3-9:machine
 pnpm audit:3-9-release-gate
 pnpm release:preflight
 ```

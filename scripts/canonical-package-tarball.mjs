@@ -1,4 +1,5 @@
 import {
+  chmodSync,
   lstatSync,
   mkdirSync,
   readFileSync,
@@ -7,6 +8,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { gzipSync } from 'fflate';
 import { create, extract } from 'tar';
 
 const CANONICAL_MTIME = new Date('1985-10-26T08:15:00.000Z');
@@ -48,6 +50,37 @@ function listArchiveEntries(root, parent = '') {
 function packageTarballName(packageName, version) {
   const normalizedName = packageName.replace(/^@/u, '').replaceAll('/', '-');
   return `${normalizedName}-${version}.tgz`;
+}
+
+function manifestBinPaths(manifest) {
+  if (typeof manifest.bin === 'string') return new Set([manifest.bin.replace(/^\.\//u, '')]);
+  if (!manifest.bin || typeof manifest.bin !== 'object') return new Set();
+  return new Set(
+    Object.values(manifest.bin)
+      .filter((value) => typeof value === 'string')
+      .map((value) => value.replace(/^\.\//u, '')),
+  );
+}
+
+function normalizeArchiveModes(root, manifest, parent = '') {
+  const executablePaths = manifestBinPaths(manifest);
+  const directory = parent ? join(root, ...parent.split('/')) : root;
+  for (const name of readdirSync(directory).sort(compareCodePoints)) {
+    const relativePath = parent ? `${parent}/${name}` : name;
+    const absolutePath = join(root, ...relativePath.split('/'));
+    const stat = lstatSync(absolutePath);
+    if (stat.isSymbolicLink()) {
+      throw new Error(`Canonical npm snapshots cannot contain symbolic links: ${relativePath}`);
+    }
+    if (stat.isDirectory()) {
+      chmodSync(absolutePath, 0o755);
+      normalizeArchiveModes(root, manifest, relativePath);
+    } else if (stat.isFile()) {
+      chmodSync(absolutePath, executablePaths.has(relativePath) ? 0o755 : 0o644);
+    } else {
+      throw new Error(`Unsupported canonical npm snapshot entry: ${relativePath}`);
+    }
+  }
 }
 
 export function canonicalizePackedTarball(
@@ -92,6 +125,7 @@ export function canonicalizePackedTarball(
     throw new Error(`Packed snapshot for ${expectedPackageName} has no version.`);
   }
   writeFileSync(manifestPath, `${JSON.stringify(sortJson(manifest), null, 2)}\n`, 'utf8');
+  normalizeArchiveModes(packageRoot, manifest);
 
   mkdirSync(tarballDirectory, { recursive: true });
   const target = resolve(
@@ -99,6 +133,8 @@ export function canonicalizePackedTarball(
     packageTarballName(expectedPackageName, manifest.version),
   );
   rmSync(target, { force: true });
+  const uncompressedTarget = `${target}.tar`;
+  rmSync(uncompressedTarget, { force: true });
 
   const entries = listArchiveEntries(packageRoot);
   if (entries.length === 0) {
@@ -107,9 +143,8 @@ export function canonicalizePackedTarball(
   create(
     {
       cwd: packageRoot,
-      file: target,
+      file: uncompressedTarget,
       follow: false,
-      gzip: { level: 9, portable: true },
       jobs: 1,
       mtime: CANONICAL_MTIME,
       noDirRecurse: true,
@@ -120,6 +155,14 @@ export function canonicalizePackedTarball(
     },
     entries,
   );
+
+  // Node delegates gzip to the host zlib build, whose byte stream can differ by platform.
+  // fflate is pure JavaScript, so fixed input and metadata produce identical release bytes.
+  writeFileSync(
+    target,
+    gzipSync(new Uint8Array(readFileSync(uncompressedTarget)), { level: 9, mtime: 0 }),
+  );
+  rmSync(uncompressedTarget, { force: true });
 
   return target;
 }

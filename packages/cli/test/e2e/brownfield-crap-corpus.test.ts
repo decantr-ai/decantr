@@ -44,8 +44,53 @@ describe('brownfield crap corpus', () => {
                 bootstrap: '^5.3.0',
               },
             });
-            writeJson(join(projectDir, 'angular.json'), { version: 1, projects: {} });
+            writeJson(join(projectDir, 'angular.json'), {
+              version: 1,
+              projects: {
+                'angular-bootstrap': {
+                  root: '',
+                  sourceRoot: 'src',
+                  projectType: 'application',
+                  architect: {
+                    build: {
+                      options: {
+                        browser: 'src/main.ts',
+                        styles: ['src/styles.css'],
+                      },
+                    },
+                  },
+                },
+              },
+            });
             mkdirp(join(projectDir, 'src', 'app'));
+            writeFileSync(
+              join(projectDir, 'src', 'main.ts'),
+              [
+                "import { bootstrapApplication } from '@angular/platform-browser';",
+                "import { AppComponent } from './app/app.component';",
+                "import { appConfig } from './app/app.config';",
+                'bootstrapApplication(AppComponent, appConfig);',
+                '',
+              ].join('\n'),
+            );
+            writeFileSync(
+              join(projectDir, 'src', 'app', 'app.component.ts'),
+              [
+                "import { Component } from '@angular/core';",
+                "@Component({ selector: 'app-root', standalone: true, template: '<router-outlet />' })",
+                'export class AppComponent {}',
+                '',
+              ].join('\n'),
+            );
+            writeFileSync(
+              join(projectDir, 'src', 'app', 'app.config.ts'),
+              [
+                "import { provideRouter } from '@angular/router';",
+                "import { routes } from './app.routes';",
+                'export const appConfig = { providers: [provideRouter(routes)] };',
+                '',
+              ].join('\n'),
+            );
             writeFileSync(
               join(projectDir, 'src', 'app', 'app.routes.ts'),
               [
@@ -60,6 +105,12 @@ describe('brownfield crap corpus', () => {
                 '',
               ].join('\n'),
             );
+            for (const component of ['home', 'users', 'billing', 'settings']) {
+              writeFileSync(
+                join(projectDir, 'src', 'app', `${component}.ts`),
+                `export default class ${component[0]?.toUpperCase()}${component.slice(1)}Component {}\n`,
+              );
+            }
             writeFileSync(
               join(projectDir, 'src', 'styles.css'),
               ':root { --bs-primary: #0d6efd; --surface-card: #fff; }\n',

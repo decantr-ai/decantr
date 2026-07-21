@@ -12,7 +12,7 @@ The official corpus, client, resolver, ranking, wiring, and content provenance i
 
 Studio is a local read-only renderer: it may recompute current state in memory or read project-mode Project Health v2 and CI v2/v3 artifacts, but it does not write source/contracts/baselines or execute adoption, repair, migration, build, verification, package-manager, or agent workflows.
 
-The 3.9 route/source and machine evidence lanes are complete: 84 unique route cases, 24 genuine competing forbidden sources, and 270 isolated machine samples. The two-human 200-finding adjudication lane remains incomplete. Stable 3.9.0 may publish through the explicit sole-maintainer waiver, but that does not authorize human precision, recall, release-qualification, or adoption-proven claims.
+The 3.9 route/source and machine evidence lanes are complete: 84 frozen route cases, 24 genuine competing forbidden sources, a supplemental pinned Angular Brownfield replay across 43 route signals/35 taskable pages/62 components, and 270 isolated machine samples. The two-human 200-finding adjudication lane remains incomplete. Stable 3.9.0 publishes through the explicit sole-maintainer waiver, but that does not authorize human precision, recall, release-qualification, or adoption-proven claims.
 
 ## Docs
 
@@ -42,6 +42,8 @@ The 3.9 route/source and machine evidence lanes are complete: 84 unique route ca
 
 - For app-scoped monorepos, pass `--project <app>` to `doctor`, `check`, `verify`, `ci`, `task`, `resolve`, `codify`, and `graph`.
 - Greenfield `init` and Brownfield `adopt` write the first typed graph; shared discovery supplies route/source provenance even without Brownfield analysis.
+- Angular discovery is production-entry based: selected `angular.json`/`project.json` build entry -> bootstrap import graph -> router root -> nested/lazy route arrays -> rendered component. Tests/fixtures are excluded, lazy boundaries are not taskable pages, Tailwind dependency presence is not styling authority, and authority/completeness are independent from score.
+- Angular Brownfield `adopt`/existing `init` refuse unproven or partial route authority unless `--force` is explicit. CLI/MCP route tasks and CI v3 still fail closed with `DISCOVERY_NOT_PROVEN`/`not_proven`; an override does not create proof.
 - `decantr task` and MCP task context require current graph artifacts and adapt one `TaskCapsuleV1`; the required rank-one read target is the discovered route implementation source. The default canonical capsule is bounded to 12,000 UTF-8 bytes and 4,000 deterministic estimated tokens. Blocked CLI task activation emits remediation and exits nonzero.
 - MCP task responses default to compact detail. Pass `"detail": "full"` only when full graph nodes, edges, and expanded context are required.
 - `scan --json`, Project Health, Evidence Bundle, workspace health, and ordinary `decantr ci` remain v2. Use `decantr ci --report-version v3 --since <ref> --json` only when `AdoptionTruthV1` plus `GovernanceDeltaV1` are required. Missing/stale/incompatible proof is `not_proven`, not an empty delta.

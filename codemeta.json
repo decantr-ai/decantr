@@ -2,7 +2,7 @@
   "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
   "@type": "SoftwareSourceCode",
   "name": "Decantr",
-  "description": "Local-first AI frontend governance through npm packages, an optional content/reference API, and MCP. Decantr 3.8.3 is current; 3.9 is the unreleased development target.",
+  "description": "Local-first AI frontend governance through npm packages, an optional content/reference API, and MCP. Decantr 3.9.0 is current with governed change proof and framework-aware route authority.",
   "codeRepository": "https://github.com/decantr-ai/decantr",
   "url": "https://decantr.ai/",
   "license": "https://opensource.org/license/mit",

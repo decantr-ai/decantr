@@ -96,4 +96,6 @@ Each probe result has a stable `id`, `kind`, `status`, target, route, evidence s
 
 The v2 schemas remain the default Decantr 3.9 control-loop contracts. New Project Health, workspace health, evidence, and MCP loop integrations should consume the v2 shapes directly. Use CI v3 only when the consumer explicitly needs governed-change proof and can supply/retain the required Git and baseline evidence. Keep v1 validators available for stored artifacts, but do not add default emitters that silently fall back to v1 or silently upgrade v2 consumers to v3.
 
-The committed 3.9 schemas define wire behavior; they do not establish that the separate 84 route, 24 forbidden-source, or 200 human-adjudicated qualification gates passed.
+`scan-report.v2` adds route authority, extraction completeness, authority files, route evidence, excluded-source counts, and styling confidence/evidence/limitations without changing the report ID. Consumers should gate route-scoped automation on those explicit fields, not on the aggregate confidence score alone.
+
+The committed 3.9 schemas define wire behavior; they do not establish that the separate 84 route, 24 forbidden-source, supplemental Angular Brownfield, or 200 human-adjudicated qualification gates passed.

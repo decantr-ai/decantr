@@ -7,8 +7,7 @@ const DOCS_INDEX_PATH = 'docs/index.html';
 const DOCS_ANALYTICS_PATH = 'docs/analytics.js';
 const SECURITY_PATH = 'SECURITY.md';
 const CODEMETA_PATH = 'codemeta.json';
-const CURRENT_PUBLIC_RELEASE = '3.8.3';
-const DEVELOPMENT_RELEASE = '3.9.0';
+const CURRENT_PUBLIC_RELEASE = '3.9.0';
 const ACTIVE_STORY_PATHS = [
   'README.md',
   'DECANTR.md',
@@ -94,15 +93,15 @@ const EXPECTED_PACKAGE_PATHS = {
 
 const EXPECTED_PACKAGES = Object.keys(EXPECTED_PACKAGE_PATHS);
 const CURRENT_PUBLIC_PACKAGE_VERSIONS = {
-  '@decantr/cli': '3.8.3',
-  '@decantr/mcp-server': '3.8.3',
-  '@decantr/content': '3.8.1',
+  '@decantr/cli': '3.9.0',
+  '@decantr/mcp-server': '3.9.0',
+  '@decantr/content': '3.9.0',
   '@decantr/essence-spec': '3.8.1',
-  '@decantr/registry': '3.8.1',
-  '@decantr/core': '3.8.2',
+  '@decantr/registry': '3.9.0',
+  '@decantr/core': '3.9.0',
   '@decantr/css': '3.8.1',
   '@decantr/telemetry': '3.8.1',
-  '@decantr/verifier': '3.8.3',
+  '@decantr/verifier': '3.9.0',
 };
 
 function extractToolNames(source) {
@@ -185,32 +184,16 @@ if (!new RegExp(`Current stable\\s*·\\s*v${CURRENT_PUBLIC_RELEASE.replaceAll('.
   failures.push(`Docs homepage must identify v${CURRENT_PUBLIC_RELEASE} as the current stable release.`);
 }
 
-if (!/Development preview\s*·\s*v3\.9\b/i.test(docsIndex)) {
-  failures.push('Docs homepage must label the 3.9 line as a development preview.');
+if (/Development preview\s*·\s*v3\.9\b/i.test(docsIndex)) {
+  failures.push('Docs homepage still labels the current 3.9 line as a development preview.');
 }
 
-if (!/3\.9[^\n]{0,240}\bremains unreleased\b/i.test(docsIndex)) {
-  failures.push('Docs homepage must say that the 3.9 development line remains unreleased.');
+if (/3\.9[^\n]{0,240}\b(?:remains )?unreleased\b/i.test(docsIndex)) {
+  failures.push('Docs homepage still describes the current 3.9 line as unreleased.');
 }
 
-const developmentVersionPattern = new RegExp(
-  `\\bv?${DEVELOPMENT_RELEASE.replaceAll('.', '\\.')}\\b`,
-  'i',
-);
-
-for (const [index, line] of docsIndex.split(/\r?\n/).entries()) {
-  if (!/\bv?3\.9(?:\.0)?\b/i.test(line)) continue;
-  const presentsReleaseStatus = /\b(?:current|stable|shipping|shipped|released|latest|live)\b/i.test(line);
-  if (!presentsReleaseStatus && !developmentVersionPattern.test(line)) continue;
-  if (/\b(?:development|preview|unreleased)\b/i.test(line)) continue;
-  failures.push(`Docs homepage line ${index + 1} presents the unreleased 3.9 line as current or shipped.`);
-}
-
-if (/MCP\s*·\s*live/i.test(docsIndex)) {
-  failures.push('Docs homepage must not badge the unreleased 3.9 task-capsule surface as live.');
-}
-if (!/<span[^>]*class="badge"[^>]*>\s*3\.9 preview\s*<\/span>/i.test(docsIndex)) {
-  failures.push('Docs homepage must badge the task-capsule surface as a 3.9 preview.');
+if (!/<span[^>]*class="badge"[^>]*>\s*3\.9\s*<\/span>/i.test(docsIndex)) {
+  failures.push('Docs homepage must badge the task-capsule surface as 3.9.');
 }
 
 const securityRequirements = [
@@ -243,8 +226,8 @@ const codemetaDescription = codemeta.description ?? '';
 if (!new RegExp(`${CURRENT_PUBLIC_RELEASE.replaceAll('.', '\\.')} is current`, 'i').test(codemetaDescription)) {
   failures.push(`${CODEMETA_PATH} must identify ${CURRENT_PUBLIC_RELEASE} as current.`);
 }
-if (!/3\.9 is the unreleased development target/i.test(codemetaDescription)) {
-  failures.push(`${CODEMETA_PATH} must identify 3.9 as the unreleased development target.`);
+if (/3\.9[^.]{0,120}\bunreleased\b/i.test(codemetaDescription)) {
+  failures.push(`${CODEMETA_PATH} still identifies 3.9 as unreleased.`);
 }
 if (!/\blocal-first\b/i.test(codemetaDescription) || !/content\/reference API/i.test(codemetaDescription) || !/\bMCP\b/.test(codemetaDescription)) {
   failures.push(`${CODEMETA_PATH} must describe the local-first package, content/API, and MCP posture.`);
@@ -366,4 +349,4 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log(`Docs marketing audit passed: v${CURRENT_PUBLIC_RELEASE} remains current, v3.9 remains an unreleased development preview, security/codemeta posture is aligned, and ${toolNames.length} MCP tools plus ${EXPECTED_PACKAGES.length} public package versions match.`);
+console.log(`Docs marketing audit passed: v${CURRENT_PUBLIC_RELEASE} is current, security/codemeta posture is aligned, and ${toolNames.length} MCP tools plus ${EXPECTED_PACKAGES.length} public package versions match.`);

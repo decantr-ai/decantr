@@ -12,7 +12,7 @@ npx @decantr/cli scan
 
 Hosted source scanning is retired. Clone or open the repository locally and run the CLI scan inside the selected app; it reads source in place and does not upload it.
 
-When the scan says the app is a good Brownfield UI target, attach Decantr:
+When the scan proves the app is a good Brownfield UI target, attach Decantr:
 
 ```bash
 npx @decantr/cli adopt --yes
@@ -34,7 +34,24 @@ In mixed workspaces, keep the first scan app-scoped too:
 pnpm exec decantr scan --project apps/web --json
 ```
 
-The JSON output is `scan-report.v2`. It reports the selected app path, the workspace package manager discovered by walking upward from that app, framework/language evidence, route signal count, taskable route count, component inventory confidence, styling authority, assistant rule files, and limitations. If `apps/web` is React/Vite/TypeScript beside an Angular sibling, Decantr should report the React app when `--project apps/web` is selected.
+The JSON output is `scan-report.v2`. It reports the selected app path, the workspace package manager discovered by walking upward from that app, framework/language evidence, route signal count, taskable route count, excluded production-source count, route authority and completeness, authority files, component inventory confidence, styling authority, assistant rule files, and limitations. If `apps/web` is React/Vite/TypeScript beside an Angular sibling, Decantr should report the React app when `--project apps/web` is selected.
+
+## Read Route Proof Before Adoption
+
+Route discovery is evidence, not a universal filename search. Decantr's governance contracts are stack-agnostic, while source authority is framework-specific.
+
+For Angular, Decantr selects the app from `angular.json` or `project.json`, starts from the configured production bootstrap, follows static TypeScript imports to `provideRouter(...)` or `RouterModule.forRoot(...)`, resolves nested and lazy route arrays, and maps rendered routes to component implementations. Test, fixture, mock, E2E, and generated source are excluded. Lazy routing boundaries remain graph signals but are not taskable pages by themselves.
+
+Check these fields before attaching an Angular app:
+
+- `routes.authority` must be `proven`
+- `routes.completeness` must be `complete`
+- `routes.authorityFiles` must name the actual bootstrap/config/route chain
+- `routes.items` must map representative production URLs to the expected implementation files
+- `routes.excludedSourceCount` should account for test and fixture source where present
+- `styling.evidence` should identify the selected app's actual style authority
+
+If those conditions are not met, `scan` withholds the adopt recommendation and `adopt` refuses before writing. Fix the unresolved route source and rerun. `decantr adopt --force` is available only for a reviewed operator override; it does not make the route graph proven. Angular CLI/MCP route tasks and CI v3 continue to fail closed when the current production route is unproven.
 
 `scan` is look-don't-touch reconnaissance. `analyze` is the local primitive that writes Brownfield intelligence and an observed proposal. `adopt` is the paved path that explains and runs the primitive flow for you: `analyze`, proposal acceptance, content-pack hydration when online, Project Health, a baseline, and optional CI setup. Adoption records a bounded before/after receipt in `.decantr/project.json` so `AdoptionTruthV1` can distinguish created or updated governance artifacts from authored host source that was proven untouched. An incomplete snapshot produces an explicit limitation rather than a source-integrity claim. If the host uses Prettier or Oxfmt, adoption also adds generated Decantr artifacts to `.prettierignore` at the app and workspace formatter boundaries. Pass `--no-packs` for a fully local/offline attach and hydrate packs later with `decantr content compile-packs <app>/decantr.essence.json --write-context`.
 
@@ -77,7 +94,7 @@ Use `scan` when you want a no-risk answer to "is this a Decantr Brownfield UI ta
 
 Use `analyze` when you are ready for local artifacts: doctrine map, Brownfield intelligence, theme inventory, enrichment backlog, report markdown, and an observed essence proposal.
 
-Use `adopt` when you want the guided attach workflow. It can write the accepted contract, generated context, optional content packs, local evidence, and CI guidance depending on the flags you choose.
+Use `adopt` when you want the guided attach workflow. It can write the accepted contract, generated context, optional content packs, local evidence, and CI guidance depending on the flags you choose. On Angular projects it first requires complete bootstrap-reachable route authority; use `--force` only after manual inspection of the scan payload.
 
 ## When To Use This Path
 

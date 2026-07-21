@@ -113,6 +113,7 @@ test('canonical package tarballs ignore source order and timestamps', (t) => {
   const secondBytes = readFileSync(second);
   assert.deepEqual(firstBytes, secondBytes);
   assert.equal(hash(firstBytes, 'sha256'), hash(secondBytes, 'sha256'));
+  assert.deepEqual([...firstBytes.subarray(4, 8)], [0, 0, 0, 0]);
 
   const listed = execFileSync('tar', ['-tzf', first], { encoding: 'utf8' }).trim().split('\n');
   assert.ok(listed.includes('package/package.json'));

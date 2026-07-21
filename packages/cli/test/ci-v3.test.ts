@@ -157,6 +157,53 @@ describe('Decantr CI v3 opt-in', () => {
     expect(result.exitCode).toBe(1);
   });
 
+  it('marks Angular governance proof incomplete when production route authority is unresolved', async () => {
+    const projectRoot = join(root, 'apps', 'alpha');
+    writeJson(join(projectRoot, 'package.json'), {
+      name: '@test/alpha',
+      dependencies: {
+        '@angular/core': '^21.0.0',
+        '@angular/router': '^21.0.0',
+      },
+    });
+    writeJson(join(projectRoot, 'angular.json'), {
+      version: 1,
+      projects: {
+        alpha: {
+          root: '',
+          sourceRoot: 'src',
+          architect: { build: { options: { browser: 'src/main.ts' } } },
+        },
+      },
+    });
+    writeFileSync(
+      join(projectRoot, 'src', 'main.ts'),
+      "import { bootstrapApplication } from '@angular/platform-browser';\nbootstrapApplication(class App {});\n",
+      'utf-8',
+    );
+    writeFileSync(
+      join(projectRoot, 'src', 'routes.ts'),
+      "import type { Routes } from '@angular/router';\nexport const routes: Routes = [{ path: '', component: Page }];\n",
+      'utf-8',
+    );
+
+    const result = await captureStdout(
+      ['ci', '--project', 'apps/alpha', '--report-version', 'v3', '--json'],
+      root,
+    );
+    const report = JSON.parse(result.output);
+
+    expect(report.governanceDelta.gate.result).toBe('not_proven');
+    expect(report.governanceDelta.current.graph.completeness).toBe('incomplete');
+    expect(report.governanceDelta.current.graph.limitations.join('\n')).toContain(
+      'Discovery sufficiency:',
+    );
+    expect(report.governanceDelta.limitations.join('\n')).toContain(
+      'Discovery sufficiency: Route authority is inferred, not proven.',
+    );
+    expect(result.exitCode).toBe(1);
+  });
+
   it('keeps current governance identity stable across report timestamps', async () => {
     const first = JSON.parse(
       (

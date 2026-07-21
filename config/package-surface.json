@@ -172,7 +172,7 @@
       "releaseChannel": "stable",
       "publishOrder": 10,
       "defaultDistTag": "latest",
-      "summary": "Shared read-only discovery and verification engine for scan report v2, Adoption Truth v1, bounded Task Capsule v1, Governance Delta v1, default CI report v2, opt-in CI report v3, evidence, project health, and workspace health.",
+      "summary": "Shared read-only discovery and verification engine for scan report v2, framework-specific route authority, Adoption Truth v1, bounded Task Capsule v1, Governance Delta v1, default CI report v2, opt-in CI report v3, evidence, project health, and workspace health.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,
@@ -192,7 +192,7 @@
       "releaseChannel": "stable",
       "publishOrder": 30,
       "defaultDistTag": "latest",
-      "summary": "Workflow commands for content-first setup, scan, adopt, doctor, task, verify, CI, codify, connect, and content operations, including Adoption Truth, bounded Task Capsules, Governance Deltas, default CI v2, opt-in CI v3, monorepo targeting, health baselines, and read-only report-isolated Studio.",
+      "summary": "Workflow commands for content-first setup, authority-aware scan/adopt/task, doctor, verify, CI, codify, connect, and content operations, including Adoption Truth, bounded Task Capsules, Governance Deltas, default CI v2, opt-in CI v3, monorepo targeting, health baselines, and read-only report-isolated Studio.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,
