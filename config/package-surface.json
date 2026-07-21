@@ -198,7 +198,7 @@
       "releaseChannel": "stable",
       "publishOrder": 30,
       "defaultDistTag": "latest",
-      "summary": "Workflow commands for content-first setup, authority-aware scan/adopt/task, doctor, verify, CI, codify, connect, and content operations, including Adoption Truth, bounded Task Capsules, Governance Deltas, default CI v2, opt-in CI v3, monorepo targeting, health baselines, and read-only report-isolated Studio.",
+      "summary": "Workflow commands for content-first setup, authority-aware scan/adopt/task, doctor, verify, CI, codify, connect, and content operations, including Adoption Truth with exact Tailwind v4 source-isolation approvals, bounded Task Capsules, Governance Deltas, default CI v2, opt-in CI v3, monorepo targeting, health baselines, and read-only report-isolated Studio.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,

@@ -264,9 +264,9 @@
   },
   "verifier": {
     "package": "@decantr/verifier",
-    "version": "3.9.3",
+    "version": "3.9.4",
     "entrypoint": "packages/verifier/dist/index.js",
-    "entrypointSha256": "d669d2d2c93c85ae45bc3c6751322ce32b6603d196b6d93fa46b5f05a3e31dce"
+    "entrypointSha256": "fa9226e4452ca65132d1ced45c00dd46bc4cab165fe2f9e2675db0100b4131f4"
   },
   "discovery": {
     "strategy": "react-router",

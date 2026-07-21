@@ -19,7 +19,7 @@ describe('GET /health', () => {
     const json = await res.json();
     expect(json).toEqual({
       status: 'ok',
-      version: '3.9.3',
+      version: '3.9.4',
       surface: 'content-api',
     });
   });
@@ -31,7 +31,7 @@ describe('GET /health', () => {
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json.status).toBe('ok');
-    expect(json.version).toBe('3.9.3');
+    expect(json.version).toBe('3.9.4');
     expect(json.surface).toBe('content-api');
   });
 });

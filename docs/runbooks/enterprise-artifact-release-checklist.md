@@ -1,6 +1,6 @@
 # Enterprise Artifact Release Checklist
 
-Use this checklist with [Release Stewardship](release-stewardship.md). Decantr 3.9 publishes directly to stable; no RC or `next` lane exists. Machine, package, provenance, and closeout evidence is mandatory. Human finding evidence is required only for a quantitative qualification claim and remains explicitly waived for the sole-maintainer 3.9.3 publication.
+Use this checklist with [Release Stewardship](release-stewardship.md). Decantr 3.9 publishes directly to stable; no RC or `next` lane exists. Machine, package, provenance, and closeout evidence is mandatory. Human finding evidence is required only for a quantitative qualification claim and remains explicitly waived for the sole-maintainer 3.9.4 publication.
 
 - `pnpm install --frozen-lockfile`
 - `pnpm build`
@@ -23,12 +23,12 @@ Use this checklist with [Release Stewardship](release-stewardship.md). Decantr 3
 - `pnpm release:preflight`
 - `pnpm release:commands`
 - Commit and push the verified source and evidence to `main`.
-- Create and push the exact stable `v3.9.3` tag only after every gate passes.
+- Create and push the exact stable `v3.9.4` tag only after every gate passes.
 - Create the GitHub Release from `docs/releases/2026-07-21-decantr-3-9-3-adoption-freshness.md`.
-- Dispatch `.github/workflows/publish.yml` from `main` with `release_tag=v3.9.3`; use the wrapper, never bare `npm publish`.
+- Dispatch `.github/workflows/publish.yml` from `main` with `release_tag=v3.9.4`; use the wrapper, never bare `npm publish`.
 - `pnpm release:verify`
-- `pnpm release:closeout -- --version 3.9.3`
-- `pnpm release:announce -- --version 3.9.3 --send` only after closeout passes.
+- `pnpm release:closeout -- --version 3.9.4`
+- `pnpm release:announce -- --version 3.9.4 --send` only after closeout passes.
 
 `release:evidence` attempts `pnpm audit --json` first. When npm explicitly reports that pnpm's audit endpoints were retired with HTTP 410, it queries npm's supported bulk advisory endpoint using the installed pnpm dependency graph. Any advisory, malformed response, inventory failure, or transport failure still fails the release evidence gate.
 

@@ -2,9 +2,9 @@
 
 The Decantr 3 public docs treat active reference pages, guides, schemas, release notes, and release runbooks as the current source of truth. Decantr 3.9 is the **Governed Change Proof** line: Contract, Context, Evidence, explicit Authority, source-grounded `AdoptionTruthV1`, bounded `TaskCapsuleV1`, fail-closed `GovernanceDeltaV1`, typed graph impact, read-only Studio, and the canonical `@decantr/content` corpus.
 
-The operating contract also includes shared source-accurate route discovery, current-graph task activation, compact task payloads with a deterministic byte/token budget, reviewed codify acceptance, v2 reports by default, explicitly selected CI v3 proof, workflow-specific assistant bridges, host-formatter boundaries for generated artifacts, and contract-only styling by default. Studio may render or recompute these contracts but does not write project files or execute repair workflows. Active reference pages describe these behaviors; older release/program documents remain historical snapshots.
+The operating contract also includes shared source-accurate route discovery, current-graph task activation, compact task payloads with a deterministic byte/token budget, reviewed codify acceptance, v2 reports by default, explicitly selected CI v3 proof, workflow-specific assistant bridges, host-formatter boundaries for generated artifacts, receipt-bound Tailwind v4 source isolation, and contract-only styling by default. Studio may render or recompute these contracts but does not write project files or execute repair workflows. Active reference pages describe these behaviors; older release/program documents remain historical snapshots.
 
-The approved 3.9 scope and qualification standard remain recorded in `programs/2026-07-16-decantr-3-9-adoption-proof-program.md`. The replayable 84-route/24-competing-source lane, supplemental pinned Angular Brownfield replay, and 270-sample machine lane are complete. The 200 human-adjudicated finding lane is not; stable 3.9.3 publication uses the explicit sole-maintainer waiver, but active docs must not claim human precision, recall, release qualification, or adoption proof. The Decantr 3.0 reset in `programs/2026-05-21-ai-frontend-governance-reset-plan.md` and other older program files remain historical strategy unless a current reference page or release note re-promotes a decision.
+The approved 3.9 scope and qualification standard remain recorded in `programs/2026-07-16-decantr-3-9-adoption-proof-program.md`. The replayable 84-route/24-competing-source lane, supplemental pinned Angular Brownfield replay, and 270-sample machine lane are complete. The 200 human-adjudicated finding lane is not; stable 3.9.4 publication uses the explicit sole-maintainer waiver, but active docs must not claim human precision, recall, release qualification, or adoption proof. The Decantr 3.0 reset in `programs/2026-05-21-ai-frontend-governance-reset-plan.md` and other older program files remain historical strategy unless a current reference page or release note re-promotes a decision.
 
 For quick setup help, showcase feedback, and live community discussion, join the [Decantr Discord](https://discord.gg/WeDpBd4xFU). GitHub issues, pull requests, and these docs remain the canonical home for bugs, feature requests, and durable decisions.
 
@@ -38,7 +38,8 @@ For quick setup help, showcase feedback, and live community discussion, join the
 - Installed-package security posture is captured in `reference/security-permissions.md`. It is generated from `config/package-permissions.json` and distinguishes published npm surfaces from internal monorepo scripts, showcase fixtures, and release automation.
 - `releases/`
   - Short product release notes for shipped user-facing surfaces.
-  - Current release: `releases/2026-07-21-decantr-3-9-3-adoption-freshness.md`.
+  - Current release: `releases/2026-07-21-decantr-3-9-4-tailwind-source-isolation.md`.
+  - Previous adoption freshness patch: `releases/2026-07-21-decantr-3-9-3-adoption-freshness.md`.
   - Previous security patch: `releases/2026-07-21-decantr-3-9-2-security-packaging.md`.
   - Governed Change Proof baseline: `releases/2026-07-16-decantr-3-9-0-governed-change-proof.md`.
   - Final 3.8 release: `releases/2026-07-16-decantr-3-8-3-route-source-precision.md`.

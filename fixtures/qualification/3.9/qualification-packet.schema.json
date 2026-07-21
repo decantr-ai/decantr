@@ -868,7 +868,7 @@
           "required": ["version", "installationSource", "packageVersions"],
           "properties": {
             "version": {
-              "enum": ["3.8.3", "3.9.3"]
+              "enum": ["3.8.3", "3.9.4"]
             },
             "installationSource": {
               "enum": ["public-npm", "packed-or-public-npm"]
@@ -1147,7 +1147,7 @@
           "enum": ["missing", "complete"]
         },
         "releaseVersion": {
-          "const": "3.9.3"
+          "const": "3.9.4"
         },
         "corpusSha256": {
           "oneOf": [
@@ -1196,6 +1196,7 @@
             "project-contract",
             "narrow-ignore-entry",
             "narrow-formatter-ignore-entry",
+            "bounded-tailwind-source-isolation",
             "host-generated"
           ]
         },
@@ -1224,6 +1225,30 @@
         }
       }
     },
+    "approvedHostSourceMutation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "path", "beforeHash", "afterHash", "verified"],
+      "properties": {
+        "kind": {
+          "const": "tailwind-v4-source-isolation"
+        },
+        "path": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "beforeHash": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "afterHash": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "verified": {
+          "const": true
+        }
+      }
+    },
     "adoptionBoundaryTarget": {
       "type": "object",
       "additionalProperties": false,
@@ -1234,6 +1259,7 @@
         "afterTreeSha256",
         "changedPaths",
         "unclassifiedPaths",
+        "approvedHostSourceMutations",
         "authoredApplicationSourceChanges",
         "studioWrites"
       ],
@@ -1264,9 +1290,18 @@
           "type": "array",
           "maxItems": 0
         },
+        "approvedHostSourceMutations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/approvedHostSourceMutation"
+          }
+        },
         "authoredApplicationSourceChanges": {
           "type": "array",
-          "maxItems": 0
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/relativePath"
+          }
         },
         "studioWrites": {
           "type": "array",

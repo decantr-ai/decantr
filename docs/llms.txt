@@ -12,7 +12,7 @@ The official corpus, client, resolver, ranking, wiring, and content provenance i
 
 Studio is a local read-only renderer: it may recompute current state in memory or read project-mode Project Health v2 and CI v2/v3 artifacts, but it does not write source/contracts/baselines or execute adoption, repair, migration, build, verification, package-manager, or agent workflows.
 
-The 3.9 route/source and machine evidence lanes are complete: 84 frozen route cases, 24 genuine competing forbidden sources, a supplemental pinned Angular Brownfield replay across 43 route signals/35 taskable pages/62 components, and 270 isolated machine samples. The two-human 200-finding adjudication lane remains incomplete. Stable 3.9.3 publishes through the explicit sole-maintainer waiver, but that does not authorize human precision, recall, release-qualification, or adoption-proven claims.
+The 3.9 route/source and machine evidence lanes are complete: 84 frozen route cases, 24 genuine competing forbidden sources, a supplemental pinned Angular Brownfield replay across 43 route signals/35 taskable pages/62 components, and 270 isolated machine samples. The two-human 200-finding adjudication lane remains incomplete. Stable 3.9.4 publishes through the explicit sole-maintainer waiver, but that does not authorize human precision, recall, release-qualification, or adoption-proven claims.
 
 ## Docs
 

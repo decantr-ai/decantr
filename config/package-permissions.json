@@ -211,7 +211,7 @@
       "ships": ["dist", "src/templates", "src/bundled", "README.md", "package.json"],
       "filesystem": {
         "read": ["Selected project/workspace files, including project-local Playwright and axe-core packages when browser evidence is explicitly requested", "bounded workspace file snapshots during explicit decantr init or decantr adopt for authored-source integrity receipts", "package manifests", "routing/style/config files", ".decantr artifacts including .decantr/graph typed graph artifacts", "Decantr cache/config files"],
-        "write": ["decantr.essence.json", "DECANTR.md", ".decantr artifacts including the adoption receipt stored in .decantr/project.json", ".decantr/drift-log.json through explicit resolve drift-log actions", "generated context packs", ".decantr/graph typed graph artifacts including local snapshot history", "optional CI workflows/snippets", "optional Cursor MCP/rule files through decantr connect cursor", ".prettierignore entries for generated Decantr governance artifacts when a compatible formatter is detected", "optional style/export files", "Decantr config for auth/telemetry when explicitly enabled"],
+        "write": ["decantr.essence.json", "DECANTR.md", ".decantr artifacts including the adoption receipt stored in .decantr/project.json", ".decantr/drift-log.json through explicit resolve drift-log actions", "generated context packs", ".decantr/graph typed graph artifacts including local snapshot history", "optional CI workflows/snippets", "optional Cursor MCP/rule files through decantr connect cursor", ".prettierignore entries for generated Decantr governance artifacts when a compatible formatter is detected", "a deterministic marked `@source not` block in detected Tailwind v4 CSS entry files, with exact path and before/after hashes recorded in the adoption receipt", "optional style/export files", "Decantr config for auth/telemetry when explicitly enabled"],
         "delete": ["Generated Decantr artifacts or explicit command targets such as removed generated context/theme outputs"]
       },
       "network": {
@@ -223,10 +223,10 @@
       },
       "telemetry": "disabled by default; opt-in records a local preference, and delivery occurs only when the caller explicitly configures a private endpoint",
       "hostedUpload": "not-supported in Decantr 3.9; local verify/audit/scan do not upload source",
-      "localArtifacts": [".decantr/analysis.json", ".decantr/context/*", ".decantr/graph/*", ".decantr/evidence/*", ".decantr/drift-log.json", ".decantr/local-patterns*.json", ".decantr/rules*.json", ".decantr/style-bridge*.json", ".prettierignore", ".cursor/mcp.json", ".cursor/rules/decantr.mdc"],
+      "localArtifacts": [".decantr/analysis.json", ".decantr/context/*", ".decantr/graph/*", ".decantr/evidence/*", ".decantr/drift-log.json", ".decantr/local-patterns*.json", ".decantr/rules*.json", ".decantr/style-bridge*.json", ".prettierignore", "detected Tailwind v4 CSS entry files", ".cursor/mcp.json", ".cursor/rules/decantr.mdc"],
       "scannerNotes": [
         "The CLI is intentionally a local project inspector and artifact writer.",
-        "Explicit initialization and Brownfield adoption take bounded before/after hashes without following symlinks so the stored receipt can distinguish Decantr-managed writes from authored source changes.",
+        "Explicit initialization and Brownfield adoption take bounded before/after hashes without following symlinks so the stored receipt can distinguish Decantr-managed writes from authored source changes. Tailwind v4 source-scan isolation is an explicit narrow exception: only a marked `@source not` block in a detected CSS entry is approved, and its path plus exact before/after hashes are stored; any unclassified mutation or hash mismatch is incomplete adoption truth.",
         "decantr scan is local read-only reconnaissance; it writes no .decantr directory or report files and does not upload source.",
         "Process execution is limited to fixed command/argv paths; shell execution is avoided in shipped workflow code.",
         "Visual evidence screenshots remain local in Decantr 3.9.",

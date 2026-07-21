@@ -20,7 +20,7 @@ Use this runbook after an npm release and before describing that release as adop
 From the Decantr monorepo:
 
 ```bash
-VERSION=3.9.3
+VERSION=3.9.4
 OUT="/tmp/decantr-post-publish-$VERSION"
 pnpm benchmark:post-publish-adoption -- \
   --cli-package "@decantr/cli@$VERSION" \
@@ -41,7 +41,7 @@ The harness gate passes only when every isolated target run has taskable routes,
 Generate a current TanStack Start control with an exact generator version:
 
 ```bash
-VERSION=3.9.3
+VERSION=3.9.4
 OUT="/tmp/decantr-post-publish-$VERSION"
 npx --yes @tanstack/cli@0.69.6 create greenfield-tanstack \
   --framework React \
