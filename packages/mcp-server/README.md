@@ -163,6 +163,8 @@ The MCP server reads Decantr files, including `.decantr/graph` typed graph artif
 
 Content-corpus and pack-resolution tools may call the configured Decantr API. Source upload fallbacks for hosted critique/audit are retired; verification tools run local reads unless a future major version introduces a new upload contract. The MCP server does not emit Decantr telemetry. See [security permissions](https://decantr.ai/reference/security-permissions.md).
 
+The npm package bundles the MCP SDK modules used by its stdio transport. It does not install the SDK's unused HTTP server dependency tree. Bundled-code licenses are retained in `THIRD_PARTY_NOTICES.md`.
+
 ## Compatibility
 
 `@decantr/mcp-server` is stable in the Decantr 3 line for the documented MCP tool surface.

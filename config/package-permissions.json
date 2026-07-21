@@ -182,7 +182,7 @@
       "name": "@decantr/mcp-server",
       "path": "packages/mcp-server",
       "runtimeKind": "mcp-server",
-      "ships": ["dist", "server.json", "README.md", "package.json"],
+      "ships": ["dist", "server.json", "THIRD_PARTY_NOTICES.md", "README.md", "package.json"],
       "filesystem": {
         "read": ["Active workspace Decantr files, including .decantr/graph typed graph artifacts", "selected project files for critique/audit/evidence tools", "git changed-file state for task context"],
         "write": ["decantr.essence.json through explicit write tools", ".decantr/drift-log.json through explicit drift deferral"],
@@ -200,7 +200,8 @@
       "localArtifacts": ["Read/write tools are contained to the active workspace root"],
       "scannerNotes": [
         "MCP write tools are annotated as write tools and use workspace-root path containment.",
-        "Hosted source upload fallbacks are retired in the active API."
+        "Hosted source upload fallbacks are retired in the active API.",
+        "The npm package bundles the MCP SDK modules used by stdio and does not install the SDK's unused HTTP dependency tree."
       ]
     },
     {

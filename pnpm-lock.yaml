@@ -206,6 +206,7 @@ importers:
       '@decantr/verifier':
         specifier: workspace:*
         version: link:../verifier
+    devDependencies:
       '@modelcontextprotocol/sdk':
         specifier: ^1.29.0
         version: 1.29.0(zod@4.4.3)

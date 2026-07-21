@@ -25,4 +25,15 @@ describe('MCP package metadata', () => {
 
     expect(source).toContain(`const VERSION = '${packageJson.version}'`);
   });
+
+  it('bundles the stdio SDK without shipping its unused HTTP dependency tree', () => {
+    const packageJson = readJson(join(packageRoot, 'package.json'));
+    const dependencies = packageJson.dependencies as Record<string, string>;
+    const devDependencies = packageJson.devDependencies as Record<string, string>;
+    const buildConfig = readFileSync(join(packageRoot, 'tsup.config.ts'), 'utf8');
+
+    expect(dependencies).not.toHaveProperty('@modelcontextprotocol/sdk');
+    expect(devDependencies).toHaveProperty('@modelcontextprotocol/sdk');
+    expect(buildConfig).toContain("noExternal: ['@modelcontextprotocol/sdk']");
+  });
 });
