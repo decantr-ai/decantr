@@ -35,8 +35,9 @@ export const CONTENT_RESOLVED_FROM_VALUES = [
 export const CONTENT_RESOLUTION_SOURCES = CONTENT_RESOLVED_FROM_VALUES;
 export type ContentResolvedFrom = (typeof CONTENT_RESOLVED_FROM_VALUES)[number];
 
+export const CONTENT_VERSION_MAX_LENGTH = 256;
 export const CONTENT_VERSION_PATTERN =
-  '^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-((?:0|[1-9][0-9]*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*)(?:\\.(?:0|[1-9][0-9]*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*))*))?(?:\\+([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?$';
+  '^(?=[0-9A-Za-z.+-]{1,256}$)(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)(?:-(?:(?!0[0-9]+(?:\\.|\\+|$))[0-9A-Za-z-]+)(?:\\.(?:(?!0[0-9]+(?:\\.|\\+|$))[0-9A-Za-z-]+))*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$';
 export const SHA256_DIGEST_PATTERN = '^sha256:[0-9a-f]{64}$';
 
 // Identity aliases and transport metadata are not authored semantic content.
@@ -67,7 +68,6 @@ export const CONTENT_DIGEST_EXCLUDED_FIELDS = [
   'generated_at',
 ] as const;
 
-const contentVersionRegex = new RegExp(CONTENT_VERSION_PATTERN);
 const sha256DigestRegex = new RegExp(SHA256_DIGEST_PATTERN);
 const digestExcludedFields = new Set<string>(CONTENT_DIGEST_EXCLUDED_FIELDS);
 
@@ -197,7 +197,30 @@ export function digestContentPayload(data: object): Sha256Digest {
 export const digestContentData = digestContentPayload;
 
 export function isContentVersion(value: unknown): value is string {
-  return typeof value === 'string' && contentVersionRegex.test(value);
+  if (
+    typeof value !== 'string' ||
+    value.length === 0 ||
+    value.length > CONTENT_VERSION_MAX_LENGTH
+  ) {
+    return false;
+  }
+
+  const plusIndex = value.indexOf('+');
+  if (plusIndex !== value.lastIndexOf('+')) return false;
+
+  const versionAndPrerelease = plusIndex === -1 ? value : value.slice(0, plusIndex);
+  const build = plusIndex === -1 ? null : value.slice(plusIndex + 1);
+  if (build !== null && !isDotSeparatedIdentifiers(build, true)) return false;
+
+  const prereleaseIndex = versionAndPrerelease.indexOf('-');
+  const core =
+    prereleaseIndex === -1 ? versionAndPrerelease : versionAndPrerelease.slice(0, prereleaseIndex);
+  const prerelease =
+    prereleaseIndex === -1 ? null : versionAndPrerelease.slice(prereleaseIndex + 1);
+  if (prerelease !== null && !isDotSeparatedIdentifiers(prerelease, false)) return false;
+
+  const coreIdentifiers = core.split('.');
+  return coreIdentifiers.length === 3 && coreIdentifiers.every(isCoreVersionIdentifier);
 }
 
 export function isSha256Digest(value: unknown): value is Sha256Digest {
@@ -212,6 +235,39 @@ export function isContentResolvedFrom(value: unknown): value is ContentResolvedF
   return (
     typeof value === 'string' && CONTENT_RESOLVED_FROM_VALUES.includes(value as ContentResolvedFrom)
   );
+}
+
+function isCoreVersionIdentifier(value: string): boolean {
+  if (value.length === 0 || (value.length > 1 && value[0] === '0')) return false;
+  for (let index = 0; index < value.length; index += 1) {
+    const code = value.charCodeAt(index);
+    if (code < 48 || code > 57) return false;
+  }
+  return true;
+}
+
+function isDotSeparatedIdentifiers(value: string, allowNumericLeadingZeros: boolean): boolean {
+  if (value.length === 0) return false;
+  return value
+    .split('.')
+    .every((identifier) => isVersionIdentifier(identifier, allowNumericLeadingZeros));
+}
+
+function isVersionIdentifier(value: string, allowNumericLeadingZeros: boolean): boolean {
+  if (value.length === 0) return false;
+
+  let numeric = true;
+  for (let index = 0; index < value.length; index += 1) {
+    const code = value.charCodeAt(index);
+    const digit = code >= 48 && code <= 57;
+    const uppercase = code >= 65 && code <= 90;
+    const lowercase = code >= 97 && code <= 122;
+    const hyphen = code === 45;
+    if (!digit && !uppercase && !lowercase && !hyphen) return false;
+    if (!digit) numeric = false;
+  }
+
+  return allowNumericLeadingZeros || !numeric || value.length === 1 || value[0] !== '0';
 }
 
 export function assertContentIdentity(value: ContentIdentity): void {

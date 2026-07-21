@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildContentCorpusManifest,
   buildContentRef,
+  CONTENT_VERSION_MAX_LENGTH,
   type ContentIdentity,
   canonicalizeJson,
   digestCanonicalJson,
@@ -10,6 +11,7 @@ import {
   getContentItemIdentity,
   getContentPackageVersion,
   getContentProvenanceSchema,
+  isContentVersion,
   listContentProvenanceSchemas,
   sortContentRefs,
 } from '../src/index.js';
@@ -43,6 +45,28 @@ describe('canonical content provenance', () => {
     expect(() => canonicalizeJson({ value: Number.NaN })).toThrow(/Non-finite number/);
     expect(() => canonicalizeJson({ value: undefined })).toThrow(/Unsupported undefined/);
     expect(() => canonicalizeJson({ value: '\ud800' })).toThrow(/Lone high surrogate/);
+  });
+
+  it('validates semantic versions without backtracking on adversarial input', () => {
+    for (const version of ['0.0.0', '1.2.3', '1.2.3-0', '1.2.3-alpha.1', '1.2.3-alpha-1+001.sha']) {
+      expect(isContentVersion(version), version).toBe(true);
+    }
+
+    for (const version of [
+      '',
+      '01.2.3',
+      '1.02.3',
+      '1.2.03',
+      '1.2',
+      '1.2.3-01',
+      '1.2.3-alpha..1',
+      '1.2.3+',
+      '1.2.3+build+other',
+      '1.2.3-alpha!',
+      `0.0.0-0.${'--.'.repeat(CONTENT_VERSION_MAX_LENGTH)}!`,
+    ]) {
+      expect(isContentVersion(version), version.slice(0, 80)).toBe(false);
+    }
   });
 
   it('emits the frozen identity shape and enforces official/local version rules', () => {
@@ -290,5 +314,7 @@ describe('canonical content provenance', () => {
     expect(validateRef({ ...ref, slug: 'sidebar-main' })).toBe(false);
     expect(validateManifest({ ...manifest, generatedAt: '2026-07-16T12:00:00.000Z' })).toBe(false);
     expect(validateManifest({ ...manifest, packageName: '@decantr/registry' })).toBe(false);
+    expect(validateRef({ ...ref, version: '1.0.0-01' })).toBe(false);
+    expect(validateRef({ ...ref, version: `1.0.0-${'a'.repeat(257)}` })).toBe(false);
   });
 });
