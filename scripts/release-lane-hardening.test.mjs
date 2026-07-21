@@ -950,4 +950,9 @@ test('publish workflow is protected and verifies the tagged origin/main commit',
   assert.match(workflow, /release-evidence-publish-tarballs/u);
   assert.match(workflow, /DECANTR_RELEASE_STAGING_DIR/u);
   assert.match(workflow, /Run tag-bound release closeout/u);
+  assert.ok(
+    workflow.indexOf('pnpm install --frozen-lockfile')
+      < workflow.indexOf('Resolve effective package closure'),
+    'publish dependencies must be installed before package selection imports release helpers',
+  );
 });

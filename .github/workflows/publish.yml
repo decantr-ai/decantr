@@ -130,6 +130,7 @@ jobs:
           node -v
           npm -v
           pnpm -v
+      - run: pnpm install --frozen-lockfile
       - name: Resolve effective package closure
         env:
           REQUESTED_WAVE: ${{ github.event.inputs.release_wave || 'all' }}
@@ -159,7 +160,6 @@ jobs:
           ' "$SELECTION_JSON")"
           echo "DECANTR_ONLY_PACKAGES=$EFFECTIVE_ONLY" >> "$GITHUB_ENV"
           printf '%s\n' "$SELECTION_JSON" >> "$GITHUB_STEP_SUMMARY"
-      - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm test
       - run: pnpm audit:package-surface
@@ -191,6 +191,7 @@ jobs:
           path: ${{ runner.temp }}/package-release-evidence/**
           if-no-files-found: error
       - name: Publish packages
+        id: publish-packages
         env:
           DIST_TAG_OVERRIDE: ${{ github.event.inputs.dist_tag || '' }}
           INCLUDE_EXPERIMENTAL: ${{ github.event.inputs.include_experimental || 'false' }}
@@ -213,12 +214,12 @@ jobs:
           ARGS+=("--auth-strategy=$DECANTR_PUBLISH_AUTH_STRATEGY")
           node scripts/publish-packages.mjs "${ARGS[@]}"
       - name: Upload release-evidence publish tarballs
-        if: ${{ always() && github.event.inputs.dry_run_only != 'true' }}
+        if: ${{ always() && steps.publish-packages.outcome != 'skipped' && github.event.inputs.dry_run_only != 'true' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: release-evidence-publish-tarballs-${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
           path: ${{ runner.temp }}/decantr-release-staging/**
-          if-no-files-found: error
+          if-no-files-found: warn
       - name: Verify published npm packages
         if: ${{ github.event.inputs.dry_run_only != 'true' }}
         env:
