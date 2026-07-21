@@ -245,8 +245,9 @@ describe('canonical content provenance', () => {
       path: `/source/${index}`,
       fetchedAt: `2026-07-16T12:00:0${index}.000Z`,
     }));
+    const packageVersion = getContentPackageVersion();
     const input = {
-      packageVersion: '3.9.0',
+      packageVersion,
       compatibility: { decantr: '>=2.0.0' },
       refs: transportedRefs,
     };
@@ -269,7 +270,7 @@ describe('canonical content provenance', () => {
     expect(repackaged.corpusDigest).toBe(first.corpusDigest);
     expect(getContentCorpusIdentity(first)).toEqual({
       packageName: '@decantr/content',
-      packageVersion: '3.9.0',
+      packageVersion,
       corpusDigest: first.corpusDigest,
     });
     expect(sortContentRefs(transportedRefs)).toEqual(first.refs);
@@ -300,7 +301,7 @@ describe('canonical content provenance', () => {
       resolvedFrom: 'configured-corpus',
     });
     const manifest = buildContentCorpusManifest({
-      packageVersion: '3.9.0',
+      packageVersion: getContentPackageVersion(),
       compatibility: '>=2.0.0',
       refs: [local, ref],
     });

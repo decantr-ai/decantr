@@ -2,7 +2,7 @@
 
 Date: 2026-07-16
 
-Status: Prepared for the Decantr 3.9 line. This policy becomes the active patch boundary only after 3.9.0 is published, verified, and closed out under the release-evidence gate. Human qualification remains a separate quantitative claim. Until closeout, the 3.9.0 release gate in `release-stewardship.md` remains authoritative.
+Status: Active maintenance policy. Decantr 3.9.0 was published, verified, and closed out on 2026-07-21. Every 3.9.x patch must independently pass its package, publication, and closeout gates. Human qualification remains a separate quantitative claim.
 
 ## Compatibility Boundary
 
@@ -49,10 +49,11 @@ Every 3.9 patch must:
 3. Build, test, and pack every affected package plus its dependency closure.
 4. Run package-surface, package-permission, schema-copy, docs-drift, and public-link audits.
 5. Run `pnpm audit:packed-content-facade` when content, registry, API client, schema, environment alias, or dependency ownership changes.
-6. Prove the exact eight-tool MCP inventory when MCP or shared task/project contracts change.
-7. Snapshot the workspace before and after Studio routes when Studio or shared verifier reads change.
-8. Run the relevant packed and public adoption lanes from `post-publish-adoption-proof.md`.
-9. Run release verification and closeout after publication before describing the patch as complete.
+6. Run `pnpm audit:packed-mcp-server` when MCP dependencies, bundling, metadata, or transport startup changes.
+7. Prove the exact eight-tool MCP inventory when MCP or shared task/project contracts change.
+8. Snapshot the workspace before and after Studio routes when Studio or shared verifier reads change.
+9. Run the relevant packed and public adoption lanes from `post-publish-adoption-proof.md`.
+10. Run release verification and closeout after publication before describing the patch as complete.
 
 Changes to filesystem, network, process execution, telemetry, hosted upload, browser evidence, MCP writes, or package `files` must also update `config/package-permissions.json`, regenerate the security-permissions reference, and pass `pnpm audit:package-permissions`.
 
@@ -67,7 +68,7 @@ pnpm audit:3-9-qualification
 
 The default command must fail closed on missing human identities, adjudication, replay artifacts, exhaustive route candidates, confusion matrices, or write-boundary evidence. A patch may preserve an already qualified corpus and replay it, but it must not tune or relabel the frozen evidence after inspecting candidate output.
 
-Stable 3.9.0 publication uses `pnpm audit:3-9-release-gate`. Its sole-maintainer mode may accept only the exact four human finding gaps recorded in the version-bound waiver, while retaining all route, machine, adoption/Studio, package, provenance, and closeout evidence. A published unqualified release must not be described as human-qualified or adoption-proven.
+Stable 3.9.x publication uses `pnpm audit:3-9-release-gate`. Its sole-maintainer mode may accept only the exact four human finding gaps recorded in a waiver bound to the target patch, while retaining all route, machine, adoption/Studio, package, provenance, and closeout evidence for that version. A published unqualified release must not be described as human-qualified or adoption-proven.
 
 ## Release Closeout
 

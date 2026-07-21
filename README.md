@@ -138,12 +138,12 @@ pnpm qualification:3-9:route
 pnpm qualification:3-9:machine
 pnpm showcase:verify:shortlist
 pnpm benchmark:realworld-corpus -- --config scripts/realworld-corpus.first-mile.json --cli packages/cli/dist/index.js --out /tmp/decantr-realworld-corpus-3.9
-pnpm benchmark:post-publish-adoption -- --cli-package @decantr/cli@3.9.0 --out /tmp/decantr-post-publish-3.9.0
+pnpm benchmark:post-publish-adoption -- --cli-package @decantr/cli@3.9.1 --out /tmp/decantr-post-publish-3.9.1
 pnpm release:verify
-pnpm release:closeout -- --version 3.9.0
+pnpm release:closeout -- --version 3.9.1
 ```
 
-Decantr 3.9 is the Governed Change Proof line. The approved scope and qualification standard are recorded in [docs/programs/2026-07-16-decantr-3-9-adoption-proof-program.md](docs/programs/2026-07-16-decantr-3-9-adoption-proof-program.md). The frozen 84-case route lane, supplemental two-repository Angular Brownfield replay, and machine lane are complete; the two-human finding lane is not. Because Decantr has one human maintainer, stable 3.9.0 publication uses the explicit sole-maintainer waiver without claiming human precision, recall, release qualification, or adoption proof.
+Decantr 3.9 is the Governed Change Proof line. The approved scope and qualification standard are recorded in [docs/programs/2026-07-16-decantr-3-9-adoption-proof-program.md](docs/programs/2026-07-16-decantr-3-9-adoption-proof-program.md). The frozen 84-case route lane, supplemental two-repository Angular Brownfield replay, and machine lane are complete; the two-human finding lane is not. Because Decantr has one human maintainer, stable 3.9.1 publication uses the explicit sole-maintainer waiver without claiming human precision, recall, release qualification, or adoption proof.
 
 ### Release stewardship
 

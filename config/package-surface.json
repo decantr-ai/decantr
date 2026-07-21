@@ -12,6 +12,12 @@
           "phases": ["publish", "closeout"]
         },
         {
+          "id": "packed-mcp-server",
+          "label": "Decantr 3.9 packed MCP clean-consumer gate",
+          "script": "scripts/audit-packed-mcp-server.mjs",
+          "phases": ["publish", "closeout"]
+        },
+        {
           "id": "release-evidence",
           "label": "Decantr 3.9 release evidence gate",
           "script": "scripts/audit-3-9-release-gate.mjs",

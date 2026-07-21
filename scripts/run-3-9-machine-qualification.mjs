@@ -33,7 +33,7 @@ const PACKAGE_WAVE = [
   '@decantr/cli',
 ];
 
-const EXPECTED_PACKAGE_VERSIONS = Object.fromEntries(PACKAGE_WAVE.map((name) => [name, '3.9.0']));
+const EXPECTED_PACKAGE_VERSIONS = Object.fromEntries(PACKAGE_WAVE.map((name) => [name, '3.9.1']));
 const EXPECTED_SCHEMA_IDS = [
   'https://decantr.ai/schemas/scan-report.v2.json',
   'https://decantr.ai/schemas/verification-report.common.v2.json',
@@ -787,27 +787,89 @@ function writeProbeScripts(candidate) {
   const mcpProbePath = join(candidate.consumerDir, 'mcp-qualification-probe.mjs');
   writeFileSync(
     mcpProbePath,
-    `import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+    `import { spawn } from 'node:child_process';
 
 const [projectRoot, route, task] = process.argv.slice(2);
-const client = new Client({ name: 'decantr-3-9-qualification', version: '1.0.0' });
-const transport = new StdioClientTransport({
-  command: process.execPath,
-  args: [${JSON.stringify(candidate.mcpPath)}],
+const child = spawn(process.execPath, [${JSON.stringify(candidate.mcpPath)}], {
   cwd: projectRoot,
   env: { ...process.env, DECANTR_OFFLINE: 'true', DECANTR_API_URL: 'http://127.0.0.1:9' },
-  stderr: 'pipe',
+  stdio: ['pipe', 'pipe', 'pipe'],
 });
-await client.connect(transport);
+child.stdout.setEncoding('utf8');
+child.stderr.setEncoding('utf8');
+
+let nextId = 1;
+let stdoutBuffer = '';
+let stderrBuffer = '';
+let exited = false;
+const pending = new Map();
+const exitPromise = new Promise((resolve) => {
+  child.once('exit', (code, signal) => {
+    exited = true;
+    const detail = stderrBuffer.trim();
+    const error = new Error('MCP server exited before completing the probe (' + (signal ?? code) + ')' + (detail ? ': ' + detail : ''));
+    for (const request of pending.values()) request.reject(error);
+    pending.clear();
+    resolve();
+  });
+});
+
+child.stderr.on('data', (chunk) => {
+  stderrBuffer += chunk;
+});
+child.stdout.on('data', (chunk) => {
+  stdoutBuffer += chunk;
+  while (true) {
+    const newline = stdoutBuffer.indexOf('\\n');
+    if (newline < 0) break;
+    const line = stdoutBuffer.slice(0, newline).replace(/\\r$/u, '');
+    stdoutBuffer = stdoutBuffer.slice(newline + 1);
+    if (!line.trim()) continue;
+    let message;
+    try {
+      message = JSON.parse(line);
+    } catch (error) {
+      for (const request of pending.values()) request.reject(new Error('Invalid MCP JSON response: ' + error.message));
+      pending.clear();
+      continue;
+    }
+    if (!Object.hasOwn(message, 'id')) continue;
+    const request = pending.get(message.id);
+    if (!request) continue;
+    pending.delete(message.id);
+    if (message.error) request.reject(new Error('MCP ' + request.method + ' failed: ' + JSON.stringify(message.error)));
+    else request.resolve(message.result);
+  }
+});
+
+function send(message) {
+  child.stdin.write(JSON.stringify(message) + '\\n');
+}
+
+function request(method, params = {}) {
+  const id = nextId++;
+  return new Promise((resolve, reject) => {
+    pending.set(id, { method, resolve, reject });
+    send({ jsonrpc: '2.0', id, method, params });
+  });
+}
+
 try {
-  const listed = await client.listTools();
-  const stateResult = await client.callTool({ name: 'decantr_project', arguments: { action: 'state', project_path: projectRoot } });
-  const taskResult = await client.callTool({ name: 'decantr_context', arguments: { action: 'task', project_path: projectRoot, route, task, detail: 'compact' } });
+  await request('initialize', {
+    protocolVersion: '2025-11-25',
+    capabilities: {},
+    clientInfo: { name: 'decantr-3-9-qualification', version: '1.0.0' },
+  });
+  send({ jsonrpc: '2.0', method: 'notifications/initialized', params: {} });
+  const listed = await request('tools/list');
+  const stateResult = await request('tools/call', { name: 'decantr_project', arguments: { action: 'state', project_path: projectRoot } });
+  const taskResult = await request('tools/call', { name: 'decantr_context', arguments: { action: 'task', project_path: projectRoot, route, task, detail: 'compact' } });
   const parse = (result) => JSON.parse(result.content.find((entry) => entry.type === 'text')?.text ?? '{}');
   console.log(JSON.stringify({ tools: listed.tools, state: parse(stateResult), task: parse(taskResult) }));
 } finally {
-  await client.close();
+  child.stdin.end();
+  await Promise.race([exitPromise, new Promise((resolve) => setTimeout(resolve, 1_000))]);
+  if (!exited) child.kill();
 }
 `,
     'utf8',

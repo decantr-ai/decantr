@@ -34,12 +34,13 @@ pnpm qualification:3-9:route
 pnpm qualification:3-9:machine
 pnpm qualification:3-9:human:lint
 pnpm audit:packed-content-facade
+pnpm audit:packed-mcp-server
 pnpm audit:3-9-release-gate
 ```
 
 `audit:3-9-qualification:lint` validates packet structure only. The default `audit:3-9-qualification` command remains the fail-closed quantitative claim gate: it exits zero only when two actual human reviewers, the adjudicated 200-judgment finding corpus, both finding replays, and all machine evidence are complete. It must continue to report `INCOMPLETE` for the sole-maintainer release and is never publication authorization by itself.
 
-`audit:3-9-release-gate` is the publication gate. It accepts either a fully human-qualified packet or `fixtures/qualification/3.9/release-waiver.json` with exactly the four frozen human finding requirements still marked missing. The waiver is valid only for stable 3.9.0, names the sole maintainer, retains complete route, machine, adoption/Studio, package, provenance, and tarball evidence, and sets `qualificationClaim: false`. It cannot waive a machine failure or authorize finding precision, finding recall, release-qualification, or adoption-proven claims. Never convert a missing gate into a passing claim by weakening either audit or relabeling generated assertions as human evidence.
+`audit:3-9-release-gate` is the publication gate. It accepts either a fully human-qualified packet or `fixtures/qualification/3.9/release-waiver.json` with exactly the four frozen human finding requirements still marked missing. The waiver must match the stable 3.9.x release target, name the sole maintainer, retain complete route, machine, adoption/Studio, package, provenance, and tarball evidence, and set `qualificationClaim: false`. It cannot waive a machine failure or authorize finding precision, finding recall, release-qualification, or adoption-proven claims. Never convert a missing gate into a passing claim by weakening either audit or relabeling generated assertions as human evidence.
 
 Use `node scripts/prepare-3-9-human-review.mjs --help` if Decantr later obtains two independent human reviewers and wants to make quantitative qualification claims. Its blank workbooks remain non-evidence; `qualification:3-9:human:lint` checks their structure, while `qualification:3-9:human` fails until both signed human reviews, all 200 adjudications, and both finding replays are complete and hash-bound.
 
@@ -69,6 +70,7 @@ pnpm test
 pnpm audit:package-surface
 pnpm audit:package-permissions
 pnpm audit:packed-content-facade
+pnpm audit:packed-mcp-server
 pnpm release:preflight
 pnpm release:commands
 ```

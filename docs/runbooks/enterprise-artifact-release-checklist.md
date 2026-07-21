@@ -1,6 +1,6 @@
 # Enterprise Artifact Release Checklist
 
-Use this checklist with [Release Stewardship](release-stewardship.md). Decantr 3.9 publishes directly to stable; no RC or `next` lane exists. Machine, package, provenance, and closeout evidence is mandatory. Human finding evidence is required only for a quantitative qualification claim and remains explicitly waived for the sole-maintainer 3.9.0 publication.
+Use this checklist with [Release Stewardship](release-stewardship.md). Decantr 3.9 publishes directly to stable; no RC or `next` lane exists. Machine, package, provenance, and closeout evidence is mandatory. Human finding evidence is required only for a quantitative qualification claim and remains explicitly waived for the sole-maintainer 3.9.1 publication.
 
 - `pnpm install --frozen-lockfile`
 - `pnpm build`
@@ -9,6 +9,7 @@ Use this checklist with [Release Stewardship](release-stewardship.md). Decantr 3
 - `pnpm audit:package-surface`
 - `pnpm audit:package-permissions`
 - `pnpm audit:packed-content-facade`
+- `pnpm audit:packed-mcp-server`
 - `pnpm audit:3-9-qualification:lint`
 - `pnpm qualification:3-9:route`
 - `pnpm qualification:3-9:machine`
@@ -22,12 +23,12 @@ Use this checklist with [Release Stewardship](release-stewardship.md). Decantr 3
 - `pnpm release:preflight`
 - `pnpm release:commands`
 - Commit and push the verified source and evidence to `main`.
-- Create and push the exact stable `v3.9.0` tag only after every gate passes.
+- Create and push the exact stable `v3.9.1` tag only after every gate passes.
 - Create the GitHub Release from `docs/releases/2026-07-16-decantr-3-9-0-governed-change-proof.md`.
-- Dispatch `.github/workflows/publish.yml` from `main` with `release_tag=v3.9.0`; use the wrapper, never bare `npm publish`.
+- Dispatch `.github/workflows/publish.yml` from `main` with `release_tag=v3.9.1`; use the wrapper, never bare `npm publish`.
 - `pnpm release:verify`
-- `pnpm release:closeout -- --version 3.9.0`
-- `pnpm release:announce -- --version 3.9.0 --send` only after closeout passes.
+- `pnpm release:closeout -- --version 3.9.1`
+- `pnpm release:announce -- --version 3.9.1 --send` only after closeout passes.
 
 `release:evidence` attempts `pnpm audit --json` first. When npm explicitly reports that pnpm's audit endpoints were retired with HTTP 410, it queries npm's supported bulk advisory endpoint using the installed pnpm dependency graph. Any advisory, malformed response, inventory failure, or transport failure still fails the release evidence gate.
 

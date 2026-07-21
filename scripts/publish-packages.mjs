@@ -314,7 +314,7 @@ function runRequiredGate(script, label) {
   if (result.stdout) process.stdout.write(result.stdout);
   if (result.stderr) process.stderr.write(result.stderr);
   if (result.status !== 0) {
-    throw new Error(`${label} failed; no Decantr 3.9.0 package was published.`);
+    throw new Error(`${label} failed; no Decantr 3.9 package was published.`);
   }
 }
 
@@ -450,7 +450,9 @@ function readReleaseEvidence(entries) {
       exactPackageTarballs: {},
     };
   }
-  const policy = readThreeNineReleasePolicy(root);
+  const policy = readThreeNineReleasePolicy(root, {
+    releaseVersion: process.env.DECANTR_RELEASE_VERSION?.trim() ?? stable39Versions(entries)[0],
+  });
   if (policy.errors.length > 0) {
     throw new Error(`The 3.9 release policy is invalid: ${policy.errors.join(' ')}`);
   }

@@ -31,11 +31,11 @@ The lint command may pass while reporting `INCOMPLETE`. Validation and assembly 
 
 ## Replay And Measure
 
-1. Replay public npm 3.8.3 first, then final 3.9.0 packed or public artifacts, against the identical corpus.
+1. Replay public npm 3.8.3 first, then final 3.9.1 packed or public artifacts, against the identical corpus.
 2. Retain raw machine-readable output and SHA-256 artifact identity. Every expected candidate must be recorded as emitted or not emitted; unexpected outputs make the set non-exhaustive and block qualification until adjudicated.
 3. Report one confusion matrix per replay. Precision uses `TP / (TP + FP)` and recall uses `TP / (TP + FN)`; each metric has its own denominator and two-sided 95% Wilson interval.
 4. Replay all 84 frozen route cases exactly once in corpus order, with 84 unique case IDs and no additions or omissions. Retain each complete ordered candidate list, including all 24 forbidden sources that genuinely competed. A prose assertion or fixture declaration is not route replay evidence.
-5. Keep each replay artifact at the repository-relative, SHA-256-addressed path recorded by the packet. Finding, route, adoption-boundary, and machine artifacts repeat their command, exit code, environment, generated time, result rows, and a recomputable behavior binding. Candidate route, finding, adoption, and machine evidence must all carry the identical six final 3.9.0 tarball hashes; replacing a hash table without regenerating bound behavior invalidates the evidence.
+5. Keep each replay artifact at the repository-relative, SHA-256-addressed path recorded by the packet. Finding, route, adoption-boundary, and machine artifacts repeat their command, exit code, environment, generated time, result rows, and a recomputable behavior binding. Candidate route, finding, adoption, and machine evidence must all carry the identical six final 3.9.1 tarball hashes; replacing a hash table without regenerating bound behavior invalidates the evidence.
 6. Do not set `packetStatus` to `complete` or `qualificationClaim` to `true` manually. Those fields are accepted only when the audit independently finds no missing evidence or failed gate.
 
 Adoption-boundary replay must classify `.gitignore` cache entries as `narrow-ignore-entry` and formatter exclusions as `narrow-formatter-ignore-entry`, with exact before/after hashes and diffs. Neither category permits unrelated host configuration changes.

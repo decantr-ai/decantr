@@ -41,7 +41,7 @@
         "finding-precision",
         "finding-recall"
       ],
-      "requirement": "Replay final 3.9.0 packed or public artifacts against the same corpus with exhaustive per-case outputs and independently recomputable precision and recall metrics."
+      "requirement": "Replay final 3.9.1 packed or public artifacts against the same corpus with exhaustive per-case outputs and independently recomputable precision and recall metrics."
     }
   ]
 }

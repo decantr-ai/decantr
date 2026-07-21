@@ -114,7 +114,7 @@ function isBlocking(report: ProjectHealthReport) {
 
 The adoption-truth, task-capsule, and governance-delta schemas are additive Decantr 3.9 contract primitives consumed by CLI, MCP, opt-in CI v3, and read-only Studio adapters. `decantr-ci-report.v3` is also additive and must be selected explicitly; v2 remains the default throughout 3.9.x and its schema/exit semantics are unchanged. A missing or incompatible baseline produces unclassified findings and `not_proven` rather than a false empty delta. V1 health/evidence/scan schemas remain published for stored-artifact compatibility; audit, file-critique, and showcase reports remain v1 until those wires need to change. See [Report Schemas](https://decantr.ai/reference/report-schemas.md).
 
-These contracts define deterministic evidence shapes; they do not by themselves prove the Decantr 3.9 quantitative gates. Human qualification remains fail-closed until the frozen route corpus, two-person finding adjudication, public 3.8.3 replay, final 3.9 replay, and adoption/Studio filesystem evidence are complete. Stable 3.9.0 publication may use the explicit sole-maintainer release gate with human finding claims waived; that does not make the release human-qualified or adoption-proven.
+These contracts define deterministic evidence shapes; they do not by themselves prove the Decantr 3.9 quantitative gates. Human qualification remains fail-closed until the frozen route corpus, two-person finding adjudication, public 3.8.3 replay, final 3.9 replay, and adoption/Studio filesystem evidence are complete. Stable 3.9.1 publication may use the explicit sole-maintainer release gate with human finding claims waived; that does not make the release human-qualified or adoption-proven.
 
 ## Security And Permissions
 

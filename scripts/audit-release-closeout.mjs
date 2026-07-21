@@ -478,6 +478,7 @@ function readReleaseEvidenceAtTag() {
     packet,
     missingEvidence: readOptional(THREE_NINE_MISSING_EVIDENCE_PATH),
     waiver: readOptional(THREE_NINE_RELEASE_WAIVER_PATH),
+    releaseVersion,
   });
   if (policy.errors.length > 0) {
     throw new Error(`The tagged 3.9 release policy is invalid: ${policy.errors.join(' ')}`);

@@ -138,7 +138,7 @@ test('sole-maintainer policy permits publication without manufacturing qualifica
     packetStatus: 'incomplete',
     qualificationClaim: false,
     routeCorpus: { status: 'complete' },
-    routeReplay: { status: 'complete' },
+    routeReplay: { status: 'complete', releaseVersion: '3.9.0' },
     adoptionBoundaryReplay: { status: 'complete' },
     machineReplay: {
       status: 'complete',
@@ -183,6 +183,27 @@ test('sole-maintainer policy permits publication without manufacturing qualifica
     waiver,
   });
   assert.match(expanded.errors.join(' '), /only the four frozen human finding requirements/u);
+
+  const patchWaiver = { ...waiver, releaseVersion: '3.9.1' };
+  const patchPacket = {
+    ...packet,
+    routeReplay: { ...packet.routeReplay, releaseVersion: '3.9.1' },
+  };
+  const patch = evaluateThreeNineReleasePolicy({
+    packet: patchPacket,
+    missingEvidence,
+    waiver: patchWaiver,
+    releaseVersion: '3.9.1',
+  });
+  assert.deepEqual(patch.errors, []);
+
+  const mismatchedPatch = evaluateThreeNineReleasePolicy({
+    packet: patchPacket,
+    missingEvidence,
+    waiver,
+    releaseVersion: '3.9.1',
+  });
+  assert.match(mismatchedPatch.errors.join(' '), /authorize only stable 3\.9\.1/u);
 });
 
 test('closeout only binds retained bytes to packages attributable to the release', () => {
@@ -365,7 +386,7 @@ function createPublishIntegrityFixture(t) {
     qualificationClaim: true,
     bufferRegressionPadding: 'x'.repeat(2 * 1024 * 1024),
     routeCorpus: { status: 'complete' },
-    routeReplay: { status: 'complete' },
+    routeReplay: { status: 'complete', releaseVersion: '3.9.0' },
     adoptionBoundaryReplay: { status: 'complete' },
     machineReplay: {
       status: 'complete',

@@ -7,7 +7,7 @@ const DOCS_INDEX_PATH = 'docs/index.html';
 const DOCS_ANALYTICS_PATH = 'docs/analytics.js';
 const SECURITY_PATH = 'SECURITY.md';
 const CODEMETA_PATH = 'codemeta.json';
-const CURRENT_PUBLIC_RELEASE = '3.9.0';
+const CURRENT_PUBLIC_RELEASE = '3.9.1';
 const ACTIVE_STORY_PATHS = [
   'README.md',
   'DECANTR.md',
@@ -93,15 +93,15 @@ const EXPECTED_PACKAGE_PATHS = {
 
 const EXPECTED_PACKAGES = Object.keys(EXPECTED_PACKAGE_PATHS);
 const CURRENT_PUBLIC_PACKAGE_VERSIONS = {
-  '@decantr/cli': '3.9.0',
-  '@decantr/mcp-server': '3.9.0',
-  '@decantr/content': '3.9.0',
+  '@decantr/cli': '3.9.1',
+  '@decantr/mcp-server': '3.9.1',
+  '@decantr/content': '3.9.1',
   '@decantr/essence-spec': '3.8.1',
-  '@decantr/registry': '3.9.0',
-  '@decantr/core': '3.9.0',
+  '@decantr/registry': '3.9.1',
+  '@decantr/core': '3.9.1',
   '@decantr/css': '3.8.1',
   '@decantr/telemetry': '3.8.1',
-  '@decantr/verifier': '3.9.0',
+  '@decantr/verifier': '3.9.1',
 };
 
 function extractToolNames(source) {

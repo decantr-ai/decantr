@@ -5,7 +5,7 @@ This directory is an intentionally incomplete release-qualification packet. It d
 - `qualification-packet.schema.json` defines the active packet and evidence shapes.
 - `qualification-packet.json` is the active, currently incomplete packet.
 - `missing-evidence.json` is the machine-readable blocking-evidence inventory and must match the audit's derived missing IDs.
-- `release-waiver.json` authorizes stable 3.9.0 publication by the sole human maintainer while leaving the exact four human finding requirements missing and every qualification/adoption claim false.
+- `release-waiver.json` authorizes stable 3.9.1 publication by the sole human maintainer while leaving the exact four human finding requirements missing and every qualification/adoption claim false.
 - `HUMAN-REVIEW.md` defines the two-person blind review and adjudication workflow.
 - `review/` contains blank, fail-closed human-review and replay workbooks. Blank slots are workflow inputs, never evidence.
 - `compatibility-manifest.json` freezes compatibility, the complete adoption write boundary, and the complete measurement protocol.
@@ -28,7 +28,7 @@ Prepare and validate the human finding lane:
     node scripts/prepare-3-9-human-review.mjs --help
     pnpm qualification:3-9:human:lint
 
-The kit requires exactly two distinct real people, 200 independent judgments, signed adjudication, and public 3.8.3 plus final packed 3.9.0 replays. Its canonical signing-payload commands bind reviewer identity, corpus bytes, every decision/rationale, reviewer-workbook hashes, and final resolutions. Follow the staged commands; do not import the quarantined legacy labels, represent an agent as a reviewer, or hand-edit generated packet fragments. After all signed workbooks and replays are complete, `pnpm qualification:3-9:human` must pass before assembly and packet integration.
+The kit requires exactly two distinct real people, 200 independent judgments, signed adjudication, and public 3.8.3 plus final packed 3.9.1 replays. Its canonical signing-payload commands bind reviewer identity, corpus bytes, every decision/rationale, reviewer-workbook hashes, and final resolutions. Follow the staged commands; do not import the quarantined legacy labels, represent an agent as a reviewer, or hand-edit generated packet fragments. After all signed workbooks and replays are complete, `pnpm qualification:3-9:human` must pass before assembly and packet integration.
 
 Run the release qualification gate:
 

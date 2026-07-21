@@ -61,9 +61,17 @@ function validateTarballs(packet, errors) {
   return tarballs;
 }
 
-export function evaluateThreeNineReleasePolicy({ packet, missingEvidence, waiver }) {
+export function evaluateThreeNineReleasePolicy({ packet, missingEvidence, waiver, releaseVersion }) {
   const errors = [];
   const exactPackageTarballs = validateTarballs(packet, errors);
+  const targetReleaseVersion = releaseVersion ?? packet?.routeReplay?.releaseVersion;
+
+  if (!/^3\.9\.\d+$/u.test(targetReleaseVersion ?? '')) {
+    errors.push('The 3.9 release policy requires a stable 3.9.x target version.');
+  }
+  if (packet?.routeReplay?.releaseVersion !== targetReleaseVersion) {
+    errors.push('The route replay is not bound to the target 3.9 release version.');
+  }
 
   for (const field of ['routeCorpus', 'routeReplay', 'adoptionBoundaryReplay', 'machineReplay']) {
     if (packet?.[field]?.status !== 'complete') {
@@ -104,8 +112,8 @@ export function evaluateThreeNineReleasePolicy({ packet, missingEvidence, waiver
     if (waiver.schemaVersion !== 'decantr-3.9-release-waiver.v1') {
       errors.push('The 3.9 release waiver schema version is invalid.');
     }
-    if (waiver.releaseVersion !== '3.9.0' || waiver.status !== 'authorized') {
-      errors.push('The release waiver must authorize only stable 3.9.0.');
+    if (waiver.releaseVersion !== targetReleaseVersion || waiver.status !== 'authorized') {
+      errors.push(`The release waiver must authorize only stable ${targetReleaseVersion}.`);
     }
     if (waiver.mode !== THREE_NINE_SOLE_MAINTAINER_MODE) {
       errors.push('The release waiver mode must be sole-maintainer-unqualified.');
@@ -155,7 +163,7 @@ function readOptionalJson(root, relativePath) {
   }
 }
 
-export function readThreeNineReleasePolicy(root) {
+export function readThreeNineReleasePolicy(root, options = {}) {
   const packet = readOptionalJson(root, THREE_NINE_QUALIFICATION_PACKET_PATH);
   if (!packet) {
     return {
@@ -171,6 +179,6 @@ export function readThreeNineReleasePolicy(root) {
     packet,
     missingEvidence: readOptionalJson(root, THREE_NINE_MISSING_EVIDENCE_PATH),
     waiver: readOptionalJson(root, THREE_NINE_RELEASE_WAIVER_PATH),
+    releaseVersion: options.releaseVersion ?? process.env.DECANTR_RELEASE_VERSION?.trim(),
   });
 }
-
