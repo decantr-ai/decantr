@@ -68,8 +68,10 @@ jobs:
         shell: bash
         run: |
           set -uo pipefail
+          set +e
           output=$(/tmp/mcp-publisher publish packages/mcp-server/server.json 2>&1)
           status=$?
+          set -e
           printf '%s\n' "$output"
           if [ "$status" -eq 0 ]; then
             exit 0
@@ -89,8 +91,8 @@ jobs:
           encoded_name=$(jq -rn --arg value "$name" '$value | @uri')
           endpoint="https://registry.modelcontextprotocol.io/v0.1/servers?search=$encoded_name"
 
-          for attempt in {1..12}; do
-            if response=$(curl --fail --silent --show-error --max-time 30 "$endpoint") &&
+          for attempt in {1..8}; do
+            if response=$(curl --fail --silent --show-error --max-time 60 "$endpoint") &&
               jq -e --arg name "$name" --arg version "$version" \
                 '.servers[]? | select(.server.name == $name and .server.version == $version and (.server.packages[]?.version == $version))' \
                 >/dev/null <<<"$response"; then

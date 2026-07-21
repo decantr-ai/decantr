@@ -1021,7 +1021,9 @@ test('publish workflow is protected and verifies the tagged origin/main commit',
 
 test('MCP metadata publication can recover from an already-published version', () => {
   const workflow = readFileSync(join(root, '.github/workflows/publish-mcp.yml'), 'utf8');
+  assert.match(workflow, /set \+e[\s\S]*output=\$\([\s\S]*status=\$\?[\s\S]*set -e/u);
   assert.match(workflow, /cannot publish duplicate version/u);
   assert.match(workflow, /continuing to public verification/u);
   assert.match(workflow, /Verify MCP Registry listing/u);
+  assert.match(workflow, /--max-time 60/u);
 });
