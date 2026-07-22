@@ -48,14 +48,15 @@ For each selected blueprint, the matrix:
 
 1. creates a fresh temp project
 2. copies the local curated content corpus into `.decantr/custom/`
-3. runs `decantr init --blueprint=<slug> --workflow=greenfield --offline --yes`
+3. runs `decantr init --blueprint=<slug> --workflow=greenfield --adoption=contract-only --offline --yes`
 4. verifies these artifacts exist:
    - `decantr.essence.json`
    - `DECANTR.md`
    - `.decantr/context/scaffold-pack.md`
    - `.decantr/context/review-pack.md`
    - `.decantr/context/pack-manifest.json`
-5. verifies the emitted prompt and generated `DECANTR.md` contain the pack-first guidance
+5. verifies the emitted prompt contains pack-first guidance and generated `DECANTR.md` contains the
+   target-based, fail-closed 3.10 workflow
 6. runs `decantr check`
 7. runs `decantr audit`
 
@@ -90,7 +91,7 @@ For cold-start certification runs, the workspace-local scaffold files are the on
 | `saas-dashboard` | Canonical authenticated SaaS shape with dashboard, analytics, billing, and settings |
 | `agent-marketplace` | Marketplace + orchestration topology with heavier AI/realtime feature mix |
 | `knowledge-base` | Documentation/search-heavy information architecture with auth and settings |
-| `registry-platform` | Most complex Decantr dogfood blueprint with browse, dashboard, admin, and auth zones |
+| `agent-studio` | AI governance workspace with orchestration, observability, and authenticated zones |
 | `terminal-dashboard` | Dense devtool-style blueprint that pressures treatments, shells, and feature breadth |
 
 ## Success Criteria
@@ -99,9 +100,15 @@ The matrix is considered green when:
 
 - every selected blueprint scaffolds successfully from a fresh temp directory
 - the stronger pack-first prompt is emitted during `init`
-- the generated `DECANTR.md` preserves the same pack-first contract
+- the generated `DECANTR.md` preserves pack-first authority, supports exact UI-surface targets, and
+  tells agents to stop on blocked, ambiguous, or unsupported targets
 - `decantr check` exits successfully
 - `decantr audit` exits successfully
+
+The representative projects intentionally contain a Decantr contract but no generated host runtime
+or stylesheet. `decantr audit` may therefore report advisory build/style findings. Those findings are
+visible in failure excerpts, but they do not fail certification unless the audit itself is invalid or
+exits non-zero. Decantr must not generate CSS merely to make this matrix quiet.
 
 ## Current Guidance
 
@@ -114,7 +121,7 @@ Use `--all` only when you want a slower full-corpus pass, such as:
 - after schema/content migrations
 - when changing scaffold prompt or pack rendering logic
 
-## Current Baseline (2026-04-13)
+## Current Baseline (2026-07-22)
 
 Initial representative run against the local curated corpus:
 
@@ -122,7 +129,7 @@ Initial representative run against the local curated corpus:
 - `saas-dashboard`: pass
 - `agent-marketplace`: pass
 - `knowledge-base`: pass
-- `registry-platform`: pass
+- `agent-studio`: pass
 - `terminal-dashboard`: pass
 
 Current representative baseline: `6/6` passing.

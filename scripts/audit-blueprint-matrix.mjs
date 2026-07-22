@@ -199,10 +199,20 @@ function hasCheckAndAuditGuidance(text) {
 
 function hasCurrentDecantrWorkflowGuidance(text) {
   const normalized = normalizePromptText(text);
-  return normalized.includes('Before editing any route, run decantr task <route> "<intent>".')
-    && normalized.includes('Treat the compiled execution-pack files as the primary source of truth.')
-    && normalized.includes('Run decantr verify for the broader Project Health view before handoff')
-    && normalized.includes('decantr ci init');
+  return (
+    normalized.includes('Before editing a UI surface, run decantr task <target> "<intent>".') &&
+    normalized.includes(
+      'A target may be a route, component, story, layout, package, exact surface id, or file:<path> selector from scan output.',
+    ) &&
+    normalized.includes(
+      'If Decantr reports the target as blocked, ambiguous, or unsupported, do not invent authority.',
+    ) &&
+    normalized.includes(
+      'Treat the compiled execution-pack files as the primary source of truth.',
+    ) &&
+    normalized.includes('Run decantr verify for the broader Project Health view before handoff') &&
+    normalized.includes('decantr ci init')
+  );
 }
 
 function certifyBlueprint(entry, contentRoot) {
