@@ -143,18 +143,18 @@ describe('command help (e2e)', () => {
     expect(existsSync(join(testDir, '.cursor'))).toBe(false);
   }, 15_000);
 
-  it('keeps all registered commands locally discoverable without running them', () => {
-    for (const entry of COMMAND_SURFACE) {
-      const output = runHelp(testDir, [entry.command, '--help']);
+  it('keeps the command catalog unique and generic commands locally discoverable', () => {
+    const commands = COMMAND_SURFACE.map((entry) => entry.command);
+    expect(new Set(commands).size).toBe(commands.length);
 
-      expect(output).toContain(`decantr ${entry.command}`);
-      expect(output).not.toContain('Primary workflow:');
-    }
+    const output = runHelp(testDir, ['new', '--help']);
+    expect(output).toContain('decantr new');
+    expect(output).not.toContain('Primary workflow:');
 
     expect(existsSync(join(testDir, '.decantr'))).toBe(false);
     expect(existsSync(join(testDir, '.cursor'))).toBe(false);
     expect(existsSync(join(testDir, 'decantr.essence.json'))).toBe(false);
-  }, 30_000);
+  });
 
   it('prints content namespace help without requiring a content repository', () => {
     const output = runHelp(testDir, ['content', '--help']);

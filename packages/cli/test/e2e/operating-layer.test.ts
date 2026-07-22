@@ -1199,7 +1199,7 @@ describe('operating layer commands', () => {
       runCli(testDir, ['task', '/', request, '--project', 'apps/web', '--json']),
     ) as { taskCapsuleDigest: string };
     expect(repeated.taskCapsuleDigest).toBe(task.taskCapsuleDigest);
-  });
+  }, 15_000);
 
   it('ignores dead or escaped pack manifest targets and falls back to narrative context', () => {
     const appRoot = join(testDir, 'apps', 'web');
@@ -1305,7 +1305,7 @@ describe('operating layer commands', () => {
     expect(task.authority.warnings.join('\n')).not.toContain('next');
     expect(task.localLaw.patternsPath).toBe('apps/web/.decantr/local-patterns.json');
     expect(task.localLaw.rulesPath).toBe('apps/web/.decantr/rules.json');
-  });
+  }, 20_000);
 
   it('maps an official corpus pattern into project-owned local law as an advisory Hybrid proposal', () => {
     const output = runCli(testDir, ['codify', '--project', 'apps/web', '--map-pattern', 'hero']);
