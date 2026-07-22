@@ -253,6 +253,21 @@ describe('MCP tool handlers', () => {
       ]);
     });
 
+    it('should describe the discovery-backed UI change-control loop', () => {
+      const toolsByName = Object.fromEntries(TOOLS.map((tool) => [tool.name, tool]));
+
+      expect(toolsByName.decantr_project.description).toContain('Observe local project authority');
+      expect(toolsByName.decantr_context.title).toBe('Decantr Task Context');
+      expect(toolsByName.decantr_context.description).toContain(
+        'discovery-backed UI surface task context',
+      );
+      expect(toolsByName.decantr_context.description).toContain('authoritative route capsules');
+      expect(toolsByName.decantr_verify.description).toContain('Verify local UI diffs');
+      expect(toolsByName.decantr_verify.description).toContain('evidence bundles');
+      expect(toolsByName.decantr_registry.title).toBe('Decantr Content Corpus (Compatibility)');
+      expect(toolsByName.decantr_registry.description).toContain('not a public registry');
+    });
+
     it('should have unique tool names', () => {
       const names = TOOLS.map((t) => t.name);
       expect(new Set(names).size).toBe(names.length);
@@ -1263,15 +1278,20 @@ describe('MCP tool handlers', () => {
         });
         writeFileSync(join(workspaceDir, 'pnpm-lock.yaml'), 'lockfileVersion: 9.0\n', 'utf-8');
         writeJson(join(projectDir, 'package.json'), {
-          dependencies: { react: '^19.0.0', 'react-dom': '^19.0.0' },
+          dependencies: {
+            react: '^19.0.0',
+            'react-dom': '^19.0.0',
+            'react-router-dom': '^7.0.0',
+          },
           devDependencies: { typescript: '^6.0.0', vite: '^8.0.0' },
         });
         mkdirSync(join(projectDir, 'src'), { recursive: true });
         writeFileSync(
           join(projectDir, 'src', 'App.tsx'),
-          'export function App() { return <main />; }\n',
+          'import { Route, Routes } from "react-router-dom"; export function App() { return <Routes><Route path="/" element={<main />} /></Routes>; }\n',
           'utf-8',
         );
+        writeFileSync(join(projectDir, 'src', 'main.tsx'), "import './App';\n", 'utf-8');
         writeJson(join(projectDir, 'decantr.essence.json'), {
           version: '4.0.0',
           dna: {
@@ -1343,6 +1363,10 @@ describe('MCP tool handlers', () => {
       const projectDir = mkdtempSync(join(tmpdir(), 'decantr-mcp-context-'));
       try {
         process.chdir(projectDir);
+        writeJson(join(projectDir, 'package.json'), {
+          private: true,
+          dependencies: { next: '^16.0.0', react: '^19.0.0' },
+        });
         mkdirSync(join(projectDir, '.decantr', 'context'), { recursive: true });
         mkdirSync(join(projectDir, '.decantr', 'evidence'), { recursive: true });
         writeJson(join(projectDir, 'decantr.essence.json'), {
@@ -1471,7 +1495,7 @@ describe('MCP tool handlers', () => {
         writeJson(join(projectDir, '.decantr', 'analysis.json'), {
           routes: {
             strategy: 'react-router',
-            routes: [{ path: '/feed', file: 'src/app/feed/page.tsx', hasLayout: false }],
+            routes: [{ path: '/feed', file: 'src/fixtures/fake-feed.tsx', hasLayout: false }],
           },
         });
         writeJson(join(projectDir, '.decantr', 'local-patterns.json'), {
@@ -1691,6 +1715,11 @@ describe('MCP tool handlers', () => {
             };
           };
           response_detail: string;
+          ui_surface_task: {
+            target: string;
+            status: string;
+            surface: { kind: string; files: string[]; authority: string };
+          };
           loop: {
             state: string;
             authority: { activeLane: string };
@@ -1712,6 +1741,14 @@ describe('MCP tool handlers', () => {
         expect(result.task_capsule_budget.estimatedTokens).toBeLessThanOrEqual(4_000);
         expect(result.task_capsule_digest).toMatch(/^sha256:[a-f0-9]{64}$/);
         expect(result.response_detail).toBe('compact');
+        expect(result.ui_surface_task).toMatchObject({
+          target: '/feed',
+          surface: {
+            kind: 'route',
+            files: ['src/app/feed/page.tsx'],
+            authority: 'production-proven',
+          },
+        });
         expect(result.page_id).toBe('feed');
         expect(result.visual_target).toContain('3-column');
         expect(result.directives).toContain('Keep infinite scroll loading visible');

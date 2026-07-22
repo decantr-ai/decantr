@@ -1,0 +1,101 @@
+{
+  "schemaVersion": "decantr-benchmark-evaluator-authoring-spec.v2",
+  "taskId": "hoppscotch-selfhost-web.non-latin-shortcuts",
+  "contractId": "hoppscotch-selfhost-web.non-latin-shortcuts.v1",
+  "review": {
+    "status": "approved",
+    "reviewedBy": "independent-evaluator-review-a",
+    "reviewedAt": "2026-07-22T12:18:51Z",
+    "notes": "Independent review reproduced historical discrimination under the frozen Node 22.17 runtime: the exact base fails seven non-Latin cases, while the expected commit passes all fourteen synthetic checks, the production build, 711 common tests, common typecheck, and the selfhost workspace check. The draft's direct selfhost lint:ts command was replaced with the package's do-typecheck workspace contract because lint:ts fails both frozen revisions on pre-existing alias and type errors; the production build remains required. The oracle executes the actual key resolver and desktop capture-handler bodies with Cyrillic, CJK, digit, navigation, and editable-target events; the later strategy-helper implementation at the corpus pin also passes, providing alternative-implementation evidence. It reads no expected diff, model/provider result, or Decantr artifact. OS keyboard presentation, IME composition, and the native Tauri bridge remain bounded limitations consistent with the frozen isolated-harness design."
+  },
+  "oracle": {
+    "candidateIndependent": true,
+    "decantrOutputAllowed": false,
+    "sourcePath": "sources/hoppscotch-selfhost-web.non-latin-shortcuts.mjs"
+  },
+  "commands": [
+    {
+      "id": "behavior",
+      "kind": "functional",
+      "runtime": "controller",
+      "executable": "node",
+      "args": [
+        "${EVALUATOR_ROOT}/sources/hoppscotch-selfhost-web.non-latin-shortcuts.mjs",
+        "--workspace",
+        "${WORKSPACE}",
+        "--project-path",
+        "${PROJECT_PATH}"
+      ],
+      "cwd": "${EVALUATOR_ROOT}",
+      "timeoutMs": 120000,
+      "required": true,
+      "resultFormat": "json-stdout"
+    },
+    {
+      "id": "host-build",
+      "kind": "build",
+      "runtime": "task",
+      "executable": "pnpm",
+      "args": [
+        "--filter",
+        "@hoppscotch/selfhost-web",
+        "build"
+      ],
+      "cwd": "${WORKSPACE}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    },
+    {
+      "id": "common-tests",
+      "kind": "functional",
+      "runtime": "task",
+      "executable": "pnpm",
+      "args": [
+        "--filter",
+        "@hoppscotch/common",
+        "test"
+      ],
+      "cwd": "${WORKSPACE}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    },
+    {
+      "id": "common-typecheck",
+      "kind": "functional",
+      "runtime": "task",
+      "executable": "pnpm",
+      "args": [
+        "--filter",
+        "@hoppscotch/common",
+        "do-typecheck"
+      ],
+      "cwd": "${WORKSPACE}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    },
+    {
+      "id": "selfhost-workspace-check",
+      "kind": "functional",
+      "runtime": "task",
+      "executable": "pnpm",
+      "args": [
+        "--filter",
+        "@hoppscotch/selfhost-web",
+        "do-typecheck"
+      ],
+      "cwd": "${WORKSPACE}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    }
+  ],
+  "limits": {
+    "timeoutMs": 7200000,
+    "maxRequests": 40,
+    "maxInputTokens": 800000,
+    "maxOutputTokens": 100000
+  }
+}

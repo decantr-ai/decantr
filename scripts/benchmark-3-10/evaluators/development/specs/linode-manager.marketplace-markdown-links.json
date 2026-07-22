@@ -1,0 +1,88 @@
+{
+  "schemaVersion": "decantr-benchmark-evaluator-authoring-spec.v2",
+  "taskId": "linode-manager.marketplace-markdown-links",
+  "contractId": "linode-manager.marketplace-markdown-links.v1",
+  "review": {
+    "status": "approved",
+    "reviewedBy": "independent-runtime-evaluator-review-ui-b",
+    "reviewedAt": "2026-07-22T13:09:56Z",
+    "notes": "Approved from exact frozen commits be21d258265c32631923778deba6e97f0bf314a4 and 6534001bbb397c461b4d871cb625d1d6930e355c under Node 22.19.0/pnpm 10.33.0 with Playwright 1.61.1 and Axe 4.12.1. The real Markdown and ProductDetailsTabs integration fails 8/10 checks on base and passes 10/10 on expected, covering explicit Markdown and autolinks, observed popups, target/rel and opener isolation, unchanged source URL, ordinary same-tab behavior, DOMPurify output, Axe, and runtime errors without implementation-shape matching. Repository build prerequisites, production build, scoped Markdown host test, and manager typecheck pass both revisions."
+  },
+  "oracle": {
+    "candidateIndependent": true,
+    "decantrOutputAllowed": false,
+    "sourcePath": "sources/linode-manager.marketplace-markdown-links.mjs"
+  },
+  "commands": [
+    {
+      "id": "host-build",
+      "kind": "build",
+      "runtime": "task",
+      "executable": "pnpm",
+      "args": [
+        "run",
+        "build"
+      ],
+      "cwd": "${WORKSPACE}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    },
+    {
+      "id": "behavior",
+      "kind": "functional",
+      "runtime": "controller",
+      "executable": "node",
+      "args": [
+        "${EVALUATOR_ROOT}/sources/linode-manager.marketplace-markdown-links.mjs",
+        "--workspace",
+        "${WORKSPACE}",
+        "--project-path",
+        "${PROJECT_PATH}",
+        "--evaluator-runtime",
+        "${EVALUATOR_RUNTIME}"
+      ],
+      "cwd": "${EVALUATOR_ROOT}",
+      "timeoutMs": 120000,
+      "required": true,
+      "resultFormat": "json-stdout"
+    },
+    {
+      "id": "manager-tests",
+      "kind": "functional",
+      "runtime": "task",
+      "executable": "pnpm",
+      "args": [
+        "--filter",
+        "linode-manager",
+        "test",
+        "src/components/Markdown/Markdown.test.tsx"
+      ],
+      "cwd": "${WORKSPACE}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    },
+    {
+      "id": "manager-typecheck",
+      "kind": "functional",
+      "runtime": "task",
+      "executable": "pnpm",
+      "args": [
+        "--filter",
+        "linode-manager",
+        "typecheck"
+      ],
+      "cwd": "${WORKSPACE}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    }
+  ],
+  "limits": {
+    "timeoutMs": 7200000,
+    "maxRequests": 40,
+    "maxInputTokens": 800000,
+    "maxOutputTokens": 100000
+  }
+}

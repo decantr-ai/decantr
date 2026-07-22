@@ -31,6 +31,9 @@ export interface BrownfieldProposal {
   essence: EssenceV4;
   evidence: {
     routeCount: number;
+    candidateRouteCount?: number;
+    routeAuthority?: RoutesAnalysis['authority'];
+    routeCompleteness?: RoutesAnalysis['completeness'];
     componentCount: number;
     featureCount: number;
     ambientContextCount: number;
@@ -369,10 +372,32 @@ export function createBrownfieldProposal(input: BrownfieldProposalInput): Brownf
   const routeMap: EssenceV4['blueprint']['routes'] = {};
   const sectionMap = new Map<string, EssenceSection>();
 
-  const observedRoutes =
-    input.routes.routes.length > 0
-      ? input.routes.routes
-      : [{ path: '/', file: '.', hasLayout: false }];
+  const observedRoutes = input.routes.routes;
+
+  if (observedRoutes.length === 0) {
+    sectionMap.set('observed-ui', {
+      id: 'observed-ui',
+      role: 'primary',
+      shell,
+      features: input.features.detected,
+      description:
+        'Selected UI package attached without promoting unresolved route candidates to governed topology.',
+      pages: [
+        {
+          id: 'surface-reference',
+          layout: ['existing-surface'],
+          directives: [
+            'No production route is governed yet. Select an exact component, story, or proven route target before editing.',
+            'Preserve the selected package runtime, styling authority, and project-owned source boundaries.',
+          ],
+        },
+      ],
+      directives: [
+        `Route authority is ${input.routes.authority} with ${input.routes.completeness} topology completeness.`,
+        'Candidate routes are observation evidence only and must not be treated as contract truth.',
+      ],
+    });
+  }
 
   for (const route of observedRoutes) {
     const classified = routeDomain(route.path);
@@ -495,6 +520,9 @@ export function createBrownfieldProposal(input: BrownfieldProposalInput): Brownf
     essence,
     evidence: {
       routeCount: input.routes.routes.length,
+      candidateRouteCount: input.routes.candidateRoutes.length,
+      routeAuthority: input.routes.authority,
+      routeCompleteness: input.routes.completeness,
       componentCount: input.components.componentCount,
       featureCount: input.features.detected.length,
       ambientContextCount: input.ambient.items.length,

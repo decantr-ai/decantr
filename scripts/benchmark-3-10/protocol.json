@@ -1,0 +1,84 @@
+{
+  "schemaVersion": "decantr-benchmark-protocol.v1",
+  "program": "decantr-3.10-ui-change-control-proof",
+  "frozenAt": "2026-07-22T11:29:02Z",
+  "productClaim": "Decantr gives AI coding agents more accurate project authority before a UI change and produces measurably better, safer UI outcomes afterward.",
+  "arms": {
+    "control": "Frontier model plus repository-native instructions, existing design-system evidence, tests, and a concise approved policy card.",
+    "treatment": "The same model, repository evidence, tests, and policy information delivered through Decantr task context and Decantr verification.",
+    "parityRule": "Decantr receives no human-authored fact that is unavailable to the control arm. Delivery format may differ; information entitlement may not."
+  },
+  "design": {
+    "taskCount": 40,
+    "repositoryTaskCount": 28,
+    "adversarialTaskCount": 12,
+    "models": 2,
+    "arms": 2,
+    "repetitions": 2,
+    "totalRuns": 320,
+    "randomizationSeed": "e9f877c19cbbb0768a925201782b84d22675484bb5057a5b9e953e8cfc1d5cf7",
+    "randomization": "Blocked randomization by task, model, arm, and repetition using randomizationSeed. Repetitions are averaged within task and are not treated as independent samples.",
+    "confirmatorySet": "Only sealed qualification tasks contribute to release-gate effect estimates. Development tasks are tuning and power-pilot evidence and are reported separately.",
+    "qualificationEmbargoCutoff": "2026-05-01T23:59:59Z",
+    "qualificationEmbargoPolicy": "Every sealed qualification task expected commit must be newer than this conservative embargo, which is later than both locked model knowledge cutoffs. The embargo is a contamination buffer, not a vendor-reported model cutoff.",
+    "minimumQualificationTasks": 16,
+    "powerGate": "Before paid qualification, a frozen development pilot must show at least 80% power to detect the five-point primary effect at alpha 0.05; otherwise the task corpus expands before qualification.",
+    "review": "Two independent frontend reviewers blinded to model and arm; disagreements are adjudicated before labels are revealed."
+  },
+  "isolation": {
+    "runner": "fresh non-root Linux container per run",
+    "network": "model endpoint only through an audited proxy",
+    "home": "empty HOME",
+    "hostSecrets": false,
+    "personalSkills": false,
+    "personalMcp": false,
+    "dependencyPolicy": "Dependencies and browser binaries are installed before the timed agent run and captured in the environment digest."
+  },
+  "primaryOutcome": {
+    "name": "blind-ui-change-quality",
+    "scale": "0-100",
+    "minimumTreatmentLift": 5,
+    "confidenceInterval": 0.95,
+    "aggregation": "Paired task-level treatment minus control score, reported overall and separately for each model."
+  },
+  "blindPreferenceAnalysis": {
+    "population": "sealed qualification tasks only; development tasks are excluded",
+    "analysisUnit": "qualification-task-model",
+    "plannedUnits": 32,
+    "repetitionAggregation": "An arm wins a task/model unit only when it is preferred in a strict majority of all planned repetitions.",
+    "tiePolicy": "Split repetitions, repetition-level ties, and every other result without a strict arm majority make the task/model unit a tie. Task/model ties are reported and excluded from the binomial denominator.",
+    "minimumDecisiveFraction": 0.8,
+    "minimumDecisiveUnits": 26,
+    "pointEstimateMinimum": 0.6,
+    "confidenceLevel": 0.95,
+    "confidenceMethod": "two-sided Wilson score interval",
+    "wilsonLowerBoundMustExceed": 0.5
+  },
+  "releaseGates": {
+    "dayZeroTargetTruth": "28/28 correct selected target or an honest unsupported result",
+    "authorityLeakage": "zero test, fixture, generated, build-output, or sibling-app files promoted to production authority",
+    "taskabilityTruth": "rank-one implementation source is correct whenever Decantr claims ready/taskable",
+    "styleAuthorityTruth": "all frozen style-authority oracle labels correct",
+    "readinessTruth": "no aggregate score may override an unresolved or partial authority axis",
+    "modelLift": "paired mean lift at least 5 points with the 95% confidence interval entirely above zero for each model",
+    "governanceReduction": "at least 25% fewer governance violations",
+    "ciExclusion": "the confidence interval for governance-violation reduction excludes no improvement",
+    "functionalNonInferiority": "treatment functional success no worse than control by more than 5 percentage points overall within each model; framework strata are reported as exploratory unless independently powered",
+    "blindPreference": "at least 26 of 32 qualification task/model units are decisive, treatment is preferred in at least 60% of decisive units, and the two-sided 95% Wilson lower confidence bound is greater than 50%",
+    "medianOverhead": "median treatment token and cost overhead no greater than 15%",
+    "tailOverhead": "95th percentile treatment token and cost overhead no greater than 25%",
+    "failureVisibility": "unsupported targets, model substitutions, missing evaluators, and host build failures remain visible in denominators"
+  },
+  "claimPolicy": {
+    "pass": "A direct stable 3.10 release may claim measured improvement only after every release gate passes on frozen candidate tarballs.",
+    "mixed": "No value claim is authorized. This protocol predeclares and powers no scoped hypotheses, so exploratory framework or task results cannot authorize a scoped improvement claim.",
+    "fail": "Do not publish a value-proven claim. Shrink Decantr to the verifier, authority-adapter, and CI layer or stop broad product expansion.",
+    "scopedHypotheses": [],
+    "holdoutRepair": "A code change caused by a qualification failure invalidates that task as holdout evidence and requires a replacement task selected after the fix."
+  },
+  "budget": {
+    "maximumModelSpendUsd": 4160,
+    "requiresExplicitHumanApproval": true,
+    "reviewAndComputeExcluded": true
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/benchmark-3-10/trajectory-manifest.v1.json",
+  "title": "Decantr 3.10 content-addressed trajectory manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "runId",
+    "complete",
+    "armDeliverySha256",
+    "adapterRequestSha256",
+    "adapterResponseSha256",
+    "events"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "decantr-benchmark-trajectory-manifest.v1" },
+    "runId": { "type": "string", "minLength": 1 },
+    "complete": { "type": "boolean" },
+    "armDeliverySha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "adapterRequestSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "adapterResponseSha256": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sequence", "sha256"],
+        "properties": {
+          "sequence": { "type": "integer", "minimum": 0 },
+          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+        }
+      }
+    }
+  }
+}

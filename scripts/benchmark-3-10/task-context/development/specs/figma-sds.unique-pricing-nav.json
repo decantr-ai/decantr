@@ -1,0 +1,60 @@
+{
+  "input": {
+    "policyCard": {
+      "statements": [
+        {
+          "id": "repository-authority",
+          "sources": [
+            "base-checkout"
+          ],
+          "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+        },
+        {
+          "id": "change-scope",
+          "sources": [
+            "task.scope"
+          ],
+          "text": "Keep authored changes within the declared allowlist: src/ui/compositions/Headers/Headers.tsx, src/stories/compositions/Cards.stories.tsx. Do not edit forbidden paths: package.json, package-lock.json, src/App.tsx, src/ui/primitives/**, src/data/**, scripts/**."
+        },
+        {
+          "id": "host-verification",
+          "sources": [
+            "candidate.environment"
+          ],
+          "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+        }
+      ]
+    },
+    "target": {
+      "selector": "component:HeaderAuth"
+    }
+  },
+  "oracle": {
+    "acceptedStatuses": [
+      "limited"
+    ],
+    "expectedKind": "component",
+    "forbiddenRankOnePatterns": [
+      "(^|/)(?:\\.next|\\.nuxt|\\.svelte-kit|__fixtures__|__generated__|__mocks__|__tests__|build|coverage|cypress|dist|e2e|fixtures?|generated|mocks?|out|playwright|specs?|stories|test-utils?|testing|tests?|target)(?:/|$)|\\.(?:cy|d|e2e|fixture|gen|generated|mock|spec|stories?|test|vitest)\\.[^.]+$"
+    ],
+    "rankOneFiles": [
+      "src/ui/compositions/Headers/Headers.tsx"
+    ],
+    "styleAuthority": {
+      "approach": "css",
+      "confidence": "high",
+      "files": [
+        "src/index.css",
+        "src/main.tsx"
+      ]
+    }
+  },
+  "review": {
+    "notes": "Approved after narrowing the selector to component:HeaderAuth, the base component that owns authenticated navigation; it resolves uniquely to production Headers.tsx. CSS authority is rooted through main.tsx and index.css, scope text is candidate-exact, and forbidden coverage is complete.",
+    "reviewedAt": "2026-07-22T12:19:56Z",
+    "reviewedBy": "independent-target-review-a",
+    "status": "approved"
+  },
+  "schemaVersion": "decantr-benchmark-task-delivery-spec.v1",
+  "taskId": "figma-sds.unique-pricing-nav"
+}

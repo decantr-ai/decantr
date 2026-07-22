@@ -1,0 +1,60 @@
+{
+  "input": {
+    "policyCard": {
+      "statements": [
+        {
+          "id": "repository-authority",
+          "sources": [
+            "base-checkout"
+          ],
+          "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+        },
+        {
+          "id": "change-scope",
+          "sources": [
+            "task.scope"
+          ],
+          "text": "Keep authored changes within the declared allowlist: packages/hoppscotch-common/src/helpers/**, packages/hoppscotch-selfhost-web/src/**. Do not edit forbidden paths: packages/hoppscotch-backend/**, packages/hoppscotch-sh-admin/**, **/generated/**, package.json, pnpm-lock.yaml."
+        },
+        {
+          "id": "host-verification",
+          "sources": [
+            "candidate.environment"
+          ],
+          "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+        }
+      ]
+    },
+    "target": {
+      "selector": "file:src/main.ts"
+    }
+  },
+  "oracle": {
+    "acceptedStatuses": [
+      "limited"
+    ],
+    "expectedKind": "file",
+    "forbiddenRankOnePatterns": [
+      "(^|/)(?:\\.next|\\.nuxt|\\.svelte-kit|__fixtures__|__generated__|__mocks__|__tests__|build|coverage|cypress|dist|e2e|fixtures?|generated|mocks?|out|playwright|specs?|stories|test-utils?|testing|tests?|target)(?:/|$)|\\.(?:cy|d|e2e|fixture|gen|generated|mock|spec|stories?|test|vitest)\\.[^.]+$"
+    ],
+    "rankOneFiles": [
+      "src/main.ts"
+    ],
+    "styleAuthority": {
+      "approach": "tailwind",
+      "confidence": "high",
+      "files": [
+        "postcss.config.cjs",
+        "tailwind.config.ts"
+      ]
+    }
+  },
+  "review": {
+    "notes": "Approved: file:src/main.ts is a taskable production fallback in the selected self-host web project and is relevant to its desktop shortcut boundary. Local Tailwind configs are valid authority, scope text mirrors the cross-package candidate allowlist, and non-production rank-one lanes are excluded.",
+    "reviewedAt": "2026-07-22T12:19:56Z",
+    "reviewedBy": "independent-target-review-a",
+    "status": "approved"
+  },
+  "schemaVersion": "decantr-benchmark-task-delivery-spec.v1",
+  "taskId": "hoppscotch-selfhost-web.non-latin-shortcuts"
+}

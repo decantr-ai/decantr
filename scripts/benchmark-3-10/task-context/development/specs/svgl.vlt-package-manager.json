@@ -1,0 +1,60 @@
+{
+  "input": {
+    "policyCard": {
+      "statements": [
+        {
+          "id": "repository-authority",
+          "sources": [
+            "base-checkout"
+          ],
+          "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+        },
+        {
+          "id": "change-scope",
+          "sources": [
+            "task.scope"
+          ],
+          "text": "Keep authored changes within the declared allowlist: src/components/logos/vlt.svelte, src/components/settings/options/selectPkgManager.svelte, src/components/svgs/copyShadcnCommand.svelte, src/data/svgs.ts, src/stores/settings.store.ts, static/library/vlt-dark.svg, static/library/vlt-light.svg, static/library/vlt-wordmark-dark.svg, static/library/vlt-wordmark-light.svg. Do not edit forbidden paths: ** (except allowed paths), src/routes/api/**, package.json, pnpm-lock.yaml."
+        },
+        {
+          "id": "host-verification",
+          "sources": [
+            "candidate.environment"
+          ],
+          "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+        }
+      ]
+    },
+    "target": {
+      "selector": "file:src/components/settings/options/selectPkgManager.svelte"
+    }
+  },
+  "oracle": {
+    "acceptedStatuses": [
+      "limited"
+    ],
+    "expectedKind": "file",
+    "forbiddenRankOnePatterns": [
+      "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+      ],
+      "rankOneFiles": [
+        "src/components/settings/options/selectPkgManager.svelte"
+      ],
+    "styleAuthority": {
+      "approach": "tailwind",
+      "confidence": "high",
+      "files": [
+        "src/routes/+layout.svelte",
+        "src/styles/globals.css"
+      ]
+    }
+  },
+  "review": {
+    "notes": "Independently checked the frozen base tree and candidate record. The neutral file selector is a realistic entry point for this cross-surface task and resolves limited to its exact production source. Narrowed the generated rank-one allowlist to that selected file; forbidden authority, Tailwind evidence, and the default-deny scope statement are accurate.",
+    "reviewedAt": "2026-07-22T12:17:39Z",
+    "reviewedBy": "independent-target-review-b",
+    "status": "approved"
+  },
+  "schemaVersion": "decantr-benchmark-task-delivery-spec.v1",
+  "taskId": "svgl.vlt-package-manager"
+}

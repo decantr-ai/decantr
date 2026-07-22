@@ -43,6 +43,7 @@ describe('route analyzer', () => {
         '',
       ].join('\n'),
     );
+    writeFileSync(join(projectRoot, 'src', 'main.tsx'), 'import { App } from "./App"; void App;\n');
 
     const analysis = scanRoutes(projectRoot);
 
@@ -52,7 +53,7 @@ describe('route analyzer', () => {
     );
   });
 
-  it('detects declarative TypeScript route specs without a framework adapter', () => {
+  it('does not promote unresolved declarative specs to taskable routes', () => {
     writeFileSync(
       join(projectRoot, 'package.json'),
       JSON.stringify(
@@ -107,10 +108,7 @@ describe('route analyzer', () => {
     const analysis = scanRoutes(projectRoot);
 
     expect(analysis.strategy).toBe('react-router');
-    expect(analysis.routes.map((route) => route.path)).toEqual(
-      expect.arrayContaining(['/', '/admin', '/admin/users']),
-    );
-    expect(analysis.routes.map((route) => route.path)).not.toContain('*');
+    expect(analysis.routes).toEqual([]);
   });
 
   it('normalizes React Router wrapper paths from mature brownfield apps', () => {
@@ -145,6 +143,10 @@ describe('route analyzer', () => {
         '',
       ].join('\n'),
     );
+    writeFileSync(
+      join(projectRoot, 'src', 'main.tsx'),
+      'import { PrivateRoutesContainer } from "./PrivateRoutesContainer"; void PrivateRoutesContainer;\n',
+    );
 
     const analysis = scanRoutes(projectRoot);
     const paths = analysis.routes.map((route) => route.path);
@@ -177,7 +179,7 @@ describe('route analyzer', () => {
     expect(analysis.routes).toContainEqual({ path: '/', file: 'src/index.html', hasLayout: false });
   });
 
-  it('detects nested static demo pages as taskable routes', () => {
+  it('does not promote nested demo HTML to production routes', () => {
     writeFileSync(
       join(projectRoot, 'package.json'),
       JSON.stringify({ private: true, name: 'jquery-ui-like-demos' }, null, 2),
@@ -197,10 +199,8 @@ describe('route analyzer', () => {
     const analysis = scanRoutes(projectRoot);
     const paths = analysis.routes.map((route) => route.path);
 
-    expect(analysis.strategy).toBe('static-html');
-    expect(paths).toEqual(
-      expect.arrayContaining(['/demos', '/demos/accordion/default', '/demos/dialog/default']),
-    );
+    expect(analysis.strategy).toBe('none');
+    expect(paths).toEqual([]);
   });
 
   it('does not expose Next Pages Router internals as taskable routes', () => {
@@ -225,5 +225,24 @@ describe('route analyzer', () => {
 
     expect(analysis.strategy).toBe('pages-router');
     expect(analysis.routes.map((route) => route.path)).toEqual(['/']);
+  });
+
+  it('keeps inferred route candidates out of governed route analysis', () => {
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      JSON.stringify({ dependencies: { react: '^19.0.0', 'react-router-dom': '^7.0.0' } }),
+    );
+    writeFileSync(
+      join(projectRoot, 'src', 'App.tsx'),
+      'import { Route } from "react-router-dom"; export const App = () => <Route path="/settings" element={<main />} />;\n',
+    );
+
+    const analysis = scanRoutes(projectRoot);
+
+    expect(analysis.authority).toBe('inferred');
+    expect(analysis.routes).toEqual([]);
+    expect(analysis.candidateRoutes).toContainEqual(
+      expect.objectContaining({ path: '/settings', file: 'src/App.tsx' }),
+    );
   });
 });

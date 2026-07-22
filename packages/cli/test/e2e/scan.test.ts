@@ -46,13 +46,13 @@ describe('scan command', () => {
     expect(output).toContain('Read-only Brownfield reconnaissance');
     expect(output).toContain('Typed Contract Graph');
     expect(output).toContain('not attached');
-    expect(output).toContain('strong fit');
+    expect(output).toContain('partial fit');
+    expect(output).toContain('Production route authority is not proven');
     expect(output).toContain('npx @decantr/cli adopt --yes');
     expect(output).toContain('This scan was read-only');
-    expect(output).toContain('When ready to attach Decantr, run');
+    expect(output).toContain('without promoting unresolved topology');
     expect(output).toContain('decantr adopt --yes');
-    expect(output).toContain('After adoption, inspect what Decantr found with');
-    expect(output).toContain('decantr studio');
+    expect(output).toContain('decantr task <target>');
     expect(existsSync(join(testDir, '.decantr'))).toBe(false);
   });
 
@@ -107,7 +107,7 @@ describe('scan command', () => {
     expect(report.components?.confidence).toMatch(/low|medium|high/);
     expect(report.graphPreview?.status).toBe('not_attached');
     expect(report.graphPreview?.canPreview).toBe(false);
-    expect(report.graphPreview?.nextCommand).toBe('decantr adopt --yes --project apps/web');
+    expect(report.graphPreview?.nextCommand).toBeNull();
     expect(report.graphPreview?.diff).toBeNull();
     expect(existsSync(join(testDir, 'apps', 'web', '.decantr'))).toBe(false);
   });

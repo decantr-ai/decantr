@@ -10,9 +10,13 @@
 
 ## Development Workflow
 
-The essence file (`decantr.essence.json`) is the source of truth for your project's structure. Context files in `.decantr/context/` are derived from it. When you need to add, remove, or modify pages, sections, or features:
+Use the Decantr change-control loop for UI work:
 
-**1. Update the essence** (use CLI commands for consistency):
+**1. Observe:** run `decantr scan` and inspect selected-app, surface-authority, topology, taskability, component-inventory, styling-authority, and runtime-evidence limitations independently.
+
+**2. Prepare:** run `decantr task <target> "<intent>"`. A target can be a proven route, exact surface ID, component, layout, overlay, story, package, or `file:<path>` selector. Read every ranked source before editing. Stop when the result is `blocked` or `unsupported`; treat `limited` as an explicit review requirement.
+
+**3. Edit:** preserve production source and accepted local law. When the requested change intentionally alters project structure, update the Essence with CLI commands for consistency:
 - `decantr add page {section}/{page} --route /{path}`
 - `decantr add section {archetype}`
 - `decantr add feature {name}` (or `--section {id}` for scoped)
@@ -21,12 +25,15 @@ The essence file (`decantr.essence.json`) is the source of truth for your projec
 - `decantr remove feature {name}`
 - `decantr theme switch {name}`
 
-**2. Regenerate context:** `decantr refresh`
+**4. Verify:** run the verification command returned by task context, normally `decantr verify`.
 
-**3. Read the updated context files**, then build.
+**5. Report:** preserve the typed evidence or explicit `not_proven` result. CI v3 is opt-in through `decantr ci --report-version v3`.
+
+When the Essence changes, run `decantr refresh` and read the updated context before building.
 
 **Rules:**
-- Never create page components for routes that don't exist in the essence
+- Never promote a route, component, or styling candidate into authority because a filename, dependency, fixture, story, generated tree, or stale analysis mentions it
+- Never create page components for routes that have neither proven production authority nor an explicitly reviewed Essence change
 - Never delete pages without removing them from the essence
 - Always refresh after mutations — stale context files lead to drift
 - If you edit the essence directly, run `decantr refresh` before building
@@ -36,15 +43,17 @@ The essence file (`decantr.essence.json`) is the source of truth for your projec
 
 This project uses **Decantr** for AI Frontend Governance. Read this file before generating or editing UI code.
 
-**Before editing any route, run `decantr task <route> "<intent>"`.** Use that task context as the working contract for the edit. If you are an AI assistant, do not start route-level source changes until task context has been loaded or the user explicitly tells you to proceed without it.
+**Before editing a UI surface, run `decantr task <target> "<intent>"`.** Use the returned authority, ranked reads, limitations, and verify command as the working context. If you are an AI assistant, do not start source changes when target resolution is blocked, unsupported, or ambiguous.
 
 ---
 
 ## What is Decantr?
 
-Decantr is a Contract / Context / Evidence layer that sits between you (the AI coding agent) and the code you produce. It provides structured schemas, guard rules, and a two-layer model (DNA + Blueprint) that keeps UI changes aligned with project standards.
+Decantr is a local Contract / Context / Evidence and UI change-control layer that sits between you (the AI coding agent) and the code you produce. Its operating loop is **Observe -> Prepare -> Verify -> Report**. It uses project-owned authority, structured schemas, guard rules, and a two-layer model (DNA + Blueprint) to make UI changes reviewable.
 
 **Decantr does NOT generate code.** You generate or edit the code. Decantr keeps the result coherent, consistent, and repairable.
+
+Decantr 3.9.4 is the current stable release. Decantr 3.10 is an unreleased falsification program. Its independent UI-surface model and benchmark are candidate work, not proof that Decantr improves frontier models. Do not make that claim unless the frozen 3.10 qualification gate passes.
 
 ---
 
@@ -75,14 +84,15 @@ Blueprint includes: Sections (grouped by archetype with role, shell, and scoped 
 | 5 | Structure | Blueprint (warn) | Pages exist in the blueprint sections |
 | 6 | Layout | Blueprint (warn) | Pattern order matches the layout spec |
 | 7 | Pattern existence | Blueprint (warn) | Patterns referenced resolve from official corpus or accepted local content |
+| 8 | Interactions | Experiential (configured) | Declared interaction signals are present in production UI source; static detection does not prove runtime behavior |
 
 ### Enforcement Tiers
 
 | Tier | When Used | DNA Rules | Blueprint Rules |
 |------|-----------|-----------|-----------------|
 | **Creative** | New project scaffolding | Off | Off |
-| **Guided** | Adding pages or features | Error | Off |
-| **Strict** | Modifying existing code | Error | Warn |
+| **Guided** | Adding pages or features | Error | Off; interaction findings warn when enabled |
+| **Strict** | Modifying existing code | Error | Warn; interaction severity follows `interactions_enforcement` |
 
 This project uses **strict** mode.
 
@@ -103,7 +113,7 @@ When a user request would violate guard rules:
 
 - `decantr_project` -- Read project state, shared discovery, and workspace health
 - `decantr_contract` -- Read/validate Essence, inspect drift, and load the Contract capsule
-- `decantr_context` -- Load scaffold/page/task context; call with `{ "action": "task" }` before route edits
+- `decantr_context` -- Load scaffold/page/task context; call with `{ "action": "task" }` before UI edits and honor blocked or limited authority
 - `decantr_graph` -- Query graph snapshots, nodes, edges, and impact
 - `decantr_registry` -- Compatibility content-corpus and execution-pack helper
 - `decantr_verify` -- Run local audit/critique and read Evidence Bundles or health-loop state
@@ -116,9 +126,9 @@ Task context is compact by default. Request `detail: "full"` only when full grap
 
 ## How To Use This Project
 
-### Source of truth
+### Authority
 
-`decantr.essence.json` is the structural spec. Tools and guards read this.
+`decantr.essence.json` is the structural contract. It is not evidence that every declared or discovered surface is reachable in production.
 
 Authority order for this project:
 
@@ -127,7 +137,7 @@ Authority order for this project:
 3. `decantr.essence.json` is the structural contract for routes, sections, DNA, guard mode, and intended product shape.
 4. Official corpus patterns and execution packs are guidance unless the project maps them into accepted local law.
 
-When runtime source and Decantr context disagree, report the drift and run `decantr doctor` or the verify command returned by task context; do not guess which side wins.
+When runtime source and Decantr context disagree, report the drift and run `decantr doctor` or the verify command returned by task context; do not guess which side wins. Keep selected app, surface authority, topology completeness, taskability, component inventory, styling authority, and runtime evidence separate. One strong axis does not repair another unresolved axis.
 
 ### Initial scaffolding
 
@@ -143,11 +153,11 @@ Preserve the current framework, package manager, router, and working runtime str
 
 Read `.decantr/context/section-{name}.md` for the section contract before implementation. If a compiled `section-{name}-pack.md` is later hydrated, prefer that more specific pack when the two sources differ. Do not invent section features, shells, or themes outside the local contract.
 
-### Working on a route
+### Working on a UI surface
 
-Run `decantr task <route> "<intent>"` before editing. Read the files it lists first and preserve the authority block it prints.
+Run `decantr task <target> "<intent>"` before editing. Read the files it ranks first and preserve the authority and limitation blocks it prints. Valid selectors can include a route such as `/settings`, an exact surface ID, a component or overlay name, `kind:name`, or `file:src/path/to/file.tsx`.
 
-Use the route source, narrative context, and Contract capsule listed by `decantr task`. If a compiled `page-{name}-pack.md` is later hydrated, prefer it over broader narrative context when they differ.
+For a proven route, use the route source, narrative context, and Contract capsule listed by `decantr task`. If a compiled `page-{name}-pack.md` is later hydrated, prefer it over broader narrative context when they differ. For components, layouts, overlays, stories, packages, and exact files, static discovery may remain `limited` because it does not prove runtime reachability. Do not turn limited evidence into a clean claim.
 
 ### Editing rules
 
@@ -166,19 +176,20 @@ Use the route source, narrative context, and Contract capsule listed by `decantr
 
 ### Validation
 
-Run `decantr verify` for the broader Project Health view before handoff, pull requests, or CI. Use `decantr ci init` to install the default GitHub Actions gate, `decantr health --prompt <finding-id>` to generate a scoped remediation prompt for a specific issue, and `decantr studio` to inspect local drift, routes, findings, remediation, CI, and pack state in a localhost dashboard.
+Run `decantr verify` for the broader Project Health view before handoff, pull requests, or CI. Preserve failures and missing proof in the report rather than summarizing them away. Use `decantr ci init` to install the default GitHub Actions gate, `decantr health --prompt <finding-id>` to generate a scoped remediation prompt for a specific issue, and `decantr studio` as an advanced read-only view of local findings and evidence.
 Declared command palettes and hotkeys must be implemented, not merely acknowledged.
 
 ### Quick Commands
 
 ```bash
 decantr setup                         # Detect project state and next workflow step
+decantr scan                          # Observe UI authority with zero writes
 decantr doctor                        # Explain current state, authority, and next steps
 decantr graph                         # Generate or refresh the typed Contract graph
-decantr task <route> "<intent>"       # Load route/task context before AI edits
+decantr task <target> "<intent>"      # Prepare change-scoped context before AI edits
 decantr verify                        # Run the workflow-aware local reliability gate
 decantr ci init                       # Install the pinned CI gate
-decantr studio                        # Open the local health dashboard
+decantr ci --report-version v3        # Report explicit governed-change evidence
 ```
 
 ---

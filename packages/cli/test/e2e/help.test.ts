@@ -3,6 +3,7 @@ import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { COMMAND_SURFACE } from '../../src/command-surface.js';
 
 function runHelp(cwd: string, args: string[]): string {
   const cliPath = join(__dirname, '..', '..', 'dist', 'bin.js');
@@ -64,6 +65,8 @@ describe('command help (e2e)', () => {
 
   it('prints workflow command help without running workflows', () => {
     const rootHelp = runHelp(testDir, ['help']);
+    const advancedHelp = runHelp(testDir, ['help', '--advanced']);
+    const compatibilityHelp = runHelp(testDir, ['help', '--compatibility']);
     const setup = runHelp(testDir, ['setup', '--help']);
     const scan = runHelp(testDir, ['scan', '--help']);
     const adopt = runHelp(testDir, ['adopt', '--help']);
@@ -75,12 +78,46 @@ describe('command help (e2e)', () => {
     const connect = runHelp(testDir, ['connect', '--help']);
     const themeSwitch = runHelp(testDir, ['theme', 'switch', '--help']);
 
-    expect(rootHelp).toContain('Which command first?');
-    expect(rootHelp).toContain('Existing app, read-only preview');
-    expect(rootHelp).toContain('decantr content get-pack page --route <route>');
-    expect(rootHelp).toContain(
-      'decantr theme switch <themeName> [--shape <shape>] [--mode <mode>]',
-    );
+    expect(rootHelp).toContain('Primary workflow:');
+    expect(rootHelp).toContain('decantr scan');
+    expect(rootHelp).toContain('decantr adopt');
+    expect(rootHelp).toContain('decantr task');
+    expect(rootHelp).toContain('decantr verify');
+    expect(rootHelp).toContain('decantr ci init');
+    expect(rootHelp).toContain('decantr help --advanced');
+
+    const hiddenCommands = [
+      'registry',
+      'login',
+      'logout',
+      'publish',
+      'theme',
+      'telemetry',
+      'studio',
+      'magic',
+      'content',
+      'content-health',
+      'create',
+    ];
+    for (const command of hiddenCommands) {
+      expect(rootHelp).not.toContain(`decantr ${command}`);
+    }
+    expect(rootHelp).not.toContain('decantr-css');
+    expect(rootHelp).not.toContain('Advanced commands:');
+
+    for (const entry of COMMAND_SURFACE.filter(
+      (candidate) => candidate.visibility === 'advanced',
+    )) {
+      expect(advancedHelp).toContain(entry.purpose);
+      expect(rootHelp).not.toContain(entry.purpose);
+    }
+    for (const entry of COMMAND_SURFACE.filter(
+      (candidate) => candidate.visibility === 'compatibility',
+    )) {
+      expect(compatibilityHelp).toContain(entry.purpose);
+      expect(advancedHelp).not.toContain(entry.purpose);
+      expect(rootHelp).not.toContain(entry.purpose);
+    }
     expect(setup).toContain('Which command first?');
     expect(scan).toContain('Which command first?');
     expect(scan).toContain('decantr scan');
@@ -106,6 +143,19 @@ describe('command help (e2e)', () => {
     expect(existsSync(join(testDir, '.cursor'))).toBe(false);
   }, 15_000);
 
+  it('keeps all registered commands locally discoverable without running them', () => {
+    for (const entry of COMMAND_SURFACE) {
+      const output = runHelp(testDir, [entry.command, '--help']);
+
+      expect(output).toContain(`decantr ${entry.command}`);
+      expect(output).not.toContain('Primary workflow:');
+    }
+
+    expect(existsSync(join(testDir, '.decantr'))).toBe(false);
+    expect(existsSync(join(testDir, '.cursor'))).toBe(false);
+    expect(existsSync(join(testDir, 'decantr.essence.json'))).toBe(false);
+  }, 30_000);
+
   it('prints content namespace help without requiring a content repository', () => {
     const output = runHelp(testDir, ['content', '--help']);
     const pageRoute = runHelp(testDir, [
@@ -128,8 +178,10 @@ describe('command help (e2e)', () => {
   it('prints init help without writing project files', () => {
     const output = runHelp(testDir, ['init', '--help']);
 
-    expect(output).toContain('decantr');
-    expect(output).toContain('Init Options');
+    expect(output).toContain('decantr init');
+    expect(output).toContain('Advanced command:');
+    expect(output).toContain('Attach or initialize Decantr contract and context files.');
+    expect(output).not.toContain('Primary workflow:');
     expect(existsSync(join(testDir, 'decantr.essence.json'))).toBe(false);
     expect(existsSync(join(testDir, '.decantr'))).toBe(false);
   });

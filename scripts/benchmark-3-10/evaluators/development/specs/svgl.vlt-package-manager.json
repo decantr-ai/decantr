@@ -1,0 +1,87 @@
+{
+  "schemaVersion": "decantr-benchmark-evaluator-authoring-spec.v2",
+  "taskId": "svgl.vlt-package-manager",
+  "contractId": "svgl.vlt-package-manager.v1",
+  "review": {
+    "status": "approved",
+    "reviewedBy": "OpenAI Codex independent evaluator reviewer",
+    "reviewedAt": "2026-07-22T14:46:27Z",
+    "notes": "Approved after replacing the expected-architecture source-token proxy with a candidate-independent Playwright oracle and reproducing exact polarity twice under the repository-pinned Node 22.17.0/pnpm 10.13.1 environment. The oracle searches the live app for vlt, selects it through the real settings UI, verifies its icon and localStorage persistence across reload, copies and validates the exact runnable command vlx shadcn@latest add @svgl/vlt, toggles light/dark logo and wordmark rendering across all four local SVGs, captures a nonblank card, blocks external asset dependencies, and runs scoped Axe and console checks. Base 283eaecd0a88cd89ac30226ea560f96a8cf0e9bc reproducibly exits 1 at 2/10 checks; expected e8213f98c5b5dfb74ecabe3ae659d8a9381ac58d passes 10/10 and exits 0. Build, lint, size, and data checks pass on both. Native svelte-check was removed because both revisions have the same eight pre-existing missing Figma plugin type errors."
+  },
+  "oracle": {
+    "candidateIndependent": true,
+    "decantrOutputAllowed": false,
+    "sourcePath": "sources/svgl.vlt-package-manager.mjs"
+  },
+  "commands": [
+    {
+      "id": "behavior",
+      "kind": "functional",
+      "runtime": "controller",
+      "executable": "node",
+      "args": [
+        "${EVALUATOR_ROOT}/sources/svgl.vlt-package-manager.mjs",
+        "--workspace",
+        "${WORKSPACE}",
+        "--project-path",
+        "${PROJECT_PATH}",
+        "--evaluator-runtime",
+        "${EVALUATOR_RUNTIME}"
+      ],
+      "cwd": "${EVALUATOR_ROOT}",
+      "timeoutMs": 120000,
+      "required": true,
+      "resultFormat": "json-stdout"
+    },
+    {
+      "id": "host-build",
+      "kind": "build",
+      "runtime": "task",
+      "executable": "pnpm",
+      "args": ["run", "build"],
+      "cwd": "${WORKSPACE}/${PROJECT_PATH}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    },
+    {
+      "id": "host-lint",
+      "kind": "governance",
+      "runtime": "task",
+      "executable": "pnpm",
+      "args": ["run", "lint"],
+      "cwd": "${WORKSPACE}/${PROJECT_PATH}",
+      "timeoutMs": 900000,
+      "required": true,
+      "resultFormat": "exit-code"
+    },
+    {
+      "id": "host-size-check",
+      "kind": "functional",
+      "runtime": "task",
+      "executable": "pnpm",
+      "args": ["run", "check:size"],
+      "cwd": "${WORKSPACE}/${PROJECT_PATH}",
+      "timeoutMs": 900000,
+      "required": true,
+      "resultFormat": "exit-code"
+    },
+    {
+      "id": "host-data-check",
+      "kind": "functional",
+      "runtime": "task",
+      "executable": "pnpm",
+      "args": ["run", "check:data"],
+      "cwd": "${WORKSPACE}/${PROJECT_PATH}",
+      "timeoutMs": 900000,
+      "required": true,
+      "resultFormat": "exit-code"
+    }
+  ],
+  "limits": {
+    "timeoutMs": 5400000,
+    "maxRequests": 40,
+    "maxInputTokens": 800000,
+    "maxOutputTokens": 100000
+  }
+}

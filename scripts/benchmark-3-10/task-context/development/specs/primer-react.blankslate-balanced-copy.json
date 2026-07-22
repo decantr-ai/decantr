@@ -1,0 +1,60 @@
+{
+  "input": {
+    "policyCard": {
+      "statements": [
+        {
+          "id": "repository-authority",
+          "sources": [
+            "base-checkout"
+          ],
+          "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+        },
+        {
+          "id": "change-scope",
+          "sources": [
+            "task.scope"
+          ],
+          "text": "Keep authored changes within the declared allowlist: packages/react/src/Blankslate/**, e2e/components/Blankslate.test.ts, .changeset/*.md. Do not edit forbidden paths: package.json, package-lock.json, .playwright/snapshots/**, packages/react/src/Banner/**, examples/**."
+        },
+        {
+          "id": "host-verification",
+          "sources": [
+            "candidate.environment"
+          ],
+          "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+        }
+      ]
+    },
+    "target": {
+      "selector": "file:packages/react/src/Blankslate/Blankslate.module.css"
+    }
+  },
+  "oracle": {
+    "acceptedStatuses": [
+      "limited"
+    ],
+    "expectedKind": "file",
+    "forbiddenRankOnePatterns": [
+      "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+    ],
+    "rankOneFiles": [
+      "packages/react/src/Blankslate/Blankslate.module.css"
+    ],
+    "styleAuthority": {
+      "approach": "css-modules",
+      "confidence": "high",
+      "files": [
+        "packages/react/src/Blankslate/Blankslate.module.css",
+        "packages/react/src/Blankslate/Blankslate.tsx"
+      ]
+    }
+  },
+  "review": {
+    "notes": "Independently checked the frozen base tree and candidate record. The neutral file selector resolves limited with the Blankslate production CSS module at rank one; test stories and generated snapshots are not production authority. Replaced Vitest-only style evidence with the production module and its importer, and confirmed the scope statement is exact.",
+    "reviewedAt": "2026-07-22T12:17:39Z",
+    "reviewedBy": "independent-target-review-b",
+    "status": "approved"
+  },
+  "schemaVersion": "decantr-benchmark-task-delivery-spec.v1",
+  "taskId": "primer-react.blankslate-balanced-copy"
+}

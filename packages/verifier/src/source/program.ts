@@ -85,6 +85,9 @@ interface ParsedCompilerConfig {
 
 const RESOLUTION_EXTENSIONS = ['.ts', '.tsx', '.mts', '.cts', '.js', '.jsx', '.mjs', '.cjs'];
 
+const inventoryPathIndexes = new WeakMap<SourceInventory, Map<string, ProjectSourceFile>>();
+const programSourceFileIndexes = new WeakMap<ts.Program, Map<string, ts.SourceFile>>();
+
 const DEFAULT_COMPILER_OPTIONS: ts.CompilerOptions = {
   allowImportingTsExtensions: true,
   allowJs: true,
@@ -166,9 +169,27 @@ function readCompilerConfig(
 }
 
 function inventoryFileByAbsolutePath(inventory: SourceInventory): Map<string, ProjectSourceFile> {
-  return new Map(
+  const cached = inventoryPathIndexes.get(inventory);
+  if (cached) return cached;
+
+  const index = new Map(
     inventory.files.map((file) => [normalizeSourcePath(resolve(file.absolutePath)), file]),
   );
+  inventoryPathIndexes.set(inventory, index);
+  return index;
+}
+
+function sourceFileByAbsolutePath(program: ts.Program): Map<string, ts.SourceFile> {
+  const cached = programSourceFileIndexes.get(program);
+  if (cached) return cached;
+
+  const index = new Map(
+    program
+      .getSourceFiles()
+      .map((sourceFile) => [normalizeSourcePath(resolve(sourceFile.fileName)), sourceFile]),
+  );
+  programSourceFileIndexes.set(program, index);
+  return index;
 }
 
 export function createProjectSourceProgram(
@@ -202,10 +223,7 @@ export function getProjectSourceFile(
   const absolutePath = isAbsolute(pathOrSourceFile)
     ? resolve(pathOrSourceFile)
     : resolve(context.projectRoot, pathOrSourceFile);
-  const normalized = normalizeSourcePath(absolutePath);
-  return context.program
-    .getSourceFiles()
-    .find((sourceFile) => normalizeSourcePath(resolve(sourceFile.fileName)) === normalized);
+  return sourceFileByAbsolutePath(context.program).get(normalizeSourcePath(absolutePath));
 }
 
 function sourceFileRelativePath(context: ProjectSourceProgram, sourceFile: ts.SourceFile): string {

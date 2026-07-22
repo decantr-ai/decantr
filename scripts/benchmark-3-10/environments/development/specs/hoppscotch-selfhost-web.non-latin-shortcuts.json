@@ -1,0 +1,87 @@
+{
+  "base": {
+    "commit": "8aac537c7ad7327a2e151e73cbb6fb65d485419f",
+    "tree": "fa3ca544e514d5e71bae92ed1de2aeb988d5a025"
+  },
+  "cleanAfterPreparation": true,
+  "lockfiles": [
+    {
+      "path": "pnpm-lock.yaml",
+      "sha256": "3007d05bdaf9297533b61ff63e3ca44fd24e3c3f04dedd5468fbca021e9c0c45"
+    }
+  ],
+  "partition": "development",
+  "preparation": [
+    {
+      "args": [
+        "--",
+        ".env.example",
+        ".env"
+      ],
+      "cwd": ".",
+      "executable": "/bin/cp",
+      "id": "copy-project-environment",
+      "network": "none",
+      "required": true,
+      "timeoutMs": 10000
+    },
+    {
+      "args": [
+        "install",
+        "--frozen-lockfile"
+      ],
+      "cwd": ".",
+      "executable": "pnpm",
+      "id": "install-dependencies",
+      "network": "dependency-registry",
+      "required": true,
+      "timeoutMs": 7200000
+    }
+  ],
+  "profile": {
+    "arch": "x64",
+    "bunVersion": null,
+    "id": "node-22.19.0-pnpm-10.32.1",
+    "nodeVersion": "22.19.0",
+    "os": "linux",
+    "packageManager": {
+      "name": "pnpm",
+      "version": "10.32.1"
+    }
+  },
+  "projectPath": "packages/hoppscotch-selfhost-web",
+  "review": {
+    "notes": "Independent source-evidence re-review verified 4 frozen Git blobs and exact SHA-256 values at 8aac537c7ad7327a2e151e73cbb6fb65d485419f. The frozen tree pins pnpm 10.32.1 but only a floating Node 22 line, not exact Node 22.19.0.",
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "status": "draft"
+  },
+  "schemaVersion": "decantr-benchmark-task-environment.v1",
+  "sourceEvidence": [
+    {
+      "kind": "reviewer-override",
+      "path": ".github/workflows/tests.yml",
+      "sha256": "c368d021cb75effc3be59f34c38e51f7c2a7e77f2de1dc16e590f46204376c89",
+      "statement": "Frozen tests explicitly pin the supported Node 22 line and install pnpm 10 dependencies after preparing the root environment."
+    },
+    {
+      "kind": "package-manifest",
+      "path": "package.json",
+      "sha256": "5c3799ebfc3dfcac6d7c742455cf732644df7ef05c2637d4d652f2d45bbcc86a",
+      "statement": "Manifest evidence considered for pnpm and runtime selection."
+    },
+    {
+      "kind": "package-manifest",
+      "path": "packages/hoppscotch-selfhost-web/package.json",
+      "sha256": "caf1fb246f4f57e22d2f57fd5289e06e8656a9dc3c33b448ab0ecce8d031eade",
+      "statement": "Manifest evidence considered for pnpm and runtime selection."
+    },
+    {
+      "kind": "lockfile",
+      "path": "pnpm-lock.yaml",
+      "sha256": "3007d05bdaf9297533b61ff63e3ca44fd24e3c3f04dedd5468fbca021e9c0c45",
+      "statement": "Selected pnpm lockfile for deterministic dependency preparation."
+    }
+  ],
+  "taskId": "hoppscotch-selfhost-web.non-latin-shortcuts"
+}

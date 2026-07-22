@@ -1,0 +1,61 @@
+{
+  "base": {
+    "commit": "f2eb0ffedb443927b0e0f4f3e78d66042fb673f7",
+    "tree": "14d58bd0a3886a59bda69d3b55d7fe7fb08086f6"
+  },
+  "cleanAfterPreparation": true,
+  "lockfiles": [
+    {
+      "path": "package-lock.json",
+      "sha256": "e3732a7f75113cdae09868bb73970735707088b94cd96f9753fc51c750a5ff06"
+    }
+  ],
+  "partition": "development",
+  "preparation": [
+    {
+      "args": [
+        "ci"
+      ],
+      "cwd": ".",
+      "executable": "npm",
+      "id": "install-dependencies",
+      "network": "dependency-registry",
+      "required": true,
+      "timeoutMs": 7200000
+    }
+  ],
+  "profile": {
+    "arch": "x64",
+    "bunVersion": null,
+    "id": "node-20.19.5-npm-10.8.2",
+    "nodeVersion": "20.19.5",
+    "os": "linux",
+    "packageManager": {
+      "name": "npm",
+      "version": "10.8.2"
+    }
+  },
+  "projectPath": ".",
+  "review": {
+    "notes": "Independent source-evidence re-review verified 2 frozen Git blobs and exact SHA-256 values at f2eb0ffedb443927b0e0f4f3e78d66042fb673f7. The frozen tree does not pin Node 20.19.5 or npm 10.8.2; the prior clean-install statement has no retained, content-bound Linux x64 execution evidence.",
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "status": "draft"
+  },
+  "schemaVersion": "decantr-benchmark-task-environment.v1",
+  "sourceEvidence": [
+    {
+      "kind": "lockfile",
+      "path": "package-lock.json",
+      "sha256": "e3732a7f75113cdae09868bb73970735707088b94cd96f9753fc51c750a5ff06",
+      "statement": "Frozen npm lockfile binds the dependency graph and records the Angular and jsdom Node 20.19 engine floor."
+    },
+    {
+      "kind": "package-manifest",
+      "path": "package.json",
+      "sha256": "064a62dd733641acdda3e3427d68686257028e26b6d6e0a27c0c5bdbb2750227",
+      "statement": "Manifest evidence considered for npm and runtime selection."
+    }
+  ],
+  "taskId": "angular-realworld.url-addressable-feeds"
+}

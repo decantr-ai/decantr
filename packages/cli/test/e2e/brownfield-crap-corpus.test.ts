@@ -168,17 +168,37 @@ describe('brownfield crap corpus', () => {
             });
             writeFileSync(join(projectDir, 'vite.config.ts'), 'export default {};\n');
             mkdirp(join(projectDir, 'src', 'router'));
+            mkdirp(join(projectDir, 'src', 'views'));
+            writeFileSync(
+              join(projectDir, 'src', 'main.ts'),
+              [
+                "import { createApp } from 'vue';",
+                "import { router } from './router';",
+                'createApp({}).use(router).mount("#app");',
+                '',
+              ].join('\n'),
+            );
+            for (const view of ['Home', 'Workspace', 'Roles', 'Library']) {
+              writeFileSync(
+                join(projectDir, 'src', 'views', `${view}.vue`),
+                `<template><main>${view}</main></template>\n`,
+              );
+            }
             writeFileSync(
               join(projectDir, 'src', 'router', 'index.ts'),
               [
                 "import { createRouter, createWebHistory } from 'vue-router';",
+                "import Home from '../views/Home.vue';",
+                "import Workspace from '../views/Workspace.vue';",
+                "import Roles from '../views/Roles.vue';",
+                "import Library from '../views/Library.vue';",
                 'export const router = createRouter({',
                 '  history: createWebHistory(),',
                 '  routes: [',
-                "    { path: '/', component: {} },",
-                "    { path: '/workspace', component: {} },",
-                "    { path: '/admin/roles', component: {} },",
-                "    { path: '/content/library', component: {} },",
+                "    { path: '/', component: Home },",
+                "    { path: '/workspace', component: Workspace },",
+                "    { path: '/admin/roles', component: Roles },",
+                "    { path: '/content/library', component: Library },",
                 '  ],',
                 '});',
                 '',

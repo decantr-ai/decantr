@@ -9,4 +9,8 @@ Use the channel that matches the shape of the work:
 
 Discord is intentionally live and lightweight. Durable decisions should land back in GitHub issues, pull requests, or docs.
 
-For Decantr 3.9 CI or Studio defects, include the exact package version, selected project path, whether the artifact is v2 or explicit v3, the command used, and a privacy-reviewed minimal report. Do not post application source, secrets, full local paths, or unredacted evidence bundles to a public issue. Human qualification claims, sole-maintainer waiver changes, and missing-evidence disputes belong in a durable GitHub issue or pull request, not an ephemeral chat thread.
+For current stable Decantr 3.9.4 defects, include the exact package version, selected project path, command, whether the report is v2 or explicit v3, and a privacy-reviewed minimal artifact. Do not post application source, secrets, full local paths, or unredacted evidence bundles to a public issue.
+
+For unreleased 3.10 discovery feedback, also include the resolved app root and the reported selected-app, surface-authority, topology, taskability, component-inventory, styling-authority, and runtime-evidence states. Report false authority separately from missed candidates: tests, stories, fixtures, mocks, generated files, build output, and sibling apps must never be promoted into production authority. A `limited`, `blocked`, `unsupported`, or `not_proven` result is useful evidence, not a request to relabel the result as passing.
+
+Benchmark design, model substitutions, qualification claims, sole-maintainer waiver changes, and missing-evidence disputes belong in a durable GitHub issue or pull request. Decantr 3.10 is not released or value-proven unless its frozen qualification gate passes.

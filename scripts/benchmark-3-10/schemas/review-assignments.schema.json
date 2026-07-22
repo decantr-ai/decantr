@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/benchmark-3-10/review-assignments.v1.json",
+  "title": "Decantr 3.10 private blinded-review assignments",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "seed", "runPlanSha256", "recordSetSha256", "assignments"],
+  "properties": {
+    "schemaVersion": { "const": "decantr-benchmark-review-assignments.v1" },
+    "seed": { "type": "string", "minLength": 16 },
+    "runPlanSha256": { "$ref": "#/$defs/sha256" },
+    "recordSetSha256": { "$ref": "#/$defs/sha256" },
+    "assignments": {
+      "type": "array",
+      "minItems": 64,
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["assignmentId", "preferenceUnitId", "taskId", "framework", "candidates"],
+        "properties": {
+          "assignmentId": { "type": "string", "pattern": "^assignment-[a-f0-9]{20}$" },
+          "preferenceUnitId": { "type": "string", "pattern": "^preference-unit-[a-f0-9]{20}$" },
+          "taskId": { "type": "string", "minLength": 1 },
+          "framework": { "type": "string", "minLength": 1 },
+          "candidates": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": { "$ref": "#/$defs/candidate" }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "artifactId", "runId", "arm", "modelId", "repetition", "recordSha256"],
+      "properties": {
+        "label": { "enum": ["A", "B"] },
+        "artifactId": { "type": "string", "pattern": "^artifact-[a-f0-9]{20}$" },
+        "runId": { "type": "string", "minLength": 1 },
+        "arm": { "enum": ["control", "treatment"] },
+        "modelId": { "type": "string", "minLength": 1 },
+        "repetition": { "type": "integer", "minimum": 1 },
+        "recordSha256": { "$ref": "#/$defs/sha256" }
+      }
+    }
+  }
+}

@@ -209,6 +209,10 @@ export interface ScanDiscoveryV2 {
   routeEvidence: string[];
   componentConfidence: DiscoveryConfidenceLevel;
   componentEvidence: string[];
+  uiSurfaces: Pick<
+    ProjectDiscovery['surfaces'],
+    'schemaVersion' | 'status' | 'primaryMode' | 'counts' | 'axes' | 'evidenceAdapters' | 'reasons'
+  >;
   limitations: string[];
 }
 
@@ -1187,11 +1191,9 @@ function scanStaticHosting(
 
 function buildApplicability(
   detection: ProjectDetection,
-  routes: RouteScan,
-  components: ScanReportV1['components'],
-  discoveryRoutes: ProjectDiscovery['routes'],
+  surfaces: ProjectDiscovery['surfaces'],
 ): ScanReportV1['applicability'] {
-  if (!WEB_FRAMEWORKS.has(detection.framework)) {
+  if (surfaces.status === 'unsupported') {
     const label =
       detection.primaryLanguage === 'python'
         ? 'Not a Brownfield UI target'
@@ -1207,35 +1209,29 @@ function buildApplicability(
     };
   }
 
-  if (
-    detection.framework === 'angular' &&
-    (discoveryRoutes.authority !== 'proven' || discoveryRoutes.completeness !== 'complete')
-  ) {
+  if (surfaces.status === 'blocked') {
     return {
       status: 'partial_fit',
-      label: 'Angular route authority not proven',
+      label: 'UI authority blocked',
       reasons: [
-        'Angular was detected, but Decantr could not prove a complete route table reachable from the selected app bootstrap.',
-        ...discoveryRoutes.limitations.slice(0, 2),
+        'Decantr could not prove a safe implementation target for this selected UI package.',
+        ...surfaces.reasons.slice(0, 2),
       ],
     };
   }
 
-  if (routes.routes.length > 0 || components.componentCount > 0) {
+  if (surfaces.status === 'ready') {
     return {
       status: 'strong_fit',
-      label: 'Good Brownfield scan target',
-      reasons: [
-        'A supported web UI framework or static site entrypoint was detected.',
-        'Routes or UI component files are present.',
-      ],
+      label: 'UI authority ready',
+      reasons: ['Every blocking static authority axis is proven for this selected target.'],
     };
   }
 
   return {
     status: 'partial_fit',
-    label: 'Partial Brownfield signal',
-    reasons: ['A web framework was detected, but route/component evidence is thin.'],
+    label: 'UI authority limited',
+    reasons: surfaces.reasons.slice(0, 3),
   };
 }
 
@@ -1443,13 +1439,15 @@ function buildCommands(
   discovery: ProjectDiscovery,
 ): string[] {
   const commands = ['npx @decantr/cli scan'];
-  if (
-    applicability.status === 'strong_fit' &&
-    discovery.routes.authority === 'proven' &&
-    discovery.routes.completeness === 'complete'
-  ) {
+  const selectedAppStatus = discovery.surfaces.axes.selectedApp.status;
+  const surfaceAuthorityStatus = discovery.surfaces.axes.surfaceAuthority.status;
+  const attachable =
+    (selectedAppStatus === 'proven' || selectedAppStatus === 'partial') &&
+    (surfaceAuthorityStatus === 'proven' || surfaceAuthorityStatus === 'partial');
+  if (attachable) {
     commands.push('npx @decantr/cli adopt --yes');
     commands.push('npx @decantr/cli doctor');
+    if (applicability.status === 'partial_fit') commands.push('npx @decantr/cli scan --json');
   } else if (applicability.status === 'partial_fit') {
     commands.push('npx @decantr/cli scan --json');
   }
@@ -1520,7 +1518,87 @@ function scanDiscoverySummary(discovery: ProjectDiscovery): ScanDiscoveryV2 {
     routeEvidence: discovery.routes.evidence,
     componentConfidence: discovery.components.confidence,
     componentEvidence: discovery.components.evidence,
+    uiSurfaces: {
+      schemaVersion: discovery.surfaces.schemaVersion,
+      status: discovery.surfaces.status,
+      primaryMode: discovery.surfaces.primaryMode,
+      counts: discovery.surfaces.counts,
+      axes: discovery.surfaces.axes,
+      evidenceAdapters: discovery.surfaces.evidenceAdapters,
+      reasons: discovery.surfaces.reasons,
+    },
     limitations: discovery.limitations,
+  };
+}
+
+function unavailableUISurfaces(): ScanDiscoveryV2['uiSurfaces'] {
+  const unsupported = {
+    status: 'unsupported' as const,
+    confidence: 'low' as const,
+    evidence: [],
+    limitations: ['Source could not be inspected.'],
+    blocksReady: true,
+  };
+  const unresolved = {
+    status: 'unresolved' as const,
+    confidence: 'low' as const,
+    evidence: [],
+    limitations: ['Source could not be inspected.'],
+    blocksReady: true,
+  };
+  return {
+    schemaVersion: 'ui-surfaces.v1',
+    status: 'unsupported',
+    primaryMode: 'unknown',
+    counts: {
+      file: 0,
+      route: 0,
+      layout: 0,
+      component: 0,
+      story: 0,
+      overlay: 0,
+      flow: 0,
+      package: 0,
+      'runtime-state': 0,
+    },
+    axes: {
+      selectedApp: unsupported,
+      surfaceAuthority: unresolved,
+      topologyCompleteness: unresolved,
+      taskability: unresolved,
+      componentInventory: { ...unresolved, blocksReady: false },
+      stylingAuthority: unresolved,
+      runtimeEvidence: {
+        status: 'not_applicable',
+        confidence: 'low',
+        evidence: [],
+        limitations: ['Runtime evidence was not collected.'],
+        blocksReady: false,
+      },
+    },
+    evidenceAdapters: {
+      storybook: unavailableEvidenceAdapter('storybook'),
+      figmaCodeConnect: unavailableEvidenceAdapter('figma-code-connect'),
+      designTokens: unavailableEvidenceAdapter('design-tokens'),
+      projectTests: unavailableEvidenceAdapter('project-tests'),
+      runtime: unavailableEvidenceAdapter('runtime'),
+      visual: unavailableEvidenceAdapter('visual'),
+      accessibility: unavailableEvidenceAdapter('accessibility'),
+    },
+    reasons: ['Selected UI source could not be inspected.'],
+  };
+}
+
+function unavailableEvidenceAdapter(
+  kind: ProjectDiscovery['surfaces']['evidenceAdapters'][keyof ProjectDiscovery['surfaces']['evidenceAdapters']]['kind'],
+): ProjectDiscovery['surfaces']['evidenceAdapters'][keyof ProjectDiscovery['surfaces']['evidenceAdapters']] {
+  return {
+    kind,
+    status: 'absent',
+    confidence: 'low',
+    files: [],
+    evidence: [],
+    limitations: ['Source could not be inspected.'],
   };
 }
 
@@ -1547,7 +1625,7 @@ export async function scanProject(
   const assistantRules = discovery.assistant.ruleFiles;
   const staticHosting = scanStaticHosting(projectRoot, detection);
   const pagesProbe = options.pagesProbe ?? null;
-  const applicability = buildApplicability(detection, routes, components, discovery.routes);
+  const applicability = buildApplicability(detection, discovery.surfaces);
   const confidence = discovery.confidence;
   const rawInput = options.input ?? { kind: 'local', value: '.' };
   const input =
@@ -1724,6 +1802,7 @@ export function createUnavailableScanReport(input: {
       routeEvidence: [],
       componentConfidence: 'low',
       componentEvidence: [],
+      uiSurfaces: unavailableUISurfaces(),
       limitations: ['Source could not be inspected.'],
     },
     findings: [

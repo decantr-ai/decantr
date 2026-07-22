@@ -395,7 +395,7 @@ export async function createWorkspaceHealthReport(
       nextActions: [
         workspaceLoopState === 'verified'
           ? 'Workspace loop verified.'
-          : 'Open the highest-risk project, run `decantr task <route> "<intent>"`, repair, then rerun `decantr verify`.',
+          : 'Open the highest-risk project, run `decantr task <target> "<intent>"`, repair, then rerun `decantr verify`.',
       ],
     },
     projects: checked,

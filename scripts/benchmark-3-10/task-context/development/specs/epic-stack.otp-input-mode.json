@@ -1,0 +1,59 @@
+{
+  "input": {
+    "policyCard": {
+      "statements": [
+        {
+          "id": "repository-authority",
+          "sources": [
+            "base-checkout"
+          ],
+          "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+        },
+        {
+          "id": "change-scope",
+          "sources": [
+            "task.scope"
+          ],
+          "text": "Keep authored changes within the declared allowlist: app/components/ui/input-otp.tsx, app/components/ui/**/*.test.tsx, tests/**. Do not edit forbidden paths: app/routes/**, app/**/server*, prisma/**, .env*, package.json, package-lock.json."
+        },
+        {
+          "id": "host-verification",
+          "sources": [
+            "candidate.environment"
+          ],
+          "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+        }
+      ]
+    },
+    "target": {
+      "selector": "component:InputOTP"
+    }
+  },
+  "oracle": {
+    "acceptedStatuses": [
+      "limited"
+    ],
+    "expectedKind": "component",
+    "forbiddenRankOnePatterns": [
+      "(^|/)(?:\\.next|\\.nuxt|\\.svelte-kit|__fixtures__|__generated__|__mocks__|__tests__|build|coverage|cypress|dist|e2e|fixtures?|generated|mocks?|out|playwright|specs?|stories|test-utils?|testing|tests?|target)(?:/|$)|\\.(?:cy|d|e2e|fixture|gen|generated|mock|spec|stories?|test|vitest)\\.[^.]+$"
+    ],
+    "rankOneFiles": [
+      "app/components/ui/input-otp.tsx"
+    ],
+    "styleAuthority": {
+      "approach": "tailwind",
+      "confidence": "high",
+      "files": [
+        "app/styles/tailwind.css"
+      ]
+    }
+  },
+  "review": {
+    "notes": "Approved: component:InputOTP uniquely selects the production reusable control and returns limited as declared. Tailwind authority is established by app/styles/tailwind.css, candidate scope text is exact, and the rank-one guard now excludes test, generated, and build output.",
+    "reviewedAt": "2026-07-22T12:19:56Z",
+    "reviewedBy": "independent-target-review-a",
+    "status": "approved"
+  },
+  "schemaVersion": "decantr-benchmark-task-delivery-spec.v1",
+  "taskId": "epic-stack.otp-input-mode"
+}

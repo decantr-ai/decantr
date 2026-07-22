@@ -1,0 +1,137 @@
+name: Decantr 3.10 evaluator qualification
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_run_id:
+        description: Run ID containing the sealed qualification-input artifact
+        required: true
+        type: string
+      input_artifact:
+        description: Exact artifact name containing request.json and its bound inputs
+        required: true
+        type: string
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: benchmark-3-10-evaluator-qualification-${{ github.ref }}-${{ inputs.source_run_id }}
+  cancel-in-progress: false
+
+jobs:
+  qualify:
+    name: Host-isolated evaluator qualification
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    permissions:
+      actions: read
+      attestations: write
+      contents: read
+      id-token: write
+      packages: read
+    steps:
+      - name: Resolve the sealed input controller commit
+        id: source
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_RUN_ID: ${{ inputs.source_run_id }}
+        run: |
+          SOURCE_RUN="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN_ID")"
+          SOURCE_SHA="$(jq -r .head_sha <<<"$SOURCE_RUN")"
+          test "$(jq -r .head_repository.full_name <<<"$SOURCE_RUN")" = "$GITHUB_REPOSITORY"
+          test "$(jq -r .path <<<"$SOURCE_RUN")" = ".github/workflows/benchmark-3-10-qualification-input.yml"
+          test "$(jq -r .event <<<"$SOURCE_RUN")" = "workflow_dispatch"
+          test "$(jq -r .conclusion <<<"$SOURCE_RUN")" = "success"
+          test "$(jq -r .head_branch <<<"$SOURCE_RUN")" = "main"
+          test "$SOURCE_SHA" = "$GITHUB_SHA"
+          echo "sha=$SOURCE_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Check out the qualification controller
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ steps.source.outputs.sha }}
+          persist-credentials: false
+
+      - name: Select the locked controller Node runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.17.0
+          cache: ''
+
+      - name: Download sealed qualification inputs
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: ${{ inputs.input_artifact }}
+          path: qualification-input
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ inputs.source_run_id }}
+
+      - name: Verify the host boundary without Docker execution
+        run: node --test scripts/benchmark-3-10/evaluators/container-orchestrator.test.mjs
+
+      - name: Authenticate the isolated evaluator to GHCR
+        env:
+          GHCR_TOKEN: ${{ github.token }}
+        run: printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+
+      - name: Hydrate the exact source snapshots
+        run: |
+          node scripts/benchmark-3-10/evaluators/qualification-input.mjs \
+            --mode hydrate \
+            --input-root "$GITHUB_WORKSPACE/qualification-input" \
+            --request request.json \
+            --workspace-root "$RUNNER_TEMP/qualification-workspaces"
+
+      - name: Execute isolated preparation and evaluator qualification
+        run: |
+          node scripts/benchmark-3-10/evaluators/container-orchestrator.mjs \
+            --request request.json \
+            --input-root "$GITHUB_WORKSPACE/qualification-input" \
+            --workspace-root "$RUNNER_TEMP/qualification-workspaces" \
+            --artifact-root "$RUNNER_TEMP/qualification-output" \
+            --out "$RUNNER_TEMP/qualification-output/execution-attestation.json"
+
+      - name: Remove GHCR reader credentials
+        if: always()
+        run: docker logout ghcr.io
+
+      - name: Create GitHub OIDC provenance for retained evidence
+        if: success()
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373
+        with:
+          subject-path: ${{ runner.temp }}/qualification-output/execution-attestation.json
+
+      - name: Retain and verify the offline provenance bundle
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/qualification-output/provenance-download"
+          cd "$RUNNER_TEMP/qualification-output/provenance-download"
+          gh attestation download ../execution-attestation.json --repo "$GITHUB_REPOSITORY"
+          BUNDLE_PATH="$(find . -maxdepth 1 -type f -name 'sha256*.jsonl' -print -quit)"
+          test -n "$BUNDLE_PATH"
+          gh attestation verify ../execution-attestation.json \
+            --repo "$GITHUB_REPOSITORY" \
+            --bundle "$BUNDLE_PATH" \
+            --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/benchmark-3-10-evaluator-qualification.yml" \
+            --source-digest "$GITHUB_SHA" \
+            --source-ref "$GITHUB_REF" \
+            --predicate-type "https://slsa.dev/provenance/v1" \
+            --deny-self-hosted-runners \
+            --format json > verification.json
+          mv "$BUNDLE_PATH" ../execution-attestation.provenance.jsonl
+          mv verification.json ../execution-attestation.provenance-verification.json
+          cd "$GITHUB_WORKSPACE"
+          rmdir "$RUNNER_TEMP/qualification-output/provenance-download"
+
+      - name: Upload retained qualification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: benchmark-3-10-qualification-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/qualification-output
+          if-no-files-found: warn
+          retention-days: 30

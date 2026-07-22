@@ -127,6 +127,10 @@ describe('check command (e2e)', () => {
       'import { Routes, Route } from "react-router-dom";\nexport function App() { return <Routes><Route path="/dashboard" element={<main />} /><Route path="/settings" element={<main />} /></Routes>; }\n',
     );
     writeFileSync(
+      join(testDir, 'src', 'main.tsx'),
+      'import { App } from "./App";\nexport { App };\n',
+    );
+    writeFileSync(
       join(testDir, 'decantr.essence.json'),
       JSON.stringify(
         {

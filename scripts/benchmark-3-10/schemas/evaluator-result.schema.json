@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/benchmark-3-10/evaluator-result.v1.json",
+  "title": "Decantr 3.10 normalized evaluator result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "runId", "taskId", "contractSha256", "status", "metrics", "commands", "failures"],
+  "properties": {
+    "schemaVersion": { "const": "decantr-benchmark-evaluator-result.v1" },
+    "runId": { "type": "string", "minLength": 1 },
+    "taskId": { "type": "string", "minLength": 1 },
+    "contractSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "status": { "enum": ["passed", "failed", "build_failure", "evaluator_failure"] },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["functionalSuccess", "buildPassed", "governanceViolations"],
+      "properties": {
+        "functionalSuccess": { "type": "boolean" },
+        "buildPassed": { "type": "boolean" },
+        "governanceViolations": { "type": "number", "minimum": 0 },
+        "accessibilityViolations": { "type": "number", "minimum": 0 },
+        "visualScore": { "type": ["number", "null"], "minimum": 0, "maximum": 100 }
+      }
+    },
+    "commands": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "kind", "status", "exitCode", "durationMs", "stdoutSha256", "stderrSha256"],
+        "properties": {
+          "id": { "type": "string" },
+          "kind": { "type": "string" },
+          "status": { "enum": ["passed", "failed", "unavailable", "malformed"] },
+          "exitCode": { "type": ["integer", "null"] },
+          "durationMs": { "type": "integer", "minimum": 0 },
+          "stdoutSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "stderrSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+        }
+      }
+    },
+    "failures": { "type": "array", "items": { "type": "string" } }
+  }
+}

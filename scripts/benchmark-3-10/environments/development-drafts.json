@@ -1,0 +1,1699 @@
+{
+  "bundleSha256": "82b918159c3ca419df72b522838b69cc4b5d90fed36c52ba218a4c483d537c22",
+  "confidentiality": "public development environment drafts; not confirmatory evidence",
+  "count": 24,
+  "partition": "development",
+  "program": "decantr-3.10-ui-change-control-proof",
+  "records": [
+    {
+      "base": {
+        "commit": "c6aff3856a8d4ef4dc35e37f4564f40d5ff3c9a6",
+        "tree": "d13a70e8e5f07513339bee0dc623dc84242f3c70"
+      },
+      "cleanAfterPreparation": true,
+      "lockfiles": [
+        {
+          "path": "package-lock.json",
+          "sha256": "7d984a8a1ff8c2dfb114e0c403008d49292a21e50b0b32e7b4f09a8c8cf9d131"
+        }
+      ],
+      "partition": "development",
+      "preparation": [
+        {
+          "args": [
+            "ci",
+            "--legacy-peer-deps"
+          ],
+          "cwd": ".",
+          "executable": "npm",
+          "id": "install-dependencies",
+          "network": "dependency-registry",
+          "required": true,
+          "timeoutMs": 7200000
+        }
+      ],
+      "profile": {
+        "arch": "x64",
+        "bunVersion": null,
+        "id": "node-20.11.1-npm-10.2.4",
+        "nodeVersion": "20.11.1",
+        "os": "linux",
+        "packageManager": {
+          "name": "npm",
+          "version": "10.2.4"
+        }
+      },
+      "projectPath": ".",
+      "review": {
+        "notes": "Generated from frozen repository evidence; independent runtime and command review is required.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "draft"
+      },
+      "schemaVersion": "decantr-benchmark-task-environment.v1",
+      "sourceEvidence": [
+        {
+          "kind": "lockfile",
+          "path": "package-lock.json",
+          "sha256": "7d984a8a1ff8c2dfb114e0c403008d49292a21e50b0b32e7b4f09a8c8cf9d131",
+          "statement": "Selected npm lockfile for deterministic dependency preparation."
+        },
+        {
+          "kind": "package-manifest",
+          "path": "package.json",
+          "sha256": "478d330977069c3911478e8a37a0b7975a750d7e4a4ecc728522ff38e4e607f9",
+          "statement": "Manifest evidence considered for npm and runtime selection."
+        }
+      ],
+      "taskId": "angular-realworld.update-existing-article"
+    },
+    {
+      "base": {
+        "commit": "f2eb0ffedb443927b0e0f4f3e78d66042fb673f7",
+        "tree": "14d58bd0a3886a59bda69d3b55d7fe7fb08086f6"
+      },
+      "cleanAfterPreparation": true,
+      "lockfiles": [
+        {
+          "path": "package-lock.json",
+          "sha256": "e3732a7f75113cdae09868bb73970735707088b94cd96f9753fc51c750a5ff06"
+        }
+      ],
+      "partition": "development",
+      "preparation": [
+        {
+          "args": [
+            "ci"
+          ],
+          "cwd": ".",
+          "executable": "npm",
+          "id": "install-dependencies",
+          "network": "dependency-registry",
+          "required": true,
+          "timeoutMs": 7200000
+        }
+      ],
+      "profile": {
+        "arch": "x64",
+        "bunVersion": null,
+        "id": "node-20.11.1-npm-10.2.4",
+        "nodeVersion": "20.11.1",
+        "os": "linux",
+        "packageManager": {
+          "name": "npm",
+          "version": "10.2.4"
+        }
+      },
+      "projectPath": ".",
+      "review": {
+        "notes": "Generated from frozen repository evidence; independent runtime and command review is required.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "draft"
+      },
+      "schemaVersion": "decantr-benchmark-task-environment.v1",
+      "sourceEvidence": [
+        {
+          "kind": "lockfile",
+          "path": "package-lock.json",
+          "sha256": "e3732a7f75113cdae09868bb73970735707088b94cd96f9753fc51c750a5ff06",
+          "statement": "Selected npm lockfile for deterministic dependency preparation."
+        },
+        {
+          "kind": "package-manifest",
+          "path": "package.json",
+          "sha256": "064a62dd733641acdda3e3427d68686257028e26b6d6e0a27c0c5bdbb2750227",
+          "statement": "Manifest evidence considered for npm and runtime selection."
+        }
+      ],
+      "taskId": "angular-realworld.url-addressable-feeds"
+    },
+    {
+      "base": {
+        "commit": "af48f06be20a1926a24d0bba6ce339e754c5735f",
+        "tree": "f1aa04cdc600e3c52fcdc3400ce159be35a4d792"
+      },
+      "cleanAfterPreparation": true,
+      "lockfiles": [
+        {
+          "path": "apps/react-vite/yarn.lock",
+          "sha256": "24f3d961ee08c108d356f3e3efff0deedf55aa3579a7096f8ec94c9b38049364"
+        }
+      ],
+      "partition": "development",
+      "preparation": [
+        {
+          "args": [
+            "--",
+            ".env.example",
+            ".env"
+          ],
+          "cwd": "apps/react-vite",
+          "executable": "/bin/cp",
+          "id": "copy-project-environment",
+          "network": "none",
+          "required": true,
+          "timeoutMs": 10000
+        },
+        {
+          "args": [
+            "install",
+            "--frozen-lockfile"
+          ],
+          "cwd": "apps/react-vite",
+          "executable": "yarn",
+          "id": "install-dependencies",
+          "network": "dependency-registry",
+          "required": true,
+          "timeoutMs": 7200000
+        }
+      ],
+      "profile": {
+        "arch": "x64",
+        "bunVersion": null,
+        "id": "node-20.19.5-yarn-1.22.22",
+        "nodeVersion": "20.19.5",
+        "os": "linux",
+        "packageManager": {
+          "name": "yarn",
+          "version": "1.22.22"
+        }
+      },
+      "projectPath": "apps/react-vite",
+      "review": {
+        "notes": "Generated from frozen repository evidence; independent runtime and command review is required.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "draft"
+      },
+      "schemaVersion": "decantr-benchmark-task-environment.v1",
+      "sourceEvidence": [
+        {
+          "kind": "package-manifest",
+          "path": "apps/react-vite/package.json",
+          "sha256": "cc52ee4cf6c90c281ec152268573846efe150e5e170224b463aec28e6591d886",
+          "statement": "Manifest evidence considered for yarn and runtime selection."
+        },
+        {
+          "kind": "lockfile",
+          "path": "apps/react-vite/yarn.lock",
+          "sha256": "24f3d961ee08c108d356f3e3efff0deedf55aa3579a7096f8ec94c9b38049364",
+          "statement": "Selected yarn lockfile for deterministic dependency preparation."
+        }
+      ],
+      "taskId": "bulletproof-react-vite.discussion-pagination"
+    },
+    {
+      "base": {
+        "commit": "156ba7350070400e5877e3a54d33486cd0d33640",
+        "tree": "6c04d700f8af13daccacc9bc5d1bc6a073797ee6"
+      },
+      "cleanAfterPreparation": true,
+      "lockfiles": [
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "e8eb85f788ecc03887320758912dbe8adbf1eded91530d94a2c7aa7fa94bf168"
+        }
+      ],
+      "partition": "development",
+      "preparation": [
+        {
+          "args": [
+            "install",
+            "--frozen-lockfile"
+          ],
+          "cwd": ".",
+          "executable": "pnpm",
+          "id": "install-dependencies",
+          "network": "dependency-registry",
+          "required": true,
+          "timeoutMs": 7200000
+        }
+      ],
+      "profile": {
+        "arch": "x64",
+        "bunVersion": null,
+        "id": "node-22.19.0-pnpm-10.28.0",
+        "nodeVersion": "22.19.0",
+        "os": "linux",
+        "packageManager": {
+          "name": "pnpm",
+          "version": "10.28.0"
+        }
+      },
+      "projectPath": "demos/simple",
+      "review": {
+        "notes": "Generated from frozen repository evidence; independent runtime and command review is required.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "draft"
+      },
+      "schemaVersion": "decantr-benchmark-task-environment.v1",
+      "sourceEvidence": [
+        {
+          "kind": "package-manifest",
+          "path": "demos/simple/package.json",
+          "sha256": "238aecd23bcb2e44024ae43be43cf343d336aaf7a8db1142dca8f6611830679f",
+          "statement": "Manifest evidence considered for pnpm and runtime selection."
+        },
+        {
+          "kind": "package-manifest",
+          "path": "package.json",
+          "sha256": "9b2ed8b814917ec850b8d81111e1b63ca2db5f2be774aaaa300174bf4829a18d",
+          "statement": "Manifest evidence considered for pnpm and runtime selection."
+        },
+        {
+          "kind": "lockfile",
+          "path": "pnpm-lock.yaml",
+          "sha256": "e8eb85f788ecc03887320758912dbe8adbf1eded91530d94a2c7aa7fa94bf168",
+          "statement": "Selected pnpm lockfile for deterministic dependency preparation."
+        }
+      ],
+      "taskId": "emdash-simple.visual-edit-field-focus"
+    },
+    {
+      "base": {
+        "commit": "dafaa9650bdcbfc9ad5487afe3e228bd751f594c",
+        "tree": "41d6462df511c88b9d9b3a263008a3e7ffe4d511"
+      },
+      "cleanAfterPreparation": true,
+      "lockfiles": [
+        {
+          "path": "package-lock.json",
+          "sha256": "127fd4b2e2f3725bad89092cd531004001be581b6bc3ac7a00026738fc3f2559"
+        }
+      ],
+      "partition": "development",
+      "preparation": [
+        {
+          "args": [
+            "ci"
+          ],
+          "cwd": ".",
+          "executable": "npm",
+          "id": "install-dependencies",
+          "network": "dependency-registry",
+          "required": true,
+          "timeoutMs": 7200000
+        },
+        {
+          "args": [
+            "--",
+            ".env.example",
+            ".env"
+          ],
+          "cwd": ".",
+          "executable": "/bin/cp",
+          "id": "copy-project-environment",
+          "network": "none",
+          "required": true,
+          "timeoutMs": 10000
+        },
+        {
+          "args": [
+            "run",
+            "setup"
+          ],
+          "cwd": ".",
+          "executable": "npm",
+          "id": "initialize-local-services",
+          "network": "none",
+          "required": true,
+          "timeoutMs": 900000
+        },
+        {
+          "args": [
+            "exec",
+            "--offline",
+            "prisma",
+            "--",
+            "db",
+            "seed"
+          ],
+          "cwd": ".",
+          "executable": "npm",
+          "id": "seed-local-database",
+          "network": "none",
+          "required": true,
+          "timeoutMs": 300000
+        }
+      ],
+      "profile": {
+        "arch": "x64",
+        "bunVersion": null,
+        "id": "node-22.19.0-npm-10.9.3",
+        "nodeVersion": "22.19.0",
+        "os": "linux",
+        "packageManager": {
+          "name": "npm",
+          "version": "10.9.3"
+        }
+      },
+      "projectPath": ".",
+      "review": {
+        "notes": "Generated from frozen repository evidence; independent runtime and command review is required.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "draft"
+      },
+      "schemaVersion": "decantr-benchmark-task-environment.v1",
+      "sourceEvidence": [
+        {
+          "kind": "lockfile",
+          "path": "package-lock.json",
+          "sha256": "127fd4b2e2f3725bad89092cd531004001be581b6bc3ac7a00026738fc3f2559",
+          "statement": "Selected npm lockfile for deterministic dependency preparation."
+        },
+        {
+          "kind": "package-manifest",
+          "path": "package.json",
+          "sha256": "6ee2f61a65d2791a3d5485448ee9d0696cf35b674d5eed6c8add68a75e3a3d08",
+          "statement": "Manifest evidence considered for npm and runtime selection."
+        }
+      ],
+      "taskId": "epic-stack.otp-input-mode"
+    },
+    {
+      "base": {
+        "commit": "0e7bf07b25465b3878194d87a1c4ca38bc511e85",
+        "tree": "74fbfa47e4956bf606d08c0383afcce66eb29d34"
+      },
+      "cleanAfterPreparation": true,
+      "lockfiles": [
+        {
+          "path": "package-lock.json",
+          "sha256": "e3ae2668d330bfde0b3ef9efca11f69d435e944c006886aa60b47262f048db27"
+        }
+      ],
+      "partition": "development",
+      "preparation": [
+        {
+          "args": [
+            "ci"
+          ],
+          "cwd": ".",
+          "executable": "npm",
+          "id": "install-dependencies",
+          "network": "dependency-registry",
+          "required": true,
+          "timeoutMs": 7200000
+        }
+      ],
+      "profile": {
+        "arch": "x64",
+        "bunVersion": null,
+        "id": "node-20.19.5-npm-10.8.2",
+        "nodeVersion": "20.19.5",
+        "os": "linux",
+        "packageManager": {
+          "name": "npm",
+          "version": "10.8.2"
+        }
+      },
+      "projectPath": ".",
+      "review": {
+        "notes": "Generated from frozen repository evidence; independent runtime and command review is required.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "draft"
+      },
+      "schemaVersion": "decantr-benchmark-task-environment.v1",
+      "sourceEvidence": [
+        {
+          "kind": "lockfile",
+          "path": "package-lock.json",
+          "sha256": "e3ae2668d330bfde0b3ef9efca11f69d435e944c006886aa60b47262f048db27",
+          "statement": "Selected npm lockfile for deterministic dependency preparation."
+        },
+        {
+          "kind": "package-manifest",
+          "path": "package.json",
+          "sha256": "936f91e64ac82141588b34ebb8f04a69bba1ad589d2b7c3429e3581d43d7d2a6",
+          "statement": "Manifest evidence considered for npm and runtime selection."
+        }
+      ],
+      "taskId": "figma-sds.unique-pricing-nav"
+    },
+    {
+      "base": {
+        "commit": "8aac537c7ad7327a2e151e73cbb6fb65d485419f",
+        "tree": "fa3ca544e514d5e71bae92ed1de2aeb988d5a025"
+      },
+      "cleanAfterPreparation": true,
+      "lockfiles": [
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "3007d05bdaf9297533b61ff63e3ca44fd24e3c3f04dedd5468fbca021e9c0c45"
+        }
+      ],
+      "partition": "development",
+      "preparation": [
+        {
+          "args": [
+            "--",
+            ".env.example",
+            ".env"
+          ],
+          "cwd": ".",
+          "executable": "/bin/cp",
+          "id": "copy-project-environment",
+          "network": "none",
+          "required": true,
+          "timeoutMs": 10000
+        },
+        {
+          "args": [
+            "install",
+            "--frozen-lockfile"
+          ],
+          "cwd": ".",
+          "executable": "pnpm",
+          "id": "install-dependencies",
+          "network": "dependency-registry",
+          "required": true,
+          "timeoutMs": 7200000
+        }
+      ],
+      "profile": {
+        "arch": "x64",
+        "bunVersion": null,
+        "id": "node-22.19.0-pnpm-10.32.1",
+        "nodeVersion": "22.19.0",
+        "os": "linux",
+        "packageManager": {
+          "name": "pnpm",
+          "version": "10.32.1"
+        }
+      },
+      "projectPath": "packages/hoppscotch-selfhost-web",
+      "review": {
+        "notes": "Generated from frozen repository evidence; independent runtime and command review is required.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "draft"
+      },
+      "schemaVersion": "decantr-benchmark-task-environment.v1",
+      "sourceEvidence": [
+        {
+          "kind": "package-manifest",
+          "path": "package.json",
+          "sha256": "5c3799ebfc3dfcac6d7c742455cf732644df7ef05c2637d4d652f2d45bbcc86a",
+          "statement": "Manifest evidence considered for pnpm and runtime selection."
+        },
+        {
+          "kind": "package-manifest",
+          "path": "packages/hoppscotch-selfhost-web/package.json",
+          "sha256": "caf1fb246f4f57e22d2f57fd5289e06e8656a9dc3c33b448ab0ecce8d031eade",
+          "statement": "Manifest evidence considered for pnpm and runtime selection."
+        },
+        {
+          "kind": "lockfile",
+          "path": "pnpm-lock.yaml",
+          "sha256": "3007d05bdaf9297533b61ff63e3ca44fd24e3c3f04dedd5468fbca021e9c0c45",
+          "statement": "Selected pnpm lockfile for deterministic dependency preparation."
+        }
+      ],
+      "taskId": "hoppscotch-selfhost-web.non-latin-shortcuts"
+    },
+    {
+      "base": {
+        "commit": "be21d258265c32631923778deba6e97f0bf314a4",
+        "tree": "396d2da6e16808323cb55107fc88920001236b6c"
+      },
+      "cleanAfterPreparation": true,
+      "lockfiles": [
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "57ad9511fa6c1be07ff5618c5a006c2587c26f000c5126bf88e5d6637add6440"
+        }
+      ],
+      "partition": "development",
+      "preparation": [
+        {
+          "args": [
+            "install",
+            "--frozen-lockfile"
+          ],
+          "cwd": ".",
+          "executable": "pnpm",
+          "id": "install-dependencies",
+          "network": "dependency-registry",
+          "required": true,
+          "timeoutMs": 7200000
+        }
+      ],
+      "profile": {
+        "arch": "x64",
+        "bunVersion": null,
+        "id": "node-22.19.0-pnpm-10.33.0",
+        "nodeVersion": "22.19.0",
+        "os": "linux",
+        "packageManager": {
+          "name": "pnpm",
+          "version": "10.33.0"
+        }
+      },
+      "projectPath": "packages/manager",
+      "review": {
+        "notes": "Generated from frozen repository evidence; independent runtime and command review is required.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "draft"
+      },
+      "schemaVersion": "decantr-benchmark-task-environment.v1",
+      "sourceEvidence": [
+        {
+          "kind": "runtime-hint",
+          "path": ".nvmrc",
+          "sha256": "85b6f5378729afed27e89d61f9c596dfdb33f5fb80bb3f0aab0b81c5b8768383",
+          "statement": "Runtime hint observed at the frozen base: 22.19"
+        },
+        {
+          "kind": "package-manifest",
+          "path": "package.json",
+          "sha256": "aa8351ceaf4b0915d510da6865146c388654f98ae66b9ec928ebaac0733327d2",
+          "statement": "Manifest evidence considered for pnpm and runtime selection."
+        },
+        {
+          "kind": "package-manifest",
+          "path": "packages/manager/package.json",
+          "sha256": "65a53b39ee1b3589d9a06276cb1b0865cdb9e32cd020fba599b82e5b518e12b3",
+          "statement": "Manifest evidence considered for pnpm and runtime selection."
+        },
+        {
+          "kind": "lockfile",
+          "path": "pnpm-lock.yaml",
+          "sha256": "57ad9511fa6c1be07ff5618c5a006c2587c26f000c5126bf88e5d6637add6440",
+          "statement": "Selected pnpm lockfile for deterministic dependency preparation."
+        }
+      ],
+      "taskId": "linode-manager.marketplace-markdown-links"
+    },
+    {
+      "base": {
+        "commit": "235b26d39d939344c3f26f58dd53a815ac7bae7d",
+        "tree": "afad3bf139836c04b21ba605a16b347421f33a34"
+      },
+      "cleanAfterPreparation": true,
+      "lockfiles": [
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "57ad9511fa6c1be07ff5618c5a006c2587c26f000c5126bf88e5d6637add6440"
+        }
+      ],
+      "partition": "development",
+      "preparation": [
+        {
+          "args": [
+            "install",
+            "--frozen-lockfile"
+          ],
+          "cwd": ".",
+          "executable": "pnpm",
+          "id": "install-dependencies",
+          "network": "dependency-registry",
+          "required": true,
+          "timeoutMs": 7200000
+        }
+      ],
+      "profile": {
+        "arch": "x64",
+        "bunVersion": null,
+        "id": "node-22.19.0-pnpm-10.33.0",
+        "nodeVersion": "22.19.0",
+        "os": "linux",
+        "packageManager": {
+          "name": "pnpm",
+          "version": "10.33.0"
+        }
+      },
+      "projectPath": "packages/manager",
+      "review": {
+        "notes": "Generated from frozen repository evidence; independent runtime and command review is required.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "draft"
+      },
+      "schemaVersion": "decantr-benchmark-task-environment.v1",
+      "sourceEvidence": [
+        {
+          "kind": "runtime-hint",
+          "path": ".nvmrc",
+          "sha256": "85b6f5378729afed27e89d61f9c596dfdb33f5fb80bb3f0aab0b81c5b8768383",
+          "statement": "Runtime hint observed at the frozen base: 22.19"
+        },
+        {
+          "kind": "package-manifest",
+          "path": "package.json",
+          "sha256": "aa8351ceaf4b0915d510da6865146c388654f98ae66b9ec928ebaac0733327d2",
+          "statement": "Manifest evidence considered for pnpm and runtime selection."
+        },
+        {
+          "kind": "package-manifest",
+          "path": "packages/manager/package.json",
+          "sha256": "65a53b39ee1b3589d9a06276cb1b0865cdb9e32cd020fba599b82e5b518e12b3",
+          "statement": "Manifest evidence considered for pnpm and runtime selection."
+        },
+        {
+          "kind": "lockfile",
+          "path": "pnpm-lock.yaml",
+          "sha256": "57ad9511fa6c1be07ff5618c5a006c2587c26f000c5126bf88e5d6637add6440",
+          "statement": "Selected pnpm lockfile for deterministic dependency preparation."
+        }
+      ],
+      "taskId": "linode-manager.switch-account-search"
+    },
+    {
+      "base": {
+        "commit": "7bd1b9313c2c99044626693f67e7709d83d67608",
+        "tree": "5aa001f8bc60956cf8107e8eb72f95f7081753aa"
+      },
+      "cleanAfterPreparation": true,
+      "lockfiles": [
+        {
+          "path": "package-lock.json",
+          "sha256": "bcf5562baacb240340323a264867c76f7b6ad5de37a88af4a859a7fe5373bedc"
+        }
+      ],
+      "partition": "development",
+      "preparation": [
+        {
+          "args": [
+            "ci"
+          ],
+          "cwd": ".",
+          "executable": "npm",
+          "id": "install-dependencies",
+          "network": "dependency-registry",
+          "required": true,
+          "timeoutMs": 7200000
+        }
+      ],
+      "profile": {
+        "arch": "x64",
+        "bunVersion": null,
+        "id": "node-12.22.12-npm-6.14.16",
+        "nodeVersion": "12.22.12",
+        "os": "linux",
+        "packageManager": {
+          "name": "npm",
+          "version": "6.14.16"
+        }
+      },
+      "projectPath": ".",
+      "review": {
+        "notes": "Generated from frozen repository evidence; independent runtime and command review is required.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "draft"
+      },
+      "schemaVersion": "decantr-benchmark-task-environment.v1",
+      "sourceEvidence": [
+        {
+          "kind": "lockfile",
+          "path": "package-lock.json",
+          "sha256": "bcf5562baacb240340323a264867c76f7b6ad5de37a88af4a859a7fe5373bedc",
+          "statement": "Selected npm lockfile for deterministic dependency preparation."
+        },
+        {
+          "kind": "package-manifest",
+          "path": "package.json",
+          "sha256": "924c141fefc6f11852df005a1e47757731c245a4efab4a3aa992fc51f4223a94",
+          "statement": "Manifest evidence considered for npm and runtime selection."
+        }
+      ],
+      "taskId": "ngx-admin.form-inputs-navigation"
+    },
+    {
+      "base": {
+        "commit": "ed757d14304d4f693c8a0e5d6374dca945fb32b0",
+        "tree": "28660a0918a86b9842096b7aa5a00aa06458d734"
+      },
+      "cleanAfterPreparation": true,
+      "lockfiles": [
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "e808586fb877ae166fb9353b32da386a16f7b29c8823087ebbbbeac5243caa30"
+        }
+      ],
+      "partition": "development",
+      "preparation": [
+        {
+          "args": [
+            "--",
+            "apps/dashboard/.env.example",
+            "apps/dashboard/.env.local"
+          ],
+          "cwd": ".",
+          "executable": "/bin/cp",
+          "id": "copy-dashboard-environment",
+          "network": "none",
+          "required": true,
+          "timeoutMs": 10000
+        },
+        {
+          "args": [
+            "install",
+            "--frozen-lockfile"
+          ],
+          "cwd": ".",
+          "executable": "pnpm",
+          "id": "install-dependencies",
+          "network": "dependency-registry",
+          "required": true,
+          "timeoutMs": 7200000
+        }
+      ],
+      "profile": {
+        "arch": "x64",
+        "bunVersion": null,
+        "id": "node-24.12.0-pnpm-10.26.0",
+        "nodeVersion": "24.12.0",
+        "os": "linux",
+        "packageManager": {
+          "name": "pnpm",
+          "version": "10.26.0"
+        }
+      },
+      "projectPath": "apps/dashboard",
+      "review": {
+        "notes": "Generated from frozen repository evidence; independent runtime and command review is required.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "draft"
+      },
+      "schemaVersion": "decantr-benchmark-task-environment.v1",
+      "sourceEvidence": [
+        {
+          "kind": "package-manifest",
+          "path": "apps/dashboard/package.json",
+          "sha256": "6cad5e08c8a8a3577fa6b435a8f8cb886f6b87f9ec87e59e9d694ddb05a693e3",
+          "statement": "Manifest evidence considered for pnpm and runtime selection."
+        },
+        {
+          "kind": "package-manifest",
+          "path": "package.json",
+          "sha256": "f443e97a7ceef4f46b290b303d9f03ef0199f89f8b52b3cf2224cb67eafb62a2",
+          "statement": "Manifest evidence considered for pnpm and runtime selection."
+        },
+        {
+          "kind": "lockfile",
+          "path": "pnpm-lock.yaml",
+          "sha256": "e808586fb877ae166fb9353b32da386a16f7b29c8823087ebbbbeac5243caa30",
+          "statement": "Selected pnpm lockfile for deterministic dependency preparation."
+        }
+      ],
+      "taskId": "openstatus-dashboard.api-key-dialog-interactivity"
+    },
+    {
+      "base": {
+        "commit": "17266abe7e23dbfa3ed1c98d83a2eaace54c133e",
+        "tree": "457930f7170ef5980062efc5af3c360a63661c0e"
+      },
+      "cleanAfterPreparation": true,
+      "lockfiles": [
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "9c93367a1db5910a8c56ceaabca6dd5689d7ae4b48bd8834242061a472881d72"
+        }
+      ],
+      "partition": "development",
+      "preparation": [
+        {
+          "args": [
+            "install",
+            "--frozen-lockfile"
+          ],
+          "cwd": ".",
+          "executable": "pnpm",
+          "id": "install-dependencies",
+          "network": "dependency-registry",
+          "required": true,
+          "timeoutMs": 7200000
+        }
+      ],
+      "profile": {
+        "arch": "x64",
+        "bunVersion": null,
+        "id": "node-24.13.0-pnpm-10.27.0",
+        "nodeVersion": "24.13.0",
+        "os": "linux",
+        "packageManager": {
+          "name": "pnpm",
+          "version": "10.27.0"
+        }
+      },
+      "projectPath": "templates/website",
+      "review": {
+        "notes": "Generated from frozen repository evidence; independent runtime and command review is required.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "draft"
+      },
+      "schemaVersion": "decantr-benchmark-task-environment.v1",
+      "sourceEvidence": [
+        {
+          "kind": "runtime-hint",
+          "path": ".node-version",
+          "sha256": "3ebea09fcbed81499165f8bb4d650d8307e4a759136e5411b9a726504b8fc2ac",
+          "statement": "Runtime hint observed at the frozen base: v24.13.0"
+        },
+        {
+          "kind": "runtime-hint",
+          "path": ".nvmrc",
+          "sha256": "3ebea09fcbed81499165f8bb4d650d8307e4a759136e5411b9a726504b8fc2ac",
+          "statement": "Runtime hint observed at the frozen base: v24.13.0"
+        },
+        {
+          "kind": "runtime-hint",
+          "path": ".tool-versions",
+          "sha256": "bff02ed5a33221b71bcd9c92d9f5738a22d24b1c70146c58686e016636654383",
+          "statement": "Runtime hint observed at the frozen base: pnpm 10.27.0\nnodejs 24.13.0"
+        },
+        {
+          "kind": "package-manifest",
+          "path": "package.json",
+          "sha256": "f2ca4917e0524313795c4de677a7173454045c950774bb9220b304bad375a0c8",
+          "statement": "Manifest evidence considered for pnpm and runtime selection."
+        },
+        {
+          "kind": "lockfile",
+          "path": "pnpm-lock.yaml",
+          "sha256": "9c93367a1db5910a8c56ceaabca6dd5689d7ae4b48bd8834242061a472881d72",
+          "statement": "Selected pnpm lockfile for deterministic dependency preparation."
+        },
+        {
+          "kind": "package-manifest",
+          "path": "templates/website/package.json",
+          "sha256": "211f619a5cc5d97de29976622fb8b10e7b60aa653a69fb88625a1fde3151b1a3",
+          "statement": "Manifest evidence considered for pnpm and runtime selection."
+        }
+      ],
+      "taskId": "payload-website-template.local-media-next16"
+    },
+    {
+      "base": {
+        "commit": "727097823422582f784674e00d3905c652d125db",
+        "tree": "500de870cfea6f068bd7d38a8115cb3105c74c80"
+      },
+      "cleanAfterPreparation": true,
+      "lockfiles": [
+        {
+          "path": "package-lock.json",
+          "sha256": "f93e76ccffd1b2e83cb162d659b622db545a29e75a440df53e7c4692cd61e1a1"
+        }
+      ],
+      "partition": "development",
+      "preparation": [
+        {
+          "args": [
+            "ci"
+          ],
+          "cwd": ".",
+          "executable": "npm",
+          "id": "install-dependencies",
+          "network": "dependency-registry",
+          "required": true,
+          "timeoutMs": 7200000
+        }
+      ],
+      "profile": {
+        "arch": "x64",
+        "bunVersion": null,
+        "id": "node-24.16.0-npm-11.6.3",
+        "nodeVersion": "24.16.0",
+        "os": "linux",
+        "packageManager": {
+          "name": "npm",
+          "version": "11.6.3"
+        }
+      },
+      "projectPath": ".",
+      "review": {
+        "notes": "Generated from frozen repository evidence; independent runtime and command review is required.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "draft"
+      },
+      "schemaVersion": "decantr-benchmark-task-environment.v1",
+      "sourceEvidence": [
+        {
+          "kind": "runtime-hint",
+          "path": ".nvmrc",
+          "sha256": "7add09abfdd044ac178d0a04a733342dc3ade5fbc80352c1800e8a536002a2e4",
+          "statement": "Runtime hint observed at the frozen base: v24"
+        },
+        {
+          "kind": "lockfile",
+          "path": "package-lock.json",
+          "sha256": "f93e76ccffd1b2e83cb162d659b622db545a29e75a440df53e7c4692cd61e1a1",
+          "statement": "Selected npm lockfile for deterministic dependency preparation."
+        },
+        {
+          "kind": "package-manifest",
+          "path": "package.json",
+          "sha256": "0d0844d2b8a9a5a29699ab0c15ca78b1637e03201b95c213cac3b17a66ad539a",
+          "statement": "Manifest evidence considered for npm and runtime selection."
+        }
+      ],
+      "taskId": "primer-react.banner-narrow-actions"
+    },
+    {
+      "base": {
+        "commit": "6dc1858538e3b7ea66b78dd9d37c391c530d78ae",
+        "tree": "e12bab734b07d40cf8b9e101d398251c57c9a8e4"
+      },
+      "cleanAfterPreparation": true,
+      "lockfiles": [
+        {
+          "path": "package-lock.json",
+          "sha256": "e7f68006a04328b75f0a3482bfce130961ef81437f77dfa550d80d5a684cfde7"
+        }
+      ],
+      "partition": "development",
+      "preparation": [
+        {
+          "args": [
+            "ci"
+          ],
+          "cwd": ".",
+          "executable": "npm",
+          "id": "install-dependencies",
+          "network": "dependency-registry",
+          "required": true,
+          "timeoutMs": 7200000
+        }
+      ],
+      "profile": {
+        "arch": "x64",
+        "bunVersion": null,
+        "id": "node-24.16.0-npm-11.6.3",
+        "nodeVersion": "24.16.0",
+        "os": "linux",
+        "packageManager": {
+          "name": "npm",
+          "version": "11.6.3"
+        }
+      },
+      "projectPath": ".",
+      "review": {
+        "notes": "Generated from frozen repository evidence; independent runtime and command review is required.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "draft"
+      },
+      "schemaVersion": "decantr-benchmark-task-environment.v1",
+      "sourceEvidence": [
+        {
+          "kind": "runtime-hint",
+          "path": ".nvmrc",
+          "sha256": "7add09abfdd044ac178d0a04a733342dc3ade5fbc80352c1800e8a536002a2e4",
+          "statement": "Runtime hint observed at the frozen base: v24"
+        },
+        {
+          "kind": "lockfile",
+          "path": "package-lock.json",
+          "sha256": "e7f68006a04328b75f0a3482bfce130961ef81437f77dfa550d80d5a684cfde7",
+          "statement": "Selected npm lockfile for deterministic dependency preparation."
+        },
+        {
+          "kind": "package-manifest",
+          "path": "package.json",
+          "sha256": "32a1a9b82142300a056a9655c3a89601de2fdb53adf4ee4d1c53556d6f4e7a81",
+          "statement": "Manifest evidence considered for npm and runtime selection."
+        }
+      ],
+      "taskId": "primer-react.blankslate-balanced-copy"
+    },
+    {
+      "base": {
+        "commit": "219fe4a1e9fe00783d4b14cc2dde879c08d27cc9",
+        "tree": "d7edb779ee146decfff36ea179824ae01125e501"
+      },
+      "cleanAfterPreparation": true,
+      "lockfiles": [
+        {
+          "path": "package-lock.json",
+          "sha256": "913cf86d8c742230280706a4eab7e49e72d70b8c7d8edc8afba7baa27662a45c"
+        }
+      ],
+      "partition": "development",
+      "preparation": [
+        {
+          "args": [
+            "submodule",
+            "status",
+            "--recursive"
+          ],
+          "cwd": ".",
+          "executable": "git",
+          "id": "verify-submodules",
+          "network": "none",
+          "required": true,
+          "timeoutMs": 60000
+        },
+        {
+          "args": [
+            "ci"
+          ],
+          "cwd": ".",
+          "executable": "npm",
+          "id": "install-dependencies",
+          "network": "dependency-registry",
+          "required": true,
+          "timeoutMs": 7200000
+        }
+      ],
+      "profile": {
+        "arch": "x64",
+        "bunVersion": null,
+        "id": "node-22.19.0-npm-10.9.3",
+        "nodeVersion": "22.19.0",
+        "os": "linux",
+        "packageManager": {
+          "name": "npm",
+          "version": "10.9.3"
+        }
+      },
+      "projectPath": ".",
+      "review": {
+        "notes": "Generated from frozen repository evidence; independent runtime and command review is required.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "draft"
+      },
+      "schemaVersion": "decantr-benchmark-task-environment.v1",
+      "sourceEvidence": [
+        {
+          "kind": "lockfile",
+          "path": "package-lock.json",
+          "sha256": "913cf86d8c742230280706a4eab7e49e72d70b8c7d8edc8afba7baa27662a45c",
+          "statement": "Selected npm lockfile for deterministic dependency preparation."
+        },
+        {
+          "kind": "package-manifest",
+          "path": "package.json",
+          "sha256": "ef5706fa52a58b6bc6c82325d03cfa8155634f14269db0682c1494185cc1de57",
+          "statement": "Manifest evidence considered for npm and runtime selection."
+        }
+      ],
+      "taskId": "sakai-ng.overlay-showcase"
+    },
+    {
+      "base": {
+        "commit": "03ef1236f0226283c2bfe6e316585115ab0b7a62",
+        "tree": "e4b063cade6d97a7ee241b9221e102172dea21ac"
+      },
+      "cleanAfterPreparation": true,
+      "lockfiles": [
+        {
+          "path": "package-lock.json",
+          "sha256": "ae699486094784f740a5214dd53f94f1488297fae4d7a1bfa720e4d7523e4bc3"
+        }
+      ],
+      "partition": "development",
+      "preparation": [
+        {
+          "args": [
+            "ci"
+          ],
+          "cwd": ".",
+          "executable": "npm",
+          "id": "install-dependencies",
+          "network": "dependency-registry",
+          "required": true,
+          "timeoutMs": 7200000
+        }
+      ],
+      "profile": {
+        "arch": "x64",
+        "bunVersion": null,
+        "id": "node-22.19.0-npm-10.9.3",
+        "nodeVersion": "22.19.0",
+        "os": "linux",
+        "packageManager": {
+          "name": "npm",
+          "version": "10.9.3"
+        }
+      },
+      "projectPath": ".",
+      "review": {
+        "notes": "Generated from frozen repository evidence; independent runtime and command review is required.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "draft"
+      },
+      "schemaVersion": "decantr-benchmark-task-environment.v1",
+      "sourceEvidence": [
+        {
+          "kind": "lockfile",
+          "path": "package-lock.json",
+          "sha256": "ae699486094784f740a5214dd53f94f1488297fae4d7a1bfa720e4d7523e4bc3",
+          "statement": "Selected npm lockfile for deterministic dependency preparation."
+        },
+        {
+          "kind": "package-manifest",
+          "path": "package.json",
+          "sha256": "36daa712109e10af3375fbaf0300b7165f438dc1133840ab401007ee9b5572c9",
+          "statement": "Manifest evidence considered for npm and runtime selection."
+        }
+      ],
+      "taskId": "sakai-vue.overlay-popover"
+    },
+    {
+      "base": {
+        "commit": "0008d4848b845a5a2324c78f135239ce6e3739b6",
+        "tree": "7ac06e06f7c3c192fcbfd4db9f6888f924196abb"
+      },
+      "cleanAfterPreparation": true,
+      "lockfiles": [
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "0ff47a1140fcaec2da5aee09eca077932c95d49094d8a005baa6e8a7bf43cc6e"
+        }
+      ],
+      "partition": "development",
+      "preparation": [
+        {
+          "args": [
+            "install",
+            "--frozen-lockfile"
+          ],
+          "cwd": ".",
+          "executable": "pnpm",
+          "id": "install-dependencies",
+          "network": "dependency-registry",
+          "required": true,
+          "timeoutMs": 7200000
+        }
+      ],
+      "profile": {
+        "arch": "x64",
+        "bunVersion": null,
+        "id": "node-22.19.0-pnpm-10.25.0",
+        "nodeVersion": "22.19.0",
+        "os": "linux",
+        "packageManager": {
+          "name": "pnpm",
+          "version": "10.25.0"
+        }
+      },
+      "projectPath": "apps/v4",
+      "review": {
+        "notes": "Generated from frozen repository evidence; independent runtime and command review is required.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "draft"
+      },
+      "schemaVersion": "decantr-benchmark-task-environment.v1",
+      "sourceEvidence": [
+        {
+          "kind": "package-manifest",
+          "path": "apps/v4/package.json",
+          "sha256": "e4362abecacdf523a6241ce20c4c04265ac2f1ae49f5e379746fa3f54deaa79e",
+          "statement": "Manifest evidence considered for pnpm and runtime selection."
+        },
+        {
+          "kind": "package-manifest",
+          "path": "package.json",
+          "sha256": "8e2fe704e138e57e77e27035b0debec17118addae8ea53529bd40e43ddaf0d7c",
+          "statement": "Manifest evidence considered for pnpm and runtime selection."
+        },
+        {
+          "kind": "lockfile",
+          "path": "pnpm-lock.yaml",
+          "sha256": "0ff47a1140fcaec2da5aee09eca077932c95d49094d8a005baa6e8a7bf43cc6e",
+          "statement": "Selected pnpm lockfile for deterministic dependency preparation."
+        }
+      ],
+      "taskId": "shadcn-vue-v4.inline-alert-content"
+    },
+    {
+      "base": {
+        "commit": "c74b5848035567efc876a6488469daf71653ac8e",
+        "tree": "26044ce9c4cd54b0019fd759f6f0fddddc44bfeb"
+      },
+      "cleanAfterPreparation": true,
+      "lockfiles": [
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "c83ae72f5d415355fbddbb667ff6df38075518a175c2bc093a69adac0d4b510c"
+        }
+      ],
+      "partition": "development",
+      "preparation": [
+        {
+          "args": [
+            "install",
+            "--frozen-lockfile"
+          ],
+          "cwd": ".",
+          "executable": "pnpm",
+          "id": "install-dependencies",
+          "network": "dependency-registry",
+          "required": true,
+          "timeoutMs": 7200000
+        }
+      ],
+      "profile": {
+        "arch": "x64",
+        "bunVersion": null,
+        "id": "node-22.19.0-pnpm-10.25.0",
+        "nodeVersion": "22.19.0",
+        "os": "linux",
+        "packageManager": {
+          "name": "pnpm",
+          "version": "10.25.0"
+        }
+      },
+      "projectPath": "apps/v4",
+      "review": {
+        "notes": "Generated from frozen repository evidence; independent runtime and command review is required.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "draft"
+      },
+      "schemaVersion": "decantr-benchmark-task-environment.v1",
+      "sourceEvidence": [
+        {
+          "kind": "package-manifest",
+          "path": "apps/v4/package.json",
+          "sha256": "dfb7d53da149e12c9995bb16d483f3266a346cc4fb8396174bd465f4e72fe4ab",
+          "statement": "Manifest evidence considered for pnpm and runtime selection."
+        },
+        {
+          "kind": "package-manifest",
+          "path": "package.json",
+          "sha256": "e88aff410106469db7bec8d34ffa8d81dc7f24d8352762560ec99ee04dd42efb",
+          "statement": "Manifest evidence considered for pnpm and runtime selection."
+        },
+        {
+          "kind": "lockfile",
+          "path": "pnpm-lock.yaml",
+          "sha256": "c83ae72f5d415355fbddbb667ff6df38075518a175c2bc093a69adac0d4b510c",
+          "statement": "Selected pnpm lockfile for deterministic dependency preparation."
+        }
+      ],
+      "taskId": "shadcn-vue-v4.selected-date-hover"
+    },
+    {
+      "base": {
+        "commit": "431feefd1be365ba45c034da7c9b33616108bc66",
+        "tree": "e86abe48db7e5d138d8fe01c233417130d7ba0fc"
+      },
+      "cleanAfterPreparation": true,
+      "lockfiles": [
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "6a81b20f708f0ba56a9812e589111e85aa0a54a4c46fcc917d028d160e19a2c0"
+        }
+      ],
+      "partition": "development",
+      "preparation": [
+        {
+          "args": [
+            "install",
+            "--frozen-lockfile"
+          ],
+          "cwd": ".",
+          "executable": "pnpm",
+          "id": "install-dependencies",
+          "network": "dependency-registry",
+          "required": true,
+          "timeoutMs": 7200000
+        }
+      ],
+      "profile": {
+        "arch": "x64",
+        "bunVersion": null,
+        "id": "node-20.5.0-pnpm-8.6.12",
+        "nodeVersion": "20.5.0",
+        "os": "linux",
+        "packageManager": {
+          "name": "pnpm",
+          "version": "8.6.12"
+        }
+      },
+      "projectPath": "examples/hackernews",
+      "review": {
+        "notes": "Generated from frozen repository evidence; independent runtime and command review is required.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "draft"
+      },
+      "schemaVersion": "decantr-benchmark-task-environment.v1",
+      "sourceEvidence": [
+        {
+          "kind": "runtime-hint",
+          "path": ".node-version",
+          "sha256": "77ba33d6df429dfc0bfc27faa0b8ed3fcc08c17b7b9b8af59be694e1dd539723",
+          "statement": "Runtime hint observed at the frozen base: 20.5.0"
+        },
+        {
+          "kind": "package-manifest",
+          "path": "examples/hackernews/package.json",
+          "sha256": "17b8f7948b968753e2ab1d98f97724251f3283a8eedea6000db456292da1d0e9",
+          "statement": "Manifest evidence considered for pnpm and runtime selection."
+        },
+        {
+          "kind": "package-manifest",
+          "path": "package.json",
+          "sha256": "ed28265b5afe7aceb2d6b5944255ca295ae3b0596a995256b471562183120319",
+          "statement": "Manifest evidence considered for pnpm and runtime selection."
+        },
+        {
+          "kind": "lockfile",
+          "path": "pnpm-lock.yaml",
+          "sha256": "6a81b20f708f0ba56a9812e589111e85aa0a54a4c46fcc917d028d160e19a2c0",
+          "statement": "Selected pnpm lockfile for deterministic dependency preparation."
+        }
+      ],
+      "taskId": "solid-start-hackernews.home-link-active-root"
+    },
+    {
+      "base": {
+        "commit": "795d311d1d8b8e502eb7f33b9b6d4475691d3101",
+        "tree": "6c51e9a67f9fd6fdba8be75d8cbdc85f3c710e3e"
+      },
+      "cleanAfterPreparation": true,
+      "lockfiles": [
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "8417a43c6dd474809040c25f6f41c5cb14e9c3aea804a9539b375808ee6001b9"
+        }
+      ],
+      "partition": "development",
+      "preparation": [
+        {
+          "args": [
+            "--",
+            ".env.example",
+            ".env"
+          ],
+          "cwd": ".",
+          "executable": "/bin/cp",
+          "id": "copy-project-environment",
+          "network": "none",
+          "required": true,
+          "timeoutMs": 10000
+        },
+        {
+          "args": [
+            "install",
+            "--frozen-lockfile"
+          ],
+          "cwd": ".",
+          "executable": "pnpm",
+          "id": "install-dependencies",
+          "network": "dependency-registry",
+          "required": true,
+          "timeoutMs": 7200000
+        }
+      ],
+      "profile": {
+        "arch": "x64",
+        "bunVersion": null,
+        "id": "node-22.19.0-pnpm-10.33.0",
+        "nodeVersion": "22.19.0",
+        "os": "linux",
+        "packageManager": {
+          "name": "pnpm",
+          "version": "10.33.0"
+        }
+      },
+      "projectPath": ".",
+      "review": {
+        "notes": "Generated from frozen repository evidence; independent runtime and command review is required.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "draft"
+      },
+      "schemaVersion": "decantr-benchmark-task-environment.v1",
+      "sourceEvidence": [
+        {
+          "kind": "package-manifest",
+          "path": "package.json",
+          "sha256": "61235f875f62dada88a9f87337c588401ef6ef52cdaa9c2c5069e0cc73ad76b5",
+          "statement": "Manifest evidence considered for pnpm and runtime selection."
+        },
+        {
+          "kind": "lockfile",
+          "path": "pnpm-lock.yaml",
+          "sha256": "8417a43c6dd474809040c25f6f41c5cb14e9c3aea804a9539b375808ee6001b9",
+          "statement": "Selected pnpm lockfile for deterministic dependency preparation."
+        }
+      ],
+      "taskId": "start-ui-web.book-cover-upload"
+    },
+    {
+      "base": {
+        "commit": "283eaecd0a88cd89ac30226ea560f96a8cf0e9bc",
+        "tree": "9f69dd3eb2e72bbd07df57ce5de8438b4bce3eeb"
+      },
+      "cleanAfterPreparation": true,
+      "lockfiles": [
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "6b66445b8183cb640327f293489fcebf6a07c625d5dfd109feb399d47ce48b41"
+        }
+      ],
+      "partition": "development",
+      "preparation": [
+        {
+          "args": [
+            "install",
+            "--frozen-lockfile"
+          ],
+          "cwd": ".",
+          "executable": "pnpm",
+          "id": "install-dependencies",
+          "network": "dependency-registry",
+          "required": true,
+          "timeoutMs": 7200000
+        }
+      ],
+      "profile": {
+        "arch": "x64",
+        "bunVersion": null,
+        "id": "node-22.19.0-pnpm-10.13.1",
+        "nodeVersion": "22.19.0",
+        "os": "linux",
+        "packageManager": {
+          "name": "pnpm",
+          "version": "10.13.1"
+        }
+      },
+      "projectPath": ".",
+      "review": {
+        "notes": "Generated from frozen repository evidence; independent runtime and command review is required.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "draft"
+      },
+      "schemaVersion": "decantr-benchmark-task-environment.v1",
+      "sourceEvidence": [
+        {
+          "kind": "package-manifest",
+          "path": "package.json",
+          "sha256": "649bf13024802ab5c7c13f1c5312f7d0ac060162affa5edf3fbe3ede1ff86390",
+          "statement": "Manifest evidence considered for pnpm and runtime selection."
+        },
+        {
+          "kind": "lockfile",
+          "path": "pnpm-lock.yaml",
+          "sha256": "6b66445b8183cb640327f293489fcebf6a07c625d5dfd109feb399d47ce48b41",
+          "statement": "Selected pnpm lockfile for deterministic dependency preparation."
+        }
+      ],
+      "taskId": "svgl.vlt-package-manager"
+    },
+    {
+      "base": {
+        "commit": "0f1be24f711b1fada8dd35a1554d4710d7fa6cd6",
+        "tree": "628a59f83d564aee67ab86a13d7651d97bda4aab"
+      },
+      "cleanAfterPreparation": true,
+      "lockfiles": [
+        {
+          "path": "bun.lock",
+          "sha256": "44c6ad24a2ecb394d6578aba5a8e06cf34d58bcadb2d80d71997920de7c3d996"
+        }
+      ],
+      "partition": "development",
+      "preparation": [
+        {
+          "args": [
+            "install",
+            "--frozen-lockfile"
+          ],
+          "cwd": ".",
+          "executable": "bun",
+          "id": "install-dependencies",
+          "network": "dependency-registry",
+          "required": true,
+          "timeoutMs": 7200000
+        }
+      ],
+      "profile": {
+        "arch": "x64",
+        "bunVersion": "1.3.10",
+        "id": "bun-1.3.10-bun-1.3.10",
+        "nodeVersion": null,
+        "os": "linux",
+        "packageManager": {
+          "name": "bun",
+          "version": "1.3.10"
+        }
+      },
+      "projectPath": ".",
+      "review": {
+        "notes": "Generated from frozen repository evidence; independent runtime and command review is required.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "draft"
+      },
+      "schemaVersion": "decantr-benchmark-task-environment.v1",
+      "sourceEvidence": [
+        {
+          "kind": "lockfile",
+          "path": "bun.lock",
+          "sha256": "44c6ad24a2ecb394d6578aba5a8e06cf34d58bcadb2d80d71997920de7c3d996",
+          "statement": "Selected bun lockfile for deterministic dependency preparation."
+        },
+        {
+          "kind": "package-manifest",
+          "path": "package.json",
+          "sha256": "d75b6e7a9b4304be7d61446e49d99e364567cdadb4438ffbcd8099224bbccb54",
+          "statement": "Manifest evidence considered for bun and runtime selection."
+        }
+      ],
+      "taskId": "tanstack-start-dashboard.overview-hydration"
+    },
+    {
+      "base": {
+        "commit": "860729230392c15d3eb9e28c270edc63baf15ea2",
+        "tree": "e21ea4bd65f1c9a5a345d72f031cd9d23af1f508"
+      },
+      "cleanAfterPreparation": true,
+      "lockfiles": [
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "43531812368e1585224f1a28f6371c584359dbc7fefe1a41aa4f6d5ed7aac842"
+        }
+      ],
+      "partition": "development",
+      "preparation": [
+        {
+          "args": [
+            "install",
+            "--frozen-lockfile",
+            "--ignore-scripts"
+          ],
+          "cwd": ".",
+          "executable": "pnpm",
+          "id": "install-dependencies",
+          "network": "dependency-registry",
+          "required": true,
+          "timeoutMs": 7200000
+        }
+      ],
+      "profile": {
+        "arch": "x64",
+        "bunVersion": null,
+        "id": "node-24.12.0-pnpm-10.32.1",
+        "nodeVersion": "24.12.0",
+        "os": "linux",
+        "packageManager": {
+          "name": "pnpm",
+          "version": "10.32.1"
+        }
+      },
+      "projectPath": ".",
+      "review": {
+        "notes": "Generated from frozen repository evidence; independent runtime and command review is required.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "draft"
+      },
+      "schemaVersion": "decantr-benchmark-task-environment.v1",
+      "sourceEvidence": [
+        {
+          "kind": "package-manifest",
+          "path": "package.json",
+          "sha256": "d2628c2adf3beef633a8a245cb2d06c0b7dbbc0e122d46b65f20b0c0ab8e6946",
+          "statement": "Manifest evidence considered for pnpm and runtime selection."
+        },
+        {
+          "kind": "lockfile",
+          "path": "pnpm-lock.yaml",
+          "sha256": "43531812368e1585224f1a28f6371c584359dbc7fefe1a41aa4f6d5ed7aac842",
+          "statement": "Selected pnpm lockfile for deterministic dependency preparation."
+        }
+      ],
+      "taskId": "tauri-start-solid.apply-font-preferences"
+    },
+    {
+      "base": {
+        "commit": "af655d3621b32327b8fb9fb985dfb597be6105a4",
+        "tree": "2ca0fb9e9789a946e2d8199e2b891a9aa25033fe"
+      },
+      "cleanAfterPreparation": true,
+      "lockfiles": [
+        {
+          "path": "frontend/pnpm-lock.yaml",
+          "sha256": "ca5ba8aee8a7cc8b1c712524ecfbbd9340c473954643e9f3162ee334d1b53b57"
+        }
+      ],
+      "partition": "development",
+      "preparation": [
+        {
+          "args": [
+            "install",
+            "--frozen-lockfile"
+          ],
+          "cwd": "frontend",
+          "executable": "pnpm",
+          "id": "install-dependencies",
+          "network": "dependency-registry",
+          "required": true,
+          "timeoutMs": 7200000
+        }
+      ],
+      "profile": {
+        "arch": "x64",
+        "bunVersion": null,
+        "id": "node-22.19.0-pnpm-10.33.0",
+        "nodeVersion": "22.19.0",
+        "os": "linux",
+        "packageManager": {
+          "name": "pnpm",
+          "version": "10.33.0"
+        }
+      },
+      "projectPath": "frontend",
+      "review": {
+        "notes": "Generated from frozen repository evidence; independent runtime and command review is required.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "draft"
+      },
+      "schemaVersion": "decantr-benchmark-task-environment.v1",
+      "sourceEvidence": [
+        {
+          "kind": "package-manifest",
+          "path": "frontend/package.json",
+          "sha256": "b7ec7f6cd70c98133d6781f85f96aaacce9ed9d5c7bebfa44139f126c5bcabe9",
+          "statement": "Manifest evidence considered for pnpm and runtime selection."
+        },
+        {
+          "kind": "lockfile",
+          "path": "frontend/pnpm-lock.yaml",
+          "sha256": "ca5ba8aee8a7cc8b1c712524ecfbbd9340c473954643e9f3162ee334d1b53b57",
+          "statement": "Selected pnpm lockfile for deterministic dependency preparation."
+        }
+      ],
+      "taskId": "upsnap-frontend.pending-countdown"
+    }
+  ],
+  "schemaVersion": "decantr-benchmark-task-environment-draft-bundle.v1"
+}

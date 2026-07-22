@@ -1,0 +1,61 @@
+{
+  "input": {
+    "policyCard": {
+      "statements": [
+        {
+          "id": "repository-authority",
+          "sources": [
+            "base-checkout"
+          ],
+          "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+        },
+        {
+          "id": "change-scope",
+          "sources": [
+            "task.scope"
+          ],
+          "text": "Keep authored changes within the declared allowlist: src/app/features/article/pages/editor/editor.component.ts, src/app/features/article/pages/editor/*.spec.ts. Do not edit forbidden paths: src/app/** (except allowed paths), package.json, package-lock.json, realworld/**, .github/**."
+        },
+        {
+          "id": "host-verification",
+          "sources": [
+            "candidate.environment"
+          ],
+          "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+        }
+      ]
+    },
+    "target": {
+      "selector": "/editor/:slug"
+    }
+  },
+  "oracle": {
+    "acceptedStatuses": [
+      "ready",
+      "limited"
+    ],
+    "expectedKind": "route",
+    "forbiddenRankOnePatterns": [
+      "(^|/)(?:\\.next|\\.nuxt|\\.svelte-kit|__fixtures__|__generated__|__mocks__|__tests__|build|coverage|cypress|dist|e2e|fixtures?|generated|mocks?|out|playwright|specs?|stories|test-utils?|testing|tests?|target)(?:/|$)|\\.(?:cy|d|e2e|fixture|gen|generated|mock|spec|stories?|test|vitest)\\.[^.]+$"
+    ],
+    "rankOneFiles": [
+      "src/app/features/article/pages/editor/editor.component.ts"
+    ],
+    "styleAuthority": {
+      "approach": "css",
+      "confidence": "high",
+      "files": [
+        "angular.json",
+        "src/styles.css"
+      ]
+    }
+  },
+  "review": {
+    "notes": "Approved after changing the selector to the base-defined /editor/:slug route. Built task context resolves it uniquely to the production editor component; Angular CSS authority exists, scope text matches the candidate, and the guard now excludes test, generated, and build lanes.",
+    "reviewedAt": "2026-07-22T12:19:56Z",
+    "reviewedBy": "independent-target-review-a",
+    "status": "approved"
+  },
+  "schemaVersion": "decantr-benchmark-task-delivery-spec.v1",
+  "taskId": "angular-realworld.update-existing-article"
+}

@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, realpathSync, statSync } from 'node:fs';
 import { extname, isAbsolute, join, relative, resolve } from 'node:path';
 import * as ts from 'typescript';
+import { classifyProjectSourceScope, type ProjectSourceScope } from './scope.js';
 
 export type ProjectSourceLanguage = 'typescript' | 'javascript';
 
@@ -27,6 +28,7 @@ export interface ProjectSourceFile {
   scriptKind: ts.ScriptKind;
   jsx: boolean;
   sizeBytes: number;
+  scope: ProjectSourceScope;
 }
 
 export interface SourceInventoryOptions {
@@ -188,6 +190,7 @@ function inventoryFile(projectRoot: string, absolutePath: string): ProjectSource
     scriptKind: sourceScriptKindFromPath(absolutePath),
     jsx: kind === 'tsx' || kind === 'jsx',
     sizeBytes,
+    scope: classifyProjectSourceScope(relativePath),
   };
 }
 

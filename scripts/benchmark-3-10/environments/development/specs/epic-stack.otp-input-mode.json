@@ -1,0 +1,140 @@
+{
+  "base": {
+    "commit": "dafaa9650bdcbfc9ad5487afe3e228bd751f594c",
+    "tree": "41d6462df511c88b9d9b3a263008a3e7ffe4d511"
+  },
+  "cleanAfterPreparation": true,
+  "lockfiles": [
+    {
+      "path": "package-lock.json",
+      "sha256": "127fd4b2e2f3725bad89092cd531004001be581b6bc3ac7a00026738fc3f2559"
+    }
+  ],
+  "partition": "development",
+  "preparation": [
+    {
+      "args": [
+        "ci"
+      ],
+      "cwd": ".",
+      "executable": "npm",
+      "id": "install-dependencies",
+      "network": "dependency-registry",
+      "required": true,
+      "timeoutMs": 7200000
+    },
+    {
+      "args": [
+        "--",
+        ".env.example",
+        ".env"
+      ],
+      "cwd": ".",
+      "executable": "/bin/cp",
+      "id": "copy-project-environment",
+      "network": "none",
+      "required": true,
+      "timeoutMs": 10000
+    },
+    {
+      "args": [
+        "run",
+        "build"
+      ],
+      "cwd": ".",
+      "executable": "npm",
+      "id": "build-application",
+      "network": "none",
+      "required": true,
+      "timeoutMs": 900000
+    },
+    {
+      "args": [
+        "exec",
+        "--offline",
+        "prisma",
+        "--",
+        "migrate",
+        "deploy"
+      ],
+      "cwd": ".",
+      "executable": "npm",
+      "id": "migrate-local-database",
+      "network": "none",
+      "required": true,
+      "timeoutMs": 300000
+    },
+    {
+      "args": [
+        "exec",
+        "--offline",
+        "prisma",
+        "--",
+        "generate",
+        "--sql"
+      ],
+      "cwd": ".",
+      "executable": "npm",
+      "id": "generate-prisma-client",
+      "network": "none",
+      "required": true,
+      "timeoutMs": 300000
+    },
+    {
+      "args": [
+        "exec",
+        "--offline",
+        "prisma",
+        "--",
+        "db",
+        "seed"
+      ],
+      "cwd": ".",
+      "executable": "npm",
+      "id": "seed-local-database",
+      "network": "none",
+      "required": true,
+      "timeoutMs": 300000
+    }
+  ],
+  "profile": {
+    "arch": "x64",
+    "bunVersion": null,
+    "id": "node-22.19.0-npm-10.9.3",
+    "nodeVersion": "22.19.0",
+    "os": "linux",
+    "packageManager": {
+      "name": "npm",
+      "version": "10.9.3"
+    }
+  },
+  "projectPath": ".",
+  "review": {
+    "notes": "Independent source-evidence re-review verified 3 frozen Git blobs and exact SHA-256 values at dafaa9650bdcbfc9ad5487afe3e228bd751f594c. Independent review confirms the frozen Ubuntu 22.04 command sequence and all bound hashes, but approval remains blocked: the exact Node 22.19.0/npm 10.9.3 Linux x64 probe failed at prisma migrate deploy with a schema-engine error. The tree pins only Node 22, not the exact patch or npm version; migration, generation, and seed must complete at the exact profile before approval.",
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "status": "draft"
+  },
+  "schemaVersion": "decantr-benchmark-task-environment.v1",
+  "sourceEvidence": [
+    {
+      "kind": "reviewer-override",
+      "path": ".github/workflows/deploy.yml",
+      "sha256": "8cb412cd350244d15ef3cf3ba94cb544d35d91028cfa4c5efcf9cc700f80cd6c",
+      "statement": "Frozen Ubuntu 22.04 CI selects Node 22 and separately installs dependencies, copies .env, migrates and generates Prisma, conditionally seeds, and builds."
+    },
+    {
+      "kind": "lockfile",
+      "path": "package-lock.json",
+      "sha256": "127fd4b2e2f3725bad89092cd531004001be581b6bc3ac7a00026738fc3f2559",
+      "statement": "Frozen root npm lockfile is bound for deterministic npm ci preparation."
+    },
+    {
+      "kind": "package-manifest",
+      "path": "package.json",
+      "sha256": "6ee2f61a65d2791a3d5485448ee9d0696cf35b674d5eed6c8add68a75e3a3d08",
+      "statement": "Manifest requires Node 22 and defines build, Prisma migration and generation, Playwright download, and Prisma seed behavior without an exact npm pin."
+    }
+  ],
+  "taskId": "epic-stack.otp-input-mode"
+}

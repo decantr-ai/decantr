@@ -1,0 +1,93 @@
+{
+  "base": {
+    "commit": "ed757d14304d4f693c8a0e5d6374dca945fb32b0",
+    "tree": "28660a0918a86b9842096b7aa5a00aa06458d734"
+  },
+  "cleanAfterPreparation": true,
+  "lockfiles": [
+    {
+      "path": "pnpm-lock.yaml",
+      "sha256": "e808586fb877ae166fb9353b32da386a16f7b29c8823087ebbbbeac5243caa30"
+    }
+  ],
+  "partition": "development",
+  "preparation": [
+    {
+      "args": [
+        "--",
+        "apps/dashboard/.env.example",
+        "apps/dashboard/.env.local"
+      ],
+      "cwd": ".",
+      "executable": "/bin/cp",
+      "id": "copy-dashboard-environment",
+      "network": "none",
+      "required": true,
+      "timeoutMs": 10000
+    },
+    {
+      "args": [
+        "install",
+        "--frozen-lockfile"
+      ],
+      "cwd": ".",
+      "executable": "pnpm",
+      "id": "install-dependencies",
+      "network": "dependency-registry",
+      "required": true,
+      "timeoutMs": 7200000
+    }
+  ],
+  "profile": {
+    "arch": "x64",
+    "bunVersion": null,
+    "id": "node-24.12.0-pnpm-10.26.0",
+    "nodeVersion": "24.12.0",
+    "os": "linux",
+    "packageManager": {
+      "name": "pnpm",
+      "version": "10.26.0"
+    }
+  },
+  "projectPath": "apps/dashboard",
+  "review": {
+    "notes": "Independent source-evidence re-review verified 5 frozen Git blobs and exact SHA-256 values at ed757d14304d4f693c8a0e5d6374dca945fb32b0. The frozen tree pins pnpm 10.26.0 but identifies only a Node 24 line; the OCI digest is not mapped to exact Node 24.12.0 in retained evidence.",
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "status": "draft"
+  },
+  "schemaVersion": "decantr-benchmark-task-environment.v1",
+  "sourceEvidence": [
+    {
+      "kind": "reviewer-override",
+      "path": ".github/workflows/test.yml",
+      "sha256": "514367d91b96b02f03e9d9f0cbda56523eb838cd0723a0594d3ef850a3d6c291",
+      "statement": "Frozen test CI selects Node 24 and pnpm 10.26.0 before installing the root workspace lockfile."
+    },
+    {
+      "kind": "reviewer-override",
+      "path": "apps/dashboard/Dockerfile",
+      "sha256": "b618c4b018af8d946f0a807c132fb7224b71b9a87b1c1c8707389ba57b7b9909",
+      "statement": "Dashboard builder and runtime use a digest-pinned Node 24 slim image and a frozen pnpm install."
+    },
+    {
+      "kind": "package-manifest",
+      "path": "apps/dashboard/package.json",
+      "sha256": "6cad5e08c8a8a3577fa6b435a8f8cb886f6b87f9ec87e59e9d694ddb05a693e3",
+      "statement": "Manifest evidence considered for pnpm and runtime selection."
+    },
+    {
+      "kind": "package-manifest",
+      "path": "package.json",
+      "sha256": "f443e97a7ceef4f46b290b303d9f03ef0199f89f8b52b3cf2224cb67eafb62a2",
+      "statement": "Manifest evidence considered for pnpm and runtime selection."
+    },
+    {
+      "kind": "lockfile",
+      "path": "pnpm-lock.yaml",
+      "sha256": "e808586fb877ae166fb9353b32da386a16f7b29c8823087ebbbbeac5243caa30",
+      "statement": "Selected pnpm lockfile for deterministic dependency preparation."
+    }
+  ],
+  "taskId": "openstatus-dashboard.api-key-dialog-interactivity"
+}

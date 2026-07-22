@@ -1,0 +1,60 @@
+{
+  "input": {
+    "policyCard": {
+      "statements": [
+        {
+          "id": "repository-authority",
+          "sources": [
+            "base-checkout"
+          ],
+          "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+        },
+        {
+          "id": "change-scope",
+          "sources": [
+            "task.scope"
+          ],
+          "text": "Keep authored changes within the declared allowlist: src/app/pages/pages-menu.ts, src/app/pages/**/*.spec.ts. Do not edit forbidden paths: package.json, package-lock.json, angular.json, src/app/pages/extra-components/**, src/app/app-routing.module.ts."
+        },
+        {
+          "id": "host-verification",
+          "sources": [
+            "candidate.environment"
+          ],
+          "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+        }
+      ]
+    },
+    "target": {
+      "selector": "file:src/app/pages/pages-menu.ts"
+    }
+  },
+  "oracle": {
+    "acceptedStatuses": [
+      "limited"
+    ],
+    "expectedKind": "file",
+    "forbiddenRankOnePatterns": [
+      "(^|/)(?:\\.next|\\.nuxt|\\.svelte-kit|__fixtures__|__generated__|__mocks__|__tests__|build|coverage|cypress|dist|e2e|fixtures?|generated|mocks?|out|playwright|specs?|stories|test-utils?|testing|tests?|target)(?:/|$)|\\.(?:cy|d|e2e|fixture|gen|generated|mock|spec|stories?|test|vitest)\\.[^.]+$"
+    ],
+    "rankOneFiles": [
+      "src/app/pages/pages-menu.ts"
+    ],
+    "styleAuthority": {
+      "approach": "nebular-scss",
+      "confidence": "high",
+      "files": [
+        "angular.json",
+        "src/app/@theme/styles/styles.scss"
+      ]
+    }
+  },
+  "review": {
+    "notes": "Approved: file:src/app/pages/pages-menu.ts is the direct production navigation authority and returns limited as declared. Nebular/SCSS authority is established by angular.json and the project theme entry, scope text matches the candidate, and non-production rank-one patterns are complete.",
+    "reviewedAt": "2026-07-22T12:19:56Z",
+    "reviewedBy": "independent-target-review-a",
+    "status": "approved"
+  },
+  "schemaVersion": "decantr-benchmark-task-delivery-spec.v1",
+  "taskId": "ngx-admin.form-inputs-navigation"
+}

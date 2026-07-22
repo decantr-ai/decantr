@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/benchmark-3-10/task-delivery-spec.v1.json",
+  "title": "Decantr 3.10 shared task delivery and target oracle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "taskId", "input", "oracle", "review"],
+  "properties": {
+    "schemaVersion": { "const": "decantr-benchmark-task-delivery-spec.v1" },
+    "taskId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,95}$" },
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target", "policyCard"],
+      "properties": {
+        "target": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["selector"],
+          "properties": {
+            "selector": { "type": "string", "minLength": 1 }
+          }
+        },
+        "policyCard": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["statements"],
+          "properties": {
+            "statements": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["id", "text", "sources"],
+                "properties": {
+                  "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]+$" },
+                  "text": { "type": "string", "minLength": 10 },
+                  "sources": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": { "type": "string", "minLength": 1 },
+                    "uniqueItems": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "oracle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "expectedKind",
+        "acceptedStatuses",
+        "rankOneFiles",
+        "forbiddenRankOnePatterns",
+        "styleAuthority"
+      ],
+      "properties": {
+        "expectedKind": {
+          "enum": ["file", "route", "layout", "component", "story", "overlay", "flow", "package", "runtime-state"]
+        },
+        "acceptedStatuses": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "enum": ["ready", "limited"] },
+          "uniqueItems": true
+        },
+        "rankOneFiles": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "forbiddenRankOnePatterns": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "styleAuthority": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["approach", "confidence", "files"],
+          "properties": {
+            "approach": { "type": "string", "minLength": 1 },
+            "confidence": { "enum": ["high", "medium", "low"] },
+            "files": {
+              "type": "array",
+              "items": { "type": "string", "minLength": 1 },
+              "uniqueItems": true
+            }
+          }
+        }
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reviewedBy", "reviewedAt", "notes"],
+      "properties": {
+        "status": { "enum": ["pending", "approved"] },
+        "reviewedBy": { "type": ["string", "null"] },
+        "reviewedAt": { "type": ["string", "null"], "format": "date-time" },
+        "notes": { "type": "string", "minLength": 20 }
+      }
+    }
+  }
+}

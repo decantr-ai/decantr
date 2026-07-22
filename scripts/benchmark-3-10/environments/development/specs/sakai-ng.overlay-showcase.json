@@ -1,0 +1,80 @@
+{
+  "base": {
+    "commit": "219fe4a1e9fe00783d4b14cc2dde879c08d27cc9",
+    "tree": "d7edb779ee146decfff36ea179824ae01125e501"
+  },
+  "cleanAfterPreparation": true,
+  "lockfiles": [
+    {
+      "path": "package-lock.json",
+      "sha256": "913cf86d8c742230280706a4eab7e49e72d70b8c7d8edc8afba7baa27662a45c"
+    }
+  ],
+  "partition": "development",
+  "preparation": [
+    {
+      "args": [
+        "submodule",
+        "status",
+        "--recursive"
+      ],
+      "cwd": ".",
+      "executable": "git",
+      "id": "verify-submodules",
+      "network": "none",
+      "required": true,
+      "timeoutMs": 60000
+    },
+    {
+      "args": [
+        "ci"
+      ],
+      "cwd": ".",
+      "executable": "npm",
+      "id": "install-dependencies",
+      "network": "dependency-registry",
+      "required": true,
+      "timeoutMs": 7200000
+    }
+  ],
+  "profile": {
+    "arch": "x64",
+    "bunVersion": null,
+    "id": "node-22.19.0-npm-10.9.3",
+    "nodeVersion": "22.19.0",
+    "os": "linux",
+    "packageManager": {
+      "name": "npm",
+      "version": "10.9.3"
+    }
+  },
+  "projectPath": ".",
+  "review": {
+    "notes": "Independent source-evidence re-review verified 3 frozen Git blobs and exact SHA-256 values at 219fe4a1e9fe00783d4b14cc2dde879c08d27cc9. Independent review confirms the root lock hash and the src/assets gitlink, but the tree has no engines, packageManager, runtime file, or CI toolchain. Node 22.19.0/npm 10.9.3 therefore remains an unauthenticated fallback, and git submodule status only inspects an already-materialized submodule. Exact Linux x64 install and submodule validation are required before approval.",
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "status": "draft"
+  },
+  "schemaVersion": "decantr-benchmark-task-environment.v1",
+  "sourceEvidence": [
+    {
+      "kind": "reviewer-override",
+      "path": ".gitmodules",
+      "sha256": "a8d091307891535fe61a47ca0f6faae6d0925a44ef4506098ddff91f0794ceab",
+      "statement": "Frozen tree binds src/assets as a git submodule, so preparation may only verify materialization without undeclared network access."
+    },
+    {
+      "kind": "lockfile",
+      "path": "package-lock.json",
+      "sha256": "913cf86d8c742230280706a4eab7e49e72d70b8c7d8edc8afba7baa27662a45c",
+      "statement": "Frozen root npm lockfile is bound for deterministic npm ci preparation."
+    },
+    {
+      "kind": "package-manifest",
+      "path": "package.json",
+      "sha256": "ef5706fa52a58b6bc6c82325d03cfa8155634f14269db0682c1494185cc1de57",
+      "statement": "Manifest defines the Angular build but provides no engines or exact npm packageManager pin."
+    }
+  ],
+  "taskId": "sakai-ng.overlay-showcase"
+}

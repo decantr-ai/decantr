@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "decantr-benchmark-evaluator-authoring-spec.v2",
+  "taskId": "ngx-admin.form-inputs-navigation",
+  "contractId": "ngx-admin.form-inputs-navigation.v1",
+  "review": {
+    "status": "approved",
+    "reviewedBy": "OpenAI Codex independent evaluator reviewer",
+    "reviewedAt": "2026-07-22T14:20:13Z",
+    "notes": "Independent exact-commit review reproduced browser polarity twice: base 7bd1b9313c2c99044626693f67e7709d83d67608 passed 4/10 checks and expected 658aa1972aa576913be5af14da6ece466b664c8a passed 10/10. The candidate-independent oracle executes the frozen menu with the candidate TypeScript compiler, captures the existing RouterModule.forChild route and component binding, renders the evaluated menu with the frozen Angular 7 runtime, and verifies unique discovery, exact href, focus, Enter activation, click navigation, and no external requests or browser errors. npm run build:prod passed at both revisions with exact Node 10.15.1/npm 6.4.1 after restoring the locked node-sass 4.9.3 binary. The prior lint:ci gate was removed because it exited zero after an internal TypeScript crash and was not valid evidence; the AOT build is the substantive host gate."
+  },
+  "oracle": {
+    "candidateIndependent": true,
+    "decantrOutputAllowed": false,
+    "sourcePath": "sources/ngx-admin.form-inputs-navigation.mjs"
+  },
+  "commands": [
+    {
+      "id": "behavior",
+      "kind": "functional",
+      "runtime": "controller",
+      "executable": "node",
+      "args": [
+        "${EVALUATOR_ROOT}/sources/ngx-admin.form-inputs-navigation.mjs",
+        "--workspace",
+        "${WORKSPACE}",
+        "--project-path",
+        "${PROJECT_PATH}",
+        "--evaluator-runtime",
+        "${EVALUATOR_RUNTIME}"
+      ],
+      "cwd": "${EVALUATOR_ROOT}",
+      "timeoutMs": 180000,
+      "required": true,
+      "resultFormat": "json-stdout"
+    },
+    {
+      "id": "host-build",
+      "kind": "build",
+      "runtime": "task",
+      "executable": "npm",
+      "args": [
+        "run",
+        "build:prod"
+      ],
+      "cwd": "${WORKSPACE}/${PROJECT_PATH}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    }
+  ],
+  "limits": {
+    "timeoutMs": 5400000,
+    "maxRequests": 40,
+    "maxInputTokens": 800000,
+    "maxOutputTokens": 100000
+  }
+}

@@ -62,7 +62,8 @@ describe('scanProject', () => {
       publishedSiteUrl: 'https://example.github.io/pages-app/',
     });
 
-    expect(report.applicability.status).toBe('strong_fit');
+    expect(report.applicability.status).toBe('partial_fit');
+    expect(report.discovery.uiSurfaces.status).toBe('limited');
     expect(report.project.framework).toBe('react');
     expect(report.routes.strategy).toBe('react-router');
     expect(report.routes.items.map((route) => route.path)).toEqual(
@@ -72,6 +73,7 @@ describe('scanProject', () => {
     expect(report.staticHosting.hashRouting).toBe(true);
     expect(report.styling.cssVariableCount).toBeGreaterThanOrEqual(2);
     expect(report.recommendedCommands).toContain('npx @decantr/cli adopt --yes');
+    expect(report.recommendedCommands).toContain('npx @decantr/cli scan --json');
     expect(JSON.stringify(report)).not.toContain(projectRoot);
   });
 
@@ -188,10 +190,13 @@ describe('scanProject', () => {
     const report = await scanProject(projectRoot);
 
     expect(report.routes.strategy).toBe('react-router');
-    expect(report.routes.items.map((route) => route.path)).toEqual(
+    expect(report.routes.signals.map((route) => route.path)).toEqual(
       expect.arrayContaining(['/', '/login', '/signup']),
     );
-    expect(report.routes.items.map((route) => route.path)).not.toContain('*');
+    expect(report.routes.items).toEqual([]);
+    expect(report.routes.signals.map((route) => route.path)).not.toContain('*');
+    expect(report.routes.authority).toBe('inferred');
+    expect(report.routes.completeness).toBe('partial');
   });
 
   it('normalizes React Router wrapper paths from mature brownfield apps', async () => {
@@ -663,6 +668,57 @@ describe('scanProject', () => {
     expect(report.applicability.status).toBe('strong_fit');
   });
 
+  it('does not treat Sass @theme import paths as Tailwind directives', async () => {
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      JSON.stringify({
+        name: 'nebular-app',
+        dependencies: {
+          '@angular/core': '^21.0.0',
+          '@nebular/theme': '^16.0.0',
+          bootstrap: '^5.3.0',
+        },
+      }),
+    );
+    mkdirSync(join(projectRoot, 'src', 'app', '@theme', 'styles'), { recursive: true });
+    writeFileSync(
+      join(projectRoot, 'angular.json'),
+      JSON.stringify({
+        version: 1,
+        projects: {
+          app: {
+            root: '',
+            sourceRoot: 'src',
+            architect: {
+              build: {
+                options: {
+                  browser: 'src/main.ts',
+                  styles: [
+                    'node_modules/bootstrap/dist/css/bootstrap.css',
+                    'src/app/@theme/styles/styles.scss',
+                  ],
+                },
+              },
+            },
+          },
+        },
+      }),
+    );
+    writeFileSync(join(projectRoot, 'src', 'main.ts'), 'export const app = true;\n');
+    writeFileSync(
+      join(projectRoot, 'src', 'app', '@theme', 'styles', 'styles.scss'),
+      "@import '@nebular/theme/styles/globals';\n@import '../@theme/styles/themes';\n",
+    );
+
+    const report = await scanProject(projectRoot);
+
+    expect(report.project.hasTailwind).toBe(false);
+    expect(report.styling.approach).toBe('nebular-scss');
+    expect(report.styling.evidence).not.toEqual(
+      expect.arrayContaining([expect.stringContaining('Tailwind directive')]),
+    );
+  });
+
   it('handles static HTML projects', async () => {
     writeFileSync(
       join(projectRoot, 'index.html'),
@@ -672,7 +728,8 @@ describe('scanProject', () => {
 
     const report = await scanProject(projectRoot);
 
-    expect(report.applicability.status).toBe('strong_fit');
+    expect(report.applicability.status).toBe('partial_fit');
+    expect(report.discovery.uiSurfaces.status).toBe('limited');
     expect(report.project.framework).toBe('html');
     expect(report.routes.strategy).toBe('static-html');
     expect(report.routes.count).toBe(1);
@@ -688,7 +745,8 @@ describe('scanProject', () => {
 
     const report = await scanProject(projectRoot);
 
-    expect(report.applicability.status).toBe('strong_fit');
+    expect(report.applicability.status).toBe('partial_fit');
+    expect(report.discovery.uiSurfaces.status).toBe('blocked');
     expect(report.project.framework).toBe('html');
     expect(report.project.primaryLanguage).toBe('html');
     expect(report.routes.strategy).toBe('static-html');
@@ -699,7 +757,7 @@ describe('scanProject', () => {
     });
   });
 
-  it('handles nested static demo pages as taskable routes', async () => {
+  it('does not promote nested static demo pages to production routes', async () => {
     writeFileSync(
       join(projectRoot, 'package.json'),
       JSON.stringify({ private: true, name: 'jquery-ui-like-demos' }, null, 2),
@@ -719,12 +777,11 @@ describe('scanProject', () => {
     const report = await scanProject(projectRoot);
     const paths = report.routes.items.map((route) => route.path);
 
-    expect(report.applicability.status).toBe('strong_fit');
-    expect(report.project.framework).toBe('html');
-    expect(report.routes.strategy).toBe('static-html');
-    expect(paths).toEqual(
-      expect.arrayContaining(['/demos', '/demos/accordion/default', '/demos/dialog/default']),
-    );
+    expect(report.applicability.status).toBe('not_applicable');
+    expect(report.discovery.uiSurfaces.status).toBe('unsupported');
+    expect(report.project.framework).toBe('unknown');
+    expect(report.routes.strategy).toBe('none');
+    expect(paths).toEqual([]);
   });
 
   it('returns not_applicable for Python backend repositories', async () => {

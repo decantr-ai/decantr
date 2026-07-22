@@ -1,0 +1,60 @@
+{
+  "input": {
+    "policyCard": {
+      "statements": [
+        {
+          "id": "repository-authority",
+          "sources": [
+            "base-checkout"
+          ],
+          "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+        },
+        {
+          "id": "change-scope",
+          "sources": [
+            "task.scope"
+          ],
+          "text": "Keep authored changes within the declared allowlist: frontend/src/lib/components/DeviceCardNic.svelte. Do not edit forbidden paths: frontend/** (except allowed path), backend/**, package.json, pnpm-lock.yaml."
+        },
+        {
+          "id": "host-verification",
+          "sources": [
+            "candidate.environment"
+          ],
+          "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+        }
+      ]
+    },
+    "target": {
+      "selector": "component:DeviceCardNic"
+    }
+  },
+  "oracle": {
+    "acceptedStatuses": [
+      "limited"
+    ],
+    "expectedKind": "component",
+    "forbiddenRankOnePatterns": [
+      "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+    ],
+    "rankOneFiles": [
+      "src/lib/components/DeviceCardNic.svelte"
+    ],
+    "styleAuthority": {
+      "approach": "tailwind",
+      "confidence": "high",
+      "files": [
+        "src/app.css",
+        "src/routes/+layout.svelte"
+      ]
+    }
+  },
+  "review": {
+    "notes": "Independently checked the frozen base tree and candidate record. The neutral component selector resolves limited to the project-relative production device-card source at rank one, with no test or generated authority promoted. The Tailwind stylesheet and production layout importer are accurate, and the repository-root scope statement is exact.",
+    "reviewedAt": "2026-07-22T12:17:39Z",
+    "reviewedBy": "independent-target-review-b",
+    "status": "approved"
+  },
+  "schemaVersion": "decantr-benchmark-task-delivery-spec.v1",
+  "taskId": "upsnap-frontend.pending-countdown"
+}

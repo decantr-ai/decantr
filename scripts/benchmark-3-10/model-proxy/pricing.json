@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "decantr-benchmark-pricing-lock.v1",
+  "currency": "USD",
+  "lockedAt": "2026-07-22T11:29:02Z",
+  "paidPricingLocked": true,
+  "policy": "Official provider token rates were reviewed on 2026-07-22. Per-run maxima remain hard aggregate reservations; paid execution still requires an audited adapter, a bound run plan and candidate, a valid explicit budget approval, and the development power gate before qualification.",
+  "models": [
+    {
+      "modelId": "openai-gpt-5.6-sol",
+      "requestedModel": "gpt-5.6-sol",
+      "maximumRunCostUsd": 10,
+      "inputPerMillionTokensUsd": 5,
+      "cachedInputPerMillionTokensUsd": 0.5,
+      "outputPerMillionTokensUsd": 30,
+      "source": "https://developers.openai.com/api/docs/models/gpt-5.6-sol"
+    },
+    {
+      "modelId": "anthropic-claude-fable-5",
+      "requestedModel": "claude-fable-5",
+      "maximumRunCostUsd": 16,
+      "inputPerMillionTokensUsd": 10,
+      "cachedInputPerMillionTokensUsd": 1,
+      "outputPerMillionTokensUsd": 50,
+      "source": "https://platform.claude.com/docs/en/about-claude/models/overview"
+    }
+  ],
+  "fake": {
+    "provider": "deterministic-fake",
+    "costUsd": 0
+  }
+}

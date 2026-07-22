@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "decantr-benchmark-evaluator-authoring-spec.v2",
+  "taskId": "primer-react.banner-narrow-actions",
+  "contractId": "primer-react.banner-narrow-actions.v1",
+  "review": {
+    "status": "approved",
+    "reviewedBy": "independent-runtime-evaluator-review-visual-a",
+    "reviewedAt": "2026-07-22T13:18:45Z",
+    "notes": "Independent runtime review used the pinned Playwright 1.61.1 Chromium against the authentic frozen Storybook feature fixtures. The exact expected tree passed all 18 checks at 320px and 1012px; the exact base failed the narrow column direction, leading action order, overflow, and keyboard-focus checks while preserving wide and explicitly stacked behavior. The oracle measures computed flex direction, DOM order, bounding-box intersections, overflow, focus, fixed screenshots, runtime errors, and scoped Axe results without reading candidate source or expected output. Required npm run type-check and npm run build -w @primer/react commands both passed on the exact expected tree."
+  },
+  "oracle": {
+    "candidateIndependent": true,
+    "decantrOutputAllowed": false,
+    "sourcePath": "sources/primer-react.banner-narrow-actions.mjs"
+  },
+  "commands": [
+    {
+      "id": "behavior",
+      "kind": "functional",
+      "runtime": "controller",
+      "executable": "node",
+      "args": [
+        "${EVALUATOR_ROOT}/sources/primer-react.banner-narrow-actions.mjs",
+        "--workspace",
+        "${WORKSPACE}",
+        "--project-path",
+        "${PROJECT_PATH}",
+        "--evaluator-runtime",
+        "${EVALUATOR_RUNTIME}"
+      ],
+      "cwd": "${EVALUATOR_ROOT}",
+      "timeoutMs": 300000,
+      "required": true,
+      "resultFormat": "json-stdout"
+    },
+    {
+      "id": "host-type-check",
+      "kind": "build",
+      "runtime": "task",
+      "executable": "npm",
+      "args": [
+        "run",
+        "type-check"
+      ],
+      "cwd": "${WORKSPACE}/${PROJECT_PATH}",
+      "timeoutMs": 900000,
+      "required": true,
+      "resultFormat": "exit-code"
+    },
+    {
+      "id": "host-build",
+      "kind": "build",
+      "runtime": "task",
+      "executable": "npm",
+      "args": [
+        "run",
+        "build",
+        "-w",
+        "@primer/react"
+      ],
+      "cwd": "${WORKSPACE}/${PROJECT_PATH}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    }
+  ],
+  "limits": {
+    "timeoutMs": 5400000,
+    "maxRequests": 40,
+    "maxInputTokens": 1000000,
+    "maxOutputTokens": 100000
+  }
+}

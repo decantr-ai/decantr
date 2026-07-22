@@ -4,16 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Decantr — AI Frontend Governance for AI-edited codebases</title>
-  <meta name="description" content="Decantr 3.9 Governed Change Proof: source-grounded adoption truth, bounded task context, framework-aware route authority, Project Health, and fail-closed governance deltas.">
+  <meta name="description" content="Decantr 3.9.4 is the current stable local-first UI governance release. Decantr 3.10 remains under proof for authority-aware UI change control.">
   <link rel="canonical" href="https://decantr.ai/">
   <meta property="og:title" content="Decantr — AI Frontend Governance">
-  <meta property="og:description" content="Decantr 3.9 Governed Change Proof adds bounded task context, framework-aware route authority, and fail-closed evidence for AI-edited frontend codebases.">
+  <meta property="og:description" content="Stable 3.9.4 provides local route-backed task context, verification, and typed evidence. Broader UI-surface change control remains under 3.10 proof.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://decantr.ai/">
   <meta property="og:image" content="https://decantr.ai/logo.svg">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Decantr — AI Frontend Governance">
-  <meta name="twitter:description" content="Local CLI and MCP server that keep AI-edited frontends inside your product contract.">
+  <meta name="twitter:description" content="Local CLI and MCP server for route-backed task context and verification. Decantr 3.10 UI-surface discovery remains unreleased.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lora:wght@500;600;700&display=swap" rel="stylesheet">
@@ -24,7 +24,7 @@
     "@graph": [
       { "@type": "Organization", "@id": "https://decantr.ai/#organization", "name": "Decantr AI", "url": "https://decantr.ai/", "logo": "https://decantr.ai/logo.svg", "sameAs": ["https://github.com/decantr-ai/decantr", "https://www.npmjs.com/org/decantr"] },
       { "@type": "WebSite", "@id": "https://decantr.ai/#website", "name": "Decantr", "alternateName": "Decantr AI", "url": "https://decantr.ai/", "publisher": { "@id": "https://decantr.ai/#organization" } },
-      { "@type": "SoftwareApplication", "@id": "https://decantr.ai/#software", "name": "Decantr", "applicationCategory": "DeveloperApplication", "operatingSystem": "Cross-platform", "url": "https://decantr.ai/", "description": "AI Frontend Governance for production codebases touched by AI agents: typed contracts, route-scoped context, Project Health, behavior obligations, and repair-ready evidence.", "sameAs": "https://github.com/decantr-ai/decantr", "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" } },
+      { "@type": "SoftwareApplication", "@id": "https://decantr.ai/#software", "name": "Decantr", "applicationCategory": "DeveloperApplication", "operatingSystem": "Cross-platform", "url": "https://decantr.ai/", "description": "Decantr 3.9.4 provides local route-backed task context, verification, and typed evidence with explicit limitations.", "sameAs": "https://github.com/decantr-ai/decantr" },
       { "@type": "SoftwareSourceCode", "@id": "https://github.com/decantr-ai/decantr#source", "name": "Decantr", "codeRepository": "https://github.com/decantr-ai/decantr", "programmingLanguage": "TypeScript", "license": "https://opensource.org/license/mit", "targetProduct": { "@id": "https://decantr.ai/#software" } }
     ]
   }
@@ -453,6 +453,11 @@
       font-size: 0.45em;
       font-weight: 500;
     }
+    .score-state {
+      font-size: clamp(2.25rem, 6vw, 4.5rem);
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
     .score-col.after .score-num {
       color: var(--success);
       text-shadow: 0 0 60px rgba(71, 224, 177, 0.35);
@@ -654,7 +659,7 @@
     /* ---------- Steps ---------- */
     .steps {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 1rem;
       counter-reset: step;
     }
@@ -705,8 +710,14 @@
     }
     .step p { color: var(--muted); font-size: 0.95rem; line-height: 1.55; }
     .step .command { max-width: 100%; margin: 0; box-shadow: none; }
-    .step .command code { font-size: 0.85rem; min-height: 2.65rem; }
-    .step .copy-btn { min-height: 2.65rem; font-size: 0.78rem; padding: 0 0.85rem; }
+    .step .command code { font-size: 0.8rem; min-height: 2.65rem; }
+    .step .copy-btn {
+      width: 2.65rem;
+      min-width: 2.65rem;
+      min-height: 2.65rem;
+      padding: 0;
+    }
+    .step .copy-label { display: none; }
     .step .step-out {
       color: var(--soft);
       font-family: var(--mono);
@@ -993,9 +1004,9 @@
     /* ---------- Roadmap teaser ---------- */
     .roadmap {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 1rem;
-      max-width: 64rem;
+      max-width: 76rem;
       margin: 0 auto;
     }
     .roadmap-item {
@@ -1217,22 +1228,24 @@
       <div class="hero-inner reveal">
         <p class="eyebrow">AI Frontend Governance for production codebases</p>
         <h1 class="hero-h1" id="hero-title">
-          Catch UI drift <span class="accent">before</span> it ships.
+          UI change control for <span class="accent">AI-edited</span> codebases.
         </h1>
         <p class="hero-lede">
-          Decantr gives AI coding agents the contract, context, and evidence they need
-          to edit your frontend without drifting from your product standards.
+          Stable 3.9.4 prepares bounded, route-backed context and reports local verification evidence.
+          Broader UI-surface authority and non-route preparation remain an unreleased 3.10 candidate.
         </p>
         <span class="hero-credibility">
           <span class="dot" aria-hidden="true"></span>
           <span>
-            <strong>v3.9.4 current</strong>
+            <strong>v3.9.4 current stable</strong>
             ·
             <a href="https://github.com/decantr-ai/decantr" target="_blank" rel="noopener" style="color: inherit; border-bottom: 1px dotted var(--soft);">
               <strong data-stat="stars">★ —</strong> on GitHub
             </a>
             ·
             8 MCP tools
+            ·
+            3.10 proof program active
             ·
             MIT
           </span>
@@ -1257,7 +1270,7 @@
         </div>
         <div class="hero-cta-row" style="margin-top: 1rem;">
           <a class="hero-secondary" href="#demo">
-            See a real repair <i data-lucide="arrow-down" class="icon" aria-hidden="true"></i>
+            See an illustrative repair <i data-lucide="arrow-down" class="icon" aria-hidden="true"></i>
           </a>
         </div>
       </div>
@@ -1266,39 +1279,35 @@
     <!-- ============ SCORE BAND ============ -->
     <section class="section score-band" aria-labelledby="score-title">
       <div class="container">
-        <h2 id="score-title" class="sr-only">Illustrative Project Health repair</h2>
+        <h2 id="score-title" class="sr-only">Unreleased 3.10 candidate readiness transition</h2>
         <div class="score-wrap reveal" data-score>
           <div class="score-col before">
-            <span class="label">Example before</span>
-            <span class="score-num" data-count-to="42">
-              <span class="value">0</span><span class="suffix">/100</span>
-            </span>
+            <span class="label">Unresolved topology</span>
+            <span class="score-num score-state">Limited</span>
           </div>
           <span class="score-arrow" aria-hidden="true">
             <i data-lucide="arrow-right" class="icon"></i>
           </span>
           <div class="score-col after">
-            <span class="label">Example after</span>
-            <span class="score-num" data-count-to="94">
-              <span class="value">0</span><span class="suffix">/100</span>
-            </span>
-            <span class="score-delta" aria-label="Improved by 52 points">
-              <i data-lucide="trending-up" class="icon" aria-hidden="true" style="width:0.85rem;height:0.85rem;"></i>
-              +52
+            <span class="label">Blocking axes resolved</span>
+            <span class="score-num score-state">Ready</span>
+            <span class="score-delta">
+              <i data-lucide="check" class="icon" aria-hidden="true" style="width:0.85rem;height:0.85rem;"></i>
+              evidence-dependent
             </span>
           </div>
         </div>
         <p class="score-caption reveal">
-          <strong>Project Health</strong> is a deterministic triage score over the evidence available to the selected app.
-          This illustration is not a benchmark or a 3.9 qualification result.
-          <a href="https://github.com/decantr-ai/decantr/blob/main/docs/reference/project-health.md" class="rubric-link" target="_blank" rel="noopener">Open-source rubric →</a>
+          <strong>Unreleased 3.10 candidate:</strong> readiness is an axis-by-axis evidence state, not a fit score. A strong framework or route count cannot hide unresolved topology, styling, taskability, or runtime evidence.
+          This transition is illustrative, not shipped 3.9.4 output, a benchmark, a qualification result, or a Decantr 3.10 proof result.
+          <a href="https://github.com/decantr-ai/decantr/blob/main/docs/reference/project-health.md" class="rubric-link" target="_blank" rel="noopener">Project Health reference →</a>
         </p>
 
         <!-- ============ Works-with ============ -->
         <div class="works-with reveal">
-          <p class="works-with-label">Works with frameworks you already ship</p>
+          <p class="works-with-label">The 3.10 candidate is being tested across</p>
           <div class="works-with-row">
-            <span>React</span><span>Next.js</span><span>Remix</span><span>Vue</span>
+            <span>Angular</span><span>React</span><span>Next.js</span><span>Remix</span><span>Vue</span>
             <span>Nuxt</span><span>Svelte</span><span>SvelteKit</span><span>SolidStart</span>
             <span>Astro</span><span>Vite</span><span>Tailwind</span><span>CSS Modules</span>
             <span>MUI</span><span>shadcn/ui</span>
@@ -1314,18 +1323,18 @@
         <div class="transcript reveal">
           <div class="transcript-head">
             <span class="dot-row" aria-hidden="true"><span></span><span></span><span></span></span>
-            <span>~/your-app — npx @decantr/cli scan</span>
-            <span style="margin-left:auto;">decantr v3.9.4</span>
+            <span>~/your-app — illustrative read-only scan</span>
+            <span style="margin-left:auto;">stable v3.9.4</span>
           </div>
           <div class="transcript-body">
             <div class="transcript-line"><span class="sym prompt">$</span><span class="body">npx @decantr/cli scan</span></div>
             <div class="transcript-line"><span class="sym spin">›</span><span class="body"><span class="soft">scanning project structure...</span></span></div>
             <div class="transcript-line"><span class="sym ok">✓</span><span class="body">Detected <strong>React</strong> + <strong>TypeScript</strong> + <strong>Vite</strong> in the selected app</span></div>
-            <div class="transcript-line"><span class="sym ok">✓</span><span class="body">Indexed <strong>64 components</strong>, <strong>18 routes</strong>, <strong>312 source files</strong></span></div>
-            <div class="transcript-line"><span class="sym spin">›</span><span class="body"><span class="soft">analyzing component reuse and token coverage...</span></span></div>
-            <div class="transcript-line"><span class="sym warn">!</span><span class="body">Brownfield preview: <span class="warn-text">3 attention areas</span> · graph baseline missing · adopt when ready</span></div>
-            <div class="transcript-line"><span class="sym ok">✓</span><span class="body">Next step → <em>decantr adopt --yes</em>, then <em>decantr studio</em> for the Control Room</span></div>
-            <div class="transcript-line"><span class="sym ok">✓</span><span class="body"><span class="ok-text">Scan complete</span> · zero files modified · ready to attach</span></div>
+            <div class="transcript-line"><span class="sym ok">✓</span><span class="body">Observed <strong>source-declared routes</strong>, taskable route candidates, components, and styling evidence</span></div>
+            <div class="transcript-line"><span class="sym spin">›</span><span class="body"><span class="soft">checking route authority, graph readiness, excluded source, and limitations...</span></span></div>
+            <div class="transcript-line"><span class="sym warn">!</span><span class="body">Route authority: <span class="warn-text">partial</span> · review representative implementation sources before adoption</span></div>
+            <div class="transcript-line"><span class="sym ok">✓</span><span class="body">Tests, fixtures, and generated outputs remain excluded from production route authority</span></div>
+            <div class="transcript-line"><span class="sym ok">✓</span><span class="body"><span class="ok-text">Scan complete</span> · zero files modified · limitations reported</span></div>
           </div>
         </div>
       </div>
@@ -1352,9 +1361,9 @@
             <p>Inline colors, arbitrary Tailwind values, and one-off spacing slip past review because each prompt only sees part of the app.</p>
           </article>
           <article class="problem">
-            <span class="problem-num">03 / Intent</span>
-            <h3>Route intent goes stale</h3>
-            <p>Pages keep changing while docs, route maps, and design expectations stop agreeing with what users actually touch.</p>
+            <span class="problem-num">03 / Authority</span>
+            <h3>The wrong surface gets treated as truth</h3>
+            <p>A test fixture, generated route tree, dependency, or sibling app can look authoritative unless evidence scope is explicit.</p>
           </article>
         </div>
       </div>
@@ -1364,42 +1373,43 @@
     <section class="section" id="how" aria-labelledby="how-title">
       <div class="container">
         <div class="section-head reveal">
-          <p class="eyebrow">One local loop</p>
-          <h2 id="how-title">Scan. Adopt. Verify.</h2>
-          <p>Three commands. Three artifacts. Your app remains the authority — Decantr just gives your agent something to repair against.</p>
+          <p class="eyebrow">Stable route loop · 3.10 expansion unreleased</p>
+          <h2 id="how-title">Observe. Prepare. Verify. Report.</h2>
+          <p>These commands exist in 3.9.4 for attached route-backed work. Decantr 3.10 proposes broader target discovery and must prove its outcome claim before that expansion is presented as shipped value.</p>
         </div>
 
         <div class="steps">
           <article class="step reveal">
             <div class="step-head">
               <span class="step-num" aria-hidden="true"></span>
-              <h3>Scan</h3>
+              <h3>Observe</h3>
             </div>
-            <p>Reads routes, components, styling, and existing project rules. Zero writes to source.</p>
+            <p>3.9.4 reads the selected app and reports route, component, styling, graph, and limitation evidence without writing files.</p>
             <div class="command">
-              <code tabindex="0" data-copy-text="npx @decantr/cli scan">npx @decantr/cli scan</code>
-              <button class="copy-btn" type="button" data-copy="npx @decantr/cli scan" data-copy-success="Copied">
+              <code tabindex="0" data-copy-text="npx @decantr/cli scan">decantr scan</code>
+              <button class="copy-btn" type="button" data-copy="npx @decantr/cli scan" data-copy-success="Copied" aria-label="Copy observe command" title="Copy command">
                 <i data-lucide="copy" class="icon" aria-hidden="true"></i>
                 <span class="copy-label">Copy</span>
               </button>
             </div>
-            <span class="step-out">prints a zero-write fit report</span>
+            <span class="step-out">prints evidence + limitations with zero writes</span>
           </article>
 
           <article class="step reveal">
             <div class="step-head">
               <span class="step-num" aria-hidden="true"></span>
-              <h3>Adopt</h3>
+              <h3>Prepare</h3>
             </div>
-            <p><strong>3.9:</strong> writes repo-owned governance artifacts, records an adoption receipt, and keeps authored-source changes explicit.</p>
+            <p>3.9.4 resolves one attached, graph-backed route.
+              Component, layout, overlay, story, package, and file selectors are unreleased 3.10 candidate behavior.</p>
             <div class="command">
-              <code tabindex="0" data-copy-text="npx @decantr/cli adopt --yes">npx @decantr/cli adopt --yes</code>
-              <button class="copy-btn" type="button" data-copy="npx @decantr/cli adopt --yes" data-copy-success="Copied">
+              <code tabindex="0" data-copy-text="npx @decantr/cli task /feed &quot;update save action&quot;">decantr task /feed</code>
+              <button class="copy-btn" type="button" data-copy="npx @decantr/cli task /feed &quot;update save action&quot;" data-copy-success="Copied" aria-label="Copy prepare command" title="Copy command">
                 <i data-lucide="copy" class="icon" aria-hidden="true"></i>
                 <span class="copy-label">Copy</span>
               </button>
             </div>
-            <span class="step-out">writes <strong>decantr.essence.json</strong> + <strong>.decantr/graph/*</strong></span>
+            <span class="step-out">returns bounded <strong>TaskCapsuleV1</strong> context or explicit blocking guidance</span>
           </article>
 
           <article class="step reveal">
@@ -1409,13 +1419,29 @@
             </div>
             <p>Emits findings with stable codes, repair IDs, and an evidence bundle your agent reads automatically.</p>
             <div class="command">
-              <code tabindex="0" data-copy-text="npx @decantr/cli verify --evidence">npx @decantr/cli verify --evidence</code>
-              <button class="copy-btn" type="button" data-copy="npx @decantr/cli verify --evidence" data-copy-success="Copied">
+              <code tabindex="0" data-copy-text="npx @decantr/cli verify --evidence">decantr verify</code>
+              <button class="copy-btn" type="button" data-copy="npx @decantr/cli verify --evidence" data-copy-success="Copied" aria-label="Copy verify command" title="Copy command">
                 <i data-lucide="copy" class="icon" aria-hidden="true"></i>
                 <span class="copy-label">Copy</span>
               </button>
             </div>
             <span class="step-out">writes <strong>.decantr/evidence/latest.json</strong></span>
+          </article>
+
+          <article class="step reveal">
+            <div class="step-head">
+              <span class="step-num" aria-hidden="true"></span>
+              <h3>Report</h3>
+            </div>
+            <p>Emits typed, reproducible evidence and keeps missing or incompatible proof visible instead of converting it into a pass.</p>
+            <div class="command">
+              <code tabindex="0" data-copy-text="npx @decantr/cli ci --report-version v3 --json">decantr ci --json</code>
+              <button class="copy-btn" type="button" data-copy="npx @decantr/cli ci --report-version v3 --json" data-copy-success="Copied" aria-label="Copy report command" title="Copy command">
+                <i data-lucide="copy" class="icon" aria-hidden="true"></i>
+                <span class="copy-label">Copy</span>
+              </button>
+            </div>
+            <span class="step-out">reports missing proof as <strong>not_proven</strong></span>
           </article>
         </div>
 
@@ -1423,8 +1449,8 @@
           <i data-lucide="plug" class="icon" aria-hidden="true"></i>
           <span>
             <strong>Plugs into your agent natively.</strong>
-            Cursor users can run <code>decantr connect cursor</code>; Claude Code, Continue.dev, Windsurf, and Cline pick up context, loop verdicts, and evidence via the Decantr MCP server.
-            Decantr guides the loop; your chosen agent or developer still applies the source change explicitly.
+            Cursor users can run <code>decantr connect cursor</code>; other MCP-compatible agents can use the stable eight-tool server.
+            Decantr prepares and checks evidence; the chosen agent or developer still applies the source change explicitly.
           </span>
         </div>
       </div>
@@ -1434,7 +1460,7 @@
     <section class="section" id="demo" aria-labelledby="demo-title">
       <div class="container">
         <div class="section-head reveal">
-          <p class="eyebrow">One repair, end to end · Decantr 3.9</p>
+          <p class="eyebrow">Illustrative stable route case · Decantr 3.9.4</p>
           <h2 id="demo-title">What your AI actually receives.</h2>
           <p>Decantr emits a finding. Your agent reads bounded task context. The change returns to an explicit verification gate: concrete codes, IDs, anchors, and authority.</p>
         </div>
@@ -1495,9 +1521,9 @@ action:
     <section class="section" id="compare" aria-labelledby="compare-title">
       <div class="container">
         <div class="section-head reveal">
-          <p class="eyebrow">Why a new tool</p>
-          <h2 id="compare-title">Linters check syntax. Decantr checks intent.</h2>
-          <p>Existing tools see *files*. Decantr sees *routes, primitives, and the contract you've already shipped.*</p>
+          <p class="eyebrow">A complementary layer</p>
+          <h2 id="compare-title">Project authority is not one tool's job.</h2>
+          <p>Decantr is intended to connect repository evidence for an agent. Linters, stories, and tests remain the authorities for the checks they actually execute.</p>
         </div>
 
         <div class="compare reveal">
@@ -1506,46 +1532,46 @@ action:
               <tr>
                 <th></th>
                 <th class="col-decantr">Decantr</th>
-                <th>ESLint</th>
-                <th>Stylelint</th>
+                <th>Linters</th>
                 <th>Storybook</th>
+                <th>Tests</th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td class="row-label">Scope</td>
-                <td class="col-decantr-cell">UI semantics + drift</td>
-                <td>JS syntax</td>
-                <td>CSS rules</td>
-                <td>Component dev env</td>
+                <td class="col-decantr-cell">UI authority + evidence</td>
+                <td>Source rules</td>
+                <td>Component states</td>
+                <td>Executable behavior</td>
               </tr>
               <tr>
-                <td class="row-label">Reads route-scoped context</td>
-                <td class="col-decantr-cell"><span class="yes"><i data-lucide="check" class="icon"></i>Yes</span></td>
-                <td><span class="no">No</span></td>
-                <td><span class="no">No</span></td>
+                <td class="row-label">Separates UI authority axes</td>
+                <td class="col-decantr-cell"><span class="partial">3.10 candidate</span></td>
+                <td><span class="no">Not its role</span></td>
+                <td><span class="partial">Partial</span></td>
                 <td><span class="partial">Partial</span></td>
               </tr>
               <tr>
-                <td class="row-label">Repair-ready findings for AI</td>
-                <td class="col-decantr-cell"><span class="yes"><i data-lucide="check" class="icon"></i>Yes</span></td>
-                <td><span class="no">No</span></td>
-                <td><span class="no">No</span></td>
-                <td><span class="no">No</span></td>
+                <td class="row-label">Change-scoped agent context</td>
+                <td class="col-decantr-cell"><span class="partial">3.9 route-backed</span></td>
+                <td><span class="partial">Rule-local</span></td>
+                <td><span class="partial">Story-local</span></td>
+                <td><span class="partial">Test-local</span></td>
               </tr>
               <tr>
-                <td class="row-label">MCP / agent-native protocol</td>
-                <td class="col-decantr-cell"><span class="yes"><i data-lucide="check" class="icon"></i>8 tools</span></td>
-                <td><span class="no">No</span></td>
-                <td><span class="no">No</span></td>
-                <td><span class="no">No</span></td>
+                <td class="row-label">Primary evidence</td>
+                <td class="col-decantr-cell">Repository + typed reports</td>
+                <td>Deterministic diagnostics</td>
+                <td>Stories + visual states</td>
+                <td>Assertions + results</td>
               </tr>
               <tr>
-                <td class="row-label">Read-only scan and Studio</td>
-                <td class="col-decantr-cell"><span class="yes"><i data-lucide="check" class="icon"></i>Yes</span></td>
-                <td><span class="yes"><i data-lucide="check" class="icon"></i>Yes</span></td>
-                <td><span class="yes"><i data-lucide="check" class="icon"></i>Yes</span></td>
-                <td><span class="no">Setup files</span></td>
+                <td class="row-label">Known limitation</td>
+                <td class="col-decantr-cell">Static evidence can be incomplete</td>
+                <td>Rule scope only</td>
+                <td>Authored states only</td>
+                <td>Covered behavior only</td>
               </tr>
               <tr>
                 <td class="row-label">Open source · MIT</td>
@@ -1581,13 +1607,13 @@ action:
           </article>
           <article class="trust-item">
             <span class="icon-wrap"><i data-lucide="puzzle" class="icon" aria-hidden="true"></i></span>
-            <h3>Drops into your stack</h3>
-            <p>Brownfield adoption observes what's already there. Contract-only adoption does not take over the app runtime or styling system.</p>
+            <h3>Attach deliberately</h3>
+            <p>Brownfield adoption is reviewable and contract-only by default. Unsupported or unresolved authority should stop the workflow.</p>
           </article>
           <article class="trust-item">
             <span class="icon-wrap"><i data-lucide="paintbrush" class="icon" aria-hidden="true"></i></span>
-            <h3>Style-system agnostic</h3>
-            <p>Tailwind, CSS modules, MUI, shadcn, your own design system — Decantr observes.</p>
+            <h3>Host styling stays authoritative</h3>
+            <p>Decantr records styling evidence and limitations. A dependency alone does not prove the active styling system.</p>
           </article>
         </div>
       </div>
@@ -1597,9 +1623,9 @@ action:
     <section class="section" aria-labelledby="map-title">
       <div class="container">
         <div class="section-head reveal">
-          <p class="eyebrow">Agent-ready context · Decantr 3.9</p>
+          <p class="eyebrow">Agent-ready context · stable route example</p>
           <h2 id="map-title">Give the AI a map before it edits.</h2>
-          <p>Decantr 3.9 builds one bounded TaskCapsuleV1 with the implementation source first, active authority, impact, findings, content provenance, stop conditions, and one verify command.</p>
+          <p>Decantr 3.9.4 can build a bounded TaskCapsuleV1 for a resolved route. The 3.10 candidate extends preparation to independent UI surfaces and must fail closed when the target or authority is ambiguous.</p>
         </div>
 
         <div class="map-card reveal">
@@ -1615,7 +1641,7 @@ action:
 <span class="label">RULES     </span> no inline styles · import primitives only · ARIA labels required
 <span class="label">BEHAVIOR  </span> confirmation-dialog · accessible name · destructive copy
 <span class="label">CAPSULE   </span> task-capsule.v1 · bounded · implementation source rank 1
-<span class="label">EVIDENCE  </span> 3 findings open · 8 MCP tools online</pre>
+<span class="label">EVIDENCE  </span> 3 findings open · 8 stable MCP tool IDs</pre>
         </div>
       </div>
     </section>
@@ -1626,7 +1652,7 @@ action:
         <div class="section-head reveal">
           <p class="eyebrow">Built in the open</p>
           <h2 id="proof-title">Specific. Inspectable. Local.</h2>
-          <p>The contracts and schemas are public, telemetry has no hosted default, and 3.9 reports incomplete change evidence as not proven instead of silently passing.</p>
+          <p>The contracts and schemas are public, telemetry has no hosted default, and incomplete change evidence remains visible as not proven instead of silently passing.</p>
         </div>
 
         <div class="proof reveal">
@@ -1638,7 +1664,7 @@ action:
             </a>
           </div>
           <div class="proof-item">
-            <span class="label">MCP tools online</span>
+            <span class="label">Stable MCP tool IDs</span>
             <span class="big">8</span>
             <span class="sub">
               <i data-lucide="bot" class="icon" aria-hidden="true"></i>for any MCP agent
@@ -1648,7 +1674,7 @@ action:
             <span class="label">License</span>
             <span class="big">MIT</span>
             <span class="sub">
-              <i data-lucide="shield-check" class="icon" aria-hidden="true"></i>no rug pull, ever
+              <i data-lucide="shield-check" class="icon" aria-hidden="true"></i>permissive open-source license
             </span>
           </div>
           <div class="proof-item">
@@ -1661,9 +1687,9 @@ action:
         </div>
 
         <p class="pricing-line reveal">
-          <strong>Pricing posture:</strong> the CLI, verifier, MCP server, and contract layer are
-          <strong>free forever, MIT licensed.</strong> The Fly API serves optional corpus and reference
-          data; local governance does not require an account or hosted control plane.
+          <strong>Current capability and license:</strong> the published CLI, verifier, MCP server, and
+          contract libraries are available under the MIT license. Their local workflows do not require
+          an account or hosted control plane; the Fly API serves optional corpus and reference data.
         </p>
       </div>
     </section>
@@ -1680,17 +1706,22 @@ action:
           <article class="roadmap-item now">
             <span class="roadmap-tag"><span class="dot" aria-hidden="true"></span>Current stable · v3.9.4</span>
             <h3>Governed Change Proof</h3>
-            <p>AdoptionTruthV1, bounded TaskCapsuleV1 context, and GovernanceDeltaV1 connect CLI, CI, MCP, and read-only Studio. Tailwind v4 adoption now isolates generated governance text with an exact receipt-bound source exclusion.</p>
+            <p>AdoptionTruthV1, route-backed TaskCapsuleV1 context, and GovernanceDeltaV1 are shipped. The sole-maintainer qualification waiver means 3.9.4 is not a quantitative adoption-proof claim.</p>
           </article>
           <article class="roadmap-item">
-            <span class="roadmap-tag">Framework authority</span>
-            <h3>Evidence before confidence</h3>
-            <p>Angular route context is proven from the selected production bootstrap, excludes test fixtures, separates lazy route scopes from rendered pages, and fails closed when extraction is incomplete.</p>
+            <span class="roadmap-tag">3.10 active program · unreleased</span>
+            <h3>UI Change Control Proof</h3>
+            <p>A frozen 40-task, two-model A/B protocol will test whether Decantr materially improves outcomes. No result or value claim exists before that gate passes.</p>
+          </article>
+          <article class="roadmap-item">
+            <span class="roadmap-tag">3.10 candidate · unreleased</span>
+            <h3>Surfaces, not route supremacy</h3>
+            <p>The candidate treats routes, layouts, components, stories, overlays, flows, packages, and runtime states as separate evidence, with ready, limited, blocked, or unsupported readiness.</p>
           </article>
           <article class="roadmap-item">
             <span class="roadmap-tag">Product boundary</span>
-            <h3>Content-first, not a registry</h3>
-            <p>@decantr/content is canonical; registry names are compatibility facades, Decantr CSS is legacy optional, Studio is read-only, and MCP remains exactly eight tools.</p>
+            <h3>Compatibility stays bounded</h3>
+            <p>@decantr/content owns corpus references; registry names and Decantr CSS are compatibility surfaces, Studio remains read-only, and MCP keeps exactly eight tool identities.</p>
           </article>
         </div>
       </div>
@@ -1701,8 +1732,8 @@ action:
       <div class="container">
         <div class="final reveal">
           <p class="eyebrow" style="justify-self: center; margin: 0 auto;">Already scanned?</p>
-          <h2 id="cta-title">Lock the contract. Run adopt.</h2>
-          <p>Adopt observes what's already in your app and writes a reviewable, repo-owned contract. Reversible. Yours.</p>
+          <h2 id="cta-title">Review the scan. Attach deliberately.</h2>
+          <p>Adopt writes reviewable, repo-owned project law beneath Brownfield production source. In 3.9.4, check selected-app, route, styling, graph, and reported limitations before accepting it.</p>
           <div class="installer" style="margin: 0 auto; max-width: 30rem;">
             <div class="installer-tabs" role="tablist" aria-label="Package manager (final)">
               <button data-pm-final="npx" class="active" role="tab" aria-selected="true">npx</button>
@@ -1730,7 +1761,7 @@ action:
           <img src="/logo.svg" alt="" width="30" height="30">
           <span class="brand-name">decantr</span>
         </a>
-        <p class="footer-copy">Local-first verifier for production frontends touched by AI agents. Your repo-owned contract stays in charge.</p>
+        <p class="footer-copy">Local-first verifier for production frontends touched by AI agents. Brownfield production source remains first authority; accepted project law records intent beneath it.</p>
         <div class="footer-meta">
           <span>v3.9.4 current</span>
           <span class="footer-meta-sep">·</span>
@@ -1759,7 +1790,7 @@ action:
       decantr_project decantr_contract decantr_context decantr_graph decantr_registry
       decantr_verify decantr_repair decantr_contract_write
     </p>
-    <h2>Content-first packages, one mission</h2>
+    <h2>Nine packages, one mission</h2>
     <div class="pkg-name">@decantr/essence-spec</div><div class="pkg-version">3.8.1 - Essence V4 contract owner</div>
     <div class="pkg-name">@decantr/content</div><div class="pkg-version">3.9.4 - current official content corpus</div>
     <div class="pkg-name">@decantr/registry</div><div class="pkg-version">3.9.4 - legacy compatibility package</div>

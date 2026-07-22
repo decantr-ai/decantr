@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/benchmark-3-10/task-environment-spec.v1.json",
+  "title": "Decantr 3.10 reviewed per-task execution environment",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "taskId",
+    "partition",
+    "base",
+    "projectPath",
+    "profile",
+    "lockfiles",
+    "sourceEvidence",
+    "preparation",
+    "cleanAfterPreparation",
+    "review"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "decantr-benchmark-task-environment.v1" },
+    "taskId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,95}$" },
+    "partition": { "enum": ["development", "qualification"] },
+    "base": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commit", "tree"],
+      "properties": {
+        "commit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+        "tree": { "type": "string", "pattern": "^[a-f0-9]{40}$" }
+      }
+    },
+    "projectPath": { "type": "string", "minLength": 1 },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "os", "arch", "nodeVersion", "bunVersion", "packageManager"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9.-]+$" },
+        "os": { "const": "linux" },
+        "arch": { "const": "x64" },
+        "nodeVersion": { "type": ["string", "null"], "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+        "bunVersion": { "type": ["string", "null"], "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+        "packageManager": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "version"],
+          "properties": {
+            "name": { "enum": ["npm", "pnpm", "yarn", "bun"] },
+            "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+(?:\\.[0-9]+)?$" }
+          }
+        }
+      }
+    },
+    "lockfiles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "sha256": { "$ref": "#/$defs/sha256" }
+        }
+      }
+    },
+    "sourceEvidence": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "path", "sha256", "statement"],
+        "properties": {
+          "kind": { "enum": ["package-manifest", "runtime-hint", "lockfile", "candidate-contract", "reviewer-override"] },
+          "path": { "type": "string", "minLength": 1 },
+          "sha256": { "$ref": "#/$defs/sha256" },
+          "statement": { "type": "string", "minLength": 12 }
+        }
+      }
+    },
+    "preparation": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/command" }
+    },
+    "cleanAfterPreparation": { "const": true },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reviewedBy", "reviewedAt", "notes"],
+      "properties": {
+        "status": { "enum": ["draft", "approved"] },
+        "reviewedBy": { "type": ["string", "null"] },
+        "reviewedAt": { "type": ["string", "null"], "format": "date-time" },
+        "notes": { "type": "string", "minLength": 20 }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "command": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "executable", "args", "cwd", "timeoutMs", "network", "required"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]+$" },
+        "executable": { "type": "string", "minLength": 1 },
+        "args": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "cwd": { "type": "string", "minLength": 1 },
+        "timeoutMs": { "type": "integer", "minimum": 100, "maximum": 7200000 },
+        "network": { "enum": ["none", "dependency-registry"] },
+        "required": { "type": "boolean" },
+        "environment": {
+          "type": "object",
+          "propertyNames": { "pattern": "^[A-Z_][A-Z0-9_]*$" },
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    }
+  }
+}

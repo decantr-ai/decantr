@@ -375,7 +375,7 @@ export async function cmdMagic(
     console.log('');
     console.log(`${BOLD}Recommended next steps:${RESET}`);
     console.log(`  ${cyan(`decantr doctor${projectFlag}`)}`);
-    console.log(`  ${cyan(`decantr task <route> "${prompt}"${projectFlag}`)}`);
+    console.log(`  ${cyan(`decantr task <target> "${prompt}"${projectFlag}`)}`);
     console.log(`  ${cyan(`decantr verify --brownfield --local-patterns${projectFlag}`)}`);
     return;
   }
@@ -793,7 +793,7 @@ export async function cmdMagic(
       ? `   1. Read ${cyan('.decantr/context/scaffold-pack.md')} first, then use ${cyan('.decantr/context/scaffold.md')} for fuller context`
       : `   1. Read ${cyan('.decantr/context/scaffold.md')} as the current local app contract`,
   );
-  console.log(`   2. Run ${cyan('decantr task <route> "<intent>"')} before route-level edits`);
+  console.log(`   2. Run ${cyan('decantr task <target> "<intent>"')} before UI-surface edits`);
   console.log(
     `   3. Use ${cyan('DECANTR.md')} for authority, guard, styling-adoption, and workflow rules`,
   );

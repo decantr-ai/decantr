@@ -1,0 +1,60 @@
+{
+  "input": {
+    "policyCard": {
+      "statements": [
+        {
+          "id": "repository-authority",
+          "sources": [
+            "base-checkout"
+          ],
+          "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+        },
+        {
+          "id": "change-scope",
+          "sources": [
+            "task.scope"
+          ],
+          "text": "Keep authored changes within the declared allowlist: apps/v4/registry/new-york-v4/ui/calendar/**, apps/v4/registry/new-york-v4/ui/range-calendar/**, apps/v4/test/**, apps/v4/tests/**. Do not edit forbidden paths: apps/v4/public/r/**, apps/v4/registry/new-york-v4/ui/** (except allowed paths), apps/** (except apps/v4 allowed paths), package.json, pnpm-lock.yaml."
+        },
+        {
+          "id": "host-verification",
+          "sources": [
+            "candidate.environment"
+          ],
+          "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+        }
+      ]
+    },
+    "target": {
+      "selector": "component:registry/new-york-v4/ui/range-calendar/RangeCalendarCellTrigger.vue:RangeCalendarCellTrigger"
+    }
+  },
+  "oracle": {
+    "acceptedStatuses": [
+      "limited"
+    ],
+    "expectedKind": "component",
+    "forbiddenRankOnePatterns": [
+      "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+    ],
+    "rankOneFiles": [
+      "registry/new-york-v4/ui/range-calendar/RangeCalendarCellTrigger.vue"
+    ],
+    "styleAuthority": {
+      "approach": "tailwind",
+      "confidence": "high",
+      "files": [
+        "assets/css/fonts.css",
+        "assets/css/main.css"
+      ]
+    }
+  },
+  "review": {
+    "notes": "Independently checked the frozen base tree and candidate record. The exact component selector is a neutral, realistic entry point for the paired calendar-state task and resolves limited to authored registry source at rank one. Generated public registry output and tests remain non-authoritative; Tailwind and scope labels are accurate.",
+    "reviewedAt": "2026-07-22T12:17:39Z",
+    "reviewedBy": "independent-target-review-b",
+    "status": "approved"
+  },
+  "schemaVersion": "decantr-benchmark-task-delivery-spec.v1",
+  "taskId": "shadcn-vue-v4.selected-date-hover"
+}

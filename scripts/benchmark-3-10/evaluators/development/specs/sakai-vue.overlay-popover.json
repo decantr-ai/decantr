@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "decantr-benchmark-evaluator-authoring-spec.v2",
+  "taskId": "sakai-vue.overlay-popover",
+  "contractId": "sakai-vue.overlay-popover.v1",
+  "review": {
+    "status": "approved",
+    "reviewedBy": "independent-runtime-evaluator-review-mixed-c",
+    "reviewedAt": "2026-07-22T13:18:42Z",
+    "notes": "Approved from exact frozen commits 03ef1236f0226283c2bfe6e316585115ab0b7a62 and 7c541761321e5bc56274c929e88297979113a74a with pinned Playwright 1.61.1 and Axe 4.12.1. Expected passes 10/10 executable checks; base fails selection-close, selected-row toast, and clean-console checks with the real null-hide runtime exception while neighboring Dialog, Drawer, Tooltip, and ConfirmPopup interactions remain proven. Scoped WCAG A/AA Axe passes after excluding the frozen theme's color contrast baseline, and npm builds pass both revisions."
+  },
+  "oracle": {
+    "candidateIndependent": true,
+    "decantrOutputAllowed": false,
+    "sourcePath": "sources/sakai-vue.overlay-popover.mjs"
+  },
+  "commands": [
+    {
+      "id": "behavior",
+      "kind": "functional",
+      "runtime": "controller",
+      "executable": "node",
+      "args": [
+        "${EVALUATOR_ROOT}/sources/sakai-vue.overlay-popover.mjs",
+        "--workspace",
+        "${WORKSPACE}",
+        "--project-path",
+        "${PROJECT_PATH}",
+        "--evaluator-runtime",
+        "${EVALUATOR_RUNTIME}"
+      ],
+      "cwd": "${EVALUATOR_ROOT}",
+      "environment": {
+        "PLAYWRIGHT_BROWSERS_PATH": "/tmp/decantr-3-10-playwright-browsers"
+      },
+      "timeoutMs": 180000,
+      "required": true,
+      "resultFormat": "json-stdout"
+    },
+    {
+      "id": "host-build",
+      "kind": "build",
+      "runtime": "task",
+      "executable": "npm",
+      "args": [
+        "run",
+        "build"
+      ],
+      "cwd": "${WORKSPACE}/${PROJECT_PATH}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    }
+  ],
+  "limits": {
+    "timeoutMs": 5400000,
+    "maxRequests": 40,
+    "maxInputTokens": 1000000,
+    "maxOutputTokens": 100000
+  }
+}

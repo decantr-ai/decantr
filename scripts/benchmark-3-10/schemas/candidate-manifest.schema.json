@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/benchmark-3-10/candidate-manifest.v1.json",
+  "title": "Decantr 3.10 candidate package and treatment-runtime binding",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "program",
+    "version",
+    "builtAt",
+    "source",
+    "tarballs",
+    "contextProvider"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "decantr-benchmark-candidate.v1" },
+    "program": { "const": "decantr-3.10-ui-change-control-proof" },
+    "version": { "type": "string", "pattern": "^3\\.10\\.0(?:[-+][a-zA-Z0-9.-]+)?$" },
+    "builtAt": { "type": "string", "format": "date-time" },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "commit",
+        "tree",
+        "clean",
+        "dirtyStatusSha256",
+        "trackedDiffSha256"
+      ],
+      "properties": {
+        "repository": { "type": "string", "format": "uri" },
+        "commit": { "$ref": "#/$defs/gitSha" },
+        "tree": { "$ref": "#/$defs/gitSha" },
+        "clean": { "type": "boolean" },
+        "dirtyStatusSha256": { "$ref": "#/$defs/sha256" },
+        "trackedDiffSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "tarballs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["package", "path", "sha256"],
+        "properties": {
+          "package": { "type": "string", "pattern": "^@decantr/[a-z0-9-]+$" },
+          "path": { "type": "string", "minLength": 1 },
+          "sha256": { "$ref": "#/$defs/sha256" }
+        }
+      }
+    },
+    "contextProvider": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "package",
+        "entrypoint",
+        "outputSchemaVersion",
+        "runtimeLock",
+        "runtimeFiles",
+        "runtimeTreeSha256"
+      ],
+      "properties": {
+        "type": { "const": "decantr-cli-task-v1" },
+        "package": { "const": "@decantr/cli" },
+        "entrypoint": { "const": "node_modules/@decantr/cli/dist/bin.js" },
+        "outputSchemaVersion": { "const": "ui-surface-task-context.v1" },
+        "runtimeLock": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "sha256"],
+          "properties": {
+            "path": { "const": "package-lock.json" },
+            "sha256": { "$ref": "#/$defs/sha256" }
+          }
+        },
+        "runtimeFiles": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "runtimeTreeSha256": { "$ref": "#/$defs/sha256" }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "gitSha": { "type": "string", "pattern": "^[a-f0-9]{40}$" }
+  }
+}

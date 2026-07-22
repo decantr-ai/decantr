@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "decantr-benchmark-evaluator-authoring-spec.v2",
+  "taskId": "shadcn-vue-v4.selected-date-hover",
+  "contractId": "shadcn-vue-v4.selected-date-hover.v1",
+  "review": {
+    "status": "approved",
+    "reviewedBy": "OpenAI Codex independent evaluator reviewer",
+    "reviewedAt": "2026-07-22T14:46:27Z",
+    "notes": "Approved after two exact repeated frozen-worktree runs under Node 22.19.0/pnpm 10.25.0. The repaired candidate-independent oracle drives the real Nuxt Calendar and Range Calendar documentation components with pinned Chromium and measures computed selected-day and range-endpoint colors through hover and keyboard focus in light and dark modes, visible focus treatment, unaffected disabled/unavailable/outside-month/today/unselected states, geometry, overflow, fixed screenshots, task-interaction runtime errors, and scoped Axe results. Base c74b5848035567efc876a6488469daf71653ac8e reproducibly fails exactly selected Calendar hover plus selected range-start and range-end hover at 12/15 checks and exits 1; expected 3bfa0107b263b1caa8315bb30c3272ad533414e6 passes 15/15 and exits 0. pnpm --filter v4 registry:build passes on both. Known full-app Nuxt hydration diagnostics are retained as non-gating boot evidence; both repeated task interaction windows contain zero runtime errors. Repository-wide typecheck and nonterminating full prerender build were excluded for the same frozen, task-unrelated reasons documented by the paired Alert evaluator."
+  },
+  "oracle": {
+    "candidateIndependent": true,
+    "decantrOutputAllowed": false,
+    "sourcePath": "sources/shadcn-vue-v4.selected-date-hover.mjs"
+  },
+  "commands": [
+    {
+      "id": "behavior",
+      "kind": "functional",
+      "runtime": "controller",
+      "executable": "node",
+      "args": [
+        "${EVALUATOR_ROOT}/sources/shadcn-vue-v4.selected-date-hover.mjs",
+        "--workspace",
+        "${WORKSPACE}",
+        "--project-path",
+        "${PROJECT_PATH}",
+        "--evaluator-runtime",
+        "${EVALUATOR_RUNTIME}"
+      ],
+      "cwd": "${EVALUATOR_ROOT}",
+      "timeoutMs": 600000,
+      "required": true,
+      "resultFormat": "json-stdout"
+    },
+    {
+      "id": "host-registry-build",
+      "kind": "build",
+      "runtime": "task",
+      "executable": "pnpm",
+      "args": ["--filter", "v4", "registry:build"],
+      "cwd": "${WORKSPACE}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    }
+  ],
+  "limits": {
+    "timeoutMs": 5400000,
+    "maxRequests": 40,
+    "maxInputTokens": 1000000,
+    "maxOutputTokens": 100000
+  }
+}

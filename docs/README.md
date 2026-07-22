@@ -1,82 +1,63 @@
 # Decantr Docs
 
-The Decantr 3 public docs treat active reference pages, guides, schemas, release notes, and release runbooks as the current source of truth. Decantr 3.9 is the **Governed Change Proof** line: Contract, Context, Evidence, explicit Authority, source-grounded `AdoptionTruthV1`, bounded `TaskCapsuleV1`, fail-closed `GovernanceDeltaV1`, typed graph impact, read-only Studio, and the canonical `@decantr/content` corpus.
+Decantr is an **agent-neutral UI change-control layer**. It observes project-owned authority, prepares change-scoped context, verifies an agent's diff, and reports typed evidence.
 
-The operating contract also includes shared source-accurate route discovery, current-graph task activation, compact task payloads with a deterministic byte/token budget, reviewed codify acceptance, v2 reports by default, explicitly selected CI v3 proof, workflow-specific assistant bridges, host-formatter boundaries for generated artifacts, receipt-bound Tailwind v4 source isolation, and contract-only styling by default. Studio may render or recompute these contracts but does not write project files or execute repair workflows. Active reference pages describe these behaviors; older release/program documents remain historical snapshots.
+**Decantr 3.9.4 is the current published stable release. Decantr 3.10 is an active proof program and is neither released nor value-proven.**
 
-The approved 3.9 scope and qualification standard remain recorded in `programs/2026-07-16-decantr-3-9-adoption-proof-program.md`. The replayable 84-route/24-competing-source lane, supplemental pinned Angular Brownfield replay, and 270-sample machine lane are complete. The 200 human-adjudicated finding lane is not; stable 3.9.4 publication uses the explicit sole-maintainer waiver, but active docs must not claim human precision, recall, release qualification, or adoption proof. The Decantr 3.0 reset in `programs/2026-05-21-ai-frontend-governance-reset-plan.md` and other older program files remain historical strategy unless a current reference page or release note re-promotes a decision.
+The 3.10 no-cost harness is testable, but the experiment is not runnable: 31/40 evaluator specs and 8/40 environment specs carry approval metadata, all 26 runtime profiles remain unbuilt/unverified, no external container-qualified evaluator receipt or human-approved Day-0 oracle exists, private qualification transfer is unresolved, and no paid model result exists. See the active program for the full evidence ledger.
 
-For quick setup help, showcase feedback, and live community discussion, join the [Decantr Discord](https://discord.gg/WeDpBd4xFU). GitHub issues, pull requests, and these docs remain the canonical home for bugs, feature requests, and durable decisions.
+The unreleased 3.10 candidate loop is:
 
-## Active Docs
+1. **Observe** the selected app and its UI authority.
+2. **Prepare** compact context for a specific change.
+3. **Verify** the resulting diff and available runtime evidence.
+4. **Report** reproducible results for people, agents, and CI.
 
-- `programs/`
-  - The approved 3.9 scope/qualification program plus historical product strategy, program structure, and planning checkpoints.
-  - Current qualification source: `programs/2026-07-16-decantr-3-9-adoption-proof-program.md`.
-  - Important background: `programs/2026-05-21-ai-frontend-governance-reset-plan.md` and `programs/2026-05-15-hybrid-fortification-plan.md`.
-- `audit/`
-  - Baseline audits, keep/cut decisions, package surface review, and platform contract findings.
-  - Latest external adoption report: `audit/2026-07-16-decantr-3-8-3-post-publish-adoption.md`.
-  - Defect-discovery predecessor: `audit/2026-07-16-decantr-3-8-2-post-publish-adoption.md`.
-- `specs/`
-  - Active implementation specs for the reset program.
-- `architecture/decisions/`
-  - Architecture decision records for active implementation choices.
-  - Current 3.0 decisions: graph storage adapter, temporal/provenance model, React/TypeScript/TSX code graph extraction, and contract capsule context architecture.
-- `research/`
-  - Market and architecture research that informs active programs.
-  - Current graph/AI governance research: `research/2026-05-21-graph-ai-governance-competitive-research.md`.
-  - Current retrieval/context architecture research: `research/2026-05-21-retrieval-architecture-research.md`.
-- `reference/`
-  - Human-readable references for active public/runtime contracts such as Project Health, Evidence Bundles, Workspace Health, Content Health, workflow mode, telemetry, and content API surfaces.
-- `guides/`
-  - Focused public entry points for existing-app adoption, monorepos, Project Health CI, AI assistant setup, typed graph agent operation, content-corpus work, and design contract basics.
-- `benchmarks/`
-  - Proof-field and real-world corpus reports used to validate Brownfield command reliability, drift detection, repair-plan coverage, runtime evidence, and loop quality.
-  - Latest proof-field report: `benchmarks/2026-06-25-decantr-3-6-proof-field-report.md`.
-- Decantr 3.9 operating guidance lives in `guides/existing-apps.md`, `guides/monorepos.md`, `guides/project-health-ci.md`, `guides/ai-assistant-setup.md`, `guides/typed-graph-agent-playbook.md`, `reference/workflow-model.md`, `reference/project-health.md`, `reference/report-schemas.md`, `reference/diagnostic-codes.md`, `reference/mcp-migration.md`, and `reference/command-surface.md`: `AdoptionTruthV1`, `TaskCapsuleV1`, `GovernanceDeltaV1`, v2 report compatibility, opt-in CI v3, read-only Studio, exactly eight MCP tools, canonical content provenance, ranked monorepo `--project` targeting, authority resolution, loop readiness, local law/style bridges, typed route/impact graph context, baselines, local browser evidence, and project-scoped repair guidance.
-- Installed-package security posture is captured in `reference/security-permissions.md`. It is generated from `config/package-permissions.json` and distinguishes published npm surfaces from internal monorepo scripts, showcase fixtures, and release automation.
-- `releases/`
-  - Short product release notes for shipped user-facing surfaces.
-  - Current release: `releases/2026-07-21-decantr-3-9-4-tailwind-source-isolation.md`.
-  - Previous adoption freshness patch: `releases/2026-07-21-decantr-3-9-3-adoption-freshness.md`.
-  - Previous security patch: `releases/2026-07-21-decantr-3-9-2-security-packaging.md`.
-  - Governed Change Proof baseline: `releases/2026-07-16-decantr-3-9-0-governed-change-proof.md`.
-  - Final 3.8 release: `releases/2026-07-16-decantr-3-8-3-route-source-precision.md`.
-  - 3.6 quality-train note: `releases/2026-06-25-decantr-3-6-0-brownfield-proof-quality.md`.
-  - Earlier 3.5 control-loop note: `releases/2026-06-23-decantr-3-5-0-brownfield-control-loop.md`.
-  - Earlier behavior-obligations note: `releases/2026-05-23-behavior-obligations.md`.
-- `schemas/`
-  - Published public schema copies and the schema index surfaced at `https://decantr.ai/schemas/`.
-- `runbooks/`
-  - Operational rollout and verification procedures for hosted surfaces.
-  - Includes package release strategy and hosted rollout runbooks.
-  - Current release closeout source of truth: `runbooks/release-stewardship.md`.
-  - Current adoption proof: `runbooks/post-publish-adoption-proof.md`.
-  - Historical Decantr 3.8 patch boundary: `runbooks/decantr-3-8-maintenance.md`.
-  - Registry portal deployment runbooks are historical after the 3.8 de-registry migration; current hosted work is the Fly content API.
+The approved 3.10 model treats routes, layouts, components, stories, overlays, flows, packages, and runtime states as UI surfaces. Selected-app authority, surface authority, topology completeness, taskability, component inventory, styling authority, and runtime evidence remain independent. A score or component count cannot hide an unresolved axis.
 
-Historical phase specs retained for architecture context:
-- `specs/2026-05-21-v3-typed-graph-foundation-design.md`
-- `specs/2026-04-08-vnext-phase-0-product-boundary-cleanup-design.md`
-- `specs/2026-04-08-vnext-phase-1-registry-contract-normalization-design.md`
-- `specs/2026-04-08-vnext-phase-2-contract-compiler-design.md`
-- `specs/2026-04-08-vnext-phase-3-verification-and-golden-corpus-design.md`
-- `specs/2026-04-08-vnext-phase-4-registry-intelligence-and-content-ops-design.md`
-- `specs/2026-04-08-vnext-phase-5-portal-docs-and-package-surface-design.md`
-- `specs/2026-04-08-vnext-phase-6-hosted-commercial-platform-design.md`
+## Start Here
 
-## Archived Docs
+- [Existing app adoption](guides/existing-apps.md): shipped 3.9.4 read-only scan, one-time attach, route-backed task preparation, verification, and CI, with candidate behavior labeled separately.
+- [AI assistant setup](guides/ai-assistant-setup.md): model-neutral CLI and MCP integration without duplicate instruction files.
+- [Workflow model](reference/workflow-model.md): shipped 3.9.4 behavior, the unreleased Observe -> Prepare -> Verify -> Report candidate, authority order, and local-first boundaries.
+- [Command surface](reference/command-surface.md): the shipped route-backed workflow, unreleased candidate additions, and callable advanced/compatibility commands.
+- [FAQ](faq.md): status, product boundary, evidence, CI, MCP, Greenfield, CSS, registry, and benchmark questions.
+- [Security and permissions](reference/security-permissions.md): installed-package filesystem, network, process, telemetry, and MCP behavior.
+- [Published schemas](https://decantr.ai/schemas/): current public wire contracts.
 
-- `archive/specs/`
-  - Pre-vNext design/spec documents kept for historical reference only.
-- `archive/plans/`
-  - Superseded execution plans from the pre-reset architecture.
-- `archive/remediation/`
-  - Older remediation notes retained as reference material.
+## Current Program And Evidence
+
+- [Decantr 3.10 UI Change Control Proof](programs/2026-07-22-decantr-3-10-ui-change-control-proof.md): active implementation and falsification boundary.
+- [Decantr 3.9.4 Day-0 Authority Baseline](benchmarks/2026-07-22-decantr-3-9-4-day-zero.md): 28-repository scanner baseline. A parseable scan is explicitly not a correctness result.
+- [Decantr 3.9 Governed Change Proof program](programs/2026-07-16-decantr-3-9-adoption-proof-program.md): historical program for the current published line.
+- [Decantr 3.9.4 release note](releases/2026-07-21-decantr-3-9-4-tailwind-source-isolation.md): current stable release history.
+
+The 3.9 route/source and machine evidence lanes are complete. The two-human finding lane is not. The sole-maintainer publication waiver does not establish human precision, recall, release qualification, adoption proof, or model-outcome improvement.
+
+## Active Reference Areas
+
+- `guides/`: user workflows for existing apps, monorepos, assistants, CI, graph context, and contracts.
+- `reference/`: current command, workflow, report, security, Project Health, package, MCP, and API contracts.
+- `schemas/`: public schema copies and the schema index.
+- `runbooks/`: release, deployment, and operational verification procedures.
+- `programs/`: approved programs. Only the explicitly active 3.10 program describes current direction.
+- `benchmarks/`: measured or diagnostic evidence with its original limits.
+
+## Compatibility And Historical Areas
+
+Greenfield blueprints, themes, Studio, showcase, broad content-corpus workflows, telemetry, registry-named commands, and `@decantr/css` remain documented where they are still callable in 3.x. They are advanced, compatibility, or historical surfaces, not the 3.10 product lead.
+
+Retain dated material under `releases/`, `audit/`, `benchmarks/`, `programs/`, `research/`, `specs/`, and `architecture/decisions/` as historical evidence. A dated document records the claim and architecture at that time; it does not silently become current product truth.
+
+Pre-reset material under `archive/` is reference-only. Registry portal deployment material is historical after the public portal retirement. The Fly content API is an optional reference helper, not the authority for a local codebase.
 
 ## Working Rule
 
-If an older program, audit, or spec conflicts with an active file under `reference/`, `guides/`, the root README, or the current release note, treat the active product documentation and shipped schemas as authoritative.
+When documentation conflicts, use this order:
 
-Official corpus blueprint docs should describe the public sets as `All`, `Featured`, `Certified`, and `Labs`. Internal portfolio labels such as fold candidates are maintainer metadata only; public docs should say that overlapping legacy slugs remain addressable directly but are hidden from browse/search.
+1. shipped package behavior and published schemas for 3.9.4;
+2. active files under `guides/` and `reference/` for current usage;
+3. the active 3.10 program for intended, not-yet-released behavior;
+4. dated release, benchmark, audit, program, research, and specification files as historical evidence.
+
+Do not describe 3.10 as released or value-proven until the frozen candidate passes the declared Day-0 and 320-run A/B gates.

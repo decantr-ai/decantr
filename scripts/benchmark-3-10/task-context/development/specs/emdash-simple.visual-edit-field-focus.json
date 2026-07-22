@@ -1,0 +1,61 @@
+{
+  "input": {
+    "policyCard": {
+      "statements": [
+        {
+          "id": "repository-authority",
+          "sources": [
+            "base-checkout"
+          ],
+          "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+        },
+        {
+          "id": "change-scope",
+          "sources": [
+            "task.scope"
+          ],
+          "text": "Keep authored changes within the declared allowlist: demos/cloudflare/src/pages/posts/[slug].astro, demos/playground/src/pages/posts/[slug].astro, demos/postgres/src/pages/posts/[slug].astro, demos/preview/src/pages/posts/[slug].astro, demos/simple/src/pages/posts/[slug].astro, templates/blog-cloudflare/src/pages/posts/[slug].astro, templates/blog/src/pages/posts/[slug].astro, packages/admin/src/components/ContentEditor.tsx, packages/admin/src/router.tsx, packages/admin/tests/**, .changeset/*.md. Do not edit forbidden paths: demos/** (except allowed paths), templates/** (except allowed paths), packages/** (except packages/admin allowed paths), **/auth/**, **/database/**, package.json, pnpm-lock.yaml, **/generated/**."
+        },
+        {
+          "id": "host-verification",
+          "sources": [
+            "candidate.environment"
+          ],
+          "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+        }
+      ]
+    },
+    "target": {
+      "selector": "/posts/:slug"
+    }
+  },
+  "oracle": {
+    "acceptedStatuses": [
+      "ready",
+      "limited"
+    ],
+    "expectedKind": "route",
+    "forbiddenRankOnePatterns": [
+      "(^|/)(?:\\.next|\\.nuxt|\\.svelte-kit|__fixtures__|__generated__|__mocks__|__tests__|build|coverage|cypress|dist|e2e|fixtures?|generated|mocks?|out|playwright|specs?|stories|test-utils?|testing|tests?|target)(?:/|$)|\\.(?:cy|d|e2e|fixture|gen|generated|mock|spec|stories?|test|vitest)\\.[^.]+$"
+    ],
+    "rankOneFiles": [
+      "src/pages/posts/[slug].astro"
+    ],
+    "styleAuthority": {
+      "approach": "css",
+      "confidence": "high",
+      "files": [
+        "src/layouts/Base.astro",
+        "src/styles/theme.css"
+      ]
+    }
+  },
+  "review": {
+    "notes": "Approved: the base /posts/:slug route is a neutral visual-editing entry surface and uniquely resolves to the selected project's production Astro page. CSS authority follows the base layout and theme file, scope text matches the candidate, and non-production rank-one lanes are excluded.",
+    "reviewedAt": "2026-07-22T12:19:56Z",
+    "reviewedBy": "independent-target-review-a",
+    "status": "approved"
+  },
+  "schemaVersion": "decantr-benchmark-task-delivery-spec.v1",
+  "taskId": "emdash-simple.visual-edit-field-focus"
+}

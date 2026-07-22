@@ -1,0 +1,1853 @@
+{
+  "schemaVersion": "decantr-day-zero-report.v1",
+  "generatedAt": "2026-07-22T10:06:12.890Z",
+  "baseline": {
+    "cliVersion": "3.9.4",
+    "repositoryCommit": "f890972f9e8df6157ff37d1c978308a180df37d0",
+    "note": "The repository commit follows v3.9.4 and changes only MCP publication retry behavior; the scanned CLI package version is 3.9.4."
+  },
+  "manifests": {
+    "corpusSha256": "44af2396816fcacac0d1e939d8b0c3380f1b1295974a791a75369dfd6aa7d91f",
+    "modelsSha256": "275468b229be6b97bc16d33206cb57c17ad4c0c2434724234c5e60a5eb4c6911",
+    "protocolSha256": "d777b202cb2a35c6a7f0ca172cc069a6854ccc9a663716d80b334e16d2b4343e"
+  },
+  "corpusRoot": "/tmp/decantr-3-10-corpus-20260722",
+  "rawDirectory": "/tmp/decantr-3-10-day-zero-raw",
+  "summary": {
+    "repositories": 28,
+    "completed": 28,
+    "harnessFailures": [],
+    "scanFailures": [],
+    "unsupported": [
+      "primer-react"
+    ],
+    "unresolvedAuthority": [
+      "spartan",
+      "solid-start-hackernews",
+      "forma-36"
+    ],
+    "partialOrUnknownCompleteness": [
+      "ngx-admin",
+      "spartan",
+      "solid-start-hackernews",
+      "forma-36"
+    ],
+    "authorityContamination": [],
+    "highConfidenceWithoutTaskableRoute": []
+  },
+  "results": [
+    {
+      "id": "angular-realworld",
+      "partition": "development",
+      "expectedFramework": "angular",
+      "projectPath": ".",
+      "commitVerified": true,
+      "status": "completed",
+      "exitCode": 0,
+      "durationMs": 450,
+      "rawOutputSha256": "7c066b881bb40445bc3eb6ab2dcefced0d6ea7981f3d7e820c8f48ae7ee77d1d",
+      "rawOutputFile": "angular-realworld.scan.json",
+      "schemaVersion": "scan-report.v2",
+      "applicability": "strong_fit",
+      "confidence": {
+        "level": "high",
+        "score": 98
+      },
+      "project": {
+        "framework": "angular",
+        "packageName": "angular-realworld",
+        "reportedProjectPath": ".",
+        "workspaceScope": "single-app"
+      },
+      "routes": {
+        "strategy": "angular-router",
+        "count": 10,
+        "routeSignalCount": 14,
+        "taskableRouteCount": 10,
+        "authority": "proven",
+        "completeness": "complete",
+        "authorityFiles": [
+          "src/app/app.config.ts",
+          "src/app/app.routes.ts",
+          "src/app/features/profile/profile.routes.ts",
+          "src/main.ts"
+        ],
+        "excludedAuthorityFiles": []
+      },
+      "components": {
+        "count": 18,
+        "confidence": "high"
+      },
+      "styling": {
+        "approach": "css",
+        "confidence": "high",
+        "evidence": [
+          "Angular build target declares 1 global style entry"
+        ],
+        "limitations": [
+          "Configured Angular style entry is not present inside the selected app: realworld/assets/theme/styles.css"
+        ]
+      },
+      "limitations": [
+        "Configured Angular style entry is not present inside the selected app: realworld/assets/theme/styles.css",
+        "Some duplicate or non-taskable route signals were collapsed before task context.",
+        "Angular component inventory is static and advisory; runtime-created components are not proven.",
+        "Component inventory is static and advisory, not proof that every reusable component was found."
+      ],
+      "error": null
+    },
+    {
+      "id": "sakai-ng",
+      "partition": "development",
+      "expectedFramework": "angular",
+      "projectPath": ".",
+      "commitVerified": true,
+      "status": "completed",
+      "exitCode": 0,
+      "durationMs": 549,
+      "rawOutputSha256": "320894c0fc1866b3bdf6b18124770d65a8d95111d3d23c762063e0d16acea960",
+      "rawOutputFile": "sakai-ng.scan.json",
+      "schemaVersion": "scan-report.v2",
+      "applicability": "strong_fit",
+      "confidence": {
+        "level": "high",
+        "score": 98
+      },
+      "project": {
+        "framework": "angular",
+        "packageName": "sakai-ng",
+        "reportedProjectPath": ".",
+        "workspaceScope": "single-app"
+      },
+      "routes": {
+        "strategy": "angular-router",
+        "count": 25,
+        "routeSignalCount": 29,
+        "taskableRouteCount": 25,
+        "authority": "proven",
+        "completeness": "complete",
+        "authorityFiles": [
+          "src/app.config.ts",
+          "src/app.routes.ts",
+          "src/app/pages/auth/auth.routes.ts",
+          "src/app/pages/pages.routes.ts",
+          "src/app/pages/uikit/uikit.routes.ts",
+          "src/main.ts"
+        ],
+        "excludedAuthorityFiles": []
+      },
+      "components": {
+        "count": 44,
+        "confidence": "high"
+      },
+      "styling": {
+        "approach": "primeng-tailwind-scss",
+        "confidence": "high",
+        "evidence": [
+          "Angular build target declares 2 global style entries",
+          "PrimeNG dependency is present in the selected app",
+          "PrimeNG runtime theme configuration found in production source",
+          "Tailwind configured in .postcssrc.json"
+        ],
+        "limitations": [
+          "Configured Angular style entry is not present inside the selected app: src/assets/styles.scss",
+          "Configured Angular style entry is not present inside the selected app: src/assets/tailwind.css"
+        ]
+      },
+      "limitations": [
+        "Configured Angular style entry is not present inside the selected app: src/assets/styles.scss",
+        "Configured Angular style entry is not present inside the selected app: src/assets/tailwind.css",
+        "Some duplicate or non-taskable route signals were collapsed before task context.",
+        "Angular component inventory is static and advisory; runtime-created components are not proven.",
+        "Component inventory is static and advisory, not proof that every reusable component was found."
+      ],
+      "error": null
+    },
+    {
+      "id": "ng-matero",
+      "partition": "development",
+      "expectedFramework": "angular",
+      "projectPath": ".",
+      "commitVerified": true,
+      "status": "completed",
+      "exitCode": 0,
+      "durationMs": 640,
+      "rawOutputSha256": "6955ce7bbfae9d7a1795f93db56af178c6c46ebc057f0654df3153fc85266f55",
+      "rawOutputFile": "ng-matero.scan.json",
+      "schemaVersion": "scan-report.v2",
+      "applicability": "strong_fit",
+      "confidence": {
+        "level": "high",
+        "score": 98
+      },
+      "project": {
+        "framework": "angular",
+        "packageName": "ng-matero",
+        "reportedProjectPath": ".",
+        "workspaceScope": "single-app"
+      },
+      "routes": {
+        "strategy": "angular-router",
+        "count": 66,
+        "routeSignalCount": 77,
+        "taskableRouteCount": 66,
+        "authority": "proven",
+        "completeness": "complete",
+        "authorityFiles": [
+          "src/app/app.config.ts",
+          "src/app/app.routes.ts",
+          "src/app/routes/design/design.routes.ts",
+          "src/app/routes/forms/forms.routes.ts",
+          "src/app/routes/material/material.routes.ts",
+          "src/app/routes/material/tab/routes.ts",
+          "src/app/routes/media/media.routes.ts",
+          "src/app/routes/permissions/permissions.routes.ts",
+          "src/app/routes/profile/profile.routes.ts",
+          "src/app/routes/tables/tables.routes.ts",
+          "src/app/routes/utilities/utilities.routes.ts",
+          "src/main.ts"
+        ],
+        "excludedAuthorityFiles": []
+      },
+      "components": {
+        "count": 101,
+        "confidence": "high"
+      },
+      "styling": {
+        "approach": "scss",
+        "confidence": "high",
+        "evidence": [
+          "Angular build target declares 1 global style entry"
+        ],
+        "limitations": []
+      },
+      "limitations": [
+        "Some duplicate or non-taskable route signals were collapsed before task context.",
+        "Angular component inventory is static and advisory; runtime-created components are not proven.",
+        "Component inventory is static and advisory, not proof that every reusable component was found."
+      ],
+      "error": null
+    },
+    {
+      "id": "ngx-admin",
+      "partition": "qualification",
+      "expectedFramework": "angular",
+      "projectPath": ".",
+      "commitVerified": true,
+      "status": "completed",
+      "exitCode": 0,
+      "durationMs": 619,
+      "rawOutputSha256": "db4f3757136a6f0118cfea21e564b3d4ca915892a2b542ae658ad91f0d5ac541",
+      "rawOutputFile": "ngx-admin.scan.json",
+      "schemaVersion": "scan-report.v2",
+      "applicability": "partial_fit",
+      "confidence": {
+        "level": "medium",
+        "score": 74
+      },
+      "project": {
+        "framework": "angular",
+        "packageName": "ngx-admin",
+        "reportedProjectPath": ".",
+        "workspaceScope": "single-app"
+      },
+      "routes": {
+        "strategy": "angular-router",
+        "count": 6,
+        "routeSignalCount": 9,
+        "taskableRouteCount": 6,
+        "authority": "proven",
+        "completeness": "partial",
+        "authorityFiles": [
+          "src/app/app-routing.module.ts",
+          "src/app/pages/pages.module.ts",
+          "src/main.ts"
+        ],
+        "excludedAuthorityFiles": []
+      },
+      "components": {
+        "count": 144,
+        "confidence": "high"
+      },
+      "styling": {
+        "approach": "tailwind",
+        "confidence": "high",
+        "evidence": [
+          "Angular build target declares 10 global style entries",
+          "Tailwind directive found in src/app/pages/charts/chartjs/chartjs.component.scss",
+          "Tailwind directive found in src/app/pages/charts/d3/d3.component.scss",
+          "Tailwind directive found in src/app/pages/charts/echarts/echarts.component.scss",
+          "Tailwind directive found in src/app/pages/dashboard/contacts/contacts.component.scss",
+          "Tailwind directive found in src/app/pages/dashboard/dashboard.component.scss",
+          "Tailwind directive found in src/app/pages/dashboard/electricity/electricity-chart/electricity-chart.component.scss",
+          "Tailwind directive found in src/app/pages/dashboard/electricity/electricity.component.scss",
+          "Tailwind directive found in src/app/pages/dashboard/kitten/kitten.component.scss",
+          "Tailwind directive found in src/app/pages/dashboard/rooms/player/player.component.scss",
+          "Tailwind directive found in src/app/pages/dashboard/rooms/room-selector/room-selector.component.scss",
+          "Tailwind directive found in src/app/pages/dashboard/rooms/rooms.component.scss",
+          "Tailwind directive found in src/app/pages/dashboard/security-cameras/security-cameras.component.scss",
+          "Tailwind directive found in src/app/pages/dashboard/solar/solar.component.scss",
+          "Tailwind directive found in src/app/pages/dashboard/status-card/status-card.component.scss",
+          "Tailwind directive found in src/app/pages/dashboard/temperature/temperature-dragger/temperature-dragger.component.scss",
+          "Tailwind directive found in src/app/pages/dashboard/temperature/temperature.component.scss",
+          "Tailwind directive found in src/app/pages/dashboard/traffic/traffic.component.scss",
+          "Tailwind directive found in src/app/pages/dashboard/weather/weather.component.scss",
+          "Tailwind directive found in src/app/pages/e-commerce/charts-panel/chart-panel-header/chart-panel-header.component.scss",
+          "Tailwind directive found in src/app/pages/e-commerce/charts-panel/chart-panel-summary/chart-panel-summary.component.scss",
+          "Tailwind directive found in src/app/pages/e-commerce/charts-panel/charts-panel.component.scss",
+          "Tailwind directive found in src/app/pages/e-commerce/charts-panel/charts/charts-common.component.scss",
+          "Tailwind directive found in src/app/pages/e-commerce/country-orders/chart/country-orders-chart.component.scss",
+          "Tailwind directive found in src/app/pages/e-commerce/country-orders/country-orders.component.scss",
+          "Tailwind directive found in src/app/pages/e-commerce/country-orders/map/country-orders-map.component.scss",
+          "Tailwind directive found in src/app/pages/e-commerce/earning-card/back-side/earning-card-back.component.scss",
+          "Tailwind directive found in src/app/pages/e-commerce/earning-card/earning-card.component.scss",
+          "Tailwind directive found in src/app/pages/e-commerce/earning-card/front-side/earning-card-front.component.scss",
+          "Tailwind directive found in src/app/pages/e-commerce/legend-chart/legend-chart.component.scss",
+          "Tailwind directive found in src/app/pages/e-commerce/profit-card/back-side/stats-card-back.component.scss",
+          "Tailwind directive found in src/app/pages/e-commerce/profit-card/front-side/stats-card-front.component.scss",
+          "Tailwind directive found in src/app/pages/e-commerce/profit-card/profit-card.component.scss",
+          "Tailwind directive found in src/app/pages/e-commerce/progress-section/progress-section.component.scss",
+          "Tailwind directive found in src/app/pages/e-commerce/slide-out/slide-out.component.scss",
+          "Tailwind directive found in src/app/pages/e-commerce/traffic-reveal-card/back-side/traffic-back-card.component.scss",
+          "Tailwind directive found in src/app/pages/e-commerce/traffic-reveal-card/front-side/traffic-bar/traffic-bar.component.scss",
+          "Tailwind directive found in src/app/pages/e-commerce/traffic-reveal-card/front-side/traffic-front-card.component.scss",
+          "Tailwind directive found in src/app/pages/e-commerce/traffic-reveal-card/traffic-cards-header/traffic-cards-header.component.scss",
+          "Tailwind directive found in src/app/pages/e-commerce/traffic-reveal-card/traffic-reveal-card.component.scss",
+          "Tailwind directive found in src/app/pages/e-commerce/user-activity/user-activity.component.scss",
+          "Tailwind directive found in src/app/pages/e-commerce/visitors-analytics/visitors-analytics-chart/visitors-analytics-chart.component.scss",
+          "Tailwind directive found in src/app/pages/e-commerce/visitors-analytics/visitors-analytics.component.scss",
+          "Tailwind directive found in src/app/pages/e-commerce/visitors-analytics/visitors-statistics/visitors-statistics.component.scss",
+          "Tailwind directive found in src/app/pages/extra-components/calendar-kit/calendar-kit.component.scss",
+          "Tailwind directive found in src/app/pages/extra-components/calendar-kit/month-cell/month-cell.component.scss",
+          "Tailwind directive found in src/app/pages/extra-components/calendar/calendar.component.scss",
+          "Tailwind directive found in src/app/pages/extra-components/calendar/day-cell/day-cell.component.scss",
+          "Tailwind directive found in src/app/pages/extra-components/chat/chat.component.scss",
+          "Tailwind directive found in src/app/pages/extra-components/form-inputs/nebular-form-inputs.component.scss",
+          "Tailwind directive found in src/app/pages/extra-components/form-inputs/nebular-select/nebular-select.component.scss",
+          "Tailwind directive found in src/app/pages/extra-components/progress-bar/interactive-progress-bar/interactive-progress-bar.component.scss",
+          "Tailwind directive found in src/app/pages/extra-components/progress-bar/progress-bar.component.scss",
+          "Tailwind directive found in src/app/pages/extra-components/spinner/spinner-in-buttons/spinner-in-buttons.component.scss",
+          "Tailwind directive found in src/app/pages/extra-components/spinner/spinner-in-tabs/spinner-in-tabs.component.scss",
+          "Tailwind directive found in src/app/pages/extra-components/spinner/spinner.component.scss",
+          "Tailwind directive found in src/app/pages/forms/buttons/buttons.component.scss",
+          "Tailwind directive found in src/app/pages/forms/datepicker/datepicker.component.scss",
+          "Tailwind directive found in src/app/pages/layout/accordion/accordion.component.scss",
+          "Tailwind directive found in src/app/pages/layout/infinite-list/news-post-placeholder/news-post-placeholder.component.scss",
+          "Tailwind directive found in src/app/pages/layout/list/list.component.scss",
+          "Tailwind directive found in src/app/pages/maps/bubble/bubble-map.component.scss",
+          "Tailwind directive found in src/app/pages/maps/gmaps/gmaps.component.scss",
+          "Tailwind directive found in src/app/pages/maps/leaflet/leaflet.component.scss",
+          "Tailwind directive found in src/app/pages/maps/search-map/map/map.component.scss",
+          "Tailwind directive found in src/app/pages/modal-overlays/dialog/dialog-name-prompt/dialog-name-prompt.component.scss",
+          "Tailwind directive found in src/app/pages/modal-overlays/dialog/dialog.component.scss",
+          "Tailwind directive found in src/app/pages/modal-overlays/dialog/showcase-dialog/showcase-dialog.component.scss",
+          "Tailwind directive found in src/app/pages/modal-overlays/toastr/toastr.component.scss",
+          "Tailwind directive found in src/app/pages/modal-overlays/tooltip/tooltip.component.scss",
+          "Tailwind directive found in src/app/pages/modal-overlays/window/window-form/window-form.component.scss",
+          "Tailwind directive found in src/app/pages/modal-overlays/window/window.component.scss",
+          "Tailwind directive found in src/app/pages/pages.component.scss",
+          "Tailwind directive found in src/app/pages/tables/smart-table/smart-table.component.scss",
+          "Tailwind directive found in src/app/pages/tables/tree-grid/tree-grid.component.scss",
+          "Tailwind directive found in src/app/pages/ui-features/grid/grid.component.scss",
+          "Tailwind directive found in src/app/pages/ui-features/icons/icons.component.scss",
+          "Tailwind directive found in src/app/pages/ui-features/typography/typography.component.scss"
+        ],
+        "limitations": [
+          "Configured Angular style entry is not present inside the selected app: node_modules/@fortawesome/fontawesome-free/css/all.css",
+          "Configured Angular style entry is not present inside the selected app: node_modules/bootstrap/dist/css/bootstrap.css",
+          "Configured Angular style entry is not present inside the selected app: node_modules/ionicons/scss/ionicons.scss",
+          "Configured Angular style entry is not present inside the selected app: node_modules/leaflet/dist/leaflet.css",
+          "Configured Angular style entry is not present inside the selected app: node_modules/nebular-icons/scss/nebular-icons.scss",
+          "Configured Angular style entry is not present inside the selected app: node_modules/pace-js/templates/pace-theme-flash.tmpl.css",
+          "Configured Angular style entry is not present inside the selected app: node_modules/roboto-fontface/css/roboto/roboto-fontface.css",
+          "Configured Angular style entry is not present inside the selected app: node_modules/socicon/css/socicon.css",
+          "Configured Angular style entry is not present inside the selected app: node_modules/typeface-exo/index.css"
+        ]
+      },
+      "limitations": [
+        "Angular route authority is production-reachable, but one or more dynamic route expressions remain unresolved.",
+        "Configured Angular style entry is not present inside the selected app: node_modules/@fortawesome/fontawesome-free/css/all.css",
+        "Configured Angular style entry is not present inside the selected app: node_modules/bootstrap/dist/css/bootstrap.css",
+        "Configured Angular style entry is not present inside the selected app: node_modules/ionicons/scss/ionicons.scss",
+        "Configured Angular style entry is not present inside the selected app: node_modules/leaflet/dist/leaflet.css",
+        "Configured Angular style entry is not present inside the selected app: node_modules/nebular-icons/scss/nebular-icons.scss",
+        "Configured Angular style entry is not present inside the selected app: node_modules/pace-js/templates/pace-theme-flash.tmpl.css",
+        "Configured Angular style entry is not present inside the selected app: node_modules/roboto-fontface/css/roboto/roboto-fontface.css",
+        "Configured Angular style entry is not present inside the selected app: node_modules/socicon/css/socicon.css",
+        "Configured Angular style entry is not present inside the selected app: node_modules/typeface-exo/index.css",
+        "Lazy Angular route array could not be resolved in src/app/pages/pages.module.ts.",
+        "Some duplicate or non-taskable route signals were collapsed before task context.",
+        "Angular component inventory is static and advisory; runtime-created components are not proven.",
+        "Component inventory is static and advisory, not proof that every reusable component was found."
+      ],
+      "error": null
+    },
+    {
+      "id": "spartan",
+      "partition": "qualification",
+      "expectedFramework": "angular",
+      "projectPath": "apps/app",
+      "commitVerified": true,
+      "status": "completed",
+      "exitCode": 0,
+      "durationMs": 1039,
+      "rawOutputSha256": "113b953a25ae844ab19dfbff84e72de960253976531dbed48d7facf0d7256d17",
+      "rawOutputFile": "spartan.scan.json",
+      "schemaVersion": "scan-report.v2",
+      "applicability": "partial_fit",
+      "confidence": {
+        "level": "low",
+        "score": 44
+      },
+      "project": {
+        "framework": "angular",
+        "packageName": "@spartan-ng/app",
+        "reportedProjectPath": "apps/app",
+        "workspaceScope": "workspace-app"
+      },
+      "routes": {
+        "strategy": "angular-router",
+        "count": 0,
+        "routeSignalCount": 0,
+        "taskableRouteCount": 0,
+        "authority": "unresolved",
+        "completeness": "unknown",
+        "authorityFiles": [
+          "src/main.ts"
+        ],
+        "excludedAuthorityFiles": []
+      },
+      "components": {
+        "count": 694,
+        "confidence": "high"
+      },
+      "styling": {
+        "approach": "tailwind",
+        "confidence": "high",
+        "evidence": [
+          "Tailwind configured in .postcssrc.json",
+          "Tailwind directive found in src/styles.css"
+        ],
+        "limitations": []
+      },
+      "limitations": [
+        "No bootstrap-reachable provideRouter or RouterModule.forRoot declaration was resolved; route-scoped governance is not proven.",
+        "No taskable route declarations were discovered from static source evidence.",
+        "Angular component inventory is static and advisory; runtime-created components are not proven.",
+        "Component inventory is static and advisory, not proof that every reusable component was found."
+      ],
+      "error": null
+    },
+    {
+      "id": "tanstack-start-dashboard",
+      "partition": "development",
+      "expectedFramework": "react",
+      "projectPath": ".",
+      "commitVerified": true,
+      "status": "completed",
+      "exitCode": 0,
+      "durationMs": 352,
+      "rawOutputSha256": "55eb0f50323424a2d62573344b3dc02be12ed8b496495e502bfd35febec9b278",
+      "rawOutputFile": "tanstack-start-dashboard.scan.json",
+      "schemaVersion": "scan-report.v2",
+      "applicability": "strong_fit",
+      "confidence": {
+        "level": "high",
+        "score": 98
+      },
+      "project": {
+        "framework": "react",
+        "packageName": "tanstack-dashboard",
+        "reportedProjectPath": ".",
+        "workspaceScope": "single-app"
+      },
+      "routes": {
+        "strategy": "source-declared",
+        "count": 22,
+        "routeSignalCount": 24,
+        "taskableRouteCount": 22,
+        "authority": "proven",
+        "completeness": "complete",
+        "authorityFiles": [
+          "src/routes/about.tsx",
+          "src/routes/auth/index.tsx",
+          "src/routes/auth/sign-in/index.tsx",
+          "src/routes/auth/sign-up/index.tsx",
+          "src/routes/auth.tsx",
+          "src/routes/dashboard/chat.tsx",
+          "src/routes/dashboard/elements/icons.tsx",
+          "src/routes/dashboard/forms/advanced.tsx",
+          "src/routes/dashboard/forms/basic.tsx",
+          "src/routes/dashboard/forms/index.tsx",
+          "src/routes/dashboard/forms/multi-step.tsx",
+          "src/routes/dashboard/forms/sheet-form.tsx",
+          "src/routes/dashboard/index.tsx",
+          "src/routes/dashboard/kanban.tsx",
+          "src/routes/dashboard/notifications.tsx",
+          "src/routes/dashboard/overview.tsx",
+          "src/routes/dashboard/product/$productId.tsx",
+          "src/routes/dashboard/product/index.tsx",
+          "src/routes/dashboard/react-query.tsx",
+          "src/routes/dashboard/users.tsx",
+          "src/routes/dashboard.tsx",
+          "src/routes/index.tsx",
+          "src/routes/privacy-policy.tsx",
+          "src/routes/terms-of-service.tsx"
+        ],
+        "excludedAuthorityFiles": []
+      },
+      "components": {
+        "count": 98,
+        "confidence": "high"
+      },
+      "styling": {
+        "approach": "tailwind",
+        "confidence": "high",
+        "evidence": [
+          "Tailwind directive found in src/styles/globals.css",
+          "Tailwind directive found in src/styles/themes/astro-vista.css",
+          "Tailwind directive found in src/styles/themes/claude.css",
+          "Tailwind directive found in src/styles/themes/light-green.css",
+          "Tailwind directive found in src/styles/themes/mono.css",
+          "Tailwind directive found in src/styles/themes/neobrutualism.css",
+          "Tailwind directive found in src/styles/themes/notebook.css",
+          "Tailwind directive found in src/styles/themes/supabase.css",
+          "Tailwind directive found in src/styles/themes/vercel.css",
+          "Tailwind directive found in src/styles/themes/whatsapp.css",
+          "Tailwind directive found in src/styles/themes/zen.css"
+        ],
+        "limitations": []
+      },
+      "limitations": [
+        "Some duplicate or non-taskable route signals were collapsed before task context.",
+        "Component inventory is static and advisory, not proof that every reusable component was found."
+      ],
+      "error": null
+    },
+    {
+      "id": "start-ui-web",
+      "partition": "development",
+      "expectedFramework": "react",
+      "projectPath": ".",
+      "commitVerified": true,
+      "status": "completed",
+      "exitCode": 0,
+      "durationMs": 376,
+      "rawOutputSha256": "b647323cdc3844514e554401317aa5c3d8f4100ab1286120efebb6924c5ed93c",
+      "rawOutputFile": "start-ui-web.scan.json",
+      "schemaVersion": "scan-report.v2",
+      "applicability": "strong_fit",
+      "confidence": {
+        "level": "high",
+        "score": 98
+      },
+      "project": {
+        "framework": "react",
+        "packageName": "start-ui-web",
+        "reportedProjectPath": ".",
+        "workspaceScope": "single-app"
+      },
+      "routes": {
+        "strategy": "source-declared",
+        "count": 29,
+        "routeSignalCount": 32,
+        "taskableRouteCount": 29,
+        "authority": "proven",
+        "completeness": "complete",
+        "authorityFiles": [
+          "src/routes/api/auth.$.ts",
+          "src/routes/api/dev.email.$template.ts",
+          "src/routes/api/openapi/app.schema.ts",
+          "src/routes/api/openapi/app.ts",
+          "src/routes/api/openapi/auth.schema.ts",
+          "src/routes/api/openapi/auth.ts",
+          "src/routes/api/rest.$.ts",
+          "src/routes/api/rpc.$.ts",
+          "src/routes/api/upload.ts",
+          "src/routes/app/account.index.tsx",
+          "src/routes/app/books/$id.index.tsx",
+          "src/routes/app/books/index.tsx",
+          "src/routes/app/index.tsx",
+          "src/routes/app/route.tsx",
+          "src/routes/index.tsx",
+          "src/routes/login/error.index.tsx",
+          "src/routes/login/index.tsx",
+          "src/routes/login/route.tsx",
+          "src/routes/login/verify.index.tsx",
+          "src/routes/logout.tsx",
+          "src/routes/manager/account.index.tsx",
+          "src/routes/manager/books/$id.index.tsx",
+          "src/routes/manager/books/$id.update.index.tsx",
+          "src/routes/manager/books/index.tsx"
+        ],
+        "excludedAuthorityFiles": []
+      },
+      "components": {
+        "count": 140,
+        "confidence": "high"
+      },
+      "styling": {
+        "approach": "tailwind",
+        "confidence": "high",
+        "evidence": [
+          "Tailwind configured in postcss.config.mjs",
+          "Tailwind directive found in src/styles/app.css"
+        ],
+        "limitations": []
+      },
+      "limitations": [
+        "Some duplicate or non-taskable route signals were collapsed before task context.",
+        "Component inventory is static and advisory, not proof that every reusable component was found."
+      ],
+      "error": null
+    },
+    {
+      "id": "bulletproof-react-vite",
+      "partition": "development",
+      "expectedFramework": "react",
+      "projectPath": "apps/react-vite",
+      "commitVerified": true,
+      "status": "completed",
+      "exitCode": 0,
+      "durationMs": 390,
+      "rawOutputSha256": "9d42de141925d060ecd8c5498ec459683c0dca0f4ecd2f84bb3e75fdd2d18146",
+      "rawOutputFile": "bulletproof-react-vite.scan.json",
+      "schemaVersion": "scan-report.v2",
+      "applicability": "strong_fit",
+      "confidence": {
+        "level": "high",
+        "score": 98
+      },
+      "project": {
+        "framework": "react",
+        "packageName": "bulletproof-react-vite",
+        "reportedProjectPath": "apps/react-vite",
+        "workspaceScope": "workspace-app"
+      },
+      "routes": {
+        "strategy": "react-router",
+        "count": 8,
+        "routeSignalCount": 9,
+        "taskableRouteCount": 8,
+        "authority": "proven",
+        "completeness": "complete",
+        "authorityFiles": [
+          "src/app/routes/landing.tsx",
+          "src/app/routes/auth/register.tsx",
+          "src/app/routes/auth/login.tsx",
+          "src/app/router.tsx",
+          "src/app/routes/app/discussions/discussions.tsx",
+          "src/app/routes/app/discussions/discussion.tsx",
+          "src/app/routes/app/users.tsx",
+          "src/app/routes/app/profile.tsx",
+          "src/app/routes/app/dashboard.tsx"
+        ],
+        "excludedAuthorityFiles": []
+      },
+      "components": {
+        "count": 44,
+        "confidence": "high"
+      },
+      "styling": {
+        "approach": "tailwind",
+        "confidence": "high",
+        "evidence": [
+          "Tailwind configured in postcss.config.cjs",
+          "Tailwind configured in tailwind.config.cjs",
+          "Tailwind directive found in src/index.css"
+        ],
+        "limitations": []
+      },
+      "limitations": [
+        "Some duplicate or non-taskable route signals were collapsed before task context.",
+        "Component inventory is static and advisory, not proof that every reusable component was found."
+      ],
+      "error": null
+    },
+    {
+      "id": "openstatus-dashboard",
+      "partition": "development",
+      "expectedFramework": "next",
+      "projectPath": "apps/dashboard",
+      "commitVerified": true,
+      "status": "completed",
+      "exitCode": 0,
+      "durationMs": 639,
+      "rawOutputSha256": "4e4bacba96e15f36d87e14ad1fdae28dbbc85ec214fedb359fbf33172fc9cc2f",
+      "rawOutputFile": "openstatus-dashboard.scan.json",
+      "schemaVersion": "scan-report.v2",
+      "applicability": "strong_fit",
+      "confidence": {
+        "level": "high",
+        "score": 98
+      },
+      "project": {
+        "framework": "nextjs",
+        "packageName": "@openstatus/dashboard",
+        "reportedProjectPath": "apps/dashboard",
+        "workspaceScope": "workspace-app"
+      },
+      "routes": {
+        "strategy": "app-router",
+        "count": 34,
+        "routeSignalCount": 34,
+        "taskableRouteCount": 34,
+        "authority": "proven",
+        "completeness": "complete",
+        "authorityFiles": [
+          "src/app/(dashboard)/agents/page.tsx",
+          "src/app/(dashboard)/chat/[id]/page.tsx",
+          "src/app/(dashboard)/chat/page.tsx",
+          "src/app/(dashboard)/cli/page.tsx",
+          "src/app/(dashboard)/invite/page.tsx",
+          "src/app/(dashboard)/monitors/(list)/page.tsx",
+          "src/app/(dashboard)/monitors/[id]/edit/page.tsx",
+          "src/app/(dashboard)/monitors/[id]/incidents/page.tsx",
+          "src/app/(dashboard)/monitors/[id]/logs/page.tsx",
+          "src/app/(dashboard)/monitors/[id]/overview/page.tsx",
+          "src/app/(dashboard)/monitors/[id]/page.tsx",
+          "src/app/(dashboard)/monitors/create/page.tsx",
+          "src/app/(dashboard)/notifications/page.tsx",
+          "src/app/(dashboard)/overview/page.tsx",
+          "src/app/(dashboard)/page.tsx",
+          "src/app/(dashboard)/settings/(list)/page.tsx",
+          "src/app/(dashboard)/settings/account/page.tsx",
+          "src/app/(dashboard)/settings/audit-logs/page.tsx",
+          "src/app/(dashboard)/settings/billing/page.tsx",
+          "src/app/(dashboard)/settings/general/page.tsx",
+          "src/app/(dashboard)/settings/integrations/page.tsx",
+          "src/app/(dashboard)/settings/private-locations/page.tsx",
+          "src/app/(dashboard)/status-pages/(list)/page.tsx",
+          "src/app/(dashboard)/status-pages/[id]/components/page.tsx"
+        ],
+        "excludedAuthorityFiles": []
+      },
+      "components": {
+        "count": 407,
+        "confidence": "high"
+      },
+      "styling": {
+        "approach": "tailwind",
+        "confidence": "high",
+        "evidence": [
+          "Tailwind configured in postcss.config.mjs",
+          "Tailwind directive found in src/app/globals.css"
+        ],
+        "limitations": []
+      },
+      "limitations": [
+        "Component inventory is static and advisory, not proof that every reusable component was found."
+      ],
+      "error": null
+    },
+    {
+      "id": "payload-website-template",
+      "partition": "development",
+      "expectedFramework": "next",
+      "projectPath": "templates/website",
+      "commitVerified": true,
+      "status": "completed",
+      "exitCode": 0,
+      "durationMs": 439,
+      "rawOutputSha256": "5520f5523e5c52b5e6cd558c82ee81055398133b41483b8e0df017fab8535a2e",
+      "rawOutputFile": "payload-website-template.scan.json",
+      "schemaVersion": "scan-report.v2",
+      "applicability": "strong_fit",
+      "confidence": {
+        "level": "high",
+        "score": 98
+      },
+      "project": {
+        "framework": "nextjs",
+        "packageName": "website",
+        "reportedProjectPath": "templates/website",
+        "workspaceScope": "workspace-app"
+      },
+      "routes": {
+        "strategy": "app-router",
+        "count": 7,
+        "routeSignalCount": 7,
+        "taskableRouteCount": 7,
+        "authority": "proven",
+        "completeness": "complete",
+        "authorityFiles": [
+          "src/app/(frontend)/[slug]/page.tsx",
+          "src/app/(frontend)/page.tsx",
+          "src/app/(frontend)/posts/[slug]/page.tsx",
+          "src/app/(frontend)/posts/page/[pageNumber]/page.tsx",
+          "src/app/(frontend)/posts/page.tsx",
+          "src/app/(frontend)/search/page.tsx",
+          "src/app/(payload)/admin/[[...segments]]/page.tsx"
+        ],
+        "excludedAuthorityFiles": []
+      },
+      "components": {
+        "count": 29,
+        "confidence": "high"
+      },
+      "styling": {
+        "approach": "tailwind",
+        "confidence": "high",
+        "evidence": [
+          "Tailwind configured in postcss.config.js",
+          "Tailwind configured in tailwind.config.mjs",
+          "Tailwind directive found in src/app/(frontend)/globals.css"
+        ],
+        "limitations": []
+      },
+      "limitations": [
+        "Component inventory is static and advisory, not proof that every reusable component was found."
+      ],
+      "error": null
+    },
+    {
+      "id": "linode-manager",
+      "partition": "qualification",
+      "expectedFramework": "react",
+      "projectPath": "packages/manager",
+      "commitVerified": true,
+      "status": "completed",
+      "exitCode": 0,
+      "durationMs": 2986,
+      "rawOutputSha256": "9a13eba7bd9f5dca1a7a9b38721b207ff7247c1e17ef4d31be2ce44cb2e9b112",
+      "rawOutputFile": "linode-manager.scan.json",
+      "schemaVersion": "scan-report.v2",
+      "applicability": "strong_fit",
+      "confidence": {
+        "level": "high",
+        "score": 98
+      },
+      "project": {
+        "framework": "react",
+        "packageName": "@linode/cloud-manager",
+        "reportedProjectPath": "packages/manager",
+        "workspaceScope": "workspace-app"
+      },
+      "routes": {
+        "strategy": "source-declared",
+        "count": 197,
+        "routeSignalCount": 313,
+        "taskableRouteCount": 197,
+        "authority": "proven",
+        "completeness": "complete",
+        "authorityFiles": [
+          "cypress/support/component/setup.tsx",
+          "src/routes/IAM/index.ts",
+          "src/routes/account/index.ts",
+          "src/routes/accountSettings/index.ts",
+          "src/routes/alerts/index.ts",
+          "src/routes/auth/index.ts",
+          "src/routes/betas/index.ts",
+          "src/routes/billing/index.ts",
+          "src/routes/databases/index.ts",
+          "src/routes/delivery/index.ts",
+          "src/routes/domains/index.ts",
+          "src/routes/events/index.ts",
+          "src/routes/firewalls/index.ts",
+          "src/routes/images/index.ts",
+          "src/routes/index.tsx",
+          "src/routes/kubernetes/index.ts",
+          "src/routes/linodes/index.ts",
+          "src/routes/loginHistory/index.ts",
+          "src/routes/longview/index.ts",
+          "src/routes/maintenance/index.ts",
+          "src/routes/managed/index.ts",
+          "src/routes/marketplace/index.ts",
+          "src/routes/metrics/index.ts",
+          "src/routes/networkLoadBalancer/index.ts"
+        ],
+        "excludedAuthorityFiles": []
+      },
+      "components": {
+        "count": 1000,
+        "confidence": "high"
+      },
+      "styling": {
+        "approach": "mui",
+        "confidence": "medium",
+        "evidence": [],
+        "limitations": []
+      },
+      "limitations": [
+        "Some duplicate or non-taskable route signals were collapsed before task context.",
+        "Component inventory is static and advisory, not proof that every reusable component was found.",
+        "Component inventory was bounded to 1000 entries; 547 additional candidate(s) were omitted."
+      ],
+      "error": null
+    },
+    {
+      "id": "epic-stack",
+      "partition": "qualification",
+      "expectedFramework": "react-router",
+      "projectPath": ".",
+      "commitVerified": true,
+      "status": "completed",
+      "exitCode": 0,
+      "durationMs": 359,
+      "rawOutputSha256": "15e6545a063f8e3abfce23edc5e0b5a11d1e2f303e6cd36ad256016d0481333c",
+      "rawOutputFile": "epic-stack.scan.json",
+      "schemaVersion": "scan-report.v2",
+      "applicability": "strong_fit",
+      "confidence": {
+        "level": "high",
+        "score": 98
+      },
+      "project": {
+        "framework": "react",
+        "packageName": "epic-stack-template",
+        "reportedProjectPath": ".",
+        "workspaceScope": "single-app"
+      },
+      "routes": {
+        "strategy": "react-router",
+        "count": 1,
+        "routeSignalCount": 5,
+        "taskableRouteCount": 1,
+        "authority": "proven",
+        "completeness": "complete",
+        "authorityFiles": [
+          "app/routes/_auth/webauthn/utils.server.ts",
+          "app/utils/providers/github.server.ts",
+          "app/utils/session.server.ts",
+          "app/utils/toast.server.ts",
+          "app/utils/verification.server.ts"
+        ],
+        "excludedAuthorityFiles": []
+      },
+      "components": {
+        "count": 64,
+        "confidence": "high"
+      },
+      "styling": {
+        "approach": "tailwind",
+        "confidence": "high",
+        "evidence": [
+          "Tailwind directive found in app/styles/tailwind.css"
+        ],
+        "limitations": []
+      },
+      "limitations": [
+        "Some duplicate or non-taskable route signals were collapsed before task context.",
+        "Component inventory is static and advisory, not proof that every reusable component was found."
+      ],
+      "error": null
+    },
+    {
+      "id": "hoppscotch-selfhost-web",
+      "partition": "development",
+      "expectedFramework": "vue",
+      "projectPath": "packages/hoppscotch-selfhost-web",
+      "commitVerified": true,
+      "status": "completed",
+      "exitCode": 0,
+      "durationMs": 272,
+      "rawOutputSha256": "0cdb677b71e6811c02e86103e02b5e51817c11935aa095fa4ddca802c8e05c79",
+      "rawOutputFile": "hoppscotch-selfhost-web.scan.json",
+      "schemaVersion": "scan-report.v2",
+      "applicability": "strong_fit",
+      "confidence": {
+        "level": "high",
+        "score": 98
+      },
+      "project": {
+        "framework": "vue",
+        "packageName": "@hoppscotch/selfhost-web",
+        "reportedProjectPath": "packages/hoppscotch-selfhost-web",
+        "workspaceScope": "workspace-app"
+      },
+      "routes": {
+        "strategy": "pages-router",
+        "count": 1,
+        "routeSignalCount": 1,
+        "taskableRouteCount": 1,
+        "authority": "proven",
+        "completeness": "complete",
+        "authorityFiles": [
+          "src/pages/device-login.vue"
+        ],
+        "excludedAuthorityFiles": []
+      },
+      "components": {
+        "count": 5,
+        "confidence": "high"
+      },
+      "styling": {
+        "approach": "tailwind",
+        "confidence": "high",
+        "evidence": [
+          "Tailwind configured in postcss.config.cjs",
+          "Tailwind configured in tailwind.config.ts"
+        ],
+        "limitations": []
+      },
+      "limitations": [
+        "Component inventory is static and advisory, not proof that every reusable component was found."
+      ],
+      "error": null
+    },
+    {
+      "id": "sakai-vue",
+      "partition": "development",
+      "expectedFramework": "vue",
+      "projectPath": ".",
+      "commitVerified": true,
+      "status": "completed",
+      "exitCode": 0,
+      "durationMs": 312,
+      "rawOutputSha256": "6e6e387781a43bb9a00796a5b02758c615d4455cbfbd43da01444540d62a10cf",
+      "rawOutputFile": "sakai-vue.scan.json",
+      "schemaVersion": "scan-report.v2",
+      "applicability": "strong_fit",
+      "confidence": {
+        "level": "high",
+        "score": 90
+      },
+      "project": {
+        "framework": "vue",
+        "packageName": "sakai-vue",
+        "reportedProjectPath": ".",
+        "workspaceScope": "single-app"
+      },
+      "routes": {
+        "strategy": "vue-router",
+        "count": 25,
+        "routeSignalCount": 26,
+        "taskableRouteCount": 25,
+        "authority": "proven",
+        "completeness": "complete",
+        "authorityFiles": [
+          "src/router/index.js"
+        ],
+        "excludedAuthorityFiles": []
+      },
+      "components": {
+        "count": 46,
+        "confidence": "high"
+      },
+      "styling": {
+        "approach": "unknown",
+        "confidence": "low",
+        "evidence": [
+          "PrimeNG dependency is present in the selected app"
+        ],
+        "limitations": [
+          "Tailwind is installed but no selected-app config, PostCSS plugin, or CSS directive proves it is active style authority."
+        ]
+      },
+      "limitations": [
+        "Some duplicate or non-taskable route signals were collapsed before task context.",
+        "Component inventory is static and advisory, not proof that every reusable component was found.",
+        "Tailwind is installed but no selected-app config, PostCSS plugin, or CSS directive proves it is active style authority."
+      ],
+      "error": null
+    },
+    {
+      "id": "nuxt-ui-dashboard",
+      "partition": "development",
+      "expectedFramework": "nuxt",
+      "projectPath": ".",
+      "commitVerified": true,
+      "status": "completed",
+      "exitCode": 0,
+      "durationMs": 255,
+      "rawOutputSha256": "55a10230c0d969a52150d4853e2cf21caf5ba31bf84fe7baebc8d749546f41ab",
+      "rawOutputFile": "nuxt-ui-dashboard.scan.json",
+      "schemaVersion": "scan-report.v2",
+      "applicability": "strong_fit",
+      "confidence": {
+        "level": "high",
+        "score": 98
+      },
+      "project": {
+        "framework": "nuxt",
+        "packageName": "nuxt-ui-template-dashboard",
+        "reportedProjectPath": ".",
+        "workspaceScope": "single-app"
+      },
+      "routes": {
+        "strategy": "nuxt-router",
+        "count": 7,
+        "routeSignalCount": 8,
+        "taskableRouteCount": 7,
+        "authority": "proven",
+        "completeness": "complete",
+        "authorityFiles": [
+          "app/pages/customers.vue",
+          "app/pages/inbox.vue",
+          "app/pages/index.vue",
+          "app/pages/settings/index.vue",
+          "app/pages/settings/members.vue",
+          "app/pages/settings/notifications.vue",
+          "app/pages/settings/security.vue",
+          "app/pages/settings.vue"
+        ],
+        "excludedAuthorityFiles": []
+      },
+      "components": {
+        "count": 12,
+        "confidence": "high"
+      },
+      "styling": {
+        "approach": "tailwind",
+        "confidence": "high",
+        "evidence": [
+          "Tailwind directive found in app/assets/css/main.css"
+        ],
+        "limitations": []
+      },
+      "limitations": [
+        "Some duplicate or non-taskable route signals were collapsed before task context.",
+        "Component inventory is static and advisory, not proof that every reusable component was found."
+      ],
+      "error": null
+    },
+    {
+      "id": "shadcn-vue-v4",
+      "partition": "development",
+      "expectedFramework": "nuxt",
+      "projectPath": "apps/v4",
+      "commitVerified": true,
+      "status": "completed",
+      "exitCode": 0,
+      "durationMs": 1525,
+      "rawOutputSha256": "195e8bbdda743f44e080451f6b6eacccef43ecec7a9b0bc0583f62afa9078961",
+      "rawOutputFile": "shadcn-vue-v4.scan.json",
+      "schemaVersion": "scan-report.v2",
+      "applicability": "strong_fit",
+      "confidence": {
+        "level": "high",
+        "score": 98
+      },
+      "project": {
+        "framework": "nuxt",
+        "packageName": "v4",
+        "reportedProjectPath": "apps/v4",
+        "workspaceScope": "workspace-app"
+      },
+      "routes": {
+        "strategy": "nuxt-router",
+        "count": 12,
+        "routeSignalCount": 14,
+        "taskableRouteCount": 12,
+        "authority": "proven",
+        "completeness": "complete",
+        "authorityFiles": [
+          "pages/blocks/[...categories].vue",
+          "pages/blocks/index.vue",
+          "pages/blocks.vue",
+          "pages/charts/[...type].vue",
+          "pages/charts.vue",
+          "pages/colors/index.vue",
+          "pages/colors.vue",
+          "pages/create.vue",
+          "pages/docs/[...slug].vue",
+          "pages/docs.vue",
+          "pages/index.vue",
+          "pages/preview/[base]/[name].vue",
+          "pages/themes.vue",
+          "pages/view/[name].vue"
+        ],
+        "excludedAuthorityFiles": []
+      },
+      "components": {
+        "count": 1000,
+        "confidence": "high"
+      },
+      "styling": {
+        "approach": "tailwind",
+        "confidence": "high",
+        "evidence": [
+          "Tailwind directive found in assets/css/main.css"
+        ],
+        "limitations": []
+      },
+      "limitations": [
+        "Some duplicate or non-taskable route signals were collapsed before task context.",
+        "Component inventory is static and advisory, not proof that every reusable component was found.",
+        "Component inventory was bounded to 1000 entries; 3770 additional candidate(s) were omitted."
+      ],
+      "error": null
+    },
+    {
+      "id": "vben-web-antd",
+      "partition": "qualification",
+      "expectedFramework": "vue",
+      "projectPath": "apps/web-antd",
+      "commitVerified": true,
+      "status": "completed",
+      "exitCode": 0,
+      "durationMs": 276,
+      "rawOutputSha256": "56f96656e8d8056295b210eb1dc746dfdf34dab5d7df5e6ad06fffdb021ba814",
+      "rawOutputFile": "vben-web-antd.scan.json",
+      "schemaVersion": "scan-report.v2",
+      "applicability": "strong_fit",
+      "confidence": {
+        "level": "high",
+        "score": 90
+      },
+      "project": {
+        "framework": "vue",
+        "packageName": "@vben/web-antd",
+        "reportedProjectPath": "apps/web-antd",
+        "workspaceScope": "workspace-app"
+      },
+      "routes": {
+        "strategy": "vue-router",
+        "count": 22,
+        "routeSignalCount": 22,
+        "taskableRouteCount": 22,
+        "authority": "proven",
+        "completeness": "complete",
+        "authorityFiles": [
+          "src/router/routes/core.ts",
+          "src/router/routes/modules/dashboard.ts",
+          "src/router/routes/modules/demos.ts",
+          "src/router/routes/modules/vben.ts"
+        ],
+        "excludedAuthorityFiles": []
+      },
+      "components": {
+        "count": 0,
+        "confidence": "low"
+      },
+      "styling": {
+        "approach": "unknown",
+        "confidence": "low",
+        "evidence": [],
+        "limitations": []
+      },
+      "limitations": [
+        "Component inventory is partial because only weak static component signals were found."
+      ],
+      "error": null
+    },
+    {
+      "id": "soybean-admin",
+      "partition": "qualification",
+      "expectedFramework": "vue",
+      "projectPath": ".",
+      "commitVerified": true,
+      "status": "completed",
+      "exitCode": 0,
+      "durationMs": 350,
+      "rawOutputSha256": "880b367c7b9290bb7045e67cd379c28b287be17a2f30e6cdff548953376bab97",
+      "rawOutputFile": "soybean-admin.scan.json",
+      "schemaVersion": "scan-report.v2",
+      "applicability": "strong_fit",
+      "confidence": {
+        "level": "high",
+        "score": 98
+      },
+      "project": {
+        "framework": "vue",
+        "packageName": "soybean-admin",
+        "reportedProjectPath": ".",
+        "workspaceScope": "single-app"
+      },
+      "routes": {
+        "strategy": "vue-router",
+        "count": 2,
+        "routeSignalCount": 2,
+        "taskableRouteCount": 2,
+        "authority": "proven",
+        "completeness": "complete",
+        "authorityFiles": [
+          "src/router/routes/builtin.ts"
+        ],
+        "excludedAuthorityFiles": []
+      },
+      "components": {
+        "count": 5,
+        "confidence": "high"
+      },
+      "styling": {
+        "approach": "css-modules",
+        "confidence": "high",
+        "evidence": [],
+        "limitations": []
+      },
+      "limitations": [
+        "Component inventory is static and advisory, not proof that every reusable component was found."
+      ],
+      "error": null
+    },
+    {
+      "id": "immich-web",
+      "partition": "development",
+      "expectedFramework": "svelte",
+      "projectPath": "web",
+      "commitVerified": true,
+      "status": "completed",
+      "exitCode": 0,
+      "durationMs": 670,
+      "rawOutputSha256": "f361b0a816fe2baef005b780d85cd387334efcdd7d7387fdc622cdc50a413437",
+      "rawOutputFile": "immich-web.scan.json",
+      "schemaVersion": "scan-report.v2",
+      "applicability": "strong_fit",
+      "confidence": {
+        "level": "high",
+        "score": 98
+      },
+      "project": {
+        "framework": "svelte",
+        "packageName": "immich-web",
+        "reportedProjectPath": "web",
+        "workspaceScope": "workspace-app"
+      },
+      "routes": {
+        "strategy": "sveltekit-router",
+        "count": 60,
+        "routeSignalCount": 112,
+        "taskableRouteCount": 60,
+        "authority": "proven",
+        "completeness": "complete",
+        "authorityFiles": [
+          "src/routes/(user)/albums/+page.svelte",
+          "src/routes/(user)/albums/+page.ts",
+          "src/routes/(user)/albums/[albumId=id]/[[photos=photos]]/[[assetId=id]]/+page.svelte",
+          "src/routes/(user)/albums/[albumId=id]/[[photos=photos]]/[[assetId=id]]/+page.ts",
+          "src/routes/(user)/archive/[[photos=photos]]/[[assetId=id]]/+page.svelte",
+          "src/routes/(user)/archive/[[photos=photos]]/[[assetId=id]]/+page.ts",
+          "src/routes/(user)/buy/+page.svelte",
+          "src/routes/(user)/buy/+page.ts",
+          "src/routes/(user)/explore/+page.svelte",
+          "src/routes/(user)/explore/+page.ts",
+          "src/routes/(user)/favorites/[[photos=photos]]/[[assetId=id]]/+page.svelte",
+          "src/routes/(user)/favorites/[[photos=photos]]/[[assetId=id]]/+page.ts",
+          "src/routes/(user)/folders/[[photos=photos]]/[[assetId=id]]/+page.svelte",
+          "src/routes/(user)/folders/[[photos=photos]]/[[assetId=id]]/+page.ts",
+          "src/routes/(user)/locked/[[photos=photos]]/[[assetId=id]]/+page.svelte",
+          "src/routes/(user)/locked/[[photos=photos]]/[[assetId=id]]/+page.ts",
+          "src/routes/(user)/map/[[photos=photos]]/[[assetId=id]]/+page.svelte",
+          "src/routes/(user)/map/[[photos=photos]]/[[assetId=id]]/+page.ts",
+          "src/routes/(user)/memory/[[photos=photos]]/[[assetId=id]]/+page.svelte",
+          "src/routes/(user)/memory/[[photos=photos]]/[[assetId=id]]/+page.ts",
+          "src/routes/(user)/partners/[userId]/[[photos=photos]]/[[assetId=id]]/+page.svelte",
+          "src/routes/(user)/partners/[userId]/[[photos=photos]]/[[assetId=id]]/+page.ts",
+          "src/routes/(user)/people/+page.svelte",
+          "src/routes/(user)/people/+page.ts"
+        ],
+        "excludedAuthorityFiles": []
+      },
+      "components": {
+        "count": 344,
+        "confidence": "high"
+      },
+      "styling": {
+        "approach": "tailwind",
+        "confidence": "high",
+        "evidence": [
+          "Tailwind directive found in src/app.css"
+        ],
+        "limitations": []
+      },
+      "limitations": [
+        "Some duplicate or non-taskable route signals were collapsed before task context.",
+        "Component inventory is static and advisory, not proof that every reusable component was found."
+      ],
+      "error": null
+    },
+    {
+      "id": "kener",
+      "partition": "development",
+      "expectedFramework": "svelte",
+      "projectPath": ".",
+      "commitVerified": true,
+      "status": "completed",
+      "exitCode": 0,
+      "durationMs": 576,
+      "rawOutputSha256": "e2832fd16399789bba8e441fd6af6044c40a9abc3918b30a4565c48048691073",
+      "rawOutputFile": "kener.scan.json",
+      "schemaVersion": "scan-report.v2",
+      "applicability": "strong_fit",
+      "confidence": {
+        "level": "high",
+        "score": 98
+      },
+      "project": {
+        "framework": "svelte",
+        "packageName": "kener",
+        "reportedProjectPath": ".",
+        "workspaceScope": "single-app"
+      },
+      "routes": {
+        "strategy": "sveltekit-router",
+        "count": 41,
+        "routeSignalCount": 41,
+        "taskableRouteCount": 41,
+        "authority": "proven",
+        "completeness": "complete",
+        "authorityFiles": [
+          "src/routes/(account)/account/forgot/+page.svelte",
+          "src/routes/(account)/account/invitation/+page.svelte",
+          "src/routes/(account)/account/signin/+page.svelte",
+          "src/routes/(account)/account/verify/+page.svelte",
+          "src/routes/(docs)/docs/(with-sidebar)/[...slug]/+page.svelte",
+          "src/routes/(docs)/docs/+page.svelte",
+          "src/routes/(embed)/embed/events/live/+page.svelte",
+          "src/routes/(embed)/embed/latency-[tag]/+page.svelte",
+          "src/routes/(embed)/embed/monitor-[tag]/+page.svelte",
+          "src/routes/(kener)/+page.svelte",
+          "src/routes/(kener)/[page_path]/+page.svelte",
+          "src/routes/(kener)/[page_path]/events/[MMMM]-[YYYY]/+page.svelte",
+          "src/routes/(kener)/events/[MMMM]-[YYYY]/+page.svelte",
+          "src/routes/(kener)/incidents/[incident_id]/+page.svelte",
+          "src/routes/(kener)/maintenances/[maintenance_id]/+page.svelte",
+          "src/routes/(kener)/monitors/[monitor_tag]/+page.svelte",
+          "src/routes/(manage)/manage/app/alerts/+page.svelte",
+          "src/routes/(manage)/manage/app/alerts/[alert_config_id]/+page.svelte",
+          "src/routes/(manage)/manage/app/alerts/logs/[alert_config_id]/+page.svelte",
+          "src/routes/(manage)/manage/app/analytics-providers/+page.svelte",
+          "src/routes/(manage)/manage/app/api-keys/+page.svelte",
+          "src/routes/(manage)/manage/app/badges/+page.svelte",
+          "src/routes/(manage)/manage/app/customizations/+page.svelte",
+          "src/routes/(manage)/manage/app/embed/+page.svelte"
+        ],
+        "excludedAuthorityFiles": []
+      },
+      "components": {
+        "count": 73,
+        "confidence": "high"
+      },
+      "styling": {
+        "approach": "tailwind",
+        "confidence": "high",
+        "evidence": [
+          "Tailwind directive found in src/routes/layout.css"
+        ],
+        "limitations": []
+      },
+      "limitations": [
+        "Component inventory is static and advisory, not proof that every reusable component was found."
+      ],
+      "error": null
+    },
+    {
+      "id": "upsnap-frontend",
+      "partition": "qualification",
+      "expectedFramework": "svelte",
+      "projectPath": "frontend",
+      "commitVerified": true,
+      "status": "completed",
+      "exitCode": 0,
+      "durationMs": 305,
+      "rawOutputSha256": "e98e7e66fd41cf183345cc176813660ab0e7e12b358252fa0f1a91181c92787b",
+      "rawOutputFile": "upsnap-frontend.scan.json",
+      "schemaVersion": "scan-report.v2",
+      "applicability": "strong_fit",
+      "confidence": {
+        "level": "high",
+        "score": 98
+      },
+      "project": {
+        "framework": "svelte",
+        "packageName": "upsnap-frontend",
+        "reportedProjectPath": ".",
+        "workspaceScope": "single-app"
+      },
+      "routes": {
+        "strategy": "sveltekit-router",
+        "count": 8,
+        "routeSignalCount": 8,
+        "taskableRouteCount": 8,
+        "authority": "proven",
+        "completeness": "complete",
+        "authorityFiles": [
+          "src/routes/+page.svelte",
+          "src/routes/account/+page.svelte",
+          "src/routes/device/+page.svelte",
+          "src/routes/device/new/+page.svelte",
+          "src/routes/login/+page.svelte",
+          "src/routes/settings/+page.svelte",
+          "src/routes/users/+page.svelte",
+          "src/routes/welcome/+page.svelte"
+        ],
+        "excludedAuthorityFiles": []
+      },
+      "components": {
+        "count": 8,
+        "confidence": "high"
+      },
+      "styling": {
+        "approach": "tailwind",
+        "confidence": "high",
+        "evidence": [
+          "Tailwind directive found in src/app.css"
+        ],
+        "limitations": []
+      },
+      "limitations": [
+        "Component inventory is static and advisory, not proof that every reusable component was found."
+      ],
+      "error": null
+    },
+    {
+      "id": "svgl",
+      "partition": "qualification",
+      "expectedFramework": "svelte",
+      "projectPath": ".",
+      "commitVerified": true,
+      "status": "completed",
+      "exitCode": 0,
+      "durationMs": 347,
+      "rawOutputSha256": "5749fb322b7fb1e6074ea82942c701a90aead7c74f39005efcb57f6b908fe0bb",
+      "rawOutputFile": "svgl.scan.json",
+      "schemaVersion": "scan-report.v2",
+      "applicability": "strong_fit",
+      "confidence": {
+        "level": "high",
+        "score": 98
+      },
+      "project": {
+        "framework": "svelte",
+        "packageName": "@pheralb/svgl",
+        "reportedProjectPath": ".",
+        "workspaceScope": "single-app"
+      },
+      "routes": {
+        "strategy": "sveltekit-router",
+        "count": 5,
+        "routeSignalCount": 9,
+        "taskableRouteCount": 5,
+        "authority": "proven",
+        "completeness": "complete",
+        "authorityFiles": [
+          "src/routes/+page.svelte",
+          "src/routes/+page.ts",
+          "src/routes/directory/[category]/+page.svelte",
+          "src/routes/directory/[category]/+page.ts",
+          "src/routes/docs/[...slug]/+page.svelte",
+          "src/routes/docs/[...slug]/+page.ts",
+          "src/routes/extensions/+page.svelte",
+          "src/routes/extensions/+page.ts",
+          "src/routes/favorites/+page.svelte"
+        ],
+        "excludedAuthorityFiles": []
+      },
+      "components": {
+        "count": 0,
+        "confidence": "low"
+      },
+      "styling": {
+        "approach": "tailwind",
+        "confidence": "high",
+        "evidence": [
+          "Tailwind directive found in src/styles/globals.css"
+        ],
+        "limitations": []
+      },
+      "limitations": [
+        "Some duplicate or non-taskable route signals were collapsed before task context.",
+        "Component inventory is partial because only weak static component signals were found."
+      ],
+      "error": null
+    },
+    {
+      "id": "emdash-simple",
+      "partition": "development",
+      "expectedFramework": "astro",
+      "projectPath": "demos/simple",
+      "commitVerified": true,
+      "status": "completed",
+      "exitCode": 0,
+      "durationMs": 244,
+      "rawOutputSha256": "0e43556868080c8131bea92bb546b1047af020c942302ac1a9322bbd66ad9cb7",
+      "rawOutputFile": "emdash-simple.scan.json",
+      "schemaVersion": "scan-report.v2",
+      "applicability": "strong_fit",
+      "confidence": {
+        "level": "high",
+        "score": 98
+      },
+      "project": {
+        "framework": "astro",
+        "packageName": "emdash-demo",
+        "reportedProjectPath": "demos/simple",
+        "workspaceScope": "workspace-app"
+      },
+      "routes": {
+        "strategy": "pages-router",
+        "count": 1,
+        "routeSignalCount": 1,
+        "taskableRouteCount": 1,
+        "authority": "proven",
+        "completeness": "complete",
+        "authorityFiles": [
+          "src/pages/rss.xml.ts"
+        ],
+        "excludedAuthorityFiles": []
+      },
+      "components": {
+        "count": 0,
+        "confidence": "low"
+      },
+      "styling": {
+        "approach": "css",
+        "confidence": "high",
+        "evidence": [],
+        "limitations": []
+      },
+      "limitations": [
+        "Component inventory is partial because only weak static component signals were found."
+      ],
+      "error": null
+    },
+    {
+      "id": "tauri-start-solid",
+      "partition": "development",
+      "expectedFramework": "solid",
+      "projectPath": ".",
+      "commitVerified": true,
+      "status": "completed",
+      "exitCode": 0,
+      "durationMs": 283,
+      "rawOutputSha256": "b3b5272e105e401764a0051a59052cb9f844d2247418ace62a7877ed9cb7f6a4",
+      "rawOutputFile": "tauri-start-solid.scan.json",
+      "schemaVersion": "scan-report.v2",
+      "applicability": "strong_fit",
+      "confidence": {
+        "level": "high",
+        "score": 98
+      },
+      "project": {
+        "framework": "solid",
+        "packageName": "tauri-start-solid",
+        "reportedProjectPath": ".",
+        "workspaceScope": "single-app"
+      },
+      "routes": {
+        "strategy": "source-declared",
+        "count": 6,
+        "routeSignalCount": 7,
+        "taskableRouteCount": 6,
+        "authority": "proven",
+        "completeness": "complete",
+        "authorityFiles": [
+          "src-app/routes/(primary)/index.tsx",
+          "src-app/routes/(primary)/route.tsx",
+          "src-app/routes/(settings)/route.tsx",
+          "src-app/routes/(settings)/settings.about.tsx",
+          "src-app/routes/(settings)/settings.appearance.tsx",
+          "src-app/routes/(settings)/settings.general.tsx",
+          "src-app/routes/(settings)/settings.updates.tsx"
+        ],
+        "excludedAuthorityFiles": []
+      },
+      "components": {
+        "count": 20,
+        "confidence": "high"
+      },
+      "styling": {
+        "approach": "tailwind",
+        "confidence": "high",
+        "evidence": [
+          "Tailwind directive found in src-app/styles/globals.css"
+        ],
+        "limitations": []
+      },
+      "limitations": [
+        "Some duplicate or non-taskable route signals were collapsed before task context.",
+        "Component inventory is static and advisory, not proof that every reusable component was found."
+      ],
+      "error": null
+    },
+    {
+      "id": "solid-start-hackernews",
+      "partition": "qualification",
+      "expectedFramework": "solid",
+      "projectPath": "apps/fixtures/hackernews",
+      "commitVerified": true,
+      "status": "completed",
+      "exitCode": 0,
+      "durationMs": 250,
+      "rawOutputSha256": "a3fbc59840435fe15ce88964beb16f445e126d48b2a5ffde512f2fe175d312d3",
+      "rawOutputFile": "solid-start-hackernews.scan.json",
+      "schemaVersion": "scan-report.v2",
+      "applicability": "strong_fit",
+      "confidence": {
+        "level": "low",
+        "score": 44
+      },
+      "project": {
+        "framework": "solid",
+        "packageName": "fixture-hackernews",
+        "reportedProjectPath": "apps/fixtures/hackernews",
+        "workspaceScope": "workspace-app"
+      },
+      "routes": {
+        "strategy": "none",
+        "count": 0,
+        "routeSignalCount": 0,
+        "taskableRouteCount": 0,
+        "authority": "unresolved",
+        "completeness": "unknown",
+        "authorityFiles": [],
+        "excludedAuthorityFiles": []
+      },
+      "components": {
+        "count": 5,
+        "confidence": "high"
+      },
+      "styling": {
+        "approach": "css",
+        "confidence": "medium",
+        "evidence": [],
+        "limitations": []
+      },
+      "limitations": [
+        "No taskable route declarations were discovered from static source evidence.",
+        "Component inventory is static and advisory, not proof that every reusable component was found."
+      ],
+      "error": null
+    },
+    {
+      "id": "primer-react",
+      "partition": "development",
+      "expectedFramework": "react-design-system",
+      "projectPath": ".",
+      "commitVerified": true,
+      "status": "completed",
+      "exitCode": 0,
+      "durationMs": 751,
+      "rawOutputSha256": "7191aa58f5acd75b80c4281572ad9e1e7be73e6d0d37093460b358eec72573ad",
+      "rawOutputFile": "primer-react.scan.json",
+      "schemaVersion": "scan-report.v2",
+      "applicability": "not_applicable",
+      "confidence": {
+        "level": "high",
+        "score": 85
+      },
+      "project": {
+        "framework": "unknown",
+        "packageName": "primer",
+        "reportedProjectPath": ".",
+        "workspaceScope": "single-app"
+      },
+      "routes": {
+        "strategy": "static-html",
+        "count": 1,
+        "routeSignalCount": 1,
+        "taskableRouteCount": 1,
+        "authority": "proven",
+        "completeness": "complete",
+        "authorityFiles": [
+          "examples/codesandbox/index.html"
+        ],
+        "excludedAuthorityFiles": []
+      },
+      "components": {
+        "count": 187,
+        "confidence": "high"
+      },
+      "styling": {
+        "approach": "css-modules",
+        "confidence": "high",
+        "evidence": [],
+        "limitations": []
+      },
+      "limitations": [
+        "Component inventory is static and advisory, not proof that every reusable component was found."
+      ],
+      "error": null
+    },
+    {
+      "id": "figma-sds",
+      "partition": "development",
+      "expectedFramework": "react-design-system",
+      "projectPath": ".",
+      "commitVerified": true,
+      "status": "completed",
+      "exitCode": 0,
+      "durationMs": 415,
+      "rawOutputSha256": "61b60a24e806bde10769a802a58c6e5bb3bb72a07702db9d82ed8d62d0098043",
+      "rawOutputFile": "figma-sds.scan.json",
+      "schemaVersion": "scan-report.v2",
+      "applicability": "strong_fit",
+      "confidence": {
+        "level": "high",
+        "score": 98
+      },
+      "project": {
+        "framework": "react",
+        "packageName": "sds",
+        "reportedProjectPath": ".",
+        "workspaceScope": "single-app"
+      },
+      "routes": {
+        "strategy": "static-html",
+        "count": 1,
+        "routeSignalCount": 1,
+        "taskableRouteCount": 1,
+        "authority": "proven",
+        "completeness": "complete",
+        "authorityFiles": [
+          "index.html"
+        ],
+        "excludedAuthorityFiles": []
+      },
+      "components": {
+        "count": 441,
+        "confidence": "high"
+      },
+      "styling": {
+        "approach": "css",
+        "confidence": "high",
+        "evidence": [],
+        "limitations": []
+      },
+      "limitations": [
+        "Component inventory is static and advisory, not proof that every reusable component was found."
+      ],
+      "error": null
+    },
+    {
+      "id": "forma-36",
+      "partition": "qualification",
+      "expectedFramework": "react-design-system",
+      "projectPath": ".",
+      "commitVerified": true,
+      "status": "completed",
+      "exitCode": 0,
+      "durationMs": 625,
+      "rawOutputSha256": "5540491122da1ac8bff7fca8d2e7a422516a81714ea4160685bdaf24c42308a7",
+      "rawOutputFile": "forma-36.scan.json",
+      "schemaVersion": "scan-report.v2",
+      "applicability": "strong_fit",
+      "confidence": {
+        "level": "low",
+        "score": 44
+      },
+      "project": {
+        "framework": "react",
+        "packageName": "forma-36-monorepo",
+        "reportedProjectPath": ".",
+        "workspaceScope": "single-app"
+      },
+      "routes": {
+        "strategy": "none",
+        "count": 0,
+        "routeSignalCount": 0,
+        "taskableRouteCount": 0,
+        "authority": "unresolved",
+        "completeness": "unknown",
+        "authorityFiles": [],
+        "excludedAuthorityFiles": []
+      },
+      "components": {
+        "count": 664,
+        "confidence": "high"
+      },
+      "styling": {
+        "approach": "css",
+        "confidence": "high",
+        "evidence": [],
+        "limitations": []
+      },
+      "limitations": [
+        "No taskable route declarations were discovered from static source evidence.",
+        "Component inventory is static and advisory, not proof that every reusable component was found."
+      ],
+      "error": null
+    }
+  ]
+}

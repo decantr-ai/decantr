@@ -1,0 +1,62 @@
+{
+  "input": {
+    "policyCard": {
+      "statements": [
+        {
+          "id": "repository-authority",
+          "sources": [
+            "base-checkout"
+          ],
+          "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+        },
+        {
+          "id": "change-scope",
+          "sources": [
+            "task.scope"
+          ],
+          "text": "Keep authored changes within the declared allowlist: src/app/pages/uikit/overlaydemo.ts, src/app/pages/uikit/overlaydemo.spec.ts. Do not edit forbidden paths: src/assets/**, src/app/layout/**, src/styles/**, package.json, package-lock.json, src/app/** (except allowed paths)."
+        },
+        {
+          "id": "host-verification",
+          "sources": [
+            "candidate.environment"
+          ],
+          "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+        }
+      ]
+    },
+    "target": {
+      "selector": "/uikit/overlay"
+    }
+  },
+  "oracle": {
+    "acceptedStatuses": [
+      "ready",
+      "limited"
+    ],
+    "expectedKind": "route",
+    "forbiddenRankOnePatterns": [
+      "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+    ],
+    "rankOneFiles": [
+      "src/app/pages/uikit/overlaydemo.ts"
+    ],
+    "styleAuthority": {
+      "approach": "primeng-tailwind-scss",
+      "confidence": "high",
+      "files": [
+        ".postcssrc.json",
+        "angular.json",
+        "src/app.config.ts"
+      ]
+    }
+  },
+  "review": {
+    "notes": "Independently checked the frozen base tree and candidate record. The neutral route selector resolves ready to the production overlay page at rank one, with test and generated paths excluded. Added the production PrimeNG runtime theme provider to the Tailwind and SCSS authority set; the scope statement exactly matches the candidate.",
+    "reviewedAt": "2026-07-22T12:17:39Z",
+    "reviewedBy": "independent-target-review-b",
+    "status": "approved"
+  },
+  "schemaVersion": "decantr-benchmark-task-delivery-spec.v1",
+  "taskId": "sakai-ng.overlay-showcase"
+}

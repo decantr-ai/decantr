@@ -1,73 +1,87 @@
 # Decantr
 
-> AI Frontend Governance for production codebases touched by AI agents. Decantr defines contracts, route-scoped context, graph-backed evidence, and repair prompts around AI-edited frontend code.
+> Agent-neutral UI change control for codebases edited by AI. Decantr observes project-owned authority, prepares compact change context, verifies the resulting diff, and reports typed local evidence.
 
-## Current Product Model
+## Release Status
 
-Decantr 3.9 is content-first and governance-first. Its Governed Change Proof model composes `AdoptionTruthV1`, `TaskCapsuleV1`, and `GovernanceDeltaV1` around existing Project Health and typed graph evidence. `@decantr/verifier` owns those three contracts. Existing report-producing commands stay on their v2 schemas by default; only `decantr ci --report-version v3` and an explicitly generated v3 CI workflow emit `decantr-ci-report.v3`.
+- Current published stable: Decantr 3.9.4.
+- Active direction: Decantr 3.10 UI Change Control Proof.
+- 3.10 is not released and is not value-proven.
+- 3.9.4 publication used a sole-maintainer waiver. Do not claim human finding precision/recall, human release qualification, adoption proof, or measured frontier-model improvement.
 
-The official corpus, client, resolver, ranking, wiring, and content provenance implementations live in `@decantr/content` inside the monorepo. The public `registry.decantr.ai` marketplace/portal is retired. `@decantr/registry` is a thin Decantr 3.x compatibility facade over content-owned implementations; `decantr registry ...`, `REGISTRY_URL`, and MCP `decantr_registry` remain compatibility names.
+## Published 3.9.4 Loop
 
-`@decantr/css` is a legacy optional adapter. Greenfield and Brownfield defaults are contract-only unless `--adoption=decantr-css` is explicit.
+1. Observe: `decantr scan` is a read-only selected-app inspection.
+2. Attach once: `decantr adopt --yes` writes Decantr governance artifacts after review.
+3. Prepare: `decantr task <route> "<change>"` prepares compact, graph-backed route context.
+4. Verify: `decantr verify` checks the diff and available evidence.
+5. Report: Project Health, JSON, Evidence Bundle, and CI artifacts carry the result.
 
-Studio is a local read-only renderer: it may recompute current state in memory or read project-mode Project Health v2 and CI v2/v3 artifacts, but it does not write source/contracts/baselines or execute adoption, repair, migration, build, verification, package-manager, or agent workflows.
+In monorepos, pass the same `--project <app>` to every app-scoped command. A successful 3.9.4 scan means the scanner ran; it does not prove that the selected routes, components, styling, or implementation source are correct.
 
-The 3.9 route/source and machine evidence lanes are complete: 84 frozen route cases, 24 genuine competing forbidden sources, a supplemental pinned Angular Brownfield replay across 43 route signals/35 taskable pages/62 components, and 270 isolated machine samples. The two-human 200-finding adjudication lane remains incomplete. Stable 3.9.4 publishes through the explicit sole-maintainer waiver, but that does not authorize human precision, recall, release-qualification, or adoption-proven claims.
+## 3.10 Authority Model
 
-## Docs
+Routes are one evidence source, not the product ontology. The approved UI surfaces are routes, layouts, components, stories, overlays, flows, packages, and runtime states.
 
-- [Homepage](https://decantr.ai/): Product overview for AI Frontend Governance.
-- [Design contract basics](https://decantr.ai/guides/design-contract-basics.md): Essence, DNA, Blueprint, context files, and the Decantr loop.
-- [Existing app adoption](https://decantr.ai/guides/existing-apps.md): Brownfield attach without rewriting the runtime.
-- [Monorepos](https://decantr.ai/guides/monorepos.md): Root install, app-scoped attach, workspace health, pinned CI, and what to commit.
-- [Project Health CI](https://decantr.ai/guides/project-health-ci.md): v2-default local/CI setup and explicit governed-change CI v3.
-- [AI assistant setup](https://decantr.ai/guides/ai-assistant-setup.md): MCP-compatible assistants and CLI context.
-- [Typed graph agent playbook](https://decantr.ai/guides/typed-graph-agent-playbook.md): Contract capsules, route graph context, impact reads, and historical graph reads.
-- [Workflow model](https://decantr.ai/reference/workflow-model.md): Workflow/adoption policy for greenfield contract-only, Brownfield attach, Hybrid local law/style bridge, legacy Decantr CSS, adapters, monorepos, and offline mode.
-- [Project Health](https://decantr.ai/reference/project-health.md): Local reliability, Evidence Bundle v2, adoption truth, governance delta, loop readiness, read-only Studio, and GitHub artifacts.
-- [Report schemas](https://decantr.ai/reference/report-schemas.md): v2 defaults, explicit CI v3, and the three 3.9 governed-change contracts.
-- [Command surface](https://decantr.ai/reference/command-surface.md): Current CLI command audit and consolidation decisions.
-- [Content Health](https://decantr.ai/reference/content-health.md): Local health checks for the official content corpus.
-- [Content API reference](https://decantr.ai/reference/registry-public-api.html): Historical filename; current content/search/schema/intelligence/showcase/pack API surface.
-- [Security and permissions](https://decantr.ai/reference/security-permissions.md): Installed package permissions, telemetry defaults, MCP boundaries, and upload posture.
-- [Package support matrix](https://decantr.ai/reference/package-support-matrix.md): Stable, legacy, internal, and experimental package status.
-- [3.8 maintenance policy](https://decantr.ai/runbooks/decantr-3-8-maintenance.md): Historical 3.8 patch boundary.
-- [Post-publish adoption proof](https://decantr.ai/runbooks/post-publish-adoption-proof.md): Public npm, pinned Brownfield, current Greenfield, host-build, and source-integrity release gates.
-- [3.8.2 post-publish adoption audit](https://decantr.ai/audit/2026-07-16-decantr-3-8-2-post-publish-adoption.md): Measured external trial, limitations, and TanStack root-route defect.
-- [3.8.3 release note](https://decantr.ai/releases/2026-07-16-decantr-3-8-3-route-source-precision.md): Narrow delivery-wave correction for TanStack page-source precedence.
-- [3.8.3 post-publish adoption audit](https://decantr.ai/audit/2026-07-16-decantr-3-8-3-post-publish-adoption.md): Public npm install, pinned Brownfield host gates, current TanStack Greenfield proof, source ownership, and limitations.
-- [3.9 Governed Change Proof program](https://decantr.ai/programs/2026-07-16-decantr-3-9-adoption-proof-program.md): Approved scope, machine evidence, sole-maintainer release decision, and still-missing human finding qualification.
+Readiness axes are independent: selected-app authority, production-surface authority, topology completeness, implementation taskability, component inventory quality, styling authority, and runtime evidence. The 3.10 primary result is `ready`, `limited`, `blocked`, or `unsupported`. Numeric confidence and aggregate fit labels must not conceal an unresolved axis.
 
-## Operational Notes
+Decantr 3.9.4 task context remains primarily route-backed. Do not claim that non-route UI-surface task context has shipped until a 3.10 release does so.
 
-- For app-scoped monorepos, pass `--project <app>` to `doctor`, `check`, `verify`, `ci`, `task`, `resolve`, `codify`, and `graph`.
-- Greenfield `init` and Brownfield `adopt` write the first typed graph; shared discovery supplies route/source provenance even without Brownfield analysis.
-- Angular discovery is production-entry based: selected `angular.json`/`project.json` build entry -> bootstrap import graph -> router root -> nested/lazy route arrays -> rendered component. Tests/fixtures are excluded, lazy boundaries are not taskable pages, Tailwind dependency presence is not styling authority, and authority/completeness are independent from score.
-- Angular Brownfield `adopt`/existing `init` refuse unproven or partial route authority unless `--force` is explicit. CLI/MCP route tasks and CI v3 still fail closed with `DISCOVERY_NOT_PROVEN`/`not_proven`; an override does not create proof.
-- `decantr task` and MCP task context require current graph artifacts and adapt one `TaskCapsuleV1`; the required rank-one read target is the discovered route implementation source. The default canonical capsule is bounded to 12,000 UTF-8 bytes and 4,000 deterministic estimated tokens. Blocked CLI task activation emits remediation and exits nonzero.
-- MCP task responses default to compact detail. Pass `"detail": "full"` only when full graph nodes, edges, and expanded context are required.
-- `scan --json`, Project Health, Evidence Bundle, workspace health, and ordinary `decantr ci` remain v2. Use `decantr ci --report-version v3 --since <ref> --json` only when `AdoptionTruthV1` plus `GovernanceDeltaV1` are required. Missing/stale/incompatible proof is `not_proven`, not an empty delta.
-- `decantr ci init` generates v2 by default. Add `--report-version v3` explicitly; GitHub v3 workflows fetch full history and pass a resolved change base through `--since`.
-- Accept reviewed local law with `decantr codify --accept --confirm-reviewed`. Add `--accept-style-bridge` only to explicitly activate a reviewed bridge proposal.
-- Saved Brownfield health baselines keep inherited findings visible while project CI gates only new findings through the v2 `baselineGate` block. CI v3 additionally classifies stable finding occurrences as new, inherited, resolved, or unclassified and fails closed when proof is incomplete.
-- Assistant bridges follow their recorded workflow and available content: contract-only Greenfield uses Essence, narrative context, and the Contract capsule; corpus-backed Greenfield/Hybrid uses packs; Brownfield uses analysis/doctrine plus available context. Prettier/Oxfmt projects ignore generated Decantr artifacts through `.prettierignore` entries. Tailwind v4 CSS entries receive a marked, receipt-bound `@source not` block for dedicated Decantr paths so generated governance text cannot change the utility bundle; other authored-source mutations remain unapproved.
-- For manual pack hydration, prefer `decantr content compile-packs apps/web/decantr.essence.json --write-context`; legacy `decantr registry compile-packs ...` still works.
-- MCP agents should use exactly the submitted eight-tool surface: `decantr_project`, `decantr_contract`, `decantr_context`, `decantr_graph`, `decantr_registry`, `decantr_verify`, `decantr_repair`, and `decantr_contract_write`. `decantr_registry` delegates to content-owned implementations; do not expect a ninth content tool in Decantr 3.x.
-- Browser evidence is local-only. `decantr verify --base-url <url> --evidence` writes screenshots and Evidence Bundle files under `.decantr/evidence/`.
-- CLI telemetry has no Decantr-hosted default. Opt-in is a local preference; network delivery requires an explicit caller-controlled `DECANTR_TELEMETRY_ENDPOINT`.
+## Product Boundary
+
+Active 3.10 investment: `@decantr/verifier`, framework authority adapters, CLI `scan`/`task`/`verify`, the compatible eight-tool MCP server, local evidence, CI integration, and deterministic policy packs.
+
+Advanced, compatibility, or historical: Greenfield blueprints, themes, registry publishing/account commands, `@decantr/css`, `@decantr/vite-plugin`, broad corpus expansion, telemetry product work, Studio/showcase expansion, and hosted cross-repository intelligence.
+
+Decantr is local-first. Hosted source upload is retired. Browser evidence stays local. The Fly content API is an optional reference helper. In Brownfield, production source and runtime configuration remain first authority. Project tests and design systems are scoped supporting evidence; accepted Essence and local rules are project law beneath production source. Official Decantr content is advisory unless deliberately adopted into project law.
+
+## MCP
+
+The public MCP identity and exactly eight tools remain stable:
+
+`decantr_project`, `decantr_contract`, `decantr_context`, `decantr_graph`, `decantr_registry`, `decantr_verify`, `decantr_repair`, `decantr_contract_write`.
+
+`decantr_registry` is a 3.x compatibility name backed by `@decantr/content`, not a public marketplace. Do not expect a ninth content tool in 3.x.
+
+## Proof Boundary
+
+The 3.10 experiment is 40 tasks x 2 models x 2 arms x 2 repetitions = 320 isolated runs over 28 pinned repositories. It includes one repository-authentic task per target plus 12 adversarial tasks. The corpus acquisition labels are 18 development and 10 qualification; independently, the task partition is 24 development and 16 sealed qualification. Repository identities were observed at Day-0, so this is not a repository-blind holdout; qualification solutions/oracles remain sealed and a future independent external holdout is required for a general industry claim.
+
+The control receives repository-native instructions, tests/design evidence, and an approved policy card. The treatment receives the same information entitlement through Decantr; Decantr receives no extra human facts. Candidate package bytes are frozen before paid execution; an implementation change invalidates that candidate result.
+
+Requested models: OpenAI `gpt-5.6-sol` and Anthropic `claude-fable-5`. Model substitutions remain visible and are not pooled.
+
+The value claim requires, separately where declared: correct or honestly unsupported Day-0 authority, no non-production authority contamination, correct rank-one ready target, at least +5/100 paired rubric lift with 95% CI above zero for each model, at least 25% fewer governance violations, functional non-inferiority within 5 percentage points overall for each model, at least 26 decisive blinded-preference units out of 32 qualification task/model units, at least 60% treatment preference among decisive units, a two-sided 95% Wilson lower bound above 50%, median token/cost overhead <=15%, and P95 overhead <=25%. Framework functional estimates are exploratory unless separately powered.
+
+Pass permits only the bounded measured claim. Mixed results narrow supported claims. Failure blocks value-proof language and requires product contraction. Unsupported targets, missing evaluators, build failures, and model substitutions stay visible and in the denominator.
+
+## Active Docs
+
+- [Homepage](https://decantr.ai/)
+- [Docs index](https://decantr.ai/README.md)
+- [Existing apps](https://decantr.ai/guides/existing-apps.md)
+- [AI assistant setup](https://decantr.ai/guides/ai-assistant-setup.md)
+- [Workflow model](https://decantr.ai/reference/workflow-model.md)
+- [Command surface](https://decantr.ai/reference/command-surface.md)
+- [FAQ](https://decantr.ai/faq.md)
+- [Security and permissions](https://decantr.ai/reference/security-permissions.md)
+- [Package support matrix](https://decantr.ai/reference/package-support-matrix.md)
+- [3.10 active proof program](https://decantr.ai/programs/2026-07-22-decantr-3-10-ui-change-control-proof.md)
+- [3.9.4 Day-0 baseline](https://decantr.ai/benchmarks/2026-07-22-decantr-3-9-4-day-zero.md)
+- [3.9 historical proof program](https://decantr.ai/programs/2026-07-16-decantr-3-9-adoption-proof-program.md)
+- [3.9.4 stable release note](https://decantr.ai/releases/2026-07-21-decantr-3-9-4-tailwind-source-isolation.md)
 
 ## Packages
 
-- [@decantr/content](https://www.npmjs.com/package/@decantr/content): Canonical official corpus, content identity/digest provenance, schemas, API clients, validation, search, resolution, ranking, wiring, and health helpers.
-- [@decantr/cli](https://www.npmjs.com/package/@decantr/cli): Workflow commands, contract/context generation, Brownfield/Hybrid governance, Project Health, Studio, CI, and content helpers.
-- [@decantr/mcp-server](https://www.npmjs.com/package/@decantr/mcp-server): MCP server exposing project state, contracts, context, graph reads, verification, repair prompts, and compatibility content-corpus lookups.
-- [@decantr/registry](https://www.npmjs.com/package/@decantr/registry): Thin legacy facade over content-owned clients, types, and helpers for Decantr 3.x compatibility.
-- [@decantr/essence-spec](https://www.npmjs.com/package/@decantr/essence-spec): Essence schemas, validation, migration, and TypeScript types.
-- [@decantr/core](https://www.npmjs.com/package/@decantr/core): Execution-pack compiler, typed graph builders, ranking, evidence/proof ingestion, and Contract capsules.
-- [@decantr/verifier](https://www.npmjs.com/package/@decantr/verifier): Canonical governed-change contracts plus discovery, audit, critique, Evidence Bundle, loop readiness, authority resolution, diagnostics, and report schemas.
-- [@decantr/css](https://www.npmjs.com/package/@decantr/css): Legacy optional CSS atom runtime.
+- `@decantr/cli`: primary local workflow.
+- `@decantr/verifier`: primary authority and evidence engine.
+- `@decantr/mcp-server`: stable agent integration.
+- `@decantr/core`: supported low-level graph and execution-pack primitives.
+- `@decantr/essence-spec`: validation for accepted Essence V4 project law; it does not replace Brownfield production authority.
+- `@decantr/content`: supported policy/reference corpus.
+- `@decantr/registry`: legacy compatibility facade.
+- `@decantr/css`: legacy optional adapter.
+- `@decantr/telemetry`: optional compatibility package.
+- `@decantr/vite-plugin`: experimental.
 
-## Repositories
-
-- [decantr-ai/decantr](https://github.com/decantr-ai/decantr): Monorepo for packages, API, docs, and official content corpus.
-- Historical separate content repo references should point to `packages/content` in the monorepo after 3.8 migration.
+Repository: [decantr-ai/decantr](https://github.com/decantr-ai/decantr). Historical separate content-repository references now point to `packages/content` in this monorepo.

@@ -1,0 +1,104 @@
+{
+  "schemaVersion": "decantr-benchmark-evaluator-authoring-spec.v2",
+  "taskId": "epic-stack.otp-input-mode",
+  "contractId": "epic-stack.otp-input-mode.v1",
+  "review": {
+    "status": "approved",
+    "reviewedBy": "independent-runtime-evaluator-review-ui-b",
+    "reviewedAt": "2026-07-22T13:09:56Z",
+    "notes": "Approved from exact frozen commits dafaa9650bdcbfc9ad5487afe3e228bd751f594c and 97135fcd7899cab299b402f36804b0d169e87d9d under Node 22.19.0/npm 10.9.3 with Playwright 1.61.1 and Axe 4.12.1. The rendered production OTP control fails 5/7 checks on base and passes 7/7 on expected, covering mobile DOM input attributes and properties, caller override behavior, alphanumeric entry, focus/caret progression, Axe, and runtime errors without source-shape matching. Both revisions pass 24 host tests, typecheck, and production build after deterministic creation of the repository's omitted ephemeral test database fixture."
+  },
+  "oracle": {
+    "candidateIndependent": true,
+    "decantrOutputAllowed": false,
+    "sourcePath": "sources/epic-stack.otp-input-mode.mjs"
+  },
+  "commands": [
+    {
+      "id": "behavior",
+      "kind": "functional",
+      "runtime": "controller",
+      "executable": "node",
+      "args": [
+        "${EVALUATOR_ROOT}/sources/epic-stack.otp-input-mode.mjs",
+        "--workspace",
+        "${WORKSPACE}",
+        "--project-path",
+        "${PROJECT_PATH}",
+        "--evaluator-runtime",
+        "${EVALUATOR_RUNTIME}"
+      ],
+      "cwd": "${EVALUATOR_ROOT}",
+      "timeoutMs": 120000,
+      "required": true,
+      "resultFormat": "json-stdout"
+    },
+    {
+      "id": "host-test-fixture",
+      "kind": "functional",
+      "runtime": "controller",
+      "executable": "node",
+      "args": [
+        "${EVALUATOR_ROOT}/sources/epic-stack.otp-input-mode.mjs",
+        "--prepare-host-fixture",
+        "--workspace",
+        "${WORKSPACE}",
+        "--project-path",
+        "${PROJECT_PATH}"
+      ],
+      "cwd": "${EVALUATOR_ROOT}",
+      "timeoutMs": 10000,
+      "required": true,
+      "resultFormat": "exit-code"
+    },
+    {
+      "id": "host-test",
+      "kind": "functional",
+      "runtime": "task",
+      "executable": "npm",
+      "args": [
+        "test",
+        "--",
+        "--run"
+      ],
+      "cwd": "${WORKSPACE}/${PROJECT_PATH}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    },
+    {
+      "id": "host-typecheck",
+      "kind": "functional",
+      "runtime": "task",
+      "executable": "npm",
+      "args": [
+        "run",
+        "typecheck"
+      ],
+      "cwd": "${WORKSPACE}/${PROJECT_PATH}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    },
+    {
+      "id": "host-build",
+      "kind": "build",
+      "runtime": "task",
+      "executable": "npm",
+      "args": [
+        "run",
+        "build"
+      ],
+      "cwd": "${WORKSPACE}/${PROJECT_PATH}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    }
+  ],
+  "limits": {
+    "timeoutMs": 5400000,
+    "maxRequests": 40,
+    "maxInputTokens": 600000,
+    "maxOutputTokens": 80000
+  }
+}

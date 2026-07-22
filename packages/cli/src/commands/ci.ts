@@ -1364,8 +1364,7 @@ async function createProjectCiReportV3(
   const selectedAppRoot = adoptionTruth.project.selectedAppRoot;
   const git = collectGitScope(workspaceRoot, selectedAppRoot, options.since);
   const current = createCurrentGovernanceState(projectRoot, projectIdentity, health);
-  const enforceDiscoveryProof =
-    discovery.project.framework === 'angular' && discoveryReadiness.adoptionBaseline !== 'ready';
+  const enforceDiscoveryProof = discoveryReadiness.adoptionBaseline !== 'ready';
   if (enforceDiscoveryProof) {
     current.graph.completeness = 'incomplete';
     current.graph.limitations = [

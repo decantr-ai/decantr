@@ -3,7 +3,13 @@
 Support status: `core-supported`  
 Release channel: `stable`
 
-Shared Decantr verification, critique, and report-schema engine used by the CLI, MCP server, and future CI/hosted verification surfaces.
+Shared local discovery, verification, critique, and report-schema engine used by the Decantr CLI, MCP server, and CI adapters.
+
+## Release Boundary
+
+Decantr 3.9.4 is the current published stable line. Its adoption truth, route-backed task capsules, governance deltas, and report schemas are shipped contracts, but the release is not quantitatively adoption-proven.
+
+Decantr 3.10 is an unreleased falsification program. The candidate verifier models routes, layouts, components, stories, overlays, flows, packages, and runtime states as independent UI surfaces and reports selected-app, surface-authority, topology, taskability, component-inventory, styling-authority, and runtime-evidence axes separately. These APIs are under development and do not establish that Decantr improves model outcomes; only the frozen 3.10 A/B gate can support that claim.
 
 ## Install
 
@@ -11,11 +17,11 @@ Shared Decantr verification, critique, and report-schema engine used by the CLI,
 npm install @decantr/verifier
 ```
 
-## What It Exports
+## Published 3.9.4 Exports
 
 - `auditProject()` for project-level Decantr audits
 - `auditBuiltDist()` for built-output runtime verification against emitted HTML, assets, and route hints
-- `discoverProject()` for shared read-only Brownfield discovery of workspace/app scope, package manager, framework, language, source-declared routes, taskable routes, component inventory, styling authority, Decantr presence, and inherited assistant-rule files. Formal TanStack source routes outrank generated trees; nested React Router objects resolve lazy implementation files; Vue Router objects are recognized; pathname fallbacks carry medium confidence. Angular discovery selects the configured app entry, follows bootstrap-reachable TypeScript imports to router roots, resolves nested/lazy route arrays and implementation files, excludes test/fixture source, separates lazy route scopes from rendered pages, inventories `@Component` classes, and reports authority/completeness independently from aggregate confidence.
+- `discoverProject()` for shared read-only Brownfield discovery of workspace/app scope, package manager, framework, language, source-declared routes, taskable routes, component inventory, styling authority, Decantr presence, and inherited assistant-rule files. Formal framework routes outrank generated trees, and Angular discovery begins at the selected production bootstrap/router graph while excluding test and fixture source.
 - `scanProject()` for read-only Brownfield reconnaissance that emits `scan-report.v2` by default using the shared discovery substrate
 - `auditComponentReuse()` for the first AST-derived component reuse drift slice, focused on AI reimplementing common UI primitives instead of importing project-owned components, plus local import references that the typed graph can turn into source-to-source impact edges
 - `auditStyleBridgeDrift()` for accepted style bridge drift, focused on production `className`, common class-helper values, stylesheet declarations, and hardcoded inline color styles that bypass project-owned token/class authority
@@ -27,7 +33,7 @@ npm install @decantr/verifier
 - `createEvidenceTier()`, `createAuthorityResolution()`, and `createLoopReadiness()` for the shared v2 Brownfield control-loop blocks used by CLI, MCP, Studio, and verifier consumers
 - `createAdoptionTruthV1()` for receipt-backed adoption facts whose observation, governance, and mutation states remain independent
 - `createProjectAdoptionTruthV1()` for one read-only, discovery-backed project truth; `createProjectIdentityV1()` provides the clone-independent workspace-relative identity shared by task capsules, CI v3, MCP, and local baselines, while `createStableProjectIdentityV1()` derives the same identity directly from a selected project root
-- `createTaskCapsuleV1()` for structured project, graph, ranked read-target, authority, impact, finding, official-guidance, stop-condition, and exact verification-command context under deterministic 12,000 canonical UTF-8 byte / 4,000 estimated-token limits using conservative `tokenEstimateV1 = ceil(bytes / 3)` accounting; task-request truncation, omitted counts, canonical byte/token measurements, and downstream digests must all derive from this final canonical result
+- `createTaskCapsuleV1()` for the shipped attached-route contract: structured project, graph, ranked read-target, authority, impact, finding, official-guidance, stop-condition, and exact verification-command context under deterministic 12,000 canonical UTF-8 byte / 4,000 estimated-token limits using conservative `tokenEstimateV1 = ceil(bytes / 3)` accounting; task-request truncation, omitted counts, canonical byte/token measurements, and downstream digests must all derive from this final canonical result
 - `createGovernanceDeltaV1()` and `fingerprintFindingOccurrenceV1()` for Git-scope-independent debt comparison with deterministic new, inherited, resolved, and unclassified finding occurrences plus explicit incomplete-proof gates
 - `resolveGraphAnchorForFinding()` and `anchorFindingsToGraph()` for attaching verifier/Project Health findings to typed Contract graph nodes when a graph snapshot exists
 - `deriveVerificationDiagnostic()` and `KNOWN_VERIFICATION_DIAGNOSTICS` for stable finding codes and typed repair IDs used by Project Health, MCP health, and Evidence Bundles
@@ -63,6 +69,15 @@ npm install @decantr/verifier
   - route-document coverage
   - built asset byte budgets for JS, CSS, and total payload
   - auth-topology warnings when the essence declares authentication without clear gateway or entry routes
+
+## Unreleased 3.10 Candidate Exports
+
+- `buildUISurfaceDiscovery()` and `UISurfaceDiscovery` for the candidate `ui-surfaces.v1` model: eight surface kinds, exact `ready` / `limited` / `blocked` / `unsupported` readiness, and independently visible authority axes
+- `resolveUISurfaceTaskContext()` for candidate target resolution by route, exact surface ID, component name, `kind:name`, or `file:<path>`; ambiguous and unknown targets return no read set, and non-route static evidence remains limited unless runtime reachability is proven
+- `discoverUIEvidenceAdapters()` for candidate selected-app Storybook, Figma Code Connect, design-token, project-test, runtime, visual, and accessibility evidence; configured or collected evidence does not prove freshness, pass state, task coverage, runtime behavior, or publication success
+- `classifyProjectSourceScope()` for candidate separation of production, test, story, fixture, mock, generated, build-output, package, and runtime evidence
+
+These source-tree APIs are under the 3.10 falsification program. They are not published 3.9.4 capability or stable schema claims.
 
 ## Example
 
@@ -114,7 +129,7 @@ function isBlocking(report: ProjectHealthReport) {
 
 The adoption-truth, task-capsule, and governance-delta schemas are additive Decantr 3.9 contract primitives consumed by CLI, MCP, opt-in CI v3, and read-only Studio adapters. `decantr-ci-report.v3` is also additive and must be selected explicitly; v2 remains the default throughout 3.9.x and its schema/exit semantics are unchanged. A missing or incompatible baseline produces unclassified findings and `not_proven` rather than a false empty delta. V1 health/evidence/scan schemas remain published for stored-artifact compatibility; audit, file-critique, and showcase reports remain v1 until those wires need to change. See [Report Schemas](https://decantr.ai/reference/report-schemas.md).
 
-These contracts define deterministic evidence shapes; they do not by themselves prove the Decantr 3.9 quantitative gates. Human qualification remains fail-closed until the frozen route corpus, two-person finding adjudication, public 3.8.3 replay, final 3.9 replay, and adoption/Studio filesystem evidence are complete. Stable 3.9.4 publication may use the explicit sole-maintainer release gate with human finding claims waived; that does not make the release human-qualified or adoption-proven.
+These contracts define deterministic evidence shapes; they do not prove product value by themselves. Stable 3.9.4 used an explicit sole-maintainer qualification waiver and is not human-qualified or adoption-proven. The 3.10 candidate is gated by a frozen 40-task, two-model, two-arm, repeated A/B protocol. Development-corpus results may tune the implementation but cannot grant the confirmatory claim; qualification failures, unsupported targets, missing evaluators, build failures, and model substitutions remain visible in the denominator.
 
 ## Security And Permissions
 
@@ -127,6 +142,7 @@ The verifier is a local library. It reads selected project source, Decantr conte
 - new checks and additive report fields may appear in compatible releases
 - report-shape changes are versioned through explicit `$schema` URLs
 - hosted, CLI, MCP, and Studio consumers should treat the published schemas as the supported contract surface
+- unreleased `ui-surfaces.v1` and `ui-surface-task-context.v1` candidate APIs must not be described as stable until a release publishes them
 
 ## License
 

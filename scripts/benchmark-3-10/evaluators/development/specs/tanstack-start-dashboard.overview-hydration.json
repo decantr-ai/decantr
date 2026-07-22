@@ -1,0 +1,74 @@
+{
+  "schemaVersion": "decantr-benchmark-evaluator-authoring-spec.v2",
+  "taskId": "tanstack-start-dashboard.overview-hydration",
+  "contractId": "tanstack-start-dashboard.overview-hydration.v1",
+  "review": {
+    "status": "approved",
+    "reviewedBy": "independent-runtime-evaluator-review-mixed-c",
+    "reviewedAt": "2026-07-22T13:18:42Z",
+    "notes": "Approved from exact frozen commits 0f1be24f711b1fada8dd35a1554d4710d7fa6cd6 and c6798c0d45c204547b9eae34bf9f83d58a93f1ea with pinned Playwright 1.61.1 and Axe 4.12.1. Expected passes 9/9 production checks with an eight-card SSR document and zero deferred boundaries; base fails the direct browser-class SSR check with 12 cards and four React deferred boundaries while both still prove eventual hydration, same-document navigation, clean console, four KPI/four panel semantics, three nonzero chart surfaces, and five data rows. Builds pass both revisions. Lint remains diagnostic-only because both frozen revisions reproduce the same 13 unrelated anchor-is-valid errors outside the task diff. Scoped Axe excludes the frozen chart/content link-name, list, svg-img-alt, and color-contrast baselines."
+  },
+  "oracle": {
+    "candidateIndependent": true,
+    "decantrOutputAllowed": false,
+    "sourcePath": "sources/tanstack-start-dashboard.overview-hydration.mjs"
+  },
+  "commands": [
+    {
+      "id": "host-build",
+      "kind": "build",
+      "runtime": "task",
+      "executable": "bun",
+      "args": [
+        "run",
+        "build"
+      ],
+      "cwd": "${WORKSPACE}/${PROJECT_PATH}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    },
+    {
+      "id": "behavior",
+      "kind": "functional",
+      "runtime": "controller",
+      "executable": "node",
+      "args": [
+        "${EVALUATOR_ROOT}/sources/tanstack-start-dashboard.overview-hydration.mjs",
+        "--workspace",
+        "${WORKSPACE}",
+        "--project-path",
+        "${PROJECT_PATH}",
+        "--evaluator-runtime",
+        "${EVALUATOR_RUNTIME}"
+      ],
+      "cwd": "${EVALUATOR_ROOT}",
+      "environment": {
+        "PLAYWRIGHT_BROWSERS_PATH": "/tmp/decantr-3-10-playwright-browsers"
+      },
+      "timeoutMs": 180000,
+      "required": true,
+      "resultFormat": "json-stdout"
+    },
+    {
+      "id": "host-lint",
+      "kind": "governance",
+      "runtime": "task",
+      "executable": "bun",
+      "args": [
+        "run",
+        "lint"
+      ],
+      "cwd": "${WORKSPACE}/${PROJECT_PATH}",
+      "timeoutMs": 900000,
+      "required": false,
+      "resultFormat": "exit-code"
+    }
+  ],
+  "limits": {
+    "timeoutMs": 5400000,
+    "maxRequests": 40,
+    "maxInputTokens": 800000,
+    "maxOutputTokens": 100000
+  }
+}

@@ -1,0 +1,3420 @@
+{
+  "confidentiality": "public development records; not confirmatory holdout evidence",
+  "count": 24,
+  "frozenAt": "2026-07-22T11:29:02Z",
+  "program": "decantr-3.10-ui-change-control-proof",
+  "records": [
+    {
+      "ancestry": {
+        "baseIsExpectedFirstParent": true,
+        "expectedIsAncestorOfCorpusPin": true,
+        "expectedParents": [
+          "c6aff3856a8d4ef4dc35e37f4564f40d5ff3c9a6",
+          "4dd3f46e3d4cfe8e81f0618a5e55b5b65517cf09"
+        ]
+      },
+      "base": {
+        "commit": "c6aff3856a8d4ef4dc35e37f4564f40d5ff3c9a6",
+        "tree": "d13a70e8e5f07513339bee0dc623dc84242f3c70"
+      },
+      "environment": {
+        "build": "npm run build",
+        "environment": "Repository base Node/npm requirements; Angular base has no test target.",
+        "install": "npm ci --legacy-peer-deps",
+        "runtime": "npm start -- --host 0.0.0.0",
+        "test": "none: the base commit has no Angular test target; use the external evaluator"
+      },
+      "evaluator": {
+        "checks": [
+          "Existing article submission calls update rather than create and preserves the slug.",
+          "New article submission continues to call create.",
+          "Successful saves preserve navigation behavior.",
+          "Failures clear submission state and preserve current feedback behavior."
+        ],
+        "commonFailures": [
+          "edit outside allowed paths",
+          "dependency or lockfile change unless explicitly allowed",
+          "build failure",
+          "console error",
+          "accessibility regression"
+        ],
+        "design": "Angular component harness with fake route, article service, and router.",
+        "implementationLocation": "external benchmark harness, mounted only after the agent run",
+        "visibility": "hidden-from-agent"
+      },
+      "expected": {
+        "commit": "400bc37adb42113683a397211d4746972156645c",
+        "tree": "a1d9d3e640c6be63b5ea32a039ea52638a0fe81b"
+      },
+      "informationEntitlement": {
+        "canonicalSha256": "02bb4ffa4e3a6683362505b3fbf35fd7ea3bf3837fc5bf60e8117758979c1516",
+        "excludedFromAgent": [
+          "expected commit, expected tree, and expected diff",
+          "provenance implementation discussion",
+          "hidden evaluator implementation and checks",
+          "personal skills and personal MCP configuration",
+          "Decantr engineering and release skills"
+        ],
+        "parityRule": "Decantr receives no human-authored fact that is unavailable to the control arm. Delivery format may differ; information entitlement may not.",
+        "sourceList": [
+          {
+            "access": "All tracked files at the base commit are readable by both arms.",
+            "id": "base-checkout",
+            "paths": [
+              "**/*"
+            ],
+            "reference": "https://github.com/realworld-apps/angular-realworld-example-app@c6aff3856a8d4ef4dc35e37f4564f40d5ff3c9a6",
+            "type": "repository-tree"
+          },
+          {
+            "access": "Identical plaintext prompt for both arms.",
+            "id": "task-prompt",
+            "reference": "record.prompt",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical allowed/forbidden path policy for both arms.",
+            "id": "scope-policy",
+            "reference": "record.scope",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical environment and command contract for both arms.",
+            "id": "execution-contract",
+            "reference": "record.environment",
+            "type": "benchmark-input"
+          }
+        ]
+      },
+      "kind": "repository",
+      "limitations": [
+        "Pre-cutoff fallback with no native Angular test target at the base commit.",
+        "The evaluator must not call the public RealWorld API."
+      ],
+      "partition": "development",
+      "prompt": "When a user saves an existing article, update that article rather than creating a duplicate. Creating a new article must continue to work, and successful saves and errors must retain their current navigation and feedback behavior.",
+      "provenance": {
+        "cutoffDisclosure": {
+          "models": {
+            "claude-fable-5": {
+              "cutoff": "2026-01-31T23:59:59Z",
+              "relation": "pre-or-on-cutoff"
+            },
+            "gpt-5.6-sol": {
+              "cutoff": "2026-02-16T23:59:59Z",
+              "relation": "pre-or-on-cutoff"
+            }
+          },
+          "qualificationEmbargo": {
+            "cutoff": "2026-05-01T23:59:59Z",
+            "relation": "pre-or-on-cutoff"
+          }
+        },
+        "expectedCommitUrl": "https://github.com/realworld-apps/angular-realworld-example-app/commit/400bc37adb42113683a397211d4746972156645c",
+        "expectedCommitterDate": "2025-08-16T23:58:56+02:00",
+        "expectedSubject": "Merge pull request #311 from babatundelmd/fix-editor-use-put-for-article-updates",
+        "sourceReportDisclosure": "Pre-cutoff fallback; the only post-cutoff merged PR was dependency-only.",
+        "type": "pull_request",
+        "url": "https://github.com/realworld-apps/angular-realworld-example-app/pull/311"
+      },
+      "repository": {
+        "corpusPin": "dd99ed2cf39c805d719f943c5d7061a5683d98a8",
+        "corpusProjectPath": ".",
+        "corpusTree": "82b24c8e0da619783643e733e2442ac538878ffd",
+        "framework": "angular",
+        "id": "angular-realworld",
+        "license": "MIT",
+        "projectPath": ".",
+        "url": "https://github.com/realworld-apps/angular-realworld-example-app"
+      },
+      "schemaVersion": "decantr-benchmark-task-candidate.v1",
+      "scope": {
+        "allowedPaths": [
+          "src/app/features/article/pages/editor/editor.component.ts",
+          "src/app/features/article/pages/editor/*.spec.ts"
+        ],
+        "forbiddenPaths": [
+          "src/app/** (except allowed paths)",
+          "package.json",
+          "package-lock.json",
+          "realworld/**",
+          ".github/**"
+        ],
+        "policy": "default-deny"
+      },
+      "taskId": "angular-realworld.update-existing-article"
+    },
+    {
+      "ancestry": {
+        "baseIsExpectedFirstParent": true,
+        "expectedIsAncestorOfCorpusPin": true,
+        "expectedParents": [
+          "f2eb0ffedb443927b0e0f4f3e78d66042fb673f7"
+        ]
+      },
+      "base": {
+        "commit": "f2eb0ffedb443927b0e0f4f3e78d66042fb673f7",
+        "tree": "14d58bd0a3886a59bda69d3b55d7fe7fb08086f6"
+      },
+      "environment": {
+        "build": "npm run build",
+        "environment": "Node >=20.11.1 with npm.",
+        "install": "npm ci",
+        "runtime": "npm start -- --host 0.0.0.0",
+        "test": "npm test -- --run"
+      },
+      "evaluator": {
+        "checks": [
+          "Verify /, /?feed=following, and /tag/angular?page=2 are represented by observable router state and navigable links.",
+          "Assert active tabs, canonical page-one links, and deterministic service query offsets.",
+          "Assert unauthenticated following-feed navigation redirects to login.",
+          "Assert switching feeds resets pagination and the empty following feed links back to global articles.",
+          "Assert refresh and browser back/forward preserve URL-addressed feed state."
+        ],
+        "commonFailures": [
+          "edit outside allowed paths",
+          "dependency or lockfile change unless explicitly allowed",
+          "build failure",
+          "console error",
+          "accessibility regression"
+        ],
+        "design": "Semantic router, template, and component source contracts backed by the frozen host tests and build; an instrumented Angular harness remains required before approval.",
+        "implementationLocation": "external benchmark harness, mounted only after the agent run",
+        "visibility": "hidden-from-agent"
+      },
+      "expected": {
+        "commit": "02b8d88d7d95853867a29be11c3a89c60c6831d1",
+        "tree": "4fa393bd9e5aa48ca3229a2c96652f14e2e7f7f0"
+      },
+      "informationEntitlement": {
+        "canonicalSha256": "46a495476b7bacc81bbcc7bfd966352a014878ee4b65cc026f23643ec5afb5c3",
+        "excludedFromAgent": [
+          "expected commit, expected tree, and expected diff",
+          "provenance implementation discussion",
+          "hidden evaluator implementation and checks",
+          "personal skills and personal MCP configuration",
+          "Decantr engineering and release skills"
+        ],
+        "parityRule": "Decantr receives no human-authored fact that is unavailable to the control arm. Delivery format may differ; information entitlement may not.",
+        "sourceList": [
+          {
+            "access": "All tracked files at the base commit are readable by both arms.",
+            "id": "base-checkout",
+            "paths": [
+              "**/*"
+            ],
+            "reference": "https://github.com/realworld-apps/angular-realworld-example-app@f2eb0ffedb443927b0e0f4f3e78d66042fb673f7",
+            "type": "repository-tree"
+          },
+          {
+            "access": "Identical plaintext prompt for both arms.",
+            "id": "task-prompt",
+            "reference": "record.prompt",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical allowed/forbidden path policy for both arms.",
+            "id": "scope-policy",
+            "reference": "record.scope",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical environment and command contract for both arms.",
+            "id": "execution-contract",
+            "reference": "record.environment",
+            "type": "benchmark-input"
+          }
+        ]
+      },
+      "kind": "adversarial",
+      "limitations": [
+        "Pre-cutoff and unreviewed direct commit.",
+        "Authentic E2E changes call the public RealWorld API and are deliberately excluded.",
+        "Invalid and negative page parameters were not addressed by the expected change.",
+        "A page click queries immediately and then queries again after URL synchronization; request-count efficiency is outside the task's promised outcome."
+      ],
+      "partition": "development",
+      "prompt": "Make feed, tag, and pagination state addressable through the browser URL. The root page must show the global feed; authenticated users can open their following feed; unauthenticated following-feed requests must lead to login; tags need stable routes; and page selection must survive direct loads, refreshes, and browser history. Switching feeds should return to the first page, and an empty following feed should offer a route back to global articles.",
+      "provenance": {
+        "cutoffDisclosure": {
+          "models": {
+            "claude-fable-5": {
+              "cutoff": "2026-01-31T23:59:59Z",
+              "relation": "pre-or-on-cutoff"
+            },
+            "gpt-5.6-sol": {
+              "cutoff": "2026-02-16T23:59:59Z",
+              "relation": "pre-or-on-cutoff"
+            }
+          },
+          "qualificationEmbargo": {
+            "cutoff": "2026-05-01T23:59:59Z",
+            "relation": "pre-or-on-cutoff"
+          }
+        },
+        "expectedCommitUrl": "https://github.com/realworld-apps/angular-realworld-example-app/commit/02b8d88d7d95853867a29be11c3a89c60c6831d1",
+        "expectedCommitterDate": "2026-01-26T22:18:53+01:00",
+        "expectedSubject": "fix: URL-based navigation and pagination (#691)",
+        "sourceReportDisclosure": "Pre-cutoff unreviewed direct-commit fallback; the associated-pull-request lookup returned no pull request.",
+        "type": "direct_commit",
+        "url": "https://github.com/realworld-apps/angular-realworld-example-app/commit/02b8d88d7d95853867a29be11c3a89c60c6831d1"
+      },
+      "repository": {
+        "corpusPin": "dd99ed2cf39c805d719f943c5d7061a5683d98a8",
+        "corpusProjectPath": ".",
+        "corpusTree": "82b24c8e0da619783643e733e2442ac538878ffd",
+        "framework": "angular",
+        "id": "angular-realworld",
+        "license": "MIT",
+        "projectPath": ".",
+        "url": "https://github.com/realworld-apps/angular-realworld-example-app"
+      },
+      "schemaVersion": "decantr-benchmark-task-candidate.v1",
+      "scope": {
+        "allowedPaths": [
+          "src/app/app.routes.ts",
+          "src/app/features/article/components/article-list.component.ts",
+          "src/app/features/article/pages/home/home.component.html",
+          "src/app/features/article/pages/home/home.component.ts",
+          "src/app/features/article/**/*.spec.ts"
+        ],
+        "forbiddenPaths": [
+          "e2e/**",
+          "playwright.config.*",
+          "src/app/**/services/**",
+          "src/app/**/auth*",
+          "package.json",
+          "package-lock.json",
+          "src/environments/**"
+        ],
+        "policy": "default-deny"
+      },
+      "taskId": "angular-realworld.url-addressable-feeds"
+    },
+    {
+      "ancestry": {
+        "baseIsExpectedFirstParent": true,
+        "expectedIsAncestorOfCorpusPin": true,
+        "expectedParents": [
+          "af48f06be20a1926a24d0bba6ce339e754c5735f"
+        ]
+      },
+      "base": {
+        "commit": "af48f06be20a1926a24d0bba6ce339e754c5735f",
+        "tree": "f1aa04cdc600e3c52fcdc3400ce159be35a4d792"
+      },
+      "environment": {
+        "build": "cd apps/react-vite && yarn build",
+        "environment": "Yarn environment from apps/react-vite base commit.",
+        "install": "cd apps/react-vite && mv .env.example .env && yarn install --frozen-lockfile",
+        "runtime": "cd apps/react-vite && yarn dev --host 0.0.0.0",
+        "test": "cd apps/react-vite && yarn test --run"
+      },
+      "evaluator": {
+        "checks": [
+          "URL page state drives page-keyed discussion queries on direct loads and numbered navigation.",
+          "Server metadata drives a compact, visibly distinct current page with adjacent numbered links and bounded ellipses.",
+          "Load-more accumulates comments and exposes progress/loading state.",
+          "Empty discussion/comment states remain correct.",
+          "Authentication, team, and user screen smoke checks pass without external APIs."
+        ],
+        "commonFailures": [
+          "edit outside allowed paths",
+          "dependency or lockfile change unless explicitly allowed",
+          "build failure",
+          "console error",
+          "accessibility regression"
+        ],
+        "design": "Semantic route, query, pagination, and MSW source contracts backed by the frozen host tests and build.",
+        "implementationLocation": "external benchmark harness, mounted only after the agent run",
+        "visibility": "hidden-from-agent"
+      },
+      "expected": {
+        "commit": "5d1c7e57b1c0af2efcfca311aaa125c6fecef879",
+        "tree": "8085a61e3e15b3cb807b32ce7a1b060acc19791a"
+      },
+      "informationEntitlement": {
+        "canonicalSha256": "ada30f63ee4e68c1757a166c3274a0db6e651c9a8c2b0130cdd669bac96117ab",
+        "excludedFromAgent": [
+          "expected commit, expected tree, and expected diff",
+          "provenance implementation discussion",
+          "hidden evaluator implementation and checks",
+          "personal skills and personal MCP configuration",
+          "Decantr engineering and release skills"
+        ],
+        "parityRule": "Decantr receives no human-authored fact that is unavailable to the control arm. Delivery format may differ; information entitlement may not.",
+        "sourceList": [
+          {
+            "access": "All tracked files at the base commit are readable by both arms.",
+            "id": "base-checkout",
+            "paths": [
+              "**/*"
+            ],
+            "reference": "https://github.com/alan2207/bulletproof-react@af48f06be20a1926a24d0bba6ce339e754c5735f",
+            "type": "repository-tree"
+          },
+          {
+            "access": "Identical plaintext prompt for both arms.",
+            "id": "task-prompt",
+            "reference": "record.prompt",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical allowed/forbidden path policy for both arms.",
+            "id": "scope-policy",
+            "reference": "record.scope",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical environment and command contract for both arms.",
+            "id": "execution-contract",
+            "reference": "record.environment",
+            "type": "benchmark-input"
+          }
+        ]
+      },
+      "kind": "repository",
+      "limitations": [
+        "Pre-cutoff fallback with a broad but cohesive 20-file application diff.",
+        "Evaluation relies on local MSW data and must not call external APIs.",
+        "The authentic commit's labelled Next control targets the final page rather than the adjacent page; the narrowed task evaluates adjacent numbered links and does not claim labelled next-control behavior.",
+        "The authentic commit visually distinguishes the current page but does not expose programmatic current-page semantics."
+      ],
+      "partition": "development",
+      "prompt": "Paginate discussion results with page state reflected in the URL and compact numbered navigation around the current page. Long comment threads should load incrementally with visible progress, while existing authentication, team, and user screens continue to work.",
+      "provenance": {
+        "cutoffDisclosure": {
+          "models": {
+            "claude-fable-5": {
+              "cutoff": "2026-01-31T23:59:59Z",
+              "relation": "pre-or-on-cutoff"
+            },
+            "gpt-5.6-sol": {
+              "cutoff": "2026-02-16T23:59:59Z",
+              "relation": "pre-or-on-cutoff"
+            }
+          },
+          "qualificationEmbargo": {
+            "cutoff": "2026-05-01T23:59:59Z",
+            "relation": "pre-or-on-cutoff"
+          }
+        },
+        "expectedCommitUrl": "https://github.com/alan2207/bulletproof-react/commit/5d1c7e57b1c0af2efcfca311aaa125c6fecef879",
+        "expectedCommitterDate": "2024-08-12T00:31:06+02:00",
+        "expectedSubject": "add pagination (#196)",
+        "sourceReportDisclosure": "Pre-cutoff fallback; post-cutoff changes were docs, dependencies, CI, or standalone assets.",
+        "type": "pull_request",
+        "url": "https://github.com/alan2207/bulletproof-react/pull/196"
+      },
+      "repository": {
+        "corpusPin": "9506629ed003a561c6627735480cce4994244bb4",
+        "corpusProjectPath": "apps/react-vite",
+        "corpusTree": "b03782f905ffcd394bdaf597c06322afbc8ed991",
+        "framework": "react",
+        "id": "bulletproof-react-vite",
+        "license": "MIT",
+        "projectPath": "apps/react-vite",
+        "url": "https://github.com/alan2207/bulletproof-react"
+      },
+      "schemaVersion": "decantr-benchmark-task-candidate.v1",
+      "scope": {
+        "allowedPaths": [
+          "apps/react-vite/src/app/router.tsx",
+          "apps/react-vite/src/app/routes/**",
+          "apps/react-vite/src/components/ui/table/**",
+          "apps/react-vite/src/features/comments/**",
+          "apps/react-vite/src/features/discussions/**",
+          "apps/react-vite/src/features/teams/**",
+          "apps/react-vite/src/features/users/**",
+          "apps/react-vite/src/lib/auth.tsx",
+          "apps/react-vite/src/types/api.ts",
+          "apps/react-vite/src/testing/mocks/**",
+          "apps/react-vite/**/*.test.ts",
+          "apps/react-vite/**/*.test.tsx"
+        ],
+        "forbiddenPaths": [
+          "docs/**",
+          "package.json",
+          "yarn.lock",
+          ".github/**",
+          "apps/react-vite/src/styles/**"
+        ],
+        "policy": "default-deny"
+      },
+      "taskId": "bulletproof-react-vite.discussion-pagination"
+    },
+    {
+      "ancestry": {
+        "baseIsExpectedFirstParent": true,
+        "expectedIsAncestorOfCorpusPin": true,
+        "expectedParents": [
+          "156ba7350070400e5877e3a54d33486cd0d33640"
+        ]
+      },
+      "base": {
+        "commit": "156ba7350070400e5877e3a54d33486cd0d33640",
+        "tree": "6c04d700f8af13daccacc9bc5d1bc6a073797ee6"
+      },
+      "environment": {
+        "build": "pnpm build && pnpm --filter emdash-demo build",
+        "environment": "Node 22 and pnpm 10.28.0; local SQLite seed.",
+        "install": "pnpm install --frozen-lockfile",
+        "runtime": "pnpm --filter emdash-demo seed && pnpm --filter emdash-demo dev",
+        "test": "pnpm typecheck && pnpm --filter emdash-demo typecheck && pnpm test:unit && pnpm run --filter @emdash-cms/admin test"
+      },
+      "evaluator": {
+        "checks": [
+          "Activating the excerpt opens the matching admin field.",
+          "After async content resolves, the field is centered in view and focused when focusable.",
+          "Only the field selector is removed while unrelated query parameters remain.",
+          "Back navigation does not retrigger field selection.",
+          "Equivalent bundled demos and templates remain aligned."
+        ],
+        "commonFailures": [
+          "edit outside allowed paths",
+          "dependency or lockfile change unless explicitly allowed",
+          "build failure",
+          "console error",
+          "accessibility regression"
+        ],
+        "design": "Seeded local visual-editing flow with delayed editor-data resolution.",
+        "implementationLocation": "external benchmark harness, mounted only after the agent run",
+        "visibility": "hidden-from-agent"
+      },
+      "expected": {
+        "commit": "e3f7db8bb670bb7444632ab0cd4e680e4c9029b3",
+        "tree": "019bdbb6d0571d804e7c7527425c17e75deed69e"
+      },
+      "informationEntitlement": {
+        "canonicalSha256": "9f2f653a2681eb47f73df0cc8782cf5e160f6f7d2ef74ab1ca9724ea022146dc",
+        "excludedFromAgent": [
+          "expected commit, expected tree, and expected diff",
+          "provenance implementation discussion",
+          "hidden evaluator implementation and checks",
+          "personal skills and personal MCP configuration",
+          "Decantr engineering and release skills"
+        ],
+        "parityRule": "Decantr receives no human-authored fact that is unavailable to the control arm. Delivery format may differ; information entitlement may not.",
+        "sourceList": [
+          {
+            "access": "All tracked files at the base commit are readable by both arms.",
+            "id": "base-checkout",
+            "paths": [
+              "**/*"
+            ],
+            "reference": "https://github.com/emdash-cms/emdash@156ba7350070400e5877e3a54d33486cd0d33640",
+            "type": "repository-tree"
+          },
+          {
+            "access": "Identical plaintext prompt for both arms.",
+            "id": "task-prompt",
+            "reference": "record.prompt",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical allowed/forbidden path policy for both arms.",
+            "id": "scope-policy",
+            "reference": "record.scope",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical environment and command contract for both arms.",
+            "id": "execution-contract",
+            "reference": "record.environment",
+            "type": "benchmark-input"
+          }
+        ]
+      },
+      "kind": "repository",
+      "limitations": [
+        "The authentic pull request spans shared copies outside demos/simple.",
+        "No landed test despite the repository TDD rule.",
+        "The source discloses AI-generated code.",
+        "Runtime requires local SQLite seed and admin authentication state."
+      ],
+      "partition": "development",
+      "prompt": "When visual editing is used on a blog-post excerpt, open the matching admin field. Once asynchronously loaded editor content is ready, bring the requested field into view, focus it when focusable, and remove only the field selector from the URL so navigation does not trigger it again. Keep equivalent bundled blog demos and templates aligned.",
+      "provenance": {
+        "cutoffDisclosure": {
+          "models": {
+            "claude-fable-5": {
+              "cutoff": "2026-01-31T23:59:59Z",
+              "relation": "post-cutoff"
+            },
+            "gpt-5.6-sol": {
+              "cutoff": "2026-02-16T23:59:59Z",
+              "relation": "post-cutoff"
+            }
+          },
+          "qualificationEmbargo": {
+            "cutoff": "2026-05-01T23:59:59Z",
+            "relation": "pre-or-on-cutoff"
+          }
+        },
+        "expectedCommitUrl": "https://github.com/emdash-cms/emdash/commit/e3f7db8bb670bb7444632ab0cd4e680e4c9029b3",
+        "expectedCommitterDate": "2026-04-11T09:39:14Z",
+        "expectedSubject": "fix: scroll to and focus target field when navigating from visual editing (#185)",
+        "sourceReportDisclosure": "Post-primary-cutoff but pre-Claude-Fable cutoff merged pull request with AI-generated-code disclosure.",
+        "type": "pull_request",
+        "url": "https://github.com/emdash-cms/emdash/pull/185"
+      },
+      "repository": {
+        "corpusPin": "ab351d289e0c725dbf74e1455b1c557a255b51ff",
+        "corpusProjectPath": "demos/simple",
+        "corpusTree": "f0226e3e3079ecbb7f423688b736887d5627e55a",
+        "framework": "astro",
+        "id": "emdash-simple",
+        "license": "MIT",
+        "projectPath": "demos/simple",
+        "url": "https://github.com/emdash-cms/emdash"
+      },
+      "schemaVersion": "decantr-benchmark-task-candidate.v1",
+      "scope": {
+        "allowedPaths": [
+          "demos/cloudflare/src/pages/posts/[slug].astro",
+          "demos/playground/src/pages/posts/[slug].astro",
+          "demos/postgres/src/pages/posts/[slug].astro",
+          "demos/preview/src/pages/posts/[slug].astro",
+          "demos/simple/src/pages/posts/[slug].astro",
+          "templates/blog-cloudflare/src/pages/posts/[slug].astro",
+          "templates/blog/src/pages/posts/[slug].astro",
+          "packages/admin/src/components/ContentEditor.tsx",
+          "packages/admin/src/router.tsx",
+          "packages/admin/tests/**",
+          ".changeset/*.md"
+        ],
+        "forbiddenPaths": [
+          "demos/** (except allowed paths)",
+          "templates/** (except allowed paths)",
+          "packages/** (except packages/admin allowed paths)",
+          "**/auth/**",
+          "**/database/**",
+          "package.json",
+          "pnpm-lock.yaml",
+          "**/generated/**"
+        ],
+        "policy": "default-deny"
+      },
+      "taskId": "emdash-simple.visual-edit-field-focus"
+    },
+    {
+      "ancestry": {
+        "baseIsExpectedFirstParent": true,
+        "expectedIsAncestorOfCorpusPin": true,
+        "expectedParents": [
+          "dafaa9650bdcbfc9ad5487afe3e228bd751f594c"
+        ]
+      },
+      "base": {
+        "commit": "dafaa9650bdcbfc9ad5487afe3e228bd751f594c",
+        "tree": "41d6462df511c88b9d9b3a263008a3e7ffe4d511"
+      },
+      "environment": {
+        "build": "npm run build",
+        "environment": "Node 22 and npm; local SQLite setup.",
+        "install": "npm ci && cp .env.example .env && npm run setup && npx prisma db seed",
+        "runtime": "npm run dev",
+        "test": "npm test -- --run && npm run typecheck"
+      },
+      "evaluator": {
+        "checks": [
+          "Default DOM input-mode contract permits both letters and digits.",
+          "Caller input-mode overrides take precedence.",
+          "Alphanumeric entry and focus movement remain correct.",
+          "The OTP control passes an axe accessibility check."
+        ],
+        "commonFailures": [
+          "edit outside allowed paths",
+          "dependency or lockfile change unless explicitly allowed",
+          "build failure",
+          "console error",
+          "accessibility regression"
+        ],
+        "design": "Mobile-emulated component harness and accessibility checks.",
+        "implementationLocation": "external benchmark harness, mounted only after the agent run",
+        "visibility": "hidden-from-agent"
+      },
+      "expected": {
+        "commit": "97135fcd7899cab299b402f36804b0d169e87d9d",
+        "tree": "2b80cce8e4825a5bd0123b23a226f36471902489"
+      },
+      "informationEntitlement": {
+        "canonicalSha256": "1c5f42cd148cd7e0a5366f6d089bcffa55f5b7b213593c247a5156aaf11d88ff",
+        "excludedFromAgent": [
+          "expected commit, expected tree, and expected diff",
+          "provenance implementation discussion",
+          "hidden evaluator implementation and checks",
+          "personal skills and personal MCP configuration",
+          "Decantr engineering and release skills"
+        ],
+        "parityRule": "Decantr receives no human-authored fact that is unavailable to the control arm. Delivery format may differ; information entitlement may not.",
+        "sourceList": [
+          {
+            "access": "All tracked files at the base commit are readable by both arms.",
+            "id": "base-checkout",
+            "paths": [
+              "**/*"
+            ],
+            "reference": "https://github.com/epicweb-dev/epic-stack@dafaa9650bdcbfc9ad5487afe3e228bd751f594c",
+            "type": "repository-tree"
+          },
+          {
+            "access": "Identical plaintext prompt for both arms.",
+            "id": "task-prompt",
+            "reference": "record.prompt",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical allowed/forbidden path policy for both arms.",
+            "id": "scope-policy",
+            "reference": "record.scope",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical environment and command contract for both arms.",
+            "id": "execution-contract",
+            "reference": "record.environment",
+            "type": "benchmark-input"
+          }
+        ]
+      },
+      "kind": "repository",
+      "limitations": [
+        "Pre-cutoff task.",
+        "Desktop automation cannot inspect an OS keyboard, so the standards-defined DOM attribute is the keyboard proxy."
+      ],
+      "partition": "development",
+      "prompt": "When the reusable one-time-password control is used on mobile, it should open a keyboard capable of entering both letters and digits by default. Preserve caller overrides and existing OTP interaction and accessibility behavior.",
+      "provenance": {
+        "cutoffDisclosure": {
+          "models": {
+            "claude-fable-5": {
+              "cutoff": "2026-01-31T23:59:59Z",
+              "relation": "pre-or-on-cutoff"
+            },
+            "gpt-5.6-sol": {
+              "cutoff": "2026-02-16T23:59:59Z",
+              "relation": "pre-or-on-cutoff"
+            }
+          },
+          "qualificationEmbargo": {
+            "cutoff": "2026-05-01T23:59:59Z",
+            "relation": "pre-or-on-cutoff"
+          }
+        },
+        "expectedCommitUrl": "https://github.com/epicweb-dev/epic-stack/commit/97135fcd7899cab299b402f36804b0d169e87d9d",
+        "expectedCommitterDate": "2025-11-03T13:12:57-07:00",
+        "expectedSubject": "Set inputmode=\"text\" by default to otpInput field (#1056)",
+        "sourceReportDisclosure": "Pre-cutoff merged pull request.",
+        "type": "pull_request",
+        "url": "https://github.com/epicweb-dev/epic-stack/pull/1056"
+      },
+      "repository": {
+        "corpusPin": "faaa21779c66002ba4c50890828b1b917cadbef2",
+        "corpusProjectPath": ".",
+        "corpusTree": "cddf87545807f8c49595a246427dcdc3f4a999c3",
+        "framework": "react-router",
+        "id": "epic-stack",
+        "license": "MIT",
+        "projectPath": ".",
+        "url": "https://github.com/epicweb-dev/epic-stack"
+      },
+      "schemaVersion": "decantr-benchmark-task-candidate.v1",
+      "scope": {
+        "allowedPaths": [
+          "app/components/ui/input-otp.tsx",
+          "app/components/ui/**/*.test.tsx",
+          "tests/**"
+        ],
+        "forbiddenPaths": [
+          "app/routes/**",
+          "app/**/server*",
+          "prisma/**",
+          ".env*",
+          "package.json",
+          "package-lock.json"
+        ],
+        "policy": "default-deny"
+      },
+      "taskId": "epic-stack.otp-input-mode"
+    },
+    {
+      "ancestry": {
+        "baseIsExpectedFirstParent": true,
+        "expectedIsAncestorOfCorpusPin": true,
+        "expectedParents": [
+          "0e7bf07b25465b3878194d87a1c4ca38bc511e85"
+        ]
+      },
+      "base": {
+        "commit": "0e7bf07b25465b3878194d87a1c4ca38bc511e85",
+        "tree": "74fbfa47e4956bf606d08c0383afcce66eb29d34"
+      },
+      "environment": {
+        "build": "npm run app:build && npm run storybook:build",
+        "environment": "npm with lockfile v2-compatible runtime",
+        "install": "npm ci",
+        "runtime": "npm run storybook",
+        "test": "npm run app:lint"
+      },
+      "evaluator": {
+        "checks": [
+          "Parse HeaderAuth navigation data and assert Pricing occurs exactly once while Solutions, Community, Resources, and Contact preserve order.",
+          "Render desktop and mobile header variants and assert all destination labels are unique and selectable.",
+          "Run lint and both builds; reject unrelated data or primitive changes."
+        ],
+        "commonFailures": [
+          "edit outside allowed paths",
+          "dependency or lockfile change unless explicitly allowed",
+          "build failure",
+          "console error",
+          "accessibility regression"
+        ],
+        "design": "typescript-ast-plus-storybook-dom",
+        "implementationLocation": "external benchmark harness, mounted only after the agent run",
+        "visibility": "hidden-from-agent"
+      },
+      "expected": {
+        "commit": "9dd91d1a9d8ef86fc6247f23921346cf4ae22950",
+        "tree": "c73f80d72909363e3a217a3ae71d3f602d6638e7"
+      },
+      "informationEntitlement": {
+        "canonicalSha256": "82bf5a122d6d0f68123acb39fa7e725493a496547fb72d40e8f13b3d38dcae9f",
+        "excludedFromAgent": [
+          "expected commit, expected tree, and expected diff",
+          "provenance implementation discussion",
+          "hidden evaluator implementation and checks",
+          "personal skills and personal MCP configuration",
+          "Decantr engineering and release skills"
+        ],
+        "parityRule": "Decantr receives no human-authored fact that is unavailable to the control arm. Delivery format may differ; information entitlement may not.",
+        "sourceList": [
+          {
+            "access": "All tracked files at the base commit are readable by both arms.",
+            "id": "base-checkout",
+            "paths": [
+              "**/*"
+            ],
+            "reference": "https://github.com/figma/sds@0e7bf07b25465b3878194d87a1c4ca38bc511e85",
+            "type": "repository-tree"
+          },
+          {
+            "access": "Identical plaintext prompt for both arms.",
+            "id": "task-prompt",
+            "reference": "record.prompt",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical allowed/forbidden path policy for both arms.",
+            "id": "scope-policy",
+            "reference": "record.scope",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical environment and command contract for both arms.",
+            "id": "execution-contract",
+            "reference": "record.environment",
+            "type": "benchmark-input"
+          }
+        ]
+      },
+      "kind": "repository",
+      "limitations": [
+        "Use as a low-complexity calibration task, not as evidence of deep governance value."
+      ],
+      "partition": "development",
+      "prompt": "Remove the duplicate Pricing destination from the authenticated header navigation so every visible top-level destination appears once. Preserve order of the remaining destinations, selection behavior, and responsive menu behavior.",
+      "provenance": {
+        "cutoffDisclosure": {
+          "models": {
+            "claude-fable-5": {
+              "cutoff": "2026-01-31T23:59:59Z",
+              "relation": "pre-or-on-cutoff"
+            },
+            "gpt-5.6-sol": {
+              "cutoff": "2026-02-16T23:59:59Z",
+              "relation": "pre-or-on-cutoff"
+            }
+          },
+          "qualificationEmbargo": {
+            "cutoff": "2026-05-01T23:59:59Z",
+            "relation": "pre-or-on-cutoff"
+          }
+        },
+        "expectedCommitUrl": "https://github.com/figma/sds/commit/9dd91d1a9d8ef86fc6247f23921346cf4ae22950",
+        "expectedCommitterDate": "2025-06-15T15:52:12-05:00",
+        "expectedSubject": "removes redundant pricing entry from header links",
+        "sourceReportDisclosure": "GitHub reports no associated pull request; this is a one-file direct commit on the main history.",
+        "type": "direct_commit",
+        "url": "https://github.com/figma/sds/commit/9dd91d1a9d8ef86fc6247f23921346cf4ae22950"
+      },
+      "repository": {
+        "corpusPin": "335befd6ff70aa1f3a2a62fb39c2b2db3c0c9527",
+        "corpusProjectPath": ".",
+        "corpusTree": "25dcf3c36adcd651a59bb1814f76317631de2a7c",
+        "framework": "react-design-system",
+        "id": "figma-sds",
+        "license": "MIT",
+        "projectPath": ".",
+        "url": "https://github.com/figma/sds"
+      },
+      "schemaVersion": "decantr-benchmark-task-candidate.v1",
+      "scope": {
+        "allowedPaths": [
+          "src/ui/compositions/Headers/Headers.tsx",
+          "src/stories/compositions/Cards.stories.tsx"
+        ],
+        "forbiddenPaths": [
+          "package.json",
+          "package-lock.json",
+          "src/App.tsx",
+          "src/ui/primitives/**",
+          "src/data/**",
+          "scripts/**"
+        ],
+        "policy": "default-deny"
+      },
+      "taskId": "figma-sds.unique-pricing-nav"
+    },
+    {
+      "ancestry": {
+        "baseIsExpectedFirstParent": true,
+        "expectedIsAncestorOfCorpusPin": true,
+        "expectedParents": [
+          "8aac537c7ad7327a2e151e73cbb6fb65d485419f"
+        ]
+      },
+      "base": {
+        "commit": "8aac537c7ad7327a2e151e73cbb6fb65d485419f",
+        "tree": "fa3ca544e514d5e71bae92ed1de2aeb988d5a025"
+      },
+      "environment": {
+        "build": "pnpm --filter @hoppscotch/selfhost-web build",
+        "environment": "pnpm 10.32.1 and repository Node requirements.",
+        "install": "corepack prepare pnpm@10.32.1 --activate && cp .env.example .env && pnpm install --frozen-lockfile",
+        "runtime": "pnpm --filter @hoppscotch/selfhost-web dev:vite",
+        "test": "pnpm --filter @hoppscotch/common test && pnpm --filter @hoppscotch/common do-typecheck && pnpm --filter @hoppscotch/selfhost-web lint:ts"
+      },
+      "evaluator": {
+        "checks": [
+          "Cyrillic and CJK produced characters trigger configured letter shortcuts by physical key.",
+          "Quit, new, close, reopen-tab, and configured digit shortcuts work.",
+          "English layouts and navigation keys retain current behavior.",
+          "Editable-target safeguards prevent shortcuts while typing."
+        ],
+        "commonFailures": [
+          "edit outside allowed paths",
+          "dependency or lockfile change unless explicitly allowed",
+          "build failure",
+          "console error",
+          "accessibility regression"
+        ],
+        "design": "Synthetic keyboard-event harness with non-Latin produced characters and physical-key codes.",
+        "implementationLocation": "external benchmark harness, mounted only after the agent run",
+        "visibility": "hidden-from-agent"
+      },
+      "expected": {
+        "commit": "ce0fdeccfbc1aca7dc1ac8bef950da12fe85f91c",
+        "tree": "48cd95cccfb93fb6751a8245ac60eebac3387e25"
+      },
+      "informationEntitlement": {
+        "canonicalSha256": "e3b143965717df784f0148202df5cdb272aa9fbf41c530f66263e65b172c0ec7",
+        "excludedFromAgent": [
+          "expected commit, expected tree, and expected diff",
+          "provenance implementation discussion",
+          "hidden evaluator implementation and checks",
+          "personal skills and personal MCP configuration",
+          "Decantr engineering and release skills"
+        ],
+        "parityRule": "Decantr receives no human-authored fact that is unavailable to the control arm. Delivery format may differ; information entitlement may not.",
+        "sourceList": [
+          {
+            "access": "All tracked files at the base commit are readable by both arms.",
+            "id": "base-checkout",
+            "paths": [
+              "**/*"
+            ],
+            "reference": "https://github.com/hoppscotch/hoppscotch@8aac537c7ad7327a2e151e73cbb6fb65d485419f",
+            "type": "repository-tree"
+          },
+          {
+            "access": "Identical plaintext prompt for both arms.",
+            "id": "task-prompt",
+            "reference": "record.prompt",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical allowed/forbidden path policy for both arms.",
+            "id": "scope-policy",
+            "reference": "record.scope",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical environment and command contract for both arms.",
+            "id": "execution-contract",
+            "reference": "record.environment",
+            "type": "benchmark-input"
+          }
+        ]
+      },
+      "kind": "repository",
+      "limitations": [
+        "Full runtime expects a self-hosted GraphQL backend; use isolated common/web harnesses.",
+        "Numpad first/last-tab behavior belongs to an immediate follow-up and is outside this task."
+      ],
+      "partition": "development",
+      "prompt": "Make existing keyboard shortcuts work when the active keyboard layout produces non-Latin characters. Quit, new/close/reopen-tab, and configured letter or digit shortcuts should behave as on an English layout while preserving navigation keys and typing-field safeguards.",
+      "provenance": {
+        "cutoffDisclosure": {
+          "models": {
+            "claude-fable-5": {
+              "cutoff": "2026-01-31T23:59:59Z",
+              "relation": "post-cutoff"
+            },
+            "gpt-5.6-sol": {
+              "cutoff": "2026-02-16T23:59:59Z",
+              "relation": "post-cutoff"
+            }
+          },
+          "qualificationEmbargo": {
+            "cutoff": "2026-05-01T23:59:59Z",
+            "relation": "pre-or-on-cutoff"
+          }
+        },
+        "expectedCommitUrl": "https://github.com/hoppscotch/hoppscotch/commit/ce0fdeccfbc1aca7dc1ac8bef950da12fe85f91c",
+        "expectedCommitterDate": "2026-03-26T19:06:00+05:30",
+        "expectedSubject": "fix: keyboard shortcuts on non-English layouts (#6009)",
+        "sourceReportDisclosure": "Post-primary-cutoff merged pull request.",
+        "type": "pull_request",
+        "url": "https://github.com/hoppscotch/hoppscotch/pull/6009"
+      },
+      "repository": {
+        "corpusPin": "a4395b3e7c41541de1d769e8701ea110ba8f96c2",
+        "corpusProjectPath": "packages/hoppscotch-selfhost-web",
+        "corpusTree": "392a092f55c15c7ffb3ce30bf657ba2255a17f40",
+        "framework": "vue",
+        "id": "hoppscotch-selfhost-web",
+        "license": "MIT",
+        "projectPath": "packages/hoppscotch-selfhost-web",
+        "url": "https://github.com/hoppscotch/hoppscotch"
+      },
+      "schemaVersion": "decantr-benchmark-task-candidate.v1",
+      "scope": {
+        "allowedPaths": [
+          "packages/hoppscotch-common/src/helpers/**",
+          "packages/hoppscotch-selfhost-web/src/**"
+        ],
+        "forbiddenPaths": [
+          "packages/hoppscotch-backend/**",
+          "packages/hoppscotch-sh-admin/**",
+          "**/generated/**",
+          "package.json",
+          "pnpm-lock.yaml"
+        ],
+        "policy": "default-deny"
+      },
+      "taskId": "hoppscotch-selfhost-web.non-latin-shortcuts"
+    },
+    {
+      "ancestry": {
+        "baseIsExpectedFirstParent": true,
+        "expectedIsAncestorOfCorpusPin": true,
+        "expectedParents": [
+          "be21d258265c32631923778deba6e97f0bf314a4"
+        ]
+      },
+      "base": {
+        "commit": "be21d258265c32631923778deba6e97f0bf314a4",
+        "tree": "396d2da6e16808323cb55107fc88920001236b6c"
+      },
+      "environment": {
+        "build": "pnpm build",
+        "environment": "Node 22.19 and pnpm 10.",
+        "install": "corepack prepare pnpm@10 --activate && pnpm bootstrap",
+        "runtime": "pnpm dev",
+        "test": "pnpm --filter linode-manager test && pnpm --filter linode-manager typecheck"
+      },
+      "evaluator": {
+        "checks": [
+          "Marketplace Markdown links and autolinks use safe new-tab behavior.",
+          "Ordinary Markdown consumers retain same-tab behavior.",
+          "HTML and malicious attributes remain sanitized.",
+          "Opened pages cannot control the opener and the current tab URL remains unchanged."
+        ],
+        "commonFailures": [
+          "edit outside allowed paths",
+          "dependency or lockfile change unless explicitly allowed",
+          "build failure",
+          "console error",
+          "accessibility regression"
+        ],
+        "design": "DOM and popup-behavior checks for ordinary Markdown and Marketplace product tabs.",
+        "implementationLocation": "external benchmark harness, mounted only after the agent run",
+        "visibility": "hidden-from-agent"
+      },
+      "expected": {
+        "commit": "6534001bbb397c461b4d871cb625d1d6930e355c",
+        "tree": "f7f2c7071fcaececca62fcfcf24a10baa8693fd7"
+      },
+      "informationEntitlement": {
+        "canonicalSha256": "d2e5b01607dc0a82602b3c2c036cdb13364e76dd5e0fbc51dbaebf733ea5604c",
+        "excludedFromAgent": [
+          "expected commit, expected tree, and expected diff",
+          "provenance implementation discussion",
+          "hidden evaluator implementation and checks",
+          "personal skills and personal MCP configuration",
+          "Decantr engineering and release skills"
+        ],
+        "parityRule": "Decantr receives no human-authored fact that is unavailable to the control arm. Delivery format may differ; information entitlement may not.",
+        "sourceList": [
+          {
+            "access": "All tracked files at the base commit are readable by both arms.",
+            "id": "base-checkout",
+            "paths": [
+              "**/*"
+            ],
+            "reference": "https://github.com/linode/manager@be21d258265c32631923778deba6e97f0bf314a4",
+            "type": "repository-tree"
+          },
+          {
+            "access": "Identical plaintext prompt for both arms.",
+            "id": "task-prompt",
+            "reference": "record.prompt",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical allowed/forbidden path policy for both arms.",
+            "id": "scope-policy",
+            "reference": "record.scope",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical environment and command contract for both arms.",
+            "id": "execution-contract",
+            "reference": "record.environment",
+            "type": "benchmark-input"
+          }
+        ]
+      },
+      "kind": "adversarial",
+      "limitations": [
+        "Live Marketplace data requires authenticated APIs; render deterministic fixtures instead.",
+        "Expected is a reachable replay rather than the GitHub merge SHA."
+      ],
+      "partition": "development",
+      "prompt": "Links embedded in Marketplace product-detail Markdown should open in a separate browser tab without navigating Cloud Manager away from the product. Keep other Markdown consumers current behavior, preserve sanitization, and prevent the opened page from controlling the original page.",
+      "provenance": {
+        "cutoffDisclosure": {
+          "models": {
+            "claude-fable-5": {
+              "cutoff": "2026-01-31T23:59:59Z",
+              "relation": "post-cutoff"
+            },
+            "gpt-5.6-sol": {
+              "cutoff": "2026-02-16T23:59:59Z",
+              "relation": "post-cutoff"
+            }
+          },
+          "qualificationEmbargo": {
+            "cutoff": "2026-05-01T23:59:59Z",
+            "relation": "pre-or-on-cutoff"
+          }
+        },
+        "expectedCommitUrl": "https://github.com/linode/manager/commit/6534001bbb397c461b4d871cb625d1d6930e355c",
+        "expectedCommitterDate": "2026-03-17T17:16:35+05:30",
+        "expectedSubject": "fix: [UIE-10352] Added capability to open links in markdown in different tab (#13501)",
+        "sourceReportDisclosure": "Post-cutoff merged pull request; expected is a pin-reachable exact replay with stable patch ID 62ebadadedec7e55785f1bb2a97f9bb16c6fa083.",
+        "type": "pull_request_replayed_commit",
+        "url": "https://github.com/linode/manager/pull/13501"
+      },
+      "repository": {
+        "corpusPin": "6503a875f7a4e82dd8335d4ce16fcbd8ae492e21",
+        "corpusProjectPath": "packages/manager",
+        "corpusTree": "1591c7fb30d8949c2739eb9a07f61caf6a7daa66",
+        "framework": "react",
+        "id": "linode-manager",
+        "license": "Apache-2.0",
+        "projectPath": "packages/manager",
+        "url": "https://github.com/linode/manager"
+      },
+      "schemaVersion": "decantr-benchmark-task-candidate.v1",
+      "scope": {
+        "allowedPaths": [
+          "packages/manager/src/components/Markdown/**",
+          "packages/manager/src/features/Marketplace/ProductDetails/**",
+          "packages/manager/.changeset/**"
+        ],
+        "forbiddenPaths": [
+          "packages/manager/src/**/sanitize*",
+          "packages/manager/src/features/Marketplace/** (except allowed paths)",
+          "packages/** (except packages/manager allowed paths)",
+          "package.json",
+          "pnpm-lock.yaml"
+        ],
+        "policy": "default-deny"
+      },
+      "taskId": "linode-manager.marketplace-markdown-links"
+    },
+    {
+      "ancestry": {
+        "baseIsExpectedFirstParent": true,
+        "expectedIsAncestorOfCorpusPin": true,
+        "expectedParents": [
+          "235b26d39d939344c3f26f58dd53a815ac7bae7d"
+        ]
+      },
+      "base": {
+        "commit": "235b26d39d939344c3f26f58dd53a815ac7bae7d",
+        "tree": "afad3bf139836c04b21ba605a16b347421f33a34"
+      },
+      "environment": {
+        "build": "pnpm build",
+        "environment": "Node 22.19 and repository pnpm.",
+        "install": "pnpm bootstrap",
+        "runtime": "pnpm dev",
+        "test": "pnpm --filter linode-manager test && pnpm --filter linode-manager typecheck"
+      },
+      "evaluator": {
+        "checks": [
+          "Search focus and typed value survive debounced query rerenders.",
+          "Pending pagination never shows the no-access empty state.",
+          "A filtered-results empty message appears only after the empty search settles.",
+          "No OAuth or live IAM account is used."
+        ],
+        "commonFailures": [
+          "edit outside allowed paths",
+          "dependency or lockfile change unless explicitly allowed",
+          "build failure",
+          "console error",
+          "accessibility regression"
+        ],
+        "design": "Switch-account drawer component harness with mocked IAM queries and debounce timing.",
+        "implementationLocation": "external benchmark harness, mounted only after the agent run",
+        "visibility": "hidden-from-agent"
+      },
+      "expected": {
+        "commit": "c30ee087ba9f91d6ba0e59bd8d4a37a70e2ca544",
+        "tree": "7c93367e53ebd5443b4cfd4a25c0c455561b099c"
+      },
+      "informationEntitlement": {
+        "canonicalSha256": "6a7c9accca8054a9d9e9a8d6c3ad1897c9318b560916a5b3fa34fb4fe6b64693",
+        "excludedFromAgent": [
+          "expected commit, expected tree, and expected diff",
+          "provenance implementation discussion",
+          "hidden evaluator implementation and checks",
+          "personal skills and personal MCP configuration",
+          "Decantr engineering and release skills"
+        ],
+        "parityRule": "Decantr receives no human-authored fact that is unavailable to the control arm. Delivery format may differ; information entitlement may not.",
+        "sourceList": [
+          {
+            "access": "All tracked files at the base commit are readable by both arms.",
+            "id": "base-checkout",
+            "paths": [
+              "**/*"
+            ],
+            "reference": "https://github.com/linode/manager@235b26d39d939344c3f26f58dd53a815ac7bae7d",
+            "type": "repository-tree"
+          },
+          {
+            "access": "Identical plaintext prompt for both arms.",
+            "id": "task-prompt",
+            "reference": "record.prompt",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical allowed/forbidden path policy for both arms.",
+            "id": "scope-policy",
+            "reference": "record.scope",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical environment and command contract for both arms.",
+            "id": "execution-contract",
+            "reference": "record.environment",
+            "type": "benchmark-input"
+          }
+        ]
+      },
+      "kind": "repository",
+      "limitations": [
+        "Live reproduction requires OAuth and an IAM delegation account; the evaluator must mock queries.",
+        "Expected is a reachable replay rather than the GitHub merge SHA."
+      ],
+      "partition": "development",
+      "prompt": "In the IAM parent/child Switch Account drawer, keep the search field focused while typing and results refresh. During pagination, do not briefly show the no-access empty state; show the filtered-results empty message only after an empty search settles.",
+      "provenance": {
+        "cutoffDisclosure": {
+          "models": {
+            "claude-fable-5": {
+              "cutoff": "2026-01-31T23:59:59Z",
+              "relation": "post-cutoff"
+            },
+            "gpt-5.6-sol": {
+              "cutoff": "2026-02-16T23:59:59Z",
+              "relation": "post-cutoff"
+            }
+          },
+          "qualificationEmbargo": {
+            "cutoff": "2026-05-01T23:59:59Z",
+            "relation": "pre-or-on-cutoff"
+          }
+        },
+        "expectedCommitUrl": "https://github.com/linode/manager/commit/c30ee087ba9f91d6ba0e59bd8d4a37a70e2ca544",
+        "expectedCommitterDate": "2026-03-13T17:34:55+01:00",
+        "expectedSubject": "fix: [UIE-10482] Parent / Child - `SwitchAccountDrawer` search focus (#13490)",
+        "sourceReportDisclosure": "Post-cutoff merged pull request; the expected commit is a pin-reachable branch replay of the GitHub merge with matching stable patch ID 420761b569c34c7b75f50cf8da04787e0cbf955d.",
+        "type": "pull_request_replayed_commit",
+        "url": "https://github.com/linode/manager/pull/13490"
+      },
+      "repository": {
+        "corpusPin": "6503a875f7a4e82dd8335d4ce16fcbd8ae492e21",
+        "corpusProjectPath": "packages/manager",
+        "corpusTree": "1591c7fb30d8949c2739eb9a07f61caf6a7daa66",
+        "framework": "react",
+        "id": "linode-manager",
+        "license": "Apache-2.0",
+        "projectPath": "packages/manager",
+        "url": "https://github.com/linode/manager"
+      },
+      "schemaVersion": "decantr-benchmark-task-candidate.v1",
+      "scope": {
+        "allowedPaths": [
+          "packages/manager/src/features/Account/**",
+          "packages/manager/.changeset/**"
+        ],
+        "forbiddenPaths": [
+          "packages/** (except packages/manager allowed paths)",
+          "package.json",
+          "pnpm-lock.yaml",
+          ".github/**"
+        ],
+        "policy": "default-deny"
+      },
+      "taskId": "linode-manager.switch-account-search"
+    },
+    {
+      "ancestry": {
+        "baseIsExpectedFirstParent": true,
+        "expectedIsAncestorOfCorpusPin": true,
+        "expectedParents": [
+          "7bd1b9313c2c99044626693f67e7709d83d67608"
+        ]
+      },
+      "base": {
+        "commit": "7bd1b9313c2c99044626693f67e7709d83d67608",
+        "tree": "5aa001f8bc60956cf8107e8eb72f95f7081753aa"
+      },
+      "environment": {
+        "build": "npm run build:prod",
+        "environment": "Node 12.x and npm 6.x (legacy Angular lockfile)",
+        "install": "npm ci",
+        "runtime": "npm start -- --host 127.0.0.1 --port 4200",
+        "test": "npm run lint:ci"
+      },
+      "evaluator": {
+        "checks": [
+          "Parse MENU_ITEMS and find exactly one Extra Components child with title Form Inputs and link /pages/extra-components/form-inputs.",
+          "Assert the existing route implementation was not edited or duplicated.",
+          "Build and use a browser smoke test to click the sidebar item and verify the URL and page heading."
+        ],
+        "commonFailures": [
+          "edit outside allowed paths",
+          "dependency or lockfile change unless explicitly allowed",
+          "build failure",
+          "console error",
+          "accessibility regression"
+        ],
+        "design": "typescript-ast-plus-navigation-smoke",
+        "implementationLocation": "external benchmark harness, mounted only after the agent run",
+        "visibility": "hidden-from-agent"
+      },
+      "expected": {
+        "commit": "658aa1972aa576913be5af14da6ece466b664c8a",
+        "tree": "f943e6607bb92305844246119d1fbbde3f8955ca"
+      },
+      "informationEntitlement": {
+        "canonicalSha256": "1f7c862766b122659ba81c51bb541ba6902f20ead0803459e53e18c79b5ad102",
+        "excludedFromAgent": [
+          "expected commit, expected tree, and expected diff",
+          "provenance implementation discussion",
+          "hidden evaluator implementation and checks",
+          "personal skills and personal MCP configuration",
+          "Decantr engineering and release skills"
+        ],
+        "parityRule": "Decantr receives no human-authored fact that is unavailable to the control arm. Delivery format may differ; information entitlement may not.",
+        "sourceList": [
+          {
+            "access": "All tracked files at the base commit are readable by both arms.",
+            "id": "base-checkout",
+            "paths": [
+              "**/*"
+            ],
+            "reference": "https://github.com/akveo/ngx-admin@7bd1b9313c2c99044626693f67e7709d83d67608",
+            "type": "repository-tree"
+          },
+          {
+            "access": "Identical plaintext prompt for both arms.",
+            "id": "task-prompt",
+            "reference": "record.prompt",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical allowed/forbidden path policy for both arms.",
+            "id": "scope-policy",
+            "reference": "record.scope",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical environment and command contract for both arms.",
+            "id": "execution-contract",
+            "reference": "record.environment",
+            "type": "benchmark-input"
+          }
+        ]
+      },
+      "kind": "repository",
+      "limitations": [
+        "The codebase is legacy, but the task itself is isolated and requires no network service after install."
+      ],
+      "partition": "development",
+      "prompt": "Make the existing Form Inputs page discoverable from the Extra Components sidebar. Add one menu entry using the existing title/link conventions and point it to the already implemented Form Inputs route. Do not create a new page or change route declarations.",
+      "provenance": {
+        "cutoffDisclosure": {
+          "models": {
+            "claude-fable-5": {
+              "cutoff": "2026-01-31T23:59:59Z",
+              "relation": "pre-or-on-cutoff"
+            },
+            "gpt-5.6-sol": {
+              "cutoff": "2026-02-16T23:59:59Z",
+              "relation": "pre-or-on-cutoff"
+            }
+          },
+          "qualificationEmbargo": {
+            "cutoff": "2026-05-01T23:59:59Z",
+            "relation": "pre-or-on-cutoff"
+          }
+        },
+        "expectedCommitUrl": "https://github.com/akveo/ngx-admin/commit/658aa1972aa576913be5af14da6ece466b664c8a",
+        "expectedCommitterDate": "2019-04-01T17:08:43+03:00",
+        "expectedSubject": "fix(sidebar): Add Form Inputs extra component menu item (#1966)",
+        "issueUrl": "https://github.com/akveo/ngx-admin/issues/1965",
+        "sourceReportDisclosure": "calibration-only; exclude from the primary cross-model confirmatory estimate because both models may have seen the solution",
+        "type": "pull_request",
+        "url": "https://github.com/akveo/ngx-admin/pull/1966"
+      },
+      "repository": {
+        "corpusPin": "dc6a442704bfef34b776b5eb15faf852d9e2f75c",
+        "corpusProjectPath": ".",
+        "corpusTree": "1dcbb104844f0519c3bd6189fd1d6e0e634981d5",
+        "framework": "angular",
+        "id": "ngx-admin",
+        "license": "MIT",
+        "projectPath": ".",
+        "url": "https://github.com/akveo/ngx-admin"
+      },
+      "schemaVersion": "decantr-benchmark-task-candidate.v1",
+      "scope": {
+        "allowedPaths": [
+          "src/app/pages/pages-menu.ts",
+          "src/app/pages/**/*.spec.ts"
+        ],
+        "forbiddenPaths": [
+          "package.json",
+          "package-lock.json",
+          "angular.json",
+          "src/app/pages/extra-components/**",
+          "src/app/app-routing.module.ts"
+        ],
+        "policy": "default-deny"
+      },
+      "taskId": "ngx-admin.form-inputs-navigation"
+    },
+    {
+      "ancestry": {
+        "baseIsExpectedFirstParent": true,
+        "expectedIsAncestorOfCorpusPin": true,
+        "expectedParents": [
+          "ed757d14304d4f693c8a0e5d6374dca945fb32b0"
+        ]
+      },
+      "base": {
+        "commit": "ed757d14304d4f693c8a0e5d6374dca945fb32b0",
+        "tree": "28660a0918a86b9842096b7aa5a00aa06458d734"
+      },
+      "environment": {
+        "build": "pnpm --filter @openstatus/dashboard build",
+        "environment": "Node 24 and pnpm 10.26.0.",
+        "install": "cp apps/dashboard/.env.example apps/dashboard/.env.local && pnpm install --frozen-lockfile",
+        "runtime": "pnpm dev:dashboard",
+        "test": "pnpm --filter @openstatus/dashboard tsc (no native dashboard test script)"
+      },
+      "evaluator": {
+        "checks": [
+          "Open the creation dialog and calendar, choose a date, cancel, and interact with another page control.",
+          "Repeat through successful creation and close the result dialog.",
+          "After every close, pointer events remain enabled and no invisible overlay intercepts clicks.",
+          "Escape and focus behavior remain usable across repeated open/close cycles."
+        ],
+        "commonFailures": [
+          "edit outside allowed paths",
+          "dependency or lockfile change unless explicitly allowed",
+          "build failure",
+          "console error",
+          "accessibility regression"
+        ],
+        "design": "Settings-form component harness with mocked workspace, query, and mutation boundaries.",
+        "implementationLocation": "external benchmark harness, mounted only after the agent run",
+        "visibility": "hidden-from-agent"
+      },
+      "expected": {
+        "commit": "255bc215222d9d7222c14f50516d1f017c7dc934",
+        "tree": "94af215ded68537ecc582f5ec065be49e47bbeb6"
+      },
+      "informationEntitlement": {
+        "canonicalSha256": "b91cf44ffb4572b765b484f116997e8481119d682ed54982e7876aa978fa8381",
+        "excludedFromAgent": [
+          "expected commit, expected tree, and expected diff",
+          "provenance implementation discussion",
+          "hidden evaluator implementation and checks",
+          "personal skills and personal MCP configuration",
+          "Decantr engineering and release skills"
+        ],
+        "parityRule": "Decantr receives no human-authored fact that is unavailable to the control arm. Delivery format may differ; information entitlement may not.",
+        "sourceList": [
+          {
+            "access": "All tracked files at the base commit are readable by both arms.",
+            "id": "base-checkout",
+            "paths": [
+              "**/*"
+            ],
+            "reference": "https://github.com/openstatusHQ/openstatus@ed757d14304d4f693c8a0e5d6374dca945fb32b0",
+            "type": "repository-tree"
+          },
+          {
+            "access": "Identical plaintext prompt for both arms.",
+            "id": "task-prompt",
+            "reference": "record.prompt",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical allowed/forbidden path policy for both arms.",
+            "id": "scope-policy",
+            "reference": "record.scope",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical environment and command contract for both arms.",
+            "id": "execution-contract",
+            "reference": "record.environment",
+            "type": "benchmark-input"
+          }
+        ]
+      },
+      "kind": "adversarial",
+      "limitations": [
+        "The pull request has no written description and adds no tests.",
+        "The expected implementation performs global pointer-event cleanup, so repeated and nested overlay cycles are required regressions."
+      ],
+      "partition": "development",
+      "prompt": "Users creating an API key must be able to open and use the expiration-date picker inside the creation dialog. Closing the picker, creation dialog, or success dialog must leave the settings page fully interactive so other controls can immediately be clicked or focused. Preserve cancellation, keyboard dismissal, and successful key feedback.",
+      "provenance": {
+        "cutoffDisclosure": {
+          "models": {
+            "claude-fable-5": {
+              "cutoff": "2026-01-31T23:59:59Z",
+              "relation": "post-cutoff"
+            },
+            "gpt-5.6-sol": {
+              "cutoff": "2026-02-16T23:59:59Z",
+              "relation": "post-cutoff"
+            }
+          },
+          "qualificationEmbargo": {
+            "cutoff": "2026-05-01T23:59:59Z",
+            "relation": "pre-or-on-cutoff"
+          }
+        },
+        "expectedCommitUrl": "https://github.com/openstatusHQ/openstatus/commit/255bc215222d9d7222c14f50516d1f017c7dc934",
+        "expectedCommitterDate": "2026-03-26T20:12:35+01:00",
+        "expectedSubject": "fix: dialog pointer-events ui blocker (#2014)",
+        "sourceReportDisclosure": "Post-cutoff merged pull request with no written description.",
+        "type": "pull_request",
+        "url": "https://github.com/openstatusHQ/openstatus/pull/2014"
+      },
+      "repository": {
+        "corpusPin": "bbe43a401ebc4e71c57f428202d80a4df1dd22bc",
+        "corpusProjectPath": "apps/dashboard",
+        "corpusTree": "98ffdb1834348fc381b0dbf84eca4ee5d3f4077e",
+        "framework": "next",
+        "id": "openstatus-dashboard",
+        "license": "AGPL-3.0-only",
+        "projectPath": "apps/dashboard",
+        "url": "https://github.com/openstatusHQ/openstatus"
+      },
+      "schemaVersion": "decantr-benchmark-task-candidate.v1",
+      "scope": {
+        "allowedPaths": [
+          "apps/dashboard/src/components/forms/settings/form-api-key.tsx",
+          "apps/dashboard/src/components/forms/settings/form-api-key.test.tsx"
+        ],
+        "forbiddenPaths": [
+          "packages/ui/src/components/ui/dialog*",
+          "packages/ui/src/components/ui/popover*",
+          "apps/dashboard/src/styles/**",
+          "apps/api/**",
+          "packages/db/**",
+          "package.json",
+          "pnpm-lock.yaml",
+          "apps/dashboard/src/components/forms/settings/** (except allowed paths)"
+        ],
+        "policy": "default-deny"
+      },
+      "taskId": "openstatus-dashboard.api-key-dialog-interactivity"
+    },
+    {
+      "ancestry": {
+        "baseIsExpectedFirstParent": true,
+        "expectedIsAncestorOfCorpusPin": true,
+        "expectedParents": [
+          "17266abe7e23dbfa3ed1c98d83a2eaace54c133e"
+        ]
+      },
+      "base": {
+        "commit": "17266abe7e23dbfa3ed1c98d83a2eaace54c133e",
+        "tree": "457930f7170ef5980062efc5af3c360a63661c0e"
+      },
+      "environment": {
+        "build": "pnpm build && pnpm --filter website build",
+        "environment": "Repository pnpm 10.27.0 environment; local database required for seeding.",
+        "install": "corepack prepare pnpm@10.27.0 --activate && pnpm install --frozen-lockfile",
+        "runtime": "pnpm --filter website dev",
+        "test": "pnpm --filter website test"
+      },
+      "evaluator": {
+        "checks": [
+          "Local media URLs remain acceptable to the Next.js 16 optimizer.",
+          "Absolute external-storage URLs remain unchanged.",
+          "Cache-busting behavior remains intact.",
+          "A seeded local image returns HTTP 200 and decodes nonblank in site and live-preview rendering."
+        ],
+        "commonFailures": [
+          "edit outside allowed paths",
+          "dependency or lockfile change unless explicitly allowed",
+          "build failure",
+          "console error",
+          "accessibility regression"
+        ],
+        "design": "URL-contract tests plus seeded Next image-optimizer browser checks.",
+        "implementationLocation": "external benchmark harness, mounted only after the agent run",
+        "visibility": "hidden-from-agent"
+      },
+      "expected": {
+        "commit": "1a0f4d028715e6ceae58acebca7884b268f298e7",
+        "tree": "391f7c943ded0324b82320f8a18bbeedd3d469f3"
+      },
+      "informationEntitlement": {
+        "canonicalSha256": "da74a808ff0bb6b7512c06c926a33f37ab808b69c2d5a4c916d10893d02ec308",
+        "excludedFromAgent": [
+          "expected commit, expected tree, and expected diff",
+          "provenance implementation discussion",
+          "hidden evaluator implementation and checks",
+          "personal skills and personal MCP configuration",
+          "Decantr engineering and release skills"
+        ],
+        "parityRule": "Decantr receives no human-authored fact that is unavailable to the control arm. Delivery format may differ; information entitlement may not.",
+        "sourceList": [
+          {
+            "access": "All tracked files at the base commit are readable by both arms.",
+            "id": "base-checkout",
+            "paths": [
+              "**/*"
+            ],
+            "reference": "https://github.com/payloadcms/payload@17266abe7e23dbfa3ed1c98d83a2eaace54c133e",
+            "type": "repository-tree"
+          },
+          {
+            "access": "Identical plaintext prompt for both arms.",
+            "id": "task-prompt",
+            "reference": "record.prompt",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical allowed/forbidden path policy for both arms.",
+            "id": "scope-policy",
+            "reference": "record.scope",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical environment and command contract for both arms.",
+            "id": "execution-contract",
+            "reference": "record.environment",
+            "type": "benchmark-input"
+          }
+        ]
+      },
+      "kind": "repository",
+      "limitations": [
+        "Requires MongoDB or PostgreSQL plus local seeding.",
+        "The source pull request edits equivalent sibling templates, while this task deliberately isolates templates/website."
+      ],
+      "partition": "development",
+      "prompt": "Freshly seeded website templates on Next.js 16 should render local media on the site and in live preview instead of returning image-optimizer private-address errors. Preserve absolute external-storage URLs and cache-busting behavior.",
+      "provenance": {
+        "cutoffDisclosure": {
+          "models": {
+            "claude-fable-5": {
+              "cutoff": "2026-01-31T23:59:59Z",
+              "relation": "post-cutoff"
+            },
+            "gpt-5.6-sol": {
+              "cutoff": "2026-02-16T23:59:59Z",
+              "relation": "post-cutoff"
+            }
+          },
+          "qualificationEmbargo": {
+            "cutoff": "2026-05-01T23:59:59Z",
+            "relation": "pre-or-on-cutoff"
+          }
+        },
+        "expectedCommitUrl": "https://github.com/payloadcms/payload/commit/1a0f4d028715e6ceae58acebca7884b268f298e7",
+        "expectedCommitterDate": "2026-03-25T15:43:50-04:00",
+        "expectedSubject": "templates: fix broken images on Next.js 16 by using relative paths for local media (#16058)",
+        "sourceReportDisclosure": "Post-cutoff merged pull request; benchmark scope isolates the website template.",
+        "type": "pull_request",
+        "url": "https://github.com/payloadcms/payload/pull/16058"
+      },
+      "repository": {
+        "corpusPin": "5e500633299ebaefb62baca350460d8b1089e2de",
+        "corpusProjectPath": "templates/website",
+        "corpusTree": "fca1d59cff76e37961676bc5f27823628bf0ca61",
+        "framework": "next",
+        "id": "payload-website-template",
+        "license": "MIT",
+        "projectPath": "templates/website",
+        "url": "https://github.com/payloadcms/payload"
+      },
+      "schemaVersion": "decantr-benchmark-task-candidate.v1",
+      "scope": {
+        "allowedPaths": [
+          "templates/website/next.config.ts",
+          "templates/website/src/**",
+          "templates/website/tests/**"
+        ],
+        "forbiddenPaths": [
+          "templates/** (except templates/website allowed paths)",
+          "package.json",
+          "pnpm-lock.yaml",
+          "packages/**"
+        ],
+        "policy": "default-deny"
+      },
+      "taskId": "payload-website-template.local-media-next16"
+    },
+    {
+      "ancestry": {
+        "baseIsExpectedFirstParent": true,
+        "expectedIsAncestorOfCorpusPin": true,
+        "expectedParents": [
+          "727097823422582f784674e00d3905c652d125db"
+        ]
+      },
+      "base": {
+        "commit": "727097823422582f784674e00d3905c652d125db",
+        "tree": "500de870cfea6f068bd7d38a8115cb3105c74c80"
+      },
+      "environment": {
+        "build": "npm run type-check && npm run build -w @primer/react",
+        "environment": "Repository-pinned npm 11.6.3",
+        "install": "corepack npm ci",
+        "runtime": "npm run start:storybook",
+        "test": "npx playwright test e2e/components/Banner.test.ts"
+      },
+      "evaluator": {
+        "checks": [
+          "Render the inline-actions story at 320x256 and assert action bounding boxes do not intersect each other or the message.",
+          "Assert narrow layout stacks actions with the primary action in the intended visual order.",
+          "Render at desktop width and assert actions remain inline; run accessibility checks and fixed screenshots."
+        ],
+        "commonFailures": [
+          "edit outside allowed paths",
+          "dependency or lockfile change unless explicitly allowed",
+          "build failure",
+          "console error",
+          "accessibility regression"
+        ],
+        "design": "fixed-viewport-browser-geometry-plus-visual",
+        "implementationLocation": "external benchmark harness, mounted only after the agent run",
+        "visibility": "hidden-from-agent"
+      },
+      "expected": {
+        "commit": "2e8c70702d5096551049c29c8e79749bf63a919f",
+        "tree": "9eeab15f33304f93b287f451cfaa4455dca54335"
+      },
+      "informationEntitlement": {
+        "canonicalSha256": "8c3a1c1199372a2655d9fd53668689d73364d063a1d87bd93ceca42081452ba4",
+        "excludedFromAgent": [
+          "expected commit, expected tree, and expected diff",
+          "provenance implementation discussion",
+          "hidden evaluator implementation and checks",
+          "personal skills and personal MCP configuration",
+          "Decantr engineering and release skills"
+        ],
+        "parityRule": "Decantr receives no human-authored fact that is unavailable to the control arm. Delivery format may differ; information entitlement may not.",
+        "sourceList": [
+          {
+            "access": "All tracked files at the base commit are readable by both arms.",
+            "id": "base-checkout",
+            "paths": [
+              "**/*"
+            ],
+            "reference": "https://github.com/primer/react@727097823422582f784674e00d3905c652d125db",
+            "type": "repository-tree"
+          },
+          {
+            "access": "Identical plaintext prompt for both arms.",
+            "id": "task-prompt",
+            "reference": "record.prompt",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical allowed/forbidden path policy for both arms.",
+            "id": "scope-policy",
+            "reference": "record.scope",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical environment and command contract for both arms.",
+            "id": "execution-contract",
+            "reference": "record.environment",
+            "type": "benchmark-input"
+          }
+        ]
+      },
+      "kind": "adversarial",
+      "limitations": [
+        "The linked accessibility issue may be private; the public PR description contains enough reproduction detail."
+      ],
+      "partition": "development",
+      "prompt": "Fix Banner when inline primary and secondary actions are shown at a 320px-wide viewport: actions must not overlap the message or each other, and primary-action order must remain intentional. Preserve current desktop inline layout and the existing stacked layout option.",
+      "provenance": {
+        "cutoffDisclosure": {
+          "models": {
+            "claude-fable-5": {
+              "cutoff": "2026-01-31T23:59:59Z",
+              "relation": "post-cutoff"
+            },
+            "gpt-5.6-sol": {
+              "cutoff": "2026-02-16T23:59:59Z",
+              "relation": "post-cutoff"
+            }
+          },
+          "qualificationEmbargo": {
+            "cutoff": "2026-05-01T23:59:59Z",
+            "relation": "pre-or-on-cutoff"
+          }
+        },
+        "expectedCommitUrl": "https://github.com/primer/react/commit/2e8c70702d5096551049c29c8e79749bf63a919f",
+        "expectedCommitterDate": "2026-03-11T15:52:03Z",
+        "expectedSubject": "fix(Banner): stack inline actions vertically on narrow viewports (#7625)",
+        "issueUrl": "https://github.com/github/accessibility-audits/issues/14971",
+        "sourceReportDisclosure": "model-specific A/B or calibration only; exclude from the primary cross-model confirmatory estimate",
+        "type": "pull_request",
+        "url": "https://github.com/primer/react/pull/7625"
+      },
+      "repository": {
+        "corpusPin": "cb1d245506841529d4df34f6efe8e6294464a631",
+        "corpusProjectPath": ".",
+        "corpusTree": "8ebc3a24dc3dbb8331e7a2d9e53d009bf76b146a",
+        "framework": "react-design-system",
+        "id": "primer-react",
+        "license": "MIT",
+        "projectPath": ".",
+        "url": "https://github.com/primer/react"
+      },
+      "schemaVersion": "decantr-benchmark-task-candidate.v1",
+      "scope": {
+        "allowedPaths": [
+          "packages/react/src/Banner/**",
+          "e2e/components/Banner.test.ts",
+          ".changeset/*.md"
+        ],
+        "forbiddenPaths": [
+          "package.json",
+          "package-lock.json",
+          ".playwright/snapshots/**",
+          "packages/react/src/Blankslate/**",
+          "examples/**"
+        ],
+        "policy": "default-deny"
+      },
+      "taskId": "primer-react.banner-narrow-actions"
+    },
+    {
+      "ancestry": {
+        "baseIsExpectedFirstParent": true,
+        "expectedIsAncestorOfCorpusPin": true,
+        "expectedParents": [
+          "6dc1858538e3b7ea66b78dd9d37c391c530d78ae"
+        ]
+      },
+      "base": {
+        "commit": "6dc1858538e3b7ea66b78dd9d37c391c530d78ae",
+        "tree": "e12bab734b07d40cf8b9e101d398251c57c9a8e4"
+      },
+      "environment": {
+        "build": "npm run type-check && npm run build -w @primer/react",
+        "environment": "Repository-pinned npm 11.6.3",
+        "install": "corepack npm ci",
+        "runtime": "npm run start:storybook",
+        "test": "npx playwright test e2e/components/Blankslate.test.ts"
+      },
+      "evaluator": {
+        "checks": [
+          "At fixed desktop and narrow widths, assert computed text-wrap is balance for both heading and description.",
+          "Assert neither element overflows its Blankslate container and all existing variants render.",
+          "Capture fixed-browser screenshots for blind review without requiring committed golden snapshots."
+        ],
+        "commonFailures": [
+          "edit outside allowed paths",
+          "dependency or lockfile change unless explicitly allowed",
+          "build failure",
+          "console error",
+          "accessibility regression"
+        ],
+        "design": "storybook-computed-style-plus-visual",
+        "implementationLocation": "external benchmark harness, mounted only after the agent run",
+        "visibility": "hidden-from-agent"
+      },
+      "expected": {
+        "commit": "aa460989194e6bb2c0e15e16023a07cf7fc42dc0",
+        "tree": "bf8ccaf10594bbb5aae8b9eada8388100147d687"
+      },
+      "informationEntitlement": {
+        "canonicalSha256": "7f321dc46d51763b2e88f7590e8043d7496fbe7490eff0534f905e5615e61524",
+        "excludedFromAgent": [
+          "expected commit, expected tree, and expected diff",
+          "provenance implementation discussion",
+          "hidden evaluator implementation and checks",
+          "personal skills and personal MCP configuration",
+          "Decantr engineering and release skills"
+        ],
+        "parityRule": "Decantr receives no human-authored fact that is unavailable to the control arm. Delivery format may differ; information entitlement may not.",
+        "sourceList": [
+          {
+            "access": "All tracked files at the base commit are readable by both arms.",
+            "id": "base-checkout",
+            "paths": [
+              "**/*"
+            ],
+            "reference": "https://github.com/primer/react@6dc1858538e3b7ea66b78dd9d37c391c530d78ae",
+            "type": "repository-tree"
+          },
+          {
+            "access": "Identical plaintext prompt for both arms.",
+            "id": "task-prompt",
+            "reference": "record.prompt",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical allowed/forbidden path policy for both arms.",
+            "id": "scope-policy",
+            "reference": "record.scope",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical environment and command contract for both arms.",
+            "id": "execution-contract",
+            "reference": "record.environment",
+            "type": "benchmark-input"
+          }
+        ]
+      },
+      "kind": "repository",
+      "limitations": [
+        "The upstream commit updates many generated screenshots; benchmark outputs must not be required to reproduce those binary files."
+      ],
+      "partition": "development",
+      "prompt": "Improve the line wrapping of Blankslate headings and descriptions so multi-line copy is visually balanced and easier to scan. Preserve alignment, spacing, all size variants, and existing component APIs.",
+      "provenance": {
+        "cutoffDisclosure": {
+          "models": {
+            "claude-fable-5": {
+              "cutoff": "2026-01-31T23:59:59Z",
+              "relation": "post-cutoff"
+            },
+            "gpt-5.6-sol": {
+              "cutoff": "2026-02-16T23:59:59Z",
+              "relation": "post-cutoff"
+            }
+          },
+          "qualificationEmbargo": {
+            "cutoff": "2026-05-01T23:59:59Z",
+            "relation": "pre-or-on-cutoff"
+          }
+        },
+        "expectedCommitUrl": "https://github.com/primer/react/commit/aa460989194e6bb2c0e15e16023a07cf7fc42dc0",
+        "expectedCommitterDate": "2026-02-19T16:13:55Z",
+        "expectedSubject": "feat(Blankslate): Add `text-wrap: balance` to Heading and Description (#7568)",
+        "sourceReportDisclosure": "model-specific A/B or calibration only; exclude from the primary cross-model confirmatory estimate",
+        "type": "pull_request",
+        "url": "https://github.com/primer/react/pull/7568"
+      },
+      "repository": {
+        "corpusPin": "cb1d245506841529d4df34f6efe8e6294464a631",
+        "corpusProjectPath": ".",
+        "corpusTree": "8ebc3a24dc3dbb8331e7a2d9e53d009bf76b146a",
+        "framework": "react-design-system",
+        "id": "primer-react",
+        "license": "MIT",
+        "projectPath": ".",
+        "url": "https://github.com/primer/react"
+      },
+      "schemaVersion": "decantr-benchmark-task-candidate.v1",
+      "scope": {
+        "allowedPaths": [
+          "packages/react/src/Blankslate/**",
+          "e2e/components/Blankslate.test.ts",
+          ".changeset/*.md"
+        ],
+        "forbiddenPaths": [
+          "package.json",
+          "package-lock.json",
+          ".playwright/snapshots/**",
+          "packages/react/src/Banner/**",
+          "examples/**"
+        ],
+        "policy": "default-deny"
+      },
+      "taskId": "primer-react.blankslate-balanced-copy"
+    },
+    {
+      "ancestry": {
+        "baseIsExpectedFirstParent": true,
+        "expectedIsAncestorOfCorpusPin": true,
+        "expectedParents": [
+          "219fe4a1e9fe00783d4b14cc2dde879c08d27cc9"
+        ]
+      },
+      "base": {
+        "commit": "219fe4a1e9fe00783d4b14cc2dde879c08d27cc9",
+        "tree": "d7edb779ee146decfff36ea179824ae01125e501"
+      },
+      "environment": {
+        "build": "npm run build",
+        "environment": "Repository-pinned Angular/npm environment with Git submodules.",
+        "install": "git submodule update --init --recursive && npm ci",
+        "runtime": "npm start -- --host 0.0.0.0",
+        "test": "npm test -- --watch=false --browsers=ChromeHeadless"
+      },
+      "evaluator": {
+        "checks": [
+          "Product images resolve to bundled local assets.",
+          "Name and price headers sort the product rows.",
+          "Confirmation popup exposes clear accept and cancel actions.",
+          "Accept and reject preserve the existing toast feedback.",
+          "The focused overlay screenshot is nonblank and free of console errors."
+        ],
+        "commonFailures": [
+          "edit outside allowed paths",
+          "dependency or lockfile change unless explicitly allowed",
+          "build failure",
+          "console error",
+          "accessibility regression"
+        ],
+        "design": "Angular fixture plus Playwright on /uikit/overlay.",
+        "implementationLocation": "external benchmark harness, mounted only after the agent run",
+        "visibility": "hidden-from-agent"
+      },
+      "expected": {
+        "commit": "1ac9522ec741f5cdb070fe1bd2b6aedaa5e77553",
+        "tree": "6577678f520e50a0651d0fab4b5a5d929d7eb4ac"
+      },
+      "informationEntitlement": {
+        "canonicalSha256": "86b14a2b83b1c9ab69ae4815d506ba38a2373b2753e4d36529c17f326d5bf93c",
+        "excludedFromAgent": [
+          "expected commit, expected tree, and expected diff",
+          "provenance implementation discussion",
+          "hidden evaluator implementation and checks",
+          "personal skills and personal MCP configuration",
+          "Decantr engineering and release skills"
+        ],
+        "parityRule": "Decantr receives no human-authored fact that is unavailable to the control arm. Delivery format may differ; information entitlement may not.",
+        "sourceList": [
+          {
+            "access": "All tracked files at the base commit are readable by both arms.",
+            "id": "base-checkout",
+            "paths": [
+              "**/*"
+            ],
+            "reference": "https://github.com/primefaces/sakai-ng@219fe4a1e9fe00783d4b14cc2dde879c08d27cc9",
+            "type": "repository-tree"
+          },
+          {
+            "access": "Identical plaintext prompt for both arms.",
+            "id": "task-prompt",
+            "reference": "record.prompt",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical allowed/forbidden path policy for both arms.",
+            "id": "scope-policy",
+            "reference": "record.scope",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical environment and command contract for both arms.",
+            "id": "execution-contract",
+            "reference": "record.environment",
+            "type": "benchmark-input"
+          }
+        ]
+      },
+      "kind": "repository",
+      "limitations": [
+        "The repository pin itself predates the primary cutoff.",
+        "The benchmark uses a focused member commit rather than the broad pull-request merge."
+      ],
+      "partition": "development",
+      "prompt": "Make the overlay showcase fully functional: product images should load from bundled assets, users should be able to sort products by name and price, and the confirmation popup should provide clear accept and cancel actions while preserving its existing feedback.",
+      "provenance": {
+        "commitUrl": "https://github.com/primefaces/sakai-ng/commit/1ac9522ec741f5cdb070fe1bd2b6aedaa5e77553",
+        "cutoffDisclosure": {
+          "models": {
+            "claude-fable-5": {
+              "cutoff": "2026-01-31T23:59:59Z",
+              "relation": "pre-or-on-cutoff"
+            },
+            "gpt-5.6-sol": {
+              "cutoff": "2026-02-16T23:59:59Z",
+              "relation": "pre-or-on-cutoff"
+            }
+          },
+          "qualificationEmbargo": {
+            "cutoff": "2026-05-01T23:59:59Z",
+            "relation": "pre-or-on-cutoff"
+          }
+        },
+        "expectedCommitUrl": "https://github.com/primefaces/sakai-ng/commit/1ac9522ec741f5cdb070fe1bd2b6aedaa5e77553",
+        "expectedCommitterDate": "2025-12-25T01:06:42+03:00",
+        "expectedSubject": "fix overlay demo",
+        "sourceReportDisclosure": "Pre-cutoff fallback using the focused overlay-demo member commit rather than the broad pull-request merge.",
+        "type": "focused_commit_within_pull_request",
+        "url": "https://github.com/primefaces/sakai-ng/pull/110"
+      },
+      "repository": {
+        "corpusPin": "96d71496d685b5c110efd2875abaa2bf89a56ad2",
+        "corpusProjectPath": ".",
+        "corpusTree": "43b0fbd84f393500c150a5460b266eefaa47a0eb",
+        "framework": "angular",
+        "id": "sakai-ng",
+        "license": "MIT",
+        "projectPath": ".",
+        "url": "https://github.com/primefaces/sakai-ng"
+      },
+      "schemaVersion": "decantr-benchmark-task-candidate.v1",
+      "scope": {
+        "allowedPaths": [
+          "src/app/pages/uikit/overlaydemo.ts",
+          "src/app/pages/uikit/overlaydemo.spec.ts"
+        ],
+        "forbiddenPaths": [
+          "src/assets/**",
+          "src/app/layout/**",
+          "src/styles/**",
+          "package.json",
+          "package-lock.json",
+          "src/app/** (except allowed paths)"
+        ],
+        "policy": "default-deny"
+      },
+      "taskId": "sakai-ng.overlay-showcase"
+    },
+    {
+      "ancestry": {
+        "baseIsExpectedFirstParent": true,
+        "expectedIsAncestorOfCorpusPin": true,
+        "expectedParents": [
+          "03ef1236f0226283c2bfe6e316585115ab0b7a62"
+        ]
+      },
+      "base": {
+        "commit": "03ef1236f0226283c2bfe6e316585115ab0b7a62",
+        "tree": "e4b063cade6d97a7ee241b9221e102172dea21ac"
+      },
+      "environment": {
+        "build": "npm run build",
+        "environment": "Repository base Node/npm environment.",
+        "install": "npm ci",
+        "runtime": "npm run dev -- --host 0.0.0.0",
+        "test": "none: the repository has no test script; use the external browser evaluator"
+      },
+      "evaluator": {
+        "checks": [
+          "The Popover card Show control opens the product table.",
+          "Selecting a row closes the popover and shows the existing toast.",
+          "Dialog, Drawer, Tooltip, and Confirm examples still smoke-test successfully."
+        ],
+        "commonFailures": [
+          "edit outside allowed paths",
+          "dependency or lockfile change unless explicitly allowed",
+          "build failure",
+          "console error",
+          "accessibility regression"
+        ],
+        "design": "Playwright flow on /uikit/overlay with image requests intercepted.",
+        "implementationLocation": "external benchmark harness, mounted only after the agent run",
+        "visibility": "hidden-from-agent"
+      },
+      "expected": {
+        "commit": "7c541761321e5bc56274c929e88297979113a74a",
+        "tree": "45f10a4d23ec751249c086ffd1d52cf9ddb03997"
+      },
+      "informationEntitlement": {
+        "canonicalSha256": "5d5d01e8aab3f6e98222d53a39f6bcc5c26b5bb18b4d47d323cb705854b77983",
+        "excludedFromAgent": [
+          "expected commit, expected tree, and expected diff",
+          "provenance implementation discussion",
+          "hidden evaluator implementation and checks",
+          "personal skills and personal MCP configuration",
+          "Decantr engineering and release skills"
+        ],
+        "parityRule": "Decantr receives no human-authored fact that is unavailable to the control arm. Delivery format may differ; information entitlement may not.",
+        "sourceList": [
+          {
+            "access": "All tracked files at the base commit are readable by both arms.",
+            "id": "base-checkout",
+            "paths": [
+              "**/*"
+            ],
+            "reference": "https://github.com/primefaces/sakai-vue@03ef1236f0226283c2bfe6e316585115ab0b7a62",
+            "type": "repository-tree"
+          },
+          {
+            "access": "Identical plaintext prompt for both arms.",
+            "id": "task-prompt",
+            "reference": "record.prompt",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical allowed/forbidden path policy for both arms.",
+            "id": "scope-policy",
+            "reference": "record.scope",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical environment and command contract for both arms.",
+            "id": "execution-contract",
+            "reference": "record.environment",
+            "type": "benchmark-input"
+          }
+        ]
+      },
+      "kind": "repository",
+      "limitations": [
+        "The pin and direct commit predate both model cutoffs.",
+        "Product images use the PrimeFaces CDN and must be ignored or intercepted."
+      ],
+      "partition": "development",
+      "prompt": "On the UI Kit Overlay page, the Popover example Show button should reliably open the product-table popover. Selecting a product should close it and retain the existing selection toast. Do not alter the Dialog, Drawer, Tooltip, or Confirm examples.",
+      "provenance": {
+        "cutoffDisclosure": {
+          "models": {
+            "claude-fable-5": {
+              "cutoff": "2026-01-31T23:59:59Z",
+              "relation": "pre-or-on-cutoff"
+            },
+            "gpt-5.6-sol": {
+              "cutoff": "2026-02-16T23:59:59Z",
+              "relation": "pre-or-on-cutoff"
+            }
+          },
+          "qualificationEmbargo": {
+            "cutoff": "2026-05-01T23:59:59Z",
+            "relation": "pre-or-on-cutoff"
+          }
+        },
+        "expectedCommitUrl": "https://github.com/primefaces/sakai-vue/commit/7c541761321e5bc56274c929e88297979113a74a",
+        "expectedCommitterDate": "2025-02-18T16:01:24+03:00",
+        "expectedSubject": "Update OverlayDoc.vue",
+        "sourceReportDisclosure": "Pre-cutoff direct commit with no associated pull request.",
+        "type": "direct_commit",
+        "url": "https://github.com/primefaces/sakai-vue/commit/7c541761321e5bc56274c929e88297979113a74a"
+      },
+      "repository": {
+        "corpusPin": "ec6b6ef53ad4fa7f2861277f50f2d9e236c40372",
+        "corpusProjectPath": ".",
+        "corpusTree": "a8d1f89d54653a6a1fa2ff300de76fbc56c24463",
+        "framework": "vue",
+        "id": "sakai-vue",
+        "license": "MIT",
+        "projectPath": ".",
+        "url": "https://github.com/primefaces/sakai-vue"
+      },
+      "schemaVersion": "decantr-benchmark-task-candidate.v1",
+      "scope": {
+        "allowedPaths": [
+          "src/views/uikit/OverlayDoc.vue",
+          "src/views/uikit/**/*.spec.ts"
+        ],
+        "forbiddenPaths": [
+          "src/** (except allowed paths)",
+          "package.json",
+          "package-lock.json",
+          "public/**",
+          ".gitmodules"
+        ],
+        "policy": "default-deny"
+      },
+      "taskId": "sakai-vue.overlay-popover"
+    },
+    {
+      "ancestry": {
+        "baseIsExpectedFirstParent": true,
+        "expectedIsAncestorOfCorpusPin": true,
+        "expectedParents": [
+          "0008d4848b845a5a2324c78f135239ce6e3739b6"
+        ]
+      },
+      "base": {
+        "commit": "0008d4848b845a5a2324c78f135239ce6e3739b6",
+        "tree": "7ac06e06f7c3c192fcbfd4db9f6888f924196abb"
+      },
+      "environment": {
+        "build": "pnpm --filter v4 registry:build && pnpm --filter v4 typecheck && pnpm --filter v4 build",
+        "environment": "pnpm 10.25.0 and repository Node requirements.",
+        "install": "corepack prepare pnpm@10.25.0 --activate && pnpm install --frozen-lockfile",
+        "runtime": "pnpm --filter v4 dev",
+        "test": "none for v4: use the external component evaluator"
+      },
+      "evaluator": {
+        "checks": [
+          "Inline text and link fragments share lines when space permits.",
+          "Block-level paragraph children continue to stack.",
+          "Typography remains unchanged.",
+          "Screenshots and accessibility checks pass in light and dark modes."
+        ],
+        "commonFailures": [
+          "edit outside allowed paths",
+          "dependency or lockfile change unless explicitly allowed",
+          "build failure",
+          "console error",
+          "accessibility regression"
+        ],
+        "design": "Fixed-width light/dark component rendering with browser line-box measurements.",
+        "implementationLocation": "external benchmark harness, mounted only after the agent run",
+        "visibility": "hidden-from-agent"
+      },
+      "expected": {
+        "commit": "87f076d359b98b88dea8856a6a6b5335dbcb6dd6",
+        "tree": "ada12c5fd98f7ad365f0e7e283a4cda082ea93da"
+      },
+      "informationEntitlement": {
+        "canonicalSha256": "9ec065bf5fb805e436bd596abcd0bcce584cef659e3582bc6aa9e732a4df4c14",
+        "excludedFromAgent": [
+          "expected commit, expected tree, and expected diff",
+          "provenance implementation discussion",
+          "hidden evaluator implementation and checks",
+          "personal skills and personal MCP configuration",
+          "Decantr engineering and release skills"
+        ],
+        "parityRule": "Decantr receives no human-authored fact that is unavailable to the control arm. Delivery format may differ; information entitlement may not.",
+        "sourceList": [
+          {
+            "access": "All tracked files at the base commit are readable by both arms.",
+            "id": "base-checkout",
+            "paths": [
+              "**/*"
+            ],
+            "reference": "https://github.com/unovue/shadcn-vue@0008d4848b845a5a2324c78f135239ce6e3739b6",
+            "type": "repository-tree"
+          },
+          {
+            "access": "Identical plaintext prompt for both arms.",
+            "id": "task-prompt",
+            "reference": "record.prompt",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical allowed/forbidden path policy for both arms.",
+            "id": "scope-policy",
+            "reference": "record.scope",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical environment and command contract for both arms.",
+            "id": "execution-contract",
+            "reference": "record.environment",
+            "type": "benchmark-input"
+          }
+        ]
+      },
+      "kind": "adversarial",
+      "limitations": [
+        "Registry generation can modify generated files and must run after the tracked-diff gate in a disposable checkout."
+      ],
+      "partition": "development",
+      "prompt": "Alert descriptions containing inline text and links should flow as a normal sentence instead of placing each fragment on a separate row. Preserve typography and normal stacking for block-level paragraphs.",
+      "provenance": {
+        "cutoffDisclosure": {
+          "models": {
+            "claude-fable-5": {
+              "cutoff": "2026-01-31T23:59:59Z",
+              "relation": "post-cutoff"
+            },
+            "gpt-5.6-sol": {
+              "cutoff": "2026-02-16T23:59:59Z",
+              "relation": "post-cutoff"
+            }
+          },
+          "qualificationEmbargo": {
+            "cutoff": "2026-05-01T23:59:59Z",
+            "relation": "pre-or-on-cutoff"
+          }
+        },
+        "expectedCommitUrl": "https://github.com/unovue/shadcn-vue/commit/87f076d359b98b88dea8856a6a6b5335dbcb6dd6",
+        "expectedCommitterDate": "2026-04-04T00:18:12+08:00",
+        "expectedSubject": "fix(alert): remove grid layout from AlertDescription that breaks inline content (#1752)",
+        "sourceReportDisclosure": "Post-primary-cutoff merged pull request.",
+        "type": "pull_request",
+        "url": "https://github.com/unovue/shadcn-vue/pull/1752"
+      },
+      "repository": {
+        "corpusPin": "de6c4e272b4b42d395d3601e4a6f277f0b26e0b1",
+        "corpusProjectPath": "apps/v4",
+        "corpusTree": "5868538d95aeaff717784957db0c551e2db87572",
+        "framework": "nuxt",
+        "id": "shadcn-vue-v4",
+        "license": "MIT",
+        "projectPath": "apps/v4",
+        "url": "https://github.com/unovue/shadcn-vue"
+      },
+      "schemaVersion": "decantr-benchmark-task-candidate.v1",
+      "scope": {
+        "allowedPaths": [
+          "apps/v4/registry/new-york-v4/ui/alert/**",
+          "apps/v4/tests/**"
+        ],
+        "forbiddenPaths": [
+          "apps/v4/public/r/**",
+          "apps/v4/registry/new-york-v4/ui/** (except allowed paths)",
+          "apps/** (except apps/v4 allowed paths)",
+          "package.json",
+          "pnpm-lock.yaml"
+        ],
+        "policy": "default-deny"
+      },
+      "taskId": "shadcn-vue-v4.inline-alert-content"
+    },
+    {
+      "ancestry": {
+        "baseIsExpectedFirstParent": true,
+        "expectedIsAncestorOfCorpusPin": true,
+        "expectedParents": [
+          "c74b5848035567efc876a6488469daf71653ac8e"
+        ]
+      },
+      "base": {
+        "commit": "c74b5848035567efc876a6488469daf71653ac8e",
+        "tree": "26044ce9c4cd54b0019fd759f6f0fddddc44bfeb"
+      },
+      "environment": {
+        "build": "pnpm --filter v4 registry:build && pnpm --filter v4 typecheck && pnpm --filter v4 build",
+        "environment": "pnpm 10.25.0 and repository Node requirements.",
+        "install": "corepack prepare pnpm@10.25.0 --activate && pnpm install --frozen-lockfile",
+        "runtime": "pnpm --filter v4 dev",
+        "test": "none for v4: root pnpm test covers the CLI; use external component evaluator"
+      },
+      "evaluator": {
+        "checks": [
+          "Selected normal, range-start, and range-end dates retain primary background and contrast text while hovered.",
+          "Unselected hover, focus, disabled, unavailable, today, and outside-month states remain unchanged.",
+          "Keyboard operation and accessibility checks pass."
+        ],
+        "commonFailures": [
+          "edit outside allowed paths",
+          "dependency or lockfile change unless explicitly allowed",
+          "build failure",
+          "console error",
+          "accessibility regression"
+        ],
+        "design": "Light/dark Calendar and Range Calendar component fixtures.",
+        "implementationLocation": "external benchmark harness, mounted only after the agent run",
+        "visibility": "hidden-from-agent"
+      },
+      "expected": {
+        "commit": "3bfa0107b263b1caa8315bb30c3272ad533414e6",
+        "tree": "9b871208d40adb6ee26f31eb59ba1cf6596c5d46"
+      },
+      "informationEntitlement": {
+        "canonicalSha256": "39fdbcf879db261b61b8e1920b6f9b3fde81f76b3b57aed97eab5681e56a0318",
+        "excludedFromAgent": [
+          "expected commit, expected tree, and expected diff",
+          "provenance implementation discussion",
+          "hidden evaluator implementation and checks",
+          "personal skills and personal MCP configuration",
+          "Decantr engineering and release skills"
+        ],
+        "parityRule": "Decantr receives no human-authored fact that is unavailable to the control arm. Delivery format may differ; information entitlement may not.",
+        "sourceList": [
+          {
+            "access": "All tracked files at the base commit are readable by both arms.",
+            "id": "base-checkout",
+            "paths": [
+              "**/*"
+            ],
+            "reference": "https://github.com/unovue/shadcn-vue@c74b5848035567efc876a6488469daf71653ac8e",
+            "type": "repository-tree"
+          },
+          {
+            "access": "Identical plaintext prompt for both arms.",
+            "id": "task-prompt",
+            "reference": "record.prompt",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical allowed/forbidden path policy for both arms.",
+            "id": "scope-policy",
+            "reference": "record.scope",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical environment and command contract for both arms.",
+            "id": "execution-contract",
+            "reference": "record.environment",
+            "type": "benchmark-input"
+          }
+        ]
+      },
+      "kind": "repository",
+      "limitations": [
+        "Registry generation writes apps/v4/public/r/** and must run only after the tracked-diff gate in a disposable evaluator checkout."
+      ],
+      "partition": "development",
+      "prompt": "When a selected date is hovered in Calendar or Range Calendar, retain its selected primary background and readable contrast text, including in dark mode. Keep unselected hover, focus, disabled, unavailable, today, and outside-month states unchanged.",
+      "provenance": {
+        "cutoffDisclosure": {
+          "models": {
+            "claude-fable-5": {
+              "cutoff": "2026-01-31T23:59:59Z",
+              "relation": "post-cutoff"
+            },
+            "gpt-5.6-sol": {
+              "cutoff": "2026-02-16T23:59:59Z",
+              "relation": "post-cutoff"
+            }
+          },
+          "qualificationEmbargo": {
+            "cutoff": "2026-05-01T23:59:59Z",
+            "relation": "pre-or-on-cutoff"
+          }
+        },
+        "expectedCommitUrl": "https://github.com/unovue/shadcn-vue/commit/3bfa0107b263b1caa8315bb30c3272ad533414e6",
+        "expectedCommitterDate": "2026-03-17T14:10:46+08:00",
+        "expectedSubject": "fix(Calendar): preserve primary background on selected day hover (#1727)",
+        "sourceReportDisclosure": "Post-primary-cutoff merged pull request.",
+        "type": "pull_request",
+        "url": "https://github.com/unovue/shadcn-vue/pull/1727"
+      },
+      "repository": {
+        "corpusPin": "de6c4e272b4b42d395d3601e4a6f277f0b26e0b1",
+        "corpusProjectPath": "apps/v4",
+        "corpusTree": "5868538d95aeaff717784957db0c551e2db87572",
+        "framework": "nuxt",
+        "id": "shadcn-vue-v4",
+        "license": "MIT",
+        "projectPath": "apps/v4",
+        "url": "https://github.com/unovue/shadcn-vue"
+      },
+      "schemaVersion": "decantr-benchmark-task-candidate.v1",
+      "scope": {
+        "allowedPaths": [
+          "apps/v4/registry/new-york-v4/ui/calendar/**",
+          "apps/v4/registry/new-york-v4/ui/range-calendar/**",
+          "apps/v4/test/**",
+          "apps/v4/tests/**"
+        ],
+        "forbiddenPaths": [
+          "apps/v4/public/r/**",
+          "apps/v4/registry/new-york-v4/ui/** (except allowed paths)",
+          "apps/** (except apps/v4 allowed paths)",
+          "package.json",
+          "pnpm-lock.yaml"
+        ],
+        "policy": "default-deny"
+      },
+      "taskId": "shadcn-vue-v4.selected-date-hover"
+    },
+    {
+      "ancestry": {
+        "baseIsExpectedFirstParent": true,
+        "expectedIsAncestorOfCorpusPin": true,
+        "expectedParents": [
+          "431feefd1be365ba45c034da7c9b33616108bc66"
+        ]
+      },
+      "base": {
+        "commit": "431feefd1be365ba45c034da7c9b33616108bc66",
+        "tree": "e86abe48db7e5d138d8fe01c233417130d7ba0fc"
+      },
+      "environment": {
+        "build": "pnpm --filter example-hackernews build",
+        "environment": "Node >=18 and the repository pnpm workspace at the base commit.",
+        "install": "pnpm install --frozen-lockfile",
+        "runtime": "pnpm --dir examples/hackernews dev",
+        "test": "none: examples/hackernews has no repository-native test script; use the external browser evaluator"
+      },
+      "evaluator": {
+        "checks": [
+          "At /, the HN home link is the only active top-level navigation link.",
+          "At /new, /show, /ask, and /jobs, Home is not active and the matching destination is active.",
+          "Click and keyboard navigation continue to reach every destination.",
+          "Link roles, names, focus visibility, and current-page accessibility semantics remain correct."
+        ],
+        "commonFailures": [
+          "edit outside allowed paths",
+          "dependency or lockfile change unless explicitly allowed",
+          "build failure",
+          "console error",
+          "accessibility regression"
+        ],
+        "design": "SolidStart Hacker News navigation browser harness at the historical example base.",
+        "implementationLocation": "external benchmark harness, mounted only after the agent run",
+        "visibility": "hidden-from-agent"
+      },
+      "expected": {
+        "commit": "0ac15a2562fb8a20c452d2c39523eb0c9f1a0c51",
+        "tree": "3c297c9d37a75c947799ec0343f95fe8680c1f2d"
+      },
+      "informationEntitlement": {
+        "canonicalSha256": "27db4067c2c42d33672e7c0e149d7c50864ba7b93c31942382032c2029469e7b",
+        "excludedFromAgent": [
+          "expected commit, expected tree, and expected diff",
+          "provenance implementation discussion",
+          "hidden evaluator implementation and checks",
+          "personal skills and personal MCP configuration",
+          "Decantr engineering and release skills"
+        ],
+        "parityRule": "Decantr receives no human-authored fact that is unavailable to the control arm. Delivery format may differ; information entitlement may not.",
+        "sourceList": [
+          {
+            "access": "All tracked files at the base commit are readable by both arms.",
+            "id": "base-checkout",
+            "paths": [
+              "**/*"
+            ],
+            "reference": "https://github.com/solidjs/solid-start@431feefd1be365ba45c034da7c9b33616108bc66",
+            "type": "repository-tree"
+          },
+          {
+            "access": "Identical plaintext prompt for both arms.",
+            "id": "task-prompt",
+            "reference": "record.prompt",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical allowed/forbidden path policy for both arms.",
+            "id": "scope-policy",
+            "reference": "record.scope",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical environment and command contract for both arms.",
+            "id": "execution-contract",
+            "reference": "record.environment",
+            "type": "benchmark-input"
+          }
+        ]
+      },
+      "kind": "repository",
+      "limitations": [
+        "The authentic direct commit predates both model cutoffs and has no supplied pull-request review trail.",
+        "The task projectPath intentionally reflects the historical examples/hackernews location, not the later corpus metadata path apps/fixtures/hackernews.",
+        "No repository-native test script exists for the example."
+      ],
+      "partition": "development",
+      "prompt": "Only the HN home link should be active at root; navigating to New, Show, Ask, or Jobs must not leave Home active; preserve navigation and accessibility.",
+      "provenance": {
+        "cutoffDisclosure": {
+          "models": {
+            "claude-fable-5": {
+              "cutoff": "2026-01-31T23:59:59Z",
+              "relation": "pre-or-on-cutoff"
+            },
+            "gpt-5.6-sol": {
+              "cutoff": "2026-02-16T23:59:59Z",
+              "relation": "pre-or-on-cutoff"
+            }
+          },
+          "qualificationEmbargo": {
+            "cutoff": "2026-05-01T23:59:59Z",
+            "relation": "pre-or-on-cutoff"
+          }
+        },
+        "expectedCommitUrl": "https://github.com/solidjs/solid-start/commit/0ac15a2562fb8a20c452d2c39523eb0c9f1a0c51",
+        "expectedCommitterDate": "2024-05-29T14:05:34-07:00",
+        "expectedSubject": "fix #1502 home link in HN example",
+        "issueUrl": "https://github.com/solidjs/solid-start/issues/1502",
+        "sourceReportDisclosure": "User-approved authentic replacement from the historical examples/hackernews tree; direct commit predates both model cutoffs and no pull-request provenance was supplied.",
+        "type": "issue_backed_direct_commit",
+        "url": "https://github.com/solidjs/solid-start/commit/0ac15a2562fb8a20c452d2c39523eb0c9f1a0c51"
+      },
+      "repository": {
+        "corpusPin": "eeff49a8766f718722e4adcfb519f487cbdf6f9a",
+        "corpusProjectPath": "apps/fixtures/hackernews",
+        "corpusTree": "12fb9391442f262d5732672748b1f58a7c7b8732",
+        "framework": "solid",
+        "id": "solid-start-hackernews",
+        "license": "MIT",
+        "projectPath": "examples/hackernews",
+        "url": "https://github.com/solidjs/solid-start"
+      },
+      "schemaVersion": "decantr-benchmark-task-candidate.v1",
+      "scope": {
+        "allowedPaths": [
+          "examples/hackernews/src/components/nav.tsx",
+          "examples/hackernews/src/components/nav.test.tsx"
+        ],
+        "forbiddenPaths": [
+          "examples/hackernews/** (except allowed paths)",
+          "examples/** (except examples/hackernews allowed paths)",
+          "packages/**",
+          "package.json",
+          "pnpm-lock.yaml",
+          "pnpm-workspace.yaml"
+        ],
+        "policy": "default-deny"
+      },
+      "taskId": "solid-start-hackernews.home-link-active-root"
+    },
+    {
+      "ancestry": {
+        "baseIsExpectedFirstParent": true,
+        "expectedIsAncestorOfCorpusPin": true,
+        "expectedParents": [
+          "795d311d1d8b8e502eb7f33b9b6d4475691d3101"
+        ]
+      },
+      "base": {
+        "commit": "795d311d1d8b8e502eb7f33b9b6d4475691d3101",
+        "tree": "6c51e9a67f9fd6fdba8be75d8cbdc85f3c710e3e"
+      },
+      "environment": {
+        "build": "SKIP_ENV_VALIDATION=true pnpm build",
+        "environment": "Node >=22 and pnpm 10.",
+        "install": "cp .env.example .env && pnpm install --frozen-lockfile",
+        "runtime": "pnpm storybook -- --host 0.0.0.0",
+        "test": "SKIP_ENV_VALIDATION=true pnpm test:ci"
+      },
+      "evaluator": {
+        "checks": [
+          "Exercise click, keyboard, and drag/drop file selection.",
+          "Verify pending, error, success, preview, filename, clear, and replacement states.",
+          "Verify disabled state blocks interaction and reports accessible feedback.",
+          "Verify the form value and all supported locale labels/help text.",
+          "Run accessibility checks without MinIO or S3."
+        ],
+        "commonFailures": [
+          "edit outside allowed paths",
+          "dependency or lockfile change unless explicitly allowed",
+          "build failure",
+          "console error",
+          "accessibility regression"
+        ],
+        "design": "Storybook/browser component harness with a mocked upload client.",
+        "implementationLocation": "external benchmark harness, mounted only after the agent run",
+        "visibility": "hidden-from-agent"
+      },
+      "expected": {
+        "commit": "bb32b7a5c94a5b4de37fda0a8669f3d26e0b9c27",
+        "tree": "ff026100491e2a7b89e098a9dab7c48ae360bf40"
+      },
+      "informationEntitlement": {
+        "canonicalSha256": "722a8d71d60a549c269c3ad5968fe754bd5cd7c1632a3fc2f05428f90a5a254e",
+        "excludedFromAgent": [
+          "expected commit, expected tree, and expected diff",
+          "provenance implementation discussion",
+          "hidden evaluator implementation and checks",
+          "personal skills and personal MCP configuration",
+          "Decantr engineering and release skills"
+        ],
+        "parityRule": "Decantr receives no human-authored fact that is unavailable to the control arm. Delivery format may differ; information entitlement may not.",
+        "sourceList": [
+          {
+            "access": "All tracked files at the base commit are readable by both arms.",
+            "id": "base-checkout",
+            "paths": [
+              "**/*"
+            ],
+            "reference": "https://github.com/BearStudio/start-ui-web@795d311d1d8b8e502eb7f33b9b6d4475691d3101",
+            "type": "repository-tree"
+          },
+          {
+            "access": "Identical plaintext prompt for both arms.",
+            "id": "task-prompt",
+            "reference": "record.prompt",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical allowed/forbidden path policy for both arms.",
+            "id": "scope-policy",
+            "reference": "record.scope",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical environment and command contract for both arms.",
+            "id": "execution-contract",
+            "reference": "record.environment",
+            "type": "benchmark-input"
+          }
+        ]
+      },
+      "kind": "repository",
+      "limitations": [
+        "The evaluator must mock uploads; MinIO or S3 is outside the benchmark environment."
+      ],
+      "partition": "development",
+      "prompt": "Let users choose or drag a book-cover image in the book form, see its filename or preview and upload state, remove or replace it, and receive accessible disabled and error feedback. Labels and help text must work in every supported locale.",
+      "provenance": {
+        "cutoffDisclosure": {
+          "models": {
+            "claude-fable-5": {
+              "cutoff": "2026-01-31T23:59:59Z",
+              "relation": "post-cutoff"
+            },
+            "gpt-5.6-sol": {
+              "cutoff": "2026-02-16T23:59:59Z",
+              "relation": "post-cutoff"
+            }
+          },
+          "qualificationEmbargo": {
+            "cutoff": "2026-05-01T23:59:59Z",
+            "relation": "pre-or-on-cutoff"
+          }
+        },
+        "expectedCommitUrl": "https://github.com/BearStudio/start-ui-web/commit/bb32b7a5c94a5b4de37fda0a8669f3d26e0b9c27",
+        "expectedCommitterDate": "2026-03-16T16:32:21+01:00",
+        "expectedSubject": "feat: add UploadInput component and integrate cover upload into book form (#710)",
+        "sourceReportDisclosure": "Post-primary-cutoff merged pull request.",
+        "type": "pull_request",
+        "url": "https://github.com/BearStudio/start-ui-web/pull/710"
+      },
+      "repository": {
+        "corpusPin": "81d5424df382e73f757bafdf7fdc2d51e4370a9f",
+        "corpusProjectPath": ".",
+        "corpusTree": "ce099c47b3f87e3f182b6843c93db3a0408083a7",
+        "framework": "react",
+        "id": "start-ui-web",
+        "license": "MIT",
+        "projectPath": ".",
+        "url": "https://github.com/BearStudio/start-ui-web"
+      },
+      "schemaVersion": "decantr-benchmark-task-candidate.v1",
+      "scope": {
+        "allowedPaths": [
+          "src/components/form/_fields.tsx",
+          "src/components/form/field-upload-input/**",
+          "src/components/upload/upload-input.tsx",
+          "src/features/book/manager/form-book.tsx",
+          "src/features/book/manager/form-book-cover.tsx",
+          "src/locales/{ar,en,fr,sw}/{book.json,components.json}",
+          "src/components/form/**/*.stories.tsx",
+          "src/components/upload/**/*.stories.tsx",
+          "src/**/*.test.ts",
+          "src/**/*.test.tsx"
+        ],
+        "forbiddenPaths": [
+          "src/app/api/**",
+          "src/server/**",
+          "prisma/**",
+          "package.json",
+          "pnpm-lock.yaml",
+          "src/components/ui/** (except allowed paths)"
+        ],
+        "policy": "default-deny"
+      },
+      "taskId": "start-ui-web.book-cover-upload"
+    },
+    {
+      "ancestry": {
+        "baseIsExpectedFirstParent": true,
+        "expectedIsAncestorOfCorpusPin": true,
+        "expectedParents": [
+          "283eaecd0a88cd89ac30226ea560f96a8cf0e9bc",
+          "413639c5e4dd4dca7e47dcb15e9d87a167252653"
+        ]
+      },
+      "base": {
+        "commit": "283eaecd0a88cd89ac30226ea560f96a8cf0e9bc",
+        "tree": "9f69dd3eb2e72bbd07df57ce5de8438b4bce3eeb"
+      },
+      "environment": {
+        "build": "pnpm build",
+        "environment": "pnpm 10.13.1 and repository Node requirements.",
+        "install": "pnpm install --frozen-lockfile",
+        "runtime": "pnpm dev -- --host 0.0.0.0",
+        "test": "pnpm check && pnpm lint && pnpm check:size && pnpm check:data"
+      },
+      "evaluator": {
+        "checks": [
+          "Selecting vlt persists after reload.",
+          "Clipboard output is a runnable vlt-flavored shadcn add command.",
+          "The vlt library entry is searchable and opens in both themes.",
+          "All four SVG assets render nonblank without external references."
+        ],
+        "commonFailures": [
+          "edit outside allowed paths",
+          "dependency or lockfile change unless explicitly allowed",
+          "build failure",
+          "console error",
+          "accessibility regression"
+        ],
+        "design": "Playwright package-manager, clipboard, search, and theme flow.",
+        "implementationLocation": "external benchmark harness, mounted only after the agent run",
+        "visibility": "hidden-from-agent"
+      },
+      "expected": {
+        "commit": "e8213f98c5b5dfb74ecabe3ae659d8a9381ac58d",
+        "tree": "515b8996e79b250ae890e8d46bbc8ac435de65e7"
+      },
+      "informationEntitlement": {
+        "canonicalSha256": "21d741c0d25d8df821c3b3388372236691ee455d704f216cc5a55a4f8dfcf4a2",
+        "excludedFromAgent": [
+          "expected commit, expected tree, and expected diff",
+          "provenance implementation discussion",
+          "hidden evaluator implementation and checks",
+          "personal skills and personal MCP configuration",
+          "Decantr engineering and release skills"
+        ],
+        "parityRule": "Decantr receives no human-authored fact that is unavailable to the control arm. Delivery format may differ; information entitlement may not.",
+        "sourceList": [
+          {
+            "access": "All tracked files at the base commit are readable by both arms.",
+            "id": "base-checkout",
+            "paths": [
+              "**/*"
+            ],
+            "reference": "https://github.com/pheralb/svgl@283eaecd0a88cd89ac30226ea560f96a8cf0e9bc",
+            "type": "repository-tree"
+          },
+          {
+            "access": "Identical plaintext prompt for both arms.",
+            "id": "task-prompt",
+            "reference": "record.prompt",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical allowed/forbidden path policy for both arms.",
+            "id": "scope-policy",
+            "reference": "record.scope",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical environment and command contract for both arms.",
+            "id": "execution-contract",
+            "reference": "record.environment",
+            "type": "benchmark-input"
+          }
+        ]
+      },
+      "kind": "repository",
+      "limitations": [
+        "No repository-native test script.",
+        "Do not run network-dependent check:links.",
+        "Logo and trademark permission relies on the contributor pull-request attestation."
+      ],
+      "partition": "development",
+      "prompt": "Add vlt as a first-class package-manager choice. Selecting it must persist like existing choices and produce a runnable vlt-flavored shadcn add command. Also expose vlt light/dark icon and wordmark through the searchable Software logo library using existing theme conventions.",
+      "provenance": {
+        "cutoffDisclosure": {
+          "models": {
+            "claude-fable-5": {
+              "cutoff": "2026-01-31T23:59:59Z",
+              "relation": "post-cutoff"
+            },
+            "gpt-5.6-sol": {
+              "cutoff": "2026-02-16T23:59:59Z",
+              "relation": "post-cutoff"
+            }
+          },
+          "qualificationEmbargo": {
+            "cutoff": "2026-05-01T23:59:59Z",
+            "relation": "pre-or-on-cutoff"
+          }
+        },
+        "expectedCommitUrl": "https://github.com/pheralb/svgl/commit/e8213f98c5b5dfb74ecabe3ae659d8a9381ac58d",
+        "expectedCommitterDate": "2026-03-12T11:39:03Z",
+        "expectedSubject": "Merge pull request #924 from darcyclarke/dc/add-vlt",
+        "sourceReportDisclosure": "Post-primary-cutoff but pre-Claude-Fable cutoff merged pull request.",
+        "type": "pull_request",
+        "url": "https://github.com/pheralb/svgl/pull/924"
+      },
+      "repository": {
+        "corpusPin": "a5a7fdef6454504902c33f571517e8302af3448c",
+        "corpusProjectPath": ".",
+        "corpusTree": "bc1c7c52b2027c895689e122b1d5fc766a287eda",
+        "framework": "svelte",
+        "id": "svgl",
+        "license": "MIT",
+        "projectPath": ".",
+        "url": "https://github.com/pheralb/svgl"
+      },
+      "schemaVersion": "decantr-benchmark-task-candidate.v1",
+      "scope": {
+        "allowedPaths": [
+          "src/components/logos/vlt.svelte",
+          "src/components/settings/options/selectPkgManager.svelte",
+          "src/components/svgs/copyShadcnCommand.svelte",
+          "src/data/svgs.ts",
+          "src/stores/settings.store.ts",
+          "static/library/vlt-dark.svg",
+          "static/library/vlt-light.svg",
+          "static/library/vlt-wordmark-dark.svg",
+          "static/library/vlt-wordmark-light.svg"
+        ],
+        "forbiddenPaths": [
+          "** (except allowed paths)",
+          "src/routes/api/**",
+          "package.json",
+          "pnpm-lock.yaml"
+        ],
+        "policy": "default-deny"
+      },
+      "taskId": "svgl.vlt-package-manager"
+    },
+    {
+      "ancestry": {
+        "baseIsExpectedFirstParent": true,
+        "expectedIsAncestorOfCorpusPin": true,
+        "expectedParents": [
+          "0f1be24f711b1fada8dd35a1554d4710d7fa6cd6"
+        ]
+      },
+      "base": {
+        "commit": "0f1be24f711b1fada8dd35a1554d4710d7fa6cd6",
+        "tree": "628a59f83d564aee67ab86a13d7651d97bda4aab"
+      },
+      "environment": {
+        "build": "bun run build",
+        "environment": "Bun runtime from the repository base.",
+        "install": "bun install --frozen-lockfile",
+        "runtime": "bun run build && HOST=0.0.0.0 PORT=3000 bun run start",
+        "test": "bun run lint (no repository-native test script)"
+      },
+      "evaluator": {
+        "checks": [
+          "A direct production request to /dashboard/overview succeeds.",
+          "Client navigation to the route succeeds without hydration warnings or error boundaries.",
+          "All four KPI labels and the four named analytics sections are visible.",
+          "Chart surfaces have nonzero rendered geometry.",
+          "No isDehydrated output, uncaught exception, or console error occurs."
+        ],
+        "commonFailures": [
+          "edit outside allowed paths",
+          "dependency or lockfile change unless explicitly allowed",
+          "build failure",
+          "console error",
+          "accessibility regression"
+        ],
+        "design": "Production SSR and client-navigation Playwright checks.",
+        "implementationLocation": "external benchmark harness, mounted only after the agent run",
+        "visibility": "hidden-from-agent"
+      },
+      "expected": {
+        "commit": "c6798c0d45c204547b9eae34bf9f83d58a93f1ea",
+        "tree": "a4232d8cf3929230a046487fa9b03fece929d5f3"
+      },
+      "informationEntitlement": {
+        "canonicalSha256": "c62f59b973e90c7e04d77ca9c148772e6a78afe792756dc5d9394857d38bd838",
+        "excludedFromAgent": [
+          "expected commit, expected tree, and expected diff",
+          "provenance implementation discussion",
+          "hidden evaluator implementation and checks",
+          "personal skills and personal MCP configuration",
+          "Decantr engineering and release skills"
+        ],
+        "parityRule": "Decantr receives no human-authored fact that is unavailable to the control arm. Delivery format may differ; information entitlement may not.",
+        "sourceList": [
+          {
+            "access": "All tracked files at the base commit are readable by both arms.",
+            "id": "base-checkout",
+            "paths": [
+              "**/*"
+            ],
+            "reference": "https://github.com/Kiranism/tanstack-start-dashboard@0f1be24f711b1fada8dd35a1554d4710d7fa6cd6",
+            "type": "repository-tree"
+          },
+          {
+            "access": "Identical plaintext prompt for both arms.",
+            "id": "task-prompt",
+            "reference": "record.prompt",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical allowed/forbidden path policy for both arms.",
+            "id": "scope-policy",
+            "reference": "record.scope",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical environment and command contract for both arms.",
+            "id": "execution-contract",
+            "reference": "record.environment",
+            "type": "benchmark-input"
+          }
+        ]
+      },
+      "kind": "repository",
+      "limitations": [
+        "No issue, pull request, review trail, or native test suite.",
+        "The expected change removes synthetic independent loading and skeleton behavior."
+      ],
+      "partition": "development",
+      "prompt": "Opening Dashboard Overview, including a hard refresh or returning through in-app navigation, must show the analytics dashboard instead of a runtime or hydration failure. Preserve the four KPI cards and render the bar chart, recent-sales panel, area chart, and pie chart from the existing local data without page or console errors.",
+      "provenance": {
+        "cutoffDisclosure": {
+          "models": {
+            "claude-fable-5": {
+              "cutoff": "2026-01-31T23:59:59Z",
+              "relation": "post-cutoff"
+            },
+            "gpt-5.6-sol": {
+              "cutoff": "2026-02-16T23:59:59Z",
+              "relation": "post-cutoff"
+            }
+          },
+          "qualificationEmbargo": {
+            "cutoff": "2026-05-01T23:59:59Z",
+            "relation": "pre-or-on-cutoff"
+          }
+        },
+        "expectedCommitUrl": "https://github.com/Kiranism/tanstack-start-dashboard/commit/c6798c0d45c204547b9eae34bf9f83d58a93f1ea",
+        "expectedCommitterDate": "2026-04-23T02:10:41+05:30",
+        "expectedSubject": "fix: remove useSuspenseQuery from overview to fix isDehydrated error",
+        "sourceReportDisclosure": "Post-primary-cutoff focused direct commit with no issue, pull request, or review trail.",
+        "type": "direct_commit",
+        "url": "https://github.com/Kiranism/tanstack-start-dashboard/commit/c6798c0d45c204547b9eae34bf9f83d58a93f1ea"
+      },
+      "repository": {
+        "corpusPin": "433a5a073c944d25dcd59922b4de7193bde3c03e",
+        "corpusProjectPath": ".",
+        "corpusTree": "684bba21f3c753c03bb2c9d3f00d4ca976a58ecf",
+        "framework": "react",
+        "id": "tanstack-start-dashboard",
+        "license": "MIT",
+        "projectPath": ".",
+        "url": "https://github.com/Kiranism/tanstack-start-dashboard"
+      },
+      "schemaVersion": "decantr-benchmark-task-candidate.v1",
+      "scope": {
+        "allowedPaths": [
+          "src/routes/dashboard/overview.tsx"
+        ],
+        "forbiddenPaths": [
+          "package.json",
+          "bun.lock",
+          "vite.config.ts",
+          "src/components/**",
+          "src/mock/**",
+          "src/routeTree.gen.ts",
+          "src/styles/**",
+          "public/**",
+          "server/**",
+          "docs/**"
+        ],
+        "policy": "default-deny"
+      },
+      "taskId": "tanstack-start-dashboard.overview-hydration"
+    },
+    {
+      "ancestry": {
+        "baseIsExpectedFirstParent": true,
+        "expectedIsAncestorOfCorpusPin": true,
+        "expectedParents": [
+          "860729230392c15d3eb9e28c270edc63baf15ea2"
+        ]
+      },
+      "base": {
+        "commit": "860729230392c15d3eb9e28c270edc63baf15ea2",
+        "tree": "e21ea4bd65f1c9a5a345d72f031cd9d23af1f508"
+      },
+      "environment": {
+        "build": "pnpm typecheck && pnpm build:ui",
+        "environment": "Node >=24.12, pnpm 10.32.1",
+        "install": "corepack pnpm install --frozen-lockfile --ignore-scripts",
+        "runtime": "pnpm dev:ui",
+        "test": "pnpm test:js"
+      },
+      "evaluator": {
+        "checks": [
+          "Mock the settings store, mount the root, and assert initial UI/editor family and size values are written to global CSS custom properties.",
+          "Update all four settings and assert the same mounted document updates without reload.",
+          "Assert font stacks contain generic fallbacks and theme data attributes still update and clean up."
+        ],
+        "commonFailures": [
+          "edit outside allowed paths",
+          "dependency or lockfile change unless explicitly allowed",
+          "build failure",
+          "console error",
+          "accessibility regression"
+        ],
+        "design": "solid-jsdom-reactivity-plus-build",
+        "implementationLocation": "external benchmark harness, mounted only after the agent run",
+        "visibility": "hidden-from-agent"
+      },
+      "expected": {
+        "commit": "fc15c1ef6f3b167f9ec4d27ab40987ac03ac0982",
+        "tree": "56b17c6daab62bc4e6dfddda176ebffef3a560b8"
+      },
+      "informationEntitlement": {
+        "canonicalSha256": "0af8ceb9f6b93aefa47836d0332fafb6c64f6bea16a0b59615bd2c26a5fc5596",
+        "excludedFromAgent": [
+          "expected commit, expected tree, and expected diff",
+          "provenance implementation discussion",
+          "hidden evaluator implementation and checks",
+          "personal skills and personal MCP configuration",
+          "Decantr engineering and release skills"
+        ],
+        "parityRule": "Decantr receives no human-authored fact that is unavailable to the control arm. Delivery format may differ; information entitlement may not.",
+        "sourceList": [
+          {
+            "access": "All tracked files at the base commit are readable by both arms.",
+            "id": "base-checkout",
+            "paths": [
+              "**/*"
+            ],
+            "reference": "https://github.com/riipandi/tauri-start-solid@860729230392c15d3eb9e28c270edc63baf15ea2",
+            "type": "repository-tree"
+          },
+          {
+            "access": "Identical plaintext prompt for both arms.",
+            "id": "task-prompt",
+            "reference": "record.prompt",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical allowed/forbidden path policy for both arms.",
+            "id": "scope-policy",
+            "reference": "record.scope",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical environment and command contract for both arms.",
+            "id": "execution-contract",
+            "reference": "record.environment",
+            "type": "benchmark-input"
+          }
+        ]
+      },
+      "kind": "repository",
+      "limitations": [
+        "Do not score native system-font enumeration or Tauri packaging; this task is only the frontend application of already saved preferences."
+      ],
+      "partition": "development",
+      "prompt": "Apply the saved UI and editor font-family and font-size preferences to the running application as reactive global typography values. Changes should take effect without restart, include sensible system fallbacks, and leave theme attributes and cleanup behavior intact.",
+      "provenance": {
+        "commitUrl": "https://github.com/riipandi/tauri-start-solid/commit/fc15c1ef6f3b167f9ec4d27ab40987ac03ac0982",
+        "cutoffDisclosure": {
+          "models": {
+            "claude-fable-5": {
+              "cutoff": "2026-01-31T23:59:59Z",
+              "relation": "post-cutoff"
+            },
+            "gpt-5.6-sol": {
+              "cutoff": "2026-02-16T23:59:59Z",
+              "relation": "post-cutoff"
+            }
+          },
+          "qualificationEmbargo": {
+            "cutoff": "2026-05-01T23:59:59Z",
+            "relation": "pre-or-on-cutoff"
+          }
+        },
+        "expectedCommitUrl": "https://github.com/riipandi/tauri-start-solid/commit/fc15c1ef6f3b167f9ec4d27ab40987ac03ac0982",
+        "expectedCommitterDate": "2026-03-21T01:57:12+07:00",
+        "expectedSubject": "fix: font family not working on UI",
+        "sourceReportDisclosure": "The expected commit is a focused direct commit carried by PR #5; PR #5 itself is a 209-file mixed change and is not the benchmark unit.",
+        "type": "direct_commit_within_pull_request",
+        "url": "https://github.com/riipandi/tauri-start-solid/pull/5"
+      },
+      "repository": {
+        "corpusPin": "5840faef1ae2b2c29bc70dbb46728bbe0f3a02f8",
+        "corpusProjectPath": ".",
+        "corpusTree": "5dfd6bd99785697276f92f80c1bc8eb94b4bb73c",
+        "framework": "solid",
+        "id": "tauri-start-solid",
+        "license": "MIT OR Apache-2.0",
+        "projectPath": ".",
+        "url": "https://github.com/riipandi/tauri-start-solid"
+      },
+      "schemaVersion": "decantr-benchmark-task-candidate.v1",
+      "scope": {
+        "allowedPaths": [
+          "src-app/routes/__root.tsx",
+          "src-app/styles/globals.css",
+          "src-app/**/*.test.ts",
+          "src-app/**/*.test.tsx"
+        ],
+        "forbiddenPaths": [
+          "package.json",
+          "pnpm-lock.yaml",
+          "src-tauri/**",
+          "src-app/stores/**",
+          "src-app/schemas/**",
+          "src-app/routes/(settings)/**"
+        ],
+        "policy": "default-deny"
+      },
+      "taskId": "tauri-start-solid.apply-font-preferences"
+    },
+    {
+      "ancestry": {
+        "baseIsExpectedFirstParent": true,
+        "expectedIsAncestorOfCorpusPin": true,
+        "expectedParents": [
+          "af655d3621b32327b8fb9fb985dfb597be6105a4"
+        ]
+      },
+      "base": {
+        "commit": "af655d3621b32327b8fb9fb985dfb597be6105a4",
+        "tree": "2ca0fb9e9789a946e2d8199e2b891a9aa25033fe"
+      },
+      "environment": {
+        "build": "cd frontend && pnpm build",
+        "environment": "Frontend pnpm environment; CI did not pin Node or pnpm.",
+        "install": "cd frontend && pnpm install --frozen-lockfile",
+        "runtime": "cd frontend && pnpm dev -- --host 0.0.0.0",
+        "test": "cd frontend && pnpm check (no repository-native test script)"
+      },
+      "evaluator": {
+        "checks": [
+          "At 65 seconds the display is 01:05.",
+          "At 9 seconds the display is 00:09.",
+          "At 0 seconds the display remains valid and transitions correctly.",
+          "The countdown button width remains stable and animation/status treatment is retained."
+        ],
+        "commonFailures": [
+          "edit outside allowed paths",
+          "dependency or lockfile change unless explicitly allowed",
+          "build failure",
+          "console error",
+          "accessibility regression"
+        ],
+        "design": "Pending-device component under a fake clock with Chromium geometry checks.",
+        "implementationLocation": "external benchmark harness, mounted only after the agent run",
+        "visibility": "hidden-from-agent"
+      },
+      "expected": {
+        "commit": "b297f3a88781d224fc4540a792a374e6971996f9",
+        "tree": "14ad78a743ab515dca788b6694cddb90434dfe85"
+      },
+      "informationEntitlement": {
+        "canonicalSha256": "0a9ef950fe7b6120df7680c4513b97966caee06121bf0e3170fb1cb961f2d513",
+        "excludedFromAgent": [
+          "expected commit, expected tree, and expected diff",
+          "provenance implementation discussion",
+          "hidden evaluator implementation and checks",
+          "personal skills and personal MCP configuration",
+          "Decantr engineering and release skills"
+        ],
+        "parityRule": "Decantr receives no human-authored fact that is unavailable to the control arm. Delivery format may differ; information entitlement may not.",
+        "sourceList": [
+          {
+            "access": "All tracked files at the base commit are readable by both arms.",
+            "id": "base-checkout",
+            "paths": [
+              "**/*"
+            ],
+            "reference": "https://github.com/seriousm4x/UpSnap@af655d3621b32327b8fb9fb985dfb597be6105a4",
+            "type": "repository-tree"
+          },
+          {
+            "access": "Identical plaintext prompt for both arms.",
+            "id": "task-prompt",
+            "reference": "record.prompt",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical allowed/forbidden path policy for both arms.",
+            "id": "scope-policy",
+            "reference": "record.scope",
+            "type": "benchmark-input"
+          },
+          {
+            "access": "Identical environment and command contract for both arms.",
+            "id": "execution-contract",
+            "reference": "record.environment",
+            "type": "benchmark-input"
+          }
+        ]
+      },
+      "kind": "repository",
+      "limitations": [
+        "Full workflow needs the Go/PocketBase backend and device data.",
+        "CI uses latest Node/pnpm and install fetches a commit-pinned GitHub dependency."
+      ],
+      "partition": "development",
+      "prompt": "In a network-interface card whose device is pending, display the remaining time as fixed-width, two-digit MM:SS, while retaining the current animated countdown and status styling.",
+      "provenance": {
+        "cutoffDisclosure": {
+          "models": {
+            "claude-fable-5": {
+              "cutoff": "2026-01-31T23:59:59Z",
+              "relation": "post-cutoff"
+            },
+            "gpt-5.6-sol": {
+              "cutoff": "2026-02-16T23:59:59Z",
+              "relation": "post-cutoff"
+            }
+          },
+          "qualificationEmbargo": {
+            "cutoff": "2026-05-01T23:59:59Z",
+            "relation": "pre-or-on-cutoff"
+          }
+        },
+        "expectedCommitUrl": "https://github.com/seriousm4x/UpSnap/commit/b297f3a88781d224fc4540a792a374e6971996f9",
+        "expectedCommitterDate": "2026-04-08T22:44:05+02:00",
+        "expectedSubject": "Format pending countdown as MM:SS (#1727)",
+        "sourceReportDisclosure": "Post-primary-cutoff but pre-Claude-Fable cutoff merged pull request.",
+        "type": "pull_request",
+        "url": "https://github.com/seriousm4x/UpSnap/pull/1727"
+      },
+      "repository": {
+        "corpusPin": "c4cf00683202083745ed9f840be2442e3896f2ea",
+        "corpusProjectPath": "frontend",
+        "corpusTree": "2677e232b9ee35849987cbb66b80132419ad6c6c",
+        "framework": "svelte",
+        "id": "upsnap-frontend",
+        "license": "MIT",
+        "projectPath": "frontend",
+        "url": "https://github.com/seriousm4x/UpSnap"
+      },
+      "schemaVersion": "decantr-benchmark-task-candidate.v1",
+      "scope": {
+        "allowedPaths": [
+          "frontend/src/lib/components/DeviceCardNic.svelte"
+        ],
+        "forbiddenPaths": [
+          "frontend/** (except allowed path)",
+          "backend/**",
+          "package.json",
+          "pnpm-lock.yaml"
+        ],
+        "policy": "default-deny"
+      },
+      "taskId": "upsnap-frontend.pending-countdown"
+    }
+  ],
+  "schemaVersion": "decantr-benchmark-development-task-candidates.v2",
+  "sourceCorpus": {
+    "canonicalSha256": "073c4ffb4c40cde6d71069ead031d6bd694c00646c6dc2c7db3b40875fd5d359",
+    "frozenAt": "2026-07-22T10:02:09Z",
+    "schemaVersion": "decantr-benchmark-corpus.v1"
+  },
+  "sourceProtocol": {
+    "canonicalSha256": "925f28b7ff9aa8bbab8bd19aea4e04dbebcd022f519246fbe0247b937037e7b9",
+    "frozenAt": "2026-07-22T11:29:02Z",
+    "schemaVersion": "decantr-benchmark-protocol.v1"
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "input": {
+    "policyCard": {
+      "statements": [
+        {
+          "id": "repository-authority",
+          "sources": [
+            "base-checkout"
+          ],
+          "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+        },
+        {
+          "id": "change-scope",
+          "sources": [
+            "task.scope"
+          ],
+          "text": "Keep authored changes within the declared allowlist: src/views/uikit/OverlayDoc.vue, src/views/uikit/**/*.spec.ts. Do not edit forbidden paths: src/** (except allowed paths), package.json, package-lock.json, public/**, .gitmodules."
+        },
+        {
+          "id": "host-verification",
+          "sources": [
+            "candidate.environment"
+          ],
+          "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+        }
+      ]
+    },
+    "target": {
+      "selector": "/uikit/overlay"
+    }
+  },
+  "oracle": {
+    "acceptedStatuses": [
+      "ready",
+      "limited"
+    ],
+    "expectedKind": "route",
+    "forbiddenRankOnePatterns": [
+      "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+    ],
+    "rankOneFiles": [
+      "src/views/uikit/OverlayDoc.vue"
+    ],
+    "styleAuthority": {
+      "approach": "primevue-tailwind-scss",
+      "confidence": "high",
+      "files": [
+        "postcss.config.js",
+        "src/assets/styles.scss",
+        "src/assets/tailwind.css",
+        "src/layout/AppConfigurator.vue",
+        "src/main.js",
+        "tailwind.config.js"
+      ]
+    }
+  },
+  "review": {
+    "notes": "Independently checked the frozen base tree and candidate record. The neutral route selector resolves limited to the production overlay view at rank one; the router, PrimeVue theme runtime, Tailwind, and SCSS files are project-owned authority. Forbidden test and generated authority is excluded, and the scope statement is exact.",
+    "reviewedAt": "2026-07-22T12:17:39Z",
+    "reviewedBy": "independent-target-review-b",
+    "status": "approved"
+  },
+  "schemaVersion": "decantr-benchmark-task-delivery-spec.v1",
+  "taskId": "sakai-vue.overlay-popover"
+}

@@ -15,6 +15,12 @@ const EXCLUDED_FILES = new Set([
   'decantr.essence.json',
   'sitemap.xml',
 ]);
+const EXCLUDED_PATH_PREFIXES = [
+  'audit/',
+  'benchmarks/',
+  'legacy/',
+  'programs/',
+];
 
 const entries = walkDocs(docsDir)
   .filter(isIndexableFile)
@@ -52,6 +58,7 @@ function isIndexableFile(filePath) {
   const rel = normalizePath(relative(docsDir, filePath));
   const filename = rel.split('/').at(-1) ?? rel;
   if (EXCLUDED_FILES.has(rel) || EXCLUDED_FILES.has(filename)) return false;
+  if (EXCLUDED_PATH_PREFIXES.some((prefix) => rel.startsWith(prefix))) return false;
   return INDEXABLE_EXTENSIONS.has(getExtension(filename));
 }
 

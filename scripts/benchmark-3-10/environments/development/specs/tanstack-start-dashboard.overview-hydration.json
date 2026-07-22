@@ -1,0 +1,68 @@
+{
+  "base": {
+    "commit": "0f1be24f711b1fada8dd35a1554d4710d7fa6cd6",
+    "tree": "628a59f83d564aee67ab86a13d7651d97bda4aab"
+  },
+  "cleanAfterPreparation": true,
+  "lockfiles": [
+    {
+      "path": "bun.lock",
+      "sha256": "44c6ad24a2ecb394d6578aba5a8e06cf34d58bcadb2d80d71997920de7c3d996"
+    }
+  ],
+  "partition": "development",
+  "preparation": [
+    {
+      "args": [
+        "install",
+        "--frozen-lockfile"
+      ],
+      "cwd": ".",
+      "executable": "bun",
+      "id": "install-dependencies",
+      "network": "dependency-registry",
+      "required": true,
+      "timeoutMs": 7200000
+    }
+  ],
+  "profile": {
+    "arch": "x64",
+    "bunVersion": "1.3.10",
+    "id": "bun-1.3.10-bun-1.3.10",
+    "nodeVersion": null,
+    "os": "linux",
+    "packageManager": {
+      "name": "bun",
+      "version": "1.3.10"
+    }
+  },
+  "projectPath": ".",
+  "review": {
+    "notes": "Independent source-evidence re-review verified 3 frozen Git blobs and exact SHA-256 values at 0f1be24f711b1fada8dd35a1554d4710d7fa6cd6. Independent review confirms that the repository is Bun-managed, the exact bun.lock hash, and the root install cwd. Neither package.json nor README pins a Bun version, and no runtime file, container, or CI workflow authenticates candidate Bun 1.3.10 on Linux x64; exact frozen-install validation is required before approval.",
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "status": "draft"
+  },
+  "schemaVersion": "decantr-benchmark-task-environment.v1",
+  "sourceEvidence": [
+    {
+      "kind": "lockfile",
+      "path": "bun.lock",
+      "sha256": "44c6ad24a2ecb394d6578aba5a8e06cf34d58bcadb2d80d71997920de7c3d996",
+      "statement": "Frozen root Bun text lock is bound for deterministic bun install --frozen-lockfile preparation."
+    },
+    {
+      "kind": "package-manifest",
+      "path": "package.json",
+      "sha256": "d75b6e7a9b4304be7d61446e49d99e364567cdadb4438ffbcd8099224bbccb54",
+      "statement": "Manifest defines Bun-oriented project scripts but contains no engines or packageManager version."
+    },
+    {
+      "kind": "reviewer-override",
+      "path": "README.md",
+      "sha256": "23e8b285aa504ed446118892178fbc15ceda54b165662193bfc9fd8868d3d2e9",
+      "statement": "Frozen project instructions use root bun install and bun run commands but do not pin a Bun release."
+    }
+  ],
+  "taskId": "tanstack-start-dashboard.overview-hydration"
+}

@@ -1,0 +1,70 @@
+{
+  "input": {
+    "policyCard": {
+      "statements": [
+        {
+          "id": "repository-authority",
+          "sources": [
+            "base-checkout"
+          ],
+          "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+        },
+        {
+          "id": "change-scope",
+          "sources": [
+            "task.scope"
+          ],
+          "text": "Keep authored changes within the declared allowlist: src/routes/dashboard/overview.tsx. Do not edit forbidden paths: package.json, bun.lock, vite.config.ts, src/components/**, src/mock/**, src/routeTree.gen.ts, src/styles/**, public/**, server/**, docs/**."
+        },
+        {
+          "id": "host-verification",
+          "sources": [
+            "candidate.environment"
+          ],
+          "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+        }
+      ]
+    },
+    "target": {
+      "selector": "/dashboard/overview"
+    }
+  },
+  "oracle": {
+    "acceptedStatuses": [
+      "ready",
+      "limited"
+    ],
+    "expectedKind": "route",
+    "forbiddenRankOnePatterns": [
+      "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+    ],
+    "rankOneFiles": [
+      "src/routes/dashboard/overview.tsx"
+    ],
+    "styleAuthority": {
+      "approach": "tailwind",
+      "confidence": "high",
+      "files": [
+        "src/styles/globals.css",
+        "src/styles/themes/astro-vista.css",
+        "src/styles/themes/claude.css",
+        "src/styles/themes/light-green.css",
+        "src/styles/themes/mono.css",
+        "src/styles/themes/neobrutualism.css",
+        "src/styles/themes/notebook.css",
+        "src/styles/themes/supabase.css",
+        "src/styles/themes/vercel.css",
+        "src/styles/themes/whatsapp.css",
+        "src/styles/themes/zen.css"
+      ]
+    }
+  },
+  "review": {
+    "notes": "Independently checked the frozen base tree and candidate record. The neutral dashboard route resolves ready to the production route source at rank one; the generated route tree and other forbidden paths cannot become authority. The Tailwind global and theme files are accurate, and the single-file scope statement exactly matches the candidate.",
+    "reviewedAt": "2026-07-22T12:17:39Z",
+    "reviewedBy": "independent-target-review-b",
+    "status": "approved"
+  },
+  "schemaVersion": "decantr-benchmark-task-delivery-spec.v1",
+  "taskId": "tanstack-start-dashboard.overview-hydration"
+}

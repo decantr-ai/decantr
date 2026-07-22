@@ -1,0 +1,63 @@
+{
+  "input": {
+    "policyCard": {
+      "statements": [
+        {
+          "id": "repository-authority",
+          "sources": [
+            "base-checkout"
+          ],
+          "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+        },
+        {
+          "id": "change-scope",
+          "sources": [
+            "task.scope"
+          ],
+          "text": "Keep authored changes within the declared allowlist: apps/react-vite/src/app/router.tsx, apps/react-vite/src/app/routes/**, apps/react-vite/src/components/ui/table/**, apps/react-vite/src/features/comments/**, apps/react-vite/src/features/discussions/**, apps/react-vite/src/features/teams/**, apps/react-vite/src/features/users/**, apps/react-vite/src/lib/auth.tsx, apps/react-vite/src/types/api.ts, apps/react-vite/src/testing/mocks/**, apps/react-vite/**/*.test.ts, apps/react-vite/**/*.test.tsx. Do not edit forbidden paths: docs/**, package.json, yarn.lock, .github/**, apps/react-vite/src/styles/**."
+        },
+        {
+          "id": "host-verification",
+          "sources": [
+            "candidate.environment"
+          ],
+          "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+        }
+      ]
+    },
+    "target": {
+      "selector": "/app/discussions/:discussionId"
+    }
+  },
+  "oracle": {
+    "acceptedStatuses": [
+      "ready",
+      "limited"
+    ],
+    "expectedKind": "route",
+    "forbiddenRankOnePatterns": [
+      "(^|/)(?:\\.next|\\.nuxt|\\.svelte-kit|__fixtures__|__generated__|__mocks__|__tests__|build|coverage|cypress|dist|e2e|fixtures?|generated|mocks?|out|playwright|specs?|stories|test-utils?|testing|tests?|target)(?:/|$)|\\.(?:cy|d|e2e|fixture|gen|generated|mock|spec|stories?|test|vitest)\\.[^.]+$"
+    ],
+    "rankOneFiles": [
+      "src/app/routes/app/discussions/discussion.tsx"
+    ],
+    "styleAuthority": {
+      "approach": "tailwind",
+      "confidence": "high",
+      "files": [
+        "postcss.config.cjs",
+        "src/index.css",
+        "src/main.tsx",
+        "tailwind.config.cjs"
+      ]
+    }
+  },
+  "review": {
+    "notes": "Approved after correcting the policy card to the candidate record's src-based allowlist. The detail route resolves uniquely to production source, Tailwind authority is accurate, and the expanded guard excludes test, generated, fixture, story, and build lanes.",
+    "reviewedAt": "2026-07-22T12:19:56Z",
+    "reviewedBy": "independent-target-review-a",
+    "status": "approved"
+  },
+  "schemaVersion": "decantr-benchmark-task-delivery-spec.v1",
+  "taskId": "bulletproof-react-vite.discussion-pagination"
+}

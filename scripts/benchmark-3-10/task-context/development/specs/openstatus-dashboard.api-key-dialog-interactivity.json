@@ -1,0 +1,61 @@
+{
+  "input": {
+    "policyCard": {
+      "statements": [
+        {
+          "id": "repository-authority",
+          "sources": [
+            "base-checkout"
+          ],
+          "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+        },
+        {
+          "id": "change-scope",
+          "sources": [
+            "task.scope"
+          ],
+          "text": "Keep authored changes within the declared allowlist: apps/dashboard/src/components/forms/settings/form-api-key.tsx, apps/dashboard/src/components/forms/settings/form-api-key.test.tsx. Do not edit forbidden paths: packages/ui/src/components/ui/dialog*, packages/ui/src/components/ui/popover*, apps/dashboard/src/styles/**, apps/api/**, packages/db/**, package.json, pnpm-lock.yaml, apps/dashboard/src/components/forms/settings/** (except allowed paths)."
+        },
+        {
+          "id": "host-verification",
+          "sources": [
+            "candidate.environment"
+          ],
+          "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+        }
+      ]
+    },
+    "target": {
+      "selector": "component:FormApiKey"
+    }
+  },
+  "oracle": {
+    "acceptedStatuses": [
+      "limited"
+    ],
+    "expectedKind": "component",
+    "forbiddenRankOnePatterns": [
+      "(^|/)(?:\\.next|\\.nuxt|\\.svelte-kit|__fixtures__|__generated__|__mocks__|__tests__|build|coverage|cypress|dist|e2e|fixtures?|generated|mocks?|out|playwright|specs?|stories|test-utils?|testing|tests?|target)(?:/|$)|\\.(?:cy|d|e2e|fixture|gen|generated|mock|spec|stories?|test|vitest)\\.[^.]+$"
+    ],
+    "rankOneFiles": [
+      "src/components/forms/settings/form-api-key.tsx"
+    ],
+    "styleAuthority": {
+      "approach": "tailwind",
+      "confidence": "high",
+      "files": [
+        "postcss.config.mjs",
+        "src/app/globals.css",
+        "src/app/layout.tsx"
+      ]
+    }
+  },
+  "review": {
+    "notes": "Approved: component:FormApiKey uniquely resolves to the production settings form. Tailwind authority is proven by PostCSS, globals.css, and the root layout import; scope text mirrors the candidate, and the revised guard covers test, generated, fixture, story, and build authority.",
+    "reviewedAt": "2026-07-22T12:19:56Z",
+    "reviewedBy": "independent-target-review-a",
+    "status": "approved"
+  },
+  "schemaVersion": "decantr-benchmark-task-delivery-spec.v1",
+  "taskId": "openstatus-dashboard.api-key-dialog-interactivity"
+}

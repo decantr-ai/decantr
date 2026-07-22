@@ -66,6 +66,11 @@ describe('brownfield shell drift', () => {
         'react-router-dom': '^7.0.0',
       },
     });
+    writeFileSync(
+      join(projectRoot, 'src', 'main.tsx'),
+      'import { App } from "./App";\nexport { App };\n',
+      'utf-8',
+    );
   });
 
   afterEach(() => {

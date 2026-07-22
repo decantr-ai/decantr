@@ -125,7 +125,7 @@ export function formatAuthorityResolutionText(
   if (conflicts.length === 0) {
     lines.push(`${GREEN}No authority conflicts found.${RESET}`);
     lines.push('');
-    lines.push(`Next: ${DIM}Run decantr task <route> "<intent>" before editing.${RESET}`);
+    lines.push(`Next: ${DIM}Run decantr task <target> "<intent>" before editing.${RESET}`);
     return `${lines.join('\n')}\n`;
   }
 

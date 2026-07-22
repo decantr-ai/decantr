@@ -1,0 +1,67 @@
+{
+  "base": {
+    "commit": "0e7bf07b25465b3878194d87a1c4ca38bc511e85",
+    "tree": "74fbfa47e4956bf606d08c0383afcce66eb29d34"
+  },
+  "cleanAfterPreparation": true,
+  "lockfiles": [
+    {
+      "path": "package-lock.json",
+      "sha256": "e3ae2668d330bfde0b3ef9efca11f69d435e944c006886aa60b47262f048db27"
+    }
+  ],
+  "partition": "development",
+  "preparation": [
+    {
+      "args": [
+        "ci"
+      ],
+      "cwd": ".",
+      "executable": "npm",
+      "id": "install-dependencies",
+      "network": "dependency-registry",
+      "required": true,
+      "timeoutMs": 7200000
+    }
+  ],
+  "profile": {
+    "arch": "x64",
+    "bunVersion": null,
+    "id": "node-20.19.2-npm-10.8.2",
+    "nodeVersion": "20.19.2",
+    "os": "linux",
+    "packageManager": {
+      "name": "npm",
+      "version": "10.8.2"
+    }
+  },
+  "projectPath": ".",
+  "review": {
+    "notes": "Independent source-evidence re-review verified 3 frozen Git blobs and exact SHA-256 values at 0e7bf07b25465b3878194d87a1c4ca38bc511e85. The frozen tree does not pin exact Node 20.19.2 or npm 10.8.2, and no content-bound Linux x64 probe receipt exists.",
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "status": "draft"
+  },
+  "schemaVersion": "decantr-benchmark-task-environment.v1",
+  "sourceEvidence": [
+    {
+      "kind": "reviewer-override",
+      "path": ".github/workflows/main.yml",
+      "sha256": "f588f982efedbd933ff4cf0bff5e7b14a65dee7d64af4cd30d3933c7970506d7",
+      "statement": "Frozen GitHub Pages workflow installs the lockfile with npm ci before running both application and Storybook builds."
+    },
+    {
+      "kind": "lockfile",
+      "path": "package-lock.json",
+      "sha256": "e3ae2668d330bfde0b3ef9efca11f69d435e944c006886aa60b47262f048db27",
+      "statement": "Selected npm lockfile for deterministic dependency preparation."
+    },
+    {
+      "kind": "package-manifest",
+      "path": "package.json",
+      "sha256": "936f91e64ac82141588b34ebb8f04a69bba1ad589d2b7c3429e3581d43d7d2a6",
+      "statement": "Manifest evidence considered for npm and runtime selection."
+    }
+  ],
+  "taskId": "figma-sds.unique-pricing-nav"
+}

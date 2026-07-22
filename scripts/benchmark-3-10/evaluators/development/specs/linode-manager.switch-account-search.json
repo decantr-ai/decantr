@@ -1,0 +1,85 @@
+{
+  "schemaVersion": "decantr-benchmark-evaluator-authoring-spec.v2",
+  "taskId": "linode-manager.switch-account-search",
+  "contractId": "linode-manager.switch-account-search.v1",
+  "review": {
+    "status": "draft",
+    "reviewedBy": "OpenAI Codex independent evaluator reviewer",
+    "reviewedAt": "2026-07-22T14:20:13Z",
+    "notes": "Independent exact-commit review reproduced stable source-oracle polarity twice: base 235b26d39d939344c3f26f58dd53a815ac7bae7d passed 3/5 checks and expected c30ee087ba9f91d6ba0e59bd8d4a37a70e2ca544 passed 5/5. BLOCKED: the evaluator parses one JSX tag and evaluates conditions isolated by English copy; it never renders SwitchAccountDrawer with mocked IAM queries. The repository's component tests do not cover typing through rerenders. Focus retention, typed-value survival, debounce timing, pagination loading, and settled empty-state transitions therefore remain unobserved, and equivalent implementations can fail the source parser. Keep draft until a component/browser harness exercises these states at both commits."
+  },
+  "oracle": {
+    "candidateIndependent": true,
+    "decantrOutputAllowed": false,
+    "sourcePath": "sources/linode-manager.switch-account-search.mjs"
+  },
+  "commands": [
+    {
+      "id": "behavior",
+      "kind": "functional",
+      "runtime": "controller",
+      "executable": "node",
+      "args": [
+        "${EVALUATOR_ROOT}/sources/linode-manager.switch-account-search.mjs",
+        "--workspace",
+        "${WORKSPACE}",
+        "--project-path",
+        "${PROJECT_PATH}"
+      ],
+      "cwd": "${EVALUATOR_ROOT}",
+      "timeoutMs": 120000,
+      "required": true,
+      "resultFormat": "json-stdout"
+    },
+    {
+      "id": "host-build",
+      "kind": "build",
+      "runtime": "task",
+      "executable": "pnpm",
+      "args": [
+        "run",
+        "build"
+      ],
+      "cwd": "${WORKSPACE}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    },
+    {
+      "id": "manager-tests",
+      "kind": "functional",
+      "runtime": "task",
+      "executable": "pnpm",
+      "args": [
+        "--filter",
+        "linode-manager",
+        "test"
+      ],
+      "cwd": "${WORKSPACE}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    },
+    {
+      "id": "manager-typecheck",
+      "kind": "functional",
+      "runtime": "task",
+      "executable": "pnpm",
+      "args": [
+        "--filter",
+        "linode-manager",
+        "typecheck"
+      ],
+      "cwd": "${WORKSPACE}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    }
+  ],
+  "limits": {
+    "timeoutMs": 7200000,
+    "maxRequests": 40,
+    "maxInputTokens": 800000,
+    "maxOutputTokens": 100000
+  }
+}

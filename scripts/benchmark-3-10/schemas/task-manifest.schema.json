@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/benchmark-3-10/task-manifest.v2.json",
+  "title": "Decantr 3.10 benchmark task manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "taskId",
+    "partition",
+    "kind",
+    "repositoryId",
+    "framework",
+    "projectPath",
+    "corpusProjectPath",
+    "corpusCommit",
+    "base",
+    "candidateSha256",
+    "prompt",
+    "informationEntitlement",
+    "informationEntitlementSha256",
+    "armInputs",
+    "scope",
+    "environment",
+    "evaluator",
+    "limits"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "decantr-benchmark-task.v2" },
+    "taskId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,95}$" },
+    "partition": { "enum": ["development", "qualification"] },
+    "kind": { "enum": ["repository", "adversarial"] },
+    "repositoryId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]+$" },
+    "framework": { "type": "string", "minLength": 1 },
+    "projectPath": { "type": "string", "minLength": 1 },
+    "corpusProjectPath": { "type": "string", "minLength": 1 },
+    "corpusCommit": { "$ref": "#/$defs/gitSha" },
+    "base": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commit", "tree"],
+      "properties": {
+        "commit": { "$ref": "#/$defs/gitSha" },
+        "tree": { "$ref": "#/$defs/gitSha" }
+      }
+    },
+    "candidateSha256": { "$ref": "#/$defs/sha256" },
+    "prompt": { "type": "string", "minLength": 20 },
+    "informationEntitlement": { "type": "object" },
+    "informationEntitlementSha256": { "$ref": "#/$defs/sha256" },
+    "armInputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["control", "treatment"],
+      "properties": {
+        "control": { "$ref": "#/$defs/controlArmInput" },
+        "treatment": { "$ref": "#/$defs/treatmentArmInput" }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allowedPaths", "forbiddenPaths"],
+      "properties": {
+        "allowedPaths": { "$ref": "#/$defs/pathList" },
+        "forbiddenPaths": { "$ref": "#/$defs/pathList" }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "specSha256",
+        "substanceSha256",
+        "runtimeProfileId",
+        "runtimeMatrixFileSha256",
+        "runtimeMatrixSha256",
+        "benchmarkImageDigest"
+      ],
+      "properties": {
+        "specSha256": { "$ref": "#/$defs/sha256" },
+        "substanceSha256": { "$ref": "#/$defs/sha256" },
+        "runtimeProfileId": { "type": "string", "pattern": "^(?:node|bun)-[a-z0-9.-]+$" },
+        "runtimeMatrixFileSha256": { "$ref": "#/$defs/sha256" },
+        "runtimeMatrixSha256": { "$ref": "#/$defs/sha256" },
+        "benchmarkImageDigest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }
+      }
+    },
+    "evaluator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contractId",
+        "contractSha256",
+        "specSha256",
+        "oracleSourceSha256",
+        "qualificationControllerSha256",
+        "qualificationReceiptFileSha256",
+        "qualificationReceiptSha256",
+        "qualificationExecutionAttestationFileSha256",
+        "qualificationExecutionAttestationSha256",
+        "qualificationExecutionControllerSha256",
+        "qualificationEvaluatorSourceClosureSha256",
+        "qualificationInputRequestFileSha256",
+        "qualificationInputRequestSha256",
+        "qualificationInputManifestFileSha256",
+        "qualificationInputManifestSha256",
+        "qualificationRunnerRepositoryCommit",
+        "qualificationProvenanceBundleFileSha256",
+        "qualificationProvenanceVerificationSha256"
+      ],
+      "properties": {
+        "contractId": { "type": "string", "minLength": 3 },
+        "contractSha256": { "$ref": "#/$defs/sha256" },
+        "specSha256": { "$ref": "#/$defs/sha256" },
+        "oracleSourceSha256": { "$ref": "#/$defs/sha256" },
+        "qualificationControllerSha256": { "$ref": "#/$defs/sha256" },
+        "qualificationReceiptFileSha256": { "$ref": "#/$defs/sha256" },
+        "qualificationReceiptSha256": { "$ref": "#/$defs/sha256" },
+        "qualificationExecutionAttestationFileSha256": { "$ref": "#/$defs/sha256" },
+        "qualificationExecutionAttestationSha256": { "$ref": "#/$defs/sha256" },
+        "qualificationExecutionControllerSha256": { "$ref": "#/$defs/sha256" },
+        "qualificationEvaluatorSourceClosureSha256": { "$ref": "#/$defs/sha256" },
+        "qualificationInputRequestFileSha256": { "$ref": "#/$defs/sha256" },
+        "qualificationInputRequestSha256": { "$ref": "#/$defs/sha256" },
+        "qualificationInputManifestFileSha256": { "$ref": "#/$defs/sha256" },
+        "qualificationInputManifestSha256": { "$ref": "#/$defs/sha256" },
+        "qualificationRunnerRepositoryCommit": { "$ref": "#/$defs/gitSha" },
+        "qualificationProvenanceBundleFileSha256": { "$ref": "#/$defs/sha256" },
+        "qualificationProvenanceVerificationSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["timeoutMs", "maxRequests", "maxInputTokens", "maxOutputTokens"],
+      "properties": {
+        "timeoutMs": { "type": "integer", "minimum": 1000, "maximum": 7200000 },
+        "maxRequests": { "type": "integer", "minimum": 1, "maximum": 100 },
+        "maxInputTokens": { "type": "integer", "minimum": 1 },
+        "maxOutputTokens": { "type": "integer", "minimum": 1 }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "gitSha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "pathList": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "controlArmInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["context", "entitlementSha256"],
+      "properties": {
+        "context": { "const": "Use the repository policy card." },
+        "entitlementSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "treatmentArmInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["context", "entitlementSha256"],
+      "properties": {
+        "context": { "const": "Use the Decantr task context." },
+        "entitlementSha256": { "$ref": "#/$defs/sha256" }
+      }
+    }
+  }
+}

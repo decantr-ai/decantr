@@ -1,0 +1,63 @@
+{
+  "input": {
+    "policyCard": {
+      "statements": [
+        {
+          "id": "repository-authority",
+          "sources": [
+            "base-checkout"
+          ],
+          "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+        },
+        {
+          "id": "change-scope",
+          "sources": [
+            "task.scope"
+          ],
+          "text": "Keep authored changes within the declared allowlist: templates/website/next.config.ts, templates/website/src/**, templates/website/tests/**. Do not edit forbidden paths: templates/** (except templates/website allowed paths), package.json, pnpm-lock.yaml, packages/**."
+        },
+        {
+          "id": "host-verification",
+          "sources": [
+            "candidate.environment"
+          ],
+          "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+        }
+      ]
+    },
+    "target": {
+      "selector": "file:next.config.ts"
+    }
+  },
+  "oracle": {
+    "acceptedStatuses": [
+      "limited"
+    ],
+    "expectedKind": "file",
+    "forbiddenRankOnePatterns": [
+      "(^|/)(?:\\.next|\\.nuxt|\\.svelte-kit|__fixtures__|__generated__|__mocks__|__tests__|build|coverage|cypress|dist|e2e|fixtures?|generated|mocks?|out|playwright|specs?|stories|test-utils?|testing|tests?|target)(?:/|$)|\\.(?:cy|d|e2e|fixture|gen|generated|mock|spec|stories?|test|vitest)\\.[^.]+$"
+    ],
+    "rankOneFiles": [
+      "next.config.ts",
+      "src/utilities/getMediaUrl.ts"
+    ],
+    "styleAuthority": {
+      "approach": "tailwind",
+      "confidence": "high",
+      "files": [
+        "postcss.config.js",
+        "src/app/(frontend)/globals.css",
+        "src/app/(frontend)/layout.tsx",
+        "tailwind.config.mjs"
+      ]
+    }
+  },
+  "review": {
+    "notes": "Approved: file:next.config.ts is a realistic production target for Next image behavior; both oracle files exist in the frozen website template and are production-scoped. Tailwind authority and candidate scope text are accurate, and the guard covers generated and standard test/build lanes.",
+    "reviewedAt": "2026-07-22T12:19:56Z",
+    "reviewedBy": "independent-target-review-a",
+    "status": "approved"
+  },
+  "schemaVersion": "decantr-benchmark-task-delivery-spec.v1",
+  "taskId": "payload-website-template.local-media-next16"
+}

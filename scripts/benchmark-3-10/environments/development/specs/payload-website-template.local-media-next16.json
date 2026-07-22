@@ -1,0 +1,92 @@
+{
+  "base": {
+    "commit": "17266abe7e23dbfa3ed1c98d83a2eaace54c133e",
+    "tree": "457930f7170ef5980062efc5af3c360a63661c0e"
+  },
+  "cleanAfterPreparation": true,
+  "lockfiles": [
+    {
+      "path": "pnpm-lock.yaml",
+      "sha256": "9c93367a1db5910a8c56ceaabca6dd5689d7ae4b48bd8834242061a472881d72"
+    }
+  ],
+  "partition": "development",
+  "preparation": [
+    {
+      "args": [
+        "install",
+        "--frozen-lockfile"
+      ],
+      "cwd": ".",
+      "executable": "pnpm",
+      "id": "install-dependencies",
+      "network": "dependency-registry",
+      "required": true,
+      "timeoutMs": 7200000
+    }
+  ],
+  "profile": {
+    "arch": "x64",
+    "bunVersion": null,
+    "id": "node-24.13.0-pnpm-10.27.0",
+    "nodeVersion": "24.13.0",
+    "os": "linux",
+    "packageManager": {
+      "name": "pnpm",
+      "version": "10.27.0"
+    }
+  },
+  "projectPath": "templates/website",
+  "review": {
+    "notes": "Frozen runtime files and package metadata pin exact Node 24.13.0 and pnpm 10.27.0; workspace, manifests, and lockfile evidence were rehashed from the exact base commit.",
+    "reviewedAt": "2026-07-22T13:57:42.436Z",
+    "reviewedBy": "OpenAI Codex independent source-evidence reviewer",
+    "status": "approved"
+  },
+  "schemaVersion": "decantr-benchmark-task-environment.v1",
+  "sourceEvidence": [
+    {
+      "kind": "runtime-hint",
+      "path": ".node-version",
+      "sha256": "3ebea09fcbed81499165f8bb4d650d8307e4a759136e5411b9a726504b8fc2ac",
+      "statement": "Runtime hint observed at the frozen base: v24.13.0"
+    },
+    {
+      "kind": "runtime-hint",
+      "path": ".nvmrc",
+      "sha256": "3ebea09fcbed81499165f8bb4d650d8307e4a759136e5411b9a726504b8fc2ac",
+      "statement": "Runtime hint observed at the frozen base: v24.13.0"
+    },
+    {
+      "kind": "runtime-hint",
+      "path": ".tool-versions",
+      "sha256": "bff02ed5a33221b71bcd9c92d9f5738a22d24b1c70146c58686e016636654383",
+      "statement": "Runtime hint observed at the frozen base: pnpm 10.27.0\nnodejs 24.13.0"
+    },
+    {
+      "kind": "package-manifest",
+      "path": "package.json",
+      "sha256": "f2ca4917e0524313795c4de677a7173454045c950774bb9220b304bad375a0c8",
+      "statement": "Manifest evidence considered for pnpm and runtime selection."
+    },
+    {
+      "kind": "lockfile",
+      "path": "pnpm-lock.yaml",
+      "sha256": "9c93367a1db5910a8c56ceaabca6dd5689d7ae4b48bd8834242061a472881d72",
+      "statement": "Selected pnpm lockfile for deterministic dependency preparation."
+    },
+    {
+      "kind": "reviewer-override",
+      "path": "pnpm-workspace.yaml",
+      "sha256": "2ef62677922d0c385f29a0c0aa4c94b24d3a81aa85614b337d0dd1b64cedb5fb",
+      "statement": "Frozen workspace metadata includes templates/website in the root pnpm installation boundary."
+    },
+    {
+      "kind": "package-manifest",
+      "path": "templates/website/package.json",
+      "sha256": "211f619a5cc5d97de29976622fb8b10e7b60aa653a69fb88625a1fde3151b1a3",
+      "statement": "Manifest evidence considered for pnpm and runtime selection."
+    }
+  ],
+  "taskId": "payload-website-template.local-media-next16"
+}

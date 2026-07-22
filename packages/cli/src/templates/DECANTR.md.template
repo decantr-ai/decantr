@@ -2,7 +2,7 @@
 
 This project uses **Decantr** for AI Frontend Governance. Read this file before generating or editing UI code.
 
-**Before editing any route, run `decantr task <route> "<intent>"`.** Use that task context as the working contract for the edit. If you are an AI assistant, do not start route-level source changes until task context has been loaded or the user explicitly tells you to proceed without it.
+**Before editing a UI surface, run `decantr task <target> "<intent>"`.** A target may be a route, component, story, layout, package, exact surface id, or `file:<path>` selector from scan output. Use that task context as the working contract for the edit. If Decantr reports the target as blocked, ambiguous, or unsupported, do not invent authority.
 
 ---
 
@@ -69,7 +69,7 @@ When a user request would violate guard rules:
 
 - `decantr_project` -- Read project state, shared discovery, and workspace health
 - `decantr_contract` -- Read/validate Essence, inspect drift, and load the Contract capsule
-- `decantr_context` -- Load scaffold/page/task context; call with `{ "action": "task" }` before route edits
+- `decantr_context` -- Load scaffold/page/task context; call with `{ "action": "task" }` before UI-surface edits
 - `decantr_graph` -- Query graph snapshots, nodes, edges, and impact
 - `decantr_registry` -- Compatibility content-corpus and execution-pack helper
 - `decantr_verify` -- Run local audit/critique and read Evidence Bundles or health-loop state
@@ -102,9 +102,9 @@ This project is using Decantr in **{{WORKFLOW_MODE}}** mode.
 
 {{SECTION_CONTEXT_GUIDANCE}}
 
-### Working on a route
+### Working on a UI surface
 
-Run `decantr task <route> "<intent>"` before editing. Read the files it lists first and preserve the authority block it prints.
+Run `decantr task <target> "<intent>"` before editing. Read the files it lists first and preserve the authority block it prints. Route targets receive contract and graph context only when live route authority supports it; other surfaces remain explicitly limited until runtime reachability is proven.
 
 {{ROUTE_CONTEXT_GUIDANCE}}
 
@@ -134,7 +134,7 @@ Declared command palettes and hotkeys must be implemented, not merely acknowledg
 decantr setup                         # Detect project state and next workflow step
 decantr doctor                        # Explain current state, authority, and next steps
 decantr graph                         # Generate or refresh the typed Contract graph
-decantr task <route> "<intent>"       # Load route/task context before AI edits
+decantr task <target> "<intent>"      # Load source-scoped UI context before AI edits
 decantr verify                        # Run the workflow-aware local reliability gate
 decantr ci init                       # Install the pinned CI gate
 decantr studio                        # Open the local health dashboard

@@ -40,7 +40,7 @@
       "id": "compatibility",
       "path": "fixtures/qualification/3.9/compatibility-manifest.json",
       "kind": "file-sha256",
-      "sha256": "dd1b259adb70fe726bbc88cc85e456c227f87e83952923e13cb4124b7f718a42"
+      "sha256": "3c9e0a2606f6afca5f99a26ebdb87f3e246fc755087ccf784349492f3a4f119f"
     },
     {
       "id": "legacyFindings",

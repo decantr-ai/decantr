@@ -8,14 +8,20 @@
 Support status: `core-supported`  
 Release channel: `stable`
 
-AI Frontend Governance for codebases touched by AI agents. Give Claude, Cursor, Windsurf, VS Code, Zed, and Continue a typed Contract, scoped Context, and repairable Evidence instead of a giant rule dump.
+Stable Decantr 3.9.4 MCP integration for local project state, attached route-backed task context, graph and evidence reads, verification, and repair prompts.
+
+## Release Boundary
+
+The published npm package is 3.9.4. Its eight tool IDs, route-backed `TaskCapsuleV1` path, verification actions, and compatibility envelopes are stable. Decantr 3.10 is an unreleased proof program. Candidate target-based discovery for components, layouts, stories, overlays, packages, runtime states, exact files, and unadopted projects is described separately below and is not available from the pinned stable setup.
 
 ![Decantr MCP demo](https://raw.githubusercontent.com/decantr-ai/decantr/main/packages/mcp-server/assets/decantr-demo.gif)
 
-- **Structured Contract context** -- gives your AI assistant patterns, layouts, component specs, shared Brownfield discovery metadata, typed graph context, Brownfield/Hybrid authority, local law, behavior obligations, and task-time context instead of letting it guess
-- **Evidence-backed repair loops** -- gives AI agents Project Health, component reuse drift, accepted behavior-obligation drift, accepted style bridge drift, stable diagnostic codes, typed repair IDs, graph-anchored Evidence Bundles, workspace health, and scoped repair prompts without uploading source
-- **Drift detection** -- catches when generated code deviates from your design intent
-- **Zero config** -- run with `npx`, no API keys or accounts required
+- **Observe project state** -- inspect shared discovery metadata, the project-owned Contract, accepted local rules, typed graph, and adoption truth
+- **Prepare route context** -- resolve an attached route through current graph and production-route authority into a compact source-ranked task capsule
+- **Verify diffs** -- evaluate local work against available authority and return stable findings, health state, and evidence without uploading source
+- **Report and repair** -- expose typed evidence, scoped repair plans, and repair prompts that any coding agent can consume
+
+Decantr does not invoke an agent, generate the edit, replace the host project's design system, or require an account for its local workflow.
 
 ## Quick Setup
 
@@ -28,7 +34,7 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
   "mcpServers": {
     "decantr": {
       "command": "npx",
-      "args": ["@decantr/mcp-server"]
+      "args": ["@decantr/mcp-server@3.9.4"]
     }
   }
 }
@@ -41,7 +47,7 @@ Restart Claude Desktop. The Decantr tools will appear automatically.
 Preferred setup:
 
 ```bash
-npx @decantr/cli connect cursor
+npx @decantr/cli@3.9.4 connect cursor
 ```
 
 From a monorepo root:
@@ -50,14 +56,14 @@ From a monorepo root:
 pnpm exec decantr connect cursor --project apps/web
 ```
 
-The connector preserves existing MCP servers and writes the project rule that tells Cursor Agent to call Decantr task context before route edits. For manual setup, create `.cursor/mcp.json` in your project root:
+The connector preserves existing MCP servers and writes the project rule that tells Cursor Agent to request route-backed Decantr task context before route edits. For manual setup, create `.cursor/mcp.json` in your project root:
 
 ```json
 {
   "mcpServers": {
     "decantr": {
       "command": "npx",
-      "args": ["-y", "@decantr/mcp-server"]
+      "args": ["-y", "@decantr/mcp-server@3.9.4"]
     }
   }
 }
@@ -74,7 +80,7 @@ Add to your Windsurf MCP config (`~/.windsurf/mcp.json`):
   "mcpServers": {
     "decantr": {
       "command": "npx",
-      "args": ["@decantr/mcp-server"]
+      "args": ["@decantr/mcp-server@3.9.4"]
     }
   }
 }
@@ -89,7 +95,7 @@ Create `.vscode/mcp.json` in your workspace (or add to your user profile `mcp.js
   "servers": {
     "decantr": {
       "command": "npx",
-      "args": ["-y", "@decantr/mcp-server"]
+      "args": ["-y", "@decantr/mcp-server@3.9.4"]
     }
   }
 }
@@ -106,7 +112,7 @@ Add to your Zed `settings.json`:
   "context_servers": {
     "decantr": {
       "command": "npx",
-      "args": ["-y", "@decantr/mcp-server"],
+      "args": ["-y", "@decantr/mcp-server@3.9.4"],
       "env": {}
     }
   }
@@ -127,7 +133,7 @@ mcpServers:
     command: npx
     args:
       - "-y"
-      - "@decantr/mcp-server"
+      - "@decantr/mcp-server@3.9.4"
 ```
 
 MCP tools are only available in Continue.dev agent mode.
@@ -138,20 +144,35 @@ The server exposes a hard 8-tool MCP surface. Pass an `action` to select the rou
 
 | Tool | Description | Example Input |
 |------|-------------|---------------|
-| `decantr_project` | Read local project state, canonical adoption truth, shared discovery summary, and workspace health | `{ "action": "state", "project_path": "apps/web" }` |
-| `decantr_contract` | Read Essence, validate, check drift, generate a skeleton, or read the Contract capsule | `{ "action": "validate", "path": "./decantr.essence.json" }` |
-| `decantr_context` | Read scaffold, section, page, task, shared discovery summary, and execution-pack context | `{ "action": "task", "project_path": "apps/web", "route": "/feed", "task": "improve recipe card loading" }` |
-| `decantr_graph` | Read graph snapshots, query graph nodes/edges, or traverse graph relations | `{ "action": "query", "project_path": "apps/web", "file_path": "src/app/page.tsx", "include_impact": true }` |
-| `decantr_registry` | Compatibility content-corpus tool for official vocabulary, benchmarks, and execution packs | `{ "action": "resolve_pattern", "id": "data-table", "preset": "product" }` |
-| `decantr_verify` | Run audit, critique, findings, v2 evidence bundles with discovery metadata, or health-loop reads | `{ "action": "evidence_bundle", "project_path": "apps/web" }` |
-| `decantr_repair` | Return typed findings, repair plans, repair prompts, and v2 health-loop guidance | `{ "action": "health_loop", "project_path": "apps/web" }` |
-| `decantr_contract_write` | Explicit write surface for accepting drift, deferring drift to the drift log, or mutating Essence v4 | `{ "action": "update_essence", "operation": "add_feature", "payload": { "feature": "billing" } }` |
+| `decantr_project` | Read local project state, shared discovery summary, adoption truth, and workspace health | `{ "action": "state", "project_path": "apps/web" }` |
+| `decantr_contract` | Read and validate the project-owned Contract, inspect drift, create a compatibility skeleton, or read its capsule | `{ "action": "validate", "path": "./decantr.essence.json" }` |
+| `decantr_context` | Read scaffold, section, page, execution-pack context, or prepare an attached route-backed task capsule | `{ "action": "task", "project_path": "apps/web", "route": "/feed", "task": "improve loading behavior" }` |
+| `decantr_graph` | Read, query, and traverse local graph and source evidence for route-scoped work | `{ "action": "query", "project_path": "apps/web", "file_path": "src/app/page.tsx", "include_impact": true }` |
+| `decantr_registry` | Legacy-named compatibility access to official corpus vocabulary, benchmark metadata, and execution packs | `{ "action": "resolve_pattern", "id": "data-table", "preset": "product" }` |
+| `decantr_verify` | Verify local UI diffs and return critique, findings, health state, or v2 evidence bundles | `{ "action": "evidence_bundle", "project_path": "apps/web" }` |
+| `decantr_repair` | Turn typed findings into scoped repair plans, prompts, and v2 health-loop guidance | `{ "action": "health_loop", "project_path": "apps/web" }` |
+| `decantr_contract_write` | Explicit workspace-contained write surface for accepting drift or updating Essence v4 | `{ "action": "update_essence", "operation": "add_feature", "payload": { "feature": "billing" } }` |
 
-`decantr_context` task responses default to `"detail": "compact"`. Compact mode projects the verifier-owned `TaskCapsuleV1` into the existing response fields and adds `task_capsule_version: "task-capsule.v1"`. The returned `task` is exactly the canonical capsule request: only `createTaskCapsuleV1()` may truncate it, and `task_capsule_budget`, `task_capsule_truncation`, and `task_capsule_digest` describe that exact result. The compatibility envelope may prune lower-priority duplicated context, but it never truncates `task` independently, and the complete response remains within 12,000 canonical UTF-8 bytes / 4,000 estimated tokens. Pass `"detail": "full"` only for diagnostic clients that need the complete graph and context payload. Both modes return `response_detail`. Task activation reports `blocked_missing_graph` when graph artifacts are absent or stale. Angular Brownfield task activation returns `DISCOVERY_NOT_PROVEN` when the requested route is not backed by complete, bootstrap-reachable production authority; live discovery outranks stale analysis artifacts.
+In published 3.9.4, pass `route` or the compatible `page_id` to the `task` action. Compact mode projects the verifier-owned `TaskCapsuleV1` into the existing response fields and remains within 12,000 canonical UTF-8 bytes / 4,000 estimated tokens. Missing or stale graph evidence reports `blocked_missing_graph`; incomplete Angular production-route authority reports `DISCOVERY_NOT_PROVEN`. Neither condition selects an implementation source by guess.
 
 Local scaffold, page, and section paths selected by `pack-manifest.json` are read or emitted as task read targets only when they resolve to real files contained under the selected project's `.decantr/context` directory. Missing, escaped, directory, and symlink-escaped references are ignored; existing `scaffold.md` and `section-<id>.md` narrative context remains the local fallback. In Greenfield `style-bridge` adoption, the accepted bridge maps onto the host project's tokens, classes, and styling runtime; it does not activate `@decantr/css`.
 
 `decantr_project` state includes verifier-built `AdoptionTruthV1`. Official corpus actions under the compatibility-named `decantr_registry` tool use `@decantr/content` implementations; there is no ninth `decantr_content` tool.
+
+## Unreleased 3.10 Candidate Discovery
+
+The source-tree candidate extends `decantr_context` task input with `target`: a route path, exact surface ID, component name, `kind:name`, or `file:path`. It resolves every target from live verifier discovery and does not promote saved analysis, graph guesses, tests, fixtures, stories, or generated output to production-route authority. Unknown, ambiguous, inferred, unresolved, or non-taskable targets return an error with no edit read set.
+
+Candidate authoritative non-route and unadopted targets return the separate `ui-surface-task-context.v1` discovery envelope with bounded reads and explicit limitations. A standalone component or story remains project-reference evidence rather than proof of runtime reachability. An adopted route continues to use the shipped `TaskCapsuleV1` contract. These additions are unreleased and must not be inferred from the 3.9.4 npm package or stable server metadata.
+
+## Product Boundary
+
+The MCP server's core is the local Observe -> Prepare -> Verify -> Report loop. The following surfaces remain available only where compatibility requires them:
+
+- `decantr_registry` is a stable 3.x tool ID for official content-corpus reads. It is not a public registry, marketplace, or community publishing surface.
+- `@decantr/css` is an optional legacy adapter. It is not selected automatically and does not override the host project's styling authority.
+- Studio is a non-core read-only consumer of Decantr evidence. It is not required to use this MCP server.
+- Hosted content and intelligence metadata are optional compatibility inputs. Local project authority, local verification, and evidence reporting do not require hosted source analysis or a Decantr account.
 
 For the broader product surface and support policy, see the root Decantr docs and package support matrix.
 
@@ -161,7 +182,7 @@ For Decantr 3 assistant prompt migration, see the MCP migration guide: https://d
 
 The MCP server reads Decantr files, including `.decantr/graph` typed graph artifacts, and selected project files from the active workspace. Write access is limited to the explicit `decantr_contract_write` tool with `accept_drift` and `update_essence` actions. `accept_drift` may defer a finding to `.decantr/drift-log.json` when the caller explicitly requests that resolution. Paths are contained to the active workspace root.
 
-Content-corpus and pack-resolution tools may call the configured Decantr API. Source upload fallbacks for hosted critique/audit are retired; verification tools run local reads unless a future major version introduces a new upload contract. The MCP server does not emit Decantr telemetry. See [security permissions](https://decantr.ai/reference/security-permissions.md).
+Content-corpus and pack-resolution actions may call a configured Decantr API. Project authority, critique, audit, and verification remain local reads; source upload fallbacks are retired. The MCP server does not emit Decantr telemetry. See [security permissions](https://decantr.ai/reference/security-permissions.md).
 
 The npm package bundles the MCP SDK modules used by its stdio transport. It does not install the SDK's unused HTTP server dependency tree. Bundled-code licenses are retained in `THIRD_PARTY_NOTICES.md`.
 
@@ -169,35 +190,34 @@ The npm package bundles the MCP SDK modules used by its stdio transport. It does
 
 `@decantr/mcp-server` is stable in the Decantr 3 line for the documented MCP tool surface.
 
-- Decantr 3.9 keeps exactly the eight tools above; a ninth content tool or hidden alias is not compatible with this release line
+- Decantr 3 keeps exactly the eight tools above; a ninth content tool or hidden alias is not compatible with this release line
 - existing documented tool names and envelopes should not break without a major version
 - breaking changes to established tool contracts require a major version and migration note
 
 ### Decantr 3 Tool Surface
 
-Decantr 3.4 consolidated legacy MCP tool names into the eight action-based tools above. Decantr 3.9 keeps that inventory, server identity, stdio transport, and existing action names; adds canonical adoption/task proof data through existing actions; and routes official corpus compatibility through `decantr_registry` rather than adding a ninth tool. For example, `decantr_get_project_state` becomes `decantr_project` with `{ "action": "state" }`, `decantr_get_graph_snapshot` becomes `decantr_graph` with `{ "action": "snapshot" }`, and the legacy write tools become `decantr_contract_write` with `{ "action": "accept_drift" }` or `{ "action": "update_essence" }`.
+Decantr 3.4 consolidated legacy MCP tool names into the eight action-based tools above. The 3.x line keeps that inventory, server identity, stdio transport, existing action names, and compatibility envelopes. Official corpus compatibility remains routed through `decantr_registry` rather than a ninth tool. For example, `decantr_get_project_state` becomes `decantr_project` with `{ "action": "state" }`, `decantr_get_graph_snapshot` becomes `decantr_graph` with `{ "action": "snapshot" }`, and the legacy write tools become `decantr_contract_write` with `{ "action": "accept_drift" }` or `{ "action": "update_essence" }`.
 
 The npm tarball includes `server.json` so MCP directories can read the same stable identity and transport metadata as repository consumers.
 
 ## How It Works
 
-An Essence spec (`decantr.essence.json`) captures your design intent -- archetype, theme, page structure, patterns, and guard rules -- in a single declarative file. The MCP server exposes this spec and the official Decantr content corpus to your AI assistant, giving it concrete layout specs, component lists, and visual treatments instead of relying on the model's generic training data. The result is generated code that follows a coherent contract, and drift detection that catches deviations before they ship.
+Published 3.9.4 reads project-owned evidence: application source and framework configuration, accepted local rules, `decantr.essence.json` when present, graph artifacts, baselines, and verification findings. In Brownfield, production source remains first authority and accepted Essence is project law beneath it. MCP clients request a route-backed task capsule before an edit and inspect verification evidence after the edit. Decantr reports evidence and limitations; the coding agent remains responsible for the code change.
 
 ## Example Workflow
 
-**Prompt:** "Build me a SaaS dashboard with user analytics, a data table of recent signups, and a settings page."
+**Prompt:** "Improve the loading and error behavior on `/feed` without replacing the existing card component or styling system."
 
-The AI assistant calls these tools behind the scenes:
+An MCP-capable coding agent can use the tools in this order:
 
-1. `decantr_contract` with `create_essence`, `validate`, or `check_drift` actions to generate and verify the contract
-2. `decantr_registry` with `resolve_archetype`, `suggest_patterns`, `resolve_pattern`, or `compile_execution_packs` actions to fetch official content-corpus vocabulary and packs
-3. `decantr_context` with `execution_pack` or `task` actions to load the compact task contract before editing
-4. `decantr_project` with `state` to check Essence, packs, graph readiness, local law, diagnostics, and next useful action calls
-5. `decantr_contract` with `capsule` and `decantr_graph` with `snapshot`, `query`, or `traverse` to read typed graph context
-6. `decantr_verify` with `critique`, `audit_project`, or `evidence_bundle` to produce local v2 evidence
-7. `decantr_repair` with `findings`, `repair_plan`, `repair_prompt`, or `health_loop` to enter a scoped evidence-backed repair loop
+1. `decantr_project` with `state` observes the selected app, available authority, graph readiness, adoption truth, and limitations.
+2. `decantr_context` with `task` and `route: "/feed"` prepares compact graph-backed context before editing.
+3. `decantr_graph` with `query` or `traverse` exposes the ranked local source and impact evidence needed for the change.
+4. The coding agent edits the project using its normal tools; Decantr does not generate or apply the source change.
+5. `decantr_verify` with `audit_project`, `critique`, `evidence_bundle`, or `health_loop` verifies the local result and reports evidence.
+6. `decantr_repair` turns any typed findings into a scoped plan or repair prompt, after which verification runs again.
 
-The AI now generates code with the right layout structure, correct components, and consistent styling, then gets a scoped evidence-backed repair loop instead of a generic guess.
+`decantr_contract` remains available when the project uses an Essence contract. `decantr_registry` remains available when the task needs official corpus vocabulary or execution packs, but it is not part of the required local loop.
 
 ## License
 

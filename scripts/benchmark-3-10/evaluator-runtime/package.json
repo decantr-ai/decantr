@@ -1,0 +1,10 @@
+{
+  "name": "decantr-3-10-evaluator-runtime",
+  "version": "0.0.0-private",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@axe-core/playwright": "4.12.1",
+    "playwright": "1.61.1"
+  }
+}

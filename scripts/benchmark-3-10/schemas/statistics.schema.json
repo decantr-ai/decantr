@@ -1,0 +1,212 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/benchmark-3-10/statistics.v1.json",
+  "title": "Decantr 3.10 qualification statistics",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "analysisSeed",
+    "confidenceLevel",
+    "bindings",
+    "denominators",
+    "modelLift",
+    "governanceReduction",
+    "functionalNonInferiority",
+    "blindPreference",
+    "overhead",
+    "failures",
+    "gates",
+    "allGatesPassed",
+    "claimAuthorization"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "decantr-benchmark-statistics.v1" },
+    "analysisSeed": { "type": "string", "minLength": 16 },
+    "confidenceLevel": { "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1 },
+    "bindings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["analysisCodeSha256", "runPlanSha256", "protocolSha256", "qualificationTaskIndexSha256", "runRecordSetSha256", "assignmentsSha256", "reviewWorkbookSha256"],
+      "properties": {
+        "analysisCodeSha256": { "$ref": "#/$defs/sha256" },
+        "runPlanSha256": { "$ref": "#/$defs/sha256" },
+        "protocolSha256": { "$ref": "#/$defs/sha256" },
+        "qualificationTaskIndexSha256": { "$ref": "#/$defs/sha256" },
+        "runRecordSetSha256": { "$ref": "#/$defs/sha256" },
+        "assignmentsSha256": { "$ref": "#/$defs/sha256" },
+        "reviewWorkbookSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "denominators": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sealedQualificationTasks",
+        "expectedRuns",
+        "observedRuns",
+        "failedRuns",
+        "reviewAssignments",
+        "excludedReviewAssignments",
+        "plannedPreferenceUnits",
+        "minimumDecisivePreferences",
+        "decisivePreferences",
+        "ties"
+      ],
+      "properties": {
+        "sealedQualificationTasks": { "const": 16 },
+        "expectedRuns": { "const": 128 },
+        "observedRuns": { "const": 128 },
+        "failedRuns": { "type": "integer", "minimum": 0, "maximum": 128 },
+        "reviewAssignments": { "const": 64 },
+        "excludedReviewAssignments": { "type": "integer", "minimum": 0 },
+        "plannedPreferenceUnits": { "const": 32 },
+        "minimumDecisivePreferences": { "const": 26 },
+        "decisivePreferences": { "type": "integer", "minimum": 0, "maximum": 32 },
+        "ties": { "type": "integer", "minimum": 0, "maximum": 32 }
+      }
+    },
+    "modelLift": { "type": "array", "items": { "$ref": "#/$defs/estimate" } },
+    "governanceReduction": { "type": "array", "items": { "$ref": "#/$defs/estimate" } },
+    "functionalNonInferiority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["margin", "confirmatoryScope", "overallByModel", "exploratoryByFramework"],
+      "properties": {
+        "margin": { "const": -0.05 },
+        "confirmatoryScope": { "const": "overall-within-model" },
+        "overallByModel": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/estimate" }
+        },
+        "exploratoryByFramework": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/exploratoryEstimate" }
+        }
+      }
+    },
+    "blindPreference": { "$ref": "#/$defs/blindPreference" },
+    "overhead": { "type": "object" },
+    "failures": { "type": "array", "items": { "type": "object" } },
+    "gates": {
+      "type": "object",
+      "additionalProperties": { "type": "boolean" },
+      "minProperties": 1
+    },
+    "allGatesPassed": { "type": "boolean" },
+    "claimAuthorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["outcome", "valueClaim", "mixedValueClaim", "scopedHypothesesPredeclaredAndPowered"],
+      "properties": {
+        "outcome": { "enum": ["pass", "mixed", "fail"] },
+        "valueClaim": { "enum": ["release-audit-required", "no-value-claim"] },
+        "mixedValueClaim": { "const": "no-value-claim" },
+        "scopedHypothesesPredeclaredAndPowered": { "const": false }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "estimate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["estimate", "confidenceInterval", "n"],
+      "properties": {
+        "modelId": { "type": "string" },
+        "framework": { "type": "string" },
+        "ties": { "type": "integer", "minimum": 0 },
+        "estimate": { "type": ["number", "null"] },
+        "confidenceInterval": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["lower", "upper"],
+          "properties": {
+            "lower": { "type": ["number", "null"] },
+            "upper": { "type": ["number", "null"] }
+          }
+        },
+        "n": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "blindPreference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "analysisUnit",
+        "population",
+        "repetitionAggregation",
+        "tiePolicy",
+        "plannedUnits",
+        "minimumDecisiveUnits",
+        "pointEstimateMinimum",
+        "confidenceMethod",
+        "wilsonLowerBoundMustExceed",
+        "treatmentPreferred",
+        "controlPreferred",
+        "estimate",
+        "confidenceInterval",
+        "n",
+        "ties"
+      ],
+      "properties": {
+        "analysisUnit": { "const": "qualification-task-model" },
+        "population": { "const": "sealed-qualification-only" },
+        "repetitionAggregation": { "const": "strict-majority-of-planned-repetitions" },
+        "tiePolicy": { "const": "non-majority-task-model-units-are-ties-excluded-from-binomial-denominator" },
+        "plannedUnits": { "const": 32 },
+        "minimumDecisiveUnits": { "const": 26 },
+        "pointEstimateMinimum": { "const": 0.6 },
+        "confidenceMethod": { "const": "two-sided-wilson-score" },
+        "wilsonLowerBoundMustExceed": { "const": 0.5 },
+        "treatmentPreferred": { "type": "integer", "minimum": 0, "maximum": 32 },
+        "controlPreferred": { "type": "integer", "minimum": 0, "maximum": 32 },
+        "estimate": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "confidenceInterval": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["lower", "upper"],
+          "properties": {
+            "lower": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+            "upper": { "type": ["number", "null"], "minimum": 0, "maximum": 1 }
+          }
+        },
+        "n": { "type": "integer", "minimum": 0, "maximum": 32 },
+        "ties": { "type": "integer", "minimum": 0, "maximum": 32 }
+      }
+    },
+    "exploratoryEstimate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "modelId",
+        "framework",
+        "estimate",
+        "confidenceInterval",
+        "n",
+        "powered",
+        "gateEligible",
+        "interpretation"
+      ],
+      "properties": {
+        "modelId": { "type": "string", "minLength": 1 },
+        "framework": { "type": "string", "minLength": 1 },
+        "estimate": { "type": ["number", "null"] },
+        "confidenceInterval": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["lower", "upper"],
+          "properties": {
+            "lower": { "type": ["number", "null"] },
+            "upper": { "type": ["number", "null"] }
+          }
+        },
+        "n": { "type": "integer", "minimum": 1 },
+        "powered": { "const": false },
+        "gateEligible": { "const": false },
+        "interpretation": { "const": "exploratory-unpowered" }
+      }
+    }
+  }
+}

@@ -806,7 +806,7 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
         ?.nextCommand,
     );
     if (workflowMode === 'brownfield-attach') {
-      appendUnique(recommendedNextCommands, `decantr task <route> "<change>"${projectFlag}`);
+      appendUnique(recommendedNextCommands, `decantr task <target> "<change>"${projectFlag}`);
     }
     appendUnique(recommendedNextCommands, verifyCommand);
     appendUnique(recommendedNextCommands, ciCommand);

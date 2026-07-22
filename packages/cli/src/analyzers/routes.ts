@@ -9,6 +9,10 @@ export interface RouteInfo {
 export interface RoutesAnalysis {
   strategy: DiscoveryRouteStrategy;
   routes: RouteInfo[];
+  candidateRoutes: RouteInfo[];
+  authority: 'proven' | 'inferred' | 'unresolved';
+  completeness: 'complete' | 'partial' | 'unknown';
+  limitations: string[];
 }
 
 /**
@@ -16,12 +20,17 @@ export interface RoutesAnalysis {
  */
 export function scanRoutes(projectRoot: string): RoutesAnalysis {
   const discovery = discoverProject(projectRoot);
+  const candidateRoutes = discovery.routes.taskableRoutes.map(({ path, file, hasLayout }) => ({
+    path,
+    file,
+    hasLayout,
+  }));
   return {
     strategy: discovery.routes.strategy,
-    routes: discovery.routes.taskableRoutes.map(({ path, file, hasLayout }) => ({
-      path,
-      file,
-      hasLayout,
-    })),
+    routes: discovery.routes.authority === 'proven' ? candidateRoutes : [],
+    candidateRoutes,
+    authority: discovery.routes.authority,
+    completeness: discovery.routes.completeness,
+    limitations: discovery.routes.limitations,
   };
 }

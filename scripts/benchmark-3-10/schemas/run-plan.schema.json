@@ -1,0 +1,190 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/benchmark-3-10/run-plan.v2.json",
+  "title": "Decantr 3.10 randomized run plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "program", "seed", "planSha256", "bindings", "design", "tasks", "runs"],
+  "properties": {
+    "schemaVersion": { "const": "decantr-benchmark-run-plan.v2" },
+    "program": { "const": "decantr-3.10-ui-change-control-proof" },
+    "seed": { "type": "string", "minLength": 16 },
+    "planSha256": { "$ref": "#/$defs/sha256" },
+    "bindings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["corpus", "models", "protocol", "runtimeMatrix", "qualificationTaskIndex", "developmentTasks"],
+      "properties": {
+        "corpus": { "$ref": "#/$defs/fileBinding" },
+        "models": { "$ref": "#/$defs/fileBinding" },
+        "protocol": { "$ref": "#/$defs/fileBinding" },
+        "runtimeMatrix": { "$ref": "#/$defs/fileBinding" },
+        "qualificationTaskIndex": { "$ref": "#/$defs/fileBinding" },
+        "developmentTasks": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/fileBinding" },
+          "minItems": 1
+        }
+      }
+    },
+    "design": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tasks", "models", "arms", "repetitions", "totalRuns"],
+      "properties": {
+        "tasks": { "type": "integer", "minimum": 1 },
+        "models": { "type": "integer", "minimum": 1 },
+        "arms": { "type": "integer", "const": 2 },
+        "repetitions": { "type": "integer", "minimum": 1 },
+        "totalRuns": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "tasks": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/taskBinding" },
+      "minItems": 1
+    },
+    "runs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/run" },
+      "minItems": 1
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "gitSha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "fileBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["logicalName", "sha256", "bytes"],
+      "properties": {
+        "logicalName": { "type": "string", "minLength": 1 },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "bytes": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "base": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commit", "tree"],
+      "properties": {
+        "commit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+        "tree": { "type": "string", "pattern": "^[a-f0-9]{40}$" }
+      }
+    },
+    "taskBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "taskId",
+        "partition",
+        "kind",
+        "repositoryId",
+        "framework",
+        "projectPath",
+        "corpusProjectPath",
+        "corpusCommit",
+        "base",
+        "manifestSha256",
+        "candidateSha256",
+        "evaluatorContractSha256",
+        "evaluatorSpecSha256",
+        "oracleSourceSha256",
+        "qualificationControllerSha256",
+        "qualificationReceiptFileSha256",
+        "qualificationReceiptSha256",
+        "qualificationExecutionAttestationFileSha256",
+        "qualificationExecutionAttestationSha256",
+        "qualificationExecutionControllerSha256",
+        "qualificationEvaluatorSourceClosureSha256",
+        "qualificationInputRequestFileSha256",
+        "qualificationInputRequestSha256",
+        "qualificationInputManifestFileSha256",
+        "qualificationInputManifestSha256",
+        "qualificationRunnerRepositoryCommit",
+        "qualificationProvenanceBundleFileSha256",
+        "qualificationProvenanceVerificationSha256",
+        "informationEntitlementSha256",
+        "environmentSpecSha256",
+        "environmentSubstanceSha256",
+        "runtimeProfileId",
+        "runtimeMatrixFileSha256",
+        "runtimeMatrixSha256",
+        "benchmarkImageDigest",
+        "sourceRef"
+      ],
+      "properties": {
+        "taskId": { "type": "string", "minLength": 1 },
+        "partition": { "enum": ["development", "qualification"] },
+        "kind": { "enum": ["repository", "adversarial"] },
+        "repositoryId": { "type": "string", "minLength": 1 },
+        "framework": { "type": "string", "minLength": 1 },
+        "projectPath": { "type": "string", "minLength": 1 },
+        "corpusProjectPath": { "type": "string", "minLength": 1 },
+        "corpusCommit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+        "base": { "$ref": "#/$defs/base" },
+        "manifestSha256": { "$ref": "#/$defs/sha256" },
+        "candidateSha256": { "$ref": "#/$defs/sha256" },
+        "evaluatorContractSha256": { "$ref": "#/$defs/sha256" },
+        "evaluatorSpecSha256": { "$ref": "#/$defs/sha256" },
+        "oracleSourceSha256": { "$ref": "#/$defs/sha256" },
+        "qualificationControllerSha256": { "$ref": "#/$defs/sha256" },
+        "qualificationReceiptFileSha256": { "$ref": "#/$defs/sha256" },
+        "qualificationReceiptSha256": { "$ref": "#/$defs/sha256" },
+        "qualificationExecutionAttestationFileSha256": { "$ref": "#/$defs/sha256" },
+        "qualificationExecutionAttestationSha256": { "$ref": "#/$defs/sha256" },
+        "qualificationExecutionControllerSha256": { "$ref": "#/$defs/sha256" },
+        "qualificationEvaluatorSourceClosureSha256": { "$ref": "#/$defs/sha256" },
+        "qualificationInputRequestFileSha256": { "$ref": "#/$defs/sha256" },
+        "qualificationInputRequestSha256": { "$ref": "#/$defs/sha256" },
+        "qualificationInputManifestFileSha256": { "$ref": "#/$defs/sha256" },
+        "qualificationInputManifestSha256": { "$ref": "#/$defs/sha256" },
+        "qualificationRunnerRepositoryCommit": { "$ref": "#/$defs/gitSha" },
+        "qualificationProvenanceBundleFileSha256": { "$ref": "#/$defs/sha256" },
+        "qualificationProvenanceVerificationSha256": { "$ref": "#/$defs/sha256" },
+        "informationEntitlementSha256": { "$ref": "#/$defs/sha256" },
+        "environmentSpecSha256": { "$ref": "#/$defs/sha256" },
+        "environmentSubstanceSha256": { "$ref": "#/$defs/sha256" },
+        "runtimeProfileId": { "type": "string", "minLength": 1 },
+        "runtimeMatrixFileSha256": { "$ref": "#/$defs/sha256" },
+        "runtimeMatrixSha256": { "$ref": "#/$defs/sha256" },
+        "benchmarkImageDigest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+        "sourceRef": { "type": "string", "minLength": 1 }
+      }
+    },
+    "run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runId",
+        "ordinal",
+        "block",
+        "taskId",
+        "partition",
+        "repositoryId",
+        "framework",
+        "modelId",
+        "provider",
+        "requestedModel",
+        "arm",
+        "repetition",
+        "taskManifestSha256"
+      ],
+      "properties": {
+        "runId": { "type": "string", "pattern": "^run-[a-f0-9]{24}$" },
+        "ordinal": { "type": "integer", "minimum": 1 },
+        "block": { "type": "integer", "minimum": 1 },
+        "taskId": { "type": "string", "minLength": 1 },
+        "partition": { "enum": ["development", "qualification"] },
+        "repositoryId": { "type": "string", "minLength": 1 },
+        "framework": { "type": "string", "minLength": 1 },
+        "modelId": { "type": "string", "minLength": 1 },
+        "provider": { "type": "string", "minLength": 1 },
+        "requestedModel": { "type": "string", "minLength": 1 },
+        "arm": { "enum": ["control", "treatment"] },
+        "repetition": { "type": "integer", "minimum": 1 },
+        "taskManifestSha256": { "$ref": "#/$defs/sha256" }
+      }
+    }
+  }
+}

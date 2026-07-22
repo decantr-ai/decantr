@@ -1,0 +1,60 @@
+{
+  "input": {
+    "policyCard": {
+      "statements": [
+        {
+          "id": "repository-authority",
+          "sources": [
+            "base-checkout"
+          ],
+          "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+        },
+        {
+          "id": "change-scope",
+          "sources": [
+            "task.scope"
+          ],
+          "text": "Keep authored changes within the declared allowlist: packages/react/src/Banner/**, e2e/components/Banner.test.ts, .changeset/*.md. Do not edit forbidden paths: package.json, package-lock.json, .playwright/snapshots/**, packages/react/src/Blankslate/**, examples/**."
+        },
+        {
+          "id": "host-verification",
+          "sources": [
+            "candidate.environment"
+          ],
+          "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+        }
+      ]
+    },
+    "target": {
+      "selector": "file:packages/react/src/Banner/Banner.module.css"
+    }
+  },
+  "oracle": {
+    "acceptedStatuses": [
+      "limited"
+    ],
+    "expectedKind": "file",
+    "forbiddenRankOnePatterns": [
+      "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+    ],
+    "rankOneFiles": [
+      "packages/react/src/Banner/Banner.module.css"
+    ],
+    "styleAuthority": {
+      "approach": "css-modules",
+      "confidence": "high",
+      "files": [
+        "packages/react/src/Banner/Banner.module.css",
+        "packages/react/src/Banner/Banner.tsx"
+      ]
+    }
+  },
+  "review": {
+    "notes": "Independently checked the frozen base tree and candidate record. The neutral file selector resolves limited with the Banner production CSS module at rank one; test and snapshot artifacts are not production authority. Replaced Vitest-only style evidence with the production module and its importer, and confirmed the scope statement is exact.",
+    "reviewedAt": "2026-07-22T12:17:39Z",
+    "reviewedBy": "independent-target-review-b",
+    "status": "approved"
+  },
+  "schemaVersion": "decantr-benchmark-task-delivery-spec.v1",
+  "taskId": "primer-react.banner-narrow-actions"
+}

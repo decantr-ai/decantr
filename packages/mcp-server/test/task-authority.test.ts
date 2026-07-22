@@ -53,6 +53,123 @@ function writeEssence(root: string): void {
 }
 
 describe('MCP task authority integrity', () => {
+  it('returns bounded live-discovery context for a non-route UI target', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'decantr-mcp-component-target-'));
+    try {
+      process.chdir(root);
+      writeJson(join(root, 'package.json'), {
+        private: true,
+        dependencies: { react: '^19.0.0' },
+      });
+      mkdirSync(join(root, 'src', 'components'), { recursive: true });
+      writeFileSync(
+        join(root, 'src', 'components', 'Button.tsx'),
+        'export function Button() { return <button type="button">Save</button>; }\n',
+        'utf-8',
+      );
+      writeFileSync(join(root, 'src', 'theme.css'), ':root { --surface: #fff; }\n', 'utf-8');
+
+      const result = (await callTool('decantr_prepare_task_context', {
+        target: 'Button',
+        task: 'add a pending state',
+      })) as {
+        schemaVersion: string;
+        mode: string;
+        status: string;
+        surface: { kind: string; authority: string; files: string[] };
+        read: string[];
+        verify_command: string;
+        task_capsule_version?: string;
+      };
+
+      expect(result).toMatchObject({
+        schemaVersion: 'ui-surface-task-context.v1',
+        mode: 'discovery',
+        status: 'limited',
+        surface: { kind: 'component', authority: 'project-reference' },
+        verify_command: 'decantr scan --json',
+      });
+      expect(result.read).toEqual(['src/components/Button.tsx']);
+      expect(result.task_capsule_version).toBeUndefined();
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('fails closed for unknown and ambiguous UI targets', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'decantr-mcp-target-resolution-'));
+    try {
+      process.chdir(root);
+      writeJson(join(root, 'package.json'), {
+        private: true,
+        dependencies: { react: '^19.0.0' },
+      });
+      mkdirSync(join(root, 'src', 'a'), { recursive: true });
+      mkdirSync(join(root, 'src', 'b'), { recursive: true });
+      writeFileSync(
+        join(root, 'src', 'a', 'Button.tsx'),
+        'export function Button() { return <button />; }\n',
+        'utf-8',
+      );
+      writeFileSync(
+        join(root, 'src', 'b', 'Button.tsx'),
+        'export function Button() { return <button />; }\n',
+        'utf-8',
+      );
+
+      const ambiguous = (await callTool('decantr_prepare_task_context', {
+        target: 'Button',
+      })) as { error: string; code: string; candidates: unknown[]; read: string[] };
+      const unknown = (await callTool('decantr_prepare_task_context', {
+        target: 'MissingPanel',
+      })) as { error: string; code: string; candidates: unknown[]; read: string[] };
+
+      expect(ambiguous).toMatchObject({ code: 'UI_SURFACE_TARGET_AMBIGUOUS', read: [] });
+      expect(ambiguous.candidates).toHaveLength(2);
+      expect(unknown).toMatchObject({
+        code: 'UI_SURFACE_TARGET_UNKNOWN',
+        candidates: [],
+        read: [],
+      });
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('does not use stale analysis as route authority', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'decantr-mcp-stale-analysis-'));
+    try {
+      process.chdir(root);
+      writeJson(join(root, 'package.json'), {
+        private: true,
+        dependencies: { react: '^19.0.0', 'react-router-dom': '^7.0.0' },
+      });
+      mkdirSync(join(root, 'src'), { recursive: true });
+      writeFileSync(
+        join(root, 'src', 'App.tsx'),
+        'import { Route } from "react-router-dom"; export const App = () => <Route path="/actual" element={<main />} />;\n',
+        'utf-8',
+      );
+      writeFileSync(join(root, 'src', 'main.tsx'), "import './App';\n", 'utf-8');
+      writeJson(join(root, '.decantr', 'analysis.json'), {
+        routes: { routes: [{ path: '/fiction', file: 'src/App.tsx' }] },
+      });
+
+      const result = (await callTool('decantr_prepare_task_context', {
+        route: '/fiction',
+      })) as { error: string; code: string; route: string; read: string[] };
+
+      expect(result).toMatchObject({
+        code: 'DISCOVERY_NOT_PROVEN',
+        route: '/fiction',
+        read: [],
+      });
+      expect(result.error).toContain('not proven');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('fails closed when an Angular route is not bootstrap-reachable', async () => {
     const root = mkdtempSync(join(tmpdir(), 'decantr-mcp-angular-authority-'));
     try {
@@ -120,13 +237,94 @@ describe('MCP task authority integrity', () => {
     }
   });
 
+  it('fails closed when an Angular route resolves inside a partial production topology', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'decantr-mcp-angular-partial-topology-'));
+    try {
+      process.chdir(root);
+      writeJson(join(root, 'package.json'), {
+        private: true,
+        dependencies: {
+          '@angular/core': '^21.0.0',
+          '@angular/router': '^21.0.0',
+        },
+      });
+      writeJson(join(root, 'angular.json'), {
+        version: 1,
+        projects: {
+          app: {
+            root: '',
+            sourceRoot: 'src',
+            architect: {
+              build: { options: { browser: 'src/main.ts', styles: ['src/styles.scss'] } },
+            },
+          },
+        },
+      });
+      writeEssence(root);
+      writeJson(join(root, '.decantr', 'project.json'), {
+        initialized: { workflowMode: 'brownfield-attach', adoptionMode: 'contract-only' },
+      });
+      mkdirSync(join(root, 'src', 'app'), { recursive: true });
+      writeFileSync(
+        join(root, 'src', 'main.ts'),
+        'import { appConfig } from "./app/app.config"; import { bootstrapApplication } from "@angular/platform-browser"; bootstrapApplication(class App {}, appConfig);\n',
+        'utf-8',
+      );
+      writeFileSync(
+        join(root, 'src', 'app', 'app.config.ts'),
+        'import { provideRouter } from "@angular/router"; import { routes } from "./app.routes"; export const appConfig = { providers: [provideRouter(routes)] };\n',
+        'utf-8',
+      );
+      writeFileSync(
+        join(root, 'src', 'app', 'app.routes.ts'),
+        [
+          'import { HomeComponent } from "./home.component";',
+          'import type { Routes } from "@angular/router";',
+          'export const routes: Routes = [',
+          '  { path: "", component: HomeComponent },',
+          '  { path: "missing", loadComponent: () => import("./missing.component") },',
+          '];',
+          '',
+        ].join('\n'),
+        'utf-8',
+      );
+      writeFileSync(
+        join(root, 'src', 'app', 'home.component.ts'),
+        'export class HomeComponent {}\n',
+        'utf-8',
+      );
+      writeFileSync(join(root, 'src', 'styles.scss'), ':root { --surface: #fff; }\n', 'utf-8');
+
+      const result = (await callTool('decantr_prepare_task_context', {
+        route: '/',
+        task: 'change the production home route',
+      })) as {
+        error: string;
+        code: string;
+        status: string;
+        route_authority: string;
+        route_completeness: string;
+      };
+
+      expect(result).toMatchObject({
+        code: 'DISCOVERY_NOT_PROVEN',
+        status: 'blocked',
+        route_authority: 'proven',
+        route_completeness: 'partial',
+      });
+      expect(result.error).toContain('Route-scoped task context is not proven');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('does not activate copied proposals or malformed final authority files', async () => {
     const root = mkdtempSync(join(tmpdir(), 'decantr-mcp-task-authority-'));
     try {
       process.chdir(root);
       writeJson(join(root, 'package.json'), {
         private: true,
-        dependencies: { react: '^19.0.0' },
+        dependencies: { react: '^19.0.0', 'react-router-dom': '^7.0.0' },
       });
       writeEssence(root);
       writeJson(join(root, '.decantr', 'project.json'), {
@@ -152,9 +350,10 @@ describe('MCP task authority integrity', () => {
       mkdirSync(join(root, 'src'), { recursive: true });
       writeFileSync(
         join(root, 'src', 'App.tsx'),
-        'export default function App() { return <main>Home</main>; }\n',
+        'import { Route, Routes } from "react-router-dom"; export default function App() { return <Routes><Route path="/" element={<main>Home</main>} /></Routes>; }\n',
         'utf-8',
       );
+      writeFileSync(join(root, 'src', 'main.tsx'), "import './App';\n", 'utf-8');
 
       const result = (await callTool('decantr_prepare_task_context', {
         route: '/',
@@ -219,7 +418,7 @@ describe('MCP task authority integrity', () => {
       process.chdir(workspaceRoot);
       writeJson(join(root, 'package.json'), {
         private: true,
-        dependencies: { react: '^19.0.0' },
+        dependencies: { react: '^19.0.0', 'react-router-dom': '^7.0.0' },
       });
       writeEssence(root);
       writeJson(join(root, '.decantr', 'project.json'), {
@@ -228,9 +427,10 @@ describe('MCP task authority integrity', () => {
       mkdirSync(join(root, 'src'), { recursive: true });
       writeFileSync(
         join(root, 'src', 'App.tsx'),
-        'export default function App() { return <main>Home</main>; }\n',
+        'import { Route, Routes } from "react-router-dom"; export default function App() { return <Routes><Route path="/" element={<main>Home</main>} /></Routes>; }\n',
         'utf-8',
       );
+      writeFileSync(join(root, 'src', 'main.tsx'), "import './App';\n", 'utf-8');
       writeFileSync(
         join(root, 'outside-pack.md'),
         '# Outside context\nDo not read this.\n',
@@ -356,7 +556,7 @@ describe('MCP task authority integrity', () => {
       process.chdir(root);
       writeJson(join(root, 'package.json'), {
         private: true,
-        dependencies: { react: '^19.0.0' },
+        dependencies: { react: '^19.0.0', 'react-router-dom': '^7.0.0' },
       });
       writeEssence(root);
       writeJson(join(root, '.decantr', 'project.json'), {
@@ -383,9 +583,10 @@ describe('MCP task authority integrity', () => {
       mkdirSync(join(root, 'src'), { recursive: true });
       writeFileSync(
         join(root, 'src', 'App.tsx'),
-        'export default function App() { return <main>Home</main>; }\n',
+        'import { Route, Routes } from "react-router-dom"; export default function App() { return <Routes><Route path="/" element={<main>Home</main>} /></Routes>; }\n',
         'utf-8',
       );
+      writeFileSync(join(root, 'src', 'main.tsx'), "import './App';\n", 'utf-8');
 
       const result = (await callTool('decantr_prepare_task_context', {
         route: '/',

@@ -347,8 +347,9 @@ describe('createProjectAdoptionTruthV1', () => {
     const truth = createProjectAdoptionTruthV1(root, { generatedAt: GENERATED_AT });
 
     expect(truth.project).toMatchObject({ workspaceRoot: '.', selectedAppRoot: '.' });
-    expect(truth.facts).toHaveLength(13);
+    expect(truth.facts).toHaveLength(14);
     expect(findFact(truth, 'project.framework').observation.state).toBe('found');
+    expect(findFact(truth, 'project.ui-surface-authority').observation.state).toBe('found');
     expect(findFact(truth, 'governance.essence-contract').governance.state).toBe('governed');
     expect(findFact(truth, 'governance.typed-graph').observation.state).toBe('found');
     expect(findFact(truth, 'adoption.support-artifacts').mutation.state).toBe('untouched');

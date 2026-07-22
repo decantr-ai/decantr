@@ -1,0 +1,75 @@
+{
+  "schemaVersion": "decantr-benchmark-evaluator-authoring-spec.v2",
+  "taskId": "start-ui-web.book-cover-upload",
+  "contractId": "start-ui-web.book-cover-upload.v1",
+  "review": {
+    "status": "draft",
+    "reviewedBy": "OpenAI Codex independent evaluator reviewer",
+    "reviewedAt": "2026-07-22T14:46:27Z",
+    "notes": "Draft after an independent exact frozen-worktree rerun under Node 22.19.0/pnpm 10.33.0. Expected bb32b7a5c94a5b4de37fda0a8669f3d26e0b9c27 passes all 13 browser checks for click, keyboard, drop, pending/success/error, preview, replacement, clear, disabled behavior, form state, four locales, Axe, and console. Both revisions build and pass 150 tests with the pinned Chromium 1228 cache. Approval remains blocked because the oracle imports src/components/upload/upload-input.tsx directly: base 795d311d1d8b8e502eb7f33b9b6d4475691d3101 fails on that expected-only module before executable behavior, and a valid alternative implemented through the allowed field-upload-input, form-book, or form-book-cover paths would also be rejected. The harness must exercise the integrated book-form contract without naming an expected implementation module before this task is candidate-independent."
+  },
+  "oracle": {
+    "candidateIndependent": true,
+    "decantrOutputAllowed": false,
+    "sourcePath": "sources/start-ui-web.book-cover-upload.mjs"
+  },
+  "commands": [
+    {
+      "id": "behavior",
+      "kind": "functional",
+      "runtime": "controller",
+      "executable": "node",
+      "args": [
+        "${EVALUATOR_ROOT}/sources/start-ui-web.book-cover-upload.mjs",
+        "--workspace",
+        "${WORKSPACE}",
+        "--project-path",
+        "${PROJECT_PATH}",
+        "--evaluator-runtime",
+        "${EVALUATOR_RUNTIME}"
+      ],
+      "cwd": "${EVALUATOR_ROOT}",
+      "environment": {
+        "PLAYWRIGHT_BROWSERS_PATH": "/tmp/decantr-3-10-playwright-browsers"
+      },
+      "timeoutMs": 180000,
+      "required": true,
+      "resultFormat": "json-stdout"
+    },
+    {
+      "id": "host-build",
+      "kind": "build",
+      "runtime": "task",
+      "executable": "pnpm",
+      "args": ["run", "build"],
+      "cwd": "${WORKSPACE}/${PROJECT_PATH}",
+      "environment": {
+        "SKIP_ENV_VALIDATION": "true"
+      },
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    },
+    {
+      "id": "host-tests",
+      "kind": "functional",
+      "runtime": "task",
+      "executable": "pnpm",
+      "args": ["run", "test:ci"],
+      "cwd": "${WORKSPACE}/${PROJECT_PATH}",
+      "environment": {
+        "PLAYWRIGHT_BROWSERS_PATH": "/tmp/decantr-3-10-playwright-browsers",
+        "SKIP_ENV_VALIDATION": "true"
+      },
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    }
+  ],
+  "limits": {
+    "timeoutMs": 5400000,
+    "maxRequests": 40,
+    "maxInputTokens": 800000,
+    "maxOutputTokens": 100000
+  }
+}

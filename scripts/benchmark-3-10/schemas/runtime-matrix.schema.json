@@ -1,0 +1,254 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/benchmark-3-10/runtime-matrix.v1.json",
+  "title": "Decantr 3.10 benchmark runtime matrix",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "program",
+    "frozenAt",
+    "status",
+    "paidExecutionAuthorized",
+    "sourceSpecSetSha256",
+    "taskCounts",
+    "profiles",
+    "blockers",
+    "matrixSha256"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "decantr-benchmark-runtime-matrix.v1" },
+    "program": { "const": "decantr-3.10-ui-change-control-proof" },
+    "frozenAt": { "type": "string", "format": "date-time" },
+    "status": { "enum": ["draft", "locked"] },
+    "paidExecutionAuthorized": { "const": false },
+    "sourceSpecSetSha256": { "$ref": "#/$defs/sha256" },
+    "taskCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["development", "qualification", "total", "approved"],
+      "properties": {
+        "development": { "const": 24 },
+        "qualification": { "const": 16 },
+        "total": { "const": 40 },
+        "approved": { "type": "integer", "minimum": 0, "maximum": 40 }
+      }
+    },
+    "profiles": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/profile" }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["draftMatrix", "source", "controller", "executionPolicy"],
+      "properties": {
+        "draftMatrix": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sha256", "frozenAt", "sourceSpecSetSha256"],
+          "properties": {
+            "sha256": { "$ref": "#/$defs/sha256" },
+            "frozenAt": { "type": "string", "format": "date-time" },
+            "sourceSpecSetSha256": { "$ref": "#/$defs/sha256" }
+          }
+        },
+        "source": { "$ref": "#/$defs/sourceClosure" },
+        "controller": { "$ref": "#/$defs/controller" },
+        "executionPolicy": { "$ref": "#/$defs/provenancePolicy" }
+      }
+    },
+    "blockers": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unapprovedTaskSpecs", "unbuiltProfiles", "unverifiedProfiles"],
+      "properties": {
+        "unapprovedTaskSpecs": { "type": "integer", "minimum": 0, "maximum": 40 },
+        "unbuiltProfiles": { "type": "integer", "minimum": 0 },
+        "unverifiedProfiles": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "matrixSha256": { "$ref": "#/$defs/sha256" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "locked" } } },
+      "then": { "required": ["provenance"] }
+    },
+    {
+      "if": { "properties": { "status": { "const": "draft" } } },
+      "then": { "not": { "required": ["provenance"] } }
+    }
+  ],
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "imageDigest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "os",
+        "arch",
+        "nodeVersion",
+        "bunVersion",
+        "packageManager",
+        "taskCount",
+        "profileSha256",
+        "baseImage",
+        "benchmarkImage",
+        "verification"
+      ],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "os": { "const": "linux" },
+        "arch": { "const": "x64" },
+        "nodeVersion": { "type": ["string", "null"] },
+        "bunVersion": { "type": ["string", "null"] },
+        "packageManager": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "version"],
+          "properties": {
+            "name": { "enum": ["npm", "pnpm", "yarn", "bun"] },
+            "version": { "type": "string" }
+          }
+        },
+        "taskCount": { "type": "integer", "minimum": 1, "maximum": 40 },
+        "profileSha256": { "$ref": "#/$defs/sha256" },
+        "baseImage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["reference", "digest"],
+          "properties": {
+            "reference": { "type": "string", "minLength": 1 },
+            "digest": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/imageDigest" }] }
+          }
+        },
+        "benchmarkImage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["reference", "digest"],
+          "properties": {
+            "reference": {
+              "type": "string",
+              "pattern": "^ghcr\\.io/decantr-ai/decantr-benchmark-3-10:(?:node|bun)-[0-9]+\\.[0-9]+\\.[0-9]+-(?:npm|pnpm|yarn|bun)-[0-9]+\\.[0-9]+\\.[0-9]+(?:@sha256:[a-f0-9]{64})?$"
+            },
+            "digest": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/imageDigest" }] }
+          }
+        },
+        "verification": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["attestation", "attestationFile"],
+              "properties": {
+                "attestation": { "$ref": "#/$defs/runtimeAttestation" },
+                "attestationFile": { "$ref": "#/$defs/fileBinding" }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "fileBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sha256", "bytes"],
+      "properties": {
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "bytes": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "image": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reference", "digest"],
+      "properties": {
+        "reference": { "type": "string", "minLength": 1 },
+        "digest": { "$ref": "#/$defs/imageDigest" }
+      }
+    },
+    "closurePart": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["roots", "fileCount", "filesSha256"],
+      "properties": {
+        "roots": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "fileCount": { "type": "integer", "minimum": 1 },
+        "filesSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "sourceClosure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "repositoryCommit",
+        "policy",
+        "buildContext",
+        "controller",
+        "sourceClosureSha256"
+      ],
+      "properties": {
+        "schemaVersion": { "const": "decantr-benchmark-runtime-source-closure.v1" },
+        "repositoryCommit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+        "policy": { "const": "exact-clean-git-files-v1" },
+        "buildContext": { "$ref": "#/$defs/closurePart" },
+        "controller": { "$ref": "#/$defs/closurePart" },
+        "sourceClosureSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "provenancePolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "signerWorkflow",
+        "signerDigest",
+        "sourceDigest",
+        "sourceRef",
+        "predicateType",
+        "denySelfHostedRunners"
+      ],
+      "properties": {
+        "repository": { "const": "decantr-ai/decantr" },
+        "signerWorkflow": {
+          "const": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml"
+        },
+        "signerDigest": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+        "sourceDigest": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+        "sourceRef": { "const": "refs/heads/main" },
+        "predicateType": { "const": "https://slsa.dev/provenance/v1" },
+        "denySelfHostedRunners": { "const": true }
+      }
+    },
+    "controller": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["image", "nodeVersion", "codexVersion", "claudeCodeVersion"],
+      "properties": {
+        "image": {
+          "allOf": [
+            { "$ref": "#/$defs/image" },
+            { "properties": { "reference": { "const": "node:22.17.0-bookworm-slim" } } }
+          ]
+        },
+        "nodeVersion": { "type": "string", "pattern": "^v?22\\.17\\.0$" },
+        "codexVersion": { "const": "0.145.0-alpha.27" },
+        "claudeCodeVersion": { "const": "2.1.153" }
+      }
+    },
+    "runtimeAttestation": {
+      "$ref": "runtime-profile-attestation.v2.json"
+    }
+  }
+}

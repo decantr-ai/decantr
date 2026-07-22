@@ -1,0 +1,293 @@
+{
+  "schemaVersion": "decantr-benchmark-corpus.v1",
+  "program": "decantr-3.10-ui-change-control-proof",
+  "frozenAt": "2026-07-22T10:02:09Z",
+  "sourcePolicy": {
+    "redistributeSource": false,
+    "networkDuringAgentRun": false,
+    "licenseUse": "Repositories are cloned at evaluation time for testing only. Decantr does not redistribute their source.",
+    "qualificationContamination": "Qualification repository identities were observed during 3.9.4 Day-0 scanning. Hidden task oracles remain sealed, but this is not a repository-blind holdout. Published claims must state this limitation."
+  },
+  "repositories": [
+    {
+      "id": "angular-realworld",
+      "repo": "https://github.com/realworld-apps/angular-realworld-example-app.git",
+      "commit": "dd99ed2cf39c805d719f943c5d7061a5683d98a8",
+      "branch": "main",
+      "license": "MIT",
+      "framework": "angular",
+      "projectPath": ".",
+      "partition": "development"
+    },
+    {
+      "id": "sakai-ng",
+      "repo": "https://github.com/primefaces/sakai-ng.git",
+      "commit": "96d71496d685b5c110efd2875abaa2bf89a56ad2",
+      "branch": "master",
+      "license": "MIT",
+      "framework": "angular",
+      "projectPath": ".",
+      "partition": "development"
+    },
+    {
+      "id": "ng-matero",
+      "repo": "https://github.com/ng-matero/ng-matero.git",
+      "commit": "9e9d3af2ae8a03dff55bc671914afe9f0a0b6329",
+      "branch": "main",
+      "license": "MIT",
+      "framework": "angular",
+      "projectPath": ".",
+      "partition": "development"
+    },
+    {
+      "id": "ngx-admin",
+      "repo": "https://github.com/akveo/ngx-admin.git",
+      "commit": "dc6a442704bfef34b776b5eb15faf852d9e2f75c",
+      "branch": "master",
+      "license": "MIT",
+      "framework": "angular",
+      "projectPath": ".",
+      "partition": "qualification"
+    },
+    {
+      "id": "spartan",
+      "repo": "https://github.com/spartan-ng/spartan.git",
+      "commit": "5399f195fa25f9e613a17098775a4514abf5c13e",
+      "branch": "main",
+      "license": "MIT",
+      "framework": "angular",
+      "projectPath": "apps/app",
+      "partition": "qualification"
+    },
+    {
+      "id": "tanstack-start-dashboard",
+      "repo": "https://github.com/Kiranism/tanstack-start-dashboard.git",
+      "commit": "433a5a073c944d25dcd59922b4de7193bde3c03e",
+      "branch": "main",
+      "license": "MIT",
+      "framework": "react",
+      "projectPath": ".",
+      "partition": "development"
+    },
+    {
+      "id": "start-ui-web",
+      "repo": "https://github.com/BearStudio/start-ui-web.git",
+      "commit": "81d5424df382e73f757bafdf7fdc2d51e4370a9f",
+      "branch": "main",
+      "license": "MIT",
+      "framework": "react",
+      "projectPath": ".",
+      "partition": "development"
+    },
+    {
+      "id": "bulletproof-react-vite",
+      "repo": "https://github.com/alan2207/bulletproof-react.git",
+      "commit": "9506629ed003a561c6627735480cce4994244bb4",
+      "branch": "master",
+      "license": "MIT",
+      "framework": "react",
+      "projectPath": "apps/react-vite",
+      "partition": "development"
+    },
+    {
+      "id": "openstatus-dashboard",
+      "repo": "https://github.com/openstatusHQ/openstatus.git",
+      "commit": "bbe43a401ebc4e71c57f428202d80a4df1dd22bc",
+      "branch": "main",
+      "license": "AGPL-3.0-only",
+      "framework": "next",
+      "projectPath": "apps/dashboard",
+      "partition": "development"
+    },
+    {
+      "id": "payload-website-template",
+      "repo": "https://github.com/payloadcms/payload.git",
+      "commit": "5e500633299ebaefb62baca350460d8b1089e2de",
+      "branch": "main",
+      "license": "MIT",
+      "framework": "next",
+      "projectPath": "templates/website",
+      "partition": "development"
+    },
+    {
+      "id": "linode-manager",
+      "repo": "https://github.com/linode/manager.git",
+      "commit": "6503a875f7a4e82dd8335d4ce16fcbd8ae492e21",
+      "branch": "develop",
+      "license": "Apache-2.0",
+      "framework": "react",
+      "projectPath": "packages/manager",
+      "partition": "qualification"
+    },
+    {
+      "id": "epic-stack",
+      "repo": "https://github.com/epicweb-dev/epic-stack.git",
+      "commit": "faaa21779c66002ba4c50890828b1b917cadbef2",
+      "branch": "main",
+      "license": "MIT",
+      "framework": "react-router",
+      "projectPath": ".",
+      "partition": "qualification"
+    },
+    {
+      "id": "hoppscotch-selfhost-web",
+      "repo": "https://github.com/hoppscotch/hoppscotch.git",
+      "commit": "a4395b3e7c41541de1d769e8701ea110ba8f96c2",
+      "branch": "main",
+      "license": "MIT",
+      "framework": "vue",
+      "projectPath": "packages/hoppscotch-selfhost-web",
+      "partition": "development"
+    },
+    {
+      "id": "sakai-vue",
+      "repo": "https://github.com/primefaces/sakai-vue.git",
+      "commit": "ec6b6ef53ad4fa7f2861277f50f2d9e236c40372",
+      "branch": "master",
+      "license": "MIT",
+      "framework": "vue",
+      "projectPath": ".",
+      "partition": "development"
+    },
+    {
+      "id": "nuxt-ui-dashboard",
+      "repo": "https://github.com/nuxt-ui-templates/dashboard.git",
+      "commit": "419abb0f674c819e387846fd0938933bbedb1eec",
+      "branch": "main",
+      "license": "MIT",
+      "framework": "nuxt",
+      "projectPath": ".",
+      "partition": "development"
+    },
+    {
+      "id": "shadcn-vue-v4",
+      "repo": "https://github.com/unovue/shadcn-vue.git",
+      "commit": "de6c4e272b4b42d395d3601e4a6f277f0b26e0b1",
+      "branch": "dev",
+      "license": "MIT",
+      "framework": "nuxt",
+      "projectPath": "apps/v4",
+      "partition": "development"
+    },
+    {
+      "id": "vben-web-antd",
+      "repo": "https://github.com/vbenjs/vue-vben-admin.git",
+      "commit": "899910547f26f6dc67c60a9b6821a131a94c7c58",
+      "branch": "main",
+      "license": "MIT",
+      "framework": "vue",
+      "projectPath": "apps/web-antd",
+      "partition": "qualification"
+    },
+    {
+      "id": "soybean-admin",
+      "repo": "https://github.com/soybeanjs/soybean-admin.git",
+      "commit": "3d3613f20cd4add3cd20fd6cc884abead165c6d2",
+      "branch": "main",
+      "license": "MIT",
+      "framework": "vue",
+      "projectPath": ".",
+      "partition": "qualification"
+    },
+    {
+      "id": "immich-web",
+      "repo": "https://github.com/immich-app/immich.git",
+      "commit": "8435d219e4206dca41ad648c13cadd511c0c5621",
+      "branch": "main",
+      "license": "AGPL-3.0-only",
+      "framework": "svelte",
+      "projectPath": "web",
+      "partition": "development"
+    },
+    {
+      "id": "kener",
+      "repo": "https://github.com/rajnandan1/kener.git",
+      "commit": "9d99a5c11f45973394f7884d7c383356ceb27a4d",
+      "branch": "main",
+      "license": "MIT",
+      "framework": "svelte",
+      "projectPath": ".",
+      "partition": "development"
+    },
+    {
+      "id": "upsnap-frontend",
+      "repo": "https://github.com/seriousm4x/UpSnap.git",
+      "commit": "c4cf00683202083745ed9f840be2442e3896f2ea",
+      "branch": "master",
+      "license": "MIT",
+      "framework": "svelte",
+      "projectPath": "frontend",
+      "partition": "qualification"
+    },
+    {
+      "id": "svgl",
+      "repo": "https://github.com/pheralb/svgl.git",
+      "commit": "a5a7fdef6454504902c33f571517e8302af3448c",
+      "branch": "main",
+      "license": "MIT",
+      "framework": "svelte",
+      "projectPath": ".",
+      "partition": "qualification"
+    },
+    {
+      "id": "emdash-simple",
+      "repo": "https://github.com/emdash-cms/emdash.git",
+      "commit": "ab351d289e0c725dbf74e1455b1c557a255b51ff",
+      "branch": "main",
+      "license": "MIT",
+      "framework": "astro",
+      "projectPath": "demos/simple",
+      "partition": "development"
+    },
+    {
+      "id": "tauri-start-solid",
+      "repo": "https://github.com/riipandi/tauri-start-solid.git",
+      "commit": "5840faef1ae2b2c29bc70dbb46728bbe0f3a02f8",
+      "branch": "main",
+      "license": "MIT OR Apache-2.0",
+      "framework": "solid",
+      "projectPath": ".",
+      "partition": "development"
+    },
+    {
+      "id": "solid-start-hackernews",
+      "repo": "https://github.com/solidjs/solid-start.git",
+      "commit": "eeff49a8766f718722e4adcfb519f487cbdf6f9a",
+      "branch": "main",
+      "license": "MIT",
+      "framework": "solid",
+      "projectPath": "apps/fixtures/hackernews",
+      "partition": "qualification"
+    },
+    {
+      "id": "primer-react",
+      "repo": "https://github.com/primer/react.git",
+      "commit": "cb1d245506841529d4df34f6efe8e6294464a631",
+      "branch": "main",
+      "license": "MIT",
+      "framework": "react-design-system",
+      "projectPath": ".",
+      "partition": "development"
+    },
+    {
+      "id": "figma-sds",
+      "repo": "https://github.com/figma/sds.git",
+      "commit": "335befd6ff70aa1f3a2a62fb39c2b2db3c0c9527",
+      "branch": "main",
+      "license": "MIT",
+      "framework": "react-design-system",
+      "projectPath": ".",
+      "partition": "development"
+    },
+    {
+      "id": "forma-36",
+      "repo": "https://github.com/contentful/forma-36.git",
+      "commit": "5c4e73d7bf3ae44632dd0419eb0160cf08e6769a",
+      "branch": "main",
+      "license": "MIT",
+      "framework": "react-design-system",
+      "projectPath": ".",
+      "partition": "qualification"
+    }
+  ]
+}

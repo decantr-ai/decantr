@@ -62,6 +62,7 @@ import {
   LOOP_READINESS_V2_SCHEMA_URL,
   type LoopReadiness,
   type ProjectAuditReport,
+  resolveUISurfaceTaskContext,
   type ScanFindingV1,
   type ScanGraphPreviewV1,
   type ScanReport,
@@ -71,6 +72,7 @@ import {
   type TaskCapsuleFindingV1,
   type TaskCapsuleOfficialGuidanceV1,
   type TaskCapsuleReadTargetV1,
+  type UISurfaceTaskContextV1,
   type VerificationFinding,
 } from '@decantr/verifier';
 import {
@@ -80,7 +82,6 @@ import {
   createAdoptionReceipt,
   receiptHasOnlyApprovedHostSourceMutations,
 } from './adoption-receipt.js';
-import { scanRoutes } from './analyzers/routes.js';
 import { scanStyling } from './analyzers/styling.js';
 import { writeArtifactReadme } from './artifacts.js';
 import {
@@ -97,6 +98,12 @@ import {
   readBrownfieldProposal,
 } from './brownfield-proposal.js';
 import { loadBundledContentItem, loadBundledContentList } from './bundled-content.js';
+import {
+  COMMAND_SURFACE,
+  type CommandSurfaceEntry,
+  type CommandSurfaceVisibility,
+  commandSurfaceByName,
+} from './command-surface.js';
 import { cmdAddFeature, cmdAddPage, cmdAddSection } from './commands/add.js';
 import { cmdAnalyze } from './commands/analyze.js';
 import { cmdCi, cmdCiHelp } from './commands/ci.js';
@@ -2333,22 +2340,34 @@ function ensureDiscoveryReadyForGovernance(
   force: boolean,
 ): boolean {
   const discovery = discoverProject(projectRoot);
-  // Angular is the first adapter with bootstrap-reachability and completeness proof.
-  // Other framework adapters keep their 3.x compatibility behavior until they expose equal proof.
-  if (discovery.project.framework !== 'angular') return true;
   const readiness = evaluateDiscoveryReadiness(discovery);
-  if (readiness.adoptionBaseline === 'ready') return true;
+  const selectedAppStatus = discovery.surfaces.axes.selectedApp.status;
+  const surfaceAuthorityStatus = discovery.surfaces.axes.surfaceAuthority.status;
+  const attachable =
+    (selectedAppStatus === 'proven' || selectedAppStatus === 'partial') &&
+    (surfaceAuthorityStatus === 'proven' || surfaceAuthorityStatus === 'partial');
+  if (attachable) {
+    if (readiness.adoptionBaseline !== 'ready') {
+      console.log(
+        `${YELLOW}Discovery boundary:${RESET} attaching with incomplete UI topology; route-scoped tasks remain fail-closed.`,
+      );
+      for (const reason of readiness.reasons) console.log(`  ${dim(`- ${reason}`)}`);
+    }
+    return true;
+  }
   if (force) {
     console.log(
-      `${YELLOW}Discovery override:${RESET} proceeding with ${operation} although route authority is not proven.`,
+      `${YELLOW}Discovery override:${RESET} proceeding with ${operation} although the selected UI surface is not proven.`,
     );
     for (const reason of readiness.reasons) console.log(`  ${dim(`- ${reason}`)}`);
     return true;
   }
-  console.error(error(`Refusing ${operation}: production route authority is not proven.`));
-  for (const reason of readiness.reasons) console.error(dim(`  - ${reason}`));
-  console.error(dim('Run `decantr scan --json`, resolve the route-source limitations, and retry.'));
-  console.error(dim('Use `--force` only after manually reviewing the incomplete route surface.'));
+  console.error(
+    error(`Refusing ${operation}: the selected path is not proven to contain UI surfaces.`),
+  );
+  for (const reason of discovery.surfaces.reasons) console.error(dim(`  - ${reason}`));
+  console.error(dim('Run `decantr scan --json`, select the correct UI app or package, and retry.'));
+  console.error(dim('Use `--force` only after manually confirming the selected UI boundary.'));
   process.exitCode = 1;
   return false;
 }
@@ -3050,7 +3069,7 @@ async function cmdInitInternal(args: InitArgs): Promise<InitExecutionResult | un
         ? '    3. Use DECANTR.md for the active Decantr CSS runtime and guard rules'
         : '    3. Use DECANTR.md for governance boundaries, interaction requirements, and styling authority',
     );
-    console.log('    4. Run decantr task <route> "<intent>" before route-level edits');
+    console.log('    4. Run decantr task <target> "<intent>" before UI-surface edits');
     console.log('    5. Run decantr verify after implementation');
   }
   console.log('');
@@ -3756,7 +3775,7 @@ function printMonorepoSetupGuidance(workspaceInfo: ReturnType<typeof resolveWork
       `  ${cyan(`decantr doctor --project ${firstAttached}`)}                    Explain current state and next command`,
     );
     console.log(
-      `  ${cyan(`decantr task <route> "<change>" --project ${firstAttached}`)}   Prepare LLM context before edits`,
+      `  ${cyan(`decantr task <target> "<change>" --project ${firstAttached}`)}   Prepare source-scoped context before edits`,
     );
     console.log(
       `  ${cyan(`decantr verify --brownfield --local-patterns --project ${firstAttached}`)}  Check after edits`,
@@ -3950,8 +3969,8 @@ function buildScanGraphPreview(
       canPreview: false,
       readOnly: true,
       message:
-        'No decantr.essence.json found. Adopt the project to create the first typed Contract graph baseline.',
-      nextCommand: withProject('decantr adopt --yes', projectArg),
+        'No decantr.essence.json found. Attachment can create a typed Contract graph without promoting unresolved UI topology.',
+      nextCommand: null,
       staleArtifacts: [],
       snapshot: null,
       capsule: null,
@@ -4171,15 +4190,15 @@ function printScanReport(
   );
   if (report.recommendedCommands.includes('npx @decantr/cli adopt --yes')) {
     console.log(
-      `When ready to attach Decantr, run ${cyan(withProject('decantr adopt --yes', projectArg))}.`,
+      `To attach Decantr without promoting unresolved topology, run ${cyan(withProject('decantr adopt --yes', projectArg))}.`,
     );
     console.log(
-      `After adoption, inspect what Decantr found with ${cyan(studioCommandForProject(projectArg))}.`,
+      `Prepare only proven targets with ${cyan(withProject('decantr task <target> "<change>"', projectArg))}.`,
     );
   } else if (report.applicability.status === 'partial_fit') {
     console.log(
       dim(
-        'Adoption is withheld until production route authority and extraction completeness are proven.',
+        'Attachment is withheld because the selected path is not proven to contain an authoritative UI surface.',
       ),
     );
   }
@@ -4271,7 +4290,7 @@ async function cmdSetupWorkflow(args: string[]): Promise<void> {
       );
     }
     console.log(
-      `  ${cyan(withProject('decantr task <route> "<change>"', projectArg))}  Prepare LLM context before edits`,
+      `  ${cyan(withProject('decantr task <target> "<change>"', projectArg))}  Prepare source-scoped context before edits`,
     );
     console.log(
       `  ${cyan(withProject(verifyCommand, projectArg))}     Run local health and drift checks`,
@@ -4497,7 +4516,7 @@ async function cmdAdoptWorkflow(args: string[]): Promise<void> {
       `  ${cyan(withProject('decantr codify --accept --confirm-reviewed', projectArg))}              Accept reviewed local patterns and rules`,
     );
     console.log(
-      `  ${cyan(withProject('decantr task <route> "<change>"', projectArg))}      Give your LLM route-specific context before edits`,
+      `  ${cyan(withProject('decantr task <target> "<change>"', projectArg))}      Give your LLM source-scoped context before edits`,
     );
     console.log(
       `  ${cyan(withProject('decantr verify --brownfield --local-patterns', projectArg))}  Check contract, health, and local law after edits`,
@@ -5285,63 +5304,144 @@ function trimTaskCompatibilityPayload(payload: Record<string, unknown>): number 
   return canonicalUtf8Bytes(payload);
 }
 
+function emitDiscoverySurfaceTaskContext(input: {
+  workspaceInfo: {
+    cwd: string;
+    workspaceRoot: string;
+    appRoot: string;
+  };
+  context: UISurfaceTaskContextV1;
+  taskSummary: string;
+  verifyCommand: string;
+  json: boolean;
+}): void {
+  const mapFile = (file: string): string =>
+    taskWorkspacePath(input.workspaceInfo.workspaceRoot, input.workspaceInfo.appRoot, file);
+  const mapSurface = (surface: UISurfaceTaskContextV1['surface']) =>
+    surface
+      ? {
+          ...surface,
+          files: surface.files.map(mapFile),
+        }
+      : null;
+  const readTargets = input.context.read.map((target) => ({
+    ...target,
+    file: mapFile(target.file),
+  }));
+  const payload = {
+    schemaVersion: input.context.schemaVersion,
+    mode: 'discovery' as const,
+    target: input.context.target,
+    task: input.taskSummary || null,
+    status: input.context.status,
+    surface: mapSurface(input.context.surface),
+    candidates: input.context.candidates.map((candidate) => mapSurface(candidate)),
+    read: readTargets.map((target) => target.file),
+    readTargets,
+    authority: {
+      axes: input.context.axes,
+      reasons: input.context.reasons,
+    },
+    stopConditions: [
+      'The selected surface does not resolve to production or project-reference source.',
+      'Runtime behavior contradicts the static authority evidence.',
+      'The requested change requires files outside the bounded read set.',
+    ],
+    verifyCommand: input.verifyCommand,
+  };
+
+  if (input.context.status === 'blocked' || input.context.status === 'unsupported') {
+    process.exitCode = 1;
+  }
+  if (input.json) {
+    console.log(JSON.stringify(payload, null, 2));
+    return;
+  }
+
+  console.log(heading('Decantr Task Context'));
+  console.log(`  Target: ${cyan(payload.target)}`);
+  console.log(`  Status: ${payload.status}`);
+  if (payload.surface) {
+    console.log(`  Surface: ${payload.surface.kind}:${payload.surface.name}`);
+  }
+  if (payload.task) console.log(`  Task: ${payload.task}`);
+  if (payload.read.length > 0) {
+    console.log('');
+    console.log(`${BOLD}Read before editing:${RESET}`);
+    for (const path of payload.read) console.log(`  ${cyan(path)}`);
+  }
+  if (payload.candidates.length > 1) {
+    console.log('');
+    console.log(`${BOLD}Matching surfaces:${RESET}`);
+    for (const candidate of payload.candidates) {
+      if (candidate) console.log(`  ${candidate.id}`);
+    }
+  }
+  if (payload.authority.reasons.length > 0) {
+    console.log('');
+    console.log(`${BOLD}Authority boundary:${RESET}`);
+    for (const reason of payload.authority.reasons) console.log(`  ${dim(`- ${reason}`)}`);
+  }
+  console.log('');
+  console.log(`  Verify: ${cyan(payload.verifyCommand)}`);
+}
+
 async function cmdTaskWorkflow(args: string[]): Promise<void> {
   const { flags, positional } = parseLooseArgs(args);
   const workspaceInfo = resolveWorkflowProject(flags, 'task');
   if (!workspaceInfo) return;
   const projectArg = flagString(flags, 'project');
 
-  const routeInput = positional[0];
-  if (!routeInput) {
+  const targetInput = positional[0];
+  if (!targetInput) {
     console.error(
       error(
-        'Usage: decantr task <route> ["task summary"] [--project <path>] [--since origin/main] [--json]',
+        'Usage: decantr task <target> ["task summary"] [--project <path>] [--since origin/main] [--json]',
       ),
     );
     process.exitCode = 1;
     return;
   }
 
-  const route = routeInput.startsWith('/') ? routeInput : `/${routeInput}`;
   const taskSummary = positional.slice(1).join(' ').trim();
   const essencePath = join(workspaceInfo.appRoot, 'decantr.essence.json');
   const essence = readJsonIfPresent<EssenceFile>(essencePath);
-  if (!essence) {
-    console.error(
-      error('No decantr.essence.json found. Run `decantr adopt` or `decantr init` first.'),
-    );
-    process.exitCode = 1;
+  const projectJson = readJsonIfPresent<{
+    initialized?: { workflowMode?: string; adoptionMode?: string };
+  }>(join(workspaceInfo.appRoot, '.decantr', 'project.json'));
+  const liveDiscovery = discoverProject(workspaceInfo.appRoot);
+  const surfaceTask = resolveUISurfaceTaskContext(liveDiscovery, targetInput);
+  const taskVerifyCommand = !essence
+    ? withProject('decantr scan --json', projectArg)
+    : projectJson?.initialized?.workflowMode?.startsWith('greenfield')
+      ? withProject('decantr verify', projectArg)
+      : projectJson?.initialized?.workflowMode === 'hybrid-compose'
+        ? withProject('decantr verify --local-patterns', projectArg)
+        : withProject('decantr verify --brownfield --local-patterns', projectArg);
+  if (
+    !essence ||
+    !targetInput.startsWith('/') ||
+    surfaceTask.status === 'blocked' ||
+    surfaceTask.status === 'unsupported'
+  ) {
+    emitDiscoverySurfaceTaskContext({
+      workspaceInfo,
+      context: surfaceTask,
+      taskSummary,
+      verifyCommand: taskVerifyCommand,
+      json: flagBoolean(flags, 'json'),
+    });
     return;
   }
   if (!isV4(essence)) {
-    console.error(error('Task context requires Essence v4. Run `decantr migrate --to v4` first.'));
+    console.error(
+      error('Route task capsules require Essence v4. Run `decantr migrate --to v4` first.'),
+    );
     process.exitCode = 1;
     return;
   }
 
-  const projectJson = readJsonIfPresent<{
-    initialized?: { workflowMode?: string; adoptionMode?: string };
-  }>(join(workspaceInfo.appRoot, '.decantr', 'project.json'));
-  const brownfieldTask = projectJson?.initialized?.workflowMode === 'brownfield-attach';
-  const liveDiscovery = brownfieldTask ? discoverProject(workspaceInfo.appRoot) : null;
-  if (liveDiscovery?.project.framework === 'angular') {
-    const readiness = evaluateDiscoveryReadiness(liveDiscovery);
-    const authoritativeRoute = liveDiscovery.routes.taskableRoutes.find(
-      (entry) => entry.path === route,
-    );
-    if (readiness.routeScopedContext !== 'ready' || !authoritativeRoute) {
-      console.error(error(`Route-scoped task context is not proven for ${route}.`));
-      for (const reason of readiness.reasons) console.error(dim(`  - ${reason}`));
-      if (!authoritativeRoute) {
-        console.error(
-          dim('  - The requested route is absent from current production route authority.'),
-        );
-      }
-      console.error(dim('Run `decantr scan --json` and resolve discovery limitations first.'));
-      process.exitCode = 1;
-      return;
-    }
-  }
+  const route = targetInput;
 
   const target = essence.blueprint.routes?.[route];
   if (!target) {
@@ -5360,24 +5460,7 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
     pages?: Array<{ id: string; markdown: string; json: string; sectionId: string | null }>;
     sections?: Array<{ id: string; markdown: string; json: string }>;
   }>(join(contextDir, 'pack-manifest.json'));
-  const taskVerifyCommand = projectJson?.initialized?.workflowMode?.startsWith('greenfield')
-    ? withProject('decantr verify', projectArg)
-    : projectJson?.initialized?.workflowMode === 'hybrid-compose'
-      ? withProject('decantr verify --local-patterns', projectArg)
-      : withProject('decantr verify --brownfield --local-patterns', projectArg);
-  const analysis = readJsonIfPresent<{
-    routes?: { routes?: Array<{ path?: string; file?: string }> };
-  }>(join(workspaceInfo.appRoot, '.decantr', 'analysis.json'));
-  let routeSourceFile = liveDiscovery?.routes.taskableRoutes.find(
-    (entry) => entry.path === route,
-  )?.file;
-  if (!routeSourceFile) {
-    routeSourceFile = analysis?.routes?.routes?.find((entry) => entry.path === route)?.file;
-  }
-  if (!routeSourceFile)
-    routeSourceFile = scanRoutes(workspaceInfo.appRoot).routes.find(
-      (entry) => entry.path === route,
-    )?.file;
+  const routeSourceFile = surfaceTask.read.find((entry) => entry.role === 'implementation')?.file;
   const pagePack = manifest?.pages?.find(
     (entry) =>
       entry.id === target.page && (entry.sectionId === null || entry.sectionId === target.section),
@@ -5436,26 +5519,6 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
   }
   const graphCurrent = Boolean(graphSnapshot) && graphStaleArtifacts.length === 0;
   const routeGraphContext = buildGraphRouteContext(graphSnapshot, route, { task: taskSummary });
-  if (!routeSourceFile && routeGraphContext) {
-    const routeSourceNodeIds = new Set(
-      routeGraphContext.edges
-        .filter(
-          (edge) =>
-            edge.src === routeGraphContext.routeNode.id &&
-            edge.relation === 'NODE_DERIVED_FROM_SOURCE' &&
-            edge.dst.startsWith('src:'),
-        )
-        .map((edge) => edge.dst),
-    );
-    const routeSourceNode = routeGraphContext.nodes.find(
-      (node) =>
-        routeSourceNodeIds.has(node.id) &&
-        graphPayloadString(node.payload, 'kind') === 'route-source',
-    );
-    routeSourceFile = routeSourceNode
-      ? graphPayloadString(routeSourceNode.payload, 'path')
-      : undefined;
-  }
   const routePatterns = page?.layout?.map(extractPatternName) ?? [];
   const localLaw = createAcceptedLocalLawTaskSummary(workspaceInfo.appRoot);
   const rankedBehaviorObligations = rankBehaviorObligationsForTask(
@@ -5499,7 +5562,7 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
   if (!routeSourceFile || !existsSync(join(workspaceInfo.appRoot, routeSourceFile))) {
     console.error(
       error(
-        `Could not prove the implementation source for ${route}. Run \`decantr scan\` and \`decantr graph\`, then retry.`,
+        `Could not prove the live implementation source for ${route}. Run \`decantr scan --json\` and resolve the authority limitation before retrying.`,
       ),
     );
     process.exitCode = 1;
@@ -6499,230 +6562,60 @@ async function cmdContentCorpusWorkflow(
 
 // ── Help ──
 
-function cmdHelp() {
+function formatHelpCatalog(visibility: CommandSurfaceVisibility): string {
+  return COMMAND_SURFACE.filter((entry) => entry.visibility === visibility)
+    .map((entry) => `  ${cyan(entry.command)}\n    ${entry.purpose}`)
+    .join('\n');
+}
+
+function cmdHelp(mode: CommandSurfaceVisibility = 'default') {
+  if (mode !== 'default') {
+    const compatibility = mode === 'compatibility';
+    console.log(`
+${BOLD}decantr ${compatibility ? 'compatibility' : 'advanced'} commands${RESET}
+
+${
+  compatibility
+    ? 'These Decantr 3.x commands remain callable for existing scripts but are omitted from the primary workflow.'
+    : 'These secondary commands remain callable but are omitted from the primary workflow.'
+}
+
+${formatHelpCatalog(mode)}
+
+${BOLD}Command help:${RESET}
+  decantr <command> --help
+${compatibility ? '' : '  decantr help --compatibility'}
+`);
+    return;
+  }
+
   console.log(`
-${BOLD}decantr${RESET} — AI Frontend Governance for codebases touched by AI agents
+${BOLD}decantr${RESET} - Agent-neutral UI change control for codebases touched by AI agents
 
-${BOLD}Usage:${RESET}
-  decantr setup [--project <path>]
-  decantr scan [--project <path>] [--json]
-  decantr new <name> [--blueprint=X] [--archetype=X] [--theme=X] [--workflow=greenfield] [--adoption=contract-only|decantr-css] [--telemetry]
-  decantr adopt [--project <path>] [--base-url <url>] [--evidence] [--ci] [--no-packs] [--yes] [--force]
-  decantr task <route> ["task summary"] [--project <path>] [--since origin/main] [--json]
-  decantr verify [--project <path>] [--brownfield] [--local-patterns] [health options]
-  decantr resolve [--project <path>] [--json] [--defer <finding-id>] [--mark-advisory <finding-id>]
-  decantr graph [--project <path>] [--route <route>] [--node <id>] [--file <path>] [--task <text>] [--snapshot-id <id>] [--compare-to <id>] [--capsule-source-limit <count>] [--check] [--json]
-  decantr ci [--project <path>] [--workspace] [--fail-on error|warn|none]
-  decantr doctor [--project <path>] [--workspace] [--json]
-  decantr connect cursor [--project <path>] [--preview]
-  decantr codify [--from-audit] [--style-bridge] [--map-pattern <slug>] [--project <path>]
-  decantr codify --accept --confirm-reviewed [--accept-style-bridge] [--project <path>]
-  decantr studio [--port 4319] [--host 127.0.0.1] [--report decantr-health.json] [--workspace]
+${BOLD}Primary workflow:${RESET}
+  ${cyan('decantr scan')} [--project <path>] [--json]
+    Observe an existing UI app without writing files.
 
-${formatWhichCommandFirst()}
+  ${cyan('decantr adopt')} [--project <path>] [--dry-run] [--yes]
+    Attach Decantr once after reviewing the scan.
 
-${BOLD}Advanced primitives:${RESET}
-  decantr init [options]
-  decantr analyze
-  decantr magic <prompt> [--dry-run]
-  decantr status
-  decantr sync
-  decantr audit [file]
-  decantr migrate --to v4
-  decantr check
-  decantr check --brownfield
-  decantr sync-drift
-  decantr resolve [--json]
-  decantr graph [--project <path>] [--route <route>] [--node <id>] [--file <path>] [--task <text>] [--snapshot-id <id>] [--compare-to <id>] [--capsule-source-limit <count>] [--check] [--json]
-  decantr search <query> [--type <type>] [--sort <recommended|recent|name>] [--recommended] [--source <authored|benchmark|hybrid>]
-  decantr suggest <query> [--type <type>] [--route <route>] [--file <path>] [--from-code]
-  decantr get <type> <id>
-  decantr list <type> [--sort <recommended|recent|name>] [--recommended] [--source <authored|benchmark|hybrid>]
-  decantr showcase [manifest|shortlist|verification] [--json]
-  decantr content summary [--namespace <namespace>] [--json]
-  decantr content compile-packs [path] [--namespace <namespace>] [--json] [--write-context]
-  decantr content get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] [--write-context]
-  decantr content get-pack page --route <route> [--namespace <namespace>] [--json] [--essence <path>]
-  decantr health [--format text|json|markdown] [--ci] [--fail-on error|warn|none]
-  decantr health --evidence [--browser] [--base-url <url>] [--design-tokens <path>]
-  decantr health --diagnostics [--json|--markdown]
-  decantr health --save-baseline | --since-baseline
-  decantr health init-ci [legacy alias for decantr ci init]
-  decantr ci init [--project <path>] [--workspace] [--provider github|generic] [--force]
-  decantr connect cursor [--project <path>] [--preview] [--mcp-only|--rules-only]
-  decantr workspace list [--json]
-  decantr workspace health [--json] [--changed --since origin/main]
-  decantr content check [--json] [--markdown] [--ci]
-  decantr content-health [--json] [--markdown] [--ci]
-  decantr telemetry status [--json]
-  decantr telemetry explain [--json]
-  decantr telemetry link --api-url <private-url> --api-key <key> [--enable] [--org <slug>]
-  decantr rules preview [--project=<path>]
-  decantr rules apply [--project=<path>]
-  decantr validate [path]
-  decantr theme switch <themeName> [--shape <shape>] [--mode <mode>]
-  decantr create <type> <name>
-  decantr publish <type> <name>
-  decantr login
-  decantr logout
-  decantr help
+  ${cyan('decantr task')} <target> ["task summary"] [--project <path>] [--json]
+    Prepare compact, source-scoped context before an AI-assisted change.
 
-${BOLD}Init Options:${RESET}
-  --blueprint, -b    Blueprint ID
-  --theme            Theme ID
-  --mode             Color mode: dark | light | auto
-  --shape            Border shape: pill | rounded | sharp
-  --target           Framework: react | vue | svelte | angular | solid | nextjs | nuxt | astro | html
-  --guard            Guard mode: creative | guided | strict
-  --density          Spacing: compact | comfortable | spacious
-  --shell            Default shell layout
-  --workflow         Workflow: greenfield | brownfield | hybrid
-  --adoption         Adoption: contract-only | style-bridge | decantr-css
-  --assistant-bridge Assistant rules: none | preview | apply
-  --accept-proposal  Brownfield: accept observed proposal when no essence exists
-  --merge-proposal   Brownfield: merge observed proposal into an existing essence
-  --replace-essence  Brownfield: explicit destructive proposal replacement with backup
-  --project          App path inside a workspace/monorepo
-  --existing         Initialize in existing project
-  --offline          Force offline mode
-  --yes, -y          Accept defaults, skip confirmations
-  --registry         Custom API URL (legacy alias; prefer DECANTR_API_URL)
-  --telemetry        Enable the local preference; delivery requires DECANTR_TELEMETRY_ENDPOINT
+  ${cyan('decantr verify')} [--project <path>] [--brownfield] [--local-patterns]
+    Check the completed change against project authority and evidence.
 
-${BOLD}Commands:${RESET}
-  ${cyan('setup')}       Detect project state and recommend the right Decantr workflow
-  ${cyan('scan')}        Read-only Brownfield reconnaissance; no files written
-  ${cyan('new')}         Create a new greenfield workspace and bootstrap the available starter adapter
-  ${cyan('adopt')}       Brownfield one-liner: analyze, attach, verify, and show next steps
-  ${cyan('task')}        Prepare route/task context, local law, behavior obligations, evidence, and changed-file impact for an AI coding assistant
-  ${cyan('verify')}      One reliability gate over Project Health, Brownfield checks, baselines, and evidence
-  ${cyan('resolve')}     Read authority conflicts and explicitly defer/advisory-mark drift
-  ${cyan('graph')}       Build typed Contract graph artifacts and the agent cache capsule
-  ${cyan('ci')}          Non-mutating CI gate and CI integration generator
-  ${cyan('doctor')}      Explain Decantr state, artifact ownership, and the next command
-  ${cyan('connect')}     Connect Decantr to AI coding tools such as Cursor
-  ${cyan('codify')}      Propose or accept project-owned Brownfield UI patterns, behavior obligations, and rules
-  ${cyan('studio')}      Open a local Project Health dashboard backed by the same report
-  ${cyan('content')}     Official content-corpus namespace: check, summary, packs, create
+  ${cyan('decantr ci init')} [--project <path>] [--workspace] [--provider github|generic]
+    Install the same verification gate in CI.
 
-${BOLD}Advanced commands:${RESET}
-  ${cyan('magic')}       Greenfield-first intent flow; steers existing apps into analyze + init
-  ${cyan('init')}        Attach Decantr contract/context files to an existing project or empty workspace
-  ${cyan('status')}      Show project status, DNA axioms, and blueprint info
-  ${cyan('health')}      Advanced Project Health primitive [--json] [--markdown] [--ci]; use decantr ci for automation
-  ${cyan('workspace')}   Discover and aggregate health across Decantr projects in a monorepo
-  ${cyan('content-health')} Generate a local official-vocabulary health report [--json] [--markdown] [--ci]
-  ${cyan('sync')}        Sync official vocabulary from API
-  ${cyan('audit')}       Audit the project or critique a specific file against compiled packs
-  ${cyan('migrate')}     Migrate older essence files to v4 format (with .pre-v4.backup.json backup)
-  ${cyan('check')}       Detect drift issues (validate + guard rules) [--telemetry] [--brownfield]
-  ${cyan('sync-drift')}  Review and resolve drift log entries
-  ${cyan('resolve')}     Group source-vs-contract conflicts and print exact resolution actions
-  ${cyan('graph')}       Generate .decantr/graph snapshot, history, manifest, diff, and contract capsule
-  ${cyan('search')}      Search official content-corpus vocabulary
-  ${cyan('suggest')}     Suggest patterns or alternatives for a query
-  ${cyan('get')}         Get full details of a vocabulary item
-  ${cyan('list')}        List items by type
-  ${cyan('showcase')}    Inspect audited showcase benchmark metadata
-  ${cyan('validate')}    Validate an Essence v4 file
-  ${cyan('theme')}       Manage custom themes and switch the active Essence theme
-  ${cyan('create')}      Create a custom content item (pattern, theme, blueprint, etc.)
-  ${cyan('publish')}     Legacy retired hosted publishing command
-  ${cyan('login')}       Legacy API-key helper for compatibility scripts
-  ${cyan('logout')}      Remove stored legacy credentials
-  ${cyan('analyze')}     Brownfield entrypoint: scan an existing project and emit attach guidance
-  ${cyan('telemetry')}   Inspect caller-configured private CLI telemetry
-  ${cyan('export')}      Export design tokens to framework format (shadcn, tailwind, css-vars)
-  ${cyan('registry')}    Legacy alias for content-corpus and pack helpers
-  ${cyan('rules')}       Preview/apply Decantr assistant bridge blocks to repo rule files
-  ${cyan('connect')}     Configure editor-specific Decantr rules and MCP where supported
-  ${cyan('upgrade')}     Check for official content updates
-  ${cyan('help')}        Show this help
+${BOLD}Operating loop:${RESET}
+  First use:  decantr scan -> decantr adopt
+  Daily work: decantr task -> decantr verify
+  Automation: decantr ci init
 
-${BOLD}Examples:${RESET}
-  decantr setup
-  decantr scan
-  decantr scan --json
-  decantr new my-app --blueprint=carbon-ai-portal
-  decantr new my-app --blueprint=carbon-ai-portal --adoption=decantr-css
-  decantr adopt --yes
-  decantr adopt --project apps/web --yes
-  decantr task /feed "add saved recipe actions"
-  decantr verify --brownfield --local-patterns
-  decantr resolve
-  decantr graph --project apps/web
-  decantr graph --project apps/web --route /feed --task "improve loading" --json
-  decantr graph --project apps/web --file src/app/page.tsx --impact --json
-  decantr graph --project apps/web --compare-to graph:previous --include-diff-ops --json
-  decantr graph --check --json
-  decantr verify --base-url http://localhost:3000 --evidence
-  decantr verify --since-baseline
-  decantr doctor --project apps/web
-  decantr connect cursor --project apps/web
-  decantr connect cursor --preview
-  decantr ci --project apps/web
-  decantr ci init --project apps/web
-  decantr codify --from-audit
-  decantr codify --map-pattern hero --project apps/web
-  decantr codify --accept --confirm-reviewed
-  decantr content check --ci --fail-on error
-  decantr magic "AI chatbot with dark cyber theme — bold and futuristic"
-  decantr init
-  decantr analyze
-  decantr init --existing --accept-proposal
-  decantr init --existing --merge-proposal
-  decantr init --existing --adoption=style-bridge --assistant-bridge=preview
-  decantr init --workflow=greenfield --adoption=contract-only
-  decantr init --project=apps/web --yes
-  decantr rules preview
-  decantr rules apply
-  decantr status
-  decantr health
-  decantr health --evidence --output .decantr/evidence/latest.json
-  decantr workspace list
-  decantr verify --workspace --changed --since origin/main
-  decantr content check --ci --fail-on error
-  decantr studio
-  decantr studio --report decantr-health.json
-  decantr telemetry status
-  decantr telemetry explain
-  decantr telemetry link --api-url https://telemetry.example/v1 --api-key <key>
-  decantr audit
-  decantr audit src/pages/HomePage.tsx
-  decantr migrate --to v4
-  decantr check --brownfield
-  decantr sync-drift
-  decantr search dashboard
-  decantr suggest "recipe feed with infinite scroll" --route /feed --from-code
-  decantr list patterns
-  decantr showcase shortlist
-  decantr showcase verification --json
-  decantr content summary --namespace @official
-  decantr content compile-packs decantr.essence.json --json
-  decantr content compile-packs decantr.essence.json --write-context
-  decantr content get-pack manifest --namespace @official --json
-  decantr content get-pack review --namespace @official --write-context
-  decantr content get-pack page --route /feed --namespace @official --json
-  decantr theme switch carbon --mode dark
-  decantr create pattern my-card
-
-${BOLD}Workflow Model:${RESET}
-  ${cyan('Greenfield blueprint')}   decantr new my-app --blueprint=X --workflow=greenfield --adoption=contract-only
-  ${cyan('Legacy CSS adapter')}     decantr new my-app --blueprint=X --adoption=decantr-css
-  ${cyan('Greenfield contract')}    decantr init --workflow=greenfield --adoption=contract-only
-  ${cyan('Brownfield adoption')}    decantr adopt --yes
-  ${cyan('Brownfield preview')}     decantr scan -> decantr adopt --yes
-  ${cyan('Brownfield monorepo')}    decantr adopt --project apps/web --yes
-  ${cyan('Daily LLM work')}          decantr graph -> decantr task <route> "<change>" -> returned verify command
-  ${cyan('Cursor activation')}       decantr connect cursor -> Cursor Agent calls decantr_context action=task
-  ${cyan('Drift resolution')}        decantr resolve -> codify/init/graph/repair source explicitly
-  ${cyan('Typed contract graph')}    decantr graph -> agent session loads .decantr/graph/contract-capsule.json
-  ${cyan('Project-owned law')}       decantr codify --from-audit -> edit proposal -> decantr codify --accept --confirm-reviewed
-  ${cyan('Hybrid composition')}     decantr add/remove, decantr theme switch, decantr content, decantr upgrade
-
-${BOLD}Bootstrap adapters:${RESET}
-  Runnable starter adapters are legacy opt-in via ${cyan('--adoption=decantr-css')}: ${cyan('react-vite')}, ${cyan('next-app')}, ${cyan('vanilla-vite')}, ${cyan('vue-vite')}, ${cyan('sveltekit')}, ${cyan('angular')}, ${cyan('solid-vite')}
-  Unsupported targets resolve through ${cyan('generic-web')} contract-only mode until their starter adapters land.
+${BOLD}More help:${RESET}
+  decantr <command> --help
+  decantr help --advanced
 `);
 }
 
@@ -7001,21 +6894,21 @@ ${BOLD}Examples:${RESET}
 
 function cmdTaskHelp() {
   console.log(`
-${BOLD}decantr task${RESET} — Prepare compact route/task context for an AI coding assistant
+${BOLD}decantr task${RESET} — Prepare authoritative UI-surface context for an AI coding assistant
 
 ${BOLD}Usage:${RESET}
-  decantr task <route> ["task summary"] [--project <path>] [--since origin/main] [--json]
+  decantr task <target> ["task summary"] [--project <path>] [--since origin/main] [--json]
 
 ${BOLD}Behavior:${RESET}
-  Requires current .decantr/graph artifacts. Read targets begin with the discovered route
-  implementation source, then include compact graph context, accepted local law, behavior
-  obligations, evidence, stop conditions, and the workflow-aware verify command. Angular
-  route tasks stop when production route authority or completeness is not proven.
+  Resolves the target from live project discovery before reading generated artifacts. Targets may
+  be routes, components, stories, layouts, packages, or exact surface/file selectors from scan
+  output. Adopted route tasks may add compact graph and contract context. Unknown, ambiguous, or
+  unproven targets stop instead of falling back to stale analysis or inferred navigation data.
 
 ${BOLD}Examples:${RESET}
   decantr task /feed "add saved recipe actions"
-  decantr task /feed "add saved recipe actions" --since origin/main
-  decantr task /profile --json
+  decantr task RecipeCard "add a compact state"
+  decantr task file:src/components/ProfilePanel.tsx --json
 `);
 }
 
@@ -7084,6 +6977,26 @@ ${BOLD}Examples:${RESET}
 `);
 }
 
+function cmdGenericCommandHelp(entry: CommandSurfaceEntry) {
+  const visibilityLabel = entry.visibility === 'compatibility' ? 'Compatibility' : 'Advanced';
+  const visibilityNote =
+    entry.visibility === 'compatibility'
+      ? 'Retained for Decantr 3.x script compatibility and omitted from the primary workflow.'
+      : 'Callable as a secondary command and omitted from the primary workflow.';
+
+  console.log(`
+${BOLD}decantr ${entry.command}${RESET} - ${entry.purpose}
+
+${BOLD}Usage:${RESET}
+  decantr ${entry.command} [options]
+
+${BOLD}${visibilityLabel} command:${RESET}
+  ${visibilityNote}
+
+Inspect the active reference documentation for the complete argument and option set.
+`);
+}
+
 function printCommandHelp(command: string, args: string[]): boolean {
   if (!isCommandHelpRequest(args)) return false;
   switch (command) {
@@ -7144,9 +7057,12 @@ function printCommandHelp(command: string, args: string[]): boolean {
     case 'theme':
       cmdThemeHelp();
       return true;
-    default:
-      cmdHelp();
+    default: {
+      const entry = commandSurfaceByName(command);
+      if (!entry) return false;
+      cmdGenericCommandHelp(entry);
       return true;
+    }
   }
 }
 
@@ -7157,7 +7073,12 @@ async function main() {
   const command = args[0];
 
   if (!command || command === 'help' || command === '--help' || command === '-h') {
-    cmdHelp();
+    const mode: CommandSurfaceVisibility = args.includes('--compatibility')
+      ? 'compatibility'
+      : args.includes('--advanced')
+        ? 'advanced'
+        : 'default';
+    cmdHelp(mode);
     return;
   }
 

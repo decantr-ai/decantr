@@ -66,6 +66,7 @@ function writeEssence(root: string): void {
 function writeTaskRouteSources(root: string): void {
   const sourceRoot = join(root, 'src');
   mkdirSync(sourceRoot, { recursive: true });
+  writeFileSync(join(sourceRoot, 'main.tsx'), "import './App';\n");
   writeFileSync(
     join(sourceRoot, 'App.tsx'),
     `import { createBrowserRouter } from 'react-router-dom';
@@ -503,7 +504,7 @@ describe('operating layer commands', () => {
     expect(doctor).toContain('Hybrid style bridge');
     expect(doctor).toContain('Style bridge: present');
     expect(setup).toContain('decantr doctor');
-    expect(setup).toContain('decantr task <route> "<change>"');
+    expect(setup).toContain('decantr task <target> "<change>"');
     expect(setup).toContain('decantr ci init');
     expect(setup).not.toContain('codify --from-audit');
     expect(task.authority.lane).toBe('Hybrid style bridge');
@@ -572,7 +573,7 @@ describe('operating layer commands', () => {
     expect(output).toContain('Attached projects:');
     expect(output).toContain('apps/web');
     expect(output).toContain('decantr doctor --project apps/web');
-    expect(output).toContain('decantr task <route> "<change>" --project apps/web');
+    expect(output).toContain('decantr task <target> "<change>" --project apps/web');
     expect(output).toContain('decantr verify --brownfield --local-patterns --project apps/web');
     expect(output).not.toContain('decantr adopt --project apps/web --yes');
   });
@@ -991,7 +992,7 @@ describe('operating layer commands', () => {
 
       expect(output).toContain('Decantr Adopt');
       expect(output).not.toContain('is not an app candidate');
-      expect(output).toContain('decantr task <route> "<change>"');
+      expect(output).toContain('decantr task <target> "<change>"');
       expect(output).toContain(`cd ${externalApp} && decantr studio`);
       expect(output).toContain('Inspect routes, findings, and attention areas visually');
       expect(existsSync(join(externalApp, 'decantr.essence.json'))).toBe(true);
@@ -999,6 +1000,71 @@ describe('operating layer commands', () => {
       rmSync(externalApp, { recursive: true, force: true });
     }
   }, 20_000);
+
+  it('prepares discovery-backed route context before adoption', () => {
+    const externalApp = mkdtempSync(join(tmpdir(), 'decantr-unattached-app-'));
+    try {
+      writeJson(join(externalApp, 'package.json'), {
+        name: 'unattached-app',
+        dependencies: { next: '^16.0.0', react: '^19.0.0', tailwindcss: '^4.0.0' },
+      });
+      mkdirSync(join(externalApp, 'app', 'settings'), { recursive: true });
+      writeFileSync(
+        join(externalApp, 'app', 'settings', 'page.tsx'),
+        'export default function Settings() { return <main>Settings</main>; }\n',
+      );
+      writeFileSync(join(externalApp, 'app', 'globals.css'), '@import "tailwindcss";\n');
+
+      const task = JSON.parse(
+        runCli(testDir, [
+          'task',
+          '/settings',
+          'tighten the settings form',
+          '--project',
+          externalApp,
+          '--json',
+        ]),
+      );
+
+      expect(task.schemaVersion).toBe('ui-surface-task-context.v1');
+      expect(task.mode).toBe('discovery');
+      expect(task.status).toBe('ready');
+      expect(task.surface).toMatchObject({ kind: 'route', name: '/settings' });
+      expect(task.read[0]).toBe('app/settings/page.tsx');
+      expect(task.verifyCommand).toContain('decantr scan --json');
+      expect(existsSync(join(externalApp, 'decantr.essence.json'))).toBe(false);
+      expect(existsSync(join(externalApp, '.decantr'))).toBe(false);
+    } finally {
+      rmSync(externalApp, { recursive: true, force: true });
+    }
+  });
+
+  it('does not use stale analysis as route implementation authority', () => {
+    const appRoot = join(testDir, 'apps', 'web');
+    mkdirSync(join(appRoot, '.decantr'), { recursive: true });
+    writeJson(join(appRoot, '.decantr', 'analysis.json'), {
+      routes: { routes: [{ path: '/', file: 'src/Legacy.tsx' }] },
+    });
+    mkdirSync(join(appRoot, 'src'), { recursive: true });
+    writeFileSync(
+      join(appRoot, 'src', 'Legacy.tsx'),
+      'export function Legacy() { return <main>Legacy</main>; }\n',
+    );
+
+    let output = '';
+    try {
+      runCli(testDir, ['task', '/', 'change home', '--project', 'apps/web', '--json']);
+      throw new Error('Expected unresolved live route authority to fail closed.');
+    } catch (error) {
+      output = (error as { stdout?: Buffer }).stdout?.toString() ?? '';
+    }
+    const task = JSON.parse(output);
+
+    expect(task.mode).toBe('discovery');
+    expect(task.status).toBe('blocked');
+    expect(task.surface).toBeNull();
+    expect(task.read).toEqual([]);
+  });
 
   it('steers magic on attached monorepo apps into task-time context', () => {
     const output = runCli(testDir, [
@@ -1011,7 +1077,7 @@ describe('operating layer commands', () => {
     expect(output).toContain('Decantr is already attached to this project');
     expect(output).toContain('decantr doctor --project apps/web');
     expect(output).toContain(
-      'decantr task <route> "make this app feel more consistent" --project apps/web',
+      'decantr task <target> "make this app feel more consistent" --project apps/web',
     );
     expect(output).toContain('decantr verify --brownfield --local-patterns --project apps/web');
     expect(output).not.toContain('Remove it first');
@@ -1019,6 +1085,10 @@ describe('operating layer commands', () => {
 
   it('includes route-scoped typed graph context in task JSON when graph artifacts exist', () => {
     const appRoot = join(testDir, 'apps', 'web');
+    writeJson(join(appRoot, 'package.json'), {
+      name: 'web',
+      dependencies: { next: '^16.0.0', react: '^19.0.0' },
+    });
     mkdirSync(join(appRoot, 'src', 'app'), { recursive: true });
     writeFileSync(
       join(appRoot, 'src', 'app', 'page.tsx'),

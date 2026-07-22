@@ -1,0 +1,74 @@
+{
+  "base": {
+    "commit": "156ba7350070400e5877e3a54d33486cd0d33640",
+    "tree": "6c04d700f8af13daccacc9bc5d1bc6a073797ee6"
+  },
+  "cleanAfterPreparation": true,
+  "lockfiles": [
+    {
+      "path": "pnpm-lock.yaml",
+      "sha256": "e8eb85f788ecc03887320758912dbe8adbf1eded91530d94a2c7aa7fa94bf168"
+    }
+  ],
+  "partition": "development",
+  "preparation": [
+    {
+      "args": [
+        "install",
+        "--frozen-lockfile"
+      ],
+      "cwd": ".",
+      "executable": "pnpm",
+      "id": "install-dependencies",
+      "network": "dependency-registry",
+      "required": true,
+      "timeoutMs": 7200000
+    }
+  ],
+  "profile": {
+    "arch": "x64",
+    "bunVersion": null,
+    "id": "node-22.19.0-pnpm-10.28.0",
+    "nodeVersion": "22.19.0",
+    "os": "linux",
+    "packageManager": {
+      "name": "pnpm",
+      "version": "10.28.0"
+    }
+  },
+  "projectPath": "demos/simple",
+  "review": {
+    "notes": "Independent source-evidence re-review verified 4 frozen Git blobs and exact SHA-256 values at 156ba7350070400e5877e3a54d33486cd0d33640. The frozen tree pins pnpm 10.28.0 but only a floating Node 22 line, not exact Node 22.19.0.",
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "status": "draft"
+  },
+  "schemaVersion": "decantr-benchmark-task-environment.v1",
+  "sourceEvidence": [
+    {
+      "kind": "reviewer-override",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "701ebc4fc9b8fc28fe8a6916ca656d9326e1a76ec53a70bb0cfb4d1e0bc112bb",
+      "statement": "Frozen CI consistently selects Node 22 and performs the root frozen pnpm install before workspace builds and checks."
+    },
+    {
+      "kind": "package-manifest",
+      "path": "demos/simple/package.json",
+      "sha256": "238aecd23bcb2e44024ae43be43cf343d336aaf7a8db1142dca8f6611830679f",
+      "statement": "Manifest evidence considered for pnpm and runtime selection."
+    },
+    {
+      "kind": "package-manifest",
+      "path": "package.json",
+      "sha256": "9b2ed8b814917ec850b8d81111e1b63ca2db5f2be774aaaa300174bf4829a18d",
+      "statement": "Manifest evidence considered for pnpm and runtime selection."
+    },
+    {
+      "kind": "lockfile",
+      "path": "pnpm-lock.yaml",
+      "sha256": "e8eb85f788ecc03887320758912dbe8adbf1eded91530d94a2c7aa7fa94bf168",
+      "statement": "Selected pnpm lockfile for deterministic dependency preparation."
+    }
+  ],
+  "taskId": "emdash-simple.visual-edit-field-focus"
+}

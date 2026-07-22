@@ -1,0 +1,85 @@
+{
+  "schemaVersion": "decantr-benchmark-evaluator-authoring-spec.v2",
+  "taskId": "figma-sds.unique-pricing-nav",
+  "contractId": "figma-sds.unique-pricing-nav.v1",
+  "review": {
+    "status": "approved",
+    "reviewedBy": "independent-runtime-evaluator-review-ui-b",
+    "reviewedAt": "2026-07-22T13:09:56Z",
+    "notes": "Approved from exact frozen commits 0e7bf07b25465b3878194d87a1c4ca38bc511e85 and 9dd91d1a9d8ef86fc6247f23921346cf4ae22950 under Node 20.19.2/npm 10.8.2 with Playwright 1.61.1 and Axe 4.12.1. The rendered production header fails 5/12 checks on base and passes 12/12 on expected, covering desktop and mobile uniqueness/order, every keyboard-selectable destination, responsive menu state, focus containment/restoration, Axe, and runtime errors without source-shape matching. App and Storybook builds pass both revisions. Lint remains diagnostic-only because both frozen revisions reproduce the same unrelated 17 errors and two warnings, including a missing tsconfig.node.json."
+  },
+  "oracle": {
+    "candidateIndependent": true,
+    "decantrOutputAllowed": false,
+    "sourcePath": "sources/figma-sds.unique-pricing-nav.mjs"
+  },
+  "commands": [
+    {
+      "id": "behavior",
+      "kind": "functional",
+      "runtime": "controller",
+      "executable": "node",
+      "args": [
+        "${EVALUATOR_ROOT}/sources/figma-sds.unique-pricing-nav.mjs",
+        "--workspace",
+        "${WORKSPACE}",
+        "--project-path",
+        "${PROJECT_PATH}",
+        "--evaluator-runtime",
+        "${EVALUATOR_RUNTIME}"
+      ],
+      "cwd": "${EVALUATOR_ROOT}",
+      "timeoutMs": 120000,
+      "required": true,
+      "resultFormat": "json-stdout"
+    },
+    {
+      "id": "host-lint",
+      "kind": "functional",
+      "runtime": "task",
+      "executable": "npm",
+      "args": [
+        "run",
+        "app:lint"
+      ],
+      "cwd": "${WORKSPACE}/${PROJECT_PATH}",
+      "timeoutMs": 1800000,
+      "required": false,
+      "resultFormat": "exit-code"
+    },
+    {
+      "id": "host-app-build",
+      "kind": "build",
+      "runtime": "task",
+      "executable": "npm",
+      "args": [
+        "run",
+        "app:build"
+      ],
+      "cwd": "${WORKSPACE}/${PROJECT_PATH}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    },
+    {
+      "id": "host-storybook-build",
+      "kind": "build",
+      "runtime": "task",
+      "executable": "npm",
+      "args": [
+        "run",
+        "storybook:build"
+      ],
+      "cwd": "${WORKSPACE}/${PROJECT_PATH}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    }
+  ],
+  "limits": {
+    "timeoutMs": 5400000,
+    "maxRequests": 40,
+    "maxInputTokens": 600000,
+    "maxOutputTokens": 80000
+  }
+}

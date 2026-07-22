@@ -5,6 +5,8 @@ Release channel: `stable`
 
 Schemas, validation, migration, guard evaluation, and TypeScript types for `decantr.essence.json`.
 
+The current published stable contract remains Essence v4. In Brownfield, an explicitly reviewed and accepted Essence is project law for intended structure beneath production source and runtime configuration; it is not a substitute for live production authority. An Essence route or page is structural intent. Decantr 3.10 is an unreleased UI change-control proof program in which selected-app identity, UI-surface reachability, topology completeness, taskability, styling authority, and runtime evidence must be observed independently by `@decantr/verifier`.
+
 ## Install
 
 ```bash
@@ -41,7 +43,7 @@ const violations = evaluateGuard(essence, {});
 
 `@decantr/essence-spec` defines the active Essence v4 public contract for Decantr 3. Runtime validation accepts v4 only; older Essence v2/v3 files are supported through `decantr migrate --to v4`.
 
-Decantr 3.9 adds governed-change evidence contracts in `@decantr/verifier`; it does not change Essence V4 or require an `@decantr/essence-spec` version bump solely for alignment.
+Decantr 3.9.4 adds governed-change evidence contracts in `@decantr/verifier`; the unreleased 3.10 candidate adds UI-surface authority contracts there as well. Neither changes Essence V4 or requires an `@decantr/essence-spec` version bump solely for release alignment.
 
 - additive schema fields may be introduced in compatible minor releases
 - breaking schema or migration behavior changes require a major version

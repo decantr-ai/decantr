@@ -1,0 +1,108 @@
+{
+  "base": {
+    "commit": "235b26d39d939344c3f26f58dd53a815ac7bae7d",
+    "tree": "afad3bf139836c04b21ba605a16b347421f33a34"
+  },
+  "cleanAfterPreparation": true,
+  "lockfiles": [
+    {
+      "path": "pnpm-lock.yaml",
+      "sha256": "57ad9511fa6c1be07ff5618c5a006c2587c26f000c5126bf88e5d6637add6440"
+    }
+  ],
+  "partition": "development",
+  "preparation": [
+    {
+      "args": [
+        "install",
+        "--frozen-lockfile"
+      ],
+      "cwd": ".",
+      "executable": "pnpm",
+      "id": "install-dependencies",
+      "network": "dependency-registry",
+      "required": true,
+      "timeoutMs": 7200000
+    },
+    {
+      "args": [
+        "run",
+        "--filter",
+        "@linode/validation",
+        "build"
+      ],
+      "cwd": ".",
+      "executable": "pnpm",
+      "id": "build-validation",
+      "network": "none",
+      "required": true,
+      "timeoutMs": 600000
+    },
+    {
+      "args": [
+        "run",
+        "--filter",
+        "@linode/api-v4",
+        "build"
+      ],
+      "cwd": ".",
+      "executable": "pnpm",
+      "id": "build-api-v4",
+      "network": "none",
+      "required": true,
+      "timeoutMs": 600000
+    }
+  ],
+  "profile": {
+    "arch": "x64",
+    "bunVersion": null,
+    "id": "node-22.19.0-pnpm-10.32.1",
+    "nodeVersion": "22.19.0",
+    "os": "linux",
+    "packageManager": {
+      "name": "pnpm",
+      "version": "10.32.1"
+    }
+  },
+  "projectPath": "packages/manager",
+  "review": {
+    "notes": "Independent source-evidence re-review verified 5 frozen Git blobs and exact SHA-256 values at 235b26d39d939344c3f26f58dd53a815ac7bae7d. The frozen tree pins Node 22.19.0 but does not pin exact pnpm 10.32.1, and no content-bound Linux x64 probe receipt exists.",
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "status": "draft"
+  },
+  "schemaVersion": "decantr-benchmark-task-environment.v1",
+  "sourceEvidence": [
+    {
+      "kind": "reviewer-override",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "8e25c25dc20af990354a890d4fb94371a23a7e4727b8b857123ae6cba4c9e72a",
+      "statement": "Frozen CI selects the package.json Node version, pnpm 10, a frozen root install, then validation and API workspace builds."
+    },
+    {
+      "kind": "runtime-hint",
+      "path": ".nvmrc",
+      "sha256": "85b6f5378729afed27e89d61f9c596dfdb33f5fb80bb3f0aab0b81c5b8768383",
+      "statement": "Runtime hint observed at the frozen base: 22.19"
+    },
+    {
+      "kind": "package-manifest",
+      "path": "package.json",
+      "sha256": "aa8351ceaf4b0915d510da6865146c388654f98ae66b9ec928ebaac0733327d2",
+      "statement": "Manifest evidence considered for pnpm and runtime selection."
+    },
+    {
+      "kind": "package-manifest",
+      "path": "packages/manager/package.json",
+      "sha256": "65a53b39ee1b3589d9a06276cb1b0865cdb9e32cd020fba599b82e5b518e12b3",
+      "statement": "Manifest evidence considered for pnpm and runtime selection."
+    },
+    {
+      "kind": "lockfile",
+      "path": "pnpm-lock.yaml",
+      "sha256": "57ad9511fa6c1be07ff5618c5a006c2587c26f000c5126bf88e5d6637add6440",
+      "statement": "Selected pnpm lockfile for deterministic dependency preparation."
+    }
+  ],
+  "taskId": "linode-manager.switch-account-search"
+}

@@ -1,0 +1,75 @@
+{
+  "bundleSha256": "f36b0bf143e2d1d9811ae87f52498c91a866605bd0ffb104aaef1e2364b902d7",
+  "confidentiality": "opaque qualification bindings only",
+  "count": 16,
+  "frozenAt": "2026-07-22T11:29:02Z",
+  "program": "decantr-3.10-ui-change-control-proof",
+  "qualificationEmbargoCutoff": "2026-05-01T23:59:59Z",
+  "schemaVersion": "decantr-benchmark-public-qualification-index.v1",
+  "tasks": [
+    {
+      "canonicalSha256": "f5b53693d976c98e006be861ad8901e227a8a9036fcf8c9c2cd6204afc78a597",
+      "opaqueId": "q-356bf5e5-d88b-4f0a-ad6b-795661750772"
+    },
+    {
+      "canonicalSha256": "9a61cd378def6b6f0b50c770a703d64a714e9e11c44caa2fd454c8212805c150",
+      "opaqueId": "q-3d1413ea-121e-4105-ac0e-73b85c5fd008"
+    },
+    {
+      "canonicalSha256": "e267d60d29264f5d1bf262bf8a6c3032ceeb7f57cfdfb5a54b5ccb0294bfe1d9",
+      "opaqueId": "q-4081295b-c6ac-4d0e-ab82-be297fde6166"
+    },
+    {
+      "canonicalSha256": "639f4b2d9ddbef7fcf28ce7fbe9bc1f645757b2fe195ff638f3dd209157582fa",
+      "opaqueId": "q-41c1fdc3-68e2-4a92-a0ce-113eaf23e278"
+    },
+    {
+      "canonicalSha256": "a49e77f636f4da4862b4f11554f4263e6bf6f4a64498187c63adfd055c553036",
+      "opaqueId": "q-55b53c76-56c2-4ee0-8a7c-e7c340470fb8"
+    },
+    {
+      "canonicalSha256": "8f3aa40a586375f175207be07289faf03f0923761701a8347f2a2d370a8a21d6",
+      "opaqueId": "q-5f4bc204-de09-45ed-aebb-4ae5586ffa23"
+    },
+    {
+      "canonicalSha256": "4e70835d5ad42a89d3f65ed139739fd83a79ebb3919cb26808ce2aa53f52fd8e",
+      "opaqueId": "q-61becf1c-d7fb-4965-9a64-4e4f76b8f270"
+    },
+    {
+      "canonicalSha256": "0aa629962c173d749dd5bbdb63d7b0a9b648023262e4f16a62fe0bc789d731fa",
+      "opaqueId": "q-6d863d26-e48b-40e0-aa1f-969177696b84"
+    },
+    {
+      "canonicalSha256": "7ee0a3704a2ccb9884a696e9dfe2730e083e4216802b679cae223ead684c9b79",
+      "opaqueId": "q-8157b7ef-7b44-4d29-b2d8-d9c625227297"
+    },
+    {
+      "canonicalSha256": "3b0474c351823c690cbd9d0f2bdc550fad4d86cea88815338c2587ed1e50e505",
+      "opaqueId": "q-866298f1-f289-47f1-9f85-284bbec4eed1"
+    },
+    {
+      "canonicalSha256": "2749235e5c8337ff582ee96e6dc753db52922d8fb6d0e8edf4bf21c8b7f1ac7a",
+      "opaqueId": "q-89255405-4ede-4cb8-8e7e-91737267fdfa"
+    },
+    {
+      "canonicalSha256": "381b10d3ccf67f1de0a38247104c37e091be5ab16322c44e47f5b7ccf33606ea",
+      "opaqueId": "q-9d643918-3c55-4570-802d-d5acd680c6ad"
+    },
+    {
+      "canonicalSha256": "1ac9ef2b931e9558d82657c0f7fccffdc2ba8d3678b6d92dfdcea7be95c41334",
+      "opaqueId": "q-a0b5bc82-2888-4a9d-9e36-f53830acccdc"
+    },
+    {
+      "canonicalSha256": "516d1906c7ac2f645525a534078bd7bd12ebba69c024fd9311c0e64d313cc98c",
+      "opaqueId": "q-aa1a49c3-977d-45ec-a425-70e8e385e513"
+    },
+    {
+      "canonicalSha256": "501dee9ab3bbe29b77ec21cab681471feb9b89282f2c64624bf3db458eca57b9",
+      "opaqueId": "q-b7916fa6-54eb-4da4-a358-d2eaf9666010"
+    },
+    {
+      "canonicalSha256": "788d0bc0f34db907e2e102b041db7dc7e726e2923ea10431502668523d18a362",
+      "opaqueId": "q-b880c796-1ccf-4366-92a0-6462ef7123d3"
+    }
+  ]
+}

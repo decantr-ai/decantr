@@ -1,0 +1,61 @@
+{
+  "input": {
+    "policyCard": {
+      "statements": [
+        {
+          "id": "repository-authority",
+          "sources": [
+            "base-checkout"
+          ],
+          "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+        },
+        {
+          "id": "change-scope",
+          "sources": [
+            "task.scope"
+          ],
+          "text": "Keep authored changes within the declared allowlist: packages/manager/src/features/Account/**, packages/manager/.changeset/**. Do not edit forbidden paths: packages/** (except packages/manager allowed paths), package.json, pnpm-lock.yaml, .github/**."
+        },
+        {
+          "id": "host-verification",
+          "sources": [
+            "candidate.environment"
+          ],
+          "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+        }
+      ]
+    },
+    "target": {
+      "selector": "component:SwitchAccountDrawer"
+    }
+  },
+  "oracle": {
+    "acceptedStatuses": [
+      "limited"
+    ],
+    "expectedKind": "component",
+    "forbiddenRankOnePatterns": [
+      "(^|/)(?:\\.next|\\.nuxt|\\.svelte-kit|__fixtures__|__generated__|__mocks__|__tests__|build|coverage|cypress|dist|e2e|fixtures?|generated|mocks?|out|playwright|specs?|stories|test-utils?|testing|tests?|target)(?:/|$)|\\.(?:cy|d|e2e|fixture|gen|generated|mock|spec|stories?|test|vitest)\\.[^.]+$"
+    ],
+    "rankOneFiles": [
+      "src/features/Account/SwitchAccountDrawer.tsx"
+    ],
+    "styleAuthority": {
+      "approach": "mui",
+      "confidence": "high",
+      "files": [
+        "src/index.tsx",
+        "src/LinodeThemeWrapper.tsx",
+        "src/utilities/theme.ts"
+      ]
+    }
+  },
+  "review": {
+    "notes": "Approved after replacing dev-tools styling evidence with the base app's MUI entry, ThemeProvider wrapper, and theme selection module. component:SwitchAccountDrawer uniquely selects production source, scope text matches the candidate, and non-production rank-one lanes are excluded.",
+    "reviewedAt": "2026-07-22T12:19:56Z",
+    "reviewedBy": "independent-target-review-a",
+    "status": "approved"
+  },
+  "schemaVersion": "decantr-benchmark-task-delivery-spec.v1",
+  "taskId": "linode-manager.switch-account-search"
+}

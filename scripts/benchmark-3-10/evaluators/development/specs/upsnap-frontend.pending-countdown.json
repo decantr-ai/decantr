@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "decantr-benchmark-evaluator-authoring-spec.v2",
+  "taskId": "upsnap-frontend.pending-countdown",
+  "contractId": "upsnap-frontend.pending-countdown.v1",
+  "review": {
+    "status": "approved",
+    "reviewedBy": "OpenAI Codex independent evaluator reviewer",
+    "reviewedAt": "2026-07-22T14:46:27Z",
+    "notes": "Approved after repairing the oracle's false-success exit path and reproducing exact polarity twice under Node 22.19.0/pnpm 10.33.0. The candidate-independent evaluator mounts the real Svelte pending-device component with the frozen project's Vite, Svelte, Tailwind, and production CSS, then uses pinned Chromium and a fake clock at 65, 9, 0, and post-zero seconds. Expected b297f3a88781d224fc4540a792a374e6971996f9 passes all 14 checks for fixed two-digit columns, MM:SS values, stable width, tabular numerals, animation, warning color, overflow, screenshots, focus, runtime errors, and scoped Axe; base af655d3621b32327b8fb9fb985dfb597be6105a4 reproducibly fails the four required formatting states at 10/14 and exits 1. pnpm run build passes on both. Native pnpm run check was removed because both revisions fail identically in generated Paraglide server.js on missing async_hooks types."
+  },
+  "oracle": {
+    "candidateIndependent": true,
+    "decantrOutputAllowed": false,
+    "sourcePath": "sources/upsnap-frontend.pending-countdown.mjs"
+  },
+  "commands": [
+    {
+      "id": "behavior",
+      "kind": "functional",
+      "runtime": "controller",
+      "executable": "node",
+      "args": [
+        "${EVALUATOR_ROOT}/sources/upsnap-frontend.pending-countdown.mjs",
+        "--workspace",
+        "${WORKSPACE}",
+        "--project-path",
+        "${PROJECT_PATH}",
+        "--evaluator-runtime",
+        "${EVALUATOR_RUNTIME}"
+      ],
+      "cwd": "${EVALUATOR_ROOT}",
+      "timeoutMs": 300000,
+      "required": true,
+      "resultFormat": "json-stdout"
+    },
+    {
+      "id": "host-build",
+      "kind": "build",
+      "runtime": "task",
+      "executable": "pnpm",
+      "args": ["run", "build"],
+      "cwd": "${WORKSPACE}/${PROJECT_PATH}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    }
+  ],
+  "limits": {
+    "timeoutMs": 5400000,
+    "maxRequests": 40,
+    "maxInputTokens": 800000,
+    "maxOutputTokens": 100000
+  }
+}

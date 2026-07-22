@@ -7,6 +7,8 @@ Low-level Decantr compiler and execution-pack foundation.
 
 Most teams should use `@decantr/cli`, `@decantr/content`, or `@decantr/mcp-server` directly. `@decantr/core` is part of the supported Decantr public foundation surface, but it is intentionally lower-level than the usual integration entrypoints. `@decantr/registry` remains only for Decantr 3.x compatibility imports.
 
+Decantr 3.9.4 is the current stable line. Decantr 3.10 is an unreleased falsification program centered on **Observe -> Prepare -> Verify -> Report**. Core graph and pack primitives support that work, but a graph, route rank, or larger context pack does not by itself prove production authority or model improvement. Routes are one UI surface among layouts, components, stories, overlays, flows, packages, runtime states, and exact source files.
+
 ## Install
 
 ```bash
@@ -29,16 +31,17 @@ npm install @decantr/core
 
 In the current workflow architecture, `@decantr/core` owns the canonical adapter labels used by compiled packs, while runnable greenfield bootstrap adapters are resolved in the CLI on top of those labels.
 
-The graph exports establish the storage boundary, typed schema shape, temporal snapshot/diff shape, payload-filterable node queries, hybrid route-context ranking, hybrid node/source impact traversal, and provider-neutral contract capsule shape for CLI, MCP, verifier, Studio, and CI integration. Ranking blends deterministic weighted traversal with local personalized PageRank and optional task-text boosts, so central graph nodes and task-relevant nodes both surface without introducing a graph database dependency. Behavior obligations remain app-owned local law in `.decantr/local-patterns.json`; higher-level packages project accepted obligations into existing `LocalRule` graph nodes with `payload.kind = "behavior-obligation"` instead of adding a new graph node type. Evidence Bundles, runtime probes, visual manifests, repair plans, and proof reports are ingested through existing graph node/edge shapes where possible; generated health-baseline diffs are excluded to avoid circular graph invalidation, and `TEST_COVERS_NODE` edges act as verification hints rather than proof of production UI behavior. The capsule keeps the contract cache key stable while listing bounded SourceArtifact paths agents can use for file-impact follow-up queries. The core package remains pure library code: filesystem graph persistence belongs in higher-level packages such as the CLI.
+The graph exports establish the storage boundary, typed schema shape, temporal snapshot/diff shape, payload-filterable node queries, route-context ranking, node/source impact traversal, and provider-neutral contract capsule shape for higher-level integrations. Ranking is deterministic supporting evidence; it cannot promote an inferred, ambiguous, test-only, generated, or stale source into production authority. Behavior obligations remain app-owned local law in `.decantr/local-patterns.json`. Evidence Bundles, runtime probes, visual manifests, repair plans, and proof reports reuse existing graph shapes where possible; generated health-baseline diffs are excluded to avoid circular graph invalidation, and `TEST_COVERS_NODE` edges are verification hints rather than proof of production UI behavior. The core package remains pure library code: filesystem graph persistence belongs in higher-level packages such as the CLI.
 
 ## FAQ
 
 Most teams should start with the CLI rather than this low-level package:
 
 ```bash
-npx @decantr/cli new my-app
-npx @decantr/cli analyze
-npx @decantr/cli check
+npx @decantr/cli scan
+npx @decantr/cli adopt --yes       # only after reviewing the observed authority
+npx @decantr/cli task /known-route "describe the UI change"
+npx @decantr/cli verify
 ```
 
 For common setup, brownfield, Studio, migration, CI, and agent-alignment questions, see the user-facing [Decantr FAQ](https://github.com/decantr-ai/decantr/blob/main/docs/faq.md).

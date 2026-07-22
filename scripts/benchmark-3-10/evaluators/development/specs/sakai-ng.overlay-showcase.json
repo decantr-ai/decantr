@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "decantr-benchmark-evaluator-authoring-spec.v2",
+  "taskId": "sakai-ng.overlay-showcase",
+  "contractId": "sakai-ng.overlay-showcase.v1",
+  "review": {
+    "status": "approved",
+    "reviewedBy": "OpenAI Codex independent evaluator reviewer",
+    "reviewedAt": "2026-07-22T14:46:27Z",
+    "notes": "Approved after two exact repeated frozen-worktree runs under Node 22.19.0/npm 10.9.3. The candidate-independent Playwright oracle boots the real Angular/PrimeNG /uikit/overlay page with off-origin traffic mocked, exercises rendered name and price sorting in both directions, verifies same-origin decoded product images and alt text, drives both semantically named confirmation outcomes and toast feedback, checks the neighboring dialog and accessibility, and decodes a focused PNG. Base 219fe4a1e9fe00783d4b14cc2dde879c08d27cc9 reproducibly passes 6/14 checks and exits 1; expected 1ac9522ec741f5cdb070fe1bd2b6aedaa5e77553 passes 14/14 and exits 0. npm run build passes on both. The repository's nominal npm test command was removed from this contract because both frozen revisions fail before running tests with TS18003: tsconfig.spec.json has no matching src/**/*.spec.ts inputs; the substantive external browser oracle is the functional gate."
+  },
+  "oracle": {
+    "candidateIndependent": true,
+    "decantrOutputAllowed": false,
+    "sourcePath": "sources/sakai-ng.overlay-showcase.mjs"
+  },
+  "commands": [
+    {
+      "id": "behavior",
+      "kind": "functional",
+      "runtime": "controller",
+      "executable": "node",
+      "args": [
+        "${EVALUATOR_ROOT}/sources/sakai-ng.overlay-showcase.mjs",
+        "--workspace",
+        "${WORKSPACE}",
+        "--project-path",
+        "${PROJECT_PATH}",
+        "--evaluator-runtime",
+        "${EVALUATOR_RUNTIME}"
+      ],
+      "cwd": "${EVALUATOR_ROOT}",
+      "timeoutMs": 180000,
+      "required": true,
+      "resultFormat": "json-stdout"
+    },
+    {
+      "id": "host-build",
+      "kind": "build",
+      "runtime": "task",
+      "executable": "npm",
+      "args": ["run", "build"],
+      "cwd": "${WORKSPACE}/${PROJECT_PATH}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    }
+  ],
+  "limits": {
+    "timeoutMs": 5400000,
+    "maxRequests": 40,
+    "maxInputTokens": 1000000,
+    "maxOutputTokens": 100000
+  }
+}

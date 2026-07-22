@@ -1,0 +1,60 @@
+{
+  "input": {
+    "policyCard": {
+      "statements": [
+        {
+          "id": "repository-authority",
+          "sources": [
+            "base-checkout"
+          ],
+          "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+        },
+        {
+          "id": "change-scope",
+          "sources": [
+            "task.scope"
+          ],
+          "text": "Keep authored changes within the declared allowlist: src-app/routes/__root.tsx, src-app/styles/globals.css, src-app/**/*.test.ts, src-app/**/*.test.tsx. Do not edit forbidden paths: package.json, pnpm-lock.yaml, src-tauri/**, src-app/stores/**, src-app/schemas/**, src-app/routes/(settings)/**."
+        },
+        {
+          "id": "host-verification",
+          "sources": [
+            "candidate.environment"
+          ],
+          "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+        }
+      ]
+    },
+    "target": {
+      "selector": "file:src-app/routes/__root.tsx"
+    }
+  },
+  "oracle": {
+    "acceptedStatuses": [
+      "limited"
+    ],
+    "expectedKind": "file",
+    "forbiddenRankOnePatterns": [
+      "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+      ],
+      "rankOneFiles": [
+        "src-app/routes/__root.tsx"
+      ],
+    "styleAuthority": {
+      "approach": "tailwind",
+      "confidence": "high",
+      "files": [
+        "src-app/main.tsx",
+        "src-app/styles/globals.css"
+      ]
+    }
+  },
+  "review": {
+    "notes": "Independently checked the frozen base tree and candidate record. The neutral file selector resolves limited to the exact production root source; narrowed the generated rank-one allowlist accordingly while retaining the global stylesheet as style authority. Tests and generated outputs are non-authoritative, and the scope statement is exact.",
+    "reviewedAt": "2026-07-22T12:17:39Z",
+    "reviewedBy": "independent-target-review-b",
+    "status": "approved"
+  },
+  "schemaVersion": "decantr-benchmark-task-delivery-spec.v1",
+  "taskId": "tauri-start-solid.apply-font-preferences"
+}

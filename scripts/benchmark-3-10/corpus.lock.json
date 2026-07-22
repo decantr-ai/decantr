@@ -1,0 +1,851 @@
+{
+  "corpusSha256": "44af2396816fcacac0d1e939d8b0c3380f1b1295974a791a75369dfd6aa7d91f",
+  "generatedAt": "2026-07-22T10:25:54.211Z",
+  "repositories": [
+    {
+      "commit": "dd99ed2cf39c805d719f943c5d7061a5683d98a8",
+      "evidenceFiles": [
+        {
+          "path": "bun.lock",
+          "sha256": "9e511e9f7b4f82e2b916a1a72bc14e8c1b5f0a51f620cc80088af02ae72730bd",
+          "sizeBytes": 155123
+        },
+        {
+          "path": "LICENSE",
+          "sha256": "698f055a5fa6844294c29278d88cd6fd8394785d769fdf165ea0accae677e2ce",
+          "sizeBytes": 1380
+        },
+        {
+          "path": "package.json",
+          "sha256": "d822151cf71979c3946bfcb50fc3a0f4860401fa749603c8189c9c55888e27c3",
+          "sizeBytes": 1962
+        }
+      ],
+      "id": "angular-realworld",
+      "license": "MIT",
+      "origin": "https://github.com/realworld-apps/angular-realworld-example-app.git",
+      "partition": "development",
+      "projectPath": ".",
+      "repo": "https://github.com/realworld-apps/angular-realworld-example-app.git",
+      "submodulesSha256": "c6a3dbce4bef982332041f0f88ce90f610f86a80abf9c13161b11367d5ff698e",
+      "tree": "82b24c8e0da619783643e733e2442ac538878ffd"
+    },
+    {
+      "commit": "96d71496d685b5c110efd2875abaa2bf89a56ad2",
+      "evidenceFiles": [
+        {
+          "path": "LICENSE.md",
+          "sha256": "b29530f31a20214ac3644aa275d4594135810eb0818a75ceee6a2b7099258374",
+          "sizeBytes": 1080
+        },
+        {
+          "path": "package-lock.json",
+          "sha256": "913cf86d8c742230280706a4eab7e49e72d70b8c7d8edc8afba7baa27662a45c",
+          "sizeBytes": 826301
+        },
+        {
+          "path": "package.json",
+          "sha256": "ef5706fa52a58b6bc6c82325d03cfa8155634f14269db0682c1494185cc1de57",
+          "sizeBytes": 1742
+        }
+      ],
+      "id": "sakai-ng",
+      "license": "MIT",
+      "origin": "https://github.com/primefaces/sakai-ng.git",
+      "partition": "development",
+      "projectPath": ".",
+      "repo": "https://github.com/primefaces/sakai-ng.git",
+      "submodulesSha256": "28f8ad119eb262a627c30c4f8166829f467daa63ea4453410498d1e4c28d7e9a",
+      "tree": "43b0fbd84f393500c150a5460b266eefaa47a0eb"
+    },
+    {
+      "commit": "9e9d3af2ae8a03dff55bc671914afe9f0a0b6329",
+      "evidenceFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "3aaa2e43d48a9a0ff0cc3095f6ace14b322acbf76a371d7d7aac702699cafc88",
+          "sizeBytes": 1064
+        },
+        {
+          "path": "package.json",
+          "sha256": "2521269647f075488a1d48625ce7558a6065e93f2a6a2bf9a6778bbbfd441d1f",
+          "sizeBytes": 3317
+        },
+        {
+          "path": "yarn.lock",
+          "sha256": "2ee89224f6a644b3d8e9a594b89df80261ec9627fef64be5e070950e6de3e55c",
+          "sizeBytes": 368544
+        }
+      ],
+      "id": "ng-matero",
+      "license": "MIT",
+      "origin": "https://github.com/ng-matero/ng-matero.git",
+      "partition": "development",
+      "projectPath": ".",
+      "repo": "https://github.com/ng-matero/ng-matero.git",
+      "submodulesSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree": "a8e1b5bf2f945f100134c734e257011e74694717"
+    },
+    {
+      "commit": "dc6a442704bfef34b776b5eb15faf852d9e2f75c",
+      "evidenceFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "d206943103e84e679115cf673647b40c9d35d3d8e5f219900e752f36f3301fd3",
+          "sizeBytes": 1076
+        },
+        {
+          "path": "package-lock.json",
+          "sha256": "7c4bc8c11b69e12ae40302a96305885365742f6380399a2dff70b0fce8aa2006",
+          "sizeBytes": 811936
+        },
+        {
+          "path": "package.json",
+          "sha256": "4060df1e57f71b861c4ffe1b0f861c9d8ff6622a052fb78d84c9fca7960d3abe",
+          "sizeBytes": 4027
+        }
+      ],
+      "id": "ngx-admin",
+      "license": "MIT",
+      "origin": "https://github.com/akveo/ngx-admin.git",
+      "partition": "qualification",
+      "projectPath": ".",
+      "repo": "https://github.com/akveo/ngx-admin.git",
+      "submodulesSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree": "1dcbb104844f0519c3bd6189fd1d6e0e634981d5"
+    },
+    {
+      "commit": "5399f195fa25f9e613a17098775a4514abf5c13e",
+      "evidenceFiles": [
+        {
+          "path": "apps/app/package.json",
+          "sha256": "4f713fefde96be09cdb16ce1df89277f15729daedf8a30093a579ecc3873e46f",
+          "sizeBytes": 50
+        },
+        {
+          "path": "LICENSE",
+          "sha256": "73811fad2f096badcedac9aa2b6130d78d83e7b350839067dd3aef49224b85af",
+          "sizeBytes": 1078
+        },
+        {
+          "path": "package.json",
+          "sha256": "058cbf1b15ba83bba186bde4251f5da3bfc3e0d73e3c6712b229c153290d3d34",
+          "sizeBytes": 7650
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "a911fdc1cf7a0a2b9ad33401522d8021ebceddcbb7fda400438aa670b3741fa5",
+          "sizeBytes": 1056126
+        }
+      ],
+      "id": "spartan",
+      "license": "MIT",
+      "origin": "https://github.com/spartan-ng/spartan.git",
+      "partition": "qualification",
+      "projectPath": "apps/app",
+      "repo": "https://github.com/spartan-ng/spartan.git",
+      "submodulesSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree": "dde8c3a34e218ba326e4fdc9ab9f986ef1dec0af"
+    },
+    {
+      "commit": "433a5a073c944d25dcd59922b4de7193bde3c03e",
+      "evidenceFiles": [
+        {
+          "path": "bun.lock",
+          "sha256": "44c6ad24a2ecb394d6578aba5a8e06cf34d58bcadb2d80d71997920de7c3d996",
+          "sizeBytes": 167886
+        },
+        {
+          "path": "LICENSE",
+          "sha256": "ba663f662d6f461b7e7c7e646673d205a66098b1f059a4a0de07934c50564624",
+          "sizeBytes": 1065
+        },
+        {
+          "path": "package.json",
+          "sha256": "d75b6e7a9b4304be7d61446e49d99e364567cdadb4438ffbcd8099224bbccb54",
+          "sizeBytes": 4200
+        }
+      ],
+      "id": "tanstack-start-dashboard",
+      "license": "MIT",
+      "origin": "https://github.com/Kiranism/tanstack-start-dashboard.git",
+      "partition": "development",
+      "projectPath": ".",
+      "repo": "https://github.com/Kiranism/tanstack-start-dashboard.git",
+      "submodulesSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree": "684bba21f3c753c03bb2c9d3f00d4ca976a58ecf"
+    },
+    {
+      "commit": "81d5424df382e73f757bafdf7fdc2d51e4370a9f",
+      "evidenceFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "77b8b57441cf7cf24cf91de76f2e540c307749408048865d583885fe1f7d6b2b",
+          "sizeBytes": 1067
+        },
+        {
+          "path": "package.json",
+          "sha256": "30b614eb097ba95ecc455550f47906fbbaf7982a6d3689000549c470cf589bdd",
+          "sizeBytes": 5948
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "74591ff5caccfb7f26c36bdc273043b35823c6664f18cda7b58b74d583e51ff5",
+          "sizeBytes": 353132
+        }
+      ],
+      "id": "start-ui-web",
+      "license": "MIT",
+      "origin": "https://github.com/BearStudio/start-ui-web.git",
+      "partition": "development",
+      "projectPath": ".",
+      "repo": "https://github.com/BearStudio/start-ui-web.git",
+      "submodulesSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree": "ce099c47b3f87e3f182b6843c93db3a0408083a7"
+    },
+    {
+      "commit": "9506629ed003a561c6627735480cce4994244bb4",
+      "evidenceFiles": [
+        {
+          "path": "apps/react-vite/package.json",
+          "sha256": "770724c0d08c5f7a84e0f38a2eeeb269bc959672458c4f60d4ef396abde8bae5",
+          "sizeBytes": 3918
+        },
+        {
+          "path": "apps/react-vite/yarn.lock",
+          "sha256": "21937464da5e54de5bce88e8314ed0747b82e0236b78079bf8aaa31c849b6cb8",
+          "sizeBytes": 501391
+        },
+        {
+          "path": "LICENSE",
+          "sha256": "5e8e5036383ac3d764a03e785cc7127ee8c10718edf61a6ff0ca28854d66f370",
+          "sizeBytes": 1071
+        },
+        {
+          "path": "package.json",
+          "sha256": "52a58a1a0e0a597a93c9cfe9284d7296ad5c00723f29e03244a16c053db81dc4",
+          "sizeBytes": 359
+        }
+      ],
+      "id": "bulletproof-react-vite",
+      "license": "MIT",
+      "origin": "https://github.com/alan2207/bulletproof-react.git",
+      "partition": "development",
+      "projectPath": "apps/react-vite",
+      "repo": "https://github.com/alan2207/bulletproof-react.git",
+      "submodulesSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree": "b03782f905ffcd394bdaf597c06322afbc8ed991"
+    },
+    {
+      "commit": "bbe43a401ebc4e71c57f428202d80a4df1dd22bc",
+      "evidenceFiles": [
+        {
+          "path": "apps/dashboard/package.json",
+          "sha256": "7e7db86a52c32c1264b9757c21e24f4dc69d4523b2dc8e077f9c48a90d5a469b",
+          "sizeBytes": 4032
+        },
+        {
+          "path": "LICENSE",
+          "sha256": "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef",
+          "sizeBytes": 34523
+        },
+        {
+          "path": "package.json",
+          "sha256": "07edf6532c1a6f7609d70be5ba0fa4eaa41571c8c898522b8ff710c43fe36a10",
+          "sizeBytes": 1105
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "c246413ff1455cfdca043687c6d9e6c5aaa426da7e33babdf992d12ebf4bea03",
+          "sizeBytes": 713779
+        }
+      ],
+      "id": "openstatus-dashboard",
+      "license": "AGPL-3.0-only",
+      "origin": "https://github.com/openstatusHQ/openstatus.git",
+      "partition": "development",
+      "projectPath": "apps/dashboard",
+      "repo": "https://github.com/openstatusHQ/openstatus.git",
+      "submodulesSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree": "98ffdb1834348fc381b0dbf84eca4ee5d3f4077e"
+    },
+    {
+      "commit": "5e500633299ebaefb62baca350460d8b1089e2de",
+      "evidenceFiles": [
+        {
+          "path": "LICENSE.md",
+          "sha256": "467deba7e5f01116cc92ca147cb18256216f3bc3b389fe8c6180b7c2d6cc082d",
+          "sizeBytes": 1100
+        },
+        {
+          "path": "package.json",
+          "sha256": "0a4c57e7aba34832ed5178e2f023b212cf5c7ce1f4bdcf47215ef4efc258f059",
+          "sizeBytes": 14070
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "afba501fe247d5af533997482a2da0c5a3547a0607df386225dd950147ed61ca",
+          "sizeBytes": 1047504
+        },
+        {
+          "path": "templates/website/package.json",
+          "sha256": "bfa1780bb87db3012a431c24e5b09b769037d5157377aec4d4daf92e6a25b722",
+          "sizeBytes": 3469
+        }
+      ],
+      "id": "payload-website-template",
+      "license": "MIT",
+      "origin": "https://github.com/payloadcms/payload.git",
+      "partition": "development",
+      "projectPath": "templates/website",
+      "repo": "https://github.com/payloadcms/payload.git",
+      "submodulesSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree": "fca1d59cff76e37961676bc5f27823628bf0ca61"
+    },
+    {
+      "commit": "6503a875f7a4e82dd8335d4ce16fcbd8ae492e21",
+      "evidenceFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "3839668abf24c248dc217777d919f281e1bd23b76b14413e6df36ea90305775a",
+          "sizeBytes": 11353
+        },
+        {
+          "path": "package.json",
+          "sha256": "e567827453f4265b931f1d6acea03d88d81565df255db2e3ea0437661880916e",
+          "sizeBytes": 4949
+        },
+        {
+          "path": "packages/manager/package.json",
+          "sha256": "df0c107cdbe66227c6e3759e559721cd7b0cc7f2d526bc4b2dc17f56dc282c78",
+          "sizeBytes": 6643
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "cf35261b2c26ebd7730848cdb85ee94c1031785d448d7962f8f6692f58c15bb6",
+          "sizeBytes": 471698
+        }
+      ],
+      "id": "linode-manager",
+      "license": "Apache-2.0",
+      "origin": "https://github.com/linode/manager.git",
+      "partition": "qualification",
+      "projectPath": "packages/manager",
+      "repo": "https://github.com/linode/manager.git",
+      "submodulesSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree": "1591c7fb30d8949c2739eb9a07f61caf6a7daa66"
+    },
+    {
+      "commit": "faaa21779c66002ba4c50890828b1b917cadbef2",
+      "evidenceFiles": [
+        {
+          "path": "LICENSE.md",
+          "sha256": "75d43f42d005a9c560d2ccdd01a7e9dd193b8632d74aa89865dc02ca78e19599",
+          "sizeBytes": 1064
+        },
+        {
+          "path": "package-lock.json",
+          "sha256": "143cea0291eb245f1bf241f06e74dfd862f87e681ef80a7ecbd64387647b5c51",
+          "sizeBytes": 653249
+        },
+        {
+          "path": "package.json",
+          "sha256": "499078b4d8092faddc3ab89b398758cb55d3824b34e23806f33c3660f51597c7",
+          "sizeBytes": 5312
+        }
+      ],
+      "id": "epic-stack",
+      "license": "MIT",
+      "origin": "https://github.com/epicweb-dev/epic-stack.git",
+      "partition": "qualification",
+      "projectPath": ".",
+      "repo": "https://github.com/epicweb-dev/epic-stack.git",
+      "submodulesSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree": "cddf87545807f8c49595a246427dcdc3f4a999c3"
+    },
+    {
+      "commit": "a4395b3e7c41541de1d769e8701ea110ba8f96c2",
+      "evidenceFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "a5e6ddb3af783a02eacc848cbe309cc0940b4859ac653e9b1a2e21a4fea22552",
+          "sizeBytes": 1056
+        },
+        {
+          "path": "package.json",
+          "sha256": "55707ff037ce3f8eb2e7fe5ee6d6bbe8e8bab1c9aa50ca2e74ad37df577d193b",
+          "sizeBytes": 1991
+        },
+        {
+          "path": "packages/hoppscotch-selfhost-web/package.json",
+          "sha256": "5514e07c8b9706152af46eca9c1551ccc8243f1a0cf9342962ec5b80b27504be",
+          "sizeBytes": 3581
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "fdd7208a0e18846e65c95616e3040b5d0a296aa0562fd1282a2c1e3b7908757d",
+          "sizeBytes": 982912
+        }
+      ],
+      "id": "hoppscotch-selfhost-web",
+      "license": "MIT",
+      "origin": "https://github.com/hoppscotch/hoppscotch.git",
+      "partition": "development",
+      "projectPath": "packages/hoppscotch-selfhost-web",
+      "repo": "https://github.com/hoppscotch/hoppscotch.git",
+      "submodulesSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree": "392a092f55c15c7ffb3ce30bf657ba2255a17f40"
+    },
+    {
+      "commit": "ec6b6ef53ad4fa7f2861277f50f2d9e236c40372",
+      "evidenceFiles": [
+        {
+          "path": "LICENSE.md",
+          "sha256": "cd6426739ea0d1bf7b6692f54563165fa6bd3f2cd236aa82f9fc2a01de37f193",
+          "sizeBytes": 1080
+        },
+        {
+          "path": "package-lock.json",
+          "sha256": "a0a544a74fd350ec1c34c7641af1dd5e82e63a0b13567b1b29ff90b04f561375",
+          "sizeBytes": 170799
+        },
+        {
+          "path": "package.json",
+          "sha256": "9eb52722c55740667d2c4315e612e8f98a381ab888f87557a2ec07a2ddd3c993",
+          "sizeBytes": 1004
+        }
+      ],
+      "id": "sakai-vue",
+      "license": "MIT",
+      "origin": "https://github.com/primefaces/sakai-vue.git",
+      "partition": "development",
+      "projectPath": ".",
+      "repo": "https://github.com/primefaces/sakai-vue.git",
+      "submodulesSha256": "28f8ad119eb262a627c30c4f8166829f467daa63ea4453410498d1e4c28d7e9a",
+      "tree": "a8d1f89d54653a6a1fa2ff300de76fbc56c24463"
+    },
+    {
+      "commit": "419abb0f674c819e387846fd0938933bbedb1eec",
+      "evidenceFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "e40f408c466e72a3b02eabe846ef35cfab210c14daff782a072dd4903d911f93",
+          "sizeBytes": 1074
+        },
+        {
+          "path": "package.json",
+          "sha256": "b5ef6b660a18db96858a9779a704e9b8c5720b5fc3ef0fecbbdfab9785a39572",
+          "sizeBytes": 927
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "de2fc029a6edadd502fc5b535ed347f7c7fbb704376727fccd6ad15157e0a97c",
+          "sizeBytes": 422458
+        }
+      ],
+      "id": "nuxt-ui-dashboard",
+      "license": "MIT",
+      "origin": "https://github.com/nuxt-ui-templates/dashboard.git",
+      "partition": "development",
+      "projectPath": ".",
+      "repo": "https://github.com/nuxt-ui-templates/dashboard.git",
+      "submodulesSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree": "135096c7f17ecd652667489176bea8b2254d34ff"
+    },
+    {
+      "commit": "de6c4e272b4b42d395d3601e4a6f277f0b26e0b1",
+      "evidenceFiles": [
+        {
+          "path": "apps/v4/package.json",
+          "sha256": "416510cc499fa08ea862a846b0f9b299e1083b50d05912a217817dc1829e1228",
+          "sizeBytes": 2528
+        },
+        {
+          "path": "LICENSE",
+          "sha256": "69f84f4ad77be299dbf42d03d7fd862ab3ab05546c6e573c6c7c875b0168a94d",
+          "sizeBytes": 1063
+        },
+        {
+          "path": "package.json",
+          "sha256": "ce29f58cfcee12421766362c1cd0d8058769f258551f1a13735fc6caec2bd5a8",
+          "sizeBytes": 1826
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "78017625eb9306d057cf13aa85ba5a9459939f13fc283f984ba8cf25ec988253",
+          "sizeBytes": 768712
+        }
+      ],
+      "id": "shadcn-vue-v4",
+      "license": "MIT",
+      "origin": "https://github.com/unovue/shadcn-vue.git",
+      "partition": "development",
+      "projectPath": "apps/v4",
+      "repo": "https://github.com/unovue/shadcn-vue.git",
+      "submodulesSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree": "5868538d95aeaff717784957db0c551e2db87572"
+    },
+    {
+      "commit": "899910547f26f6dc67c60a9b6821a131a94c7c58",
+      "evidenceFiles": [
+        {
+          "path": "apps/web-antd/package.json",
+          "sha256": "f15d028631e55964b826f6a563c4037a904a6c8549cb61f17f8468fdefc60faf",
+          "sizeBytes": 1424
+        },
+        {
+          "path": "LICENSE",
+          "sha256": "26bd1c47f2d85139581c82c7b0197785322a11217c762d65f10c04f1567450ee",
+          "sizeBytes": 1070
+        },
+        {
+          "path": "package.json",
+          "sha256": "617e599c68537ad40ce680d0269c5713d3be755190bc7890f5db55593744f6a8",
+          "sizeBytes": 3963
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "34a89c223db23146d8f9cd4a9edf562a9d45b607e4b6f43a4adab21dbdaae90e",
+          "sizeBytes": 739170
+        }
+      ],
+      "id": "vben-web-antd",
+      "license": "MIT",
+      "origin": "https://github.com/vbenjs/vue-vben-admin.git",
+      "partition": "qualification",
+      "projectPath": "apps/web-antd",
+      "repo": "https://github.com/vbenjs/vue-vben-admin.git",
+      "submodulesSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree": "5780cbd3aa87689005f3bc8539bcd9045441fda5"
+    },
+    {
+      "commit": "3d3613f20cd4add3cd20fd6cc884abead165c6d2",
+      "evidenceFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "a79a57b906af5b6e51b0adcf3c8f5a88ea6e72191304daf45fd3f4173775ee23",
+          "sizeBytes": 1064
+        },
+        {
+          "path": "package.json",
+          "sha256": "bf34f0f8251f0c40cb245661827d0a4cf827e3fb0797c40b0eea3f369ec6cfb5",
+          "sizeBytes": 3150
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "72047d5525fd1b56eeb4b9cfc137ee76b21a21b4a2c5cf059555364ee5bffe57",
+          "sizeBytes": 272115
+        }
+      ],
+      "id": "soybean-admin",
+      "license": "MIT",
+      "origin": "https://github.com/soybeanjs/soybean-admin.git",
+      "partition": "qualification",
+      "projectPath": ".",
+      "repo": "https://github.com/soybeanjs/soybean-admin.git",
+      "submodulesSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree": "4466d5bf58f71056fa4b5c11e687057e7fd831a0"
+    },
+    {
+      "commit": "8435d219e4206dca41ad648c13cadd511c0c5621",
+      "evidenceFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "a3bad629f67f442b23b5224419e49edafc32e6b9c876b89464f7aafe6091ccde",
+          "sizeBytes": 32388
+        },
+        {
+          "path": "package.json",
+          "sha256": "a366592133c91aef33c284df320f65e69ef7d538912897802bc6d8107a19fc26",
+          "sizeBytes": 443
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "ee263bbe6b9250a2861e3bc585f80ebc171d1a96c6c1e6bac26b98c481d5c4e4",
+          "sizeBytes": 943101
+        },
+        {
+          "path": "web/package.json",
+          "sha256": "c98b9d7dd7c0f7f4ea1d8bc0c9219c23877a9846833c9fa68a0f8da92cbeb22f",
+          "sizeBytes": 4295
+        }
+      ],
+      "id": "immich-web",
+      "license": "AGPL-3.0-only",
+      "origin": "https://github.com/immich-app/immich.git",
+      "partition": "development",
+      "projectPath": "web",
+      "repo": "https://github.com/immich-app/immich.git",
+      "submodulesSha256": "cda7d56a6a54d4b1fa6d3de3a09729128de624c09736c2ffe4e0200d4a03c1e7",
+      "tree": "4165ba71c77f5d40887f482c704053a7e16a6b20"
+    },
+    {
+      "commit": "9d99a5c11f45973394f7884d7c383356ceb27a4d",
+      "evidenceFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "054cd46b7445df037ca93fd390f73e11fd18926b03d101eb066cc9ee979fbe8d",
+          "sizeBytes": 1074
+        },
+        {
+          "path": "package-lock.json",
+          "sha256": "8bcd79d1dcb5073c26587b076b35efd8a0f8d1f3292c4c1ed90196c85bdf0c70",
+          "sizeBytes": 410978
+        },
+        {
+          "path": "package.json",
+          "sha256": "6f7784dd151e919a93c90eceda46ba5a9c0f8e48e31927dd6d82f9896d8ff63f",
+          "sizeBytes": 6505
+        }
+      ],
+      "id": "kener",
+      "license": "MIT",
+      "origin": "https://github.com/rajnandan1/kener.git",
+      "partition": "development",
+      "projectPath": ".",
+      "repo": "https://github.com/rajnandan1/kener.git",
+      "submodulesSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree": "eb46e484595aac1da25c5051302b83e02de01c03"
+    },
+    {
+      "commit": "c4cf00683202083745ed9f840be2442e3896f2ea",
+      "evidenceFiles": [
+        {
+          "path": "frontend/package.json",
+          "sha256": "fc72e50d164683b1c8d9bf98df83b148da32e0358cb3b85bae89666915a7325d",
+          "sizeBytes": 1844
+        },
+        {
+          "path": "frontend/pnpm-lock.yaml",
+          "sha256": "59ef6bba95e998ec09f98dc3b2855d2b5e3856be5539909053fcea19e977605b",
+          "sizeBytes": 82207
+        },
+        {
+          "path": "LICENSE",
+          "sha256": "9f2563cf6e3c299e9be3af22046af4cef8869991cc2d9dd282edabdb2dbbccbc",
+          "sizeBytes": 1067
+        }
+      ],
+      "id": "upsnap-frontend",
+      "license": "MIT",
+      "origin": "https://github.com/seriousm4x/UpSnap.git",
+      "partition": "qualification",
+      "projectPath": "frontend",
+      "repo": "https://github.com/seriousm4x/UpSnap.git",
+      "submodulesSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree": "2677e232b9ee35849987cbb66b80132419ad6c6c"
+    },
+    {
+      "commit": "a5a7fdef6454504902c33f571517e8302af3448c",
+      "evidenceFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "8140f413cb8bf477735c35b7b1c1e0a5731a5b41406c042304a98c39e6b8ba47",
+          "sizeBytes": 1067
+        },
+        {
+          "path": "package.json",
+          "sha256": "b731c4e841360fc904d7c692ff61180ebb323a10064b26b3c992d791ba766b6a",
+          "sizeBytes": 3136
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "f466e36c6b02fe28f9dae9c035f565172ef0b367d4e6395ab7fa6e07665df9b0",
+          "sizeBytes": 241866
+        }
+      ],
+      "id": "svgl",
+      "license": "MIT",
+      "origin": "https://github.com/pheralb/svgl.git",
+      "partition": "qualification",
+      "projectPath": ".",
+      "repo": "https://github.com/pheralb/svgl.git",
+      "submodulesSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree": "bc1c7c52b2027c895689e122b1d5fc766a287eda"
+    },
+    {
+      "commit": "ab351d289e0c725dbf74e1455b1c557a255b51ff",
+      "evidenceFiles": [
+        {
+          "path": "demos/simple/package.json",
+          "sha256": "65e94004ff3a2913c0554b07a2fc3c544337b7b377c0e0fbdb0de34c74bfb86d",
+          "sizeBytes": 901
+        },
+        {
+          "path": "LICENSE",
+          "sha256": "d5ab82c0225b0def1fa140af22ff2f3bed9791a527545be1b04ab4337dc88675",
+          "sizeBytes": 1079
+        },
+        {
+          "path": "package.json",
+          "sha256": "9983625943c31e8ba60aebdaf0ef8ce246d87686790bd85ef719ec3e0ca42ed3",
+          "sizeBytes": 2814
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "b34bf302f6be8d8825e33004d02a37697b5504d01637a1d4f248e0a82d387d91",
+          "sizeBytes": 839004
+        }
+      ],
+      "id": "emdash-simple",
+      "license": "MIT",
+      "origin": "https://github.com/emdash-cms/emdash.git",
+      "partition": "development",
+      "projectPath": "demos/simple",
+      "repo": "https://github.com/emdash-cms/emdash.git",
+      "submodulesSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree": "f0226e3e3079ecbb7f423688b736887d5627e55a"
+    },
+    {
+      "commit": "5840faef1ae2b2c29bc70dbb46728bbe0f3a02f8",
+      "evidenceFiles": [
+        {
+          "path": "LICENSE-APACHE",
+          "sha256": "40776a96af5e9c9012bcd72f9fda683c0534d5006a8b6cfbc0df2a8a3e66991d",
+          "sizeBytes": 9717
+        },
+        {
+          "path": "LICENSE-MIT",
+          "sha256": "2b4934e7a28e7871f6b1281194264ae756c6ca1b574b3e6106d9c150095ac0ce",
+          "sizeBytes": 1052
+        },
+        {
+          "path": "package.json",
+          "sha256": "d2628c2adf3beef633a8a245cb2d06c0b7dbbc0e122d46b65f20b0c0ab8e6946",
+          "sizeBytes": 5275
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "43531812368e1585224f1a28f6371c584359dbc7fefe1a41aa4f6d5ed7aac842",
+          "sizeBytes": 202516
+        }
+      ],
+      "id": "tauri-start-solid",
+      "license": "MIT OR Apache-2.0",
+      "origin": "https://github.com/riipandi/tauri-start-solid.git",
+      "partition": "development",
+      "projectPath": ".",
+      "repo": "https://github.com/riipandi/tauri-start-solid.git",
+      "submodulesSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree": "5dfd6bd99785697276f92f80c1bc8eb94b4bb73c"
+    },
+    {
+      "commit": "eeff49a8766f718722e4adcfb519f487cbdf6f9a",
+      "evidenceFiles": [
+        {
+          "path": "apps/fixtures/hackernews/package.json",
+          "sha256": "5fbaa1454202eedd136f8e085f2e06e7e6768f173713157543645c55d2e6f40e",
+          "sizeBytes": 357
+        },
+        {
+          "path": "LICENSE",
+          "sha256": "be995fc1282c92b904501dbf46566d71008c59f899588024add3405b02cc0d00",
+          "sizeBytes": 1070
+        },
+        {
+          "path": "package.json",
+          "sha256": "442878369803c1c4e650effb9cf82aef6f329188c75aa6c22edd37b5714f29cd",
+          "sizeBytes": 1861
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "0793d2d58e57a80af435a054582d0ef83b5cf29f705fbb40e63c6175955e7d45",
+          "sizeBytes": 213379
+        }
+      ],
+      "id": "solid-start-hackernews",
+      "license": "MIT",
+      "origin": "https://github.com/solidjs/solid-start.git",
+      "partition": "qualification",
+      "projectPath": "apps/fixtures/hackernews",
+      "repo": "https://github.com/solidjs/solid-start.git",
+      "submodulesSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree": "12fb9391442f262d5732672748b1f58a7c7b8732"
+    },
+    {
+      "commit": "cb1d245506841529d4df34f6efe8e6294464a631",
+      "evidenceFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "bf4f127cb7d82ed5c00d7095616440211225f4ca3b0195a0ecd0051720df5c18",
+          "sizeBytes": 1069
+        },
+        {
+          "path": "package-lock.json",
+          "sha256": "4ac73479ad6c98ce9f71f8034d1203c05de466e13aa681c5f526f8f3712d009d",
+          "sizeBytes": 907026
+        },
+        {
+          "path": "package.json",
+          "sha256": "b963f33045b186c0b444acc0487076b4c7e0507679a85ceca557a02ea1af8edf",
+          "sizeBytes": 4655
+        }
+      ],
+      "id": "primer-react",
+      "license": "MIT",
+      "origin": "https://github.com/primer/react.git",
+      "partition": "development",
+      "projectPath": ".",
+      "repo": "https://github.com/primer/react.git",
+      "submodulesSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree": "8ebc3a24dc3dbb8331e7a2d9e53d009bf76b146a"
+    },
+    {
+      "commit": "335befd6ff70aa1f3a2a62fb39c2b2db3c0c9527",
+      "evidenceFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "570f1f1c07d32e2cdc7da3eea40f9c772e584782db15cbf455a72a19de36b7bc",
+          "sizeBytes": 1062
+        },
+        {
+          "path": "package-lock.json",
+          "sha256": "dbe2c14993748935d7b692ccfab002b14b5a4b2084802e8e3195dd7f0885a7f2",
+          "sizeBytes": 353599
+        },
+        {
+          "path": "package.json",
+          "sha256": "da9c71ceab6aa32de2984276b7dcb94bcf7632fe1e6dc5eee8c98231ae824af4",
+          "sizeBytes": 2086
+        }
+      ],
+      "id": "figma-sds",
+      "license": "MIT",
+      "origin": "https://github.com/figma/sds.git",
+      "partition": "development",
+      "projectPath": ".",
+      "repo": "https://github.com/figma/sds.git",
+      "submodulesSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree": "25dcf3c36adcd651a59bb1814f76317631de2a7c"
+    },
+    {
+      "commit": "5c4e73d7bf3ae44632dd0419eb0160cf08e6769a",
+      "evidenceFiles": [
+        {
+          "path": "LICENSE.md",
+          "sha256": "1576919bd013e9a0d050675c2183f7eade7ae715bf454cdc79259b867a99173f",
+          "sizeBytes": 1067
+        },
+        {
+          "path": "package-lock.json",
+          "sha256": "5ae85be653087316b3a11bf3298b9545ab667b236d268ec54b90562f82f3b188",
+          "sizeBytes": 1588226
+        },
+        {
+          "path": "package.json",
+          "sha256": "00ac691cb1e2eeff7155f9c32d247c10ba01d804888d752a8dea809e7d8595d3",
+          "sizeBytes": 5698
+        }
+      ],
+      "id": "forma-36",
+      "license": "MIT",
+      "origin": "https://github.com/contentful/forma-36.git",
+      "partition": "qualification",
+      "projectPath": ".",
+      "repo": "https://github.com/contentful/forma-36.git",
+      "submodulesSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree": "d489ad7022d9dfa210bc02fa95498bb18abec115"
+    }
+  ],
+  "schemaVersion": "decantr-benchmark-corpus-lock.v1"
+}

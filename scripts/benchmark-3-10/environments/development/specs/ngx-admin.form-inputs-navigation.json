@@ -1,0 +1,67 @@
+{
+  "base": {
+    "commit": "7bd1b9313c2c99044626693f67e7709d83d67608",
+    "tree": "5aa001f8bc60956cf8107e8eb72f95f7081753aa"
+  },
+  "cleanAfterPreparation": true,
+  "lockfiles": [
+    {
+      "path": "package-lock.json",
+      "sha256": "bcf5562baacb240340323a264867c76f7b6ad5de37a88af4a859a7fe5373bedc"
+    }
+  ],
+  "partition": "development",
+  "preparation": [
+    {
+      "args": [
+        "ci"
+      ],
+      "cwd": ".",
+      "executable": "npm",
+      "id": "install-dependencies",
+      "network": "dependency-registry",
+      "required": true,
+      "timeoutMs": 7200000
+    }
+  ],
+  "profile": {
+    "arch": "x64",
+    "bunVersion": null,
+    "id": "node-10.15.1-npm-6.4.1",
+    "nodeVersion": "10.15.1",
+    "os": "linux",
+    "packageManager": {
+      "name": "npm",
+      "version": "6.4.1"
+    }
+  },
+  "projectPath": ".",
+  "review": {
+    "notes": "Independent source-evidence re-review verified 3 frozen Git blobs and exact SHA-256 values at 7bd1b9313c2c99044626693f67e7709d83d67608. Independent review rejects the generated Node 12 fallback. Frozen Travis covers Node 8, 9, and 10 but mutates each job with npm@latest, so it proves no exact pair. Node 10.15.1/npm 6.4.1 remains a provisional date-aligned profile; the legacy lock and dependency graph still require an exact Linux x64 npm ci and build probe before approval.",
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "status": "draft"
+  },
+  "schemaVersion": "decantr-benchmark-task-environment.v1",
+  "sourceEvidence": [
+    {
+      "kind": "reviewer-override",
+      "path": ".travis.yml",
+      "sha256": "a46a68f70216c4d4790f1958c83ff4df16232a588d4221175d4fa3981ac04a96",
+      "statement": "Frozen Travis tests Node 8, 9, and 10, then mutably installs npm@latest; it rejects Node 12 but cannot authenticate an exact npm version."
+    },
+    {
+      "kind": "lockfile",
+      "path": "package-lock.json",
+      "sha256": "bcf5562baacb240340323a264867c76f7b6ad5de37a88af4a859a7fe5373bedc",
+      "statement": "Frozen lockfileVersion 1 root lock is bound for deterministic npm ci preparation."
+    },
+    {
+      "kind": "package-manifest",
+      "path": "package.json",
+      "sha256": "924c141fefc6f11852df005a1e47757731c245a4efab4a3aa992fc51f4223a94",
+      "statement": "Manifest defines the Angular 7 npm build but contains no engines, packageManager, or other exact runtime pin."
+    }
+  ],
+  "taskId": "ngx-admin.form-inputs-navigation"
+}

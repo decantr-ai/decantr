@@ -91,14 +91,14 @@ function cursorRuleContent(input: CursorConnectInput): string {
   const projectPath = projectPathForConnection(input);
   const projectSuffix = projectPath ? ` --project ${projectPath}` : '';
   const mcpProjectLine = projectPath ? `, "project_path": "${projectPath}"` : '';
-  const route = input.routeHint ?? '<route>';
-  const taskExample = route === '<route>' ? '<intent>' : 'make a focused UI change';
+  const target = input.routeHint ?? '<target>';
+  const taskExample = target === '<target>' ? '<intent>' : 'make a focused UI change';
   const attachedNote = input.attached
-    ? 'This app is attached to Decantr; use task context before route edits.'
-    : 'If this app is not attached yet, run `decantr scan` and `decantr adopt --yes` before expecting route-level task context.';
+    ? 'This app is attached to Decantr; use task context before UI-surface edits.'
+    : 'This app is not attached yet. `decantr task` can still return read-only discovery context; run `decantr scan` and review `decantr adopt --yes` before expecting contract-backed context.';
 
   return `---
-description: Decantr route-scoped contract, context, and evidence for Cursor Agent
+description: Decantr source-scoped UI authority, context, and evidence for Cursor Agent
 alwaysApply: true
 ---
 
@@ -106,10 +106,10 @@ alwaysApply: true
 
 ${attachedNote}
 
-Before editing any route, use Decantr task context:
+Before editing a UI surface, use Decantr task context:
 
-- MCP: call \`decantr_context\` with \`{ "action": "task"${mcpProjectLine}, "route": "${route}", "task": "${taskExample}" }\`.
-- CLI fallback: run \`decantr task ${route} "${taskExample}"${projectSuffix}\`.
+- MCP: call \`decantr_context\` with \`{ "action": "task"${mcpProjectLine}, "route": "${target}", "task": "${taskExample}" }\`. The \`route\` field name remains for 3.x compatibility and accepts an exact UI-surface target.
+- CLI fallback: run \`decantr task ${target} "${taskExample}"${projectSuffix}\`.
 
 Use the returned authority block, read targets, local law, evidence, graph impact, stop conditions, and verify command as the working contract. If runtime source and Decantr context disagree, stop and report drift instead of guessing which side wins.
 
@@ -177,8 +177,8 @@ export function cmdConnectCursor(input: CursorConnectInput): void {
   const rulePath = join(input.connectionRoot, '.cursor', 'rules', 'decantr.mdc');
   const projectPath = projectPathForConnection(input);
   const projectSuffix = projectPath ? ` --project ${projectPath}` : '';
-  const route = input.routeHint ?? '<route>';
-  const taskIntent = route === '<route>' ? '<intent>' : 'make a focused UI change';
+  const target = input.routeHint ?? '<target>';
+  const taskIntent = target === '<target>' ? '<intent>' : 'make a focused UI change';
   const results: CursorWriteResult[] = [];
 
   if (!input.rulesOnly) results.push(writeCursorMcp(mcpPath, Boolean(input.preview)));
@@ -221,7 +221,7 @@ export function cmdConnectCursor(input: CursorConnectInput): void {
     console.log(`  ${cyan(`decantr adopt --yes${projectSuffix}`)}   Attach Decantr when ready`);
   }
   console.log(
-    `  ${cyan(`decantr task ${route} "${taskIntent}"${projectSuffix}`)}   Prepare context before edits`,
+    `  ${cyan(`decantr task ${target} "${taskIntent}"${projectSuffix}`)}   Prepare context before edits`,
   );
   console.log(
     `  ${cyan(`decantr verify --brownfield --local-patterns${projectSuffix}`)}   Check after edits`,

@@ -1,0 +1,81 @@
+{
+  "base": {
+    "commit": "af48f06be20a1926a24d0bba6ce339e754c5735f",
+    "tree": "f1aa04cdc600e3c52fcdc3400ce159be35a4d792"
+  },
+  "cleanAfterPreparation": true,
+  "lockfiles": [
+    {
+      "path": "apps/react-vite/yarn.lock",
+      "sha256": "24f3d961ee08c108d356f3e3efff0deedf55aa3579a7096f8ec94c9b38049364"
+    }
+  ],
+  "partition": "development",
+  "preparation": [
+    {
+      "args": [
+        "--",
+        ".env.example",
+        ".env"
+      ],
+      "cwd": "apps/react-vite",
+      "executable": "/bin/cp",
+      "id": "copy-project-environment",
+      "network": "none",
+      "required": true,
+      "timeoutMs": 10000
+    },
+    {
+      "args": [
+        "install",
+        "--frozen-lockfile"
+      ],
+      "cwd": "apps/react-vite",
+      "executable": "yarn",
+      "id": "install-dependencies",
+      "network": "dependency-registry",
+      "required": true,
+      "timeoutMs": 7200000
+    }
+  ],
+  "profile": {
+    "arch": "x64",
+    "bunVersion": null,
+    "id": "node-20.16.0-yarn-1.22.22",
+    "nodeVersion": "20.16.0",
+    "os": "linux",
+    "packageManager": {
+      "name": "yarn",
+      "version": "1.22.22"
+    }
+  },
+  "projectPath": "apps/react-vite",
+  "review": {
+    "notes": "Independent source-evidence re-review verified 3 frozen Git blobs and exact SHA-256 values at af48f06be20a1926a24d0bba6ce339e754c5735f. The frozen tree does not pin exact Node 20.16.0 or Yarn 1.22.22 patches, so the exact profile is not source-authenticated.",
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "status": "draft"
+  },
+  "schemaVersion": "decantr-benchmark-task-environment.v1",
+  "sourceEvidence": [
+    {
+      "kind": "reviewer-override",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "71b9294ed6cbdd51cffb35e2ffc58b7f6ae2780c747c45e99348c39b229c2cb0",
+      "statement": "Frozen CI selects the Node LTS line, uses the project directory, copies its environment file, and installs with Yarn."
+    },
+    {
+      "kind": "package-manifest",
+      "path": "apps/react-vite/package.json",
+      "sha256": "cc52ee4cf6c90c281ec152268573846efe150e5e170224b463aec28e6591d886",
+      "statement": "Manifest evidence considered for yarn and runtime selection."
+    },
+    {
+      "kind": "lockfile",
+      "path": "apps/react-vite/yarn.lock",
+      "sha256": "24f3d961ee08c108d356f3e3efff0deedf55aa3579a7096f8ec94c9b38049364",
+      "statement": "Selected yarn lockfile for deterministic dependency preparation."
+    }
+  ],
+  "taskId": "bulletproof-react-vite.discussion-pagination"
+}

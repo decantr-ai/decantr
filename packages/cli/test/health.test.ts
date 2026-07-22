@@ -1588,6 +1588,7 @@ exports.chromium = {
       'doctor',
       'export',
       'get',
+      'graph',
       'heal',
       'health',
       'init',
@@ -1601,10 +1602,13 @@ exports.chromium = {
       'refresh',
       'registry',
       'remove',
+      'resolve',
       'rules',
+      'scan',
       'search',
       'showcase',
       'setup',
+      'status',
       'studio',
       'suggest',
       'sync',
@@ -1621,9 +1625,63 @@ exports.chromium = {
     for (const command of dispatchedCommands) {
       expect(commands.has(command)).toBe(true);
     }
+    expect(commands).toEqual(new Set(dispatchedCommands));
+    expect(
+      COMMAND_SURFACE.filter((entry) => entry.visibility === 'default').map(
+        (entry) => entry.command,
+      ),
+    ).toEqual(['scan', 'adopt', 'task', 'verify', 'ci']);
+    expect(
+      COMMAND_SURFACE.filter((entry) => entry.visibility === 'advanced').map(
+        (entry) => entry.command,
+      ),
+    ).toEqual([
+      'setup',
+      'new',
+      'resolve',
+      'doctor',
+      'connect',
+      'codify',
+      'content',
+      'magic',
+      'init',
+      'analyze',
+      'refresh',
+      'graph',
+      'health',
+      'studio',
+      'workspace',
+      'check',
+      'audit',
+      'migrate',
+      'add',
+      'remove',
+      'theme',
+      'rules',
+      'export',
+      'status',
+      'sync',
+      'upgrade',
+      'sync-drift',
+      'search',
+      'suggest',
+      'get',
+      'list',
+      'showcase',
+      'validate',
+      'telemetry',
+    ]);
+    expect(
+      COMMAND_SURFACE.filter((entry) => entry.visibility === 'compatibility').map(
+        (entry) => entry.command,
+      ),
+    ).toEqual(['heal', 'registry', 'content-health', 'create', 'publish', 'login', 'logout']);
     expect(commandSurfaceByName('verify')?.classification).toBe('primary');
+    expect(commandSurfaceByName('verify')?.visibility).toBe('default');
     expect(commandSurfaceByName('health')?.classification).toBe('advanced');
+    expect(commandSurfaceByName('health')?.visibility).toBe('advanced');
     expect(commandSurfaceByName('heal')?.classification).toBe('deprecated-alias');
+    expect(commandSurfaceByName('heal')?.visibility).toBe('compatibility');
     expect(commandSurfaceByName('workspace')?.purpose).toContain('Monorepo');
   });
 

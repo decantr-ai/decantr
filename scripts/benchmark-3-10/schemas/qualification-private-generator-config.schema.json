@@ -1,0 +1,157 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/benchmark-3-10/qualification-private-generator-config.v1.json",
+  "title": "Private qualification generator configuration",
+  "description": "Ignored local configuration for sealed candidate refreezing, environment drafting, and public-source privacy auditing.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion"],
+  "properties": {
+    "schemaVersion": { "const": "decantr-benchmark-qualification-private-generator-config.v1" },
+    "refreeze": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["replacements", "projectPathOverrides"],
+      "properties": {
+        "replacements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["removedTaskId", "addedTaskId"],
+            "properties": {
+              "removedTaskId": { "$ref": "#/$defs/taskId" },
+              "addedTaskId": { "$ref": "#/$defs/taskId" }
+            }
+          }
+        },
+        "projectPathOverrides": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["taskId", "projectPath"],
+            "properties": {
+              "taskId": { "$ref": "#/$defs/taskId" },
+              "projectPath": { "$ref": "#/$defs/relativePath" }
+            }
+          }
+        }
+      }
+    },
+    "environments": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["taskOverrides"],
+      "properties": {
+        "taskOverrides": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["taskId"],
+            "properties": {
+              "taskId": { "$ref": "#/$defs/taskId" },
+              "runtimeFallback": {
+                "type": "object",
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "node": { "$ref": "#/$defs/version" },
+                  "bun": { "$ref": "#/$defs/version" },
+                  "npm": { "$ref": "#/$defs/version" },
+                  "pnpm": { "$ref": "#/$defs/version" },
+                  "yarn": { "$ref": "#/$defs/version" }
+                }
+              },
+              "install": {
+                "type": "object",
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "args": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": { "type": "string" }
+                  },
+                  "environment": { "$ref": "#/$defs/environment" }
+                }
+              },
+              "preparation": {
+                "type": "object",
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "beforeInstall": {
+                    "type": "array",
+                    "items": { "$ref": "#/$defs/command" }
+                  },
+                  "afterInstall": {
+                    "type": "array",
+                    "items": { "$ref": "#/$defs/command" }
+                  }
+                }
+              }
+            },
+            "anyOf": [
+              { "required": ["runtimeFallback"] },
+              { "required": ["install"] },
+              { "required": ["preparation"] }
+            ]
+          }
+        }
+      }
+    },
+    "privacyAudit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sensitiveTokens"],
+      "properties": {
+        "sensitiveTokens": {
+          "description": "Additional exact opaque values that must never occur in Git-trackable public paths or file contents.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 4 }
+        }
+      }
+    }
+  },
+  "anyOf": [
+    { "required": ["refreeze"] },
+    { "required": ["environments"] },
+    { "required": ["privacyAudit"] }
+  ],
+  "$defs": {
+    "taskId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,95}$" },
+    "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+    },
+    "environment": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "pattern": "^[A-Z_][A-Z0-9_]*$" },
+      "additionalProperties": { "type": "string" }
+    },
+    "command": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "executable", "args", "cwd", "timeoutMs", "network", "required"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]+$" },
+        "executable": { "type": "string", "minLength": 1 },
+        "args": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "cwd": { "$ref": "#/$defs/relativePath" },
+        "timeoutMs": { "type": "integer", "minimum": 100, "maximum": 7200000 },
+        "network": { "const": "none" },
+        "required": { "const": true },
+        "environment": { "$ref": "#/$defs/environment" }
+      }
+    }
+  }
+}

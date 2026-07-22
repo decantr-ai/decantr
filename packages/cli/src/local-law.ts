@@ -660,7 +660,7 @@ export function createBrownfieldCodifyProposal(
     nextSteps: [
       'Edit this proposal with real component paths and token/class recipes.',
       'Run decantr codify --accept --confirm-reviewed after review.',
-      'Use decantr task <route> before LLM edits so local law appears in task context.',
+      'Use decantr task <target> before LLM edits so local law appears in task context.',
       'Run decantr verify --brownfield --local-patterns after edits.',
       'For Hybrid adoption, start with warn-level local rules and raise severities only after the team agrees the law is stable.',
       'Wire deterministic project rules into ESLint, Biome, Storybook, visual tests, or CI where Decantr should not guess.',
@@ -780,7 +780,7 @@ export function writeHostedPatternMappingProposal(
           'Review this proposal with the team.',
           'Add project-owned component paths, token hints, class recipes, and exceptions.',
           'Run decantr codify --accept --confirm-reviewed after review.',
-          'Use decantr task <route> before LLM edits so local law appears in task context.',
+          'Use decantr task <target> before LLM edits so local law appears in task context.',
         ],
   };
   const slug = input.hostedPattern.slug.trim();

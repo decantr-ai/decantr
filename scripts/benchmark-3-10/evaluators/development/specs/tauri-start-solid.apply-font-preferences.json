@@ -1,0 +1,88 @@
+{
+  "schemaVersion": "decantr-benchmark-evaluator-authoring-spec.v2",
+  "taskId": "tauri-start-solid.apply-font-preferences",
+  "contractId": "tauri-start-solid.apply-font-preferences.v1",
+  "review": {
+    "status": "approved",
+    "reviewedBy": "independent-runtime-evaluator-review-mixed-c",
+    "reviewedAt": "2026-07-22T13:18:42Z",
+    "notes": "Approved from exact frozen commits 860729230392c15d3eb9e28c270edc63baf15ea2 and fc15c1ef6f3b167f9ec4d27ab40987ac03ac0982 with pinned Playwright 1.61.1 and Axe 4.12.1. Expected passes 10/10 executable checks; base passes only root mount, platform/theme cleanup, scoped Axe, and console while failing all four discovered initial typography bindings, generic fallbacks, same-document reactive updates, retained theme reactivity, and stylesheet defaults. UI builds and post-generation typechecks pass both revisions. The frozen test:js command remains diagnostic-only because both revisions contain zero matching test files and Vitest exits 1 before running a test."
+  },
+  "oracle": {
+    "candidateIndependent": true,
+    "decantrOutputAllowed": false,
+    "sourcePath": "sources/tauri-start-solid.apply-font-preferences.mjs"
+  },
+  "commands": [
+    {
+      "id": "behavior",
+      "kind": "functional",
+      "runtime": "controller",
+      "executable": "node",
+      "args": [
+        "${EVALUATOR_ROOT}/sources/tauri-start-solid.apply-font-preferences.mjs",
+        "--workspace",
+        "${WORKSPACE}",
+        "--project-path",
+        "${PROJECT_PATH}",
+        "--evaluator-runtime",
+        "${EVALUATOR_RUNTIME}"
+      ],
+      "cwd": "${EVALUATOR_ROOT}",
+      "environment": {
+        "PLAYWRIGHT_BROWSERS_PATH": "/tmp/decantr-3-10-playwright-browsers"
+      },
+      "timeoutMs": 180000,
+      "required": true,
+      "resultFormat": "json-stdout"
+    },
+    {
+      "id": "host-build-ui",
+      "kind": "build",
+      "runtime": "task",
+      "executable": "pnpm",
+      "args": [
+        "run",
+        "build:ui"
+      ],
+      "cwd": "${WORKSPACE}/${PROJECT_PATH}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    },
+    {
+      "id": "host-typecheck",
+      "kind": "functional",
+      "runtime": "task",
+      "executable": "pnpm",
+      "args": [
+        "run",
+        "typecheck"
+      ],
+      "cwd": "${WORKSPACE}/${PROJECT_PATH}",
+      "timeoutMs": 1200000,
+      "required": true,
+      "resultFormat": "exit-code"
+    },
+    {
+      "id": "host-tests",
+      "kind": "functional",
+      "runtime": "task",
+      "executable": "pnpm",
+      "args": [
+        "run",
+        "test:js"
+      ],
+      "cwd": "${WORKSPACE}/${PROJECT_PATH}",
+      "timeoutMs": 1200000,
+      "required": false,
+      "resultFormat": "exit-code"
+    }
+  ],
+  "limits": {
+    "timeoutMs": 5400000,
+    "maxRequests": 40,
+    "maxInputTokens": 800000,
+    "maxOutputTokens": 100000
+  }
+}

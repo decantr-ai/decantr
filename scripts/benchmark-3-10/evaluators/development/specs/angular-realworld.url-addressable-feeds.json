@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "decantr-benchmark-evaluator-authoring-spec.v2",
+  "taskId": "angular-realworld.url-addressable-feeds",
+  "contractId": "angular-realworld.url-addressable-feeds.v1",
+  "review": {
+    "status": "approved",
+    "reviewedBy": "OpenAI Codex independent evaluator reviewer",
+    "reviewedAt": "2026-07-22T14:20:13Z",
+    "notes": "Independent exact-commit review used the frozen npm lockfile and the locked Playwright evaluator runtime. The base f2eb0ffedb443927b0e0f4f3e78d66042fb673f7 failed the bound browser oracle twice; expected 02b8d88d7d95853867a29be11c3a89c60c6831d1 passed all 15 checks twice, including direct tag loads, refresh, back navigation, feed/page query preservation, anonymous redirect, recovery from an empty following feed, accessibility, request offsets, and a clean browser console. npm test -- --run passed all 180 tests and npm run build passed at both revisions. API traffic is locally fulfilled and all non-application requests are blocked, so the oracle is candidate-independent and consumes no Decantr output. The earlier 14/15 history result did not reproduce after exact-lock preparation."
+  },
+  "oracle": {
+    "candidateIndependent": true,
+    "decantrOutputAllowed": false,
+    "sourcePath": "sources/angular-realworld.url-addressable-feeds.mjs"
+  },
+  "commands": [
+    {
+      "id": "behavior",
+      "kind": "functional",
+      "runtime": "controller",
+      "executable": "node",
+      "args": [
+        "${EVALUATOR_ROOT}/sources/angular-realworld.url-addressable-feeds.mjs",
+        "--workspace",
+        "${WORKSPACE}",
+        "--project-path",
+        "${PROJECT_PATH}",
+        "--evaluator-runtime",
+        "${EVALUATOR_RUNTIME}"
+      ],
+      "cwd": "${EVALUATOR_ROOT}",
+      "timeoutMs": 180000,
+      "required": true,
+      "resultFormat": "json-stdout"
+    },
+    {
+      "id": "host-test",
+      "kind": "functional",
+      "runtime": "task",
+      "executable": "npm",
+      "args": [
+        "test",
+        "--",
+        "--run"
+      ],
+      "cwd": "${WORKSPACE}/${PROJECT_PATH}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    },
+    {
+      "id": "host-build",
+      "kind": "build",
+      "runtime": "task",
+      "executable": "npm",
+      "args": [
+        "run",
+        "build"
+      ],
+      "cwd": "${WORKSPACE}/${PROJECT_PATH}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    }
+  ],
+  "limits": {
+    "timeoutMs": 5400000,
+    "maxRequests": 40,
+    "maxInputTokens": 600000,
+    "maxOutputTokens": 80000
+  }
+}

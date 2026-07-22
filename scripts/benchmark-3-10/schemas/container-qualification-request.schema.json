@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/benchmark-3-10/container-qualification-request.v1.json",
+  "title": "Decantr 3.10 container evaluator qualification request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "program",
+    "requestSha256",
+    "taskId",
+    "partition",
+    "bindings",
+    "roles",
+    "dependencyProxy",
+    "runnerRepository",
+    "imageArchivePath"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "decantr-benchmark-container-qualification-request.v1" },
+    "program": { "const": "decantr-3.10-ui-change-control-proof" },
+    "requestSha256": { "$ref": "#/$defs/sha256" },
+    "taskId": { "$ref": "#/$defs/taskId" },
+    "partition": { "enum": ["development", "qualification"] },
+    "bindings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["inputManifest", "candidate", "prequalificationBundle", "evaluator", "environment", "runtimeMatrix"],
+      "properties": {
+        "inputManifest": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "fileSha256", "manifestSha256"],
+          "properties": {
+            "path": { "$ref": "#/$defs/path" },
+            "fileSha256": { "$ref": "#/$defs/sha256" },
+            "manifestSha256": { "$ref": "#/$defs/sha256" }
+          }
+        },
+        "candidate": { "$ref": "#/$defs/fileBinding" },
+        "prequalificationBundle": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "fileSha256", "bundleSha256"],
+          "properties": {
+            "path": { "$ref": "#/$defs/path" },
+            "fileSha256": { "$ref": "#/$defs/sha256" },
+            "bundleSha256": { "$ref": "#/$defs/sha256" }
+          }
+        },
+        "evaluator": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "contractPath",
+            "contractFileSha256",
+            "contractId",
+            "sourceRoot",
+            "sourceClosure",
+            "projectPath"
+          ],
+          "properties": {
+            "contractPath": { "$ref": "#/$defs/path" },
+            "contractFileSha256": { "$ref": "#/$defs/sha256" },
+            "contractId": { "type": "string", "minLength": 3 },
+            "sourceRoot": { "$ref": "#/$defs/path" },
+            "sourceClosure": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["path", "sha256"],
+                "properties": {
+                  "path": { "$ref": "#/$defs/path" },
+                  "sha256": { "$ref": "#/$defs/sha256" }
+                }
+              }
+            },
+            "projectPath": { "$ref": "#/$defs/path" }
+          }
+        },
+        "environment": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["specPath", "specFileSha256"],
+          "properties": {
+            "specPath": { "$ref": "#/$defs/path" },
+            "specFileSha256": { "$ref": "#/$defs/sha256" }
+          }
+        },
+        "runtimeMatrix": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "fileSha256", "matrixSha256", "profileId"],
+          "properties": {
+            "path": { "$ref": "#/$defs/path" },
+            "fileSha256": { "$ref": "#/$defs/sha256" },
+            "matrixSha256": { "$ref": "#/$defs/sha256" },
+            "profileId": { "type": "string", "minLength": 3 }
+          }
+        }
+      }
+    },
+    "roles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["base", "expected"],
+      "properties": {
+        "base": { "$ref": "#/$defs/role" },
+        "expected": { "$ref": "#/$defs/role" }
+      }
+    },
+    "dependencyProxy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["image", "imageArchivePath"],
+      "properties": {
+        "image": { "$ref": "#/$defs/image" },
+        "imageArchivePath": { "oneOf": [{ "$ref": "#/$defs/path" }, { "type": "null" }] }
+      }
+    },
+    "runnerRepository": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commit"],
+      "properties": {
+        "commit": { "$ref": "#/$defs/gitSha" }
+      }
+    },
+    "imageArchivePath": { "oneOf": [{ "$ref": "#/$defs/path" }, { "type": "null" }] }
+  },
+  "$defs": {
+    "taskId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,95}$" },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "gitSha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "imageDigest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "path": { "type": "string", "minLength": 1 },
+    "fileBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "canonicalSha256", "fileSha256"],
+      "properties": {
+        "path": { "$ref": "#/$defs/path" },
+        "canonicalSha256": { "$ref": "#/$defs/sha256" },
+        "fileSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "image": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reference", "digest"],
+      "properties": {
+        "reference": { "type": "string", "minLength": 3 },
+        "digest": { "$ref": "#/$defs/imageDigest" }
+      }
+    },
+    "revision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commit", "tree"],
+      "properties": {
+        "commit": { "$ref": "#/$defs/gitSha" },
+        "tree": { "$ref": "#/$defs/gitSha" }
+      }
+    },
+    "role": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "snapshotPackPath",
+        "snapshotPackFileSha256",
+        "revision"
+      ],
+      "properties": {
+        "snapshotPackPath": { "$ref": "#/$defs/path" },
+        "snapshotPackFileSha256": { "$ref": "#/$defs/sha256" },
+        "revision": { "$ref": "#/$defs/revision" }
+      }
+    }
+  }
+}

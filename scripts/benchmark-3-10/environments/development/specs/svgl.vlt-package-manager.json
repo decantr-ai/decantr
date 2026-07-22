@@ -1,0 +1,68 @@
+{
+  "base": {
+    "commit": "283eaecd0a88cd89ac30226ea560f96a8cf0e9bc",
+    "tree": "9f69dd3eb2e72bbd07df57ce5de8438b4bce3eeb"
+  },
+  "cleanAfterPreparation": true,
+  "lockfiles": [
+    {
+      "path": "pnpm-lock.yaml",
+      "sha256": "6b66445b8183cb640327f293489fcebf6a07c625d5dfd109feb399d47ce48b41"
+    }
+  ],
+  "partition": "development",
+  "preparation": [
+    {
+      "args": [
+        "install",
+        "--frozen-lockfile"
+      ],
+      "cwd": ".",
+      "executable": "pnpm",
+      "id": "install-dependencies",
+      "network": "dependency-registry",
+      "required": true,
+      "timeoutMs": 7200000
+    }
+  ],
+  "profile": {
+    "arch": "x64",
+    "bunVersion": null,
+    "id": "node-22.17.0-pnpm-10.13.1",
+    "nodeVersion": "22.17.0",
+    "os": "linux",
+    "packageManager": {
+      "name": "pnpm",
+      "version": "10.13.1"
+    }
+  },
+  "projectPath": ".",
+  "review": {
+    "notes": "Frozen Dockerfile and package metadata pin exact Node 22.17.0 and pnpm 10.13.1; manifest and lockfile evidence were rehashed from the exact base commit.",
+    "reviewedAt": "2026-07-22T13:57:42.436Z",
+    "reviewedBy": "OpenAI Codex independent source-evidence reviewer",
+    "status": "approved"
+  },
+  "schemaVersion": "decantr-benchmark-task-environment.v1",
+  "sourceEvidence": [
+    {
+      "kind": "reviewer-override",
+      "path": "Dockerfile",
+      "sha256": "0d2859369c7c1e4db451c804ba8b1fc6709aed10892924004cf855619773ef05",
+      "statement": "Frozen Linux image pins Node 22.17.0, installs pnpm 10.13.1, and runs root pnpm install --frozen-lockfile."
+    },
+    {
+      "kind": "package-manifest",
+      "path": "package.json",
+      "sha256": "649bf13024802ab5c7c13f1c5312f7d0ac060162affa5edf3fbe3ede1ff86390",
+      "statement": "Root manifest independently pins pnpm 10.13.1."
+    },
+    {
+      "kind": "lockfile",
+      "path": "pnpm-lock.yaml",
+      "sha256": "6b66445b8183cb640327f293489fcebf6a07c625d5dfd109feb399d47ce48b41",
+      "statement": "Frozen root lockfileVersion 9 lock is bound for the Dockerfile's deterministic install command."
+    }
+  ],
+  "taskId": "svgl.vlt-package-manager"
+}

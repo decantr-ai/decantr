@@ -1,0 +1,133 @@
+name: Decantr 3.10 runtime profile probes
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: Optional exact profile ID to retry; empty probes the full matrix
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: benchmark-3-10-runtime-profiles-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  matrix:
+    name: Resolve public runtime matrix
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Enforce the trusted source identity
+        run: |
+          test "$GITHUB_REPOSITORY" = "decantr-ai/decantr"
+          test "$GITHUB_REF" = "refs/heads/main"
+          test "$GITHUB_EVENT_NAME" = "workflow_dispatch"
+          test "$RUNNER_ENVIRONMENT" = "github-hosted"
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.17.0
+          cache: ''
+      - id: profiles
+        env:
+          REQUESTED_PROFILE: ${{ inputs.profile }}
+        run: |
+          if [ -n "$REQUESTED_PROFILE" ]; then
+            value=$(node scripts/benchmark-3-10/environments/list-runtime-profiles.mjs --matrix scripts/benchmark-3-10/environments/runtime-matrix.draft.json --profile "$REQUESTED_PROFILE")
+          else
+            value=$(node scripts/benchmark-3-10/environments/list-runtime-profiles.mjs --matrix scripts/benchmark-3-10/environments/runtime-matrix.draft.json)
+          fi
+          echo "value=$value" >> "$GITHUB_OUTPUT"
+    outputs:
+      profiles: ${{ steps.profiles.outputs.value }}
+
+  probe:
+    name: Probe ${{ matrix.profile }}
+    needs: matrix
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    permissions:
+      attestations: write
+      contents: read
+      id-token: write
+      packages: write
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        profile: ${{ fromJSON(needs.matrix.outputs.profiles) }}
+    steps:
+      - name: Enforce the GitHub-hosted execution identity
+        run: |
+          test "$GITHUB_REPOSITORY" = "decantr-ai/decantr"
+          test "$GITHUB_REF" = "refs/heads/main"
+          test "$GITHUB_EVENT_NAME" = "workflow_dispatch"
+          test "$GITHUB_JOB" = "probe"
+          test "$RUNNER_ENVIRONMENT" = "github-hosted"
+          test "$RUNNER_OS" = "Linux"
+          test "$RUNNER_ARCH" = "X64"
+          test "$GITHUB_WORKFLOW_REF" = "$GITHUB_REPOSITORY/.github/workflows/benchmark-3-10-runtime-profiles.yml@$GITHUB_REF"
+          test "$GITHUB_WORKFLOW_SHA" = "$GITHUB_SHA"
+          test -n "$ImageOS"
+          test -n "$ImageVersion"
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.17.0
+          cache: ''
+      - name: Authenticate the trusted runtime publisher to GHCR
+        env:
+          GHCR_TOKEN: ${{ github.token }}
+        run: printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+      - name: Build and verify the immutable profile subject
+        env:
+          ARTIFACT_ROOT: ${{ runner.temp }}/runtime-profile-evidence
+          PROFILE_ID: ${{ matrix.profile }}
+        run: |
+          node scripts/benchmark-3-10/environments/build-runtime-profiles.mjs \
+            --profile "$PROFILE_ID" \
+            --verified-at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --out "$ARTIFACT_ROOT"
+      - name: Remove GHCR publisher credentials
+        if: always()
+        run: docker logout ghcr.io
+      - name: Create GitHub OIDC provenance for the exact build subject
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373
+        with:
+          subject-path: ${{ runner.temp }}/runtime-profile-evidence/${{ matrix.profile }}.subject.json
+      - name: Retain, verify, and bind offline provenance
+        env:
+          ARTIFACT_ROOT: ${{ runner.temp }}/runtime-profile-evidence
+          GH_TOKEN: ${{ github.token }}
+          PROFILE_ID: ${{ matrix.profile }}
+        run: |
+          SUBJECT="$ARTIFACT_ROOT/$PROFILE_ID.subject.json"
+          DOWNLOAD_ROOT="$RUNNER_TEMP/runtime-profile-provenance-download"
+          mkdir -p "$DOWNLOAD_ROOT"
+          cd "$DOWNLOAD_ROOT"
+          gh attestation download "$SUBJECT" \
+            --repo "$GITHUB_REPOSITORY" \
+            --predicate-type "https://slsa.dev/provenance/v1"
+          mapfile -t BUNDLES < <(find . -maxdepth 1 -type f -name 'sha256*.jsonl' -print)
+          test "${#BUNDLES[@]}" -eq 1
+          mv "${BUNDLES[0]}" "$ARTIFACT_ROOT/$PROFILE_ID.provenance.jsonl"
+          cd "$GITHUB_WORKSPACE"
+          rmdir "$DOWNLOAD_ROOT"
+          node scripts/benchmark-3-10/environments/runtime-profile-attestation.mjs \
+            --artifact-root "$ARTIFACT_ROOT" \
+            --profile "$PROFILE_ID"
+      - name: Upload retained runtime-profile evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: runtime-profile-${{ matrix.profile }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/runtime-profile-evidence
+          if-no-files-found: warn
+          retention-days: 30

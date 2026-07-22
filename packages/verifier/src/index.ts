@@ -141,6 +141,14 @@ export type {
 } from './discovery.js';
 export { discoverProject, evaluateDiscoveryReadiness } from './discovery.js';
 export type {
+  FrameworkRouteAuthority,
+  FrameworkRouteAuthorityInput,
+  FrameworkRouteAuthorityResult,
+  FrameworkRouteCompleteness,
+  FrameworkRouteSignalInput,
+} from './framework-adapters/index.js';
+export { assessFrameworkRouteAuthority } from './framework-adapters/index.js';
+export type {
   CreateGovernanceDeltaV1Input,
   GovernanceAnnotationCoordinatesV1,
   GovernanceArtifactIdentityV1,
@@ -236,6 +244,7 @@ export type {
   ProjectSourceLanguage,
   ProjectSourceProgram,
   ProjectSourceProgramOptions,
+  ProjectSourceScope,
   ResolveSourceSymbolOriginOptions,
   SourceImportKind,
   SourceImportReference,
@@ -251,12 +260,15 @@ export type {
   SourceSymbolOrigin,
 } from './source/index.js';
 export {
+  classifyProjectSourceScope,
   collectSourceImports,
   createProjectSourceProgram,
   createSourceInventory,
   extractSourceStringLiterals,
   getProjectSourceFile,
   isPathInsideProject,
+  isProductionAuthorityPath,
+  isProductionAuthorityScope,
   isSupportedSourceExtension,
   normalizeSourcePath,
   resolveSourceImport,
@@ -305,6 +317,35 @@ export {
   TASK_CAPSULE_V1_SCHEMA_URL,
   tokenEstimateV1,
 } from './task-capsule.js';
+export type {
+  DiscoverUIEvidenceAdaptersInput,
+  UIEvidenceAdapter,
+  UIEvidenceAdapterKind,
+  UIEvidenceAdapterStatus,
+  UIEvidenceAdapters,
+  UIEvidenceFile,
+  UIEvidenceFileRole,
+} from './ui-evidence-adapters.js';
+export { discoverUIEvidenceAdapters } from './ui-evidence-adapters.js';
+export type {
+  UISurfaceTaskContextV1,
+  UISurfaceTaskReadTarget,
+  UISurfaceTaskTargetKind,
+} from './ui-surface-task.js';
+export { resolveUISurfaceTaskContext } from './ui-surface-task.js';
+export type {
+  BuildUISurfaceDiscoveryInput,
+  UIAuthorityAxis,
+  UIAuthorityAxisStatus,
+  UIReadinessAxes,
+  UIReadinessStatus,
+  UISurfaceAuthority,
+  UISurfaceDiscovery,
+  UISurfaceItem,
+  UISurfaceKind,
+  UISurfaceTaskability,
+} from './ui-surfaces.js';
+export { buildUISurfaceDiscovery } from './ui-surfaces.js';
 
 export const VERIFICATION_SCHEMA_URLS = {
   adoptionTruth: 'https://decantr.ai/schemas/adoption-truth.v1.json',

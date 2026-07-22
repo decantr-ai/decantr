@@ -59,15 +59,18 @@ import {
   LOOP_READINESS_V2_SCHEMA_URL,
   PROJECT_HEALTH_REPORT_V2_SCHEMA_URL,
   type ProjectAuditReport,
+  type ProjectDiscovery,
   type ProjectHealthFinding,
   type ProjectHealthFindingSource,
   type ProjectHealthReport,
   type ProjectHealthStatus,
+  resolveUISurfaceTaskContext,
   TASK_CAPSULE_TOKEN_ESTIMATE_BYTES_PER_TOKEN,
   type TaskCapsuleAuthorityLane,
   type TaskCapsuleFindingV1,
   type TaskCapsuleOfficialGuidanceV1,
   type TaskCapsuleReadTargetV1,
+  type UISurfaceTaskContextV1,
   type VerificationFinding,
   type VerificationRepairAction,
   type VerificationSeverity,
@@ -298,8 +301,10 @@ function displayProjectFile(projectRoot: string, path: string | null | undefined
   return displayWorkspacePath(join(projectRoot, path));
 }
 
-function mcpDiscoverySummary(projectRoot: string) {
-  const discovery = discoverProject(projectRoot);
+function mcpDiscoverySummary(
+  projectRoot: string,
+  discovery: ProjectDiscovery = discoverProject(projectRoot),
+) {
   return {
     schema_version: 'discovery.v1',
     project_path: discovery.workspace.projectPath,
@@ -364,6 +369,76 @@ function mcpDiscoverySummary(projectRoot: string) {
     },
     confidence: discovery.confidence,
     limitations: discovery.limitations,
+  };
+}
+
+function mcpUISurfaceTaskContext(projectRoot: string, context: UISurfaceTaskContextV1) {
+  const mapSurface = (surface: UISurfaceTaskContextV1['surface']) =>
+    surface
+      ? {
+          ...surface,
+          files: surface.files.map((file) => mcpTaskWorkspacePath(projectRoot, file)),
+        }
+      : null;
+  const readTargets = context.read.map((target) => ({
+    ...target,
+    file: mcpTaskWorkspacePath(projectRoot, target.file),
+  }));
+
+  return {
+    schemaVersion: context.schemaVersion,
+    target: context.target,
+    status: context.status,
+    surface: mapSurface(context.surface),
+    candidates: context.candidates.map((candidate) => mapSurface(candidate)),
+    read: readTargets.map((target) => target.file),
+    readTargets,
+    authority: {
+      axes: context.axes,
+      reasons: context.reasons,
+    },
+  };
+}
+
+function mcpTaskDiscoverySummary(projectRoot: string, discovery: ProjectDiscovery) {
+  const summary = mcpDiscoverySummary(projectRoot, discovery);
+  return {
+    schema_version: summary.schema_version,
+    project_path: summary.project_path,
+    workspace_scope: summary.workspace_scope,
+    project: {
+      framework: summary.project.framework,
+      framework_version: summary.project.framework_version,
+      package_manager: summary.project.package_manager,
+      primary_language: summary.project.primary_language,
+      has_typescript: summary.project.has_typescript,
+      has_tailwind: summary.project.has_tailwind,
+      has_decantr: summary.project.has_decantr,
+      package_name: summary.project.package_name,
+    },
+    routes: {
+      strategy: summary.routes.strategy,
+      route_signal_count: summary.routes.route_signal_count,
+      taskable_route_count: summary.routes.taskable_route_count,
+      confidence: summary.routes.confidence,
+      authority: summary.routes.authority,
+      completeness: summary.routes.completeness,
+      authority_files: summary.routes.authority_files,
+      readiness: summary.routes.readiness,
+    },
+    components: {
+      component_count: summary.components.component_count,
+      page_count: summary.components.page_count,
+      confidence: summary.components.confidence,
+    },
+    styling: {
+      approach: summary.styling.approach,
+      confidence: summary.styling.confidence,
+      config_file: summary.styling.config_file,
+      dark_mode: summary.styling.dark_mode,
+    },
+    confidence: summary.confidence,
+    limitations: summary.limitations.slice(0, 6),
   };
 }
 
@@ -1089,16 +1164,12 @@ function changedFileForProject(projectRoot: string, gitRoot: string, file: strin
   return null;
 }
 
-function impactedRoutesForFiles(projectRoot: string, files: string[]): string[] {
-  const analysis = readJsonIfExists<{
-    routes?: { routes?: Array<{ path?: string; file?: string }> };
-  }>(join(projectRoot, '.decantr', 'analysis.json'));
-  const routeEntries = analysis?.routes?.routes ?? [];
+function impactedRoutesForFiles(discovery: ProjectDiscovery, files: string[]): string[] {
   const impacted = new Set<string>();
   for (const file of files) {
-    for (const route of routeEntries) {
-      if (route.file && (file === route.file || file.endsWith(route.file))) {
-        if (route.path) impacted.add(route.path);
+    for (const route of discovery.routes.taskableRoutes) {
+      if (file === route.file || file.endsWith(route.file)) {
+        impacted.add(route.path);
       }
     }
   }
@@ -1548,7 +1619,10 @@ function trimMcpTaskCompatibilityPayload(payload: Record<string, unknown>): numb
   const loop = payload.loop as
     | { maker?: { instructions?: unknown[] }; checker?: { instructions?: unknown[] } }
     | undefined;
-  const removable = [
+  const uiSurfaceTask = payload.ui_surface_task as
+    | { candidates?: unknown[]; read?: unknown[]; readTargets?: unknown[] }
+    | undefined;
+  const lowPriorityRemovable = [
     discovery?.project?.evidence,
     discovery?.routes?.taskable_routes,
     discovery?.routes?.signals,
@@ -1558,10 +1632,20 @@ function trimMcpTaskCompatibilityPayload(payload: Record<string, unknown>): numb
     discovery?.styling?.theme_signals,
     discovery?.assistant?.rule_files,
     discovery?.limitations,
-    payload.directives,
-    payload.patterns,
+    uiSurfaceTask?.candidates,
+    uiSurfaceTask?.read,
+    uiSurfaceTask?.readTargets,
     payload.ranked_patterns,
-    payload.shared_components,
+    typedGraph?.stale_sources,
+    typedGraph?.route_context?.nodes,
+    typedGraph?.route_context?.edges,
+    typedGraph?.changed_file_context?.impact?.ranked,
+    typedGraph?.changed_file_context?.impact?.nodes,
+    typedGraph?.changed_file_context?.impact?.edges,
+    loop?.maker?.instructions,
+    loop?.checker?.instructions,
+  ].filter((value): value is unknown[] => Array.isArray(value));
+  const lastResortRemovable = [
     localLaw?.patterns,
     localLaw?.behavior_obligations,
     localLaw?.rules,
@@ -1573,27 +1657,25 @@ function trimMcpTaskCompatibilityPayload(payload: Record<string, unknown>): numb
     health?.contract_drift,
     theme?.modes,
     theme?.variants,
-    typedGraph?.stale_sources,
+    payload.shared_components,
+    payload.patterns,
+    payload.directives,
     typedGraph?.route_context?.ranked,
-    typedGraph?.route_context?.nodes,
-    typedGraph?.route_context?.edges,
-    typedGraph?.changed_file_context?.impact?.ranked,
-    typedGraph?.changed_file_context?.impact?.nodes,
-    typedGraph?.changed_file_context?.impact?.edges,
-    loop?.maker?.instructions,
-    loop?.checker?.instructions,
   ].filter((value): value is unknown[] => Array.isArray(value));
 
-  let madeProgress = true;
-  while (canonicalUtf8Bytes(payload) > MCP_TASK_PAYLOAD_MAX_CANONICAL_BYTES && madeProgress) {
-    madeProgress = false;
-    for (const list of removable) {
-      if (list.length === 0) continue;
-      list.pop();
-      madeProgress = true;
+  const pruneLists = (lists: unknown[][]): void => {
+    for (const list of lists) {
+      while (
+        list.length > 0 &&
+        canonicalUtf8Bytes(payload) > MCP_TASK_PAYLOAD_MAX_CANONICAL_BYTES
+      ) {
+        list.pop();
+      }
       if (canonicalUtf8Bytes(payload) <= MCP_TASK_PAYLOAD_MAX_CANONICAL_BYTES) break;
     }
-  }
+  };
+
+  pruneLists(lowPriorityRemovable);
 
   for (const key of ['page_pack_excerpt', 'section_context'] as const) {
     while (
@@ -1604,6 +1686,7 @@ function trimMcpTaskCompatibilityPayload(payload: Record<string, unknown>): numb
       payload[key] = payload[key].slice(0, Math.max(256, Math.floor(payload[key].length / 2)));
     }
   }
+  pruneLists(lastResortRemovable);
   return canonicalUtf8Bytes(payload);
 }
 
@@ -2810,7 +2893,7 @@ function consolidatedTool(
         action: {
           type: 'string' as const,
           enum: consolidatedActionNames(name),
-          description: 'Action to run through this consolidated Decantr MCP tool.',
+          description: "Select one of this compatibility-stable tool's existing actions.",
         },
       },
       required: ['action'],
@@ -2823,50 +2906,50 @@ function consolidatedTool(
 export const TOOLS = [
   consolidatedTool(
     'decantr_project',
-    'Decantr Project',
-    'Read local project state and workspace health without uploading source.',
+    'Decantr Project Authority',
+    'Observe local project authority, selected-app discovery, adoption truth, and workspace health without uploading source.',
     READ_ONLY,
   ),
   consolidatedTool(
     'decantr_contract',
     'Decantr Contract',
-    'Read, validate, drift-check, generate, or summarize the active Decantr contract.',
+    'Read and validate the project-owned Decantr contract, inspect drift, or create a compatibility contract skeleton.',
     READ_ONLY_NETWORK,
   ),
   consolidatedTool(
     'decantr_context',
-    'Decantr Context',
-    'Read scaffold, section, page, task, and execution-pack context for agent work.',
+    'Decantr Task Context',
+    'Prepare discovery-backed UI surface task context, preserve authoritative route capsules, or read existing scaffold, section, page, and execution-pack context.',
     READ_ONLY_NETWORK,
   ),
   consolidatedTool(
     'decantr_graph',
-    'Decantr Graph',
-    'Read, query, and traverse local typed Contract graph artifacts.',
+    'Decantr Evidence Graph',
+    'Read, query, and traverse local graph and source evidence that supports route-scoped UI work.',
     READ_ONLY,
   ),
   consolidatedTool(
     'decantr_registry',
-    'Decantr Registry',
-    'Compatibility tool for searching the official Decantr content corpus, benchmark metadata, and execution packs.',
+    'Decantr Content Corpus (Compatibility)',
+    'Legacy-named compatibility access to the official Decantr content corpus, benchmark metadata, and execution packs; not a public registry.',
     READ_ONLY_NETWORK,
   ),
   consolidatedTool(
     'decantr_verify',
     'Decantr Verify',
-    'Run local verification reads, critique files, and return evidence or health findings.',
+    'Verify local UI diffs against available authority and return critique, findings, health state, and evidence bundles.',
     READ_ONLY_NETWORK,
   ),
   consolidatedTool(
     'decantr_repair',
     'Decantr Repair',
-    'Read typed findings, repair plans, repair prompts, and health-loop guidance.',
+    'Turn typed verification findings into scoped repair plans, prompts, and health-loop guidance.',
     READ_ONLY,
   ),
   consolidatedTool(
     'decantr_contract_write',
     'Decantr Contract Write',
-    'Explicit write surface for accepting drift or mutating Essence v4 inside the workspace.',
+    'Explicit workspace-contained write surface for accepting drift or updating the Essence v4 contract.',
     WRITE_TOOL,
   ),
 ];
@@ -4689,76 +4772,173 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
         typeof args.project_path === 'string' && args.project_path.trim()
           ? args.project_path.trim()
           : null;
-      const routeArg = typeof args.route === 'string' ? args.route : undefined;
-      const pageArg = typeof args.page_id === 'string' ? args.page_id : undefined;
+      const targetArg =
+        typeof args.target === 'string' && args.target.trim() ? args.target.trim() : undefined;
+      const routeArg =
+        typeof args.route === 'string' && args.route.trim() ? args.route.trim() : undefined;
+      const pageArg =
+        typeof args.page_id === 'string' && args.page_id.trim() ? args.page_id.trim() : undefined;
       const task = typeof args.task === 'string' ? args.task : '';
       const detail = args.detail === 'full' ? 'full' : 'compact';
-      if (!routeArg && !pageArg) {
-        return { error: 'Provide route or page_id.' };
+      if (!targetArg && !routeArg && !pageArg) {
+        return { error: 'Provide target, route, or page_id.' };
       }
-
-      let essence: EssenceFile;
-      try {
-        const result = await readEssenceFile(join(projectRoot, 'decantr.essence.json'));
-        essence = result.essence;
-      } catch {
-        return { error: 'No valid essence file found. Run decantr init first.' };
-      }
-      if (!isV4(essence)) {
+      if (targetArg && (routeArg || pageArg)) {
         return {
-          error: 'Task context requires Essence v4.0.0. Run `decantr migrate --to v4` first.',
+          error:
+            'Provide target by itself, or use the compatibility route/page_id selectors without target.',
         };
       }
 
-      const routeEntry = routeArg ? essence.blueprint.routes?.[routeArg] : null;
+      const essencePath = join(projectRoot, 'decantr.essence.json');
+      let essence: EssenceV4 | null = null;
+      if (existsSync(essencePath)) {
+        try {
+          const result = await readEssenceFile(essencePath);
+          if (!isV4(result.essence)) {
+            return {
+              error: 'Task context requires Essence v4.0.0. Run `decantr migrate --to v4` first.',
+            };
+          }
+          essence = result.essence;
+        } catch {
+          return {
+            error:
+              'The existing decantr.essence.json is invalid. Repair it before requesting task context.',
+          };
+        }
+      }
+
+      let targetInput = targetArg ?? routeArg;
+      if (!targetInput && pageArg) {
+        if (!essence) {
+          return {
+            error:
+              'page_id compatibility lookup requires Essence v4. Use target for discovery-backed UI surface context.',
+          };
+        }
+        const matchingRoutes = Object.entries(essence.blueprint.routes ?? {})
+          .filter(([, entry]) => entry.page === pageArg)
+          .map(([route]) => route)
+          .sort();
+        if (matchingRoutes.length !== 1) {
+          return {
+            error:
+              matchingRoutes.length === 0
+                ? `Could not resolve page_id "${pageArg}" to an Essence route.`
+                : `page_id "${pageArg}" resolves to multiple Essence routes. Provide route instead.`,
+            available_routes: matchingRoutes,
+          };
+        }
+        [targetInput] = matchingRoutes;
+      }
+
+      const liveDiscovery = discoverProject(projectRoot);
+      const surfaceTask = resolveUISurfaceTaskContext(liveDiscovery, targetInput ?? '');
+      const mappedSurfaceTask = mcpUISurfaceTaskContext(projectRoot, surfaceTask);
+      const surface = surfaceTask.surface;
+      const provenSource =
+        surface?.authority === 'production-proven' || surface?.authority === 'project-reference';
+      const hasImplementationRead = surfaceTask.read.some(
+        (entry) => entry.role === 'implementation' && existsSync(join(projectRoot, entry.file)),
+      );
+      const targetIsBlocked =
+        surfaceTask.status === 'blocked' ||
+        surfaceTask.status === 'unsupported' ||
+        !surface ||
+        !provenSource ||
+        surface.taskability === 'blocked' ||
+        surface.taskability === 'not_applicable' ||
+        !hasImplementationRead;
+      if (targetIsBlocked) {
+        const routeSelector = Boolean(targetInput?.startsWith('/'));
+        const code =
+          surfaceTask.candidates.length > 1
+            ? 'UI_SURFACE_TARGET_AMBIGUOUS'
+            : routeSelector
+              ? 'DISCOVERY_NOT_PROVEN'
+              : surfaceTask.status === 'unsupported'
+                ? 'UI_SURFACE_UNSUPPORTED'
+                : surface
+                  ? 'UI_SURFACE_AUTHORITY_NOT_PROVEN'
+                  : 'UI_SURFACE_TARGET_UNKNOWN';
+        return {
+          error: routeSelector
+            ? `Route-scoped task context is not proven for ${targetInput}.`
+            : `UI surface task context is not proven for ${targetInput ?? '(empty target)'}.`,
+          code,
+          mode: 'discovery',
+          ...mappedSurfaceTask,
+          discovery: mcpDiscoverySummary(projectRoot, liveDiscovery),
+          ...(routeSelector
+            ? {
+                route: targetInput,
+                readiness: evaluateDiscoveryReadiness(liveDiscovery),
+                route_authority: liveDiscovery.routes.authority,
+                route_completeness: liveDiscovery.routes.completeness,
+                authority_files: liveDiscovery.routes.authorityFiles,
+                limitations: liveDiscovery.routes.limitations,
+              }
+            : {}),
+        };
+      }
+
+      const projectJson = readJsonIfExists<{
+        initialized?: { workflowMode?: string; adoptionMode?: string };
+      }>(join(projectRoot, '.decantr', 'project.json'));
+      const workflowMode = projectJson?.initialized?.workflowMode;
+      const verifyCommand = !essence
+        ? projectArg
+          ? `decantr scan --project ${projectArg} --json`
+          : 'decantr scan --json'
+        : workflowMode?.startsWith('greenfield')
+          ? projectArg
+            ? `decantr verify --project ${projectArg}`
+            : 'decantr verify'
+          : workflowMode === 'hybrid-compose'
+            ? projectArg
+              ? `decantr verify --project ${projectArg} --local-patterns`
+              : 'decantr verify --local-patterns'
+            : projectArg
+              ? `decantr verify --project ${projectArg} --brownfield --local-patterns`
+              : 'decantr verify --brownfield --local-patterns';
+      const discoveryTaskResponse = {
+        ...mappedSurfaceTask,
+        mode: 'discovery' as const,
+        task: task || null,
+        discovery: mcpDiscoverySummary(projectRoot, liveDiscovery),
+        stopConditions: [
+          'The selected surface no longer resolves to production or project-reference source.',
+          'Runtime behavior contradicts the static authority evidence.',
+          'The requested change requires files outside the bounded read set.',
+        ],
+        verify_command: verifyCommand,
+      };
+      if (!essence || surface.kind !== 'route') {
+        return discoveryTaskResponse;
+      }
+
+      const resolvedRoute = surface.name;
+      const routeEntry = essence.blueprint.routes?.[resolvedRoute] ?? null;
       const sectionId = routeEntry?.section;
-      const pageId = pageArg || routeEntry?.page;
+      const pageId = pageArg ?? routeEntry?.page;
       const section = sectionId
         ? essence.blueprint.sections.find((entry) => entry.id === sectionId)
         : essence.blueprint.sections.find((entry) =>
             entry.pages.some((page) => page.id === pageId),
           );
       const page = section?.pages.find((entry) => entry.id === pageId) ?? null;
-      if (!section || !page || !pageId) {
+      if (!routeEntry || !section || !page || !pageId || routeEntry.page !== pageId) {
         return {
-          error: 'Could not resolve route/page to an Essence section page.',
+          error:
+            'Live UI surface authority does not resolve to the requested Essence section page.',
+          code: 'ESSENCE_TARGET_MISMATCH',
+          target: resolvedRoute,
           available_routes: Object.keys(essence.blueprint.routes ?? {}).sort(),
           available_pages: essence.blueprint.sections.flatMap((entry) =>
             entry.pages.map((pageEntry) => ({ section_id: entry.id, page_id: pageEntry.id })),
           ),
         };
-      }
-      const resolvedRoute =
-        routeArg ??
-        (typeof (page as { route?: unknown }).route === 'string'
-          ? (page as { route: string }).route
-          : Object.entries(essence.blueprint.routes ?? {}).find(
-              ([, entry]) => entry.section === section.id && entry.page === pageId,
-            )?.[0]) ??
-        null;
-
-      const projectJson = readJsonIfExists<{
-        initialized?: { workflowMode?: string; adoptionMode?: string };
-      }>(join(projectRoot, '.decantr', 'project.json'));
-      const brownfieldTask = projectJson?.initialized?.workflowMode === 'brownfield-attach';
-      const liveDiscovery = brownfieldTask ? discoverProject(projectRoot) : null;
-      if (liveDiscovery?.project.framework === 'angular' && resolvedRoute) {
-        const readiness = evaluateDiscoveryReadiness(liveDiscovery);
-        const authoritativeRoute = liveDiscovery.routes.taskableRoutes.find(
-          (entry) => entry.path === resolvedRoute,
-        );
-        if (readiness.routeScopedContext !== 'ready' || !authoritativeRoute) {
-          return {
-            error: `Route-scoped task context is not proven for ${resolvedRoute}.`,
-            code: 'DISCOVERY_NOT_PROVEN',
-            route: resolvedRoute,
-            readiness,
-            route_authority: liveDiscovery.routes.authority,
-            route_completeness: liveDiscovery.routes.completeness,
-            authority_files: liveDiscovery.routes.authorityFiles,
-            limitations: liveDiscovery.routes.limitations,
-          };
-        }
       }
 
       const contextDir = join(projectRoot, '.decantr', 'context');
@@ -4817,44 +4997,18 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
         path: displayProjectFile(projectRoot, styleBridge.path),
       };
       const changedFiles = changedFilesForTask(projectRoot);
-      const changedRoutes = impactedRoutesForFiles(projectRoot, changedFiles);
-      const analysis = readJsonIfExists<{
-        routes?: { routes?: Array<{ path?: string; file?: string }> };
-      }>(join(projectRoot, '.decantr', 'analysis.json'));
-      let routeSourceFile =
-        liveDiscovery?.routes.taskableRoutes.find((entry) => entry.path === resolvedRoute)?.file ??
-        null;
-      if (!routeSourceFile) {
-        routeSourceFile = analysis?.routes?.routes?.find(
-          (entry) => entry.path === resolvedRoute,
-        )?.file;
-      }
-      if (!routeSourceFile && resolvedRoute) {
-        const discovery = discoverProject(projectRoot);
-        routeSourceFile = discovery.routes.taskableRoutes.find(
-          (entry) => entry.path === resolvedRoute,
-        )?.file;
-      }
-      if (!routeSourceFile && resolvedRoute === '/') {
-        routeSourceFile = [
-          'src/App.tsx',
-          'src/App.jsx',
-          'src/App.vue',
-          'src/App.svelte',
-          'src/app/page.tsx',
-          'src/app/page.jsx',
-          'app/page.tsx',
-          'app/page.jsx',
-          'pages/index.tsx',
-          'pages/index.jsx',
-          'src/pages/index.tsx',
-          'src/pages/index.jsx',
-        ].find((candidate) => existsSync(join(projectRoot, candidate)));
-      }
+      const changedRoutes = impactedRoutesForFiles(liveDiscovery, changedFiles);
+      const routeSourceFile =
+        surfaceTask.read.find((entry) => entry.role === 'implementation')?.file ?? null;
       const patternIds = extractPagePatternIds(page);
       const ranked = rankPatternCandidates(
         {
-          query: [task, routeArg, (page as { description?: string }).description, ...patternIds]
+          query: [
+            task,
+            resolvedRoute,
+            (page as { description?: string }).description,
+            ...patternIds,
+          ]
             .filter(Boolean)
             .join(' '),
           limit: 5,
@@ -4862,22 +5016,11 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
         patternIds.map((id) => patternToDiscoveryCandidate({ id, name: id, description: id })),
       );
       const typedGraph = buildTaskTypedGraphContext(projectRoot, resolvedRoute, task, changedFiles);
-      const workflowMode = projectJson?.initialized?.workflowMode;
-      const verifyCommand = workflowMode?.startsWith('greenfield')
-        ? projectArg
-          ? `decantr verify --project ${projectArg}`
-          : 'decantr verify'
-        : workflowMode === 'hybrid-compose'
-          ? projectArg
-            ? `decantr verify --project ${projectArg} --local-patterns`
-            : 'decantr verify --local-patterns'
-          : projectArg
-            ? `decantr verify --project ${projectArg} --brownfield --local-patterns`
-            : 'decantr verify --brownfield --local-patterns';
       const graphReady = Boolean(typedGraph?.route_context) && typedGraph?.current === true;
       if (!routeSourceFile || !existsSync(join(projectRoot, routeSourceFile))) {
         return {
-          error: `Could not prove the implementation source for ${resolvedRoute ?? pageId}. Run decantr scan and decantr graph, then retry.`,
+          error: `Could not prove the implementation source for ${resolvedRoute}. Run decantr scan, then retry.`,
+          code: 'UI_SURFACE_AUTHORITY_NOT_PROVEN',
         };
       }
       const selectedAppRoot = relative(process.cwd(), projectRoot).replace(/\\/g, '/') || '.';
@@ -5214,7 +5357,24 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
           .update(canonicalJsonStringify(capsule), 'utf8')
           .digest('hex')}`,
         response_detail: detail,
-        discovery: mcpDiscoverySummary(projectRoot),
+        discovery: mcpTaskDiscoverySummary(projectRoot, liveDiscovery),
+        ui_surface_task: {
+          schemaVersion: mappedSurfaceTask.schemaVersion,
+          target: mappedSurfaceTask.target,
+          status: mappedSurfaceTask.status,
+          surface: mappedSurfaceTask.surface
+            ? {
+                id: mappedSurfaceTask.surface.id,
+                kind: mappedSurfaceTask.surface.kind,
+                name: mappedSurfaceTask.surface.name,
+                files: mappedSurfaceTask.surface.files,
+                authority: mappedSurfaceTask.surface.authority,
+                taskability: mappedSurfaceTask.surface.taskability,
+                confidence: mappedSurfaceTask.surface.confidence,
+              }
+            : null,
+          authority: { reasons: mappedSurfaceTask.authority.reasons },
+        },
         route: resolvedRoute,
         page_id: pageId,
         section_id: section.id,

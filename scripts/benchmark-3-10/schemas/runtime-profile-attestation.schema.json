@@ -1,0 +1,243 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/benchmark-3-10/runtime-profile-attestation.v2.json",
+  "title": "Decantr 3.10 runtime profile provenance attestation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "subject", "provenance", "attestationSha256"],
+  "properties": {
+    "schemaVersion": { "const": "decantr-benchmark-runtime-profile-attestation.v2" },
+    "subject": { "$ref": "#/$defs/buildSubject" },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy",
+        "subjectFile",
+        "bundleFile",
+        "verificationFile",
+        "verificationSha256"
+      ],
+      "properties": {
+        "policy": { "$ref": "#/$defs/provenancePolicy" },
+        "subjectFile": { "$ref": "#/$defs/artifactFileBinding" },
+        "bundleFile": { "$ref": "#/$defs/artifactFileBinding" },
+        "verificationFile": { "$ref": "#/$defs/artifactFileBinding" },
+        "verificationSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "attestationSha256": { "$ref": "#/$defs/sha256" }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "gitCommit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "imageDigest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "image": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reference", "digest"],
+      "properties": {
+        "reference": { "type": "string", "minLength": 1 },
+        "digest": { "$ref": "#/$defs/imageDigest" }
+      }
+    },
+    "benchmarkImage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reference", "digest"],
+      "properties": {
+        "reference": {
+          "type": "string",
+          "pattern": "^ghcr\\.io/decantr-ai/decantr-benchmark-3-10:(?:node|bun)-[0-9]+\\.[0-9]+\\.[0-9]+-(?:npm|pnpm|yarn|bun)-[0-9]+\\.[0-9]+\\.[0-9]+@sha256:[a-f0-9]{64}$"
+        },
+        "digest": { "$ref": "#/$defs/imageDigest" }
+      }
+    },
+    "controller": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["image", "nodeVersion", "codexVersion", "claudeCodeVersion"],
+      "properties": {
+        "image": {
+          "allOf": [
+            { "$ref": "#/$defs/image" },
+            { "properties": { "reference": { "const": "node:22.17.0-bookworm-slim" } } }
+          ]
+        },
+        "nodeVersion": { "type": "string", "pattern": "^v?22\\.17\\.0$" },
+        "codexVersion": { "const": "0.145.0-alpha.27" },
+        "claudeCodeVersion": { "const": "2.1.153" }
+      }
+    },
+    "closurePart": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["roots", "fileCount", "filesSha256"],
+      "properties": {
+        "roots": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "fileCount": { "type": "integer", "minimum": 1 },
+        "filesSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "sourceClosure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "repositoryCommit",
+        "policy",
+        "buildContext",
+        "controller",
+        "sourceClosureSha256"
+      ],
+      "properties": {
+        "schemaVersion": { "const": "decantr-benchmark-runtime-source-closure.v1" },
+        "repositoryCommit": { "$ref": "#/$defs/gitCommit" },
+        "policy": { "const": "exact-clean-git-files-v1" },
+        "buildContext": { "$ref": "#/$defs/closurePart" },
+        "controller": { "$ref": "#/$defs/closurePart" },
+        "sourceClosureSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "executionIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "workflow",
+        "workflowRef",
+        "workflowSha",
+        "sourceCommit",
+        "sourceRef",
+        "runId",
+        "runAttempt",
+        "job",
+        "eventName",
+        "runnerEnvironment",
+        "runnerOs",
+        "runnerArch",
+        "runnerImage",
+        "runnerImageVersion"
+      ],
+      "properties": {
+        "repository": { "const": "decantr-ai/decantr" },
+        "workflow": {
+          "const": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml"
+        },
+        "workflowRef": {
+          "const": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml@refs/heads/main"
+        },
+        "workflowSha": { "$ref": "#/$defs/gitCommit" },
+        "sourceCommit": { "$ref": "#/$defs/gitCommit" },
+        "sourceRef": { "const": "refs/heads/main" },
+        "runId": { "type": "string", "pattern": "^[1-9][0-9]*$" },
+        "runAttempt": { "type": "string", "pattern": "^[1-9][0-9]*$" },
+        "job": { "const": "probe" },
+        "eventName": { "const": "workflow_dispatch" },
+        "runnerEnvironment": { "const": "github-hosted" },
+        "runnerOs": { "const": "Linux" },
+        "runnerArch": { "const": "X64" },
+        "runnerImage": { "type": "string", "minLength": 1 },
+        "runnerImageVersion": { "type": "string", "minLength": 1 }
+      }
+    },
+    "buildSubject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "profileId",
+        "profileSha256",
+        "matrix",
+        "baseImage",
+        "benchmarkImage",
+        "runtimeKind",
+        "runtimeVersion",
+        "packageManagerName",
+        "packageManagerVersion",
+        "controller",
+        "browserSmokePassed",
+        "verifiedAt",
+        "host",
+        "source",
+        "execution",
+        "subjectSha256"
+      ],
+      "properties": {
+        "schemaVersion": { "const": "decantr-benchmark-runtime-profile-build-subject.v1" },
+        "profileId": { "type": "string", "minLength": 1 },
+        "profileSha256": { "$ref": "#/$defs/sha256" },
+        "matrix": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["draftSha256", "sourceSpecSetSha256"],
+          "properties": {
+            "draftSha256": { "$ref": "#/$defs/sha256" },
+            "sourceSpecSetSha256": { "$ref": "#/$defs/sha256" }
+          }
+        },
+        "baseImage": { "$ref": "#/$defs/image" },
+        "benchmarkImage": { "$ref": "#/$defs/benchmarkImage" },
+        "runtimeKind": { "enum": ["node", "bun"] },
+        "runtimeVersion": { "$ref": "#/$defs/version" },
+        "packageManagerName": { "enum": ["npm", "pnpm", "yarn", "bun"] },
+        "packageManagerVersion": { "$ref": "#/$defs/version" },
+        "controller": { "$ref": "#/$defs/controller" },
+        "browserSmokePassed": { "const": true },
+        "verifiedAt": { "type": "string", "format": "date-time" },
+        "host": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["os", "arch"],
+          "properties": {
+            "os": { "const": "linux" },
+            "arch": { "const": "x64" }
+          }
+        },
+        "source": { "$ref": "#/$defs/sourceClosure" },
+        "execution": { "$ref": "#/$defs/executionIdentity" },
+        "subjectSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "provenancePolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "signerWorkflow",
+        "signerDigest",
+        "sourceDigest",
+        "sourceRef",
+        "predicateType",
+        "denySelfHostedRunners"
+      ],
+      "properties": {
+        "repository": { "const": "decantr-ai/decantr" },
+        "signerWorkflow": {
+          "const": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml"
+        },
+        "signerDigest": { "$ref": "#/$defs/gitCommit" },
+        "sourceDigest": { "$ref": "#/$defs/gitCommit" },
+        "sourceRef": { "const": "refs/heads/main" },
+        "predicateType": { "const": "https://slsa.dev/provenance/v1" },
+        "denySelfHostedRunners": { "const": true }
+      }
+    },
+    "artifactFileBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "bytes"],
+      "properties": {
+        "path": { "type": "string", "pattern": "^[a-z0-9.-]+$" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "bytes": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

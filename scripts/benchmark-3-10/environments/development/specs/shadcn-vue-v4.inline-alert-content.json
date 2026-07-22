@@ -1,0 +1,74 @@
+{
+  "base": {
+    "commit": "0008d4848b845a5a2324c78f135239ce6e3739b6",
+    "tree": "7ac06e06f7c3c192fcbfd4db9f6888f924196abb"
+  },
+  "cleanAfterPreparation": true,
+  "lockfiles": [
+    {
+      "path": "pnpm-lock.yaml",
+      "sha256": "0ff47a1140fcaec2da5aee09eca077932c95d49094d8a005baa6e8a7bf43cc6e"
+    }
+  ],
+  "partition": "development",
+  "preparation": [
+    {
+      "args": [
+        "install",
+        "--frozen-lockfile"
+      ],
+      "cwd": ".",
+      "executable": "pnpm",
+      "id": "install-dependencies",
+      "network": "dependency-registry",
+      "required": true,
+      "timeoutMs": 7200000
+    }
+  ],
+  "profile": {
+    "arch": "x64",
+    "bunVersion": null,
+    "id": "node-22.19.0-pnpm-10.25.0",
+    "nodeVersion": "22.19.0",
+    "os": "linux",
+    "packageManager": {
+      "name": "pnpm",
+      "version": "10.25.0"
+    }
+  },
+  "projectPath": "apps/v4",
+  "review": {
+    "notes": "Independent source-evidence re-review verified 4 frozen Git blobs and exact SHA-256 values at 0008d4848b845a5a2324c78f135239ce6e3739b6. Independent review confirms pnpm 10.25.0, the root workspace lock, root install cwd, and Ubuntu pnpm install evidence. The workflows never select Node, and no runtime file or engines field authenticates candidate Node 22.19.0; an exact Linux x64 Node 22.19.0 preparation probe is required before approval.",
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "status": "draft"
+  },
+  "schemaVersion": "decantr-benchmark-task-environment.v1",
+  "sourceEvidence": [
+    {
+      "kind": "reviewer-override",
+      "path": ".github/workflows/pkg.pr.new.yaml",
+      "sha256": "432c4f14bee7aa9f33e131ceced4c71c0c9d4879ce564fd661762dd30a52caac",
+      "statement": "Frozen Ubuntu workflow sets up pnpm from packageManager and installs at the repository root, but does not select Node."
+    },
+    {
+      "kind": "package-manifest",
+      "path": "apps/v4/package.json",
+      "sha256": "e4362abecacdf523a6241ce20c4c04265ac2f1ae49f5e379746fa3f54deaa79e",
+      "statement": "Target app manifest contributes postinstall Nuxt preparation but no independent runtime or package-manager pin."
+    },
+    {
+      "kind": "package-manifest",
+      "path": "package.json",
+      "sha256": "8e2fe704e138e57e77e27035b0debec17118addae8ea53529bd40e43ddaf0d7c",
+      "statement": "Root manifest pins pnpm 10.25.0 and routes build and development commands to the apps/v4 workspace."
+    },
+    {
+      "kind": "lockfile",
+      "path": "pnpm-lock.yaml",
+      "sha256": "0ff47a1140fcaec2da5aee09eca077932c95d49094d8a005baa6e8a7bf43cc6e",
+      "statement": "Frozen root workspace lock is bound for deterministic pnpm install --frozen-lockfile preparation."
+    }
+  ],
+  "taskId": "shadcn-vue-v4.inline-alert-content"
+}

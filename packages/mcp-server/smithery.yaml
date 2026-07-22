@@ -1,6 +1,8 @@
 # Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
 #
-# Decantr MCP server runs via stdio and requires no configuration.
+# This directory entry runs the published Decantr 3.9.4 stdio server with no configuration.
+# Stable task preparation is attached-route-backed; target-based non-route discovery remains
+# an unreleased 3.10 candidate and is not claimed by this entry.
 # Smithery auto-indexes this file when the repo is claimed.
 
 startCommand:
@@ -12,6 +14,6 @@ startCommand:
     |-
     (config) => ({
       command: 'npx',
-      args: ['-y', '@decantr/mcp-server@latest'],
+      args: ['-y', '@decantr/mcp-server@3.9.4'],
       env: {}
     })

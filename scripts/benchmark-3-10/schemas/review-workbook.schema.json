@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/benchmark-3-10/review-workbook.v1.json",
+  "title": "Decantr 3.10 blinded review workbook",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "blinded", "assignmentsSha256", "reviewers", "reviews", "adjudications"],
+  "properties": {
+    "schemaVersion": { "const": "decantr-benchmark-review-workbook.v1" },
+    "blinded": { "const": true },
+    "assignmentsSha256": { "$ref": "#/$defs/sha256" },
+    "reviewers": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^reviewer-[a-z0-9._-]+$" }
+    },
+    "reviews": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["assignmentId", "reviewerId", "scores", "preference", "completedAt"],
+        "properties": {
+          "assignmentId": { "type": "string", "minLength": 1 },
+          "reviewerId": { "type": "string", "minLength": 1 },
+          "scores": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["A", "B"],
+            "properties": {
+              "A": { "type": "number", "minimum": 0, "maximum": 100 },
+              "B": { "type": "number", "minimum": 0, "maximum": 100 }
+            }
+          },
+          "preference": { "enum": ["A", "B", "tie"] },
+          "completedAt": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    "adjudications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["assignmentId", "adjudicatorId", "preference", "reason", "completedAt"],
+        "properties": {
+          "assignmentId": { "type": "string", "minLength": 1 },
+          "adjudicatorId": { "type": "string", "minLength": 1 },
+          "preference": { "enum": ["A", "B", "tie"] },
+          "reason": { "type": "string", "minLength": 1 },
+          "completedAt": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  }
+}

@@ -346,7 +346,8 @@
 │  │                                                       │          │
 │  └───────────────────────────────────────────────────────┘          │
 │                                                                     │
-│  After init, the essence file IS the source of truth.               │
+│  After Greenfield init, Essence is accepted structural law.         │
+│  In Brownfield, production source remains first authority.          │
 │  The cascade only matters at scaffold time.                         │
 └─────────────────────────────────────────────────────────────────────┘
 

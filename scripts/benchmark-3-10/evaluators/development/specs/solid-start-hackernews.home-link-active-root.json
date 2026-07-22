@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "decantr-benchmark-evaluator-authoring-spec.v2",
+  "taskId": "solid-start-hackernews.home-link-active-root",
+  "contractId": "solid-start-hackernews.home-link-active-root.v1",
+  "review": {
+    "status": "approved",
+    "reviewedBy": "independent-runtime-evaluator-review-ui-b",
+    "reviewedAt": "2026-07-22T13:09:56Z",
+    "notes": "Approved from exact frozen commits 431feefd1be365ba45c034da7c9b33616108bc66 and 0ac15a2562fb8a20c452d2c39523eb0c9f1a0c51 under Node 20.5.0/pnpm 8.6.12 with Playwright 1.61.1 and Axe 4.12.1. The production navigation rendered inside the installed Solid Router fails 4/9 checks on base and passes 9/9 on expected, covering exclusive active and aria-current state on every discovered route, root-only Home state, mouse and keyboard navigation, visible ordered focus, back/forward history, Axe, and runtime errors without source-shape matching. The linked @solidjs/start package build/typecheck and Hacker News production build pass both revisions."
+  },
+  "oracle": {
+    "candidateIndependent": true,
+    "decantrOutputAllowed": false,
+    "sourcePath": "sources/solid-start-hackernews.home-link-active-root.mjs"
+  },
+  "commands": [
+    {
+      "id": "behavior",
+      "kind": "functional",
+      "runtime": "controller",
+      "executable": "node",
+      "args": [
+        "${EVALUATOR_ROOT}/sources/solid-start-hackernews.home-link-active-root.mjs",
+        "--workspace",
+        "${WORKSPACE}",
+        "--project-path",
+        "${PROJECT_PATH}",
+        "--evaluator-runtime",
+        "${EVALUATOR_RUNTIME}"
+      ],
+      "cwd": "${EVALUATOR_ROOT}",
+      "timeoutMs": 120000,
+      "required": true,
+      "resultFormat": "json-stdout"
+    },
+    {
+      "id": "host-framework-build",
+      "kind": "build",
+      "runtime": "task",
+      "executable": "pnpm",
+      "args": [
+        "--filter",
+        "@solidjs/start",
+        "build"
+      ],
+      "cwd": "${WORKSPACE}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    },
+    {
+      "id": "host-build",
+      "kind": "build",
+      "runtime": "task",
+      "executable": "pnpm",
+      "args": [
+        "--filter",
+        "example-hackernews",
+        "build"
+      ],
+      "cwd": "${WORKSPACE}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    }
+  ],
+  "limits": {
+    "timeoutMs": 5400000,
+    "maxRequests": 40,
+    "maxInputTokens": 800000,
+    "maxOutputTokens": 100000
+  }
+}

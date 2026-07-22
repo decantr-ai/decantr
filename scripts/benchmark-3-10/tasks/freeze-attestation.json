@@ -1,0 +1,26 @@
+{
+  "counts": {
+    "adversarial": 12,
+    "development": 24,
+    "qualification": 16,
+    "repository": 28,
+    "total": 40
+  },
+  "developmentSha256": "0793835e3e31152f9c7a9fda56155ab2a1398e896975d3cd6dc6577ad56409ec",
+  "frozenAt": "2026-07-22T11:29:02Z",
+  "gitLineagesVerified": 40,
+  "limitations": [
+    "Repository identities were observed during development; this is task-sealed, not repository-blind.",
+    "Evaluator implementations and expected patches remain required before runnable manifests can be frozen."
+  ],
+  "modelKnowledgeCutoffs": {
+    "claude-fable-5": "2026-01-31T23:59:59Z",
+    "gpt-5.6-sol": "2026-02-16T23:59:59Z"
+  },
+  "passed": true,
+  "program": "decantr-3.10-ui-change-control-proof",
+  "publicQualificationIndexSha256": "587e043f087cc97777a5f5560c3ba67c7ebe0e0f757e7d49186d90aeb3987e6d",
+  "qualificationBundleSha256": "f36b0bf143e2d1d9811ae87f52498c91a866605bd0ffb104aaef1e2364b902d7",
+  "qualificationEmbargoCutoff": "2026-05-01T23:59:59Z",
+  "schemaVersion": "decantr-benchmark-public-task-freeze-attestation.v1"
+}

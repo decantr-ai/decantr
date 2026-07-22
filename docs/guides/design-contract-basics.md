@@ -4,7 +4,7 @@ Decantr is an AI Frontend Governance layer for codebases touched by AI agents. I
 
 ## The Core Files
 
-- `decantr.essence.json`: the source of truth for theme, sections, routes, features, guard rules, and platform intent.
+- `decantr.essence.json`: accepted project law for intended theme, sections, routes, features, guard rules, and platform intent. In Brownfield, production source and runtime configuration remain first authority; contract conflicts stay visible.
 - `DECANTR.md`: the assistant-facing method and implementation guidance.
 - `.decantr/context/scaffold.md`: the app-level contract.
 - `.decantr/context/section-*.md`: section and page-level contracts.

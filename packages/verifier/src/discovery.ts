@@ -9,6 +9,14 @@ import {
   discoverAngularApplication,
   discoverAngularProjectContext,
 } from './angular-discovery.js';
+import { assessFrameworkRouteAuthority } from './framework-adapters/index.js';
+import { isProductionAuthorityPath } from './source/scope.js';
+import {
+  buildUISurfaceDiscovery,
+  type UIReadinessAxes,
+  type UIReadinessStatus,
+  type UISurfaceDiscovery,
+} from './ui-surfaces.js';
 
 export type DiscoveryConfidenceLevel = 'high' | 'medium' | 'low';
 export type DiscoveryPackageManager = 'npm' | 'pnpm' | 'yarn' | 'bun' | 'unknown';
@@ -38,7 +46,9 @@ export type DiscoveryRouteStrategy =
   | 'none'
   | 'nuxt-router'
   | 'pages-router'
+  | 'react-router-file-router'
   | 'react-router'
+  | 'solidstart-router'
   | 'source-declared'
   | 'static-html'
   | 'sveltekit-router'
@@ -65,6 +75,7 @@ export interface DiscoveryRouteSignal {
   confidence: DiscoveryConfidenceLevel;
   taskable: boolean;
   evidence: string;
+  declarationFile?: string;
 }
 
 export interface DiscoveryRoute {
@@ -138,6 +149,7 @@ export interface DiscoveryComponents {
 export interface DiscoveryStyling {
   approach: string;
   configFile: string | null;
+  authorityFiles: string[];
   cssVariableCount: number;
   colorTokenCount: number;
   darkMode: boolean;
@@ -155,6 +167,7 @@ export interface ProjectDiscovery {
   routes: DiscoveryRoutes;
   components: DiscoveryComponents;
   styling: DiscoveryStyling;
+  surfaces: UISurfaceDiscovery;
   assistant: {
     ruleFiles: string[];
   };
@@ -167,6 +180,8 @@ export interface ProjectDiscovery {
 }
 
 export interface DiscoveryReadiness {
+  status: UIReadinessStatus;
+  axes: UIReadinessAxes;
   routeScopedContext: 'ready' | 'not_proven';
   adoptionBaseline: 'ready' | 'not_proven';
   reasons: string[];
@@ -192,9 +207,30 @@ const SOURCE_EXTENSIONS = new Set([
   '.cjs',
   '.vue',
   '.svelte',
+  '.astro',
 ]);
 const STYLE_EXTENSIONS = new Set(['.css', '.scss', '.sass', '.less']);
-const PAGE_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx', '.vue', '.svelte', '.html']);
+const PAGE_EXTENSIONS = new Set([
+  '.ts',
+  '.tsx',
+  '.js',
+  '.jsx',
+  '.vue',
+  '.svelte',
+  '.astro',
+  '.html',
+]);
+const UI_SURFACE_EXTENSIONS = new Set([
+  ...SOURCE_EXTENSIONS,
+  ...STYLE_EXTENSIONS,
+  '.html',
+  '.json',
+  '.jsonc',
+  '.md',
+  '.mdx',
+  '.yaml',
+  '.yml',
+]);
 const MAX_FILE_READ_BYTES = 512 * 1024;
 const MAX_WALK_FILES = 8000;
 const MAX_REPORT_ROUTES = 1000;
@@ -208,14 +244,8 @@ const JSX_ROUTE_PATH_RE =
 const OBJECT_ROUTE_PATH_RE = /\bpath\s*:\s*(?:"([^"]+)"|'([^']+)'|`([^`]+)`)/g;
 const TANSTACK_FILE_ROUTE_RE =
   /\bcreate(?:Lazy)?FileRoute\s*\(\s*(?:"([^"]+)"|'([^']+)'|`([^`]+)`)/g;
-const STATIC_HTML_ENTRY_FILES = [
-  'index.html',
-  'docs/index.html',
-  'src/index.html',
-  'public/index.html',
-  'dist/index.html',
-];
-const STATIC_HTML_ROUTE_DIRS = ['demos', 'examples'];
+const STATIC_HTML_ENTRY_FILES = ['index.html', 'src/index.html', 'public/index.html'];
+const STATIC_HTML_ROUTE_DIRS: string[] = [];
 const RULE_FILES = [
   'CLAUDE.md',
   'AGENTS.md',
@@ -242,7 +272,7 @@ const SKIP_DIRS = new Set([
 ]);
 
 const EXCLUDED_SOURCE_FILE_RE =
-  /(?:^|\/)(?:__tests__|e2e|tests?|mocks?|fixtures?|generated|__generated__)(?:\/|$)|(?:\.test|\.spec|\.vitest|\.e2e|\.cy|\.stories|\.story|\.mock|\.fixture|\.gen|\.d)\.[cm]?[tj]sx?$/i;
+  /(?:^|\/)(?:\.storybook|__tests__|cypress|demos?|docs?|e2e|examples?|mocks?|fixtures?|generated|__generated__|playgrounds?|playwright|samples?|specs?|stories|storybook|support|tests?)(?:\/|$)|(?:\.test|\.spec|\.vitest|\.e2e|\.cy|\.stories|\.story|\.figma|\.mock|\.fixture|\.gen|\.generated|\.d)\.[cm]?[tj]sx?$/i;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -348,6 +378,7 @@ function detectTailwindAuthority(
 ): {
   found: boolean;
   evidence: string[];
+  files: string[];
 } {
   const configFiles = [
     'tailwind.config.js',
@@ -363,6 +394,7 @@ function detectTailwindAuthority(
     '.postcssrc.cjs',
   ];
   const evidence: string[] = [];
+  const files = new Set<string>();
   for (const file of configFiles) {
     const path = join(projectRoot, file);
     if (!existsSync(path)) continue;
@@ -372,17 +404,25 @@ function detectTailwindAuthority(
       /(?:@tailwindcss\/postcss|tailwindcss)/u.test(content)
     ) {
       evidence.push(`Tailwind configured in ${file}`);
+      files.add(file);
     }
   }
   for (const file of cssFiles ?? walkFiles(projectRoot, { extensions: STYLE_EXTENSIONS })) {
     const content = readTextFile(join(projectRoot, file), 256 * 1024) ?? '';
     if (
-      /@(?:tailwind|theme)\b|@import\s+["']tailwindcss["']|@plugin\s+["']tailwindcss/u.test(content)
+      /(?:^|[\r\n])\s*@(?:tailwind|theme)\b|@import\s+["']tailwindcss["']|(?:^|[\r\n])\s*@plugin\s+["']tailwindcss/mu.test(
+        content,
+      )
     ) {
       evidence.push(`Tailwind directive found in ${file}`);
+      files.add(file);
     }
   }
-  return { found: evidence.length > 0, evidence: [...new Set(evidence)].sort() };
+  return {
+    found: evidence.length > 0,
+    evidence: [...new Set(evidence)].sort(),
+    files: [...files].sort(),
+  };
 }
 
 function shouldSkipDir(name: string): boolean {
@@ -644,10 +684,101 @@ function scanFileRoutes(
       {
         path: fileRouteFromPath(rel, baseDir),
         file: rel,
+        declarationFile: rel,
         kind: 'file-route' as const,
         confidence: 'high' as const,
         taskable: true,
         evidence: `file route ${rel}`,
+      },
+    ];
+  });
+}
+
+function reactRouterFileRouteFromPath(file: string, baseDir: string): string {
+  let withoutExt = file.slice(0, -extname(file).length);
+  withoutExt = withoutExt.replace(
+    new RegExp(`^${baseDir.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/?`),
+    '',
+  );
+  const escapedDot = '__DECANTR_LITERAL_DOT__';
+  const parts = withoutExt
+    .replace(/\[\.\]/gu, escapedDot)
+    .split('/')
+    .filter(Boolean)
+    .flatMap((part) => part.split('.'))
+    .map((part) => part.replaceAll(escapedDot, '.'))
+    .filter((part) => part !== 'index' && !part.startsWith('_'))
+    .map((part) => {
+      if (part === '$') return ':splat*';
+      if (part.startsWith('$')) return `:${part.slice(1)}`;
+      return part.endsWith('_') ? part.slice(0, -1) : part;
+    });
+  return `/${parts.join('/')}` || '/';
+}
+
+function scanReactRouterFileRoutes(projectRoot: string): DiscoveryRouteSignal[] {
+  const configFile = 'app/routes.ts';
+  const config = readTextFile(join(projectRoot, configFile), 256 * 1024) ?? '';
+  if (
+    !config ||
+    !/(?:autoRoutes|flatRoutes)\s*\(/u.test(config) ||
+    !existsSync(join(projectRoot, 'app', 'routes'))
+  ) {
+    return [];
+  }
+  return walkFiles(join(projectRoot, 'app', 'routes'), {
+    extensions: new Set(['.tsx', '.ts', '.jsx', '.js']),
+  }).flatMap((file) => {
+    const rel = `app/routes/${file}`;
+    if (
+      EXCLUDED_SOURCE_FILE_RE.test(rel) ||
+      /(?:^|\/)__|\.(?:client|server|spec|test)\.[cm]?[jt]sx?$/iu.test(rel)
+    ) {
+      return [];
+    }
+    const content = readTextFile(join(projectRoot, rel), 256 * 1024) ?? '';
+    const taskable =
+      /\bexport\s+default\b/u.test(content) ||
+      /\bexport\s+(?:const|function|class)\s+(?:Component|HydrateFallback)\b/u.test(content);
+    return [
+      {
+        path: reactRouterFileRouteFromPath(rel, 'app/routes'),
+        file: rel,
+        declarationFile: configFile,
+        kind: 'react-router' as const,
+        confidence: 'high' as const,
+        taskable,
+        evidence: taskable
+          ? 'React Router auto-routes UI module'
+          : 'React Router auto-routes resource module',
+      },
+    ];
+  });
+}
+
+function scanSolidStartFileRoutes(projectRoot: string): DiscoveryRouteSignal[] {
+  if (!existsSync(join(projectRoot, 'src', 'routes'))) return [];
+  return walkFiles(join(projectRoot, 'src', 'routes'), {
+    extensions: new Set(['.tsx', '.ts', '.jsx', '.js']),
+  }).flatMap((file) => {
+    const rel = `src/routes/${file}`;
+    if (
+      EXCLUDED_SOURCE_FILE_RE.test(rel) ||
+      /\.(?:data|server|spec|test)\.[cm]?[jt]sx?$/iu.test(rel)
+    ) {
+      return [];
+    }
+    const content = readTextFile(join(projectRoot, rel), 256 * 1024) ?? '';
+    if (!/\bexport\s+default\b/u.test(content)) return [];
+    return [
+      {
+        path: fileRouteFromPath(rel, 'src/routes'),
+        file: rel,
+        declarationFile: rel,
+        kind: 'file-route' as const,
+        confidence: 'high' as const,
+        taskable: true,
+        evidence: 'SolidStart file-route UI module',
       },
     ];
   });
@@ -659,15 +790,17 @@ function collectRouteLiterals(
   file: string,
   signals: DiscoveryRouteSignal[],
   kind: DiscoveryRouteSignalKind,
+  taskable = true,
 ): void {
   for (const match of content.matchAll(pattern)) {
     const value = match.slice(1).find((item): item is string => typeof item === 'string');
     addRouteSignal(signals, {
       path: value,
       file,
+      declarationFile: file,
       kind,
       confidence: kind === 'pathname-branch' ? 'medium' : 'high',
-      taskable: true,
+      taskable,
       evidence: `${kind} route literal`,
     });
   }
@@ -819,15 +952,48 @@ function resolveLocalImportFile(
   sourceFile: string,
   importPath: string,
 ): string | null {
-  if (!importPath.startsWith('.')) return null;
-  const base = resolve(dirname(join(projectRoot, sourceFile)), importPath);
+  const base = importPath.startsWith('.')
+    ? resolve(dirname(join(projectRoot, sourceFile)), importPath)
+    : importPath.startsWith('#/') || importPath.startsWith('@/')
+      ? resolve(projectRoot, 'src', importPath.slice(2))
+      : null;
+  if (!base) return null;
   const candidates = [
     base,
-    ...['.tsx', '.ts', '.jsx', '.js', '.mjs', '.cjs'].map((extension) => `${base}${extension}`),
-    ...['.tsx', '.ts', '.jsx', '.js'].map((extension) => join(base, `index${extension}`)),
+    ...['.tsx', '.ts', '.jsx', '.js', '.mjs', '.cjs', '.vue', '.svelte', '.astro'].map(
+      (extension) => `${base}${extension}`,
+    ),
+    ...['.tsx', '.ts', '.jsx', '.js', '.vue', '.svelte', '.astro'].map((extension) =>
+      join(base, `index${extension}`),
+    ),
   ];
-  const match = candidates.find((candidate) => existsSync(candidate));
+  const match = candidates.find((candidate) => {
+    try {
+      return statSync(candidate).isFile();
+    } catch {
+      return false;
+    }
+  });
   return match ? relative(projectRoot, match).replace(/\\/g, '/') : null;
+}
+
+function dynamicImportFile(projectRoot: string, sourceFile: string, node: ts.Node): string | null {
+  let importPath: string | null = null;
+  const visit = (current: ts.Node): void => {
+    if (importPath) return;
+    if (
+      ts.isCallExpression(current) &&
+      current.expression.kind === ts.SyntaxKind.ImportKeyword &&
+      current.arguments.length > 0
+    ) {
+      const argument = unwrapExpression(current.arguments[0] as ts.Expression);
+      if (ts.isStringLiteralLike(argument)) importPath = argument.text;
+      return;
+    }
+    ts.forEachChild(current, visit);
+  };
+  visit(node);
+  return importPath ? resolveLocalImportFile(projectRoot, sourceFile, importPath) : null;
 }
 
 function routeImplementationFile(
@@ -835,28 +1001,13 @@ function routeImplementationFile(
   sourceFile: string,
   routeObject: ts.ObjectLiteralExpression,
 ): string {
-  let importPath: string | null = null;
-  const visit = (node: ts.Node): void => {
-    if (importPath) return;
-    if (
-      ts.isCallExpression(node) &&
-      node.expression.kind === ts.SyntaxKind.ImportKeyword &&
-      node.arguments.length > 0
-    ) {
-      const argument = unwrapExpression(node.arguments[0] as ts.Expression);
-      if (ts.isStringLiteralLike(argument)) importPath = argument.text;
-      return;
-    }
-    ts.forEachChild(node, visit);
-  };
   for (const property of routeObject.properties) {
     if (ts.isPropertyAssignment(property) && propertyNameText(property.name) === 'children')
       continue;
-    visit(property);
+    const resolved = dynamicImportFile(projectRoot, sourceFile, property);
+    if (resolved) return resolved;
   }
-  return importPath
-    ? resolveLocalImportFile(projectRoot, sourceFile, importPath) || sourceFile
-    : sourceFile;
+  return sourceFile;
 }
 
 function collectReactRouterObjectRoutes(
@@ -910,6 +1061,7 @@ function collectReactRouterObjectRoutes(
         addRouteSignal(signals, {
           path: fullPath,
           file: routeImplementationFile(projectRoot, file, current),
+          declarationFile: file,
           kind: 'react-router',
           confidence: 'high',
           taskable: true,
@@ -944,6 +1096,195 @@ function collectReactRouterObjectRoutes(
   return signals;
 }
 
+function collectImportedComponentFiles(
+  projectRoot: string,
+  file: string,
+  sourceFile: ts.SourceFile,
+): Map<string, string> {
+  const importedComponents = new Map<string, string>();
+  for (const statement of sourceFile.statements) {
+    if (ts.isImportDeclaration(statement) && ts.isStringLiteralLike(statement.moduleSpecifier)) {
+      const resolved = resolveLocalImportFile(projectRoot, file, statement.moduleSpecifier.text);
+      if (!resolved || !statement.importClause) continue;
+      if (statement.importClause.name) {
+        importedComponents.set(statement.importClause.name.text, resolved);
+      }
+      const bindings = statement.importClause.namedBindings;
+      if (bindings && ts.isNamedImports(bindings)) {
+        for (const element of bindings.elements) {
+          importedComponents.set(element.name.text, resolved);
+        }
+      }
+    }
+    if (!ts.isVariableStatement(statement)) continue;
+    for (const declaration of statement.declarationList.declarations) {
+      if (!ts.isIdentifier(declaration.name) || !declaration.initializer) continue;
+      const imported = dynamicImportFile(projectRoot, file, declaration.initializer);
+      if (imported) importedComponents.set(declaration.name.text, imported);
+    }
+  }
+  return importedComponents;
+}
+
+function collectVueComponentRegistry(
+  projectRoot: string,
+  parsedFiles: Array<{ file: string; sourceFile: ts.SourceFile }>,
+): Map<string, string> {
+  const registry = new Map<string, string>();
+  for (const { file, sourceFile } of parsedFiles) {
+    if (!isProductionAuthorityPath(file)) continue;
+    const importedComponents = collectImportedComponentFiles(projectRoot, file, sourceFile);
+    for (const statement of sourceFile.statements) {
+      if (!ts.isVariableStatement(statement)) continue;
+      for (const declaration of statement.declarationList.declarations) {
+        if (!ts.isIdentifier(declaration.name) || !declaration.initializer) continue;
+        const registryName = declaration.name.text;
+        if (registryName !== 'views' && registryName !== 'layouts') continue;
+        const initializer = unwrapExpression(declaration.initializer);
+        if (!ts.isObjectLiteralExpression(initializer)) continue;
+        for (const property of initializer.properties) {
+          if (!ts.isPropertyAssignment(property)) continue;
+          const key = propertyNameText(property.name);
+          if (!key) continue;
+          const value = unwrapExpression(property.initializer);
+          const resolved =
+            (ts.isIdentifier(value) ? importedComponents.get(value.text) : null) ??
+            dynamicImportFile(projectRoot, file, property.initializer);
+          if (!resolved) continue;
+          registry.set(`${registryName}.${key}`, resolved);
+          registry.set(`${registryName.slice(0, -1)}.${key}`, resolved);
+        }
+      }
+    }
+  }
+  return registry;
+}
+
+function resolveVueRegistryComponent(value: string, registry: Map<string, string>): string | null {
+  const references = value
+    .split('$')
+    .map((reference) => reference.trim())
+    .filter(Boolean);
+  for (const reference of [...references].reverse()) {
+    const resolved = registry.get(reference);
+    if (resolved) return resolved;
+  }
+  return null;
+}
+
+function collectVueRouterObjectRoutes(
+  projectRoot: string,
+  file: string,
+  sourceFile: ts.SourceFile,
+  values: Map<string, string>,
+  componentRegistry: Map<string, string>,
+): DiscoveryRouteSignal[] {
+  const signals: DiscoveryRouteSignal[] = [];
+  const arrays = new Map<string, ts.ArrayLiteralExpression>();
+  const importedComponents = collectImportedComponentFiles(projectRoot, file, sourceFile);
+  const parsedArrays = new Set<ts.ArrayLiteralExpression>();
+
+  for (const statement of sourceFile.statements) {
+    if (!ts.isVariableStatement(statement)) continue;
+    for (const declaration of statement.declarationList.declarations) {
+      if (!ts.isIdentifier(declaration.name) || !declaration.initializer) continue;
+      const initializer = unwrapExpression(declaration.initializer);
+      if (ts.isArrayLiteralExpression(initializer)) arrays.set(declaration.name.text, initializer);
+    }
+  }
+
+  const resolveArray = (
+    expression: ts.Expression | undefined,
+  ): ts.ArrayLiteralExpression | null => {
+    if (!expression) return null;
+    const current = unwrapExpression(expression);
+    if (ts.isArrayLiteralExpression(current)) return current;
+    return ts.isIdentifier(current) ? arrays.get(current.text) || null : null;
+  };
+
+  const componentFile = (routeObject: ts.ObjectLiteralExpression): string | null => {
+    for (const property of routeObject.properties) {
+      if (!ts.isPropertyAssignment(property) || propertyNameText(property.name) !== 'component') {
+        continue;
+      }
+      const component = unwrapExpression(property.initializer);
+      if (ts.isIdentifier(component)) return importedComponents.get(component.text) ?? null;
+      if (ts.isStringLiteralLike(component)) {
+        return resolveVueRegistryComponent(component.text, componentRegistry);
+      }
+      const dynamicFile = routeImplementationFile(projectRoot, file, routeObject);
+      if (dynamicFile !== file) return dynamicFile;
+      if (ts.isObjectLiteralExpression(component) || ts.isArrowFunction(component)) return file;
+    }
+    return null;
+  };
+
+  const parseArray = (array: ts.ArrayLiteralExpression, parentPath: string | null): void => {
+    if (parsedArrays.has(array)) return;
+    parsedArrays.add(array);
+    for (const element of array.elements) {
+      const current = unwrapExpression(element as ts.Expression);
+      if (!ts.isObjectLiteralExpression(current)) continue;
+      let routePath: string | undefined;
+      let children: ts.ArrayLiteralExpression | null = null;
+      for (const property of current.properties) {
+        if (!ts.isPropertyAssignment(property)) continue;
+        const key = propertyNameText(property.name);
+        if (key === 'path') routePath = resolveStaticRouteValue(property.initializer, values);
+        if (key === 'children') children = resolveArray(property.initializer);
+      }
+      const fullPath = routePath !== undefined ? joinNestedRoute(parentPath, routePath) : null;
+      const implementation = componentFile(current);
+      if (fullPath) {
+        addRouteSignal(signals, {
+          path: fullPath,
+          file: implementation ?? file,
+          declarationFile: file,
+          kind: 'vue-router',
+          confidence: implementation ? 'high' : 'medium',
+          taskable: Boolean(implementation),
+          evidence: implementation
+            ? 'Vue Router object declaration with resolved component source'
+            : 'Vue Router object declaration without a resolved component source',
+        });
+      }
+      if (children) parseArray(children, fullPath || parentPath);
+    }
+  };
+
+  const visit = (node: ts.Node): void => {
+    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) {
+      if (node.expression.text === 'createRouter') {
+        const options = node.arguments[0] ? unwrapExpression(node.arguments[0]) : null;
+        if (options && ts.isObjectLiteralExpression(options)) {
+          const routesProperty = options.properties.find(
+            (property): property is ts.PropertyAssignment =>
+              ts.isPropertyAssignment(property) && propertyNameText(property.name) === 'routes',
+          );
+          const routes = resolveArray(routesProperty?.initializer);
+          if (routes) parseArray(routes, null);
+        }
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sourceFile);
+  for (const array of arrays.values()) {
+    const containsRouteObject = array.elements.some((element) => {
+      const current = unwrapExpression(element as ts.Expression);
+      return (
+        ts.isObjectLiteralExpression(current) &&
+        current.properties.some(
+          (property) =>
+            ts.isPropertyAssignment(property) && propertyNameText(property.name) === 'path',
+        )
+      );
+    });
+    if (containsRouteObject) parseArray(array, null);
+  }
+  return signals;
+}
+
 function detectSourceRouteSignals(
   projectRoot: string,
   identity: DiscoveryProjectIdentity,
@@ -966,6 +1307,10 @@ function detectSourceRouteSignals(
     };
   });
   const staticValues = collectStaticRouteValues(parsedFiles.map(({ sourceFile }) => sourceFile));
+  const vueComponentRegistry =
+    identity.framework === 'vue'
+      ? collectVueComponentRegistry(projectRoot, parsedFiles)
+      : new Map<string, string>();
   const hasTanstack = Boolean(
     identity.dependencies['@tanstack/react-router'] ||
       identity.dependencies['@tanstack/router-core'],
@@ -973,7 +1318,7 @@ function detectSourceRouteSignals(
 
   for (const { content, file, sourceFile } of parsedFiles) {
     if (!content) continue;
-    if (EXCLUDED_SOURCE_FILE_RE.test(file)) continue;
+    if (EXCLUDED_SOURCE_FILE_RE.test(file) || !isProductionAuthorityPath(file)) continue;
     const isGeneratedFile = /(?:^|\/)[^/]*\.gen\.[cm]?[tj]sx?$/i.test(file);
     const isTanstackFile =
       content.includes('@tanstack/react-router') ||
@@ -996,6 +1341,10 @@ function detectSourceRouteSignals(
       content.includes('createRouter') ||
       content.includes('createWebHistory') ||
       content.includes('createWebHashHistory');
+    const isVueRouteModule =
+      identity.framework === 'vue' &&
+      /(?:^|\/)(?:router|routes)(?:\/|$)/u.test(file) &&
+      /\bpath\s*:/u.test(content);
 
     if (isTanstackFile && !isGeneratedFile) {
       collectRouteLiterals(TANSTACK_FILE_ROUTE_RE, content, file, formalSignals, 'tanstack-router');
@@ -1024,12 +1373,36 @@ function detectSourceRouteSignals(
       formalSignals.push(...objectRoutes);
       collectRouteLiterals(JSX_ROUTE_PATH_RE, content, file, formalSignals, 'react-router');
       if (objectRoutes.length === 0) {
-        collectRouteLiterals(OBJECT_ROUTE_PATH_RE, content, file, formalSignals, 'react-router');
+        collectRouteLiterals(
+          OBJECT_ROUTE_PATH_RE,
+          content,
+          file,
+          formalSignals,
+          'react-router',
+          false,
+        );
       }
     }
 
-    if (isVueRouterFile) {
-      collectRouteLiterals(OBJECT_ROUTE_PATH_RE, content, file, formalSignals, 'vue-router');
+    if (isVueRouterFile || isVueRouteModule) {
+      const objectRoutes = collectVueRouterObjectRoutes(
+        projectRoot,
+        file,
+        sourceFile,
+        staticValues,
+        vueComponentRegistry,
+      );
+      formalSignals.push(...objectRoutes);
+      if (objectRoutes.length === 0) {
+        collectRouteLiterals(
+          OBJECT_ROUTE_PATH_RE,
+          content,
+          file,
+          formalSignals,
+          'vue-router',
+          false,
+        );
+      }
     }
 
     collectPathnameBranchRoutes(content, file, fallbackSignals);
@@ -1045,6 +1418,7 @@ function detectSourceRouteSignals(
         file,
         formalSignals,
         'source-declared',
+        false,
       );
     }
   }
@@ -1074,6 +1448,7 @@ function scanStaticHtmlRouteSignals(projectRoot: string): DiscoveryRouteSignal[]
     signals.push({
       path: '/',
       file,
+      declarationFile: file,
       kind: 'html-route',
       confidence: 'high',
       taskable: true,
@@ -1136,11 +1511,19 @@ function discoverRoutes(
     fileRouteSignals.push(...pagesSignals);
   }
 
+  const reactRouterFileSignals =
+    identity.framework === 'react' ? scanReactRouterFileRoutes(projectRoot) : [];
+  const solidStartSignals =
+    identity.framework === 'solid' && identity.dependencies['@solidjs/start']
+      ? scanSolidStartFileRoutes(projectRoot)
+      : [];
+
   const sourceSignals =
     identity.framework === 'angular' ? [] : detectSourceRouteSignals(projectRoot, identity);
   const angularSignals: DiscoveryRouteSignal[] =
     angularDiscovery?.routes.signals.map((signal) => ({
       ...signal,
+      declarationFile: signal.file,
       kind: 'angular-router' as const,
     })) ?? [];
   const htmlSignals = scanStaticHtmlRouteSignals(projectRoot);
@@ -1165,6 +1548,12 @@ function discoverRoutes(
   } else if (identity.framework === 'nuxt' && fileRouteSignals.length > 0) {
     selectedSignals = fileRouteSignals;
     strategy = 'nuxt-router';
+  } else if (reactRouterFileSignals.length > 0) {
+    selectedSignals = reactRouterFileSignals;
+    strategy = 'react-router-file-router';
+  } else if (solidStartSignals.length > 0) {
+    selectedSignals = solidStartSignals;
+    strategy = 'solidstart-router';
   } else if (sourceSignals.some((signal) => signal.kind === 'tanstack-router')) {
     selectedSignals = sourceSignals;
     strategy = 'source-declared';
@@ -1204,40 +1593,24 @@ function discoverRoutes(
   const fallbackOnly =
     selectedSignals.length > 0 &&
     selectedSignals.every((signal) => signal.kind === 'pathname-branch');
-  const authority: AngularRouteAuthority =
-    identity.framework === 'angular'
-      ? (angularDiscovery?.routes.authority ?? 'unresolved')
-      : selectedSignals.length === 0
-        ? 'unresolved'
-        : fallbackOnly
-          ? 'inferred'
-          : 'proven';
-  const completeness: AngularRouteCompleteness =
-    identity.framework === 'angular'
-      ? (angularDiscovery?.routes.completeness ?? 'unknown')
-      : selectedSignals.length === 0
-        ? 'unknown'
-        : fallbackOnly
-          ? 'partial'
-          : 'complete';
+  const authorityAssessment = assessFrameworkRouteAuthority({
+    projectRoot,
+    framework: identity.framework,
+    strategy,
+    dependencies: identity.dependencies,
+    signals: selectedSignals,
+    angular: angularDiscovery?.routes ?? null,
+  });
+  const authority: AngularRouteAuthority = authorityAssessment.authority;
+  const completeness: AngularRouteCompleteness = authorityAssessment.completeness;
   const confidence: DiscoveryConfidenceLevel =
     taskableRoutes.length === 0 || authority !== 'proven'
       ? 'low'
       : completeness === 'partial' || fallbackOnly
         ? 'medium'
         : 'high';
-  const authorityFiles =
-    identity.framework === 'angular'
-      ? (angularDiscovery?.routes.authorityFiles ?? [])
-      : [...new Set(selectedSignals.map((signal) => signal.file))].slice(0, 24);
-  const evidence =
-    identity.framework === 'angular'
-      ? (angularDiscovery?.routes.evidence ?? [])
-      : selectedSignals.length > 0
-        ? [
-            `${selectedSignals.length} ${fallbackOnly ? 'inferred' : 'formal'} route signal(s) found`,
-          ]
-        : [];
+  const authorityFiles = authorityAssessment.authorityFiles.slice(0, 24);
+  const evidence = authorityAssessment.evidence;
   return {
     strategy,
     routeSignals,
@@ -1252,6 +1625,7 @@ function discoverRoutes(
     evidence,
     limitations: [
       ...(angularDiscovery?.routes.limitations ?? []),
+      ...authorityAssessment.limitations,
       ...(taskableRoutes.length === 0
         ? ['No taskable route declarations were discovered from static source evidence.']
         : []),
@@ -1289,7 +1663,7 @@ function discoverComponents(
   }
   for (const file of sourceFiles) {
     if (!/\.(tsx|jsx|vue|svelte)$/.test(file) && !/\.(ts|js)$/.test(file)) continue;
-    if (EXCLUDED_SOURCE_FILE_RE.test(file)) continue;
+    if (EXCLUDED_SOURCE_FILE_RE.test(file) || !isProductionAuthorityPath(file)) continue;
     const content = readTextFile(join(projectRoot, file), 256 * 1024) ?? '';
     if (identity.framework === 'angular' && /@Component\s*\(/u.test(content)) continue;
     if (!/[<][A-Za-z][^>]*>/.test(content) && !/\.(vue|svelte)$/.test(file)) continue;
@@ -1307,6 +1681,9 @@ function discoverComponents(
       /\bexport\s+const\s+([A-Z][A-Za-z0-9_]*)\s*=\s*(?:memo|forwardRef|\()/g,
     ))
       names.add(match[1] ?? '');
+    for (const name of discoverNamedScriptComponentExports(file, content, isRouteLocal)) {
+      names.add(name);
+    }
     if (isRouteLocal) {
       for (const match of content.matchAll(/\bfunction\s+([A-Z][A-Za-z0-9_]*)\b/g))
         names.add(match[1] ?? '');
@@ -1386,6 +1763,106 @@ function discoverComponents(
   };
 }
 
+function discoverNamedScriptComponentExports(
+  file: string,
+  content: string,
+  includeRouteLocal: boolean,
+): string[] {
+  if (!/\.[cm]?[jt]sx?$/u.test(file)) return [];
+  const scriptKind = /\.tsx$/u.test(file)
+    ? ts.ScriptKind.TSX
+    : /\.jsx$/u.test(file)
+      ? ts.ScriptKind.JSX
+      : /\.[cm]?ts$/u.test(file)
+        ? ts.ScriptKind.TS
+        : ts.ScriptKind.JS;
+  const source = ts.createSourceFile(file, content, ts.ScriptTarget.Latest, true, scriptKind);
+  const declarations = new Set<string>();
+  const directlyExported = new Set<string>();
+  const namedExports = new Map<string, Set<string>>();
+
+  const rememberDeclaration = (name: string | undefined, exported: boolean): void => {
+    if (!name || !/^[A-Z][A-Za-z0-9_]*$/u.test(name)) return;
+    declarations.add(name);
+    if (exported) directlyExported.add(name);
+  };
+
+  for (const statement of source.statements) {
+    if (ts.isFunctionDeclaration(statement) || ts.isClassDeclaration(statement)) {
+      rememberDeclaration(statement.name?.text, hasExportModifier(statement));
+      continue;
+    }
+    if (ts.isVariableStatement(statement)) {
+      const exported = hasExportModifier(statement);
+      for (const declaration of statement.declarationList.declarations) {
+        if (
+          !ts.isIdentifier(declaration.name) ||
+          !isLikelyScriptComponentInitializer(declaration.initializer)
+        ) {
+          continue;
+        }
+        rememberDeclaration(declaration.name.text, exported);
+      }
+      continue;
+    }
+    if (
+      ts.isExportDeclaration(statement) &&
+      !statement.moduleSpecifier &&
+      statement.exportClause &&
+      ts.isNamedExports(statement.exportClause)
+    ) {
+      for (const element of statement.exportClause.elements) {
+        const local = element.propertyName?.text ?? element.name.text;
+        const exported = element.name.text;
+        if (!/^[A-Z][A-Za-z0-9_]*$/u.test(exported)) continue;
+        const aliases = namedExports.get(local) ?? new Set<string>();
+        aliases.add(exported);
+        namedExports.set(local, aliases);
+      }
+      continue;
+    }
+    if (ts.isExportAssignment(statement) && ts.isIdentifier(statement.expression)) {
+      directlyExported.add(statement.expression.text);
+    }
+  }
+
+  const names = new Set<string>();
+  for (const local of declarations) {
+    if (!includeRouteLocal && !directlyExported.has(local) && !namedExports.has(local)) continue;
+    names.add(local);
+    for (const alias of namedExports.get(local) ?? []) names.add(alias);
+  }
+  return [...names];
+}
+
+function hasExportModifier(node: ts.Node): boolean {
+  return Boolean(
+    ts.canHaveModifiers(node) &&
+      ts
+        .getModifiers(node)
+        ?.some(
+          (modifier) =>
+            modifier.kind === ts.SyntaxKind.ExportKeyword ||
+            modifier.kind === ts.SyntaxKind.DefaultKeyword,
+        ),
+  );
+}
+
+function isLikelyScriptComponentInitializer(initializer: ts.Expression | undefined): boolean {
+  if (!initializer) return false;
+  const value = unwrapExpression(initializer);
+  if (
+    ts.isArrowFunction(value) ||
+    ts.isFunctionExpression(value) ||
+    ts.isTaggedTemplateExpression(value)
+  ) {
+    return true;
+  }
+  if (!ts.isCallExpression(value)) return false;
+  const callee = value.expression.getText();
+  return /(?:^|\.)(?:forwardRef|memo|styled|defineComponent)$/u.test(callee);
+}
+
 function extractCssEvidence(content: string): {
   variables: number;
   colors: number;
@@ -1422,18 +1899,32 @@ function discoverStyling(
   let darkMode = false;
   let configFile: string | null = null;
   let approach = 'unknown';
+  const authorityFiles = new Set<string>();
   const tailwindConfig = [
     'tailwind.config.js',
     'tailwind.config.ts',
     'tailwind.config.mjs',
     'tailwind.config.cjs',
   ].find((file) => existsSync(join(projectRoot, file)));
-  const tailwind = detectTailwindAuthority(projectRoot, cssFiles);
-  const hasPrimeNg = Boolean(
-    identity.dependencies.primeng ||
-      identity.dependencies['@primeuix/themes'] ||
-      identity.dependencies.primeflex,
+  const unoConfig = ['uno.config.ts', 'uno.config.js', 'uno.config.mjs', 'uno.config.cjs'].find(
+    (file) => existsSync(join(projectRoot, file)),
   );
+  const tailwind = detectTailwindAuthority(projectRoot, cssFiles);
+  for (const file of tailwind.files) authorityFiles.add(file);
+  const hasPrimeNg = Boolean(
+    identity.dependencies.primeng || identity.dependencies['@primeuix/themes'],
+  );
+  const hasPrimeVue = Boolean(
+    identity.dependencies.primevue ||
+      identity.dependencies['@primevue/themes'] ||
+      (identity.framework === 'vue' && identity.dependencies.primeflex),
+  );
+  const hasNebular = Boolean(
+    identity.dependencies['@nebular/theme'] || identity.dependencies['@nebular/auth'],
+  );
+  const hasAntDesignVue = Boolean(identity.dependencies['ant-design-vue']);
+  const hasNaiveUi = Boolean(identity.dependencies['naive-ui']);
+  const hasUnoCss = Boolean(identity.dependencies.unocss);
   const hasScss =
     angularProject.styleEntries.some((file) => /\.s[ac]ss$/iu.test(file)) ||
     cssFiles.some((file) => /\.s[ac]ss$/iu.test(file));
@@ -1442,6 +1933,30 @@ function discoverStyling(
     ...angularProject.styleFiles,
     ...cssFiles.filter((file) => !configuredStyleSet.has(file)),
   ];
+  const productionSourceFiles = walkFiles(projectRoot, { extensions: SOURCE_EXTENSIONS }).filter(
+    isProductionAuthorityPath,
+  );
+  const sourceImportEvidence = (pattern: RegExp): { file: string; content: string } | null => {
+    for (const file of productionSourceFiles.slice(0, 1000)) {
+      const content = readTextFile(join(projectRoot, file), 256 * 1024) ?? '';
+      pattern.lastIndex = 0;
+      if (pattern.test(content)) return { file, content };
+    }
+    return null;
+  };
+  const productionStyleImport = (() => {
+    const styleImportRe = /(?:from\s+|import\s*)["']([^"']+\.(?:css|s[ac]ss|less))["']/gu;
+    for (const file of productionSourceFiles.slice(0, 1000)) {
+      const content = readTextFile(join(projectRoot, file), 256 * 1024) ?? '';
+      for (const match of content.matchAll(styleImportRe)) {
+        const styleFile = resolveLocalImportFile(projectRoot, file, match[1]);
+        if (styleFile && isProductionAuthorityPath(styleFile)) {
+          return { sourceFile: file, styleFile };
+        }
+      }
+    }
+    return null;
+  })();
 
   for (const file of orderedCssFiles.slice(0, 200)) {
     const content = readTextFile(join(projectRoot, file), 256 * 1024);
@@ -1458,6 +1973,8 @@ function discoverStyling(
       `Angular build target declares ${angularProject.styleEntries.length} global style entr${angularProject.styleEntries.length === 1 ? 'y' : 'ies'}`,
     );
     themeSignals.add('Angular global styles');
+    for (const file of angularProject.styleFiles) authorityFiles.add(file);
+    for (const file of angularProject.configurationFiles) authorityFiles.add(file);
   }
   if (hasPrimeNg) {
     evidence.push('PrimeNG dependency is present in the selected app');
@@ -1473,6 +1990,72 @@ function discoverStyling(
       evidence.push('PrimeNG runtime theme configuration found in production source');
       themeSignals.add('PrimeNG theme provider');
     }
+  }
+  const primeVueRuntime = hasPrimeVue
+    ? sourceImportEvidence(
+        /(?:from\s+|import\s*)["'](?:primevue|@primevue\/themes)(?:\/[^"']*)?["']/u,
+      )
+    : null;
+  if (hasPrimeVue) {
+    evidence.push('PrimeVue dependency is present in the selected app');
+    if (primeVueRuntime) {
+      evidence.push(`PrimeVue runtime configuration found in ${primeVueRuntime.file}`);
+      themeSignals.add('PrimeVue runtime theme');
+      authorityFiles.add(primeVueRuntime.file);
+    }
+  }
+  if (hasNebular) {
+    evidence.push('Nebular dependency is present in the selected app');
+    themeSignals.add('Nebular');
+  }
+  const antDesignRuntime = hasAntDesignVue
+    ? sourceImportEvidence(
+        /(?:from\s+|import\s*)["'](?:ant-design-vue|@vben\/styles)(?:\/[^"']*)?["']/u,
+      )
+    : null;
+  if (hasAntDesignVue) {
+    evidence.push('Ant Design Vue dependency is present in the selected app');
+    if (antDesignRuntime) {
+      evidence.push(
+        `Ant Design Vue or workspace style runtime import found in ${antDesignRuntime.file}`,
+      );
+      themeSignals.add('Ant Design Vue runtime theme');
+      authorityFiles.add(antDesignRuntime.file);
+    }
+  }
+  const naiveUiRuntime = hasNaiveUi
+    ? sourceImportEvidence(/import\s*\{[^}]*\bNConfigProvider\b[^}]*\}\s*from\s*["']naive-ui["']/u)
+    : null;
+  if (hasNaiveUi) {
+    evidence.push('Naive UI dependency is present in the selected app');
+    if (naiveUiRuntime) {
+      evidence.push(`Naive UI theme provider found in ${naiveUiRuntime.file}`);
+      themeSignals.add('Naive UI runtime theme');
+      authorityFiles.add(naiveUiRuntime.file);
+    }
+  }
+  const unoRuntime = hasUnoCss
+    ? sourceImportEvidence(/(?:from\s+|import\s*)["'](?:uno\.css|virtual:uno(?:\.css)?)["']/u)
+    : null;
+  if (hasUnoCss) {
+    evidence.push('UnoCSS dependency is present in the selected app');
+    if (unoConfig) {
+      evidence.push(`UnoCSS configuration found in ${unoConfig}`);
+      authorityFiles.add(unoConfig);
+    }
+    if (unoRuntime) {
+      evidence.push(`UnoCSS runtime stylesheet import found in ${unoRuntime.file}`);
+      themeSignals.add('UnoCSS runtime stylesheet');
+      authorityFiles.add(unoRuntime.file);
+    }
+  }
+  if (productionStyleImport) {
+    evidence.push(
+      `Production source ${productionStyleImport.sourceFile} imports ${productionStyleImport.styleFile}`,
+    );
+    themeSignals.add('production stylesheet import');
+    authorityFiles.add(productionStyleImport.sourceFile);
+    authorityFiles.add(productionStyleImport.styleFile);
   }
   evidence.push(...tailwind.evidence);
   if (identity.dependencies.tailwindcss && !tailwind.found) {
@@ -1490,6 +2073,42 @@ function discoverStyling(
         ? 'primeng-scss'
         : 'primeng';
     configFile = angularProject.configurationFiles[0] ?? 'package.json';
+  } else if (identity.framework === 'vue' && hasNaiveUi && naiveUiRuntime) {
+    approach =
+      hasUnoCss && (unoConfig || unoRuntime)
+        ? hasScss
+          ? 'naive-ui-unocss-scss'
+          : 'naive-ui-unocss'
+        : hasScss
+          ? 'naive-ui-scss'
+          : 'naive-ui';
+    configFile = unoConfig ?? naiveUiRuntime.file;
+  } else if (identity.framework === 'vue' && hasPrimeVue) {
+    approach = tailwind.found
+      ? hasScss
+        ? 'primevue-tailwind-scss'
+        : 'primevue-tailwind'
+      : hasScss
+        ? 'primevue-scss'
+        : 'primevue';
+    configFile = primeVueRuntime?.file ?? 'package.json';
+  } else if (identity.framework === 'vue' && hasAntDesignVue && antDesignRuntime) {
+    approach = identity.dependencies['@vben/styles']
+      ? 'ant-design-vue-workspace-styles'
+      : 'ant-design-vue';
+    configFile = antDesignRuntime.file;
+  } else if (identity.framework === 'angular' && hasNebular) {
+    approach = tailwind.found
+      ? hasScss
+        ? 'nebular-tailwind-scss'
+        : 'nebular-tailwind'
+      : hasScss
+        ? 'nebular-scss'
+        : 'nebular';
+    configFile = angularProject.configurationFiles[0] ?? 'package.json';
+  } else if (hasUnoCss && (unoConfig || unoRuntime)) {
+    approach = hasScss ? 'unocss-scss' : 'unocss';
+    configFile = unoConfig ?? unoRuntime?.file ?? null;
   } else if (tailwindConfig || tailwind.found || themeSignals.has('tailwind v4 @theme')) {
     approach = 'tailwind';
     configFile =
@@ -1515,6 +2134,17 @@ function discoverStyling(
     approach = 'css';
   }
 
+  if (!configFile && productionStyleImport && ['css', 'css-modules', 'scss'].includes(approach)) {
+    configFile = productionStyleImport.styleFile;
+  }
+  if (
+    configFile &&
+    existsSync(join(projectRoot, configFile)) &&
+    (configFile !== 'package.json' || authorityFiles.size === 0)
+  ) {
+    authorityFiles.add(configFile);
+  }
+
   const confidence: DiscoveryConfidenceLevel =
     approach === 'unknown'
       ? 'low'
@@ -1524,6 +2154,10 @@ function discoverStyling(
   return {
     approach,
     configFile,
+    authorityFiles: [...authorityFiles]
+      .filter((file) => existsSync(join(projectRoot, file)) && isProductionAuthorityPath(file))
+      .sort()
+      .slice(0, 16),
     cssVariableCount,
     colorTokenCount,
     darkMode,
@@ -1558,6 +2192,7 @@ function calculateConfidence(input: {
   routes: DiscoveryRoutes;
   components: DiscoveryComponents;
   styling: DiscoveryStyling;
+  readiness: UIReadinessStatus;
 }): ProjectDiscovery['confidence'] {
   let score = 20;
   const reasons: string[] = [];
@@ -1590,11 +2225,13 @@ function calculateConfidence(input: {
     );
   }
   const confidenceCap =
-    input.routes.confidence === 'low' || input.routes.authority !== 'proven'
-      ? 44
-      : input.routes.confidence === 'medium' || input.routes.completeness !== 'complete'
-        ? 74
-        : 98;
+    input.readiness === 'unsupported'
+      ? 35
+      : input.readiness === 'blocked'
+        ? 44
+        : input.readiness === 'limited'
+          ? 74
+          : 98;
   const clamped = Math.max(5, Math.min(confidenceCap, score));
   return {
     level: clamped >= 75 ? 'high' : clamped >= 45 ? 'medium' : 'low',
@@ -1616,8 +2253,22 @@ export function discoverProject(projectRoot: string): ProjectDiscovery {
   const routes = discoverRoutes(appRoot, project, angularDiscovery);
   const components = discoverComponents(appRoot, routes, project, angularDiscovery);
   const styling = discoverStyling(appRoot, project, angularProject);
+  const surfaces = buildUISurfaceDiscovery({
+    projectRoot: appRoot,
+    files: walkFiles(appRoot, { extensions: UI_SURFACE_EXTENSIONS }),
+    project,
+    routes,
+    components,
+    styling,
+  });
   const assistant = { ruleFiles: findAssistantRules(appRoot, workspaceRoot) };
-  const confidence = calculateConfidence({ project, routes, components, styling });
+  const confidence = calculateConfidence({
+    project,
+    routes,
+    components,
+    styling,
+    readiness: surfaces.status,
+  });
   const limitations = [
     ...new Set([...routes.limitations, ...components.limitations, ...styling.limitations]),
   ];
@@ -1634,6 +2285,7 @@ export function discoverProject(projectRoot: string): ProjectDiscovery {
     routes,
     components,
     styling,
+    surfaces,
     assistant,
     confidence,
     limitations,
@@ -1654,7 +2306,9 @@ export function evaluateDiscoveryReadiness(discovery: ProjectDiscovery): Discove
     );
   }
   const routeScopedContext =
-    discovery.routes.taskableRouteCount > 0 && discovery.routes.authority === 'proven'
+    discovery.routes.taskableRouteCount > 0 &&
+    discovery.routes.authority === 'proven' &&
+    discovery.routes.completeness === 'complete'
       ? 'ready'
       : 'not_proven';
   const adoptionBaseline =
@@ -1662,6 +2316,8 @@ export function evaluateDiscoveryReadiness(discovery: ProjectDiscovery): Discove
       ? 'ready'
       : 'not_proven';
   return {
+    status: discovery.surfaces.status,
+    axes: discovery.surfaces.axes,
     routeScopedContext,
     adoptionBaseline,
     reasons:

@@ -1,0 +1,73 @@
+{
+  "base": {
+    "commit": "6dc1858538e3b7ea66b78dd9d37c391c530d78ae",
+    "tree": "e12bab734b07d40cf8b9e101d398251c57c9a8e4"
+  },
+  "cleanAfterPreparation": true,
+  "lockfiles": [
+    {
+      "path": "package-lock.json",
+      "sha256": "e7f68006a04328b75f0a3482bfce130961ef81437f77dfa550d80d5a684cfde7"
+    }
+  ],
+  "partition": "development",
+  "preparation": [
+    {
+      "args": [
+        "ci"
+      ],
+      "cwd": ".",
+      "executable": "npm",
+      "id": "install-dependencies",
+      "network": "dependency-registry",
+      "required": true,
+      "timeoutMs": 7200000
+    }
+  ],
+  "profile": {
+    "arch": "x64",
+    "bunVersion": null,
+    "id": "node-24.16.0-npm-11.6.3",
+    "nodeVersion": "24.16.0",
+    "os": "linux",
+    "packageManager": {
+      "name": "npm",
+      "version": "11.6.3"
+    }
+  },
+  "projectPath": ".",
+  "review": {
+    "notes": "Independent source-evidence re-review verified 4 frozen Git blobs and exact SHA-256 values at 6dc1858538e3b7ea66b78dd9d37c391c530d78ae. Independent review confirms npm 11.6.3, the root lock, npm ci, and active Ubuntu CI on the .nvmrc Node 24 line. The tree never fixes a Node patch, so candidate Node 24.16.0 cannot be authenticated against the February 2026 base without an exact Linux x64 probe; status remains draft.",
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "status": "draft"
+  },
+  "schemaVersion": "decantr-benchmark-task-environment.v1",
+  "sourceEvidence": [
+    {
+      "kind": "reviewer-override",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "a9a11b96b669415ebdf415bacd60a354266b073c3a1f00e64e427831f4274f84",
+      "statement": "Frozen Ubuntu CI resolves .nvmrc and runs npm ci from the repository root."
+    },
+    {
+      "kind": "runtime-hint",
+      "path": ".nvmrc",
+      "sha256": "7add09abfdd044ac178d0a04a733342dc3ade5fbc80352c1800e8a536002a2e4",
+      "statement": "Frozen .nvmrc selects the Node 24 line but deliberately does not authenticate an exact patch."
+    },
+    {
+      "kind": "lockfile",
+      "path": "package-lock.json",
+      "sha256": "e7f68006a04328b75f0a3482bfce130961ef81437f77dfa550d80d5a684cfde7",
+      "statement": "Frozen root npm lockfile is bound for the repository's npm ci preparation."
+    },
+    {
+      "kind": "package-manifest",
+      "path": "package.json",
+      "sha256": "32a1a9b82142300a056a9655c3a89601de2fdb53adf4ee4d1c53556d6f4e7a81",
+      "statement": "Root manifest pins npm 11.6.3 with integrity metadata and defines the workspaces consumed by the root lock."
+    }
+  ],
+  "taskId": "primer-react.blankslate-balanced-copy"
+}

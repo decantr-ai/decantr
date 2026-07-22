@@ -58,6 +58,7 @@ const SUBJECT = {
   packageManager: 'package manager',
   framework: 'framework',
   language: 'language',
+  uiSurfaces: 'UI surface authority',
   routes: 'routes',
   components: 'components',
   styling: 'styling authority',
@@ -74,6 +75,7 @@ const FACT_ID = {
   packageManager: 'project.package-manager',
   framework: 'project.framework',
   language: 'project.language',
+  uiSurfaces: 'project.ui-surface-authority',
   routes: 'project.routes',
   components: 'project.components',
   styling: 'project.styling-authority',
@@ -1006,9 +1008,14 @@ export function createProjectAdoptionTruthV1(
   const firstRoute = [...discovery.routes.taskableRoutes].sort((left, right) =>
     left.path.localeCompare(right.path),
   )[0]?.path;
+  const firstSurface = discovery.surfaces.items
+    .filter((surface) => surface.taskability === 'ready' || surface.taskability === 'limited')
+    .sort((left, right) => left.id.localeCompare(right.id))[0];
   const taskBase = firstRoute
     ? `decantr task ${JSON.stringify(firstRoute)} "<task>"`
-    : 'decantr task <route> "<task>"';
+    : firstSurface
+      ? `decantr task ${JSON.stringify(firstSurface.id)} "<task>"`
+      : 'decantr task <target> "<task>"';
   const readyAction = `Run \`${scopedCommand(taskBase, discovery)}\` before the next governed edit.`;
   const nextAction = !essenceValid
     ? initAction
@@ -1092,6 +1099,17 @@ export function createProjectAdoptionTruthV1(
     routeProvenance.push(provenance('source', evidencePath, 'Production route-authority source.'));
   }
   const discoveryReadiness = evaluateDiscoveryReadiness(discovery);
+  const uiSurfaceProvenance = discovery.surfaces.items
+    .slice(0, 200)
+    .flatMap((surface) =>
+      surface.files.map((path) =>
+        provenance(
+          'source',
+          appEvidencePath(discovery, path),
+          `${surface.id} has ${surface.authority} authority and ${surface.taskability} taskability.`,
+        ),
+      ),
+    );
   const componentProvenance = discovery.components.items.map((component) =>
     provenance(
       'source',
@@ -1225,6 +1243,30 @@ export function createProjectAdoptionTruthV1(
         discovery.project.primaryLanguage === 'unknown'
           ? 'Confirm the selected app language with source or compiler configuration evidence.'
           : 'Use the selected app language for project-scoped edits.',
+    }),
+    fact({
+      id: FACT_ID.uiSurfaces,
+      subject: SUBJECT.uiSurfaces,
+      observation: observation(
+        discovery.surfaces.axes.surfaceAuthority.status === 'proven' ||
+          discovery.surfaces.axes.surfaceAuthority.status === 'partial'
+          ? 'found'
+          : discovery.surfaces.status === 'unsupported'
+            ? 'not_found'
+            : 'unknown',
+        discovery.surfaces.axes.surfaceAuthority.confidence,
+        uiSurfaceProvenance,
+      ),
+      governance:
+        discovery.surfaces.items.length > 0
+          ? governance('advisory', 'observed project UI surfaces')
+          : governance('uncovered', null),
+      mutation: unverifiedMutation(),
+      limitations: discovery.surfaces.reasons,
+      nextAction:
+        discovery.surfaces.status === 'ready'
+          ? 'Select an exact UI surface target before preparing an edit.'
+          : 'Select a concrete surface and resolve its blocking authority axes before editing.',
     }),
     fact({
       id: FACT_ID.routes,

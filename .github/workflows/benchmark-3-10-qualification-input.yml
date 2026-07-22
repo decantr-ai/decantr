@@ -1,0 +1,56 @@
+name: Decantr 3.10 development qualification input
+
+on:
+  workflow_dispatch:
+    inputs:
+      task_id:
+        description: Exact public development task ID
+        required: true
+        type: string
+      proxy_image_digest:
+        description: Reviewed docker.io/ubuntu/squid image digest
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: benchmark-3-10-qualification-input-${{ github.ref }}-${{ inputs.task_id }}
+  cancel-in-progress: false
+
+jobs:
+  seal:
+    name: Seal public development input
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.17.0
+          cache: ''
+      - name: Require an exact reviewed proxy digest
+        env:
+          PROXY_IMAGE_DIGEST: ${{ inputs.proxy_image_digest }}
+        run: '[[ "$PROXY_IMAGE_DIGEST" =~ ^sha256:[a-f0-9]{64}$ ]]'
+      - name: Acquire frozen revisions and seal the input
+        env:
+          PROXY_IMAGE_DIGEST: ${{ inputs.proxy_image_digest }}
+          TASK_ID: ${{ inputs.task_id }}
+        run: |
+          node scripts/benchmark-3-10/evaluators/prepare-development-input.mjs \
+            --task-id "$TASK_ID" \
+            --corpus-root "$RUNNER_TEMP/corpus" \
+            --output-root "$RUNNER_TEMP/qualification-input" \
+            --proxy-image-digest "$PROXY_IMAGE_DIGEST"
+      - name: Upload sealed short-lived input
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: benchmark-3-10-qualification-input-${{ inputs.task_id }}
+          path: ${{ runner.temp }}/qualification-input
+          if-no-files-found: error
+          retention-days: 3

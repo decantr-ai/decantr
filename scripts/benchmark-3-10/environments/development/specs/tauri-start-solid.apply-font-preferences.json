@@ -1,0 +1,68 @@
+{
+  "base": {
+    "commit": "860729230392c15d3eb9e28c270edc63baf15ea2",
+    "tree": "e21ea4bd65f1c9a5a345d72f031cd9d23af1f508"
+  },
+  "cleanAfterPreparation": true,
+  "lockfiles": [
+    {
+      "path": "pnpm-lock.yaml",
+      "sha256": "43531812368e1585224f1a28f6371c584359dbc7fefe1a41aa4f6d5ed7aac842"
+    }
+  ],
+  "partition": "development",
+  "preparation": [
+    {
+      "args": [
+        "install",
+        "--frozen-lockfile"
+      ],
+      "cwd": ".",
+      "executable": "pnpm",
+      "id": "install-dependencies",
+      "network": "dependency-registry",
+      "required": true,
+      "timeoutMs": 7200000
+    }
+  ],
+  "profile": {
+    "arch": "x64",
+    "bunVersion": null,
+    "id": "node-24.12.0-pnpm-10.32.1",
+    "nodeVersion": "24.12.0",
+    "os": "linux",
+    "packageManager": {
+      "name": "pnpm",
+      "version": "10.32.1"
+    }
+  },
+  "projectPath": ".",
+  "review": {
+    "notes": "Independent source-evidence re-review verified 3 frozen Git blobs and exact SHA-256 values at 860729230392c15d3eb9e28c270edc63baf15ea2. Independent review confirms exact Node >=24.12.0 and pnpm 10.32.1 source pins and removes --ignore-scripts because it contradicts the repository's allowed-build and frozen-install behavior. Approval remains blocked: the only tracked test workflow is an inactive example with macOS as its sole active matrix entry and Linux commented out, so the lifecycle-enabled install needs an exact Linux x64 clean preparation probe.",
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "status": "draft"
+  },
+  "schemaVersion": "decantr-benchmark-task-environment.v1",
+  "sourceEvidence": [
+    {
+      "kind": "reviewer-override",
+      "path": ".github/workflows/test.yml.example",
+      "sha256": "80b8e16294f71a3c95c193b2af08f5e79cafc346ec4ecf156cae98ea90b4a093",
+      "statement": "Frozen example uses pnpm install --frozen-lockfile, but only macOS is active; Ubuntu and its native packages are commented and unverified."
+    },
+    {
+      "kind": "package-manifest",
+      "path": "package.json",
+      "sha256": "d2628c2adf3beef633a8a245cb2d06c0b7dbbc0e122d46b65f20b0c0ab8e6946",
+      "statement": "Manifest requires Node >=24.12.0, pins pnpm 10.32.1, permits esbuild and lefthook builds, and defines install lifecycle behavior."
+    },
+    {
+      "kind": "lockfile",
+      "path": "pnpm-lock.yaml",
+      "sha256": "43531812368e1585224f1a28f6371c584359dbc7fefe1a41aa4f6d5ed7aac842",
+      "statement": "Frozen root lockfileVersion 9 lock is bound for lifecycle-enabled pnpm install --frozen-lockfile preparation."
+    }
+  ],
+  "taskId": "tauri-start-solid.apply-font-preferences"
+}

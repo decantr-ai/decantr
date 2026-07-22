@@ -166,7 +166,7 @@ describe('analyze command', () => {
     );
     writeFileSync(
       join(testDir, 'src', 'main.tsx'),
-      'import { HashRouter } from "react-router-dom";\n',
+      'import { HashRouter } from "react-router-dom";\nimport { App } from "./App";\nvoid HashRouter; void App;\n',
     );
     writeFileSync(
       join(testDir, 'src', 'App.tsx'),
@@ -252,6 +252,55 @@ describe('analyze command', () => {
     expect(analysis.styling?.cssVariables?.length ?? 0).toBeGreaterThan(0);
     expect(analysis.layout?.shellPattern).toContain('sidebar-main');
     expect(analysis.dependencies?.ui).toContain('react-router-dom');
+  });
+
+  it('keeps inferred route candidates out of the observed Essence contract', () => {
+    writeFileSync(
+      join(testDir, 'package.json'),
+      JSON.stringify({
+        name: 'unrooted-react-app',
+        dependencies: { react: '^19.0.0', 'react-router-dom': '^7.0.0' },
+      }),
+    );
+    mkdirSync(join(testDir, 'src'), { recursive: true });
+    writeFileSync(
+      join(testDir, 'src', 'App.tsx'),
+      'import { Route } from "react-router-dom"; export const App = () => <Route path="/settings" element={<main />} />;\n',
+    );
+
+    execSync(`node ${cliPath} analyze`, { cwd: testDir, stdio: 'pipe' });
+
+    const analysis = JSON.parse(
+      readFileSync(join(testDir, '.decantr', 'analysis.json'), 'utf-8'),
+    ) as {
+      routes?: {
+        authority?: string;
+        routes?: Array<{ path: string }>;
+        candidateRoutes?: Array<{ path: string }>;
+      };
+    };
+    const proposal = JSON.parse(
+      readFileSync(join(testDir, '.decantr', 'observed-essence.proposal.json'), 'utf-8'),
+    ) as {
+      evidence?: { routeCount?: number; candidateRouteCount?: number };
+      essence?: {
+        blueprint?: {
+          routes?: Record<string, unknown>;
+          sections?: Array<{ pages?: Array<{ route?: string }> }>;
+        };
+      };
+    };
+
+    expect(analysis.routes?.authority).toBe('inferred');
+    expect(analysis.routes?.routes).toEqual([]);
+    expect(analysis.routes?.candidateRoutes).toContainEqual({
+      path: '/settings',
+      file: 'src/App.tsx',
+      hasLayout: false,
+    });
+    expect(proposal.evidence).toMatchObject({ routeCount: 0, candidateRouteCount: 1 });
+    expect(proposal.essence?.blueprint?.routes).toEqual({});
+    expect(proposal.essence?.blueprint?.sections?.[0]?.pages?.[0]?.route).toBeUndefined();
   });
 
   it('recommends proposal merge when the project already has an essence', () => {

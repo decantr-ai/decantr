@@ -1,0 +1,112 @@
+# Evaluator Authoring
+
+The benchmark materializer refuses to create runnable task manifests until every task has a reviewed, candidate-independent evaluator. Development evaluator sources may live here. Qualification evaluator sources, contracts, and plaintext task manifests stay under `.private/benchmark-3-10/` and are never committed.
+
+Each evaluator root has this layout:
+
+```text
+specs/<task-id>.json
+sources/<task-id>.mjs
+contracts/<task-id>.json       # generated
+manifest.json                  # generated
+```
+
+The source is one self-contained Node module. It may use Node built-ins and dependencies from the frozen target environment, but it may not import another local evaluator file or read product output. It receives `--workspace` and `--project-path`, exercises behavior independently of either experimental arm, and writes exactly one JSON object to stdout:
+
+```json
+{
+  "passed": true,
+  "metrics": {
+    "governanceViolations": 0,
+    "accessibilityViolations": 0,
+    "visualScore": 100
+  }
+}
+```
+
+The authoring spec binds the source and fixed-argv host commands:
+
+```json
+{
+  "schemaVersion": "decantr-benchmark-evaluator-authoring-spec.v2",
+  "taskId": "repository.task",
+  "contractId": "repository.task.v1",
+  "review": {
+    "status": "draft",
+    "reviewedBy": null,
+    "reviewedAt": null,
+    "notes": "Explain the independent behavioral oracle and known blind spots."
+  },
+  "oracle": {
+    "candidateIndependent": true,
+    "decantrOutputAllowed": false,
+    "sourcePath": "sources/repository.task.mjs"
+  },
+  "commands": [
+    {
+      "id": "behavior",
+      "kind": "functional",
+      "executable": "node",
+      "args": [
+        "${EVALUATOR_ROOT}/sources/repository.task.mjs",
+        "--workspace",
+        "${WORKSPACE}",
+        "--project-path",
+        "${PROJECT_PATH}"
+      ],
+      "cwd": "${EVALUATOR_ROOT}",
+      "timeoutMs": 120000,
+      "required": true,
+      "resultFormat": "json-stdout"
+    },
+    {
+      "id": "host-build",
+      "kind": "build",
+      "executable": "npm",
+      "args": ["run", "build"],
+      "cwd": "${WORKSPACE}/${PROJECT_PATH}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    }
+  ],
+  "limits": {
+    "timeoutMs": 5400000,
+    "maxRequests": 40,
+    "maxInputTokens": 1000000,
+    "maxOutputTokens": 100000
+  }
+}
+```
+
+At least one required functional command must invoke the exact bound source, and at least one host build command must be required. Compound shell strings are not accepted: split them into separate fixed commands and set `cwd` and `environment` explicitly. The materializer checks token maxima against every locked model's per-run dollar cap.
+
+An evaluator is not approved merely because its source parses. Review must verify that it:
+
+- fails on the frozen base commit;
+- passes on the expected commit;
+- accepts a defensible alternative implementation where practical;
+- does not compare against the expected diff or consume any product-generated artifact;
+- checks task behavior, scope, accessibility, and styling authority appropriate to the task;
+- emits failures rather than skipping when its runtime or fixture is unavailable.
+
+After independent review, set `review.status` to `approved` and record the reviewer, timestamp, and substantive notes. Approval does not directly open materialization.
+
+## Qualification Evidence
+
+`qualification-task.mjs --mode prepare` creates a content-bound authoring seal and compiled contract. It does not execute the evaluator. `--mode host-probe` is an optional local diagnostic that checks strict base-fails/expected-passes polarity, but it emits a non-materializable probe and can never satisfy the task gate.
+
+Materializable evidence comes only from `.github/workflows/benchmark-3-10-evaluator-qualification.yml`:
+
+1. `qualification-input.mjs --mode build` runs from a clean committed controller checkout and seals the exact candidate, reviewed environment, locked matrix, evaluator source, contract, and base/expected Git snapshot packs.
+2. `qualification-input.mjs --mode hydrate` rejects a changed, missing, extra, or symlinked artifact file before hydrating the exact commits and trees.
+3. `container-orchestrator.mjs` verifies the runner commit and clean controller tree, prepares both roles in the locked image, inspects containers from the host, and executes the evaluator with no evaluation network or sibling workspace access.
+4. GitHub signs the execution attestation. The retained provenance bundle is verified offline with exact repository, workflow, commit, ref, predicate, and hosted-runner policy.
+5. `qualification-task.mjs --mode finalize-container` retains the result pair, authoring seal, execution attestation, and provenance, then emits a v2 receipt only after independent strict-polarity and binding checks.
+6. `materialize.mjs` re-verifies the complete retained chain before writing task manifests and the public opaque qualification index.
+
+The v2 receipt binds the execution-attestation file and self digest, container-controller closure, evaluator-source closure, runner repository commit, provenance bundle bytes, and provenance verification digest. Those fields remain mandatory through run planning, execution records, and release audit.
+
+Public development input artifacts may use ordinary short-lived GitHub Actions storage. Private qualification sources and oracles require a reviewed secret-preserving transfer path; that path is not implemented, so sealed qualification execution remains closed. Never commit private evaluator material or upload it to a publicly readable artifact.
+
+Current authored-spec state is 18/24 approved for development and 13/16 approved for qualification. These are review metadata counts, not materialized tasks or human model-outcome review. Nine specs remain draft and zero external container-qualified receipts currently exist.

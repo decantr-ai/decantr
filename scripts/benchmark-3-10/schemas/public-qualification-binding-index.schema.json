@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/benchmark-3-10/public-qualification-binding-index.v2.json",
+  "title": "Decantr 3.10 opaque qualification runnable bindings",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "program",
+    "sealedAt",
+    "candidateIndexSha256",
+    "qualificationTaskIndexSha256",
+    "runtimeMatrixFileSha256",
+    "runtimeMatrixSha256",
+    "bundleSha256",
+    "tasks"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "decantr-benchmark-public-qualification-binding-index.v2" },
+    "program": { "const": "decantr-3.10-ui-change-control-proof" },
+    "sealedAt": { "type": "string", "format": "date-time" },
+    "candidateIndexSha256": { "$ref": "#/$defs/sha256" },
+    "qualificationTaskIndexSha256": { "$ref": "#/$defs/sha256" },
+    "runtimeMatrixFileSha256": { "$ref": "#/$defs/sha256" },
+    "runtimeMatrixSha256": { "$ref": "#/$defs/sha256" },
+    "bundleSha256": { "$ref": "#/$defs/sha256" },
+    "tasks": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "opaqueId",
+          "candidateSha256",
+          "manifestSha256",
+          "deliverySpecSha256",
+          "environmentSpecSha256",
+          "evaluatorContractSha256",
+          "evaluatorSpecSha256",
+          "qualificationControllerSha256",
+          "qualificationReceiptFileSha256",
+          "qualificationReceiptSha256",
+          "qualificationExecutionAttestationFileSha256",
+          "qualificationExecutionAttestationSha256",
+          "qualificationExecutionControllerSha256",
+          "qualificationEvaluatorSourceClosureSha256",
+          "qualificationInputRequestFileSha256",
+          "qualificationInputRequestSha256",
+          "qualificationInputManifestFileSha256",
+          "qualificationInputManifestSha256",
+          "qualificationRunnerCommit",
+          "qualificationProvenanceBundleFileSha256",
+          "qualificationProvenanceVerificationSha256",
+          "oracleSourceSha256"
+        ],
+        "properties": {
+          "opaqueId": { "type": "string", "pattern": "^q-[a-f0-9-]{36}$" },
+          "candidateSha256": { "$ref": "#/$defs/sha256" },
+          "manifestSha256": { "$ref": "#/$defs/sha256" },
+          "deliverySpecSha256": { "$ref": "#/$defs/sha256" },
+          "environmentSpecSha256": { "$ref": "#/$defs/sha256" },
+          "evaluatorContractSha256": { "$ref": "#/$defs/sha256" },
+          "evaluatorSpecSha256": { "$ref": "#/$defs/sha256" },
+          "qualificationControllerSha256": { "$ref": "#/$defs/sha256" },
+          "qualificationReceiptFileSha256": { "$ref": "#/$defs/sha256" },
+          "qualificationReceiptSha256": { "$ref": "#/$defs/sha256" },
+          "qualificationExecutionAttestationFileSha256": { "$ref": "#/$defs/sha256" },
+          "qualificationExecutionAttestationSha256": { "$ref": "#/$defs/sha256" },
+          "qualificationExecutionControllerSha256": { "$ref": "#/$defs/sha256" },
+          "qualificationEvaluatorSourceClosureSha256": { "$ref": "#/$defs/sha256" },
+          "qualificationInputRequestFileSha256": { "$ref": "#/$defs/sha256" },
+          "qualificationInputRequestSha256": { "$ref": "#/$defs/sha256" },
+          "qualificationInputManifestFileSha256": { "$ref": "#/$defs/sha256" },
+          "qualificationInputManifestSha256": { "$ref": "#/$defs/sha256" },
+          "qualificationRunnerCommit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+          "qualificationProvenanceBundleFileSha256": { "$ref": "#/$defs/sha256" },
+          "qualificationProvenanceVerificationSha256": { "$ref": "#/$defs/sha256" },
+          "oracleSourceSha256": { "$ref": "#/$defs/sha256" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  }
+}

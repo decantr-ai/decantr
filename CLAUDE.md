@@ -4,9 +4,13 @@ Do not add Co-Authored-By lines to commits.
 
 ## Project
 
-Decantr is AI Frontend Governance. It is a contract, context, content-corpus, and evidence layer that AI coding assistants use to keep frontend changes coherent in production codebases. Decantr does not generate code -- the AI does.
+Decantr is local-first AI Frontend Governance and UI change control. It observes project-owned authority, prepares bounded context for a specific UI change, verifies the resulting diff, and reports typed evidence. Decantr does not generate code -- the AI or developer does.
 
-Current product model: Decantr 3.9.4 is the Governed Change Proof release line on top of the public 3.8.3 baseline. The 3.9 implementation adds verifier-owned adoption truth, bounded task capsules, governance deltas, explicit CI v3, and an Angular production-authority adapter while keeping v2 reports as the default. Release completion still requires the release-evidence gate, packed-artifact matrix, publication verification, and release closeout. Because Decantr has one human maintainer, stable 3.9.4 publishes under the explicit `sole-maintainer-unqualified` waiver; the fail-closed human qualification packet remains incomplete and no precision, recall, release-qualification, or adoption-proven claim is allowed. Decantr 3.8 remains patch-only under `docs/runbooks/decantr-3-8-maintenance.md`; 3.9 maintenance boundaries live in `docs/runbooks/decantr-3-9-maintenance.md`. The approved program is `docs/programs/2026-07-16-decantr-3-9-adoption-proof-program.md`; the framework authority decision is `docs/architecture/decisions/2026-07-21-framework-authority-adapters.md`; older program files remain historical strategy unless a current reference or release note explicitly re-promotes them. A forward-looking successor architecture is tracked in `docs/audit/decantr-meta-alignment.md` (`decantr-meta` project, separate from this monorepo).
+Current stable product: Decantr 3.9.4 is the published Governed Change Proof line. It ships verifier-owned adoption truth, route-backed bounded task capsules, governance deltas, explicit CI v3, and Angular production-authority handling while keeping v2 reports as the default. Because Decantr has one human maintainer, 3.9.4 shipped under the explicit `sole-maintainer-unqualified` waiver. The quantitative human qualification packet remains incomplete, so no precision, recall, human qualification, adoption-proof, or general model-improvement claim is allowed.
+
+Current development program: Decantr 3.10 is unreleased and governed by `docs/programs/2026-07-22-decantr-3-10-ui-change-control-proof.md`. Its candidate loop is **Observe -> Prepare -> Verify -> Report**. It treats routes, layouts, components, stories, overlays, flows, packages, and runtime states as independent UI surfaces; route inventory is evidence, not the product ontology. The program must prove a predeclared treatment lift separately for each locked frontier model before 3.10 can claim material model improvement. Until then, describe the implementation as a candidate architecture under falsification, never as proven or released. The frozen 3.9.4 Day-0 result is a baseline, not a 3.10 result. Paid model runs require explicit budget authorization.
+
+Decantr 3.8 remains patch-only under `docs/runbooks/decantr-3-8-maintenance.md`; 3.9 maintenance boundaries live in `docs/runbooks/decantr-3-9-maintenance.md`. The 3.9 adoption-proof program and framework-authority decision remain historical evidence boundaries for shipped 3.9 behavior. Older program files remain history unless an active reference or release note explicitly re-promotes them. `docs/audit/decantr-meta-alignment.md` describes a separate successor-project concept and is not the active product plan for this monorepo.
 
 ## Packages
 
@@ -19,9 +23,9 @@ Current product model: Decantr 3.9.4 is the Governed Change Proof release line o
 | `@decantr/telemetry` | `packages/telemetry/` | Optional event contracts and caller-controlled sinks; no hosted default collection |
 | `@decantr/mcp-server` | `packages/mcp-server/` | MCP server exposing the submitted 8-tool surface to AI assistants |
 | `@decantr/css` | `packages/css/` | Legacy optional CSS atom adapter; not a default adoption path |
-| `@decantr/verifier` | `packages/verifier/` | Shared discovery, verification, canonical governed-change contracts, and report-schema engine |
-| `@decantr/vite-plugin` | `packages/vite-plugin/` | Vite plugin for real-time design drift detection |
-| `@decantr/cli` | `packages/cli/` | CLI for project initialization, content queries, validation, Project Health, and governance workflows |
+| `@decantr/verifier` | `packages/verifier/` | Shared discovery, independent UI-surface authority/readiness, verification, governed-change contracts, and report schemas |
+| `@decantr/vite-plugin` | `packages/vite-plugin/` | Experimental opt-in Vite guard feedback; not a default product surface |
+| `@decantr/cli` | `packages/cli/` | Primary scan/task/verify/CI change-control loop plus advanced attach and compatibility workflows |
 
 ## Apps
 
@@ -137,15 +141,27 @@ Compact, compiled contracts consumed by AI agents during scaffolding. Generated 
 
 Related intelligence schemas: `content-intelligence.v1.json`, `registry-intelligence-summary.v1.json`, `project-audit-report.v1.json`, `file-critique-report.v1.json`, `public-content-{list,record,summary}.v1.json`.
 
-## Governed Change Contracts
+## Governed Change And UI-Surface Contracts
 
-`@decantr/verifier` is the sole owner of the additive Decantr 3.9 proof contracts:
+`@decantr/verifier` is the sole owner of the shipped additive Decantr 3.9 proof contracts:
 
 - `AdoptionTruthV1` records one selected application plus independently modeled observation, governance, and mutation facts.
 - `TaskCapsuleV1` provides bounded task-time project, route, graph, authority, impact, finding, content-provenance, stop-condition, and verification context. Its canonical/default payload limit is 12,000 UTF-8 bytes with deterministic `ceil(bytes / 3)` token estimation.
 - `GovernanceDeltaV1` classifies new, inherited, resolved, and unclassified finding occurrences against compatible evidence and returns `not_proven` when a baseline or change scope is missing or incompatible.
 
 CLI, MCP, CI v3, and Studio adapt these verifier-built values; they must not define competing discovery or proof shapes. Existing v2 machine reports remain the default throughout 3.9.x. `decantr ci --report-version v3` is the only 3.9 opt-in report upgrade, and `decantr ci init --report-version v3` is required to generate a v3 workflow. No environment variable, package version, or upgrade may select v3 silently.
+
+The unreleased 3.10 candidate adds a verifier-owned `UISurfaceDiscovery` model and `UISurfaceTaskContextV1` resolver. Keep these evidence axes independent:
+
+- selected app
+- surface authority
+- topology completeness
+- taskability
+- component inventory
+- styling authority
+- runtime evidence
+
+Primary readiness language is exactly `ready`, `limited`, `blocked`, or `unsupported`. A numeric score or aggregate confidence must never hide an unresolved axis. Test, story, fixture, mock, generated, coverage, build-output, and sibling-app evidence cannot become production authority. A route, component, layout, overlay, story, flow, package, runtime state, or exact file may be a task selector, but ambiguous or unproven targets fail closed. Non-route static evidence is normally limited unless concrete runtime reachability proves more.
 
 ## Section Context Enrichments
 
@@ -161,7 +177,9 @@ Section contexts (`.decantr/context/section-*.md`) include additional blocks gen
   4. Never nest grid layouts more than 2 levels deep
   5. Never apply padding to a container that also uses gap for the same axis
 
-## Design Pipeline
+## Legacy Greenfield Design Pipeline
+
+This pipeline remains supported content/scaffolding behavior, but it is not the Decantr 3.10 product thesis or the primary help path.
 
 1. **Intent** -- User describes what they want to build.
 2. **Interpret** -- Parse intent into structured form.
@@ -169,7 +187,7 @@ Section contexts (`.decantr/context/section-*.md`) include additional blocks gen
 4. **Specify** -- Write `decantr.essence.json`.
 5. **Compose** -- Resolve layouts from patterns and themes.
 6. **Generate** -- User's AI generates code from the composition.
-7. **Guard** -- Validate every change against the spec. Prevent drift.
+7. **Guard** -- Validate detectable change evidence against the spec and report drift; static checks do not prove complete runtime behavior.
 
 ## Guard Rules
 
@@ -256,16 +274,17 @@ The MCP server (`@decantr/mcp-server`) exposes the submitted Decantr 3 **8-tool*
 
 Do not add a ninth content tool in Decantr 3.x. Route new content-corpus actions through `decantr_registry` for directory compatibility.
 
-`decantr_context` task responses are compact by default. Preserve route identity, implementation read targets, authority, graph readiness/ranking summaries, health, stop conditions, and verify command while bounding large context and omitting full nodes/edges. `detail: "full"` is the explicit diagnostic opt-in. Task context must block when graph artifacts are missing or stale.
+`decantr_context` task responses are compact by default. Preserve the selected target, implementation read targets, authority, readiness axes, graph state when applicable, health, stop conditions, and verify command while bounding large context and omitting full nodes/edges. `detail: "full"` is the explicit diagnostic opt-in. A route-backed `TaskCapsuleV1` still requires current graph evidence. A discovery-backed 3.10 UI-surface context may be read-only without an attached graph, but it must remain limited or blocked unless its own authority requirements are met.
 
-The compact CLI and MCP task adapters are projections of `TaskCapsuleV1`. Preserve existing top-level compatibility fields and the `taskCapsuleVersion` / `task_capsule_version` markers; do not add a second nested copy of the capsule.
+Stable attached-route CLI and MCP task adapters are projections of `TaskCapsuleV1`. Preserve existing top-level compatibility fields and the `taskCapsuleVersion` / `task_capsule_version` markers; do not add a second nested copy of the capsule. Candidate discovery-backed UI-surface context remains a distinct read-only result and must not claim a task-capsule marker.
 
 ## CLI Commands
 
 Authoritative dispatch: `packages/cli/src/index.ts` switch statement. Groups:
 
 **Project lifecycle:** `new`, `init`, `status`, `upgrade`
-**Governance workflows:** `setup`, `scan`, `adopt`, `doctor`, `task`, `verify`, `ci`, `resolve`, `codify`, `connect`, `studio`
+**Primary change-control workflow:** `scan`, `task`, `verify`, `ci init`
+**Advanced governance workflows:** `setup`, `adopt`, `doctor`, `resolve`, `codify`, `connect`, `studio`
 **Content sync:** `sync`, `refresh`
 **Content queries:** `search`, `suggest`, `get`, `list`, `showcase`
 **Validation / drift:** `validate`, `check`, `heal`, `migrate`, `audit`
@@ -305,11 +324,11 @@ Assistant rule-file bridge behavior is deliberately conservative:
 
 Adoption safety invariants:
 
-- Shared discovery lives in `@decantr/verifier`. Formal TanStack source files outrank generated trees; React Router object routes resolve nested paths and lazy implementation files; Vue Router object routes are formal evidence; pathname-only routes are medium confidence; app scans inherit workspace-level assistant rules. Angular uses the selected build entry and TypeScript import graph to prove router authority, excludes tests/fixtures, treats lazy boundaries as non-taskable structural signals, and separates authority/completeness/taskability/style evidence from aggregate confidence. Do not add a generic Angular route regex or let dependency-only Tailwind evidence outrank selected-app build/runtime styling.
+- Shared discovery lives in `@decantr/verifier`. Selected app, surface authority, topology completeness, taskability, component inventory, styling authority, and runtime evidence are independent. Formal TanStack source files outrank generated trees; React Router object routes resolve nested paths and lazy implementation files; Vue Router object routes are formal evidence; pathname-only routes remain inferred evidence. Angular uses the selected build entry and TypeScript import graph to prove router authority, excludes tests/fixtures, treats lazy boundaries as non-taskable structural signals, and keeps every authority axis visible. Do not add a generic Angular route regex or let dependency-only Tailwind evidence outrank selected-app build/runtime styling.
 - Angular Brownfield adoption and direct existing-app init fail closed on unproven or partial route discovery unless `--force` is explicit. Angular CLI/MCP route tasks and CI v3 remain fail closed even after an adoption override; live source authority outranks saved analysis.
 - Greenfield `init` writes the first typed graph. Explicit `--workflow=greenfield` controls defaults even inside an existing technology scaffold and must not inherit Brownfield personality, shell, commands, or authority from incidental host files.
 - Graph construction uses shared route discovery for route/page implementation provenance even when `.decantr/analysis.json` is absent.
-- `decantr task` and MCP task activation require a current graph and lead read targets with the discovered implementation source. A blocked CLI task emits structured remediation but exits nonzero.
+- In stable 3.9.4, route-backed `decantr task` and MCP task activation require a current graph and lead read targets with the discovered implementation source. In the 3.10 candidate, `decantr task <target>` may prepare read-only discovery context for routes, components, layouts, overlays, stories, packages, or exact files before adoption. It must use live discovery, never saved analysis as authority, and must fail closed on unknown, ambiguous, unresolved, or non-taskable targets. A blocked CLI task emits structured reasons and exits nonzero.
 - `scan`, `adopt`, `doctor`, MCP project state, CI v3, and Studio must consume verifier-owned adoption truth for the selected app. Observation does not imply governance, and a planned write is not a completed mutation.
 - `decantr ci` and generated CI stay on v2 unless `--report-version v3` is explicit. CI v3 carries `AdoptionTruthV1` and `GovernanceDeltaV1`; missing, stale, or incompatible proof remains `not_proven` and non-passing unless `--fail-on none` is explicit.
 - Studio is a read-only renderer. It may read current state or project-mode health/CI v2/CI v3/contract artifacts and recompute in memory, but it must not write project files, run repair/build/package-manager/Git commands, invoke an agent, or upload source.
@@ -323,7 +342,7 @@ Adoption safety invariants:
 | Path | Purpose |
 |------|---------|
 | `docs/css-scaffolding-guide.md` | Full CSS implementation spec (@layer, theme scoping, variable naming). Generated `DECANTR.md` includes a condensed version. |
-| `docs/programs/` | Active 3.9 adoption-proof program plus historical strategic programs |
+| `docs/programs/` | Active 3.10 UI change-control proof program plus preserved historical programs |
 | `docs/runbooks/` | Operational runbooks (releases, deploys, adoption proof, certification, and 3.8/3.9 maintenance) |
 | `docs/specs/` | Design specifications for major features |
 | `docs/architecture/` | Architecture diagrams and flow documentation |
@@ -340,3 +359,9 @@ Adoption safety invariants:
 - Release/audit automation lives in `scripts/*.mjs` (30+ scripts covering showcases, package surface, npm, blueprint governance, etc.)
 - Root `config/` carries machine-readable package retirement and surface manifests (`package-retirements.json`, `package-surface.json`)
 - `pnpm audit:packed-content-facade` proves clean tarball installation and legacy content/registry facade identity. `pnpm audit:3-9-qualification:lint` checks packet structure only; only the default `pnpm audit:3-9-qualification` command can grant human qualification. Stable 3.9 publication is separately authorized by `pnpm audit:3-9-release-gate`, which may accept only the exact version-bound sole-maintainer waiver and never grants quantitative claims.
+- `scripts/benchmark-3-10/` owns the frozen corpus, model lock, protocol, neutral runner, and release-gate audit. Validate locally without paid calls; do not start the 320-run experiment without explicit budget authorization and sealed qualification material.
+- 3.10 evaluator approval is not qualification. Local host probes are explicitly non-materializable. Runnable task evidence requires the external GitHub-hosted container workflow, exact sealed snapshot packs, strict base-fails/expected-passes polarity, a clean committed controller, a signed execution attestation, and offline-verified provenance bound through task manifests, plans, run records, and release audit. Private qualification input transfer is not implemented and must remain closed.
+- The checked-in qualification-input producer supports public development tasks only. Host `run-one` records are explicitly test-only; release-eligible model evidence still requires an unimplemented GitHub-hosted split-stage agent/evaluator executor. Its separately attested minimal agent image must contain no evaluator, expected-patch, qualification-controller, oracle, private-task, or hidden-review bytes; only after the agent output and trajectory are content-addressed may the hidden evaluator stage receive sealed inputs.
+- Blinded preference is gated over 32 qualification task/model units after strict repetition-majority aggregation: at least 26 decisive units, at least 60% treatment preference among decisive units, and a two-sided 95% Wilson lower bound above 50%. Framework functional strata remain exploratory unless separately powered.
+- Current 3.10 readiness is 31/40 evaluator reviews, 8/40 environment reviews, 26/26 runtime profiles unbuilt/unverified, zero materializable qualification receipts, no human-approved Day-0 oracle, and no candidate tarball set, paid adapter, budget approval, provider run, blinded review, or qualification statistic. Recompute before repeating these numbers; test-green harness mechanics are not product-value evidence.
+- A direct 3.10 stable release is allowed only after the frozen candidate passes the predeclared benchmark gates. Mixed evidence narrows the claim and product scope; failed evidence blocks a value-proof claim. Do not create an RC or `next` lane.

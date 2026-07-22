@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/benchmark-3-10/power-pilot.v1.json",
+  "title": "Decantr 3.10 frozen development power pilot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "program",
+    "frozenAt",
+    "qualificationExecutionOpenedAt",
+    "runPlanSha256",
+    "candidateTarballSetSha256",
+    "developmentRunRecordSetSha256",
+    "analysisCodeSha256",
+    "analysisSeed",
+    "developmentTaskCount",
+    "targetEffectPoints",
+    "alpha",
+    "estimatedPower",
+    "method"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "decantr-benchmark-power-pilot.v1" },
+    "program": { "const": "decantr-3.10-ui-change-control-proof" },
+    "frozenAt": { "type": "string", "format": "date-time" },
+    "qualificationExecutionOpenedAt": { "type": "string", "format": "date-time" },
+    "runPlanSha256": { "$ref": "#/$defs/sha256" },
+    "candidateTarballSetSha256": { "$ref": "#/$defs/sha256" },
+    "developmentRunRecordSetSha256": { "$ref": "#/$defs/sha256" },
+    "analysisCodeSha256": { "$ref": "#/$defs/sha256" },
+    "analysisSeed": { "type": "string", "minLength": 16 },
+    "developmentTaskCount": { "type": "integer", "minimum": 1 },
+    "targetEffectPoints": { "const": 5 },
+    "alpha": { "const": 0.05 },
+    "estimatedPower": { "type": "number", "minimum": 0.8, "maximum": 1 },
+    "method": { "type": "string", "minLength": 20 }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  }
+}

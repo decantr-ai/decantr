@@ -6,9 +6,12 @@ export type CommandSurfaceClass =
   | 'experimental'
   | 'deprecated-alias';
 
+export type CommandSurfaceVisibility = 'default' | 'advanced' | 'compatibility';
+
 export interface CommandSurfaceEntry {
   command: string;
   classification: CommandSurfaceClass;
+  visibility: CommandSurfaceVisibility;
   mutates: boolean;
   audience: 'app-developer' | 'content-author' | 'operator' | 'ai-agent' | 'internal';
   purpose: string;
@@ -19,6 +22,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'setup',
     classification: 'primary',
+    visibility: 'advanced',
     mutates: false,
     audience: 'app-developer',
     purpose: 'Detect project state and recommend the correct Decantr workflow.',
@@ -27,6 +31,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'scan',
     classification: 'primary',
+    visibility: 'default',
     mutates: false,
     audience: 'app-developer',
     purpose: 'Read-only Brownfield reconnaissance without writing Decantr artifacts.',
@@ -35,6 +40,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'new',
     classification: 'primary',
+    visibility: 'advanced',
     mutates: true,
     audience: 'app-developer',
     purpose: 'Create a greenfield Decantr workspace and optional runnable starter.',
@@ -43,6 +49,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'adopt',
     classification: 'primary',
+    visibility: 'default',
     mutates: true,
     audience: 'app-developer',
     purpose: 'Brownfield workflow: analyze, attach, verify, baseline, and show next steps.',
@@ -51,6 +58,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'task',
     classification: 'primary',
+    visibility: 'default',
     mutates: false,
     audience: 'ai-agent',
     purpose:
@@ -60,6 +68,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'verify',
     classification: 'primary',
+    visibility: 'default',
     mutates: false,
     audience: 'app-developer',
     purpose:
@@ -69,6 +78,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'resolve',
     classification: 'primary',
+    visibility: 'advanced',
     mutates: true,
     audience: 'app-developer',
     purpose:
@@ -78,6 +88,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'ci',
     classification: 'primary',
+    visibility: 'default',
     mutates: true,
     audience: 'operator',
     purpose:
@@ -87,6 +98,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'doctor',
     classification: 'primary',
+    visibility: 'advanced',
     mutates: false,
     audience: 'app-developer',
     purpose:
@@ -96,6 +108,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'connect',
     classification: 'primary',
+    visibility: 'advanced',
     mutates: true,
     audience: 'app-developer',
     purpose: 'Configure editor-specific Decantr activation such as Cursor MCP and project rules.',
@@ -104,6 +117,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'codify',
     classification: 'primary',
+    visibility: 'advanced',
     mutates: true,
     audience: 'app-developer',
     purpose:
@@ -113,6 +127,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'content',
     classification: 'content-author',
+    visibility: 'advanced',
     mutates: true,
     audience: 'content-author',
     purpose:
@@ -122,6 +137,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'magic',
     classification: 'advanced',
+    visibility: 'advanced',
     mutates: true,
     audience: 'app-developer',
     purpose: 'Intent-first greenfield path that steers existing apps into brownfield analysis.',
@@ -130,6 +146,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'init',
     classification: 'advanced',
+    visibility: 'advanced',
     mutates: true,
     audience: 'app-developer',
     purpose: 'Attach or initialize Decantr contract and context files.',
@@ -138,6 +155,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'analyze',
     classification: 'advanced',
+    visibility: 'advanced',
     mutates: true,
     audience: 'app-developer',
     purpose: 'Brownfield inventory and proposal entrypoint.',
@@ -146,6 +164,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'refresh',
     classification: 'advanced',
+    visibility: 'advanced',
     mutates: true,
     audience: 'app-developer',
     purpose:
@@ -155,6 +174,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'graph',
     classification: 'advanced',
+    visibility: 'advanced',
     mutates: true,
     audience: 'ai-agent',
     purpose:
@@ -164,6 +184,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'health',
     classification: 'advanced',
+    visibility: 'advanced',
     mutates: false,
     audience: 'app-developer',
     purpose: 'Canonical local reliability report, evidence, remediation, and CI spine.',
@@ -172,6 +193,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'studio',
     classification: 'primary',
+    visibility: 'advanced',
     mutates: false,
     audience: 'app-developer',
     purpose: 'Local Project Health and workspace triage dashboard.',
@@ -180,6 +202,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'workspace',
     classification: 'advanced',
+    visibility: 'advanced',
     mutates: false,
     audience: 'app-developer',
     purpose:
@@ -189,6 +212,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'check',
     classification: 'advanced',
+    visibility: 'advanced',
     mutates: false,
     audience: 'app-developer',
     purpose: 'Fast contract and guard validation.',
@@ -197,6 +221,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'heal',
     classification: 'deprecated-alias',
+    visibility: 'compatibility',
     mutates: false,
     audience: 'app-developer',
     purpose: 'Deprecated alias for check.',
@@ -205,6 +230,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'audit',
     classification: 'advanced',
+    visibility: 'advanced',
     mutates: false,
     audience: 'app-developer',
     purpose: 'Lower-level verifier audit or file critique against compiled packs.',
@@ -213,6 +239,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'migrate',
     classification: 'advanced',
+    visibility: 'advanced',
     mutates: true,
     audience: 'app-developer',
     purpose: 'Migrate pre-v4 Essence files to the active v4 contract.',
@@ -221,6 +248,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'add',
     classification: 'advanced',
+    visibility: 'advanced',
     mutates: true,
     audience: 'app-developer',
     purpose: 'Compose sections, pages, and features into an attached contract.',
@@ -229,6 +257,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'remove',
     classification: 'advanced',
+    visibility: 'advanced',
     mutates: true,
     audience: 'app-developer',
     purpose: 'Remove sections, pages, and features from an attached contract.',
@@ -237,6 +266,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'theme',
     classification: 'advanced',
+    visibility: 'advanced',
     mutates: true,
     audience: 'app-developer',
     purpose: 'Manage and switch Decantr themes.',
@@ -245,6 +275,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'rules',
     classification: 'advanced',
+    visibility: 'advanced',
     mutates: true,
     audience: 'ai-agent',
     purpose: 'Preview or apply assistant bridge snippets to supported rule files.',
@@ -253,6 +284,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'export',
     classification: 'advanced',
+    visibility: 'advanced',
     mutates: true,
     audience: 'app-developer',
     purpose: 'Export Decantr tokens to framework or design-token formats.',
@@ -261,6 +293,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'status',
     classification: 'advanced',
+    visibility: 'advanced',
     mutates: false,
     audience: 'app-developer',
     purpose: 'Inspect local project DNA and sync status.',
@@ -269,6 +302,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'sync',
     classification: 'advanced',
+    visibility: 'advanced',
     mutates: true,
     audience: 'app-developer',
     purpose: 'Sync official vocabulary content into the local cache.',
@@ -277,6 +311,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'upgrade',
     classification: 'advanced',
+    visibility: 'advanced',
     mutates: true,
     audience: 'app-developer',
     purpose: 'Check and optionally apply official-vocabulary content updates.',
@@ -285,6 +320,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'sync-drift',
     classification: 'advanced',
+    visibility: 'advanced',
     mutates: true,
     audience: 'app-developer',
     purpose: 'Review and resolve local drift log entries.',
@@ -293,6 +329,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'registry',
     classification: 'deprecated-alias',
+    visibility: 'compatibility',
     mutates: true,
     audience: 'operator',
     purpose:
@@ -302,6 +339,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'search',
     classification: 'advanced',
+    visibility: 'advanced',
     mutates: false,
     audience: 'app-developer',
     purpose: 'Vocabulary content discovery shortcut.',
@@ -310,6 +348,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'suggest',
     classification: 'advanced',
+    visibility: 'advanced',
     mutates: false,
     audience: 'app-developer',
     purpose: 'Vocabulary pattern suggestion shortcut.',
@@ -318,6 +357,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'get',
     classification: 'advanced',
+    visibility: 'advanced',
     mutates: false,
     audience: 'app-developer',
     purpose: 'Fetch full vocabulary item details.',
@@ -326,6 +366,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'list',
     classification: 'advanced',
+    visibility: 'advanced',
     mutates: false,
     audience: 'app-developer',
     purpose: 'List vocabulary items by type.',
@@ -334,6 +375,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'showcase',
     classification: 'operator',
+    visibility: 'advanced',
     mutates: false,
     audience: 'operator',
     purpose: 'Inspect audited showcase benchmark metadata.',
@@ -342,6 +384,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'validate',
     classification: 'advanced',
+    visibility: 'advanced',
     mutates: false,
     audience: 'app-developer',
     purpose: 'Validate an Essence file directly.',
@@ -350,6 +393,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'content-health',
     classification: 'content-author',
+    visibility: 'compatibility',
     mutates: false,
     audience: 'content-author',
     purpose: 'Local official-vocabulary repository health report.',
@@ -358,6 +402,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'create',
     classification: 'content-author',
+    visibility: 'compatibility',
     mutates: true,
     audience: 'content-author',
     purpose: 'Create a custom vocabulary content item scaffold.',
@@ -366,6 +411,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'publish',
     classification: 'deprecated-alias',
+    visibility: 'compatibility',
     mutates: false,
     audience: 'content-author',
     purpose:
@@ -375,6 +421,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'login',
     classification: 'deprecated-alias',
+    visibility: 'compatibility',
     mutates: true,
     audience: 'operator',
     purpose: 'Legacy credential helper retained for scripts that still configure DECANTR_API_KEY.',
@@ -383,6 +430,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'logout',
     classification: 'deprecated-alias',
+    visibility: 'compatibility',
     mutates: true,
     audience: 'operator',
     purpose: 'Legacy credential cleanup helper retained for script compatibility.',
@@ -391,6 +439,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
     command: 'telemetry',
     classification: 'operator',
+    visibility: 'advanced',
     mutates: true,
     audience: 'operator',
     purpose: 'Inspect caller-configured private CLI telemetry and identity settings.',

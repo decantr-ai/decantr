@@ -1,0 +1,81 @@
+{
+  "base": {
+    "commit": "795d311d1d8b8e502eb7f33b9b6d4475691d3101",
+    "tree": "6c51e9a67f9fd6fdba8be75d8cbdc85f3c710e3e"
+  },
+  "cleanAfterPreparation": true,
+  "lockfiles": [
+    {
+      "path": "pnpm-lock.yaml",
+      "sha256": "8417a43c6dd474809040c25f6f41c5cb14e9c3aea804a9539b375808ee6001b9"
+    }
+  ],
+  "partition": "development",
+  "preparation": [
+    {
+      "args": [
+        "--",
+        ".env.example",
+        ".env"
+      ],
+      "cwd": ".",
+      "executable": "/bin/cp",
+      "id": "copy-project-environment",
+      "network": "none",
+      "required": true,
+      "timeoutMs": 10000
+    },
+    {
+      "args": [
+        "install",
+        "--frozen-lockfile"
+      ],
+      "cwd": ".",
+      "executable": "pnpm",
+      "id": "install-dependencies",
+      "network": "dependency-registry",
+      "required": true,
+      "timeoutMs": 7200000
+    }
+  ],
+  "profile": {
+    "arch": "x64",
+    "bunVersion": null,
+    "id": "node-22.19.0-pnpm-10.33.0",
+    "nodeVersion": "22.19.0",
+    "os": "linux",
+    "packageManager": {
+      "name": "pnpm",
+      "version": "10.33.0"
+    }
+  },
+  "projectPath": ".",
+  "review": {
+    "notes": "Independent source-evidence re-review verified 3 frozen Git blobs and exact SHA-256 values at 795d311d1d8b8e502eb7f33b9b6d4475691d3101. Independent review confirms Node >=22, Ubuntu matrices for Node 22/24/LTS, pnpm 10, root frozen installation, and environment copy needed by install-time generators. Frozen source pins neither runtime nor pnpm patch, so candidate Node 22.19.0/pnpm 10.33.0 remains provisional pending an exact Linux x64 clean preparation probe.",
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "status": "draft"
+  },
+  "schemaVersion": "decantr-benchmark-task-environment.v1",
+  "sourceEvidence": [
+    {
+      "kind": "reviewer-override",
+      "path": ".github/actions/setup-pnpm/action.yml",
+      "sha256": "f8dff51ac2ac228d0c65c70cf1ddefeda2e91c6599c5d12421f311501500f494",
+      "statement": "Frozen composite action selects pnpm 10, resolves a Node major or LTS input, and runs root pnpm install --frozen-lockfile."
+    },
+    {
+      "kind": "package-manifest",
+      "path": "package.json",
+      "sha256": "61235f875f62dada88a9f87337c588401ef6ef52cdaa9c2c5069e0cc73ad76b5",
+      "statement": "Manifest requires Node >=22 and runs Prisma and build-info generators during postinstall, requiring project environment preparation."
+    },
+    {
+      "kind": "lockfile",
+      "path": "pnpm-lock.yaml",
+      "sha256": "8417a43c6dd474809040c25f6f41c5cb14e9c3aea804a9539b375808ee6001b9",
+      "statement": "Frozen root lockfileVersion 9 lock is bound for deterministic root workspace installation."
+    }
+  ],
+  "taskId": "start-ui-web.book-cover-upload"
+}

@@ -1,0 +1,69 @@
+{
+  "base": {
+    "commit": "af655d3621b32327b8fb9fb985dfb597be6105a4",
+    "tree": "2ca0fb9e9789a946e2d8199e2b891a9aa25033fe"
+  },
+  "cleanAfterPreparation": true,
+  "lockfiles": [
+    {
+      "path": "frontend/pnpm-lock.yaml",
+      "sha256": "ca5ba8aee8a7cc8b1c712524ecfbbd9340c473954643e9f3162ee334d1b53b57"
+    }
+  ],
+  "partition": "development",
+  "preparation": [
+    {
+      "args": [
+        "install",
+        "--frozen-lockfile",
+        "--prefer-offline"
+      ],
+      "cwd": "frontend",
+      "executable": "pnpm",
+      "id": "install-dependencies",
+      "network": "dependency-registry",
+      "required": true,
+      "timeoutMs": 7200000
+    }
+  ],
+  "profile": {
+    "arch": "x64",
+    "bunVersion": null,
+    "id": "node-22.19.0-pnpm-10.33.0",
+    "nodeVersion": "22.19.0",
+    "os": "linux",
+    "packageManager": {
+      "name": "pnpm",
+      "version": "10.33.0"
+    }
+  },
+  "projectPath": "frontend",
+  "review": {
+    "notes": "Independent source-evidence re-review verified 3 frozen Git blobs and exact SHA-256 values at af655d3621b32327b8fb9fb985dfb597be6105a4. Independent review confirms the frontend lock hash, cwd, and fixed install flags from frozen Ubuntu release CI. The workflow and Dockerfile both float toolchains (pnpm latest, Node latest or node:alpine), while package.json has no engines or packageManager; candidate Node 22.19.0/pnpm 10.33.0 is therefore unauthenticated pending an exact Linux x64 clean preparation probe.",
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "status": "draft"
+  },
+  "schemaVersion": "decantr-benchmark-task-environment.v1",
+  "sourceEvidence": [
+    {
+      "kind": "reviewer-override",
+      "path": ".github/workflows/release.yml",
+      "sha256": "ec4a9c130c1786ef850223e53aca109f5c8d1f3694731b3642106ebcc798b8d5",
+      "statement": "Frozen Ubuntu release workflow floats pnpm and Node at latest and installs frontend dependencies with --frozen-lockfile --prefer-offline."
+    },
+    {
+      "kind": "package-manifest",
+      "path": "frontend/package.json",
+      "sha256": "b7ec7f6cd70c98133d6781f85f96aaacce9ed9d5c7bebfa44139f126c5bcabe9",
+      "statement": "Frontend manifest defines SvelteKit preparation but contains no engines or packageManager version."
+    },
+    {
+      "kind": "lockfile",
+      "path": "frontend/pnpm-lock.yaml",
+      "sha256": "ca5ba8aee8a7cc8b1c712524ecfbbd9340c473954643e9f3162ee334d1b53b57",
+      "statement": "Frozen frontend lockfileVersion 9 lock is bound for the release workflow's frontend-scoped install."
+    }
+  ],
+  "taskId": "upsnap-frontend.pending-countdown"
+}

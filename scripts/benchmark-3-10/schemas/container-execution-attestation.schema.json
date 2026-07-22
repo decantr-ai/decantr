@@ -1,0 +1,421 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/benchmark-3-10/container-execution-attestation.v1.json",
+  "title": "Decantr 3.10 host-generated evaluator container execution attestation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "program",
+    "executionId",
+    "taskId",
+    "partition",
+    "status",
+    "executionIdentity",
+    "runnerRepositoryCommit",
+    "startedAt",
+    "endedAt",
+    "bindings",
+    "preparation",
+    "evaluation",
+    "attestationSha256"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "decantr-benchmark-container-execution-attestation.v1" },
+    "program": { "const": "decantr-3.10-ui-change-control-proof" },
+    "executionId": { "type": "string", "minLength": 8 },
+    "taskId": { "$ref": "#/$defs/taskId" },
+    "partition": { "enum": ["development", "qualification"] },
+    "status": { "const": "completed" },
+    "executionIdentity": { "$ref": "#/$defs/executionIdentity" },
+    "runnerRepositoryCommit": { "$ref": "#/$defs/gitSha" },
+    "startedAt": { "type": "string", "format": "date-time" },
+    "endedAt": { "type": "string", "format": "date-time" },
+    "bindings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate",
+        "qualificationInput",
+        "prequalificationBundle",
+        "evaluator",
+        "controller",
+        "sourceSnapshots",
+        "environment",
+        "runtimeMatrix",
+        "runtimeProfile",
+        "benchmarkImage"
+      ],
+      "properties": {
+        "qualificationInput": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["requestFileSha256", "requestSha256", "manifestFileSha256", "manifestSha256"],
+          "properties": {
+            "requestFileSha256": { "$ref": "#/$defs/sha256" },
+            "requestSha256": { "$ref": "#/$defs/sha256" },
+            "manifestFileSha256": { "$ref": "#/$defs/sha256" },
+            "manifestSha256": { "$ref": "#/$defs/sha256" }
+          }
+        },
+        "candidate": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["canonicalSha256", "fileSha256"],
+          "properties": {
+            "canonicalSha256": { "$ref": "#/$defs/sha256" },
+            "fileSha256": { "$ref": "#/$defs/sha256" }
+          }
+        },
+        "prequalificationBundle": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["bundleSha256", "fileSha256"],
+          "properties": {
+            "bundleSha256": { "$ref": "#/$defs/sha256" },
+            "fileSha256": { "$ref": "#/$defs/sha256" }
+          }
+        },
+        "evaluator": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["contractFileSha256", "oracleSourceSha256", "sourceClosureSha256", "sourceClosure"],
+          "properties": {
+            "contractFileSha256": { "$ref": "#/$defs/sha256" },
+            "oracleSourceSha256": { "$ref": "#/$defs/sha256" },
+            "sourceClosureSha256": { "$ref": "#/$defs/sha256" },
+            "sourceClosure": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "$ref": "#/$defs/evaluatorSourceEntry" }
+            }
+          }
+        },
+        "controller": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["closureSha256", "entries"],
+          "properties": {
+            "closureSha256": { "$ref": "#/$defs/sha256" },
+            "entries": {
+              "type": "array",
+              "minItems": 5,
+              "items": { "$ref": "#/$defs/closureEntry" }
+            }
+          }
+        },
+        "sourceSnapshots": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["base", "expected"],
+          "properties": {
+            "base": { "$ref": "#/$defs/sourceSnapshot" },
+            "expected": { "$ref": "#/$defs/sourceSnapshot" }
+          }
+        },
+        "environment": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["specFileSha256", "substanceSha256"],
+          "properties": {
+            "specFileSha256": { "$ref": "#/$defs/sha256" },
+            "substanceSha256": { "$ref": "#/$defs/sha256" }
+          }
+        },
+        "runtimeMatrix": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["fileSha256", "matrixSha256"],
+          "properties": {
+            "fileSha256": { "$ref": "#/$defs/sha256" },
+            "matrixSha256": { "$ref": "#/$defs/sha256" }
+          }
+        },
+        "runtimeProfile": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "profileSha256"],
+          "properties": {
+            "id": { "type": "string", "minLength": 3 },
+            "profileSha256": { "$ref": "#/$defs/sha256" }
+          }
+        },
+        "benchmarkImage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["reference", "digest", "inspectEvidence"],
+          "properties": {
+            "reference": {
+              "type": "string",
+              "pattern": "^ghcr\\.io/decantr-ai/decantr-benchmark-3-10:(?:node|bun)-[0-9]+\\.[0-9]+\\.[0-9]+-(?:npm|pnpm|yarn|bun)-[0-9]+\\.[0-9]+\\.[0-9]+@sha256:[a-f0-9]{64}$"
+            },
+            "digest": { "$ref": "#/$defs/imageDigest" },
+            "inspectEvidence": { "$ref": "#/$defs/jsonEvidence" }
+          }
+        }
+      }
+    },
+    "preparation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["networkPolicy", "directTaskEgress", "proxy", "roles"],
+      "properties": {
+        "networkPolicy": { "const": "isolated-forward-proxy" },
+        "directTaskEgress": { "const": false },
+        "proxy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "image",
+            "configSha256",
+            "fixedHosts",
+            "lockfileHosts",
+            "allowedHosts",
+            "lockfiles",
+            "inspectEvidence",
+            "networkInspectEvidence"
+          ],
+          "properties": {
+            "image": { "$ref": "#/$defs/image" },
+            "configSha256": { "$ref": "#/$defs/sha256" },
+            "fixedHosts": { "$ref": "#/$defs/hosts" },
+            "lockfileHosts": { "$ref": "#/$defs/hosts" },
+            "allowedHosts": { "$ref": "#/$defs/hosts" },
+            "lockfiles": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "$ref": "#/$defs/lockfile" }
+            },
+            "inspectEvidence": { "$ref": "#/$defs/jsonEvidence" },
+            "networkInspectEvidence": { "$ref": "#/$defs/jsonEvidence" }
+          }
+        },
+        "roles": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["base", "expected"],
+          "properties": {
+            "base": { "$ref": "#/$defs/preparationRole" },
+            "expected": { "$ref": "#/$defs/preparationRole" }
+          }
+        }
+      }
+    },
+    "evaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["networkMode", "hostInspected", "roles"],
+      "properties": {
+        "networkMode": { "const": "none" },
+        "hostInspected": { "const": true },
+        "roles": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["base", "expected"],
+          "properties": {
+            "base": { "$ref": "#/$defs/evaluationRole" },
+            "expected": { "$ref": "#/$defs/evaluationRole" }
+          }
+        }
+      }
+    },
+    "attestationSha256": { "$ref": "#/$defs/sha256" }
+  },
+  "$defs": {
+    "taskId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,95}$" },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "gitSha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "imageDigest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "image": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reference", "digest"],
+      "properties": {
+        "reference": { "type": "string", "minLength": 3 },
+        "digest": { "$ref": "#/$defs/imageDigest" }
+      }
+    },
+    "executionIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "repository", "workflowRef", "runId", "runAttempt", "actor", "ref"],
+      "properties": {
+        "provider": { "enum": ["github-actions", "local"] },
+        "repository": { "type": "string", "minLength": 1 },
+        "workflowRef": { "type": "string", "minLength": 1 },
+        "runId": { "type": "string", "minLength": 1 },
+        "runAttempt": { "type": "string", "minLength": 1 },
+        "actor": { "type": "string", "minLength": 1 },
+        "ref": { "type": "string", "minLength": 1 }
+      }
+    },
+    "closureEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "bytes"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "bytes": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "evaluatorSourceEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "kind", "sha256", "bytes", "mode"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "kind": { "const": "file" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "bytes": { "type": "integer", "minimum": 1 },
+        "mode": { "type": "integer", "minimum": 0, "maximum": 511 }
+      }
+    },
+    "sourceSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["revision", "packFileSha256"],
+      "properties": {
+        "revision": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["commit", "tree"],
+          "properties": {
+            "commit": { "$ref": "#/$defs/gitSha" },
+            "tree": { "$ref": "#/$defs/gitSha" }
+          }
+        },
+        "packFileSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "fileEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["logicalPath", "fileSha256"],
+      "properties": {
+        "logicalPath": { "type": "string", "minLength": 1 },
+        "fileSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "jsonEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["logicalPath", "fileSha256", "canonicalSha256"],
+      "properties": {
+        "logicalPath": { "type": "string", "minLength": 1 },
+        "fileSha256": { "$ref": "#/$defs/sha256" },
+        "canonicalSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "hosts": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z]{2,63}$"
+      }
+    },
+    "lockfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "preparationStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "commandSha256",
+        "network",
+        "imageDigest",
+        "inspectEvidence",
+        "logsEvidence",
+        "startedAt",
+        "endedAt",
+        "exitCode"
+      ],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "commandSha256": { "$ref": "#/$defs/sha256" },
+        "network": { "enum": ["none", "isolated-forward-proxy"] },
+        "imageDigest": { "$ref": "#/$defs/imageDigest" },
+        "inspectEvidence": { "$ref": "#/$defs/jsonEvidence" },
+        "logsEvidence": { "$ref": "#/$defs/fileEvidence" },
+        "startedAt": { "type": "string", "format": "date-time" },
+        "endedAt": { "type": "string", "format": "date-time" },
+        "exitCode": { "const": 0 }
+      }
+    },
+    "preparationRole": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "workspaceBeforeSha256",
+        "workspacePreparedSha256",
+        "networkPolicy",
+        "directTaskEgress",
+        "steps"
+      ],
+      "properties": {
+        "workspaceBeforeSha256": { "$ref": "#/$defs/sha256" },
+        "workspacePreparedSha256": { "$ref": "#/$defs/sha256" },
+        "networkPolicy": { "const": "isolated-forward-proxy" },
+        "directTaskEgress": { "const": false },
+        "steps": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/preparationStep" }
+        }
+      }
+    },
+    "resultEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["logicalPath", "fileSha256", "canonicalSha256", "status"],
+      "properties": {
+        "logicalPath": { "type": "string", "minLength": 1 },
+        "fileSha256": { "$ref": "#/$defs/sha256" },
+        "canonicalSha256": { "$ref": "#/$defs/sha256" },
+        "status": { "enum": ["passed", "failed", "build_failure", "evaluator_failure"] }
+      }
+    },
+    "evaluationRole": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "imageDigest",
+        "networkMode",
+        "hostInspectedWhileRunning",
+        "readOnlyRoot",
+        "workspaceReadOnly",
+        "siblingWorkspaceVisible",
+        "networkCanary",
+        "workspaceBeforeSha256",
+        "workspaceAfterSha256",
+        "inspectEvidence",
+        "logsEvidence",
+        "canaryEvidence",
+        "result"
+      ],
+      "properties": {
+        "imageDigest": { "$ref": "#/$defs/imageDigest" },
+        "networkMode": { "const": "none" },
+        "hostInspectedWhileRunning": { "const": true },
+        "readOnlyRoot": { "const": true },
+        "workspaceReadOnly": { "const": true },
+        "siblingWorkspaceVisible": { "const": false },
+        "networkCanary": { "const": "blocked" },
+        "workspaceBeforeSha256": { "$ref": "#/$defs/sha256" },
+        "workspaceAfterSha256": { "$ref": "#/$defs/sha256" },
+        "inspectEvidence": { "$ref": "#/$defs/jsonEvidence" },
+        "logsEvidence": { "$ref": "#/$defs/fileEvidence" },
+        "canaryEvidence": { "$ref": "#/$defs/jsonEvidence" },
+        "result": { "$ref": "#/$defs/resultEvidence" }
+      }
+    }
+  }
+}

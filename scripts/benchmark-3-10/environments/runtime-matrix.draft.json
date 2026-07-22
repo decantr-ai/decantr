@@ -1,0 +1,594 @@
+{
+  "blockers": {
+    "unapprovedTaskSpecs": 32,
+    "unbuiltProfiles": 26,
+    "unverifiedProfiles": 26
+  },
+  "frozenAt": "2026-07-22T11:29:02Z",
+  "matrixSha256": "e25bb1e59f20572fd1f4393e4d93ec5f2518256526e93ace61e9afbee431fcde",
+  "paidExecutionAuthorized": false,
+  "profiles": [
+    {
+      "arch": "x64",
+      "baseImage": {
+        "digest": null,
+        "reference": "oven/bun:1.3.10-debian"
+      },
+      "benchmarkImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:bun-1.3.10-bun-1.3.10"
+      },
+      "bunVersion": "1.3.10",
+      "id": "bun-1.3.10-bun-1.3.10",
+      "nodeVersion": null,
+      "os": "linux",
+      "packageManager": {
+        "name": "bun",
+        "version": "1.3.10"
+      },
+      "profileSha256": "66242440265e626446e2ff071c74529bf585c0e83250727f45373eaa778809c6",
+      "taskCount": 1,
+      "verification": null
+    },
+    {
+      "arch": "x64",
+      "baseImage": {
+        "digest": null,
+        "reference": "node:10.15.1-buster-slim"
+      },
+      "benchmarkImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-10.15.1-npm-6.4.1"
+      },
+      "bunVersion": null,
+      "id": "node-10.15.1-npm-6.4.1",
+      "nodeVersion": "10.15.1",
+      "os": "linux",
+      "packageManager": {
+        "name": "npm",
+        "version": "6.4.1"
+      },
+      "profileSha256": "ce92cc30e412ba97478fd2abde95dc452005ae2b7eca8d4087eebdc4e13a8c09",
+      "taskCount": 1,
+      "verification": null
+    },
+    {
+      "arch": "x64",
+      "baseImage": {
+        "digest": null,
+        "reference": "node:20.16.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-20.16.0-yarn-1.22.22"
+      },
+      "bunVersion": null,
+      "id": "node-20.16.0-yarn-1.22.22",
+      "nodeVersion": "20.16.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "yarn",
+        "version": "1.22.22"
+      },
+      "profileSha256": "7e3f19d80151f1fe7c5e7048de255d622655d459a591ac3d5ca2d69a42c3d9cc",
+      "taskCount": 1,
+      "verification": null
+    },
+    {
+      "arch": "x64",
+      "baseImage": {
+        "digest": null,
+        "reference": "node:20.19.2-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-20.19.2-npm-10.8.2"
+      },
+      "bunVersion": null,
+      "id": "node-20.19.2-npm-10.8.2",
+      "nodeVersion": "20.19.2",
+      "os": "linux",
+      "packageManager": {
+        "name": "npm",
+        "version": "10.8.2"
+      },
+      "profileSha256": "356c875e34793bed5bf73d8684bfc0b25a2c0e2caaf0602b23658b8b202c017d",
+      "taskCount": 1,
+      "verification": null
+    },
+    {
+      "arch": "x64",
+      "baseImage": {
+        "digest": null,
+        "reference": "node:20.19.4-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-20.19.4-npm-10.8.2"
+      },
+      "bunVersion": null,
+      "id": "node-20.19.4-npm-10.8.2",
+      "nodeVersion": "20.19.4",
+      "os": "linux",
+      "packageManager": {
+        "name": "npm",
+        "version": "10.8.2"
+      },
+      "profileSha256": "1586b320dbce71a6142f96764f0ff26c25e0ee74d5ab575bc8bff73253a32553",
+      "taskCount": 1,
+      "verification": null
+    },
+    {
+      "arch": "x64",
+      "baseImage": {
+        "digest": null,
+        "reference": "node:20.19.5-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-20.19.5-npm-10.8.2"
+      },
+      "bunVersion": null,
+      "id": "node-20.19.5-npm-10.8.2",
+      "nodeVersion": "20.19.5",
+      "os": "linux",
+      "packageManager": {
+        "name": "npm",
+        "version": "10.8.2"
+      },
+      "profileSha256": "ff0fb34f230a1917104343652da0bc0e95c1e74bde6f89cbba72961d2f06e120",
+      "taskCount": 1,
+      "verification": null
+    },
+    {
+      "arch": "x64",
+      "baseImage": {
+        "digest": null,
+        "reference": "node:20.5.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-20.5.0-pnpm-9.0.0"
+      },
+      "bunVersion": null,
+      "id": "node-20.5.0-pnpm-9.0.0",
+      "nodeVersion": "20.5.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "pnpm",
+        "version": "9.0.0"
+      },
+      "profileSha256": "404105eea388a729b64c0a7e5315904367740d4ea63175c8b95b3d7c260fe625",
+      "taskCount": 1,
+      "verification": null
+    },
+    {
+      "arch": "x64",
+      "baseImage": {
+        "digest": null,
+        "reference": "node:22.15.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.15.0-pnpm-10.30.3"
+      },
+      "bunVersion": null,
+      "id": "node-22.15.0-pnpm-10.30.3",
+      "nodeVersion": "22.15.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "pnpm",
+        "version": "10.30.3"
+      },
+      "profileSha256": "df11db38fdd11a882bd8be021b0eb50a3b247f7c614a11510619e8bb781d242a",
+      "taskCount": 3,
+      "verification": null
+    },
+    {
+      "arch": "x64",
+      "baseImage": {
+        "digest": null,
+        "reference": "node:22.17.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.17.0-pnpm-10.13.1"
+      },
+      "bunVersion": null,
+      "id": "node-22.17.0-pnpm-10.13.1",
+      "nodeVersion": "22.17.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "pnpm",
+        "version": "10.13.1"
+      },
+      "profileSha256": "91ddcf1669f997a598eaf6e8a6c4ebb71a730484b7ef9cb5c6b3571b0bbad30b",
+      "taskCount": 1,
+      "verification": null
+    },
+    {
+      "arch": "x64",
+      "baseImage": {
+        "digest": null,
+        "reference": "node:22.18.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.18.0-npm-8.11.0"
+      },
+      "bunVersion": null,
+      "id": "node-22.18.0-npm-8.11.0",
+      "nodeVersion": "22.18.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "npm",
+        "version": "8.11.0"
+      },
+      "profileSha256": "b5013a41369bad6bfdba7ff864d0ed7e517adc380576e1177b0f7462310a6edb",
+      "taskCount": 1,
+      "verification": null
+    },
+    {
+      "arch": "x64",
+      "baseImage": {
+        "digest": null,
+        "reference": "node:22.18.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.18.0-npm-8.5.0"
+      },
+      "bunVersion": null,
+      "id": "node-22.18.0-npm-8.5.0",
+      "nodeVersion": "22.18.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "npm",
+        "version": "8.5.0"
+      },
+      "profileSha256": "aff17f05452efdbab0df4fcf7e6f17eb9ead13af2f0c90a4dcb925fba95c1411",
+      "taskCount": 1,
+      "verification": null
+    },
+    {
+      "arch": "x64",
+      "baseImage": {
+        "digest": null,
+        "reference": "node:22.19.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.19.0-npm-10.9.3"
+      },
+      "bunVersion": null,
+      "id": "node-22.19.0-npm-10.9.3",
+      "nodeVersion": "22.19.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "npm",
+        "version": "10.9.3"
+      },
+      "profileSha256": "e4fd777eb81d647980e77859992ffc1a5623d76b7b698608e9954144da296ac2",
+      "taskCount": 3,
+      "verification": null
+    },
+    {
+      "arch": "x64",
+      "baseImage": {
+        "digest": null,
+        "reference": "node:22.19.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.19.0-pnpm-10.25.0"
+      },
+      "bunVersion": null,
+      "id": "node-22.19.0-pnpm-10.25.0",
+      "nodeVersion": "22.19.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "pnpm",
+        "version": "10.25.0"
+      },
+      "profileSha256": "d0bd1bc80e965c9247986e0e539a1ed7bf285fe32942c9c1e7a3e46b1551bac9",
+      "taskCount": 2,
+      "verification": null
+    },
+    {
+      "arch": "x64",
+      "baseImage": {
+        "digest": null,
+        "reference": "node:22.19.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.19.0-pnpm-10.28.0"
+      },
+      "bunVersion": null,
+      "id": "node-22.19.0-pnpm-10.28.0",
+      "nodeVersion": "22.19.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "pnpm",
+        "version": "10.28.0"
+      },
+      "profileSha256": "8a61389b5fbfb0549e523d62b67e00caebe3ca3928475760edef909fb795f05d",
+      "taskCount": 1,
+      "verification": null
+    },
+    {
+      "arch": "x64",
+      "baseImage": {
+        "digest": null,
+        "reference": "node:22.19.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.19.0-pnpm-10.32.1"
+      },
+      "bunVersion": null,
+      "id": "node-22.19.0-pnpm-10.32.1",
+      "nodeVersion": "22.19.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "pnpm",
+        "version": "10.32.1"
+      },
+      "profileSha256": "5005939cbeefec765081ce16a78c4895b537250f19fa0872caec97161affb5b6",
+      "taskCount": 3,
+      "verification": null
+    },
+    {
+      "arch": "x64",
+      "baseImage": {
+        "digest": null,
+        "reference": "node:22.19.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.19.0-pnpm-10.33.0"
+      },
+      "bunVersion": null,
+      "id": "node-22.19.0-pnpm-10.33.0",
+      "nodeVersion": "22.19.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "pnpm",
+        "version": "10.33.0"
+      },
+      "profileSha256": "f72699bb20063732468bed1e180f653c9f93c42ab24a2e0ba2847aab06701181",
+      "taskCount": 5,
+      "verification": null
+    },
+    {
+      "arch": "x64",
+      "baseImage": {
+        "digest": null,
+        "reference": "node:22.19.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.19.0-pnpm-11.9.0"
+      },
+      "bunVersion": null,
+      "id": "node-22.19.0-pnpm-11.9.0",
+      "nodeVersion": "22.19.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "pnpm",
+        "version": "11.9.0"
+      },
+      "profileSha256": "d04d95830c7a1f38b5b0fee58b959817d02a07c66ca549ac4974553cf31bcf49",
+      "taskCount": 1,
+      "verification": null
+    },
+    {
+      "arch": "x64",
+      "baseImage": {
+        "digest": null,
+        "reference": "node:22.19.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.19.0-yarn-1.22.22"
+      },
+      "bunVersion": null,
+      "id": "node-22.19.0-yarn-1.22.22",
+      "nodeVersion": "22.19.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "yarn",
+        "version": "1.22.22"
+      },
+      "profileSha256": "ab0d9b23d4788d323d164e41ba20f09611a67d8d0d952e15c17ff4fc9885295c",
+      "taskCount": 1,
+      "verification": null
+    },
+    {
+      "arch": "x64",
+      "baseImage": {
+        "digest": null,
+        "reference": "node:24.12.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-24.12.0-pnpm-10.26.0"
+      },
+      "bunVersion": null,
+      "id": "node-24.12.0-pnpm-10.26.0",
+      "nodeVersion": "24.12.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "pnpm",
+        "version": "10.26.0"
+      },
+      "profileSha256": "cf70e38e8a68b794500dda45809e78a88c9048da1c42fa57f51275015afce63c",
+      "taskCount": 1,
+      "verification": null
+    },
+    {
+      "arch": "x64",
+      "baseImage": {
+        "digest": null,
+        "reference": "node:24.12.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-24.12.0-pnpm-10.32.1"
+      },
+      "bunVersion": null,
+      "id": "node-24.12.0-pnpm-10.32.1",
+      "nodeVersion": "24.12.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "pnpm",
+        "version": "10.32.1"
+      },
+      "profileSha256": "8255018c89a1fa9229595f4c5a8de30004cd0bba1385d8ed1fce08a9d2c228eb",
+      "taskCount": 1,
+      "verification": null
+    },
+    {
+      "arch": "x64",
+      "baseImage": {
+        "digest": null,
+        "reference": "node:24.12.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-24.12.0-pnpm-11.2.1"
+      },
+      "bunVersion": null,
+      "id": "node-24.12.0-pnpm-11.2.1",
+      "nodeVersion": "24.12.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "pnpm",
+        "version": "11.2.1"
+      },
+      "profileSha256": "2b9f7ceced556878e385adafab458e46a6875349a8c24618599c78401e7bcc84",
+      "taskCount": 2,
+      "verification": null
+    },
+    {
+      "arch": "x64",
+      "baseImage": {
+        "digest": null,
+        "reference": "node:24.13.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-24.13.0-pnpm-10.27.0"
+      },
+      "bunVersion": null,
+      "id": "node-24.13.0-pnpm-10.27.0",
+      "nodeVersion": "24.13.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "pnpm",
+        "version": "10.27.0"
+      },
+      "profileSha256": "ee8ce19481132c56088c19311e46a7f5810c6c437b6935e8e2e9fcf4f204b4ce",
+      "taskCount": 1,
+      "verification": null
+    },
+    {
+      "arch": "x64",
+      "baseImage": {
+        "digest": null,
+        "reference": "node:24.15.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-24.15.0-pnpm-11.13.1"
+      },
+      "bunVersion": null,
+      "id": "node-24.15.0-pnpm-11.13.1",
+      "nodeVersion": "24.15.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "pnpm",
+        "version": "11.13.1"
+      },
+      "profileSha256": "45ff8a13ec32aded7f42b6945e65e47d4a81e50f32acfdbe87d3759caac029df",
+      "taskCount": 1,
+      "verification": null
+    },
+    {
+      "arch": "x64",
+      "baseImage": {
+        "digest": null,
+        "reference": "node:24.16.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-24.16.0-npm-11.6.3"
+      },
+      "bunVersion": null,
+      "id": "node-24.16.0-npm-11.6.3",
+      "nodeVersion": "24.16.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "npm",
+        "version": "11.6.3"
+      },
+      "profileSha256": "953a9af0ec1d2a52f142ab8134e1353eac8bdc9d391f745169da2a09f66a0626",
+      "taskCount": 2,
+      "verification": null
+    },
+    {
+      "arch": "x64",
+      "baseImage": {
+        "digest": null,
+        "reference": "node:24.16.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-24.16.0-npm-11.7.0"
+      },
+      "bunVersion": null,
+      "id": "node-24.16.0-npm-11.7.0",
+      "nodeVersion": "24.16.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "npm",
+        "version": "11.7.0"
+      },
+      "profileSha256": "a53cc08af5ba4fc4728d3218b8c6f242c960c83f9c6f74834acabfbdf10f14d2",
+      "taskCount": 1,
+      "verification": null
+    },
+    {
+      "arch": "x64",
+      "baseImage": {
+        "digest": null,
+        "reference": "node:24.16.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-24.16.0-pnpm-11.7.0"
+      },
+      "bunVersion": null,
+      "id": "node-24.16.0-pnpm-11.7.0",
+      "nodeVersion": "24.16.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "pnpm",
+        "version": "11.7.0"
+      },
+      "profileSha256": "2ffd1e20b862716c156f6ec2c471fa8c05c2f77d78e6dd91a8fbb89e81f52726",
+      "taskCount": 2,
+      "verification": null
+    }
+  ],
+  "program": "decantr-3.10-ui-change-control-proof",
+  "schemaVersion": "decantr-benchmark-runtime-matrix.v1",
+  "sourceSpecSetSha256": "835a08352f4b17625a1c34e453906a553ef6fc8fc8802d9356ec906f12c09b93",
+  "status": "draft",
+  "taskCounts": {
+    "approved": 8,
+    "development": 24,
+    "qualification": 16,
+    "total": 40
+  }
+}

@@ -59,30 +59,30 @@ export function readAssistantBridgeContext(projectRoot: string): AssistantBridge
 function bridgeBlock(input: AssistantBridgeContext): string {
   const lines = [
     START,
-    'Before editing any route, run `decantr task <route> "<intent>"` and use the printed authority block, read targets, local law, evidence, and verify command as the working contract.',
+    'Before editing a UI surface, run `decantr task <target> "<intent>"` and use the printed authority block, read targets, local law, evidence, and verify command as the working contract.',
   ];
 
   if (input.workflowMode === 'brownfield-attach') {
     lines.push(
-      'Before implementing Decantr-scoped work, read `decantr.essence.json`, `.decantr/context/scaffold.md`, and the route-specific task read targets first. When task context lists Brownfield analysis, doctrine, ambient-context, graph, or compiled-pack files, read those exact files too; never assume an unlisted artifact exists.',
+      'Before implementing Decantr-scoped work, read `decantr.essence.json`, `.decantr/context/scaffold.md`, and the selected surface task read targets first. When task context lists Brownfield analysis, doctrine, ambient-context, graph, or compiled-pack files, read those exact files too; never assume an unlisted artifact exists.',
       'Treat Decantr as the reconciled contract layer and the original project docs/rules as cited evidence; if runtime source and Decantr context conflict, stop and report the drift instead of guessing which side wins.',
       'Preserve the existing framework, routing, styling, package manager, data boundaries, and build conventions unless the Decantr contract explicitly records a reviewed change.',
     );
   } else if (input.workflowMode === 'hybrid-compose') {
     lines.push(
-      'Before implementing Decantr-scoped work, read `decantr.essence.json`, `.decantr/context/scaffold-pack.md`, `.decantr/context/review-pack.md`, and the route-specific task read targets first.',
+      'Before implementing Decantr-scoped work, read `decantr.essence.json`, `.decantr/context/scaffold-pack.md`, `.decantr/context/review-pack.md`, and the selected surface task read targets first.',
       'Use compiled Decantr packs for the composed contract and existing project docs/rules as implementation evidence; if they conflict, stop and report the drift instead of guessing which side wins.',
       'Preserve the host framework, routing, styling, package manager, data boundaries, and working runtime while implementing the reviewed Decantr composition.',
     );
   } else if (input.workflowMode === 'greenfield-contract-only') {
     lines.push(
-      'Before implementing Decantr-scoped work, read `decantr.essence.json`, `.decantr/context/scaffold.md`, the matching narrative section context, `.decantr/graph/contract-capsule.json`, and the route-specific task read targets first.',
+      'Before implementing Decantr-scoped work, read `decantr.essence.json`, `.decantr/context/scaffold.md`, the matching narrative section context, `.decantr/graph/contract-capsule.json`, and the selected surface task read targets first.',
       'Treat the Essence contract and local generated context as primary authority; use compiled execution packs when they are later hydrated. If generated context and runtime source conflict, stop and report the drift instead of guessing which side wins.',
       "Implement the contract with the project's chosen framework and host styling system; Decantr does not own the runtime or CSS layer.",
     );
   } else {
     lines.push(
-      'Before implementing Decantr-scoped work, read `decantr.essence.json`, `.decantr/context/scaffold-pack.md`, `.decantr/context/review-pack.md`, and the route-specific task read targets first.',
+      'Before implementing Decantr-scoped work, read `decantr.essence.json`, `.decantr/context/scaffold-pack.md`, `.decantr/context/review-pack.md`, and the selected surface task read targets first.',
       'Treat the Essence contract and compiled execution packs as primary authority; if generated context and runtime source conflict, stop and report the drift instead of guessing which side wins.',
       'Implement shared shell and route structure before filling section pages, while respecting the declared framework and host styling system.',
     );

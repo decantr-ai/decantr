@@ -87,9 +87,11 @@ describe('init command', () => {
       expect(content).toContain('## How To Use This Project');
       expect(content).toContain('## Styling Adoption');
       expect(content).toContain('contract and governance layer only');
-      expect(content).toContain('Before editing any route, run `decantr task <route> "<intent>"`');
+      expect(content).toContain(
+        'Before editing a UI surface, run `decantr task <target> "<intent>"`',
+      );
       expect(content).toContain('Authority order for this project:');
-      expect(content).toContain('decantr task <route> "<intent>"');
+      expect(content).toContain('decantr task <target> "<intent>"');
       expect(content).toContain('decantr verify                        # Run the workflow-aware');
       expect(content).toContain('`decantr_context` -- Load scaffold/page/task context');
       expect(content).not.toContain('decantr_check_drift');
@@ -400,8 +402,10 @@ describe('init command', () => {
         }`;
       }
 
-      expect(refusal).toContain('Refusing adoption: production route authority is not proven.');
-      expect(refusal).toContain('Use `--force` only after manually reviewing');
+      expect(refusal).toContain(
+        'Refusing adoption: the selected path is not proven to contain UI surfaces.',
+      );
+      expect(refusal).toContain('Use `--force` only after manually confirming');
       expect(existsSync(join(testDir, '.decantr'))).toBe(false);
 
       const forced = execSync(
@@ -626,6 +630,10 @@ describe('init command', () => {
         'import { Routes, Route } from "react-router-dom";\nexport function App() { return <Routes><Route path="/dashboard" element={<main />} /></Routes>; }\n',
       );
       writeFileSync(
+        join(testDir, 'src', 'main.tsx'),
+        'import { App } from "./App";\nexport { App };\n',
+      );
+      writeFileSync(
         join(testDir, 'decantr.essence.json'),
         JSON.stringify(
           {
@@ -724,6 +732,12 @@ describe('init command', () => {
           2,
         ) + '\n',
       );
+      mkdirSync(join(testDir, 'src'), { recursive: true });
+      writeFileSync(
+        join(testDir, 'src', 'App.tsx'),
+        'export function App() { return <main>Direct brownfield app</main>; }\n',
+      );
+      writeFileSync(join(testDir, 'src', 'main.tsx'), 'export { App } from "./App";\n');
 
       const output = execSync(`node ${cliPath} init --existing --yes --offline`, {
         cwd: testDir,
@@ -759,7 +773,16 @@ describe('init command', () => {
   it(
     'previews and applies assistant bridge rule files idempotently',
     () => {
-      writeFileSync(join(testDir, 'package.json'), JSON.stringify({ name: 'rules-app' }));
+      writeFileSync(
+        join(testDir, 'package.json'),
+        JSON.stringify({ name: 'rules-app', dependencies: { react: '^19.0.0' } }),
+      );
+      mkdirSync(join(testDir, 'src'), { recursive: true });
+      writeFileSync(
+        join(testDir, 'src', 'App.tsx'),
+        'export function App() { return <main>Rules app</main>; }\n',
+      );
+      writeFileSync(join(testDir, 'src', 'main.tsx'), 'export { App } from "./App";\n');
       writeFileSync(join(testDir, 'CLAUDE.md'), '# Existing rules\n');
       mkdirSync(join(testDir, '.claude', 'rules'), { recursive: true });
       mkdirSync(join(testDir, '.github'), { recursive: true });
@@ -790,9 +813,9 @@ describe('init command', () => {
         'utf-8',
       );
       expect((claude.match(/decantr:assistant-bridge:start/g) || []).length).toBe(1);
-      expect(claude).toContain('decantr task <route> "<intent>"');
+      expect(claude).toContain('decantr task <target> "<intent>"');
       expect(claude).toContain('runtime source and Decantr context conflict');
-      expect(preview).toContain('decantr task <route> "<intent>"');
+      expect(preview).toContain('decantr task <target> "<intent>"');
       expect(preview).toContain('report the drift instead of guessing');
       expect(cursor).toContain('alwaysApply: true');
       expect((claudeRule.match(/decantr:assistant-bridge:start/g) || []).length).toBe(1);
@@ -810,6 +833,11 @@ describe('init command', () => {
       );
       const stylesDir = join(testDir, 'src', 'styles');
       mkdirSync(stylesDir, { recursive: true });
+      writeFileSync(
+        join(testDir, 'src', 'App.tsx'),
+        'export function App() { return <main>Bridge app</main>; }\n',
+      );
+      writeFileSync(join(testDir, 'src', 'main.tsx'), 'export { App } from "./App";\n');
       const hostTokens = ':root { --host-primary: #123456; }\n';
       const hostGlobal = 'body { color: var(--host-primary); }\n';
       const hostBridge = '/* project-owned compatibility stylesheet */\n';

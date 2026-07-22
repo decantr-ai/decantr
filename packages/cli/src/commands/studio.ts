@@ -1560,7 +1560,7 @@ function studioTaskPreview(
     command:
       route && intent
         ? `decantr task ${JSON.stringify(route)} ${JSON.stringify(intent)}`
-        : 'decantr task <route> "<intent>"',
+        : 'decantr task <target> "<intent>"',
     notes: [
       'Run this before editing a route.',
       'If runtime source and Decantr context disagree, stop and report drift.',

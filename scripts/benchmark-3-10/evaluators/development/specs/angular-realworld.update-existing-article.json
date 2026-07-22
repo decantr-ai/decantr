@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "decantr-benchmark-evaluator-authoring-spec.v2",
+  "taskId": "angular-realworld.update-existing-article",
+  "contractId": "angular-realworld.update-existing-article.v1",
+  "review": {
+    "status": "approved",
+    "reviewedBy": "independent-runtime-evaluator-review-angular",
+    "reviewedAt": "2026-07-22T13:24:46Z",
+    "notes": "Approved from exact frozen-worktree evidence. Base c6aff3856a8d4ef4dc35e37f4564f40d5ff3c9a6 passes 6/11 browser checks and fails five substantive update-path checks; expected 400bc37adb42113683a397211d4746972156645c passes 11/11. The pinned Playwright oracle boots Angular, supplies only local RealWorld API mocks, distinguishes PUT edit from POST create, inspects payloads and returned-slug navigation, exercises 422 recovery and retry, and checks controls and console state. It never reads candidate source, so helper extraction and equivalent control-flow implementations are accepted by behavior. npm run build passes on both revisions under Node 20.19.4/npm 10.8.2."
+  },
+  "oracle": {
+    "candidateIndependent": true,
+    "decantrOutputAllowed": false,
+    "sourcePath": "sources/angular-realworld.update-existing-article.mjs"
+  },
+  "commands": [
+    {
+      "id": "behavior",
+      "kind": "functional",
+      "runtime": "controller",
+      "executable": "node",
+      "args": [
+        "${EVALUATOR_ROOT}/sources/angular-realworld.update-existing-article.mjs",
+        "--workspace",
+        "${WORKSPACE}",
+        "--project-path",
+        "${PROJECT_PATH}",
+        "--evaluator-runtime",
+        "${EVALUATOR_RUNTIME}"
+      ],
+      "cwd": "${EVALUATOR_ROOT}",
+      "timeoutMs": 180000,
+      "required": true,
+      "resultFormat": "json-stdout"
+    },
+    {
+      "id": "host-build",
+      "kind": "build",
+      "runtime": "task",
+      "executable": "npm",
+      "args": [
+        "run",
+        "build"
+      ],
+      "cwd": "${WORKSPACE}/${PROJECT_PATH}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    }
+  ],
+  "limits": {
+    "timeoutMs": 5400000,
+    "maxRequests": 40,
+    "maxInputTokens": 600000,
+    "maxOutputTokens": 80000
+  }
+}

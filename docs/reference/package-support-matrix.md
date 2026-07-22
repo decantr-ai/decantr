@@ -8,21 +8,21 @@ Package surface audit: `pnpm audit:package-surface`
 Package permissions audit: `pnpm audit:package-permissions`
 Security permissions reference: `docs/reference/security-permissions.md`
 
-This matrix defines which npm packages are part of the active Decantr 3 product surface.
+This matrix defines support and publishing roles for Decantr 3 npm packages. The Current Product Nucleus section below identifies the active product surface; compatibility packages remain outside it.
 
 ## Active Packages
 
 | Package | Support status | Surface class | Maturity | Release wave | Release channel | Default npm tag | Publish default | Stable candidate | Blockers | Release lane | Summary |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `@decantr/essence-spec` | core-supported | `public-foundation` | stable | `foundation` (`10`) | `stable` | `latest` | `true` | `true` | `0` | `stable-public` | Essence schemas, validation, migration, and TypeScript types. |
+| `@decantr/essence-spec` | core-supported | `public-foundation` | stable | `foundation` (`10`) | `stable` | `latest` | `true` | `true` | `0` | `stable-public` | Essence V4 schema, validation, migration, and TypeScript types for accepted project law; Brownfield production source and runtime configuration remain first authority. |
 | `@decantr/content` | core-supported | `public-foundation` | stable | `foundation` (`20`) | `stable` | `latest` | `true` | `true` | `0` | `stable-public` | Canonical Decantr corpus, schemas, provenance, search, resolution, discovery, ranking, and wiring helpers for stack-agnostic AI frontend governance. |
-| `@decantr/registry` | supported-secondary | `public-foundation` | stable | `foundation` (`30`) | `stable` | `latest` | `true` | `true` | `0` | `stable-public` | 3.x compatibility package for registry-named schema exports, API clients, resolver types, and legacy content utilities. New integrations should prefer @decantr/content for the official corpus. |
-| `@decantr/css` | supported-secondary | `public-foundation` | stable | `foundation` (`40`) | `stable` | `latest` | `true` | `true` | `0` | `stable-public` | Legacy optional CSS atom runtime retained for compatibility and showcase demos; no longer the default greenfield adoption path. |
+| `@decantr/registry` | supported-secondary | `public-compatibility` | stable | `foundation` (`30`) | `stable` | `latest` | `true` | `true` | `0` | `stable-public` | 3.x compatibility package for registry-named schema exports, API clients, resolver types, and legacy content utilities. New integrations should prefer @decantr/content for the official corpus. |
+| `@decantr/css` | supported-secondary | `public-compatibility` | stable | `foundation` (`40`) | `stable` | `latest` | `true` | `true` | `0` | `stable-public` | Legacy optional CSS atom runtime retained for compatibility and showcase demos; no longer the default greenfield adoption path. |
 | `@decantr/core` | core-supported | `public-foundation` | stable | `foundation` (`50`) | `stable` | `latest` | `true` | `true` | `0` | `stable-public` | Execution-pack compiler primitives, typed graph builders, deterministic changed-file graph resolution, Contract capsule helpers, and shared Decantr core utilities. |
-| `@decantr/telemetry` | core-supported | `public-foundation` | stable | `foundation` (`60`) | `stable` | `latest` | `true` | `true` | `0` | `stable-public` | Privacy-preserving telemetry event contracts, clients, and analytics sinks. |
+| `@decantr/telemetry` | supported-secondary | `public-compatibility` | stable | `foundation` (`60`) | `stable` | `latest` | `true` | `true` | `0` | `stable-public` | Compatibility telemetry contracts, privacy filters, clients, and caller-controlled sinks for private deployments; no hosted default and no active 3.10 product investment. |
 | `@decantr/verifier` | core-supported | `public-operator` | stable | `delivery` (`10`) | `stable` | `latest` | `true` | `true` | `0` | `stable-public` | Shared read-only discovery and verification engine for scan report v2, framework-specific route authority, Adoption Truth v1, bounded Task Capsule v1, Governance Delta v1, default CI report v2, opt-in CI report v3, evidence, project health, and workspace health. |
-| `@decantr/mcp-server` | core-supported | `public-operator` | stable | `delivery` (`20`) | `stable` | `latest` | `true` | `true` | `0` | `stable-public` | Stable eight-tool MCP surface for content-corpus compatibility, Decantr Contract context, Adoption Truth, bounded Task Capsules, typed graph artifacts, packs, evidence, workspace health, and repair prompts. |
-| `@decantr/cli` | core-supported | `public-delivery` | stable | `delivery` (`30`) | `stable` | `latest` | `true` | `true` | `0` | `stable-public` | Workflow commands for content-first setup, authority-aware scan/adopt/task, doctor, verify, CI, codify, connect, and content operations, including Adoption Truth with exact Tailwind v4 source-isolation approvals, bounded Task Capsules, Governance Deltas, default CI v2, opt-in CI v3, monorepo targeting, health baselines, and read-only report-isolated Studio. |
+| `@decantr/mcp-server` | core-supported | `public-operator` | stable | `delivery` (`20`) | `stable` | `latest` | `true` | `true` | `0` | `stable-public` | Stable eight-tool MCP surface for local project state, accepted Essence reads, route-backed TaskCapsuleV1 context, graph and verification evidence, health, and repair prompts; non-route target discovery remains unreleased. |
+| `@decantr/cli` | core-supported | `public-delivery` | stable | `delivery` (`30`) | `stable` | `latest` | `true` | `true` | `0` | `stable-public` | Workflow commands for local Brownfield scan/adopt, route-backed task context, verification, CI, codify, connect, and compatibility content operations, including Adoption Truth with exact Tailwind v4 source-isolation approvals, bounded Task Capsules, Governance Deltas, default CI v2, opt-in CI v3, monorepo targeting, health baselines, and read-only report-isolated Studio. |
 | `@decantr/vite-plugin` | supported-secondary | `experimental` | experimental | `experimental` (`10`) | `stable` | `-` | `false` | `false` | `2` | `experimental-hold` | Experimental Vite-specific overlay for Decantr guard feedback during local development; remains a verification-adjacent sidecar, not a default reliability adapter. |
 
 ## Adapter Capability Matrix
@@ -50,6 +50,7 @@ Unsupported framework targets are still valid Decantr contract targets. They sho
 - `archived` means preserved for history only and not expected to receive new product work.
 - `extracted` means moved out of the monorepo reset surface into a separate line.
 - `public-foundation` means stable public package that defines Decantr foundation contracts and shared building blocks.
+- `public-compatibility` means stable public package retained for Decantr 3.x compatibility, outside the active product nucleus.
 - `public-delivery` means stable public delivery package used directly by end users and teams.
 - `public-operator` means stable public operator-facing package for advanced delivery, verification, or agent workflows.
 - `internal` means internal package used inside Decantr implementation and not part of the public release promise.
@@ -60,6 +61,7 @@ Unsupported framework targets are still valid Decantr contract targets. They sho
 - release channel `stable` means normal public release channel; publishable packages default to npm `latest`.
 - release channel `prerelease` means major-line preview channel; publishable packages use prerelease semver and default to npm `next`.
 - `release wave` defines the intended publish order for coordinated npm releases.
+- A `foundation` release wave is dependency/publish sequencing only; packages classified as `public-compatibility` are not product foundations.
 - `publish default` reflects whether the package participates in the default publish flow without opt-in overrides.
 - `stable candidate` means the package is intended to be eligible for stable graduation once its blockers reach zero.
 - `release lane` is the operator-facing bucket for release planning: `stable-public`, `prerelease-public`, `internal-only`, or `experimental-hold`.
@@ -102,7 +104,6 @@ The active Decantr product surface is:
 - `@decantr/essence-spec`
 - `@decantr/content`
 - `@decantr/core`
-- `@decantr/telemetry`
 - `@decantr/verifier`
 - `@decantr/mcp-server`
 - `@decantr/cli`

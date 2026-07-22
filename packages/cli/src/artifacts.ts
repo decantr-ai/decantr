@@ -48,7 +48,7 @@ These files are local evidence and should normally stay out of source control un
 
 ## Daily Loop
 
-- Before AI edits: \`decantr task <route> "<change>"\`
+- Before AI edits: \`decantr task <target> "<change>"\`
 - After local edits: \`decantr verify\`
 - In CI: \`decantr ci\`
 - When confused: \`decantr doctor\`

@@ -1,0 +1,80 @@
+{
+  "base": {
+    "commit": "431feefd1be365ba45c034da7c9b33616108bc66",
+    "tree": "e86abe48db7e5d138d8fe01c233417130d7ba0fc"
+  },
+  "cleanAfterPreparation": true,
+  "lockfiles": [
+    {
+      "path": "pnpm-lock.yaml",
+      "sha256": "6a81b20f708f0ba56a9812e589111e85aa0a54a4c46fcc917d028d160e19a2c0"
+    }
+  ],
+  "partition": "development",
+  "preparation": [
+    {
+      "args": [
+        "install",
+        "--frozen-lockfile"
+      ],
+      "cwd": ".",
+      "executable": "pnpm",
+      "id": "install-dependencies",
+      "network": "dependency-registry",
+      "required": true,
+      "timeoutMs": 7200000
+    }
+  ],
+  "profile": {
+    "arch": "x64",
+    "bunVersion": null,
+    "id": "node-20.5.0-pnpm-9.0.0",
+    "nodeVersion": "20.5.0",
+    "os": "linux",
+    "packageManager": {
+      "name": "pnpm",
+      "version": "9.0.0"
+    }
+  },
+  "projectPath": "examples/hackernews",
+  "review": {
+    "notes": "Independent source-evidence re-review verified 5 frozen Git blobs and exact SHA-256 values at 431feefd1be365ba45c034da7c9b33616108bc66. Independent review corrects the generated pnpm 8 profile to the frozen CI's pnpm 9 line while retaining exact .node-version 20.5.0. Version 9.0.0 is only a provisional exact floor: source pins no pnpm patch, and the frozen lock unexpectedly regressed to lockfileVersion 6 after the pnpm 9 transition. Exact Linux x64 frozen-install validation is required before approval.",
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "status": "draft"
+  },
+  "schemaVersion": "decantr-benchmark-task-environment.v1",
+  "sourceEvidence": [
+    {
+      "kind": "reviewer-override",
+      "path": ".github/workflows/typecheck.yml",
+      "sha256": "e89536c1d0a5939a5f146666e55f01a4fa2281e84ab3687482673d3aaa718c20",
+      "statement": "Frozen Ubuntu workflow explicitly selects pnpm 9 and runs pnpm install --frozen-lockfile, overriding the generated pnpm 8 choice."
+    },
+    {
+      "kind": "runtime-hint",
+      "path": ".node-version",
+      "sha256": "77ba33d6df429dfc0bfc27faa0b8ed3fcc08c17b7b9b8af59be694e1dd539723",
+      "statement": "Frozen .node-version authenticates exact Node 20.5.0."
+    },
+    {
+      "kind": "package-manifest",
+      "path": "examples/hackernews/package.json",
+      "sha256": "17b8f7948b968753e2ab1d98f97724251f3283a8eedea6000db456292da1d0e9",
+      "statement": "Target Hacker News manifest requires Node 18 or newer and is installed through the root workspace."
+    },
+    {
+      "kind": "package-manifest",
+      "path": "package.json",
+      "sha256": "ed28265b5afe7aceb2d6b5944255ca295ae3b0596a995256b471562183120319",
+      "statement": "Root manifest defines workspace-wide pnpm scripts but does not pin a pnpm patch."
+    },
+    {
+      "kind": "lockfile",
+      "path": "pnpm-lock.yaml",
+      "sha256": "6a81b20f708f0ba56a9812e589111e85aa0a54a4c46fcc917d028d160e19a2c0",
+      "statement": "Frozen root workspace lock is bound exactly; its lockfileVersion 6 conflicts with the repository's pnpm 9 CI transition and needs a probe."
+    }
+  ],
+  "taskId": "solid-start-hackernews.home-link-active-root"
+}

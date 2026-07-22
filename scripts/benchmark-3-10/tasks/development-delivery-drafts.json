@@ -1,0 +1,2484 @@
+{
+  "bundleSha256": "d54f5abb1df1cf4ae458d55d202e8ffbcb6f03d2843b4034e4ec53fc18d218ab",
+  "confidentiality": "Public development target-oracle drafts; not confirmatory evidence.",
+  "count": 24,
+  "program": "decantr-3.10-ui-change-control-proof",
+  "records": [
+    {
+      "input": {
+        "policyCard": {
+          "statements": [
+            {
+              "id": "repository-authority",
+              "sources": [
+                "base-checkout"
+              ],
+              "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+            },
+            {
+              "id": "change-scope",
+              "sources": [
+                "task.scope"
+              ],
+              "text": "Keep authored changes within the declared allowlist: src/app/features/article/pages/editor/editor.component.ts, src/app/features/article/pages/editor/*.spec.ts. Do not edit forbidden paths: src/app/** (except allowed paths), package.json, package-lock.json, realworld/**, .github/**."
+            },
+            {
+              "id": "host-verification",
+              "sources": [
+                "candidate.environment"
+              ],
+              "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+            }
+          ]
+        },
+        "target": {
+          "selector": "/editor"
+        }
+      },
+      "observation": {
+        "candidateCount": 1,
+        "changedFiles": [
+          "src/app/features/article/pages/editor/editor.component.ts"
+        ],
+        "exactDisambiguation": false,
+        "existingProductionChangedFiles": [
+          "src/app/features/article/pages/editor/editor.component.ts"
+        ],
+        "fileFallback": false,
+        "productionChangedFiles": [
+          "src/app/features/article/pages/editor/editor.component.ts"
+        ],
+        "rankOneFile": "src/app/features/article/pages/editor/editor.component.ts",
+        "rankOneMatchesOracle": true,
+        "readTargetCount": 3,
+        "status": "ready",
+        "suggestedCandidates": [
+          {
+            "files": [
+              "src/app/features/article/pages/editor/editor.component.ts"
+            ],
+            "id": "route:/editor:src/app/features/article/pages/editor/editor.component.ts",
+            "kind": "route",
+            "name": "/editor"
+          },
+          {
+            "files": [
+              "src/app/features/article/pages/editor/editor.component.ts"
+            ],
+            "id": "route:/editor/:slug:src/app/features/article/pages/editor/editor.component.ts",
+            "kind": "route",
+            "name": "/editor/:slug"
+          },
+          {
+            "files": [
+              "src/app/features/article/pages/editor/editor.component.ts"
+            ],
+            "id": "component:src/app/features/article/pages/editor/editor.component.ts:EditorComponent",
+            "kind": "component",
+            "name": "EditorComponent"
+          }
+        ],
+        "surfaceId": "route:/editor:src/app/features/article/pages/editor/editor.component.ts"
+      },
+      "oracle": {
+        "acceptedStatuses": [
+          "ready",
+          "limited"
+        ],
+        "expectedKind": "route",
+        "forbiddenRankOnePatterns": [
+          "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+        ],
+        "rankOneFiles": [
+          "src/app/features/article/pages/editor/editor.component.ts"
+        ],
+        "styleAuthority": {
+          "approach": "css",
+          "confidence": "high",
+          "files": [
+            "angular.json",
+            "src/styles.css"
+          ]
+        }
+      },
+      "partition": "development",
+      "review": {
+        "notes": "Generated from the frozen base and expected change. A reviewer must confirm target neutrality, rank-one source truth, and styling authority.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "pending"
+      },
+      "schemaVersion": "decantr-benchmark-task-delivery-draft.v1",
+      "taskId": "angular-realworld.update-existing-article"
+    },
+    {
+      "input": {
+        "policyCard": {
+          "statements": [
+            {
+              "id": "repository-authority",
+              "sources": [
+                "base-checkout"
+              ],
+              "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+            },
+            {
+              "id": "change-scope",
+              "sources": [
+                "task.scope"
+              ],
+              "text": "Keep authored changes within the declared allowlist: src/app/app.routes.ts, src/app/features/article/components/article-list.component.ts, src/app/features/article/pages/home/home.component.html, src/app/features/article/pages/home/home.component.ts, src/app/features/article/**/*.spec.ts. Do not edit forbidden paths: e2e/**, playwright.config.*, src/app/**/services/**, src/app/**/auth*, package.json, package-lock.json, src/environments/**."
+            },
+            {
+              "id": "host-verification",
+              "sources": [
+                "candidate.environment"
+              ],
+              "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+            }
+          ]
+        },
+        "target": {
+          "selector": "/"
+        }
+      },
+      "observation": {
+        "candidateCount": 1,
+        "changedFiles": [
+          "e2e/articles.spec.ts",
+          "e2e/comments.spec.ts",
+          "e2e/helpers/api.ts",
+          "e2e/helpers/comments.ts",
+          "e2e/navigation.spec.ts",
+          "e2e/social.spec.ts",
+          "e2e/url-navigation.spec.ts",
+          "playwright.config.ts",
+          "src/app/app.routes.ts",
+          "src/app/features/article/components/article-list.component.ts",
+          "src/app/features/article/pages/home/home.component.html",
+          "src/app/features/article/pages/home/home.component.ts"
+        ],
+        "exactDisambiguation": false,
+        "existingProductionChangedFiles": [
+          "e2e/helpers/comments.ts",
+          "playwright.config.ts",
+          "src/app/app.routes.ts",
+          "src/app/features/article/components/article-list.component.ts",
+          "src/app/features/article/pages/home/home.component.html",
+          "src/app/features/article/pages/home/home.component.ts"
+        ],
+        "fileFallback": false,
+        "productionChangedFiles": [
+          "e2e/helpers/api.ts",
+          "e2e/helpers/comments.ts",
+          "playwright.config.ts",
+          "src/app/app.routes.ts",
+          "src/app/features/article/components/article-list.component.ts",
+          "src/app/features/article/pages/home/home.component.html",
+          "src/app/features/article/pages/home/home.component.ts"
+        ],
+        "rankOneFile": "src/app/features/article/pages/home/home.component.ts",
+        "rankOneMatchesOracle": true,
+        "readTargetCount": 4,
+        "status": "ready",
+        "suggestedCandidates": [
+          {
+            "files": [
+              "src/app/features/article/pages/home/home.component.ts"
+            ],
+            "id": "route:/:src/app/features/article/pages/home/home.component.ts",
+            "kind": "route",
+            "name": "/"
+          },
+          {
+            "files": [
+              "src/app/features/article/components/article-list.component.ts"
+            ],
+            "id": "component:src/app/features/article/components/article-list.component.ts:ArticleListComponent",
+            "kind": "component",
+            "name": "ArticleListComponent"
+          },
+          {
+            "files": [
+              "src/app/features/article/pages/home/home.component.ts"
+            ],
+            "id": "component:src/app/features/article/pages/home/home.component.ts:HomeComponent",
+            "kind": "component",
+            "name": "HomeComponent"
+          },
+          {
+            "files": [
+              "src/app/app.routes.ts"
+            ],
+            "id": "route:/editor:src/app/app.routes.ts",
+            "kind": "route",
+            "name": "/editor"
+          }
+        ],
+        "surfaceId": "route:/:src/app/features/article/pages/home/home.component.ts"
+      },
+      "oracle": {
+        "acceptedStatuses": [
+          "ready",
+          "limited"
+        ],
+        "expectedKind": "route",
+        "forbiddenRankOnePatterns": [
+          "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+        ],
+        "rankOneFiles": [
+          "src/app/features/article/pages/home/home.component.ts"
+        ],
+        "styleAuthority": {
+          "approach": "css",
+          "confidence": "high",
+          "files": [
+            "angular.json",
+            "src/styles.css"
+          ]
+        }
+      },
+      "partition": "development",
+      "review": {
+        "notes": "Generated from the frozen base and expected change. A reviewer must confirm target neutrality, rank-one source truth, and styling authority.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "pending"
+      },
+      "schemaVersion": "decantr-benchmark-task-delivery-draft.v1",
+      "taskId": "angular-realworld.url-addressable-feeds"
+    },
+    {
+      "input": {
+        "policyCard": {
+          "statements": [
+            {
+              "id": "repository-authority",
+              "sources": [
+                "base-checkout"
+              ],
+              "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+            },
+            {
+              "id": "change-scope",
+              "sources": [
+                "task.scope"
+              ],
+              "text": "Keep authored changes within the declared allowlist: apps/react-vite/src/app/router.tsx, apps/react-vite/src/app/routes/**, apps/react-vite/src/components/ui/table/**, apps/react-vite/src/features/comments/**, apps/react-vite/src/features/discussions/**, apps/react-vite/src/features/teams/**, apps/react-vite/src/features/users/**, apps/react-vite/src/lib/auth.tsx, apps/react-vite/src/types/api.ts, apps/react-vite/src/testing/mocks/**, apps/react-vite/**/*.test.ts, apps/react-vite/**/*.test.tsx. Do not edit forbidden paths: docs/**, package.json, yarn.lock, .github/**, apps/react-vite/src/styles/**."
+            },
+            {
+              "id": "host-verification",
+              "sources": [
+                "candidate.environment"
+              ],
+              "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+            }
+          ]
+        },
+        "target": {
+          "selector": "/app/discussions/:discussionId"
+        }
+      },
+      "observation": {
+        "candidateCount": 1,
+        "changedFiles": [
+          "src/app/router.tsx",
+          "src/app/routes/app/discussions/discussion.tsx",
+          "src/app/routes/app/discussions/discussions.tsx",
+          "src/app/routes/auth/register.tsx",
+          "src/components/ui/table/pagination.tsx",
+          "src/components/ui/table/table.tsx",
+          "src/features/comments/api/create-comment.ts",
+          "src/features/comments/api/delete-comment.ts",
+          "src/features/comments/api/get-comments.ts",
+          "src/features/comments/components/comments-list.tsx",
+          "src/features/discussions/api/get-discussion.ts",
+          "src/features/discussions/api/get-discussions.ts",
+          "src/features/discussions/components/discussion-view.tsx",
+          "src/features/discussions/components/discussions-list.tsx",
+          "src/features/discussions/components/update-discussion.tsx",
+          "src/features/teams/api/get-teams.ts",
+          "src/features/users/api/get-users.ts",
+          "src/features/users/components/users-list.tsx",
+          "src/lib/auth.tsx",
+          "src/testing/mocks/handlers/auth.ts",
+          "src/testing/mocks/handlers/comments.ts",
+          "src/testing/mocks/handlers/discussions.ts",
+          "src/testing/mocks/handlers/teams.ts",
+          "src/testing/mocks/handlers/users.ts",
+          "src/types/api.ts"
+        ],
+        "exactDisambiguation": false,
+        "existingProductionChangedFiles": [
+          "src/app/router.tsx",
+          "src/app/routes/app/discussions/discussion.tsx",
+          "src/app/routes/app/discussions/discussions.tsx",
+          "src/app/routes/auth/register.tsx",
+          "src/components/ui/table/table.tsx",
+          "src/features/comments/api/create-comment.ts",
+          "src/features/comments/api/delete-comment.ts",
+          "src/features/comments/api/get-comments.ts",
+          "src/features/comments/components/comments-list.tsx",
+          "src/features/discussions/api/get-discussion.ts",
+          "src/features/discussions/api/get-discussions.ts",
+          "src/features/discussions/components/discussion-view.tsx",
+          "src/features/discussions/components/discussions-list.tsx",
+          "src/features/discussions/components/update-discussion.tsx",
+          "src/features/teams/api/get-teams.ts",
+          "src/features/users/api/get-users.ts",
+          "src/features/users/components/users-list.tsx",
+          "src/lib/auth.tsx",
+          "src/types/api.ts"
+        ],
+        "fileFallback": false,
+        "productionChangedFiles": [
+          "src/app/router.tsx",
+          "src/app/routes/app/discussions/discussion.tsx",
+          "src/app/routes/app/discussions/discussions.tsx",
+          "src/app/routes/auth/register.tsx",
+          "src/components/ui/table/pagination.tsx",
+          "src/components/ui/table/table.tsx",
+          "src/features/comments/api/create-comment.ts",
+          "src/features/comments/api/delete-comment.ts",
+          "src/features/comments/api/get-comments.ts",
+          "src/features/comments/components/comments-list.tsx",
+          "src/features/discussions/api/get-discussion.ts",
+          "src/features/discussions/api/get-discussions.ts",
+          "src/features/discussions/components/discussion-view.tsx",
+          "src/features/discussions/components/discussions-list.tsx",
+          "src/features/discussions/components/update-discussion.tsx",
+          "src/features/teams/api/get-teams.ts",
+          "src/features/users/api/get-users.ts",
+          "src/features/users/components/users-list.tsx",
+          "src/lib/auth.tsx",
+          "src/types/api.ts"
+        ],
+        "rankOneFile": "src/app/routes/app/discussions/discussion.tsx",
+        "rankOneMatchesOracle": true,
+        "readTargetCount": 7,
+        "status": "limited",
+        "suggestedCandidates": [
+          {
+            "files": [
+              "src/app/routes/app/discussions/discussion.tsx"
+            ],
+            "id": "route:/app/discussions/:discussionId:src/app/routes/app/discussions/discussion.tsx",
+            "kind": "route",
+            "name": "/app/discussions/:discussionId"
+          },
+          {
+            "files": [
+              "src/app/router.tsx"
+            ],
+            "id": "route:/app:src/app/router.tsx",
+            "kind": "route",
+            "name": "/app"
+          },
+          {
+            "files": [
+              "src/app/routes/app/discussions/discussions.tsx"
+            ],
+            "id": "route:/app/discussions:src/app/routes/app/discussions/discussions.tsx",
+            "kind": "route",
+            "name": "/app/discussions"
+          },
+          {
+            "files": [
+              "src/app/routes/auth/register.tsx"
+            ],
+            "id": "route:/auth/register:src/app/routes/auth/register.tsx",
+            "kind": "route",
+            "name": "/auth/register"
+          },
+          {
+            "files": [
+              "src/app/routes/app/discussions/discussion.tsx"
+            ],
+            "id": "component:src/app/routes/app/discussions/discussion.tsx:DiscussionRoute",
+            "kind": "component",
+            "name": "DiscussionRoute"
+          }
+        ],
+        "surfaceId": "route:/app/discussions/:discussionId:src/app/routes/app/discussions/discussion.tsx"
+      },
+      "oracle": {
+        "acceptedStatuses": [
+          "ready",
+          "limited"
+        ],
+        "expectedKind": "route",
+        "forbiddenRankOnePatterns": [
+          "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+        ],
+        "rankOneFiles": [
+          "src/app/routes/app/discussions/discussion.tsx"
+        ],
+        "styleAuthority": {
+          "approach": "tailwind",
+          "confidence": "high",
+          "files": [
+            "postcss.config.cjs",
+            "src/index.css",
+            "src/main.tsx",
+            "tailwind.config.cjs"
+          ]
+        }
+      },
+      "partition": "development",
+      "review": {
+        "notes": "Generated from the frozen base and expected change. A reviewer must confirm target neutrality, rank-one source truth, and styling authority.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "pending"
+      },
+      "schemaVersion": "decantr-benchmark-task-delivery-draft.v1",
+      "taskId": "bulletproof-react-vite.discussion-pagination"
+    },
+    {
+      "input": {
+        "policyCard": {
+          "statements": [
+            {
+              "id": "repository-authority",
+              "sources": [
+                "base-checkout"
+              ],
+              "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+            },
+            {
+              "id": "change-scope",
+              "sources": [
+                "task.scope"
+              ],
+              "text": "Keep authored changes within the declared allowlist: demos/cloudflare/src/pages/posts/[slug].astro, demos/playground/src/pages/posts/[slug].astro, demos/postgres/src/pages/posts/[slug].astro, demos/preview/src/pages/posts/[slug].astro, demos/simple/src/pages/posts/[slug].astro, templates/blog-cloudflare/src/pages/posts/[slug].astro, templates/blog/src/pages/posts/[slug].astro, packages/admin/src/components/ContentEditor.tsx, packages/admin/src/router.tsx, packages/admin/tests/**, .changeset/*.md. Do not edit forbidden paths: demos/** (except allowed paths), templates/** (except allowed paths), packages/** (except packages/admin allowed paths), **/auth/**, **/database/**, package.json, pnpm-lock.yaml, **/generated/**."
+            },
+            {
+              "id": "host-verification",
+              "sources": [
+                "candidate.environment"
+              ],
+              "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+            }
+          ]
+        },
+        "target": {
+          "selector": "/posts/:slug"
+        }
+      },
+      "observation": {
+        "candidateCount": 1,
+        "changedFiles": [
+          "src/pages/posts/[slug].astro"
+        ],
+        "exactDisambiguation": false,
+        "existingProductionChangedFiles": [
+          "src/pages/posts/[slug].astro"
+        ],
+        "fileFallback": false,
+        "productionChangedFiles": [
+          "src/pages/posts/[slug].astro"
+        ],
+        "rankOneFile": "src/pages/posts/[slug].astro",
+        "rankOneMatchesOracle": true,
+        "readTargetCount": 3,
+        "status": "ready",
+        "suggestedCandidates": [
+          {
+            "files": [
+              "src/pages/posts/[slug].astro"
+            ],
+            "id": "route:/posts/:slug:src/pages/posts/[slug].astro",
+            "kind": "route",
+            "name": "/posts/:slug"
+          }
+        ],
+        "surfaceId": "route:/posts/:slug:src/pages/posts/[slug].astro"
+      },
+      "oracle": {
+        "acceptedStatuses": [
+          "ready",
+          "limited"
+        ],
+        "expectedKind": "route",
+        "forbiddenRankOnePatterns": [
+          "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+        ],
+        "rankOneFiles": [
+          "src/pages/posts/[slug].astro"
+        ],
+        "styleAuthority": {
+          "approach": "css",
+          "confidence": "high",
+          "files": [
+            "src/layouts/Base.astro",
+            "src/styles/theme.css"
+          ]
+        }
+      },
+      "partition": "development",
+      "review": {
+        "notes": "Generated from the frozen base and expected change. A reviewer must confirm target neutrality, rank-one source truth, and styling authority.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "pending"
+      },
+      "schemaVersion": "decantr-benchmark-task-delivery-draft.v1",
+      "taskId": "emdash-simple.visual-edit-field-focus"
+    },
+    {
+      "input": {
+        "policyCard": {
+          "statements": [
+            {
+              "id": "repository-authority",
+              "sources": [
+                "base-checkout"
+              ],
+              "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+            },
+            {
+              "id": "change-scope",
+              "sources": [
+                "task.scope"
+              ],
+              "text": "Keep authored changes within the declared allowlist: app/components/ui/input-otp.tsx, app/components/ui/**/*.test.tsx, tests/**. Do not edit forbidden paths: app/routes/**, app/**/server*, prisma/**, .env*, package.json, package-lock.json."
+            },
+            {
+              "id": "host-verification",
+              "sources": [
+                "candidate.environment"
+              ],
+              "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+            }
+          ]
+        },
+        "target": {
+          "selector": "component:InputOTP"
+        }
+      },
+      "observation": {
+        "candidateCount": 1,
+        "changedFiles": [
+          "app/components/ui/input-otp.tsx"
+        ],
+        "exactDisambiguation": false,
+        "existingProductionChangedFiles": [
+          "app/components/ui/input-otp.tsx"
+        ],
+        "fileFallback": false,
+        "productionChangedFiles": [
+          "app/components/ui/input-otp.tsx"
+        ],
+        "rankOneFile": "app/components/ui/input-otp.tsx",
+        "rankOneMatchesOracle": true,
+        "readTargetCount": 2,
+        "status": "limited",
+        "suggestedCandidates": [
+          {
+            "files": [
+              "app/components/ui/input-otp.tsx"
+            ],
+            "id": "component:app/components/ui/input-otp.tsx:InputOTP",
+            "kind": "component",
+            "name": "InputOTP"
+          },
+          {
+            "files": [
+              "app/components/ui/input-otp.tsx"
+            ],
+            "id": "component:app/components/ui/input-otp.tsx:InputOTPGroup",
+            "kind": "component",
+            "name": "InputOTPGroup"
+          },
+          {
+            "files": [
+              "app/components/ui/input-otp.tsx"
+            ],
+            "id": "component:app/components/ui/input-otp.tsx:InputOTPSeparator",
+            "kind": "component",
+            "name": "InputOTPSeparator"
+          },
+          {
+            "files": [
+              "app/components/ui/input-otp.tsx"
+            ],
+            "id": "component:app/components/ui/input-otp.tsx:InputOTPSlot",
+            "kind": "component",
+            "name": "InputOTPSlot"
+          }
+        ],
+        "surfaceId": "component:app/components/ui/input-otp.tsx:InputOTP"
+      },
+      "oracle": {
+        "acceptedStatuses": [
+          "limited"
+        ],
+        "expectedKind": "component",
+        "forbiddenRankOnePatterns": [
+          "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+        ],
+        "rankOneFiles": [
+          "app/components/ui/input-otp.tsx"
+        ],
+        "styleAuthority": {
+          "approach": "tailwind",
+          "confidence": "high",
+          "files": [
+            "app/styles/tailwind.css"
+          ]
+        }
+      },
+      "partition": "development",
+      "review": {
+        "notes": "Generated from the frozen base and expected change. A reviewer must confirm target neutrality, rank-one source truth, and styling authority.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "pending"
+      },
+      "schemaVersion": "decantr-benchmark-task-delivery-draft.v1",
+      "taskId": "epic-stack.otp-input-mode"
+    },
+    {
+      "input": {
+        "policyCard": {
+          "statements": [
+            {
+              "id": "repository-authority",
+              "sources": [
+                "base-checkout"
+              ],
+              "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+            },
+            {
+              "id": "change-scope",
+              "sources": [
+                "task.scope"
+              ],
+              "text": "Keep authored changes within the declared allowlist: src/ui/compositions/Headers/Headers.tsx, src/stories/compositions/Cards.stories.tsx. Do not edit forbidden paths: package.json, package-lock.json, src/App.tsx, src/ui/primitives/**, src/data/**, scripts/**."
+            },
+            {
+              "id": "host-verification",
+              "sources": [
+                "candidate.environment"
+              ],
+              "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+            }
+          ]
+        },
+        "target": {
+          "selector": "component:Header"
+        }
+      },
+      "observation": {
+        "candidateCount": 1,
+        "changedFiles": [
+          "src/ui/compositions/Headers/Headers.tsx"
+        ],
+        "exactDisambiguation": false,
+        "existingProductionChangedFiles": [
+          "src/ui/compositions/Headers/Headers.tsx"
+        ],
+        "fileFallback": false,
+        "productionChangedFiles": [
+          "src/ui/compositions/Headers/Headers.tsx"
+        ],
+        "rankOneFile": "src/ui/compositions/Headers/Headers.tsx",
+        "rankOneMatchesOracle": true,
+        "readTargetCount": 7,
+        "status": "limited",
+        "suggestedCandidates": [
+          {
+            "files": [
+              "src/ui/compositions/Headers/Headers.tsx"
+            ],
+            "id": "component:src/ui/compositions/Headers/Headers.tsx:Header",
+            "kind": "component",
+            "name": "Header"
+          },
+          {
+            "files": [
+              "src/ui/compositions/Headers/Headers.tsx"
+            ],
+            "id": "component:src/ui/compositions/Headers/Headers.tsx:HeaderAuth",
+            "kind": "component",
+            "name": "HeaderAuth"
+          },
+          {
+            "files": [
+              "src/ui/compositions/Headers/Headers.tsx"
+            ],
+            "id": "component:src/ui/compositions/Headers/Headers.tsx:Headers",
+            "kind": "component",
+            "name": "Headers"
+          }
+        ],
+        "surfaceId": "component:src/ui/compositions/Headers/Headers.tsx:Header"
+      },
+      "oracle": {
+        "acceptedStatuses": [
+          "limited"
+        ],
+        "expectedKind": "component",
+        "forbiddenRankOnePatterns": [
+          "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+        ],
+        "rankOneFiles": [
+          "src/ui/compositions/Headers/Headers.tsx"
+        ],
+        "styleAuthority": {
+          "approach": "css",
+          "confidence": "high",
+          "files": [
+            "src/index.css",
+            "src/main.tsx"
+          ]
+        }
+      },
+      "partition": "development",
+      "review": {
+        "notes": "Generated from the frozen base and expected change. A reviewer must confirm target neutrality, rank-one source truth, and styling authority.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "pending"
+      },
+      "schemaVersion": "decantr-benchmark-task-delivery-draft.v1",
+      "taskId": "figma-sds.unique-pricing-nav"
+    },
+    {
+      "input": {
+        "policyCard": {
+          "statements": [
+            {
+              "id": "repository-authority",
+              "sources": [
+                "base-checkout"
+              ],
+              "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+            },
+            {
+              "id": "change-scope",
+              "sources": [
+                "task.scope"
+              ],
+              "text": "Keep authored changes within the declared allowlist: packages/hoppscotch-common/src/helpers/**, packages/hoppscotch-selfhost-web/src/**. Do not edit forbidden paths: packages/hoppscotch-backend/**, packages/hoppscotch-sh-admin/**, **/generated/**, package.json, pnpm-lock.yaml."
+            },
+            {
+              "id": "host-verification",
+              "sources": [
+                "candidate.environment"
+              ],
+              "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+            }
+          ]
+        },
+        "target": {
+          "selector": "file:src/main.ts"
+        }
+      },
+      "observation": {
+        "candidateCount": 1,
+        "changedFiles": [
+          "src/main.ts"
+        ],
+        "exactDisambiguation": false,
+        "existingProductionChangedFiles": [
+          "src/main.ts"
+        ],
+        "fileFallback": true,
+        "productionChangedFiles": [
+          "src/main.ts"
+        ],
+        "rankOneFile": "src/main.ts",
+        "rankOneMatchesOracle": true,
+        "readTargetCount": 3,
+        "status": "limited",
+        "suggestedCandidates": [],
+        "surfaceId": "file:src/main.ts"
+      },
+      "oracle": {
+        "acceptedStatuses": [
+          "limited"
+        ],
+        "expectedKind": "file",
+        "forbiddenRankOnePatterns": [
+          "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+        ],
+        "rankOneFiles": [
+          "src/main.ts"
+        ],
+        "styleAuthority": {
+          "approach": "tailwind",
+          "confidence": "high",
+          "files": [
+            "postcss.config.cjs",
+            "tailwind.config.ts"
+          ]
+        }
+      },
+      "partition": "development",
+      "review": {
+        "notes": "Generated from the frozen base and expected change. A reviewer must confirm target neutrality, rank-one source truth, and styling authority.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "pending"
+      },
+      "schemaVersion": "decantr-benchmark-task-delivery-draft.v1",
+      "taskId": "hoppscotch-selfhost-web.non-latin-shortcuts"
+    },
+    {
+      "input": {
+        "policyCard": {
+          "statements": [
+            {
+              "id": "repository-authority",
+              "sources": [
+                "base-checkout"
+              ],
+              "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+            },
+            {
+              "id": "change-scope",
+              "sources": [
+                "task.scope"
+              ],
+              "text": "Keep authored changes within the declared allowlist: packages/manager/src/components/Markdown/**, packages/manager/src/features/Marketplace/ProductDetails/**, packages/manager/.changeset/**. Do not edit forbidden paths: packages/manager/src/**/sanitize*, packages/manager/src/features/Marketplace/** (except allowed paths), packages/** (except packages/manager allowed paths), package.json, pnpm-lock.yaml."
+            },
+            {
+              "id": "host-verification",
+              "sources": [
+                "candidate.environment"
+              ],
+              "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+            }
+          ]
+        },
+        "target": {
+          "selector": "component:Markdown"
+        }
+      },
+      "observation": {
+        "candidateCount": 1,
+        "changedFiles": [
+          ".changeset/pr-13501-fixed-1774516931626.md",
+          "src/components/Markdown/Markdown.tsx",
+          "src/features/Marketplace/ProductDetails/ProductDetailsTabs.tsx"
+        ],
+        "exactDisambiguation": false,
+        "existingProductionChangedFiles": [
+          "src/components/Markdown/Markdown.tsx",
+          "src/features/Marketplace/ProductDetails/ProductDetailsTabs.tsx"
+        ],
+        "fileFallback": false,
+        "productionChangedFiles": [
+          "src/components/Markdown/Markdown.tsx",
+          "src/features/Marketplace/ProductDetails/ProductDetailsTabs.tsx"
+        ],
+        "rankOneFile": "src/components/Markdown/Markdown.tsx",
+        "rankOneMatchesOracle": true,
+        "readTargetCount": 6,
+        "status": "limited",
+        "suggestedCandidates": [
+          {
+            "files": [
+              "src/components/Markdown/Markdown.tsx"
+            ],
+            "id": "component:src/components/Markdown/Markdown.tsx:Markdown",
+            "kind": "component",
+            "name": "Markdown"
+          }
+        ],
+        "surfaceId": "component:src/components/Markdown/Markdown.tsx:Markdown"
+      },
+      "oracle": {
+        "acceptedStatuses": [
+          "limited"
+        ],
+        "expectedKind": "component",
+        "forbiddenRankOnePatterns": [
+          "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+        ],
+        "rankOneFiles": [
+          "src/components/Markdown/Markdown.tsx"
+        ],
+        "styleAuthority": {
+          "approach": "mui",
+          "confidence": "high",
+          "files": [
+            "src/dev-tools/DevTools.tsx",
+            "src/dev-tools/dev-tools.css"
+          ]
+        }
+      },
+      "partition": "development",
+      "review": {
+        "notes": "Generated from the frozen base and expected change. A reviewer must confirm target neutrality, rank-one source truth, and styling authority.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "pending"
+      },
+      "schemaVersion": "decantr-benchmark-task-delivery-draft.v1",
+      "taskId": "linode-manager.marketplace-markdown-links"
+    },
+    {
+      "input": {
+        "policyCard": {
+          "statements": [
+            {
+              "id": "repository-authority",
+              "sources": [
+                "base-checkout"
+              ],
+              "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+            },
+            {
+              "id": "change-scope",
+              "sources": [
+                "task.scope"
+              ],
+              "text": "Keep authored changes within the declared allowlist: packages/manager/src/features/Account/**, packages/manager/.changeset/**. Do not edit forbidden paths: packages/** (except packages/manager allowed paths), package.json, pnpm-lock.yaml, .github/**."
+            },
+            {
+              "id": "host-verification",
+              "sources": [
+                "candidate.environment"
+              ],
+              "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+            }
+          ]
+        },
+        "target": {
+          "selector": "component:SwitchAccountDrawer"
+        }
+      },
+      "observation": {
+        "candidateCount": 1,
+        "changedFiles": [
+          ".changeset/pr-13490-fixed-1773393042703.md",
+          "src/features/Account/SwitchAccountDrawer.tsx"
+        ],
+        "exactDisambiguation": false,
+        "existingProductionChangedFiles": [
+          "src/features/Account/SwitchAccountDrawer.tsx"
+        ],
+        "fileFallback": false,
+        "productionChangedFiles": [
+          "src/features/Account/SwitchAccountDrawer.tsx"
+        ],
+        "rankOneFile": "src/features/Account/SwitchAccountDrawer.tsx",
+        "rankOneMatchesOracle": true,
+        "readTargetCount": 7,
+        "status": "limited",
+        "suggestedCandidates": [
+          {
+            "files": [
+              "src/features/Account/SwitchAccountDrawer.tsx"
+            ],
+            "id": "component:src/features/Account/SwitchAccountDrawer.tsx:SwitchAccountDrawer",
+            "kind": "component",
+            "name": "SwitchAccountDrawer"
+          },
+          {
+            "files": [
+              "src/features/Account/SwitchAccountDrawer.tsx"
+            ],
+            "id": "overlay:src/features/Account/SwitchAccountDrawer.tsx:SwitchAccountDrawer",
+            "kind": "overlay",
+            "name": "SwitchAccountDrawer"
+          }
+        ],
+        "surfaceId": "component:src/features/Account/SwitchAccountDrawer.tsx:SwitchAccountDrawer"
+      },
+      "oracle": {
+        "acceptedStatuses": [
+          "limited"
+        ],
+        "expectedKind": "component",
+        "forbiddenRankOnePatterns": [
+          "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+        ],
+        "rankOneFiles": [
+          "src/features/Account/SwitchAccountDrawer.tsx"
+        ],
+        "styleAuthority": {
+          "approach": "mui",
+          "confidence": "high",
+          "files": [
+            "src/dev-tools/DevTools.tsx",
+            "src/dev-tools/dev-tools.css"
+          ]
+        }
+      },
+      "partition": "development",
+      "review": {
+        "notes": "Generated from the frozen base and expected change. A reviewer must confirm target neutrality, rank-one source truth, and styling authority.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "pending"
+      },
+      "schemaVersion": "decantr-benchmark-task-delivery-draft.v1",
+      "taskId": "linode-manager.switch-account-search"
+    },
+    {
+      "input": {
+        "policyCard": {
+          "statements": [
+            {
+              "id": "repository-authority",
+              "sources": [
+                "base-checkout"
+              ],
+              "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+            },
+            {
+              "id": "change-scope",
+              "sources": [
+                "task.scope"
+              ],
+              "text": "Keep authored changes within the declared allowlist: src/app/pages/pages-menu.ts, src/app/pages/**/*.spec.ts. Do not edit forbidden paths: package.json, package-lock.json, angular.json, src/app/pages/extra-components/**, src/app/app-routing.module.ts."
+            },
+            {
+              "id": "host-verification",
+              "sources": [
+                "candidate.environment"
+              ],
+              "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+            }
+          ]
+        },
+        "target": {
+          "selector": "file:src/app/pages/pages-menu.ts"
+        }
+      },
+      "observation": {
+        "candidateCount": 1,
+        "changedFiles": [
+          "src/app/pages/pages-menu.ts"
+        ],
+        "exactDisambiguation": false,
+        "existingProductionChangedFiles": [
+          "src/app/pages/pages-menu.ts"
+        ],
+        "fileFallback": true,
+        "productionChangedFiles": [
+          "src/app/pages/pages-menu.ts"
+        ],
+        "rankOneFile": "src/app/pages/pages-menu.ts",
+        "rankOneMatchesOracle": true,
+        "readTargetCount": 3,
+        "status": "limited",
+        "suggestedCandidates": [],
+        "surfaceId": "file:src/app/pages/pages-menu.ts"
+      },
+      "oracle": {
+        "acceptedStatuses": [
+          "limited"
+        ],
+        "expectedKind": "file",
+        "forbiddenRankOnePatterns": [
+          "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+        ],
+        "rankOneFiles": [
+          "src/app/pages/pages-menu.ts"
+        ],
+        "styleAuthority": {
+          "approach": "nebular-scss",
+          "confidence": "high",
+          "files": [
+            "angular.json",
+            "src/app/@theme/styles/styles.scss"
+          ]
+        }
+      },
+      "partition": "development",
+      "review": {
+        "notes": "Generated from the frozen base and expected change. A reviewer must confirm target neutrality, rank-one source truth, and styling authority.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "pending"
+      },
+      "schemaVersion": "decantr-benchmark-task-delivery-draft.v1",
+      "taskId": "ngx-admin.form-inputs-navigation"
+    },
+    {
+      "input": {
+        "policyCard": {
+          "statements": [
+            {
+              "id": "repository-authority",
+              "sources": [
+                "base-checkout"
+              ],
+              "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+            },
+            {
+              "id": "change-scope",
+              "sources": [
+                "task.scope"
+              ],
+              "text": "Keep authored changes within the declared allowlist: apps/dashboard/src/components/forms/settings/form-api-key.tsx, apps/dashboard/src/components/forms/settings/form-api-key.test.tsx. Do not edit forbidden paths: packages/ui/src/components/ui/dialog*, packages/ui/src/components/ui/popover*, apps/dashboard/src/styles/**, apps/api/**, packages/db/**, package.json, pnpm-lock.yaml, apps/dashboard/src/components/forms/settings/** (except allowed paths)."
+            },
+            {
+              "id": "host-verification",
+              "sources": [
+                "candidate.environment"
+              ],
+              "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+            }
+          ]
+        },
+        "target": {
+          "selector": "component:FormApiKey"
+        }
+      },
+      "observation": {
+        "candidateCount": 1,
+        "changedFiles": [
+          "src/components/forms/settings/form-api-key.tsx"
+        ],
+        "exactDisambiguation": false,
+        "existingProductionChangedFiles": [
+          "src/components/forms/settings/form-api-key.tsx"
+        ],
+        "fileFallback": false,
+        "productionChangedFiles": [
+          "src/components/forms/settings/form-api-key.tsx"
+        ],
+        "rankOneFile": "src/components/forms/settings/form-api-key.tsx",
+        "rankOneMatchesOracle": true,
+        "readTargetCount": 4,
+        "status": "limited",
+        "suggestedCandidates": [
+          {
+            "files": [
+              "src/components/forms/settings/form-api-key.tsx"
+            ],
+            "id": "component:src/components/forms/settings/form-api-key.tsx:FormApiKey",
+            "kind": "component",
+            "name": "FormApiKey"
+          }
+        ],
+        "surfaceId": "component:src/components/forms/settings/form-api-key.tsx:FormApiKey"
+      },
+      "oracle": {
+        "acceptedStatuses": [
+          "limited"
+        ],
+        "expectedKind": "component",
+        "forbiddenRankOnePatterns": [
+          "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+        ],
+        "rankOneFiles": [
+          "src/components/forms/settings/form-api-key.tsx"
+        ],
+        "styleAuthority": {
+          "approach": "tailwind",
+          "confidence": "high",
+          "files": [
+            "postcss.config.mjs",
+            "src/app/globals.css",
+            "src/app/layout.tsx"
+          ]
+        }
+      },
+      "partition": "development",
+      "review": {
+        "notes": "Generated from the frozen base and expected change. A reviewer must confirm target neutrality, rank-one source truth, and styling authority.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "pending"
+      },
+      "schemaVersion": "decantr-benchmark-task-delivery-draft.v1",
+      "taskId": "openstatus-dashboard.api-key-dialog-interactivity"
+    },
+    {
+      "input": {
+        "policyCard": {
+          "statements": [
+            {
+              "id": "repository-authority",
+              "sources": [
+                "base-checkout"
+              ],
+              "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+            },
+            {
+              "id": "change-scope",
+              "sources": [
+                "task.scope"
+              ],
+              "text": "Keep authored changes within the declared allowlist: templates/website/next.config.ts, templates/website/src/**, templates/website/tests/**. Do not edit forbidden paths: templates/** (except templates/website allowed paths), package.json, pnpm-lock.yaml, packages/**."
+            },
+            {
+              "id": "host-verification",
+              "sources": [
+                "candidate.environment"
+              ],
+              "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+            }
+          ]
+        },
+        "target": {
+          "selector": "file:next.config.ts"
+        }
+      },
+      "observation": {
+        "candidateCount": 1,
+        "changedFiles": [
+          "next.config.ts",
+          "src/utilities/getMediaUrl.ts"
+        ],
+        "exactDisambiguation": false,
+        "existingProductionChangedFiles": [
+          "next.config.ts",
+          "src/utilities/getMediaUrl.ts"
+        ],
+        "fileFallback": true,
+        "productionChangedFiles": [
+          "next.config.ts",
+          "src/utilities/getMediaUrl.ts"
+        ],
+        "rankOneFile": "next.config.ts",
+        "rankOneMatchesOracle": true,
+        "readTargetCount": 5,
+        "status": "limited",
+        "suggestedCandidates": [],
+        "surfaceId": "file:next.config.ts"
+      },
+      "oracle": {
+        "acceptedStatuses": [
+          "limited"
+        ],
+        "expectedKind": "file",
+        "forbiddenRankOnePatterns": [
+          "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+        ],
+        "rankOneFiles": [
+          "next.config.ts",
+          "src/utilities/getMediaUrl.ts"
+        ],
+        "styleAuthority": {
+          "approach": "tailwind",
+          "confidence": "high",
+          "files": [
+            "postcss.config.js",
+            "src/app/(frontend)/globals.css",
+            "src/app/(frontend)/layout.tsx",
+            "tailwind.config.mjs"
+          ]
+        }
+      },
+      "partition": "development",
+      "review": {
+        "notes": "Generated from the frozen base and expected change. A reviewer must confirm target neutrality, rank-one source truth, and styling authority.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "pending"
+      },
+      "schemaVersion": "decantr-benchmark-task-delivery-draft.v1",
+      "taskId": "payload-website-template.local-media-next16"
+    },
+    {
+      "input": {
+        "policyCard": {
+          "statements": [
+            {
+              "id": "repository-authority",
+              "sources": [
+                "base-checkout"
+              ],
+              "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+            },
+            {
+              "id": "change-scope",
+              "sources": [
+                "task.scope"
+              ],
+              "text": "Keep authored changes within the declared allowlist: packages/react/src/Banner/**, e2e/components/Banner.test.ts, .changeset/*.md. Do not edit forbidden paths: package.json, package-lock.json, .playwright/snapshots/**, packages/react/src/Blankslate/**, examples/**."
+            },
+            {
+              "id": "host-verification",
+              "sources": [
+                "candidate.environment"
+              ],
+              "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+            }
+          ]
+        },
+        "target": {
+          "selector": "file:packages/react/src/Banner/Banner.module.css"
+        }
+      },
+      "observation": {
+        "candidateCount": 1,
+        "changedFiles": [
+          ".changeset/gold-rooms-bake.md",
+          ".playwright/snapshots/components/Banner.test.ts-snapshots/Banner-ActionsInline-primer-breakpoint-xs-linux.png",
+          "e2e/components/Banner.test.ts",
+          "packages/react/src/Banner/Banner.module.css"
+        ],
+        "exactDisambiguation": false,
+        "existingProductionChangedFiles": [
+          "packages/react/src/Banner/Banner.module.css"
+        ],
+        "fileFallback": true,
+        "productionChangedFiles": [
+          "packages/react/src/Banner/Banner.module.css"
+        ],
+        "rankOneFile": "packages/react/src/Banner/Banner.module.css",
+        "rankOneMatchesOracle": true,
+        "readTargetCount": 8,
+        "status": "limited",
+        "suggestedCandidates": [],
+        "surfaceId": "file:packages/react/src/Banner/Banner.module.css"
+      },
+      "oracle": {
+        "acceptedStatuses": [
+          "limited"
+        ],
+        "expectedKind": "file",
+        "forbiddenRankOnePatterns": [
+          "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+        ],
+        "rankOneFiles": [
+          "packages/react/src/Banner/Banner.module.css"
+        ],
+        "styleAuthority": {
+          "approach": "css-modules",
+          "confidence": "high",
+          "files": [
+            "packages/react/config/vitest/browser/global.css",
+            "packages/react/config/vitest/browser/setup.ts"
+          ]
+        }
+      },
+      "partition": "development",
+      "review": {
+        "notes": "Generated from the frozen base and expected change. A reviewer must confirm target neutrality, rank-one source truth, and styling authority.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "pending"
+      },
+      "schemaVersion": "decantr-benchmark-task-delivery-draft.v1",
+      "taskId": "primer-react.banner-narrow-actions"
+    },
+    {
+      "input": {
+        "policyCard": {
+          "statements": [
+            {
+              "id": "repository-authority",
+              "sources": [
+                "base-checkout"
+              ],
+              "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+            },
+            {
+              "id": "change-scope",
+              "sources": [
+                "task.scope"
+              ],
+              "text": "Keep authored changes within the declared allowlist: packages/react/src/Blankslate/**, e2e/components/Blankslate.test.ts, .changeset/*.md. Do not edit forbidden paths: package.json, package-lock.json, .playwright/snapshots/**, packages/react/src/Banner/**, examples/**."
+            },
+            {
+              "id": "host-verification",
+              "sources": [
+                "candidate.environment"
+              ],
+              "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+            }
+          ]
+        },
+        "target": {
+          "selector": "file:packages/react/src/Blankslate/Blankslate.module.css"
+        }
+      },
+      "observation": {
+        "candidateCount": 1,
+        "changedFiles": [
+          ".changeset/blankslate-text-wrap-balance.md",
+          ".playwright/snapshots/components/Blankslate.test.ts-snapshots/Blankslate-Default-dark-colorblind-linux.png",
+          ".playwright/snapshots/components/Blankslate.test.ts-snapshots/Blankslate-Default-dark-dimmed-linux.png",
+          ".playwright/snapshots/components/Blankslate.test.ts-snapshots/Blankslate-Default-dark-high-contrast-linux.png",
+          ".playwright/snapshots/components/Blankslate.test.ts-snapshots/Blankslate-Default-dark-linux.png",
+          ".playwright/snapshots/components/Blankslate.test.ts-snapshots/Blankslate-Default-dark-tritanopia-linux.png",
+          ".playwright/snapshots/components/Blankslate.test.ts-snapshots/Blankslate-Default-light-colorblind-linux.png",
+          ".playwright/snapshots/components/Blankslate.test.ts-snapshots/Blankslate-Default-light-high-contrast-linux.png",
+          ".playwright/snapshots/components/Blankslate.test.ts-snapshots/Blankslate-Default-light-linux.png",
+          ".playwright/snapshots/components/Blankslate.test.ts-snapshots/Blankslate-Default-light-tritanopia-linux.png",
+          ".playwright/snapshots/components/Blankslate.test.ts-snapshots/Blankslate-Default-primer-breakpoint-sm-linux.png",
+          ".playwright/snapshots/components/Blankslate.test.ts-snapshots/Blankslate-Narrow-dark-colorblind-linux.png",
+          ".playwright/snapshots/components/Blankslate.test.ts-snapshots/Blankslate-Narrow-dark-dimmed-linux.png",
+          ".playwright/snapshots/components/Blankslate.test.ts-snapshots/Blankslate-Narrow-dark-high-contrast-linux.png",
+          ".playwright/snapshots/components/Blankslate.test.ts-snapshots/Blankslate-Narrow-dark-linux.png",
+          ".playwright/snapshots/components/Blankslate.test.ts-snapshots/Blankslate-Narrow-dark-tritanopia-linux.png",
+          ".playwright/snapshots/components/Blankslate.test.ts-snapshots/Blankslate-Narrow-light-colorblind-linux.png",
+          ".playwright/snapshots/components/Blankslate.test.ts-snapshots/Blankslate-Narrow-light-high-contrast-linux.png",
+          ".playwright/snapshots/components/Blankslate.test.ts-snapshots/Blankslate-Narrow-light-linux.png",
+          ".playwright/snapshots/components/Blankslate.test.ts-snapshots/Blankslate-Narrow-light-tritanopia-linux.png",
+          ".playwright/snapshots/components/Blankslate.test.ts-snapshots/Blankslate-Narrow-primer-breakpoint-sm-linux.png",
+          ".playwright/snapshots/components/Blankslate.test.ts-snapshots/Blankslate-border-false-size-large-spacious-false-linux.png",
+          ".playwright/snapshots/components/Blankslate.test.ts-snapshots/Blankslate-border-false-size-large-spacious-true-linux.png",
+          ".playwright/snapshots/components/Blankslate.test.ts-snapshots/Blankslate-border-false-size-medium-spacious-false-linux.png",
+          ".playwright/snapshots/components/Blankslate.test.ts-snapshots/Blankslate-border-false-size-medium-spacious-true-linux.png",
+          ".playwright/snapshots/components/Blankslate.test.ts-snapshots/Blankslate-border-true-size-large-spacious-false-linux.png",
+          ".playwright/snapshots/components/Blankslate.test.ts-snapshots/Blankslate-border-true-size-large-spacious-true-linux.png",
+          ".playwright/snapshots/components/Blankslate.test.ts-snapshots/Blankslate-border-true-size-medium-spacious-false-linux.png",
+          ".playwright/snapshots/components/Blankslate.test.ts-snapshots/Blankslate-border-true-size-medium-spacious-true-linux.png",
+          "packages/react/src/Blankslate/Blankslate.module.css"
+        ],
+        "exactDisambiguation": false,
+        "existingProductionChangedFiles": [
+          "packages/react/src/Blankslate/Blankslate.module.css"
+        ],
+        "fileFallback": true,
+        "productionChangedFiles": [
+          "packages/react/src/Blankslate/Blankslate.module.css"
+        ],
+        "rankOneFile": "packages/react/src/Blankslate/Blankslate.module.css",
+        "rankOneMatchesOracle": true,
+        "readTargetCount": 8,
+        "status": "limited",
+        "suggestedCandidates": [],
+        "surfaceId": "file:packages/react/src/Blankslate/Blankslate.module.css"
+      },
+      "oracle": {
+        "acceptedStatuses": [
+          "limited"
+        ],
+        "expectedKind": "file",
+        "forbiddenRankOnePatterns": [
+          "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+        ],
+        "rankOneFiles": [
+          "packages/react/src/Blankslate/Blankslate.module.css"
+        ],
+        "styleAuthority": {
+          "approach": "css-modules",
+          "confidence": "high",
+          "files": [
+            "packages/react/config/vitest/browser/global.css",
+            "packages/react/config/vitest/browser/setup.ts"
+          ]
+        }
+      },
+      "partition": "development",
+      "review": {
+        "notes": "Generated from the frozen base and expected change. A reviewer must confirm target neutrality, rank-one source truth, and styling authority.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "pending"
+      },
+      "schemaVersion": "decantr-benchmark-task-delivery-draft.v1",
+      "taskId": "primer-react.blankslate-balanced-copy"
+    },
+    {
+      "input": {
+        "policyCard": {
+          "statements": [
+            {
+              "id": "repository-authority",
+              "sources": [
+                "base-checkout"
+              ],
+              "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+            },
+            {
+              "id": "change-scope",
+              "sources": [
+                "task.scope"
+              ],
+              "text": "Keep authored changes within the declared allowlist: src/app/pages/uikit/overlaydemo.ts, src/app/pages/uikit/overlaydemo.spec.ts. Do not edit forbidden paths: src/assets/**, src/app/layout/**, src/styles/**, package.json, package-lock.json, src/app/** (except allowed paths)."
+            },
+            {
+              "id": "host-verification",
+              "sources": [
+                "candidate.environment"
+              ],
+              "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+            }
+          ]
+        },
+        "target": {
+          "selector": "/uikit/overlay"
+        }
+      },
+      "observation": {
+        "candidateCount": 1,
+        "changedFiles": [
+          "src/app/pages/uikit/overlaydemo.ts"
+        ],
+        "exactDisambiguation": false,
+        "existingProductionChangedFiles": [
+          "src/app/pages/uikit/overlaydemo.ts"
+        ],
+        "fileFallback": false,
+        "productionChangedFiles": [
+          "src/app/pages/uikit/overlaydemo.ts"
+        ],
+        "rankOneFile": "src/app/pages/uikit/overlaydemo.ts",
+        "rankOneMatchesOracle": true,
+        "readTargetCount": 3,
+        "status": "ready",
+        "suggestedCandidates": [
+          {
+            "files": [
+              "src/app/pages/uikit/overlaydemo.ts"
+            ],
+            "id": "route:/uikit/overlay:src/app/pages/uikit/overlaydemo.ts",
+            "kind": "route",
+            "name": "/uikit/overlay"
+          },
+          {
+            "files": [
+              "src/app/pages/uikit/overlaydemo.ts"
+            ],
+            "id": "component:src/app/pages/uikit/overlaydemo.ts:OverlayDemo",
+            "kind": "component",
+            "name": "OverlayDemo"
+          }
+        ],
+        "surfaceId": "route:/uikit/overlay:src/app/pages/uikit/overlaydemo.ts"
+      },
+      "oracle": {
+        "acceptedStatuses": [
+          "ready",
+          "limited"
+        ],
+        "expectedKind": "route",
+        "forbiddenRankOnePatterns": [
+          "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+        ],
+        "rankOneFiles": [
+          "src/app/pages/uikit/overlaydemo.ts"
+        ],
+        "styleAuthority": {
+          "approach": "primeng-tailwind-scss",
+          "confidence": "high",
+          "files": [
+            ".postcssrc.json",
+            "angular.json"
+          ]
+        }
+      },
+      "partition": "development",
+      "review": {
+        "notes": "Generated from the frozen base and expected change. A reviewer must confirm target neutrality, rank-one source truth, and styling authority.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "pending"
+      },
+      "schemaVersion": "decantr-benchmark-task-delivery-draft.v1",
+      "taskId": "sakai-ng.overlay-showcase"
+    },
+    {
+      "input": {
+        "policyCard": {
+          "statements": [
+            {
+              "id": "repository-authority",
+              "sources": [
+                "base-checkout"
+              ],
+              "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+            },
+            {
+              "id": "change-scope",
+              "sources": [
+                "task.scope"
+              ],
+              "text": "Keep authored changes within the declared allowlist: src/views/uikit/OverlayDoc.vue, src/views/uikit/**/*.spec.ts. Do not edit forbidden paths: src/** (except allowed paths), package.json, package-lock.json, public/**, .gitmodules."
+            },
+            {
+              "id": "host-verification",
+              "sources": [
+                "candidate.environment"
+              ],
+              "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+            }
+          ]
+        },
+        "target": {
+          "selector": "/uikit/overlay"
+        }
+      },
+      "observation": {
+        "candidateCount": 1,
+        "changedFiles": [
+          "src/views/uikit/OverlayDoc.vue"
+        ],
+        "exactDisambiguation": false,
+        "existingProductionChangedFiles": [
+          "src/views/uikit/OverlayDoc.vue"
+        ],
+        "fileFallback": false,
+        "productionChangedFiles": [
+          "src/views/uikit/OverlayDoc.vue"
+        ],
+        "rankOneFile": "src/views/uikit/OverlayDoc.vue",
+        "rankOneMatchesOracle": true,
+        "readTargetCount": 6,
+        "status": "limited",
+        "suggestedCandidates": [
+          {
+            "files": [
+              "src/views/uikit/OverlayDoc.vue"
+            ],
+            "id": "route:/uikit/overlay:src/views/uikit/OverlayDoc.vue",
+            "kind": "route",
+            "name": "/uikit/overlay"
+          },
+          {
+            "files": [
+              "src/views/uikit/OverlayDoc.vue"
+            ],
+            "id": "component:src/views/uikit/OverlayDoc.vue:OverlayDoc",
+            "kind": "component",
+            "name": "OverlayDoc"
+          }
+        ],
+        "surfaceId": "route:/uikit/overlay:src/views/uikit/OverlayDoc.vue"
+      },
+      "oracle": {
+        "acceptedStatuses": [
+          "ready",
+          "limited"
+        ],
+        "expectedKind": "route",
+        "forbiddenRankOnePatterns": [
+          "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+        ],
+        "rankOneFiles": [
+          "src/views/uikit/OverlayDoc.vue"
+        ],
+        "styleAuthority": {
+          "approach": "primevue-tailwind-scss",
+          "confidence": "high",
+          "files": [
+            "postcss.config.js",
+            "src/assets/styles.scss",
+            "src/assets/tailwind.css",
+            "src/layout/AppConfigurator.vue",
+            "src/main.js",
+            "tailwind.config.js"
+          ]
+        }
+      },
+      "partition": "development",
+      "review": {
+        "notes": "Generated from the frozen base and expected change. A reviewer must confirm target neutrality, rank-one source truth, and styling authority.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "pending"
+      },
+      "schemaVersion": "decantr-benchmark-task-delivery-draft.v1",
+      "taskId": "sakai-vue.overlay-popover"
+    },
+    {
+      "input": {
+        "policyCard": {
+          "statements": [
+            {
+              "id": "repository-authority",
+              "sources": [
+                "base-checkout"
+              ],
+              "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+            },
+            {
+              "id": "change-scope",
+              "sources": [
+                "task.scope"
+              ],
+              "text": "Keep authored changes within the declared allowlist: apps/v4/registry/new-york-v4/ui/alert/**, apps/v4/tests/**. Do not edit forbidden paths: apps/v4/public/r/**, apps/v4/registry/new-york-v4/ui/** (except allowed paths), apps/** (except apps/v4 allowed paths), package.json, pnpm-lock.yaml."
+            },
+            {
+              "id": "host-verification",
+              "sources": [
+                "candidate.environment"
+              ],
+              "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+            }
+          ]
+        },
+        "target": {
+          "selector": "component:registry/new-york-v4/ui/alert/AlertDescription.vue:AlertDescription"
+        }
+      },
+      "observation": {
+        "candidateCount": 1,
+        "changedFiles": [
+          "registry/new-york-v4/ui/alert/AlertDescription.vue"
+        ],
+        "exactDisambiguation": true,
+        "existingProductionChangedFiles": [
+          "registry/new-york-v4/ui/alert/AlertDescription.vue"
+        ],
+        "fileFallback": false,
+        "productionChangedFiles": [
+          "registry/new-york-v4/ui/alert/AlertDescription.vue"
+        ],
+        "rankOneFile": "registry/new-york-v4/ui/alert/AlertDescription.vue",
+        "rankOneMatchesOracle": true,
+        "readTargetCount": 3,
+        "status": "limited",
+        "suggestedCandidates": [
+          {
+            "files": [
+              "registry/new-york-v4/ui/alert/AlertDescription.vue"
+            ],
+            "id": "component:registry/new-york-v4/ui/alert/AlertDescription.vue:AlertDescription",
+            "kind": "component",
+            "name": "AlertDescription"
+          }
+        ],
+        "surfaceId": "component:registry/new-york-v4/ui/alert/AlertDescription.vue:AlertDescription"
+      },
+      "oracle": {
+        "acceptedStatuses": [
+          "limited"
+        ],
+        "expectedKind": "component",
+        "forbiddenRankOnePatterns": [
+          "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+        ],
+        "rankOneFiles": [
+          "registry/new-york-v4/ui/alert/AlertDescription.vue"
+        ],
+        "styleAuthority": {
+          "approach": "tailwind",
+          "confidence": "high",
+          "files": [
+            "assets/css/fonts.css",
+            "assets/css/main.css"
+          ]
+        }
+      },
+      "partition": "development",
+      "review": {
+        "notes": "Generated from the frozen base and expected change. A reviewer must confirm target neutrality, rank-one source truth, and styling authority.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "pending"
+      },
+      "schemaVersion": "decantr-benchmark-task-delivery-draft.v1",
+      "taskId": "shadcn-vue-v4.inline-alert-content"
+    },
+    {
+      "input": {
+        "policyCard": {
+          "statements": [
+            {
+              "id": "repository-authority",
+              "sources": [
+                "base-checkout"
+              ],
+              "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+            },
+            {
+              "id": "change-scope",
+              "sources": [
+                "task.scope"
+              ],
+              "text": "Keep authored changes within the declared allowlist: apps/v4/registry/new-york-v4/ui/calendar/**, apps/v4/registry/new-york-v4/ui/range-calendar/**, apps/v4/test/**, apps/v4/tests/**. Do not edit forbidden paths: apps/v4/public/r/**, apps/v4/registry/new-york-v4/ui/** (except allowed paths), apps/** (except apps/v4 allowed paths), package.json, pnpm-lock.yaml."
+            },
+            {
+              "id": "host-verification",
+              "sources": [
+                "candidate.environment"
+              ],
+              "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+            }
+          ]
+        },
+        "target": {
+          "selector": "component:registry/new-york-v4/ui/range-calendar/RangeCalendarCellTrigger.vue:RangeCalendarCellTrigger"
+        }
+      },
+      "observation": {
+        "candidateCount": 1,
+        "changedFiles": [
+          "registry/new-york-v4/ui/calendar/CalendarCellTrigger.vue",
+          "registry/new-york-v4/ui/range-calendar/RangeCalendarCellTrigger.vue"
+        ],
+        "exactDisambiguation": true,
+        "existingProductionChangedFiles": [
+          "registry/new-york-v4/ui/calendar/CalendarCellTrigger.vue",
+          "registry/new-york-v4/ui/range-calendar/RangeCalendarCellTrigger.vue"
+        ],
+        "fileFallback": false,
+        "productionChangedFiles": [
+          "registry/new-york-v4/ui/calendar/CalendarCellTrigger.vue",
+          "registry/new-york-v4/ui/range-calendar/RangeCalendarCellTrigger.vue"
+        ],
+        "rankOneFile": "registry/new-york-v4/ui/range-calendar/RangeCalendarCellTrigger.vue",
+        "rankOneMatchesOracle": true,
+        "readTargetCount": 3,
+        "status": "limited",
+        "suggestedCandidates": [
+          {
+            "files": [
+              "registry/new-york-v4/ui/range-calendar/RangeCalendarCellTrigger.vue"
+            ],
+            "id": "component:registry/new-york-v4/ui/range-calendar/RangeCalendarCellTrigger.vue:RangeCalendarCellTrigger",
+            "kind": "component",
+            "name": "RangeCalendarCellTrigger"
+          },
+          {
+            "files": [
+              "registry/new-york-v4/ui/calendar/CalendarCellTrigger.vue"
+            ],
+            "id": "component:registry/new-york-v4/ui/calendar/CalendarCellTrigger.vue:CalendarCellTrigger",
+            "kind": "component",
+            "name": "CalendarCellTrigger"
+          }
+        ],
+        "surfaceId": "component:registry/new-york-v4/ui/range-calendar/RangeCalendarCellTrigger.vue:RangeCalendarCellTrigger"
+      },
+      "oracle": {
+        "acceptedStatuses": [
+          "limited"
+        ],
+        "expectedKind": "component",
+        "forbiddenRankOnePatterns": [
+          "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+        ],
+        "rankOneFiles": [
+          "registry/new-york-v4/ui/range-calendar/RangeCalendarCellTrigger.vue"
+        ],
+        "styleAuthority": {
+          "approach": "tailwind",
+          "confidence": "high",
+          "files": [
+            "assets/css/fonts.css",
+            "assets/css/main.css"
+          ]
+        }
+      },
+      "partition": "development",
+      "review": {
+        "notes": "Generated from the frozen base and expected change. A reviewer must confirm target neutrality, rank-one source truth, and styling authority.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "pending"
+      },
+      "schemaVersion": "decantr-benchmark-task-delivery-draft.v1",
+      "taskId": "shadcn-vue-v4.selected-date-hover"
+    },
+    {
+      "input": {
+        "policyCard": {
+          "statements": [
+            {
+              "id": "repository-authority",
+              "sources": [
+                "base-checkout"
+              ],
+              "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+            },
+            {
+              "id": "change-scope",
+              "sources": [
+                "task.scope"
+              ],
+              "text": "Keep authored changes within the declared allowlist: examples/hackernews/src/components/nav.tsx, examples/hackernews/src/components/nav.test.tsx. Do not edit forbidden paths: examples/hackernews/** (except allowed paths), examples/** (except examples/hackernews allowed paths), packages/**, package.json, pnpm-lock.yaml, pnpm-workspace.yaml."
+            },
+            {
+              "id": "host-verification",
+              "sources": [
+                "candidate.environment"
+              ],
+              "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+            }
+          ]
+        },
+        "target": {
+          "selector": "component:Nav"
+        }
+      },
+      "observation": {
+        "candidateCount": 1,
+        "changedFiles": [
+          "src/components/nav.tsx"
+        ],
+        "exactDisambiguation": false,
+        "existingProductionChangedFiles": [
+          "src/components/nav.tsx"
+        ],
+        "fileFallback": false,
+        "productionChangedFiles": [
+          "src/components/nav.tsx"
+        ],
+        "rankOneFile": "src/components/nav.tsx",
+        "rankOneMatchesOracle": true,
+        "readTargetCount": 3,
+        "status": "limited",
+        "suggestedCandidates": [
+          {
+            "files": [
+              "src/components/nav.tsx"
+            ],
+            "id": "component:src/components/nav.tsx:Nav",
+            "kind": "component",
+            "name": "Nav"
+          }
+        ],
+        "surfaceId": "component:src/components/nav.tsx:Nav"
+      },
+      "oracle": {
+        "acceptedStatuses": [
+          "limited"
+        ],
+        "expectedKind": "component",
+        "forbiddenRankOnePatterns": [
+          "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+        ],
+        "rankOneFiles": [
+          "src/components/nav.tsx"
+        ],
+        "styleAuthority": {
+          "approach": "css",
+          "confidence": "high",
+          "files": [
+            "src/app.css",
+            "src/app.tsx"
+          ]
+        }
+      },
+      "partition": "development",
+      "review": {
+        "notes": "Generated from the frozen base and expected change. A reviewer must confirm target neutrality, rank-one source truth, and styling authority.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "pending"
+      },
+      "schemaVersion": "decantr-benchmark-task-delivery-draft.v1",
+      "taskId": "solid-start-hackernews.home-link-active-root"
+    },
+    {
+      "input": {
+        "policyCard": {
+          "statements": [
+            {
+              "id": "repository-authority",
+              "sources": [
+                "base-checkout"
+              ],
+              "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+            },
+            {
+              "id": "change-scope",
+              "sources": [
+                "task.scope"
+              ],
+              "text": "Keep authored changes within the declared allowlist: src/components/form/_fields.tsx, src/components/form/field-upload-input/**, src/components/upload/upload-input.tsx, src/features/book/manager/form-book.tsx, src/features/book/manager/form-book-cover.tsx, src/locales/{ar,en,fr,sw}/{book.json,components.json}, src/components/form/**/*.stories.tsx, src/components/upload/**/*.stories.tsx, src/**/*.test.ts, src/**/*.test.tsx. Do not edit forbidden paths: src/app/api/**, src/server/**, prisma/**, package.json, pnpm-lock.yaml, src/components/ui/** (except allowed paths)."
+            },
+            {
+              "id": "host-verification",
+              "sources": [
+                "candidate.environment"
+              ],
+              "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+            }
+          ]
+        },
+        "target": {
+          "selector": "component:FormBookCover"
+        }
+      },
+      "observation": {
+        "candidateCount": 1,
+        "changedFiles": [
+          "src/components/form/_fields.tsx",
+          "src/components/form/field-upload-input/docs.stories.tsx",
+          "src/components/form/field-upload-input/index.tsx",
+          "src/components/upload/upload-button.stories.tsx",
+          "src/components/upload/upload-input.stories.tsx",
+          "src/components/upload/upload-input.tsx",
+          "src/features/book/manager/form-book-cover.tsx",
+          "src/features/book/manager/form-book.tsx",
+          "src/locales/ar/book.json",
+          "src/locales/ar/components.json",
+          "src/locales/en/book.json",
+          "src/locales/en/components.json",
+          "src/locales/fr/book.json",
+          "src/locales/fr/components.json",
+          "src/locales/sw/book.json",
+          "src/locales/sw/components.json"
+        ],
+        "exactDisambiguation": false,
+        "existingProductionChangedFiles": [
+          "src/components/form/_fields.tsx",
+          "src/features/book/manager/form-book-cover.tsx",
+          "src/features/book/manager/form-book.tsx"
+        ],
+        "fileFallback": false,
+        "productionChangedFiles": [
+          "src/components/form/_fields.tsx",
+          "src/components/form/field-upload-input/index.tsx",
+          "src/components/upload/upload-input.tsx",
+          "src/features/book/manager/form-book-cover.tsx",
+          "src/features/book/manager/form-book.tsx"
+        ],
+        "rankOneFile": "src/features/book/manager/form-book-cover.tsx",
+        "rankOneMatchesOracle": true,
+        "readTargetCount": 5,
+        "status": "limited",
+        "suggestedCandidates": [
+          {
+            "files": [
+              "src/features/book/manager/form-book-cover.tsx"
+            ],
+            "id": "component:src/features/book/manager/form-book-cover.tsx:FormBookCover",
+            "kind": "component",
+            "name": "FormBookCover"
+          },
+          {
+            "files": [
+              "src/features/book/manager/form-book.tsx"
+            ],
+            "id": "component:src/features/book/manager/form-book.tsx:FormBook",
+            "kind": "component",
+            "name": "FormBook"
+          }
+        ],
+        "surfaceId": "component:src/features/book/manager/form-book-cover.tsx:FormBookCover"
+      },
+      "oracle": {
+        "acceptedStatuses": [
+          "limited"
+        ],
+        "expectedKind": "component",
+        "forbiddenRankOnePatterns": [
+          "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+        ],
+        "rankOneFiles": [
+          "src/features/book/manager/form-book-cover.tsx"
+        ],
+        "styleAuthority": {
+          "approach": "tailwind",
+          "confidence": "high",
+          "files": [
+            "postcss.config.mjs",
+            "src/styles/app.css"
+          ]
+        }
+      },
+      "partition": "development",
+      "review": {
+        "notes": "Generated from the frozen base and expected change. A reviewer must confirm target neutrality, rank-one source truth, and styling authority.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "pending"
+      },
+      "schemaVersion": "decantr-benchmark-task-delivery-draft.v1",
+      "taskId": "start-ui-web.book-cover-upload"
+    },
+    {
+      "input": {
+        "policyCard": {
+          "statements": [
+            {
+              "id": "repository-authority",
+              "sources": [
+                "base-checkout"
+              ],
+              "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+            },
+            {
+              "id": "change-scope",
+              "sources": [
+                "task.scope"
+              ],
+              "text": "Keep authored changes within the declared allowlist: src/components/logos/vlt.svelte, src/components/settings/options/selectPkgManager.svelte, src/components/svgs/copyShadcnCommand.svelte, src/data/svgs.ts, src/stores/settings.store.ts, static/library/vlt-dark.svg, static/library/vlt-light.svg, static/library/vlt-wordmark-dark.svg, static/library/vlt-wordmark-light.svg. Do not edit forbidden paths: ** (except allowed paths), src/routes/api/**, package.json, pnpm-lock.yaml."
+            },
+            {
+              "id": "host-verification",
+              "sources": [
+                "candidate.environment"
+              ],
+              "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+            }
+          ]
+        },
+        "target": {
+          "selector": "file:src/components/settings/options/selectPkgManager.svelte"
+        }
+      },
+      "observation": {
+        "candidateCount": 1,
+        "changedFiles": [
+          "src/components/logos/vlt.svelte",
+          "src/components/settings/options/selectPkgManager.svelte",
+          "src/components/svgs/copyShadcnCommand.svelte",
+          "src/data/svgs.ts",
+          "src/stores/settings.store.ts",
+          "static/library/vlt-dark.svg",
+          "static/library/vlt-light.svg",
+          "static/library/vlt-wordmark-dark.svg",
+          "static/library/vlt-wordmark-light.svg"
+        ],
+        "exactDisambiguation": false,
+        "existingProductionChangedFiles": [
+          "src/components/settings/options/selectPkgManager.svelte",
+          "src/components/svgs/copyShadcnCommand.svelte",
+          "src/data/svgs.ts",
+          "src/stores/settings.store.ts"
+        ],
+        "fileFallback": true,
+        "productionChangedFiles": [
+          "src/components/logos/vlt.svelte",
+          "src/components/settings/options/selectPkgManager.svelte",
+          "src/components/svgs/copyShadcnCommand.svelte",
+          "src/data/svgs.ts",
+          "src/stores/settings.store.ts"
+        ],
+        "rankOneFile": "src/components/settings/options/selectPkgManager.svelte",
+        "rankOneMatchesOracle": true,
+        "readTargetCount": 3,
+        "status": "limited",
+        "suggestedCandidates": [],
+        "surfaceId": "file:src/components/settings/options/selectPkgManager.svelte"
+      },
+      "oracle": {
+        "acceptedStatuses": [
+          "limited"
+        ],
+        "expectedKind": "file",
+        "forbiddenRankOnePatterns": [
+          "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+        ],
+        "rankOneFiles": [
+          "src/components/settings/options/selectPkgManager.svelte",
+          "src/components/svgs/copyShadcnCommand.svelte",
+          "src/data/svgs.ts",
+          "src/stores/settings.store.ts"
+        ],
+        "styleAuthority": {
+          "approach": "tailwind",
+          "confidence": "high",
+          "files": [
+            "src/routes/+layout.svelte",
+            "src/styles/globals.css"
+          ]
+        }
+      },
+      "partition": "development",
+      "review": {
+        "notes": "Generated from the frozen base and expected change. A reviewer must confirm target neutrality, rank-one source truth, and styling authority.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "pending"
+      },
+      "schemaVersion": "decantr-benchmark-task-delivery-draft.v1",
+      "taskId": "svgl.vlt-package-manager"
+    },
+    {
+      "input": {
+        "policyCard": {
+          "statements": [
+            {
+              "id": "repository-authority",
+              "sources": [
+                "base-checkout"
+              ],
+              "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+            },
+            {
+              "id": "change-scope",
+              "sources": [
+                "task.scope"
+              ],
+              "text": "Keep authored changes within the declared allowlist: src/routes/dashboard/overview.tsx. Do not edit forbidden paths: package.json, bun.lock, vite.config.ts, src/components/**, src/mock/**, src/routeTree.gen.ts, src/styles/**, public/**, server/**, docs/**."
+            },
+            {
+              "id": "host-verification",
+              "sources": [
+                "candidate.environment"
+              ],
+              "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+            }
+          ]
+        },
+        "target": {
+          "selector": "/dashboard/overview"
+        }
+      },
+      "observation": {
+        "candidateCount": 1,
+        "changedFiles": [
+          "src/routes/dashboard/overview.tsx"
+        ],
+        "exactDisambiguation": false,
+        "existingProductionChangedFiles": [
+          "src/routes/dashboard/overview.tsx"
+        ],
+        "fileFallback": false,
+        "productionChangedFiles": [
+          "src/routes/dashboard/overview.tsx"
+        ],
+        "rankOneFile": "src/routes/dashboard/overview.tsx",
+        "rankOneMatchesOracle": true,
+        "readTargetCount": 5,
+        "status": "ready",
+        "suggestedCandidates": [
+          {
+            "files": [
+              "src/routes/dashboard/overview.tsx"
+            ],
+            "id": "route:/dashboard/overview:src/routes/dashboard/overview.tsx",
+            "kind": "route",
+            "name": "/dashboard/overview"
+          },
+          {
+            "files": [
+              "src/routes/dashboard/overview.tsx"
+            ],
+            "id": "component:src/routes/dashboard/overview.tsx:OverviewPage",
+            "kind": "component",
+            "name": "OverviewPage"
+          },
+          {
+            "files": [
+              "src/routes/dashboard/overview.tsx"
+            ],
+            "id": "component:src/routes/dashboard/overview.tsx:SuspenseAreaGraph",
+            "kind": "component",
+            "name": "SuspenseAreaGraph"
+          },
+          {
+            "files": [
+              "src/routes/dashboard/overview.tsx"
+            ],
+            "id": "component:src/routes/dashboard/overview.tsx:SuspenseBarGraph",
+            "kind": "component",
+            "name": "SuspenseBarGraph"
+          },
+          {
+            "files": [
+              "src/routes/dashboard/overview.tsx"
+            ],
+            "id": "component:src/routes/dashboard/overview.tsx:SuspensePieGraph",
+            "kind": "component",
+            "name": "SuspensePieGraph"
+          }
+        ],
+        "surfaceId": "route:/dashboard/overview:src/routes/dashboard/overview.tsx"
+      },
+      "oracle": {
+        "acceptedStatuses": [
+          "ready",
+          "limited"
+        ],
+        "expectedKind": "route",
+        "forbiddenRankOnePatterns": [
+          "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+        ],
+        "rankOneFiles": [
+          "src/routes/dashboard/overview.tsx"
+        ],
+        "styleAuthority": {
+          "approach": "tailwind",
+          "confidence": "high",
+          "files": [
+            "src/styles/globals.css",
+            "src/styles/themes/astro-vista.css",
+            "src/styles/themes/claude.css",
+            "src/styles/themes/light-green.css",
+            "src/styles/themes/mono.css",
+            "src/styles/themes/neobrutualism.css",
+            "src/styles/themes/notebook.css",
+            "src/styles/themes/supabase.css",
+            "src/styles/themes/vercel.css",
+            "src/styles/themes/whatsapp.css",
+            "src/styles/themes/zen.css"
+          ]
+        }
+      },
+      "partition": "development",
+      "review": {
+        "notes": "Generated from the frozen base and expected change. A reviewer must confirm target neutrality, rank-one source truth, and styling authority.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "pending"
+      },
+      "schemaVersion": "decantr-benchmark-task-delivery-draft.v1",
+      "taskId": "tanstack-start-dashboard.overview-hydration"
+    },
+    {
+      "input": {
+        "policyCard": {
+          "statements": [
+            {
+              "id": "repository-authority",
+              "sources": [
+                "base-checkout"
+              ],
+              "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+            },
+            {
+              "id": "change-scope",
+              "sources": [
+                "task.scope"
+              ],
+              "text": "Keep authored changes within the declared allowlist: src-app/routes/__root.tsx, src-app/styles/globals.css, src-app/**/*.test.ts, src-app/**/*.test.tsx. Do not edit forbidden paths: package.json, pnpm-lock.yaml, src-tauri/**, src-app/stores/**, src-app/schemas/**, src-app/routes/(settings)/**."
+            },
+            {
+              "id": "host-verification",
+              "sources": [
+                "candidate.environment"
+              ],
+              "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+            }
+          ]
+        },
+        "target": {
+          "selector": "file:src-app/routes/__root.tsx"
+        }
+      },
+      "observation": {
+        "candidateCount": 1,
+        "changedFiles": [
+          "src-app/routes/__root.tsx",
+          "src-app/styles/globals.css"
+        ],
+        "exactDisambiguation": false,
+        "existingProductionChangedFiles": [
+          "src-app/routes/__root.tsx",
+          "src-app/styles/globals.css"
+        ],
+        "fileFallback": true,
+        "productionChangedFiles": [
+          "src-app/routes/__root.tsx",
+          "src-app/styles/globals.css"
+        ],
+        "rankOneFile": "src-app/routes/__root.tsx",
+        "rankOneMatchesOracle": true,
+        "readTargetCount": 3,
+        "status": "limited",
+        "suggestedCandidates": [],
+        "surfaceId": "file:src-app/routes/__root.tsx"
+      },
+      "oracle": {
+        "acceptedStatuses": [
+          "limited"
+        ],
+        "expectedKind": "file",
+        "forbiddenRankOnePatterns": [
+          "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+        ],
+        "rankOneFiles": [
+          "src-app/routes/__root.tsx",
+          "src-app/styles/globals.css"
+        ],
+        "styleAuthority": {
+          "approach": "tailwind",
+          "confidence": "high",
+          "files": [
+            "src-app/main.tsx",
+            "src-app/styles/globals.css"
+          ]
+        }
+      },
+      "partition": "development",
+      "review": {
+        "notes": "Generated from the frozen base and expected change. A reviewer must confirm target neutrality, rank-one source truth, and styling authority.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "pending"
+      },
+      "schemaVersion": "decantr-benchmark-task-delivery-draft.v1",
+      "taskId": "tauri-start-solid.apply-font-preferences"
+    },
+    {
+      "input": {
+        "policyCard": {
+          "statements": [
+            {
+              "id": "repository-authority",
+              "sources": [
+                "base-checkout"
+              ],
+              "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+            },
+            {
+              "id": "change-scope",
+              "sources": [
+                "task.scope"
+              ],
+              "text": "Keep authored changes within the declared allowlist: frontend/src/lib/components/DeviceCardNic.svelte. Do not edit forbidden paths: frontend/** (except allowed path), backend/**, package.json, pnpm-lock.yaml."
+            },
+            {
+              "id": "host-verification",
+              "sources": [
+                "candidate.environment"
+              ],
+              "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+            }
+          ]
+        },
+        "target": {
+          "selector": "component:DeviceCardNic"
+        }
+      },
+      "observation": {
+        "candidateCount": 1,
+        "changedFiles": [
+          "src/lib/components/DeviceCardNic.svelte"
+        ],
+        "exactDisambiguation": false,
+        "existingProductionChangedFiles": [
+          "src/lib/components/DeviceCardNic.svelte"
+        ],
+        "fileFallback": false,
+        "productionChangedFiles": [
+          "src/lib/components/DeviceCardNic.svelte"
+        ],
+        "rankOneFile": "src/lib/components/DeviceCardNic.svelte",
+        "rankOneMatchesOracle": true,
+        "readTargetCount": 3,
+        "status": "limited",
+        "suggestedCandidates": [
+          {
+            "files": [
+              "src/lib/components/DeviceCardNic.svelte"
+            ],
+            "id": "component:src/lib/components/DeviceCardNic.svelte:DeviceCardNic",
+            "kind": "component",
+            "name": "DeviceCardNic"
+          }
+        ],
+        "surfaceId": "component:src/lib/components/DeviceCardNic.svelte:DeviceCardNic"
+      },
+      "oracle": {
+        "acceptedStatuses": [
+          "limited"
+        ],
+        "expectedKind": "component",
+        "forbiddenRankOnePatterns": [
+          "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+        ],
+        "rankOneFiles": [
+          "src/lib/components/DeviceCardNic.svelte"
+        ],
+        "styleAuthority": {
+          "approach": "tailwind",
+          "confidence": "high",
+          "files": [
+            "src/app.css",
+            "src/routes/+layout.svelte"
+          ]
+        }
+      },
+      "partition": "development",
+      "review": {
+        "notes": "Generated from the frozen base and expected change. A reviewer must confirm target neutrality, rank-one source truth, and styling authority.",
+        "reviewedAt": null,
+        "reviewedBy": null,
+        "status": "pending"
+      },
+      "schemaVersion": "decantr-benchmark-task-delivery-draft.v1",
+      "taskId": "upsnap-frontend.pending-countdown"
+    }
+  ],
+  "schemaVersion": "decantr-benchmark-task-delivery-draft-bundle.v1"
+}

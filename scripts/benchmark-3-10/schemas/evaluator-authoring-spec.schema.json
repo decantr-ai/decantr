@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/benchmark-3-10/evaluator-authoring-spec.v2.json",
+  "title": "Decantr 3.10 evaluator authoring specification",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "taskId",
+    "contractId",
+    "review",
+    "oracle",
+    "commands",
+    "limits"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "decantr-benchmark-evaluator-authoring-spec.v2" },
+    "taskId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,95}$" },
+    "contractId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$" },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reviewedBy", "reviewedAt", "notes"],
+      "properties": {
+        "status": { "enum": ["draft", "approved"] },
+        "reviewedBy": { "type": ["string", "null"] },
+        "reviewedAt": { "type": ["string", "null"], "format": "date-time" },
+        "notes": { "type": "string", "minLength": 20 }
+      }
+    },
+    "oracle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidateIndependent", "decantrOutputAllowed", "sourcePath"],
+      "properties": {
+        "candidateIndependent": { "const": true },
+        "decantrOutputAllowed": { "const": false },
+        "sourcePath": { "type": "string", "pattern": "^sources/[a-z0-9][a-z0-9._-]+\\.mjs$" }
+      }
+    },
+    "commands": {
+      "type": "array",
+      "minItems": 2,
+      "items": { "$ref": "evaluator-contract.v2.json#/$defs/command" }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["timeoutMs", "maxRequests", "maxInputTokens", "maxOutputTokens"],
+      "properties": {
+        "timeoutMs": { "type": "integer", "minimum": 1000, "maximum": 7200000 },
+        "maxRequests": { "type": "integer", "minimum": 1, "maximum": 100 },
+        "maxInputTokens": { "type": "integer", "minimum": 1 },
+        "maxOutputTokens": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

@@ -11,6 +11,7 @@ const SUPPORT_VALUES = new Set([
 
 const SURFACE_CLASS_VALUES = new Set([
   'public-foundation',
+  'public-compatibility',
   'public-delivery',
   'public-operator',
   'internal',
@@ -18,6 +19,7 @@ const SURFACE_CLASS_VALUES = new Set([
 ]);
 const PUBLIC_SURFACE_CLASS_VALUES = new Set([
   'public-foundation',
+  'public-compatibility',
   'public-delivery',
   'public-operator',
 ]);
@@ -36,6 +38,7 @@ const SUPPORT_DESCRIPTIONS = {
 };
 const SURFACE_CLASS_DESCRIPTIONS = {
   'public-foundation': 'stable public package that defines Decantr foundation contracts and shared building blocks',
+  'public-compatibility': 'stable public package retained for Decantr 3.x compatibility, outside the active product nucleus',
   'public-delivery': 'stable public delivery package used directly by end users and teams',
   'public-operator': 'stable public operator-facing package for advanced delivery, verification, or agent workflows',
   internal: 'internal package used inside Decantr implementation and not part of the public release promise',
@@ -296,8 +299,14 @@ export function validatePackageSurface(surface, publicPackages) {
       if (!readiness.stableCandidate) {
         findings.push(`Public stable package ${entry.name} must be marked releaseReadiness.stableCandidate=true.`);
       }
-      if (!readiness.docsAligned || !readiness.ciCovered || !readiness.productIntegrated) {
-        findings.push(`Public stable package ${entry.name} must have docsAligned, ciCovered, and productIntegrated set to true.`);
+      if (!readiness.docsAligned || !readiness.ciCovered) {
+        findings.push(`Public stable package ${entry.name} must have docsAligned and ciCovered set to true.`);
+      }
+      if (entry.surfaceClass === 'public-compatibility' && readiness.productIntegrated) {
+        findings.push(`Compatibility package ${entry.name} must set releaseReadiness.productIntegrated=false.`);
+      }
+      if (entry.surfaceClass !== 'public-compatibility' && !readiness.productIntegrated) {
+        findings.push(`Active public package ${entry.name} must set releaseReadiness.productIntegrated=true.`);
       }
       if ((readiness.blockers ?? []).length > 0) {
         findings.push(`Public stable package ${entry.name} must not carry outstanding release blockers.`);
@@ -386,7 +395,7 @@ export function renderPackageSupportMatrix(surface, retirements) {
     'Package permissions audit: `pnpm audit:package-permissions`',
     'Security permissions reference: `docs/reference/security-permissions.md`',
     '',
-    'This matrix defines which npm packages are part of the active Decantr 3 product surface.',
+    'This matrix defines support and publishing roles for Decantr 3 npm packages. The Current Product Nucleus section below identifies the active product surface; compatibility packages remain outside it.',
     '',
     '## Active Packages',
     '',
@@ -420,6 +429,7 @@ export function renderPackageSupportMatrix(surface, retirements) {
     ...Object.entries(MATURITY_DESCRIPTIONS).map(([maturity, description]) => `- \`${maturity}\` means ${description}.`),
     ...Object.entries(RELEASE_CHANNEL_DESCRIPTIONS).map(([channel, description]) => `- release channel \`${channel}\` means ${description}.`),
     '- `release wave` defines the intended publish order for coordinated npm releases.',
+    '- A `foundation` release wave is dependency/publish sequencing only; packages classified as `public-compatibility` are not product foundations.',
     '- `publish default` reflects whether the package participates in the default publish flow without opt-in overrides.',
     '- `stable candidate` means the package is intended to be eligible for stable graduation once its blockers reach zero.',
     '- `release lane` is the operator-facing bucket for release planning: `stable-public`, `prerelease-public`, `internal-only`, or `experimental-hold`.',

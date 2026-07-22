@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/benchmark-3-10/prepared-environment.v1.json",
+  "title": "Decantr 3.10 prepared task environment attestation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "program",
+    "taskId",
+    "environmentSpecSha256",
+    "environmentSubstanceSha256",
+    "runtimeMatrixSha256",
+    "runtimeProfileId",
+    "benchmarkImageDigest",
+    "base",
+    "revisionRole",
+    "revision",
+    "candidateSha256",
+    "lockfiles",
+    "steps",
+    "dependencyRoots",
+    "dependencyTreeSha256",
+    "dependencyEntryCount",
+    "trackedClean",
+    "preparedAt",
+    "environmentSha256",
+    "attestationSha256"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "decantr-benchmark-prepared-environment.v1" },
+    "program": { "const": "decantr-3.10-ui-change-control-proof" },
+    "taskId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,95}$" },
+    "environmentSpecSha256": { "$ref": "#/$defs/sha256" },
+    "environmentSubstanceSha256": { "$ref": "#/$defs/sha256" },
+    "runtimeMatrixSha256": { "$ref": "#/$defs/sha256" },
+    "runtimeProfileId": { "type": "string", "minLength": 1 },
+    "benchmarkImageDigest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "base": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commit", "tree"],
+      "properties": {
+        "commit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+        "tree": { "type": "string", "pattern": "^[a-f0-9]{40}$" }
+      }
+    },
+    "revisionRole": { "enum": ["base", "expected"] },
+    "revision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commit", "tree"],
+      "properties": {
+        "commit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+        "tree": { "type": "string", "pattern": "^[a-f0-9]{40}$" }
+      }
+    },
+    "candidateSha256": {
+      "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/sha256" }]
+    },
+    "lockfiles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "sha256": { "$ref": "#/$defs/sha256" }
+        }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "network", "commandSha256", "exitCode", "durationMs", "stdoutSha256", "stderrSha256"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "network": { "enum": ["none", "dependency-registry"] },
+          "commandSha256": { "$ref": "#/$defs/sha256" },
+          "exitCode": { "const": 0 },
+          "durationMs": { "type": "integer", "minimum": 0 },
+          "stdoutSha256": { "$ref": "#/$defs/sha256" },
+          "stderrSha256": { "$ref": "#/$defs/sha256" }
+        }
+      }
+    },
+    "dependencyRoots": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "dependencyTreeSha256": { "$ref": "#/$defs/sha256" },
+    "dependencyEntryCount": { "type": "integer", "minimum": 1 },
+    "trackedClean": { "const": true },
+    "preparedAt": { "type": "string", "format": "date-time" },
+    "environmentSha256": { "$ref": "#/$defs/sha256" },
+    "attestationSha256": { "$ref": "#/$defs/sha256" }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  }
+}

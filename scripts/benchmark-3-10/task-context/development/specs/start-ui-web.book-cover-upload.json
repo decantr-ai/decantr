@@ -1,0 +1,60 @@
+{
+  "input": {
+    "policyCard": {
+      "statements": [
+        {
+          "id": "repository-authority",
+          "sources": [
+            "base-checkout"
+          ],
+          "text": "Preserve repository-owned framework, component, styling, and dependency conventions unless the task explicitly changes them."
+        },
+        {
+          "id": "change-scope",
+          "sources": [
+            "task.scope"
+          ],
+          "text": "Keep authored changes within the declared allowlist: src/components/form/_fields.tsx, src/components/form/field-upload-input/**, src/components/upload/upload-input.tsx, src/features/book/manager/form-book.tsx, src/features/book/manager/form-book-cover.tsx, src/locales/{ar,en,fr,sw}/{book.json,components.json}, src/components/form/**/*.stories.tsx, src/components/upload/**/*.stories.tsx, src/**/*.test.ts, src/**/*.test.tsx. Do not edit forbidden paths: src/app/api/**, src/server/**, prisma/**, package.json, pnpm-lock.yaml, src/components/ui/** (except allowed paths)."
+        },
+        {
+          "id": "host-verification",
+          "sources": [
+            "candidate.environment"
+          ],
+          "text": "Keep the repository build and task-specific host checks passing under the frozen environment contract."
+        }
+      ]
+    },
+    "target": {
+      "selector": "component:FormBookCover"
+    }
+  },
+  "oracle": {
+    "acceptedStatuses": [
+      "limited"
+    ],
+    "expectedKind": "component",
+    "forbiddenRankOnePatterns": [
+      "(^|/)(?:__tests__|coverage|dist|build|fixtures?|mocks?|specs?|stories|tests?)(?:/|$)|\\.(?:test|spec|stories?)\\."
+    ],
+    "rankOneFiles": [
+      "src/features/book/manager/form-book-cover.tsx"
+    ],
+    "styleAuthority": {
+      "approach": "tailwind",
+      "confidence": "high",
+      "files": [
+        "postcss.config.mjs",
+        "src/styles/app.css"
+      ]
+    }
+  },
+  "review": {
+    "notes": "Independently checked the frozen base tree and candidate record. The neutral component selector resolves limited to the existing production book-cover form source at rank one; stories and tests remain advisory rather than production authority. The Tailwind configuration and stylesheet are accurate, and the scope statement matches the candidate exactly.",
+    "reviewedAt": "2026-07-22T12:17:39Z",
+    "reviewedBy": "independent-target-review-b",
+    "status": "approved"
+  },
+  "schemaVersion": "decantr-benchmark-task-delivery-spec.v1",
+  "taskId": "start-ui-web.book-cover-upload"
+}

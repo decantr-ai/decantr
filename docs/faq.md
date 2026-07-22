@@ -1,320 +1,205 @@
 # Decantr FAQ
 
-Short answers for common Decantr usage questions.
+## What is Decantr?
 
-## How do I start a new app with Decantr?
+Decantr is agent-neutral UI change control. Published 3.9.4 prepares route-backed context for an attached project and gives people and CI evidence after the change. The unreleased 3.10 candidate broadens that model to non-route UI surfaces.
 
-Use `decantr new`:
+The 3.10 candidate loop is **Observe -> Prepare -> Verify -> Report**, assembled from existing commands. Decantr does not replace the coding agent, router, component library, styling system, Storybook, design files, tests, or human review.
 
-```bash
-npx @decantr/cli new my-app
-cd my-app
-```
+## What is the current release?
 
-You can also start from a specific blueprint:
+Decantr **3.9.4** is the current published stable release. Decantr **3.10 is an active proof program**, not a released or value-proven line.
 
-```bash
-npx @decantr/cli new my-app --blueprint=agent-marketplace
-```
+The [3.10 program](programs/2026-07-22-decantr-3-10-ui-change-control-proof.md) defines intended behavior and release gates. The [3.9.4 Day-0 baseline](benchmarks/2026-07-22-decantr-3-9-4-day-zero.md) documents current discovery weaknesses. Neither document turns planned behavior into shipped behavior.
 
-Decantr creates the app contract, starter context, and available adapter files. The AI assistant still writes and edits the implementation.
+## How do I start in an existing app?
 
-## How do I use Decantr in an existing app?
-
-Use the Brownfield adoption workflow:
+Scan first, attach once, then use the daily task and verify loop:
 
 ```bash
+npx @decantr/cli scan
 npx @decantr/cli adopt --yes
+npx @decantr/cli task /feed "add saved actions"
+npx @decantr/cli verify
+npx @decantr/cli ci init
 ```
 
-For monorepos, install at the workspace root and point Decantr at the app:
+`scan` is read-only. `adopt` is the one-time write boundary. `task` prepares agent context; in 3.9.4 it is primarily route-backed. `verify` checks the result. `ci init` installs the durable automation gate.
+
+## How do I use Decantr in a monorepo?
+
+Install at the workspace root and keep the selected app explicit:
 
 ```bash
 pnpm add -D -w @decantr/cli
-pnpm exec decantr setup
-pnpm exec decantr workspace list
+pnpm exec decantr scan --project apps/web
 pnpm exec decantr adopt --project apps/web --yes
-pnpm exec decantr doctor --project apps/web
+pnpm exec decantr task /feed "add saved actions" --project apps/web
+pnpm exec decantr verify --project apps/web
+pnpm exec decantr ci init --project apps/web
 ```
 
-Brownfield adoption is observe-first: Decantr reads what already exists, proposes a contract, and lets you accept or merge it.
+Package-manager evidence may come from the workspace root. In 3.9.4, framework and route authority must come from the selected app, not a sibling. The same selected-app rule applies to the broader 3.10 candidate surface, component, styling, and runtime axes.
 
-After adoption, use `doctor` when you are not sure what Decantr expects next. It reports the same selected application and `AdoptionTruthV1` facts used by MCP, opt-in CI v3, and Studio, including provenance, governance coverage, mutation receipts, limitations, and the ordered next action. It also reports whether the app is still Brownfield contract-only or has moved into Hybrid local law, style bridge, explicit legacy Decantr CSS, or composition mode.
+## Does a successful scan mean Decantr understood the app?
 
-If the app is running and you want local screenshot evidence, run:
+No. A successful process exit means the scanner produced a report. It does not prove that the selected app, route graph, component inventory, style authority, or rank-one implementation source is correct.
+
+Before adopting with 3.9.4, inspect representative production targets and limitations. In particular, confirm that tests, fixtures, stories, generated files, build output, and sibling apps were not promoted to production authority. The Day-0 baseline contains examples where high fit/confidence language concealed incomplete or inapplicable evidence.
+
+## What is a UI surface?
+
+The approved 3.10 model covers eight kinds of target:
+
+- routes;
+- layouts;
+- components;
+- stories;
+- overlays such as dialogs and drawers;
+- flows crossing multiple screens or states;
+- packages such as design systems;
+- runtime states such as loading, empty, error, permission, and responsive states.
+
+Routes remain useful evidence, but they are not the universal unit of UI work. A design-system package can be a valid target with no application router. A URL literal in a test is not a production route.
+
+## How does Decantr decide whether a task is ready?
+
+The 3.10 direction keeps these axes independent:
+
+- selected-app authority;
+- production-surface authority;
+- topology completeness;
+- implementation taskability;
+- component inventory quality;
+- styling authority;
+- runtime evidence.
+
+The primary result is intended to be `ready`, `limited`, `blocked`, or `unsupported`. A route can be proven while styling remains unresolved. A large component inventory cannot compensate for a missing implementation target. Numeric confidence must not override an unresolved axis.
+
+This readiness model is a 3.10 target. Do not infer that every 3.9.4 report already enforces it.
+
+## What should an agent do before editing?
+
+For the current route-backed CLI path:
 
 ```bash
-npx @decantr/cli verify --project apps/web --base-url http://localhost:3000 --evidence
+npx @decantr/cli task /feed "improve loading and saved-item behavior"
 ```
 
-## How does Decantr keep AI or agent work tied back to the original spec?
+The agent should read the ranked project source and authority returned by the command, make the change with its normal tools, and run the exact verification command returned in the task context. If Decantr reports stale, missing, conflicting, or unsupported authority, stop and resolve that limitation instead of guessing.
 
-You cannot truly force an LLM to follow a spec. Models are probabilistic, and once implementation starts they can drift, improvise, or overfit to the last instruction.
+Decantr should complement repository-native instructions. Do not add redundant `AGENTS.md`, Cursor, Claude, and editor rule files merely to repeat the same workflow.
 
-That is why Decantr exists. It gives the assistant a durable contract to work from, scoped context to read while coding, and checks that report when the implementation drifts away from the intended product shape.
+## Does Decantr require a specific model or editor?
 
-The normal loop is:
+No. CLI output, project files, JSON contracts, CI artifacts, and MCP are model- and editor-neutral. The project can use its existing agent, tools, tests, and instructions.
 
-```bash
-npx @decantr/cli task /feed "describe the change"
-npx @decantr/cli verify
-npx @decantr/cli doctor
-```
+Cursor has a compatibility setup command, and any MCP-compatible client can use the MCP server, but neither is required.
 
-`task` includes the route's active authority: existing app, accepted local law, style bridge, explicit legacy Decantr CSS, official content guidance, or Greenfield context. In Decantr 3.9 the CLI and MCP compatibility fields are built from one `TaskCapsuleV1`. The implementation source is the required rank-one read target, official guidance includes content identity/digest provenance, and the default canonical capsule stays within 12,000 UTF-8 bytes and 4,000 deterministic estimated tokens. If the prompt asks for a mismatched runtime or Decantr CSS in a contract-only app, the task context warns before the assistant starts coding.
+## What MCP tools are public?
 
-## What does “Governed Change Proof” mean in Decantr 3.9?
+Decantr 3.x preserves exactly eight tool identities:
 
-It means Decantr separates three questions instead of collapsing them into one health score:
+`decantr_project`, `decantr_contract`, `decantr_context`, `decantr_graph`, `decantr_registry`, `decantr_verify`, `decantr_repair`, and `decantr_contract_write`.
 
-- `AdoptionTruthV1`: what app Decantr selected, what evidence supports each observation, what is governed, and what adoption changed or preserved.
-- `TaskCapsuleV1`: the bounded route/task context an existing coding agent should read before editing.
-- `GovernanceDeltaV1`: what findings are new, inherited, resolved, or unclassified relative to a compatible baseline and Git change scope.
+For task preparation, use `decantr_context` with `{"action":"task"}`. In 3.9.4 this remains route-backed. `decantr_registry` is a compatibility name over `@decantr/content`; it is not a hosted public marketplace and there is no ninth content tool in 3.x.
 
-These contracts fail honestly when evidence is incomplete. A missing or incompatible baseline produces `not_proven`; it is not treated as an empty delta or proof that every finding is new.
+## Is Decantr local-first?
 
-If product intent changes, update the Decantr contract deliberately, regenerate context, then continue:
+Yes.
 
-```bash
-npx @decantr/cli add page dashboard/reports --route /dashboard/reports
-npx @decantr/cli add feature auth
-npx @decantr/cli refresh
-npx @decantr/cli verify
-```
+- `scan`, task preparation, verification, and evidence generation run locally.
+- Hosted source upload is retired.
+- Browser screenshots and evidence remain local unless the user moves them.
+- A hosted account is not required.
+- The optional Fly content API provides reference content and schemas; it is not project authority.
+- Telemetry has no Decantr-hosted default sink.
 
-The guardrail is simple: do not let implementation silently redefine the product. Either the code follows the contract, or the contract changes on purpose.
+## What does adoption write?
 
-## How do I make sure my project keeps following Decantr over time?
+Brownfield adoption can write an accepted Decantr contract, project context, graph/evidence artifacts, project state, formatter ignore entries for generated artifacts, and optional CI configuration. Production source and runtime configuration remain first authority; the accepted Essence contract is project law beneath that source, not a replacement for it. The 3.9.4 flow records an adoption receipt so these writes can be distinguished from host source.
 
-Use local checks for fast feedback, then make Decantr part of CI so drift cannot be merged unnoticed.
+Review `scan` first. Use `adopt --force` only as a visible, manual override when you understand an unresolved discovery result; an override does not make the evidence proven.
 
-You cannot guarantee that every LLM, editor, or developer action will follow Decantr perfectly at all times. Local agents can ignore instructions, humans can forget commands, and commit hooks can be bypassed. The durable guardrail is to make Decantr health a required CI check.
+## How do I enforce Decantr in CI?
 
-Install the default GitHub Actions gate:
-
-```bash
-npx @decantr/cli ci init
-```
-
-For monorepos:
-
-```bash
-npx @decantr/cli ci init --project apps/web
-```
-
-The generated workflow runs:
-
-```bash
-npx @decantr/cli ci --fail-on error
-```
-
-Then mark that GitHub check as required in branch protection. That makes Decantr drift unmergeable until it is fixed or the contract is deliberately updated.
-
-For local convenience, add package scripts:
-
-```json
-{
-  "scripts": {
-    "decantr:check": "decantr verify",
-    "decantr:doctor": "decantr doctor",
-    "decantr:ci": "decantr ci --fail-on error"
-  }
-}
-```
-
-Some teams also wire those scripts into pre-commit or pre-push hooks, but CI is the enforcement layer. The local checks help people and agents catch drift early; CI keeps drift out of the main branch.
-
-## How do I check whether my app is still following Decantr?
-
-Run:
-
-```bash
-npx @decantr/cli verify
-```
-
-For an existing app that was attached through brownfield adoption:
-
-```bash
-npx @decantr/cli verify --brownfield
-```
-
-If you accepted local project law with `decantr codify --accept --confirm-reviewed`, use:
-
-```bash
-npx @decantr/cli verify --brownfield --local-patterns
-```
-
-For a broader report:
-
-```bash
-npx @decantr/cli health
-```
-
-## How do I open the Decantr Studio dashboard?
-
-Run Studio from the app root, where `decantr.essence.json` lives:
-
-```bash
-npx @decantr/cli studio
-```
-
-Then open:
-
-```text
-http://127.0.0.1:4319
-```
-
-If that port is already in use:
-
-```bash
-npx @decantr/cli studio --host 127.0.0.1 --port 4320
-```
-
-In a monorepo, run Studio from the app package rather than the workspace root:
-
-```bash
-cd apps/web
-npx @decantr/cli studio
-```
-
-Studio is local-only. Current-project mode composes the same Project Health v2 evidence as:
-
-```bash
-npx @decantr/cli health
-```
-
-It also renders verifier-owned adoption truth and an in-memory governance delta without changing the Project Health v2 schema.
-
-Use Studio when you want a browser view of Project Health, adoption truth, governance delta, the issue to fix first, manual repair guidance, verification commands, route coverage, runtime evidence, pack health, and CI readiness. Studio is read-only with respect to project files: refresh recomputes or rereads state, but Studio does not run adoption, repair, acceptance, migration, builds, package-manager commands, agents, or verification. Use `decantr ci` for enforcement in pull requests. Stop Studio with `Ctrl+C` in the terminal that started it.
-
-## Does Decantr automatically fix Project Health findings?
-
-Not by default. Decantr is the contract and verification layer; it tells the developer or AI assistant what drifted and what needs to change. For an LLM-assisted workflow, use Studio's **Copy AI prompt** button or run:
-
-```bash
-npx @decantr/cli health --prompt <finding-id>
-```
-
-That command prints a focused repair prompt. It does not edit files by itself. Paste the prompt into the assistant doing the implementation, make the change, then rerun:
-
-```bash
-npx @decantr/cli health
-```
-
-To view a CI-produced JSON report without scanning the project source again:
-
-```bash
-npx @decantr/cli ci --report-version v3 --json --output decantr-ci-v3.json
-npx @decantr/cli studio --report decantr-ci-v3.json
-```
-
-Report mode accepts project-mode Project Health v2, CI v2, CI v3, standalone `AdoptionTruthV1`, and standalone `GovernanceDeltaV1` documents. It serves the artifact you provide, does not scan the checkout, and does not upload the report to Decantr telemetry.
-
-## How do I regenerate Decantr guidance after changing the app contract?
-
-Run:
-
-```bash
-npx @decantr/cli refresh
-```
-
-Use `refresh` after changing routes, sections, theme, features, or any other product-shape decision that the assistant should follow.
-
-## How do I add a page, feature, or theme?
-
-Examples:
-
-```bash
-npx @decantr/cli add page dashboard/reports --route /dashboard/reports
-npx @decantr/cli add page app/settings --route /settings --project apps/web
-npx @decantr/cli add feature auth
-npx @decantr/cli theme switch auradecantism
-npx @decantr/cli refresh
-```
-
-In observed Brownfield apps, `app/settings` can resolve to the single primary section, such as `observed-primary`, when that mapping is unambiguous.
-
-After the change, run:
-
-```bash
-npx @decantr/cli check
-```
-
-## How do I migrate an older Decantr project to V2 / Essence V4?
-
-Run:
-
-```bash
-npx @decantr/cli migrate --to v4
-```
-
-Then refresh and check:
-
-```bash
-npx @decantr/cli refresh
-npx @decantr/cli check
-```
-
-Pre-V4 essence files are migration inputs, not active runtime contracts.
-
-## How do I add Decantr checks to CI?
-
-Install the default GitHub Actions gate:
+Generate the current default workflow once:
 
 ```bash
 npx @decantr/cli ci init
 ```
 
-For monorepos:
+Then make the generated check required in branch protection. Existing CI v2 behavior remains the 3.9.4 default. Explicit CI v3 remains available for the published `AdoptionTruthV1` and `GovernanceDeltaV1` compatibility contracts:
 
 ```bash
-npx @decantr/cli ci init --project apps/web
+npx @decantr/cli ci --since origin/main --report-version v3 --json
 ```
 
-CI can then run:
+Missing, stale, or incompatible evidence must remain visible. CI should not interpret missing proof as a clean result.
 
-```bash
-npx @decantr/cli ci --fail-on error
-```
+## Does Decantr replace project tests or accessibility tools?
 
-That command remains on `decantr-ci-report.v2`. Opt into governed-change proof only when the pipeline has Git history and a deliberate comparison base:
-
-```bash
-npx @decantr/cli ci --since origin/main --report-version v3 --fail-on error --json
-npx @decantr/cli ci init --report-version v3
-```
-
-CI v3 embeds the existing v2 Project Health evidence plus `AdoptionTruthV1` and `GovernanceDeltaV1`. Missing, stale, or incompatible proof is `not_proven` and fails unless `--fail-on none` is explicit. Package upgrade alone never switches an existing v2 workflow to v3.
+No. Keep ESLint/Biome, TypeScript, host tests, Storybook, Playwright, visual regression, axe, manual accessibility review, and design-system checks. Published 3.9.4 ranks route-backed task context; the 3.10 candidate attempts broader surface authority. In both cases Decantr combines available evidence rather than recreating every specialist tool.
 
 ## Is Decantr a code generator?
 
-Not primarily. Decantr is an AI Frontend Governance layer for codebases touched by AI agents. It gives AI tools a clearer Contract, better route-scoped Context, official-corpus vocabulary when useful, and drift evidence with repair guidance. The assistant still writes the code.
+Not as its primary product. The agent writes the code. The current Greenfield scaffold and blueprint commands remain callable in 3.x, but Greenfield generation, themes, and broad blueprint expansion are not active 3.10 investment.
 
-## Are behavior obligations a UX framework or WCAG replacement?
+For a new app, choose the framework and project template on their own merits. Attach Decantr when you want the same Observe -> Prepare -> Verify -> Report loop. Existing `new`, `init`, blueprint, and theme workflows are advanced compatibility surfaces.
 
-No. `behavior_obligations` are a narrow local-law facet for project-owned interaction and accessibility expectations in an existing app. They help Decantr tell an AI assistant, "this project uses this Dialog primitive for destructive confirmation," or "this project requires explicit labels and button types in forms."
+## Is `@decantr/css` required?
 
-Decantr only verifies obligations where static source evidence is strong. It does not replace WCAG expertise, axe, Playwright, Storybook, Chromatic, manual screen-reader checks, or your project tests. Focus trapping, real keyboard paths, temporal UI state, and screen-reader behavior still belong in project-owned tests and review unless there is concrete source evidence Decantr can cite.
+No. `@decantr/css` is a legacy optional adapter. Brownfield and normal contract-only workflows keep the project's Tailwind, PrimeNG, Sass, CSS Modules, MUI, Chakra, Bootstrap, or other styling authority.
 
-## Why are behavior obligations local law instead of Essence or official content?
+Package presence alone is not styling authority. Decantr must use project configuration, reachable imports/providers, style order, tokens, components, and runtime evidence where available.
 
-Because interaction behavior is usually app-owned. An official corpus pattern can provide useful accessibility and interaction guidance, but it should not override the way a production codebase composes its own Dialog, Button, Form, routing, feature flags, or test harness.
+## What happened to the public registry?
 
-Keeping `behavior_obligations` in `.decantr/local-patterns.json` lets Brownfield and Hybrid teams accept only the obligations their source evidence supports. The typed graph then projects those accepted obligations as `LocalRule` nodes, task context serves them to agents, and Project Health emits evidence-backed findings without changing Essence V4 or official content schemas.
+The public registry portal and community marketplace direction are retired. `@decantr/registry`, `decantr registry ...`, `REGISTRY_URL`, and MCP `decantr_registry` remain 3.x compatibility names over content-owned implementations.
 
-## What should I do when Decantr flags drift?
+`@decantr/content` is a supported policy/reference package. Broad corpus growth and registry publishing are not active 3.10 product work. The optional content API remains a helper for schemas, search, and reference material.
 
-Decide whether the code or the contract is wrong.
+## What about Studio, showcase, telemetry, and themes?
 
-If the implementation drifted, fix the code and rerun:
+They remain available where shipped, but they are advanced, compatibility, or historical surfaces. The 3.10 proof does not invest in Studio/showcase expansion, telemetry product work, themes, or hosted cross-repository intelligence.
 
-```bash
-npx @decantr/cli check
-```
+## Has Decantr proven that it improves frontier models?
 
-If the product direction changed, update Decantr first, then regenerate guidance:
+No. That is the purpose of the 3.10 program.
 
-```bash
-npx @decantr/cli refresh
-npx @decantr/cli check
-```
+The frozen experiment is 40 tasks across 28 pinned repositories, two requested models, control and Decantr treatment arms, and two repetitions: 320 isolated runs. It includes one repository-authentic task per target and 12 adversarial tasks. The corpus acquisition labels are 18 development and 10 qualification; independently, the task partition is 24 development and 16 sealed qualification. Repository identities were seen during Day-0, so this is not a repository-blind holdout; sealed solutions/oracles and a future independent external holdout limit the claim honestly.
+
+Both arms receive the same information entitlement. Decantr may rank, compress, cite, and verify that information; it may not receive extra human facts. Candidate package bytes are frozen before paid execution, and an implementation change invalidates that result.
+
+The requested models are OpenAI `gpt-5.6-sol` and Anthropic `claude-fable-5`. Any substitution is reported and excluded from the requested-model result.
+
+## What would count as 3.10 proof?
+
+The full predeclared boundary is in the [3.10 program](programs/2026-07-22-decantr-3-10-ui-change-control-proof.md). Core gates include:
+
+- correct app selection or honest `unsupported` for all 28 repositories;
+- no test, fixture, story, generated, build-output, or sibling-app authority contamination;
+- correct rank-one implementation whenever Decantr says a task is ready;
+- at least +5/100 paired treatment lift with 95% CI above zero for each model;
+- at least 25% fewer governance violations;
+- functional non-inferiority within 5 percentage points overall for each model, with framework strata exploratory unless separately powered;
+- at least 26 decisive units out of 32 qualification task/model units, at least 60% treatment preference among decisive units, and a two-sided 95% Wilson lower bound above 50%;
+- median token/cost overhead no higher than 15%, P95 no higher than 25%.
+
+Unsupported targets, evaluator gaps, build failures, and model substitutions remain visible and in the denominator.
+
+## What happens if the benchmark is mixed or fails?
+
+A pass permits only the measured, bounded claim. Mixed results require narrower framework or task claims and a narrower product. Failure blocks value-proven language and requires Decantr to contract toward verifier, authority-adapter, and CI infrastructure or stop broad expansion.
+
+Failure does not automatically delete repositories, packages, services, or historical evidence.
+
+## What did 3.9.4 prove?
+
+The 3.9 route/source and isolated machine lanes are complete. The two-human finding lane is incomplete. Stable publication used an explicit sole-maintainer waiver.
+
+Therefore 3.9.4 must not be described as proving human precision/recall, human release qualification, broad adoption value, or material improvement to frontier-model UI changes.
+
+## Where are older workflows documented?
+
+Historical release notes, audits, programs, benchmarks, research, and specifications remain in their dated directories. Treat them as evidence of what was proposed or shipped at that time. Active guides and references describe current usage; the active 3.10 program describes intended behavior until a release ships it.

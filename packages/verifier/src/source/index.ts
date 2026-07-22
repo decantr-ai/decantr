@@ -42,3 +42,10 @@ export {
   resolveSourceImport,
   resolveSourceSymbolOrigin,
 } from './program.js';
+
+export type { ProjectSourceScope } from './scope.js';
+export {
+  classifyProjectSourceScope,
+  isProductionAuthorityPath,
+  isProductionAuthorityScope,
+} from './scope.js';

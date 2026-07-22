@@ -1,70 +1,138 @@
 # Decantr Command Surface
 
-This is the current command audit for the Decantr 3.9 Governed Change Proof line. The goal is consolidation without breaking users: workflow commands are the human-facing product surface, while existing primitives remain available for advanced users, scripts, and CI internals. Decantr 3.9 adds no top-level CLI command; it composes verifier-owned proof contracts through existing commands and one explicit CI report-version flag.
+Decantr 3.10 narrows the visible product to one existing-app workflow while preserving callable 3.x compatibility. No new top-level command is required for the approved direction.
 
-| Command | Class | Decision | Notes |
+**Status:** 3.9.4 is the published stable release. The visibility model below is the active 3.10 direction and must not be described as a released 3.10 surface until it ships.
+
+## 3.10 Candidate Default Workflow
+
+| Command | Stage | Mutates | Role |
 | --- | --- | --- | --- |
-| `setup` | primary | keep | Detect project state and recommend the right Decantr workflow without writing files. |
-| `scan` | primary | keep | Read-only Brownfield reconnaissance; JSON remains additive `ScanReportV2` and exposes route authority, completeness, provenance, exclusions, and style evidence. |
-| `new` | primary | keep | Greenfield workspace creation. |
-| `adopt` | primary | keep | Brownfield one-liner over analyze, proposal acceptance, online pack hydration, Project Health, evidence, baseline, and optional CI; Angular requires complete production route proof or explicit `--force`. |
-| `task` | primary | keep | Compatibility renderer over bounded `TaskCapsuleV1`; requires a current graph and rank-one implementation source, then adds authority, impact, findings, content provenance, stop conditions, and one verify command. Missing/stale graph context or unproven Angular route authority exits nonzero. |
-| `verify` | primary | keep | One reliability gate over Project Health, typed graph freshness, optional Brownfield guard checks, baselines, evidence, local law, and workspace health. |
-| `ci` | primary | keep | Non-mutating project/workspace gate; v2 remains default and explicit `--report-version v3` adds `AdoptionTruthV1` plus fail-closed `GovernanceDeltaV1`. |
-| `resolve` | primary | keep | Read-only authority resolver for source-vs-contract conflicts; explicit drift-log writes require flags and contract/source mutations remain in existing workflows. |
-| `connect` | primary | keep | Configure editor-specific Decantr activation such as Cursor MCP and project rules without changing source. |
-| `doctor` | primary | keep | Explain verifier-owned adoption truth, project/workspace state, adoption lane, provenance/limitations, graph readiness, local law, CI wiring, and the ordered next action. |
-| `codify` | primary | keep | Propose and accept project-owned Brownfield/Hybrid UI law and style bridges. |
-| `studio` | primary | keep | Read-only local renderer for current Project Health/adoption truth/governance delta and supported saved project-mode reports; never executes repairs or writes project state. |
-| `content` | content-author | keep | Content-author namespace over check, create, corpus summary, and execution-pack hydration. Hosted publish is retired. |
-| `magic` | advanced | keep | Intent-first greenfield path; not the primary enterprise story. |
-| `init` | advanced | keep | Attach/setup primitive for Decantr contracts and context. |
-| `analyze` | advanced | keep | Brownfield inventory and proposal primitive used by `adopt`. |
-| `refresh` | advanced | keep | Regenerate derived context/style artifacts. |
-| `graph` | advanced | keep | Generate typed Contract graph artifacts, graph diff, manifest, source-artifact index, contract capsule, optional task-ranked route subgraph, and optional node/source-file impact subgraph under `.decantr/graph`. |
-| `check` | advanced | keep | Fast contract and guard validation. |
-| `health` | advanced | keep | Canonical report, Evidence Bundle, prompt, browser/token checks, and lower-level Project Health primitive used by `verify` and `ci`. |
-| `workspace` | advanced | keep | Monorepo app candidate discovery, attached Decantr project listing, and aggregate health; `verify --workspace` is the user-facing shortcut. |
-| `heal` | deprecated-alias | soft-deprecate | Alias for `check`; retained for compatibility. |
-| `audit` | advanced | keep advanced | Lower-level verifier audit/file critique. |
-| `status`, `sync`, `upgrade`, `sync-drift`, `get`, `list`, `validate`, `rules`, `export` | advanced | keep | Useful when users need direct corpus, rules, export, or diagnostic control. |
-| `registry` | deprecated-alias | soft-deprecate | Compatibility alias over content-owned corpus/client behavior; docs and first-party integrations should prefer `decantr content ...` / `@decantr/content`. |
-| `showcase`, `telemetry` | operator | keep | Showcase inspection and caller-configured private telemetry workflows. |
-| `login`, `logout` | deprecated-alias | soft-deprecate | Legacy registry-account commands retained for scripts; hosted account flows are retired. |
-| `content-health`, `create`, `publish` | content-author | keep as aliases | Backward-compatible root commands; docs should prefer `decantr content ...`; hosted publish exits with a retirement message. |
+| `scan` | Observe | No | Read-only selected-app and route/style reconnaissance in 3.9.4; broader UI-authority axes are candidate-only. |
+| `adopt` | Attach once | Yes | Reviewed Brownfield attachment over existing lower-level primitives. |
+| `task` | Prepare | No | Compact agent context for one change; 3.9.4 remains primarily route-backed. |
+| `verify` | Verify/Report | No by default | Local reliability gate over the diff and available evidence. |
+| `ci` / `ci init` | Report/Enforce | Gate: no; init: yes | Run the automation gate or install it once. |
 
-The typed metadata lives in `packages/cli/src/command-surface.ts` and is covered by tests against the dispatched CLI commands. Any new top-level command should update that file, command help, package docs, root docs, release notes, and relevant skills before it ships.
+The candidate uses only existing commands; the published 3.9.4 invocation remains route-backed:
 
-Brownfield intelligence is now exposed through workflows first:
+```bash
+decantr scan
+decantr adopt --yes
+decantr task /feed "add saved actions"
+decantr verify
+decantr ci init
+```
 
-- `decantr scan` is the zero-commit preview. It detects selected app scope, workspace package manager, frontend framework, primary language, route signals, taskable routes, excluded production-source count, authority/completeness, component inventory confidence, styling evidence, static-hosting hints, Decantr presence, assistant-rule files, and typed Contract graph readiness, then prints a terminal report without creating `.decantr`, installing dependencies, building the app, executing scripts, uploading source, or saving a report. Angular authority begins at the selected build entry and is not proven by an orphaned `Routes` array. For attached Essence V4 apps, `graphPreview` is derived in memory and reports whether `.decantr/graph` artifacts are current, stale, or missing. Use `--project apps/web` from monorepos and `--json` for automation; JSON emits additive `scan-report.v2`.
-- `decantr adopt --yes` runs the full adoption path and explains the underlying primitives before writing. In monorepos, use `decantr adopt --project apps/web --yes`; `--base-url` is optional visual evidence, not the default attach command. Angular adoption refuses inferred, unresolved, or partial route proof before mutation. `--force` is available only as an explicit reviewed override and is printed in the receipt/output as such. Online adoption hydrates content API execution packs automatically; use `--no-packs` to defer that step. A bounded before/after receipt is stored in `.decantr/project.json` so `AdoptionTruthV1` can distinguish Decantr governance writes from untouched authored host source or an exact approved Tailwind v4 source-isolation mutation. Prettier/Oxfmt projects receive `.prettierignore` entries for generated Decantr artifacts. Detected Tailwind v4 CSS entry files receive a marked `@source not` block for dedicated Decantr paths so generated governance text cannot affect the utility bundle; the receipt binds each path and exact before/after hash.
-- Direct `decantr init` writes retain the same bounded receipt, including every governance/support mutation, any exact Tailwind v4 isolation approval, and the independent authored-source integrity result. Any other source mutation or approval-hash mismatch leaves adoption truth incomplete.
-- First-time users should read the command choice this way: `scan` for read-only preview, `adopt` for existing app attachment, `new` for greenfield starters, and `init` only when they need the lower-level attach primitive. After adoption, `decantr studio` gives a local visual triage view and `decantr doctor` explains the next command.
-- `decantr task <route>` requires a current typed graph; missing or stale graph artifacts block activation and return a nonzero CLI exit status even in JSON mode. Existing fields are built from `TaskCapsuleV1` and JSON adds `taskCapsuleVersion: "task-capsule.v1"` without nesting a duplicate capsule. Read targets start with the required route implementation file from shared discovery. Authority, changed-file graph impact, stable findings, content identity/digest provenance, stop conditions, and one verify command are retained under a 12,000-byte / 4,000 deterministic-token canonical budget. Greenfield init writes the first graph, and graph construction uses shared route discovery even without Brownfield analysis.
-- `decantr codify --from-audit` proposes project-owned local patterns/rules; `decantr codify --style-bridge` proposes a separate style bridge; and `decantr codify --map-pattern <slug>` maps official corpus guidance into advisory local law. `decantr codify --accept --confirm-reviewed` promotes reviewed local law only. Add `--accept-style-bridge` to explicitly activate the reviewed bridge and change adoption mode.
-- `decantr verify --brownfield --local-patterns` runs the reliability gate, checks typed graph freshness for attached apps, requires accepted local patterns, scans accepted local rules when present, and emits v2 Project Health/Evidence loop payloads.
-- `decantr resolve --project <path>` reads the v2 authority resolution block, groups conflicts by authority lane, and prints exact next commands. It does not mutate by default. `--defer <finding-id>` and `--mark-advisory <finding-id>` may write `.decantr/drift-log.json`; contract, source, local-law, and style-bridge changes stay in explicit workflows such as `codify`, `init --existing --merge-proposal`, `add/remove`, and MCP `decantr_contract_write`.
-- `decantr connect cursor --project <path>` writes `.cursor/mcp.json` and `.cursor/rules/decantr.mdc` in the opened workspace, preserving existing MCP servers. The generated rule tells Cursor Agent to call task context before route edits and run the verify command returned by that context. Use `--preview` for a no-write inspection.
-- `decantr doctor --project <path>` explains verifier-owned adoption truth, whether the app is attached, which adoption lane is active, whether generated context and typed graph artifacts are current, whether local law exists, whether CI is wired, limitations, and the next action.
-- `decantr ci --project <path>` is the blessed CI command. It is non-mutating and adoption-mode aware. V2 remains the exact default, including Brownfield `baselineGate` semantics. Explicit `--report-version v3` embeds `AdoptionTruthV1` and `GovernanceDeltaV1`; missing/stale/incompatible baseline or change evidence yields `not_proven` and fails unless `--fail-on none` is explicit. `decantr ci init --report-version v3` generates a GitHub workflow with full history and an explicit `--since` base; existing v2 workflows are not rewritten.
-- `decantr studio` recomputes or rereads state without writing project files or invoking adoption, repair, acceptance, migration, builds, package managers, verification, providers, or agents. Report mode supports project-mode Project Health v2, CI v2/v3, Adoption Truth, and Governance Delta artifacts; saved workspace CI mode is not supported.
-- `decantr health init-ci` and `decantr verify init-ci` are legacy aliases for `decantr ci init`; they should generate the same pinned `decantr-ci.yml` surface, not the old `@latest` Project Health workflow.
-- `decantr analyze` still writes Brownfield intelligence, theme inventory, and enrichment backlog artifacts.
-- `decantr graph --project <path>` writes `.decantr/graph/graph.snapshot.json`, `.decantr/graph/snapshots/<snapshot-id>.json`, `graph.manifest.json`, `graph.diff.json`, and `contract-capsule.json` from Essence, accepted local rules, accepted style bridge, Brownfield analysis route-source provenance, reusable component declarations, visual manifests, and saved Evidence Bundle artifacts when present. Accepted style bridge token hints become first-class Token nodes so the Contract capsule can expose project-owned style authority without requiring the legacy Decantr CSS adapter. Evidence Bundle repair/read targets become source artifacts when referenced files exist, giving findings file-level anchors; the capsule includes bounded SourceArtifact paths as `file_path` handles for follow-up graph tools, reports when the list is truncated, and can be tuned with `--capsule-source-limit <count>`. CLI JSON and MCP graph metadata expose typed diff counts such as added findings, resolved findings, and added evidence. `decantr graph --route /feed --json` includes the route-scoped graph subgraph with hybrid weighted/PageRank ranking; `decantr graph --node cmp:button --impact --json` includes dependency impact context for a component, token, rule, finding, or source artifact; `decantr graph --file src/app/page.tsx --impact --json` resolves a project-relative source file to its SourceArtifact node and returns its route/page blast radius; `--snapshot-id <id>` replays a local history snapshot, and `--compare-to <id> --include-diff-ops --json` compares the selected/current graph against another local snapshot with bounded typed diff operations. Health-baseline diff output is deliberately excluded from graph inputs so a continuity check cannot invalidate the graph. `decantr graph --check` is the CI-safe freshness check.
-- `decantr setup` is stateful orientation: before adoption it shows app candidates and the attach command; after adoption it shows attached projects plus `doctor`, `task`, `verify`, and `ci init` as the day-two loop.
-- `decantr workspace list` ranks monorepo app candidates before any workflow command uses the first suggestion. Product UI apps rank ahead of docs, Storybook, API/server, MCP helper, workbench/demo, and package/library surfaces. JSON output includes `rank`, `score`, `category`, and `reason` in addition to the existing path, attachment state, and suggested adopt command.
-- `decantr suggest` accepts `--route`, `--file`, `--from-code`, and `--project`; when accepted local law or a style bridge exists, project-owned patterns and mappings are shown before official corpus suggestions. From an app root, suggestions should discover local law from the current directory without requiring `--project`; from a monorepo root, use `--project <app>`. `--from-code` may derive the query from `--route` or `--file`, and monorepo-root file paths under the selected project are normalized to app-local paths.
-- `decantr check --brownfield --project <path>` validates the selected app from a monorepo root; app-scoped primitives should not silently fall back to the workspace root.
-- `decantr add page <section>/<page> --route <route> --project <path>` writes both the page and route mapping so the page is immediately usable by `decantr task <route>`.
-- App-scoped primitives that support project state (`health`, `status`, `upgrade`, `add`, `remove`, `theme`, `export`, `suggest`, `magic`, `rules`, and `telemetry`) should honor `--project <path>`. Unsupported flags should fail before writing proposal/generated files.
-- `decantr content get-pack page --route <route>` is the CLI task-context path through the existing pack surface. `decantr content compile-packs apps/web/decantr.essence.json --write-context` hydrates app packs beside the provided essence path. Legacy `decantr registry ...` aliases remain compatible for Decantr 3.x scripts.
-- `decantr health --browser --base-url <url> --evidence` writes local screenshots and a visual manifest; `--save-baseline` / `--since-baseline` add continuity.
-- `decantr health --diagnostics --json` prints the stable diagnostic code and repair ID catalog without running a project audit.
-- `decantr refresh --check` is the CI-safe generated-context freshness check and fails when `pack-manifest.json` references missing files. In contract-only Brownfield it should not fail solely because content API packs were intentionally deferred. `decantr refresh --list-changes` prints created, updated, and removed generated files after regeneration, using paths that are openable from the command's current directory.
+`adopt` and `ci init` are setup boundaries, not daily ceremony. The normal change loop is `task -> edit -> verify`; CI enforces it.
 
-Command help must be side-effect free. `decantr <command> --help`, `decantr <command> -h`, and `decantr <command> help` should print help and never execute command bodies or write project files.
+In monorepos, keep one app scope:
 
-Package and trust audits are repo scripts, not user-facing CLI commands. `pnpm audit:package-surface` verifies support-matrix drift and the installed permission surface, while `pnpm audit:package-permissions` runs the permission-only audit with `npm pack --dry-run --json`. The generated reference is `docs/reference/security-permissions.md`.
+```bash
+decantr scan --project apps/web
+decantr adopt --project apps/web --yes
+decantr task /feed "add saved actions" --project apps/web
+decantr verify --project apps/web
+decantr ci init --project apps/web
+```
 
-`@decantr/vite-plugin` remains experimental after this audit. It may become a verifier-backed dev adapter later, but it is not part of the default Decantr 3 reliability layer.
+## Command Semantics
+
+### `scan`
+
+- Reads the selected app without writing project artifacts, installing dependencies, building, running package scripts, or uploading source.
+- Reports evidence and limitations; a successful exit is not an authority-correctness result.
+- Must not let confidence, fit, route count, or component count conceal unresolved authority.
+- In 3.10, the primary readiness vocabulary is `ready`, `limited`, `blocked`, or `unsupported` across independent axes.
+
+### `adopt`
+
+- Is the one-time user-facing attach path over analysis, contract/context creation, graph/evidence setup, baseline creation, and optional CI.
+- Must explain writes before mutation and preserve the host framework, router, styling, components, tests, and instructions.
+- A force override records an operator decision; it does not upgrade weak evidence to proof.
+- Active 3.10 implementation investment remains focused on observe/prepare/verify. Adoption is the attachment bridge, not a platform-expansion surface.
+
+### `task`
+
+- Prepares compact, ranked, change-specific context for any coding agent.
+- Published 3.9.4 behavior is route-backed through `TaskCapsuleV1` and requires current graph evidence.
+- Missing, stale, conflicting, blocked, or unsupported authority must return non-success guidance rather than guessed sources.
+- The 3.10 UI-surface model covers routes, layouts, components, stories, overlays, flows, packages, and runtime states. Do not mislabel a non-route surface as a route to fit the old capsule.
+
+### `verify`
+
+- Composes Decantr checks with project-owned build, test, lint, browser, visual, accessibility, and evidence inputs where available.
+- Must not claim runtime behavior from static source or visual correctness from a screenshot hash.
+- Keeps missing and incomplete evidence visible.
+
+### `ci`
+
+- Runs the non-interactive project or workspace gate.
+- `ci init` generates integration files and therefore mutates the repository; ordinary `ci` is a gate.
+- 3.9.4 keeps CI v2 as the default. Explicit `--report-version v3` preserves current compatibility contracts.
+- A missing or incompatible comparison basis remains `not_proven`, not clean.
+
+## Advanced Commands
+
+These commands remain callable for diagnosis, direct control, content maintenance, or specialized workflows. They should not crowd normal help or every agent prompt.
+
+| Area | Commands | Posture |
+| --- | --- | --- |
+| Orientation and diagnosis | `setup`, `doctor`, `resolve`, `health`, `workspace` | Advanced support for the primary loop. |
+| Agent and graph integration | `connect`, `graph`, `rules` | Advanced integration; avoid duplicate instruction bridges. |
+| Project-law workflows | `codify`, `audit`, `check` | Advanced Brownfield/Hybrid control. |
+| Lower-level attachment | `init`, `analyze`, `refresh`, `migrate` | Primitives behind or beside the normal workflow. |
+| Contract composition | `add`, `remove`, `theme`, `export`, `validate`, `status` | Advanced 3.x authoring/maintenance. |
+| Greenfield | `new`, `magic` | Available compatibility path; not active 3.10 investment. |
+| Content/reference | `content`, `search`, `suggest`, `get`, `list`, `sync`, `upgrade` | Supported utilities; broad corpus expansion is frozen. |
+| Drift operations | `sync-drift` | Advanced explicit drift-log handling. |
+| Local/operator views | `studio`, `showcase`, `telemetry` | No active 3.10 product expansion. |
+
+Advanced does not mean removed or broken. It means the command is not required to understand Decantr's core value proposition.
+
+## Compatibility Commands
+
+These names remain callable for 3.x scripts but should not appear as the recommended product path:
+
+| Command | Compatibility behavior |
+| --- | --- |
+| `heal` | Deprecated alias for `check`. |
+| `registry` | Legacy facade over content-owned reads/cache/pack behavior. |
+| `content-health` | Root compatibility entry for content health. |
+| `create` | Root compatibility entry for content item scaffolding. |
+| `publish` | Retired hosted community-publishing path; should return retirement guidance. |
+| `login`, `logout` | Legacy credential helpers; hosted registry accounts are retired. |
+
+Legacy `health init-ci` and `verify init-ci` aliases may continue to map to `ci init`. Existing `--adoption=decantr-css` behavior remains explicit compatibility and must not return to normal help.
+
+`@decantr/registry`, MCP `decantr_registry`, and `REGISTRY_URL` are also compatibility names. They do not imply a public registry portal or marketplace.
+
+## Product Surfaces Outside The Default Path
+
+Greenfield blueprints, themes, broad content-corpus operations, `@decantr/css`, the Vite plugin, Studio, showcase, telemetry, and registry publishing/account workflows are advanced, compatibility, experimental, or historical surfaces. They receive no feature expansion in the 3.10 proof program.
+
+Package consolidation and command removal are deferred to 4.0 after the benchmark result. The 3.10 work should reduce visibility and duplicated implementation, not silently break 3.x scripts.
+
+## MCP Boundary
+
+CLI simplification does not change MCP identity. Preserve exactly:
+
+`decantr_project`, `decantr_contract`, `decantr_context`, `decantr_graph`, `decantr_registry`, `decantr_verify`, `decantr_repair`, and `decantr_contract_write`.
+
+Do not add a ninth content tool or remove `decantr_registry` in 3.x.
+
+## Help And Safety Rules
+
+- Root help should lead with the five-command workflow.
+- Every hidden command must have independent command-local help before it leaves root help.
+- `decantr <command> --help`, `-h`, and `help` must be side-effect free.
+- Command metadata, dispatch, help, docs, and tests must agree.
+- Compatibility commands stay callable without becoming recommended.
+- Mutation commands must identify their write boundary before changing files.
+- No command may convert an unsupported or unresolved authority state into a clean result through scoring.
+
+## Proof Boundary
+
+Command simplification is not the 3.10 success criterion. The release must also pass the frozen 28-repository Day-0 authority gate and the 320-run, information-equivalent model A/B experiment. See the [3.10 program](../programs/2026-07-22-decantr-3-10-ui-change-control-proof.md) and [3.9.4 Day-0 baseline](../benchmarks/2026-07-22-decantr-3-9-4-day-zero.md).
+
+The typed command metadata lives in `packages/cli/src/command-surface.ts`. Published 3.9.4 behavior remains the compatibility floor until a qualified 3.10 release replaces it.

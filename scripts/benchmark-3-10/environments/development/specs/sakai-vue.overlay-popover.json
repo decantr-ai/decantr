@@ -1,0 +1,61 @@
+{
+  "base": {
+    "commit": "03ef1236f0226283c2bfe6e316585115ab0b7a62",
+    "tree": "e4b063cade6d97a7ee241b9221e102172dea21ac"
+  },
+  "cleanAfterPreparation": true,
+  "lockfiles": [
+    {
+      "path": "package-lock.json",
+      "sha256": "ae699486094784f740a5214dd53f94f1488297fae4d7a1bfa720e4d7523e4bc3"
+    }
+  ],
+  "partition": "development",
+  "preparation": [
+    {
+      "args": [
+        "ci"
+      ],
+      "cwd": ".",
+      "executable": "npm",
+      "id": "install-dependencies",
+      "network": "dependency-registry",
+      "required": true,
+      "timeoutMs": 7200000
+    }
+  ],
+  "profile": {
+    "arch": "x64",
+    "bunVersion": null,
+    "id": "node-22.19.0-npm-10.9.3",
+    "nodeVersion": "22.19.0",
+    "os": "linux",
+    "packageManager": {
+      "name": "npm",
+      "version": "10.9.3"
+    }
+  },
+  "projectPath": ".",
+  "review": {
+    "notes": "Independent source-evidence re-review verified 2 frozen Git blobs and exact SHA-256 values at 03ef1236f0226283c2bfe6e316585115ab0b7a62. Independent review confirms the frozen root npm lock and deterministic npm ci argv. The February 2025 tree has no engines, packageManager, runtime file, Dockerfile, or CI workflow, so it cannot authenticate candidate Node 22.19.0/npm 10.9.3 or establish an exact Linux x64 preparation result; status remains draft.",
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "status": "draft"
+  },
+  "schemaVersion": "decantr-benchmark-task-environment.v1",
+  "sourceEvidence": [
+    {
+      "kind": "lockfile",
+      "path": "package-lock.json",
+      "sha256": "ae699486094784f740a5214dd53f94f1488297fae4d7a1bfa720e4d7523e4bc3",
+      "statement": "Frozen root npm lockfile is bound for deterministic npm ci preparation."
+    },
+    {
+      "kind": "package-manifest",
+      "path": "package.json",
+      "sha256": "36daa712109e10af3375fbaf0300b7165f438dc1133840ab401007ee9b5572c9",
+      "statement": "Manifest defines the Vite build but provides no engines or exact npm packageManager pin."
+    }
+  ],
+  "taskId": "sakai-vue.overlay-popover"
+}

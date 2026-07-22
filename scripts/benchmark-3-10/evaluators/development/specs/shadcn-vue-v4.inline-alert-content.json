@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "decantr-benchmark-evaluator-authoring-spec.v2",
+  "taskId": "shadcn-vue-v4.inline-alert-content",
+  "contractId": "shadcn-vue-v4.inline-alert-content.v1",
+  "review": {
+    "status": "approved",
+    "reviewedBy": "OpenAI Codex independent evaluator reviewer",
+    "reviewedAt": "2026-07-22T14:46:27Z",
+    "notes": "Approved after two exact repeated frozen-worktree runs under Node 22.19.0/pnpm 10.25.0 and after repairing the oracle's false-success exit path. The candidate-independent browser oracle mounts the real Nuxt Alert documentation component, injects evaluator-owned inline-link and block-paragraph slot content, and measures compiled layout, line boxes, typography, light/dark color, focus, overflow, screenshots, alert semantics, runtime errors, and scoped Axe results. Base 0008d4848b845a5a2324c78f135239ce6e3739b6 reproducibly fails only inlineFragmentsUseOneNormalFlowLine at 10/11 checks and exits 1; expected 87f076d359b98b88dea8856a6a6b5335dbcb6dd6 passes 11/11 and exits 0. pnpm --filter v4 registry:build passes on both. Repository-wide typecheck was removed because unchanged content tabs and pagination examples fail on both revisions; the full Nuxt build was removed because client/server compilation succeeds but frozen prerendering does not terminate at the review cutoff. The real dev compiler, browser oracle, and focused registry build remain required."
+  },
+  "oracle": {
+    "candidateIndependent": true,
+    "decantrOutputAllowed": false,
+    "sourcePath": "sources/shadcn-vue-v4.inline-alert-content.mjs"
+  },
+  "commands": [
+    {
+      "id": "behavior",
+      "kind": "functional",
+      "runtime": "controller",
+      "executable": "node",
+      "args": [
+        "${EVALUATOR_ROOT}/sources/shadcn-vue-v4.inline-alert-content.mjs",
+        "--workspace",
+        "${WORKSPACE}",
+        "--project-path",
+        "${PROJECT_PATH}",
+        "--evaluator-runtime",
+        "${EVALUATOR_RUNTIME}"
+      ],
+      "cwd": "${EVALUATOR_ROOT}",
+      "timeoutMs": 600000,
+      "required": true,
+      "resultFormat": "json-stdout"
+    },
+    {
+      "id": "host-registry-build",
+      "kind": "build",
+      "runtime": "task",
+      "executable": "pnpm",
+      "args": ["--filter", "v4", "registry:build"],
+      "cwd": "${WORKSPACE}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    }
+  ],
+  "limits": {
+    "timeoutMs": 5400000,
+    "maxRequests": 40,
+    "maxInputTokens": 1000000,
+    "maxOutputTokens": 100000
+  }
+}

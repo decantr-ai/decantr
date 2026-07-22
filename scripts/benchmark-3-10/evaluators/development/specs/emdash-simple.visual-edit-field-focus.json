@@ -1,0 +1,126 @@
+{
+  "schemaVersion": "decantr-benchmark-evaluator-authoring-spec.v2",
+  "taskId": "emdash-simple.visual-edit-field-focus",
+  "contractId": "emdash-simple.visual-edit-field-focus.v1",
+  "review": {
+    "status": "draft",
+    "reviewedBy": "OpenAI Codex independent evaluator reviewer",
+    "reviewedAt": "2026-07-22T14:20:13Z",
+    "notes": "Independent exact-commit review reproduced stable source-oracle polarity twice: base 156ba7350070400e5877e3a54d33486cd0d33640 passed 1/8 checks and expected e3f7db8bb670bb7444632ab0cd4e680e4c9029b3 passed 8/8. BLOCKED: all assertions remain regexes or identifier counts over the expected source shape. No seeded visual-editing flow waits for asynchronous content, scrolls and focuses the requested field, preserves unrelated query parameters, verifies replace-history/back behavior, or opens equivalent demo/template annotations. Existing visual-editing E2E coverage does not exercise this field-selection change. Keep draft until a deterministic browser harness observes those outcomes at both frozen revisions."
+  },
+  "oracle": {
+    "candidateIndependent": true,
+    "decantrOutputAllowed": false,
+    "sourcePath": "sources/emdash-simple.visual-edit-field-focus.mjs"
+  },
+  "commands": [
+    {
+      "id": "behavior",
+      "kind": "functional",
+      "runtime": "controller",
+      "executable": "node",
+      "args": [
+        "${EVALUATOR_ROOT}/sources/emdash-simple.visual-edit-field-focus.mjs",
+        "--workspace",
+        "${WORKSPACE}",
+        "--project-path",
+        "${PROJECT_PATH}"
+      ],
+      "cwd": "${EVALUATOR_ROOT}",
+      "timeoutMs": 120000,
+      "required": true,
+      "resultFormat": "json-stdout"
+    },
+    {
+      "id": "host-package-build",
+      "kind": "build",
+      "runtime": "task",
+      "executable": "pnpm",
+      "args": [
+        "build"
+      ],
+      "cwd": "${WORKSPACE}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    },
+    {
+      "id": "host-demo-build",
+      "kind": "build",
+      "runtime": "task",
+      "executable": "pnpm",
+      "args": [
+        "--filter",
+        "emdash-demo",
+        "build"
+      ],
+      "cwd": "${WORKSPACE}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    },
+    {
+      "id": "host-package-typecheck",
+      "kind": "functional",
+      "runtime": "task",
+      "executable": "pnpm",
+      "args": [
+        "typecheck"
+      ],
+      "cwd": "${WORKSPACE}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    },
+    {
+      "id": "host-demo-typecheck",
+      "kind": "functional",
+      "runtime": "task",
+      "executable": "pnpm",
+      "args": [
+        "--filter",
+        "emdash-demo",
+        "typecheck"
+      ],
+      "cwd": "${WORKSPACE}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    },
+    {
+      "id": "host-unit-tests",
+      "kind": "functional",
+      "runtime": "task",
+      "executable": "pnpm",
+      "args": [
+        "test:unit"
+      ],
+      "cwd": "${WORKSPACE}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    },
+    {
+      "id": "host-admin-tests",
+      "kind": "functional",
+      "runtime": "task",
+      "executable": "pnpm",
+      "args": [
+        "run",
+        "--filter",
+        "@emdash-cms/admin",
+        "test"
+      ],
+      "cwd": "${WORKSPACE}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    }
+  ],
+  "limits": {
+    "timeoutMs": 5400000,
+    "maxRequests": 40,
+    "maxInputTokens": 600000,
+    "maxOutputTokens": 80000
+  }
+}

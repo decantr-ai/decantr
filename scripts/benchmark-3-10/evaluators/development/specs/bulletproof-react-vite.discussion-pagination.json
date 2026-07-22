@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "decantr-benchmark-evaluator-authoring-spec.v2",
+  "taskId": "bulletproof-react-vite.discussion-pagination",
+  "contractId": "bulletproof-react-vite.discussion-pagination.v1",
+  "review": {
+    "status": "draft",
+    "reviewedBy": "OpenAI Codex independent evaluator reviewer",
+    "reviewedAt": "2026-07-22T14:20:13Z",
+    "notes": "Independent exact-commit review reproduced stable source-oracle polarity twice: base af48f06be20a1926a24d0bba6ce339e754c5735f passed 0/12 checks and expected 5d1c7e57b1c0af2efcfca311aaa125c6fecef879 passed 12/12. BLOCKED: the oracle is still implementation-shape matching across eight files; it does not render the discussion list, click numbered links, verify URL/history changes, observe server page contents, or load multiple comment pages. Source review also found that expected labels its final-page link as Next and styles the current page without aria-current. Required Yarn tests/build remain in the contract but cannot make the functional oracle authentic. Keep draft until a browser or component harness exercises pagination and incremental comments at both frozen revisions."
+  },
+  "oracle": {
+    "candidateIndependent": true,
+    "decantrOutputAllowed": false,
+    "sourcePath": "sources/bulletproof-react-vite.discussion-pagination.mjs"
+  },
+  "commands": [
+    {
+      "id": "behavior",
+      "kind": "functional",
+      "runtime": "controller",
+      "executable": "node",
+      "args": [
+        "${EVALUATOR_ROOT}/sources/bulletproof-react-vite.discussion-pagination.mjs",
+        "--workspace",
+        "${WORKSPACE}",
+        "--project-path",
+        "${PROJECT_PATH}"
+      ],
+      "cwd": "${EVALUATOR_ROOT}",
+      "timeoutMs": 120000,
+      "required": true,
+      "resultFormat": "json-stdout"
+    },
+    {
+      "id": "host-test",
+      "kind": "functional",
+      "runtime": "task",
+      "executable": "yarn",
+      "args": [
+        "test",
+        "--run"
+      ],
+      "cwd": "${WORKSPACE}/${PROJECT_PATH}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    },
+    {
+      "id": "host-build",
+      "kind": "build",
+      "runtime": "task",
+      "executable": "yarn",
+      "args": [
+        "build"
+      ],
+      "cwd": "${WORKSPACE}/${PROJECT_PATH}",
+      "timeoutMs": 1800000,
+      "required": true,
+      "resultFormat": "exit-code"
+    }
+  ],
+  "limits": {
+    "timeoutMs": 5400000,
+    "maxRequests": 40,
+    "maxInputTokens": 600000,
+    "maxOutputTokens": 80000
+  }
+}

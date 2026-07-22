@@ -38,7 +38,7 @@
       "releaseChannel": "stable",
       "publishOrder": 10,
       "defaultDistTag": "latest",
-      "summary": "Essence schemas, validation, migration, and TypeScript types.",
+      "summary": "Essence V4 schema, validation, migration, and TypeScript types for accepted project law; Brownfield production source and runtime configuration remain first authority.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,
@@ -51,7 +51,7 @@
       "name": "@decantr/registry",
       "path": "packages/registry",
       "support": "supported-secondary",
-      "surfaceClass": "public-foundation",
+      "surfaceClass": "public-compatibility",
       "maturity": "stable",
       "publish": true,
       "releaseWave": "foundation",
@@ -63,7 +63,7 @@
         "stableCandidate": true,
         "docsAligned": true,
         "ciCovered": true,
-        "productIntegrated": true,
+        "productIntegrated": false,
         "blockers": []
       }
     },
@@ -91,7 +91,7 @@
       "name": "@decantr/css",
       "path": "packages/css",
       "support": "supported-secondary",
-      "surfaceClass": "public-foundation",
+      "surfaceClass": "public-compatibility",
       "maturity": "stable",
       "publish": true,
       "releaseWave": "foundation",
@@ -103,7 +103,7 @@
         "stableCandidate": true,
         "docsAligned": true,
         "ciCovered": true,
-        "productIntegrated": true,
+        "productIntegrated": false,
         "blockers": []
       }
     },
@@ -130,20 +130,20 @@
     {
       "name": "@decantr/telemetry",
       "path": "packages/telemetry",
-      "support": "core-supported",
-      "surfaceClass": "public-foundation",
+      "support": "supported-secondary",
+      "surfaceClass": "public-compatibility",
       "maturity": "stable",
       "publish": true,
       "releaseWave": "foundation",
       "releaseChannel": "stable",
       "publishOrder": 60,
       "defaultDistTag": "latest",
-      "summary": "Privacy-preserving telemetry event contracts, clients, and analytics sinks.",
+      "summary": "Compatibility telemetry contracts, privacy filters, clients, and caller-controlled sinks for private deployments; no hosted default and no active 3.10 product investment.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,
         "ciCovered": true,
-        "productIntegrated": true,
+        "productIntegrated": false,
         "blockers": []
       }
     },
@@ -158,7 +158,7 @@
       "releaseChannel": "stable",
       "publishOrder": 20,
       "defaultDistTag": "latest",
-      "summary": "Stable eight-tool MCP surface for content-corpus compatibility, Decantr Contract context, Adoption Truth, bounded Task Capsules, typed graph artifacts, packs, evidence, workspace health, and repair prompts.",
+      "summary": "Stable eight-tool MCP surface for local project state, accepted Essence reads, route-backed TaskCapsuleV1 context, graph and verification evidence, health, and repair prompts; non-route target discovery remains unreleased.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,
@@ -198,7 +198,7 @@
       "releaseChannel": "stable",
       "publishOrder": 30,
       "defaultDistTag": "latest",
-      "summary": "Workflow commands for content-first setup, authority-aware scan/adopt/task, doctor, verify, CI, codify, connect, and content operations, including Adoption Truth with exact Tailwind v4 source-isolation approvals, bounded Task Capsules, Governance Deltas, default CI v2, opt-in CI v3, monorepo targeting, health baselines, and read-only report-isolated Studio.",
+      "summary": "Workflow commands for local Brownfield scan/adopt, route-backed task context, verification, CI, codify, connect, and compatibility content operations, including Adoption Truth with exact Tailwind v4 source-isolation approvals, bounded Task Capsules, Governance Deltas, default CI v2, opt-in CI v3, monorepo targeting, health baselines, and read-only report-isolated Studio.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,

@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/benchmark-3-10/prequalification-task.v2.json",
+  "title": "Decantr 3.10 prequalification task bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "program",
+    "taskId",
+    "partition",
+    "candidateSetSha256",
+    "candidateSha256",
+    "corpusSha256",
+    "evaluatorSpecSha256",
+    "oracleSourceSha256",
+    "evaluatorContractSha256",
+    "qualificationControllerSha256",
+    "environmentSpecSha256",
+    "environmentSubstanceSha256",
+    "runtimeMatrixFileSha256",
+    "runtimeMatrixSha256",
+    "runtimeProfileId",
+    "benchmarkImageDigest",
+    "revisions",
+    "sealedAt",
+    "bundleSha256"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "decantr-benchmark-prequalification-task.v2" },
+    "program": { "const": "decantr-3.10-ui-change-control-proof" },
+    "taskId": { "$ref": "#/$defs/taskId" },
+    "partition": { "enum": ["development", "qualification"] },
+    "candidateSetSha256": { "$ref": "#/$defs/sha256" },
+    "candidateSha256": { "$ref": "#/$defs/sha256" },
+    "corpusSha256": { "$ref": "#/$defs/sha256" },
+    "evaluatorSpecSha256": { "$ref": "#/$defs/sha256" },
+    "oracleSourceSha256": { "$ref": "#/$defs/sha256" },
+    "evaluatorContractSha256": { "$ref": "#/$defs/sha256" },
+    "qualificationControllerSha256": { "$ref": "#/$defs/sha256" },
+    "environmentSpecSha256": { "$ref": "#/$defs/sha256" },
+    "environmentSubstanceSha256": { "$ref": "#/$defs/sha256" },
+    "runtimeMatrixFileSha256": { "$ref": "#/$defs/sha256" },
+    "runtimeMatrixSha256": { "$ref": "#/$defs/sha256" },
+    "runtimeProfileId": { "type": "string", "minLength": 1 },
+    "benchmarkImageDigest": { "$ref": "#/$defs/imageDigest" },
+    "revisions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["base", "expected"],
+      "properties": {
+        "base": { "$ref": "#/$defs/revision" },
+        "expected": { "$ref": "#/$defs/revision" }
+      }
+    },
+    "sealedAt": { "type": "string", "format": "date-time" },
+    "bundleSha256": { "$ref": "#/$defs/sha256" }
+  },
+  "$defs": {
+    "taskId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,95}$" },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "imageDigest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "revision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commit", "tree"],
+      "properties": {
+        "commit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+        "tree": { "type": "string", "pattern": "^[a-f0-9]{40}$" }
+      }
+    }
+  }
+}

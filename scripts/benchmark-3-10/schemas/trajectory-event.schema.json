@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/benchmark-3-10/trajectory-event.v1.json",
+  "title": "Decantr 3.10 normalized trajectory event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "runId", "sequence", "source", "type", "recordedAt", "payload"],
+  "properties": {
+    "schemaVersion": { "const": "decantr-benchmark-trajectory-event.v1" },
+    "runId": { "type": "string", "minLength": 1 },
+    "sequence": { "type": "integer", "minimum": 0 },
+    "source": { "enum": ["runner", "adapter", "evaluator"] },
+    "type": { "type": "string", "minLength": 1 },
+    "recordedAt": { "type": "string", "format": "date-time" },
+    "payload": { "type": "object" }
+  }
+}
