@@ -39,7 +39,11 @@ import {
   assertExecutionAttestation,
   calculateContainerControllerClosure,
 } from './container-orchestrator.mjs';
-import { verifyQualificationProvenance } from './github-provenance.mjs';
+import {
+  qualificationProvenanceBundleFilename,
+  qualificationProvenancePolicy,
+  verifyQualificationProvenance,
+} from './qualification-provenance.mjs';
 
 const benchmarkRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const repoRoot = resolve(benchmarkRoot, '..', '..');
@@ -96,6 +100,7 @@ export async function materializeBenchmarkTasks(options) {
     qualificationControllerSha256,
     containerController,
     provenanceVerifier,
+    cosignPath: options.cosignPath,
     sealedAt: options.sealedAt,
     pricing,
   });
@@ -114,6 +119,7 @@ export async function materializeBenchmarkTasks(options) {
     qualificationControllerSha256,
     containerController,
     provenanceVerifier,
+    cosignPath: options.cosignPath,
     sealedAt: options.sealedAt,
     pricing,
   });
@@ -283,6 +289,7 @@ async function materializePartition(options) {
       receiptRoot: options.receiptRoot,
       containerController: options.containerController,
       provenanceVerifier: options.provenanceVerifier,
+      cosignPath: options.cosignPath,
     });
     const qualificationResults = {};
     for (const role of ['base', 'expected']) {
@@ -373,7 +380,14 @@ async function materializePartition(options) {
 
 async function verifyQualificationExecutionEvidence(options) {
   const attestationPath = join(options.receiptRoot, 'attestations', `${options.candidate.taskId}.json`);
-  const provenancePath = join(options.receiptRoot, 'provenance', `${options.candidate.taskId}.jsonl`);
+  const provenancePath = join(
+    options.receiptRoot,
+    'provenance',
+    qualificationProvenanceBundleFilename(
+      options.candidate.taskId,
+      options.receipt.execution.provenanceProvider,
+    ),
+  );
   const prequalificationPath = join(
     options.receiptRoot,
     'prequalification',
@@ -475,26 +489,22 @@ async function verifyQualificationExecutionEvidence(options) {
   const provenance = await options.provenanceVerifier({
     attestationPath,
     bundlePath: provenancePath,
-    repository: execution.repository,
-    signerWorkflow: execution.signerWorkflow,
+    partition: options.candidate.partition,
     sourceDigest: execution.runnerRepositoryCommit,
     sourceRef: execution.sourceRef,
-    predicateType: execution.predicateType,
+    cosignPath: options.cosignPath,
+  });
+  const expectedPolicy = qualificationProvenancePolicy(options.candidate.partition, {
+    sourceDigest: execution.runnerRepositoryCommit,
+    sourceRef: execution.sourceRef,
   });
   if (
     provenance.attestationFileSha256 !== execution.attestationFileSha256 ||
     provenance.bundleFileSha256 !== execution.provenanceBundleFileSha256 ||
     provenance.verificationSha256 !== execution.provenanceVerificationSha256 ||
-    sha256Canonical(provenance.policy) !== sha256Canonical({
-      repository: execution.repository,
-      signerWorkflow: execution.signerWorkflow,
-      sourceDigest: execution.runnerRepositoryCommit,
-      sourceRef: execution.sourceRef,
-      predicateType: execution.predicateType,
-      denySelfHostedRunners: true,
-    })
+    sha256Canonical(provenance.policy) !== sha256Canonical(expectedPolicy)
   ) {
-    throw new Error(`${options.candidate.taskId}: retained GitHub provenance verification is invalid`);
+    throw new Error(`${options.candidate.taskId}: retained provenance verification is invalid`);
   }
   return { attestation, attestationPath, provenancePath };
 }
@@ -1158,6 +1168,7 @@ function parseArgs(argv) {
     else if (argument === '--qualification-task-root') options.qualificationTaskOutputRoot = resolve(argv[++index]);
     else if (argument === '--qualification-index') options.qualificationIndexPath = resolve(argv[++index]);
     else if (argument === '--public-binding') options.publicBindingPath = resolve(argv[++index]);
+    else if (argument === '--cosign') options.cosignPath = resolve(argv[++index]);
     else throw new Error(`Unknown option: ${argument}`);
   }
   if (!options.sealedAt) throw new Error('--sealed-at is required');

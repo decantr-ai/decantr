@@ -1,10 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { calculateContainerControllerClosure, calculateExecutionAttestationDigest } from '../evaluators/container-orchestrator.mjs';
-import {
-  QUALIFICATION_PREDICATE_TYPE,
-  QUALIFICATION_REPOSITORY,
-  QUALIFICATION_SIGNER_WORKFLOW,
-} from '../evaluators/github-provenance.mjs';
+import { qualificationProvenancePolicy } from '../evaluators/qualification-provenance.mjs';
 import { prettyCanonicalJson, sha256, sha256Canonical } from '../runner/canonical.mjs';
 
 export const FIXTURE_RUNNER_COMMIT = 'd'.repeat(40);
@@ -107,6 +103,11 @@ export async function makeFixtureExecutionAttestation(input) {
     };
   };
   const sourceRef = input.sourceRef ?? FIXTURE_SOURCE_REF;
+  const runnerCommit = input.runnerCommit ?? FIXTURE_RUNNER_COMMIT;
+  const provenancePolicy = qualificationProvenancePolicy(input.candidate.partition, {
+    sourceDigest: runnerCommit,
+    sourceRef,
+  });
   const executionId = input.executionId ?? `fixture-${input.candidate.taskId}`;
   const qualificationInput = input.qualificationInput ?? makeFixtureQualificationInput(input.candidate);
   const attestation = {
@@ -118,14 +119,14 @@ export async function makeFixtureExecutionAttestation(input) {
     status: 'completed',
     executionIdentity: {
       provider: 'github-actions',
-      repository: QUALIFICATION_REPOSITORY,
-      workflowRef: `${QUALIFICATION_SIGNER_WORKFLOW}@${sourceRef}`,
+      repository: provenancePolicy.repository,
+      workflowRef: `${provenancePolicy.signerWorkflow}@${sourceRef}`,
       runId: input.runId ?? '12345',
       runAttempt: '1',
       actor: 'fixture-reviewer',
       ref: sourceRef,
     },
-    runnerRepositoryCommit: input.runnerCommit ?? FIXTURE_RUNNER_COMMIT,
+    runnerRepositoryCommit: runnerCommit,
     startedAt: input.startedAt ?? '2026-07-22T14:00:00Z',
     endedAt: input.qualifiedAt ?? '2026-07-22T14:30:00Z',
     bindings: {
@@ -205,15 +206,12 @@ export async function makeFixtureExecutionAttestation(input) {
 }
 
 export async function fixtureProvenanceVerifier(options) {
+  const policy = qualificationProvenancePolicy(options.partition, {
+    sourceDigest: options.sourceDigest,
+    sourceRef: options.sourceRef,
+  });
   return {
-    policy: {
-      repository: options.repository,
-      signerWorkflow: options.signerWorkflow,
-      sourceDigest: options.sourceDigest,
-      sourceRef: options.sourceRef,
-      predicateType: options.predicateType,
-      denySelfHostedRunners: true,
-    },
+    policy,
     attestationFileSha256: sha256(await readFile(options.attestationPath)),
     bundleFileSha256: sha256(await readFile(options.bundlePath)),
     verificationSha256: FIXTURE_PROVENANCE_VERIFICATION_SHA256,

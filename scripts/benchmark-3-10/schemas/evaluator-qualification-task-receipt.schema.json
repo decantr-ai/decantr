@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://decantr.ai/schemas/benchmark-3-10/evaluator-qualification-task-receipt.v2.json",
+  "$id": "https://decantr.ai/schemas/benchmark-3-10/evaluator-qualification-task-receipt.v3.json",
   "title": "Decantr 3.10 evaluator qualification task receipt",
   "type": "object",
   "additionalProperties": false,
@@ -36,7 +36,7 @@
     "receiptSha256"
   ],
   "properties": {
-    "schemaVersion": { "const": "decantr-benchmark-evaluator-qualification-task-receipt.v2" },
+    "schemaVersion": { "const": "decantr-benchmark-evaluator-qualification-task-receipt.v3" },
     "program": { "const": "decantr-3.10-ui-change-control-proof" },
     "taskId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,95}$" },
     "partition": { "enum": ["development", "qualification"] },
@@ -74,10 +74,14 @@
         "runnerRepositoryCommit",
         "provenanceBundleFileSha256",
         "provenanceVerificationSha256",
+        "provenanceProvider",
         "repository",
         "signerWorkflow",
         "sourceRef",
+        "eventName",
         "predicateType",
+        "certificateIdentity",
+        "certificateOidcIssuer",
         "denySelfHostedRunners"
       ],
       "properties": {
@@ -92,14 +96,74 @@
         "runnerRepositoryCommit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
         "provenanceBundleFileSha256": { "$ref": "#/$defs/sha256" },
         "provenanceVerificationSha256": { "$ref": "#/$defs/sha256" },
-        "repository": { "const": "decantr-ai/decantr" },
+        "provenanceProvider": {
+          "enum": ["github-attestations", "sigstore-keyless"]
+        },
+        "repository": {
+          "enum": ["decantr-ai/decantr", "decantr-ai/decantr-qualification-private"]
+        },
         "signerWorkflow": {
-          "const": "decantr-ai/decantr/.github/workflows/benchmark-3-10-evaluator-qualification.yml"
+          "enum": [
+            "decantr-ai/decantr/.github/workflows/benchmark-3-10-evaluator-qualification.yml",
+            "decantr-ai/decantr-qualification-private/.github/workflows/benchmark-3-10-evaluator-qualification.yml"
+          ]
         },
         "sourceRef": { "type": "string", "minLength": 1 },
-        "predicateType": { "const": "https://slsa.dev/provenance/v1" },
+        "eventName": { "const": "workflow_dispatch" },
+        "predicateType": {
+          "type": ["string", "null"]
+        },
+        "certificateIdentity": {
+          "type": ["string", "null"]
+        },
+        "certificateOidcIssuer": {
+          "type": ["string", "null"]
+        },
         "denySelfHostedRunners": { "const": true }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "provenanceProvider": { "const": "github-attestations" }
+            }
+          },
+          "then": {
+            "properties": {
+              "repository": { "const": "decantr-ai/decantr" },
+              "signerWorkflow": {
+                "const": "decantr-ai/decantr/.github/workflows/benchmark-3-10-evaluator-qualification.yml"
+              },
+              "predicateType": { "const": "https://slsa.dev/provenance/v1" },
+              "certificateIdentity": { "const": null },
+              "certificateOidcIssuer": { "const": null }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "provenanceProvider": { "const": "sigstore-keyless" }
+            }
+          },
+          "then": {
+            "properties": {
+              "repository": { "const": "decantr-ai/decantr-qualification-private" },
+              "signerWorkflow": {
+                "const": "decantr-ai/decantr-qualification-private/.github/workflows/benchmark-3-10-evaluator-qualification.yml"
+              },
+              "predicateType": { "const": null },
+              "certificateIdentity": {
+                "type": "string",
+                "pattern": "^https://github\\.com/decantr-ai/decantr-qualification-private/\\.github/workflows/benchmark-3-10-evaluator-qualification\\.yml@refs/heads/[A-Za-z0-9._/-]+$"
+              },
+              "certificateOidcIssuer": {
+                "const": "https://token.actions.githubusercontent.com"
+              }
+            }
+          }
+        }
+      ]
     },
     "baseResultSha256": { "$ref": "#/$defs/sha256" },
     "baseResultFileSha256": { "$ref": "#/$defs/sha256" },

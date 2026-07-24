@@ -32,11 +32,10 @@ import {
   calculateContainerControllerClosure,
 } from './container-orchestrator.mjs';
 import {
-  QUALIFICATION_PREDICATE_TYPE,
-  QUALIFICATION_REPOSITORY,
-  QUALIFICATION_SIGNER_WORKFLOW,
+  qualificationProvenanceBundleFilename,
+  qualificationProvenancePolicy,
   verifyQualificationProvenance,
-} from './github-provenance.mjs';
+} from './qualification-provenance.mjs';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 const benchmarkRoot = resolve(directory, '..');
@@ -296,7 +295,12 @@ export async function finalizeContainerQualificationTask(inputOptions) {
     ['rev-parse', 'HEAD'],
     sanitizedEnvironment(join(repoRoot, '.benchmark-finalize-git-home')),
   );
-  const expectedWorkflowRef = `${QUALIFICATION_SIGNER_WORKFLOW}@${attestation.executionIdentity.ref}`;
+  const provenancePolicy = qualificationProvenancePolicy(inputs.candidate.partition, {
+    sourceDigest: expectedRunnerCommit,
+    sourceRef: attestation.executionIdentity.ref,
+  });
+  const expectedWorkflowRef =
+    `${provenancePolicy.signerWorkflow}@${attestation.executionIdentity.ref}`;
   if (
     attestation.taskId !== inputs.candidate.taskId ||
     attestation.partition !== inputs.candidate.partition ||
@@ -325,7 +329,7 @@ export async function finalizeContainerQualificationTask(inputOptions) {
     attestation.bindings.benchmarkImage.digest !== inputs.profile.benchmarkImage.digest ||
     attestation.runnerRepositoryCommit !== expectedRunnerCommit ||
     attestation.executionIdentity.provider !== 'github-actions' ||
-    attestation.executionIdentity.repository !== QUALIFICATION_REPOSITORY ||
+    attestation.executionIdentity.repository !== provenancePolicy.repository ||
     attestation.executionIdentity.workflowRef !== expectedWorkflowRef
   ) {
     throw new Error(`${inputs.candidate.taskId}: container execution attestation is stale or not authoritative`);
@@ -336,14 +340,18 @@ export async function finalizeContainerQualificationTask(inputOptions) {
   const provenance = await provenanceVerifier({
     attestationPath: options.executionAttestationPath,
     bundlePath: options.provenanceBundlePath,
-    repository: QUALIFICATION_REPOSITORY,
-    signerWorkflow: QUALIFICATION_SIGNER_WORKFLOW,
+    partition: inputs.candidate.partition,
     sourceDigest: expectedRunnerCommit,
     sourceRef: attestation.executionIdentity.ref,
-    predicateType: QUALIFICATION_PREDICATE_TYPE,
+    cosignPath: options.cosignPath,
   });
   const provenanceBytes = await readFile(options.provenanceBundlePath);
-  assertFinalizedProvenance(provenance, attestation, attestationBytes, provenanceBytes);
+  assertFinalizedProvenance(
+    provenance,
+    provenancePolicy,
+    attestationBytes,
+    provenanceBytes,
+  );
 
   await Promise.all([
     mkdir(options.resultRoot, { recursive: true, mode: 0o700 }),
@@ -397,7 +405,14 @@ export async function finalizeContainerQualificationTask(inputOptions) {
   );
 
   const retainedAttestationPath = join(options.receiptRoot, 'attestations', `${inputs.candidate.taskId}.json`);
-  const retainedProvenancePath = join(options.receiptRoot, 'provenance', `${inputs.candidate.taskId}.jsonl`);
+  const retainedProvenancePath = join(
+    options.receiptRoot,
+    'provenance',
+    qualificationProvenanceBundleFilename(
+      inputs.candidate.taskId,
+      provenancePolicy.provider,
+    ),
+  );
   const retainedPrequalificationPath = join(
     options.receiptRoot,
     'prequalification',
@@ -422,7 +437,7 @@ export async function finalizeContainerQualificationTask(inputOptions) {
   ]);
 
   const receipt = {
-    schemaVersion: 'decantr-benchmark-evaluator-qualification-task-receipt.v2',
+    schemaVersion: 'decantr-benchmark-evaluator-qualification-task-receipt.v3',
     program: PROGRAM,
     taskId: inputs.candidate.taskId,
     partition: inputs.candidate.partition,
@@ -457,11 +472,15 @@ export async function finalizeContainerQualificationTask(inputOptions) {
       runnerRepositoryCommit: attestation.runnerRepositoryCommit,
       provenanceBundleFileSha256: sha256(provenanceBytes),
       provenanceVerificationSha256: provenance.verificationSha256,
-      repository: QUALIFICATION_REPOSITORY,
-      signerWorkflow: QUALIFICATION_SIGNER_WORKFLOW,
-      sourceRef: attestation.executionIdentity.ref,
-      predicateType: QUALIFICATION_PREDICATE_TYPE,
-      denySelfHostedRunners: true,
+      provenanceProvider: provenancePolicy.provider,
+      repository: provenancePolicy.repository,
+      signerWorkflow: provenancePolicy.signerWorkflow,
+      sourceRef: provenancePolicy.sourceRef,
+      eventName: provenancePolicy.eventName,
+      predicateType: provenancePolicy.predicateType,
+      certificateIdentity: provenancePolicy.certificateIdentity,
+      certificateOidcIssuer: provenancePolicy.certificateOidcIssuer,
+      denySelfHostedRunners: provenancePolicy.denySelfHostedRunners,
     },
     baseResultSha256: resultBindings.base.canonicalSha256,
     baseResultFileSha256: resultBindings.base.fileSha256,
@@ -613,7 +632,7 @@ export function assertQualificationReceipt(receipt, expected = {}) {
     'qualification receipt',
   );
   if (
-    receipt.schemaVersion !== 'decantr-benchmark-evaluator-qualification-task-receipt.v2' ||
+    receipt.schemaVersion !== 'decantr-benchmark-evaluator-qualification-task-receipt.v3' ||
     receipt.program !== PROGRAM ||
     receipt.qualified !== true ||
     receipt.executionAssurance !== 'github-host-container-attested' ||
@@ -664,10 +683,14 @@ export function assertQualificationReceipt(receipt, expected = {}) {
       'runnerRepositoryCommit',
       'provenanceBundleFileSha256',
       'provenanceVerificationSha256',
+      'provenanceProvider',
       'repository',
       'signerWorkflow',
       'sourceRef',
+      'eventName',
       'predicateType',
+      'certificateIdentity',
+      'certificateOidcIssuer',
       'denySelfHostedRunners',
     ],
     'qualification execution binding',
@@ -688,14 +711,18 @@ export function assertQualificationReceipt(receipt, expected = {}) {
       throw new Error(`qualification execution ${key} is invalid`);
     }
   }
+  let expectedPolicy;
+  try {
+    expectedPolicy = qualificationProvenancePolicy(receipt.partition, {
+      sourceDigest: receipt.execution.runnerRepositoryCommit,
+      sourceRef: receipt.execution.sourceRef,
+    });
+  } catch {
+    throw new Error('qualification execution provenance policy is invalid');
+  }
   if (
-    !/^[a-f0-9]{40}$/u.test(receipt.execution.runnerRepositoryCommit ?? '') ||
-    receipt.execution.repository !== QUALIFICATION_REPOSITORY ||
-    receipt.execution.signerWorkflow !== QUALIFICATION_SIGNER_WORKFLOW ||
-    typeof receipt.execution.sourceRef !== 'string' ||
-    receipt.execution.sourceRef.length === 0 ||
-    receipt.execution.predicateType !== QUALIFICATION_PREDICATE_TYPE ||
-    receipt.execution.denySelfHostedRunners !== true
+    sha256Canonical(provenancePolicyFromExecution(receipt.execution)) !==
+    sha256Canonical(expectedPolicy)
   ) {
     throw new Error('qualification execution provenance policy is invalid');
   }
@@ -950,20 +977,35 @@ function assertContainerQualificationTemporalOrder(inputs, attestation, sealedAt
   }
 }
 
-function assertFinalizedProvenance(provenance, attestation, attestationBytes, provenanceBytes) {
+function assertFinalizedProvenance(
+  provenance,
+  expectedPolicy,
+  attestationBytes,
+  provenanceBytes,
+) {
   if (
-    provenance?.policy?.repository !== QUALIFICATION_REPOSITORY ||
-    provenance.policy.signerWorkflow !== QUALIFICATION_SIGNER_WORKFLOW ||
-    provenance.policy.sourceDigest !== attestation.runnerRepositoryCommit ||
-    provenance.policy.sourceRef !== attestation.executionIdentity.ref ||
-    provenance.policy.predicateType !== QUALIFICATION_PREDICATE_TYPE ||
-    provenance.policy.denySelfHostedRunners !== true ||
+    sha256Canonical(provenance?.policy) !== sha256Canonical(expectedPolicy) ||
     provenance.attestationFileSha256 !== sha256(attestationBytes) ||
     provenance.bundleFileSha256 !== sha256(provenanceBytes) ||
     !SHA256.test(provenance.verificationSha256 ?? '')
   ) {
-    throw new Error('GitHub qualification provenance does not satisfy the frozen verification policy');
+    throw new Error('qualification provenance does not satisfy the frozen verification policy');
   }
+}
+
+function provenancePolicyFromExecution(execution) {
+  return {
+    provider: execution.provenanceProvider,
+    repository: execution.repository,
+    signerWorkflow: execution.signerWorkflow,
+    sourceDigest: execution.runnerRepositoryCommit,
+    sourceRef: execution.sourceRef,
+    eventName: execution.eventName,
+    predicateType: execution.predicateType,
+    certificateIdentity: execution.certificateIdentity,
+    certificateOidcIssuer: execution.certificateOidcIssuer,
+    denySelfHostedRunners: execution.denySelfHostedRunners,
+  };
 }
 
 function containedArtifactPath(root, logicalPath, label) {
@@ -1119,6 +1161,7 @@ function normalizeOptions(input, mode) {
       options[name] = resolve(options[name]);
     }
     options.resultRoot = resolve(options.resultRoot ?? join(options.receiptRoot, 'results'));
+    if (options.cosignPath) options.cosignPath = resolve(options.cosignPath);
   } else {
     throw new Error(`unsupported qualification mode: ${mode}`);
   }
@@ -1156,6 +1199,7 @@ function parseArgs(argv) {
     executionArtifactRoot: parsed['execution-artifact-root'],
     executionAttestationPath: parsed['execution-attestation'],
     provenanceBundlePath: parsed['provenance-bundle'],
+    cosignPath: parsed.cosign,
     preparedAt: parsed['prepared-at'],
     sealedAt: parsed['sealed-at'],
     probedPreparationAt: parsed['probed-preparation-at'],

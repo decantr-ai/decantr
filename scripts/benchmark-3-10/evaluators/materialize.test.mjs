@@ -32,10 +32,9 @@ import {
   makeFixtureQualificationInput,
 } from '../test-helpers/qualification-execution.mjs';
 import {
-  QUALIFICATION_PREDICATE_TYPE,
-  QUALIFICATION_REPOSITORY,
-  QUALIFICATION_SIGNER_WORKFLOW,
-} from './github-provenance.mjs';
+  qualificationProvenanceBundleFilename,
+  qualificationProvenancePolicy,
+} from './qualification-provenance.mjs';
 import { materializeBenchmarkTasks } from './materialize.mjs';
 
 const SEALED_AT = '2026-07-22T15:00:00Z';
@@ -610,13 +609,20 @@ async function writeQualificationReceipts(options) {
     const attestationRoot = join(receiptRoot, 'attestations');
     const provenanceRoot = join(receiptRoot, 'provenance');
     const qualificationInputRoot = join(receiptRoot, 'qualification-input');
+    const provenancePolicy = qualificationProvenancePolicy(candidate.partition, {
+      sourceDigest: FIXTURE_RUNNER_COMMIT,
+      sourceRef: FIXTURE_SOURCE_REF,
+    });
     await Promise.all([
       mkdir(attestationRoot, { recursive: true }),
       mkdir(provenanceRoot, { recursive: true }),
       mkdir(qualificationInputRoot, { recursive: true }),
     ]);
     const attestationPath = join(attestationRoot, `${candidate.taskId}.json`);
-    const provenancePath = join(provenanceRoot, `${candidate.taskId}.jsonl`);
+    const provenancePath = join(
+      provenanceRoot,
+      qualificationProvenanceBundleFilename(candidate.taskId, provenancePolicy.provider),
+    );
     await writeJson(attestationPath, attestation);
     await writeFile(provenancePath, `${JSON.stringify({ fixture: candidate.taskId })}\n`);
     await Promise.all([
@@ -632,7 +638,7 @@ async function writeQualificationReceipts(options) {
     const attestationFileSha256 = sha256(await readFile(attestationPath));
     const provenanceBundleFileSha256 = sha256(await readFile(provenancePath));
     const receipt = {
-      schemaVersion: 'decantr-benchmark-evaluator-qualification-task-receipt.v2',
+      schemaVersion: 'decantr-benchmark-evaluator-qualification-task-receipt.v3',
       program: PROGRAM,
       taskId: candidate.taskId,
       partition: candidate.partition,
@@ -667,11 +673,15 @@ async function writeQualificationReceipts(options) {
         runnerRepositoryCommit: FIXTURE_RUNNER_COMMIT,
         provenanceBundleFileSha256,
         provenanceVerificationSha256: FIXTURE_PROVENANCE_VERIFICATION_SHA256,
-        repository: QUALIFICATION_REPOSITORY,
-        signerWorkflow: QUALIFICATION_SIGNER_WORKFLOW,
-        sourceRef: FIXTURE_SOURCE_REF,
-        predicateType: QUALIFICATION_PREDICATE_TYPE,
-        denySelfHostedRunners: true,
+        provenanceProvider: provenancePolicy.provider,
+        repository: provenancePolicy.repository,
+        signerWorkflow: provenancePolicy.signerWorkflow,
+        sourceRef: provenancePolicy.sourceRef,
+        eventName: provenancePolicy.eventName,
+        predicateType: provenancePolicy.predicateType,
+        certificateIdentity: provenancePolicy.certificateIdentity,
+        certificateOidcIssuer: provenancePolicy.certificateOidcIssuer,
+        denySelfHostedRunners: provenancePolicy.denySelfHostedRunners,
       },
       baseResultSha256: resultBindings.base.canonicalSha256,
       baseResultFileSha256: resultBindings.base.fileSha256,
@@ -685,6 +695,10 @@ async function writeQualificationReceipts(options) {
 
 function makeExecutionAttestation(input) {
   const proxyDigest = `sha256:${'f'.repeat(64)}`;
+  const provenancePolicy = qualificationProvenancePolicy(input.candidate.partition, {
+    sourceDigest: FIXTURE_RUNNER_COMMIT,
+    sourceRef: FIXTURE_SOURCE_REF,
+  });
   const preparationRole = (role) => ({
     workspaceBeforeSha256: role === 'base' ? '1'.repeat(64) : '2'.repeat(64),
     workspacePreparedSha256: role === 'base' ? '3'.repeat(64) : '4'.repeat(64),
@@ -736,8 +750,8 @@ function makeExecutionAttestation(input) {
     status: 'completed',
     executionIdentity: {
       provider: 'github-actions',
-      repository: QUALIFICATION_REPOSITORY,
-      workflowRef: `${QUALIFICATION_SIGNER_WORKFLOW}@${FIXTURE_SOURCE_REF}`,
+      repository: provenancePolicy.repository,
+      workflowRef: `${provenancePolicy.signerWorkflow}@${FIXTURE_SOURCE_REF}`,
       runId: '12345',
       runAttempt: '1',
       actor: 'fixture-reviewer',
@@ -822,15 +836,12 @@ function fileEvidence(logicalPath, fill) {
 }
 
 async function fixtureProvenanceVerifier(options) {
+  const policy = qualificationProvenancePolicy(options.partition, {
+    sourceDigest: options.sourceDigest,
+    sourceRef: options.sourceRef,
+  });
   return {
-    policy: {
-      repository: options.repository,
-      signerWorkflow: options.signerWorkflow,
-      sourceDigest: options.sourceDigest,
-      sourceRef: options.sourceRef,
-      predicateType: options.predicateType,
-      denySelfHostedRunners: true,
-    },
+    policy,
     attestationFileSha256: sha256(await readFile(options.attestationPath)),
     bundleFileSha256: sha256(await readFile(options.bundlePath)),
     verificationSha256: FIXTURE_PROVENANCE_VERIFICATION_SHA256,

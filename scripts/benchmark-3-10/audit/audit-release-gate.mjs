@@ -44,7 +44,11 @@ import {
   assertExecutionAttestation,
   calculateContainerControllerClosure,
 } from '../evaluators/container-orchestrator.mjs';
-import { verifyQualificationProvenance } from '../evaluators/github-provenance.mjs';
+import {
+  qualificationProvenanceBundleFilename,
+  qualificationProvenancePolicy,
+  verifyQualificationProvenance,
+} from '../evaluators/qualification-provenance.mjs';
 
 const FUNCTIONAL_NONINFERIORITY_RULE =
   'treatment functional success no worse than control by more than 5 percentage points overall within each model; framework strata are reported as exploratory unless independently powered';
@@ -172,6 +176,7 @@ export async function auditReleaseGate(options) {
     developmentReceiptRoot: options.developmentReceiptRoot,
     qualificationReceiptRoot: options.qualificationReceiptRoot,
     provenanceVerifier: options.provenanceVerifier ?? verifyQualificationProvenance,
+    cosignPath: options.cosignPath,
     errors,
   });
 
@@ -971,6 +976,7 @@ async function checkQualificationReceiptChains(options) {
         runtimeMatrixFileSha256: options.runtimeMatrixFileSha256,
         containerController,
         provenanceVerifier: options.provenanceVerifier,
+        cosignPath: options.cosignPath,
       });
       const existingCandidateSet = candidateSetByPartition.get(task.partition);
       if (existingCandidateSet && existingCandidateSet !== receipt.candidateSetSha256) {
@@ -1045,7 +1051,13 @@ async function assertAuditedQualificationExecution(options) {
   );
   const provenancePath = resolveContained(
     options.receiptRoot,
-    join('provenance', `${taskId}.jsonl`),
+    join(
+      'provenance',
+      qualificationProvenanceBundleFilename(
+        taskId,
+        options.receipt.execution.provenanceProvider,
+      ),
+    ),
     `${taskId}: retained provenance bundle`,
   );
   const prequalificationPath = resolveContained(
@@ -1181,18 +1193,22 @@ async function assertAuditedQualificationExecution(options) {
   const provenance = await options.provenanceVerifier({
     attestationPath,
     bundlePath: provenancePath,
-    repository: execution.repository,
-    signerWorkflow: execution.signerWorkflow,
+    partition: options.task.partition,
     sourceDigest: execution.runnerRepositoryCommit,
     sourceRef: execution.sourceRef,
-    predicateType: execution.predicateType,
+    cosignPath: options.cosignPath,
+  });
+  const expectedPolicy = qualificationProvenancePolicy(options.task.partition, {
+    sourceDigest: execution.runnerRepositoryCommit,
+    sourceRef: execution.sourceRef,
   });
   if (
     provenance.attestationFileSha256 !== execution.attestationFileSha256 ||
     provenance.bundleFileSha256 !== execution.provenanceBundleFileSha256 ||
-    provenance.verificationSha256 !== execution.provenanceVerificationSha256
+    provenance.verificationSha256 !== execution.provenanceVerificationSha256 ||
+    sha256Canonical(provenance.policy) !== sha256Canonical(expectedPolicy)
   ) {
-    throw new Error('offline GitHub provenance verification differs from the qualification receipt');
+    throw new Error('offline provenance verification differs from the qualification receipt');
   }
   return { attestation };
 }
@@ -2324,6 +2340,7 @@ function parseArgs(argv) {
     else if (argument === '--power-pilot') options.powerPilotPath = resolve(argv[++index]);
     else if (argument === '--budget-approval') options.budgetApprovalPath = resolve(argv[++index]);
     else if (argument === '--claims') options.claimsPath = resolve(argv[++index]);
+    else if (argument === '--cosign') options.cosignPath = resolve(argv[++index]);
     else if (argument === '--out') options.outputPath = resolve(argv[++index]);
     else throw new Error(`Unknown option: ${argument}`);
   }

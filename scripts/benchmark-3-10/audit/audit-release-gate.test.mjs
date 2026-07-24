@@ -33,10 +33,9 @@ import {
   calculateQualificationReceiptDigest,
 } from '../evaluators/qualification-task.mjs';
 import {
-  QUALIFICATION_PREDICATE_TYPE,
-  QUALIFICATION_REPOSITORY,
-  QUALIFICATION_SIGNER_WORKFLOW,
-} from '../evaluators/github-provenance.mjs';
+  qualificationProvenanceBundleFilename,
+  qualificationProvenancePolicy,
+} from '../evaluators/qualification-provenance.mjs';
 import {
   FIXTURE_PROVENANCE_VERIFICATION_SHA256,
   FIXTURE_RUNNER_COMMIT,
@@ -481,14 +480,22 @@ async function createReleaseFixture() {
     const executionAttestationPath = join(receiptRoot, 'attestations', `${taskId}.json`);
     await writeFile(executionAttestationPath, prettyCanonicalJson(executionAttestation));
     const executionAttestationFileSha256 = sha256(await readFile(executionAttestationPath));
-    const provenancePath = join(receiptRoot, 'provenance', `${taskId}.jsonl`);
+    const provenancePolicy = qualificationProvenancePolicy(partition, {
+      sourceDigest: FIXTURE_RUNNER_COMMIT,
+      sourceRef: FIXTURE_SOURCE_REF,
+    });
+    const provenancePath = join(
+      receiptRoot,
+      'provenance',
+      qualificationProvenanceBundleFilename(taskId, provenancePolicy.provider),
+    );
     await writeFile(
       provenancePath,
       `${canonicalJson({ taskId, attestation: executionAttestation.attestationSha256 })}\n`,
     );
     const provenanceBundleFileSha256 = sha256(await readFile(provenancePath));
     const receipt = {
-      schemaVersion: 'decantr-benchmark-evaluator-qualification-task-receipt.v2',
+      schemaVersion: 'decantr-benchmark-evaluator-qualification-task-receipt.v3',
       program: 'decantr-3.10-ui-change-control-proof',
       taskId,
       partition,
@@ -524,11 +531,15 @@ async function createReleaseFixture() {
         runnerRepositoryCommit: FIXTURE_RUNNER_COMMIT,
         provenanceBundleFileSha256,
         provenanceVerificationSha256: FIXTURE_PROVENANCE_VERIFICATION_SHA256,
-        repository: QUALIFICATION_REPOSITORY,
-        signerWorkflow: QUALIFICATION_SIGNER_WORKFLOW,
-        sourceRef: FIXTURE_SOURCE_REF,
-        predicateType: QUALIFICATION_PREDICATE_TYPE,
-        denySelfHostedRunners: true,
+        provenanceProvider: provenancePolicy.provider,
+        repository: provenancePolicy.repository,
+        signerWorkflow: provenancePolicy.signerWorkflow,
+        sourceRef: provenancePolicy.sourceRef,
+        eventName: provenancePolicy.eventName,
+        predicateType: provenancePolicy.predicateType,
+        certificateIdentity: provenancePolicy.certificateIdentity,
+        certificateOidcIssuer: provenancePolicy.certificateOidcIssuer,
+        denySelfHostedRunners: provenancePolicy.denySelfHostedRunners,
       },
       baseResultSha256: resultBindings.base.canonicalSha256,
       baseResultFileSha256: resultBindings.base.fileSha256,
