@@ -3,10 +3,10 @@
   "taskId": "payload-website-template.local-media-next16",
   "contractId": "payload-website-template.local-media-next16.v1",
   "review": {
-    "status": "draft",
-    "reviewedBy": "OpenAI Codex independent evaluator reviewer",
-    "reviewedAt": "2026-07-22T14:20:13Z",
-    "notes": "Independent exact-commit review reproduced stable source-oracle polarity twice: base 17266abe7e23dbfa3ed1c98d83a2eaace54c133e passed 3/8 checks and expected 1a0f4d028715e6ceae58acebca7884b268f298e7 passed 8/8. BLOCKED: the required seeded Next.js 16 image-optimizer and browser evidence is absent. The oracle extracts one named utility, substitutes getClientSideURL, and parses localPatterns; it never seeds media, requests /_next/image, verifies HTTP 200 and nonblank decoded pixels, or exercises site and live-preview rendering. Existing website integration/E2E tests only fetch users and load the homepage. Keep draft until a seeded optimizer/browser harness validates local and external media at both commits."
+    "status": "approved",
+    "reviewedBy": "David Aimi (sole maintainer), execution assisted by OpenAI Codex",
+    "reviewedAt": "2026-07-24T14:38:28Z",
+    "notes": "Sole-maintainer review reproduced stable exact-commit polarity twice with Next.js 16.2.1. The external harness compiles the frozen revision's real getMediaUrl module through a filesystem link, derives local image policy with the TypeScript compiler, serves a generated 32x32 PNG, and exercises separate site and live-preview routes through the real /_next/image optimizer. Expected 1a0f4d028715e6ceae58acebca7884b268f298e7 passed all 10 checks twice with HTTP 200 WebP responses, 32x32 decoded images, 1,024 colored pixels, preserved external/cache-tag behavior, screenshots, and clean consoles. Base 17266abe7e23dbfa3ed1c98d83a2eaace54c133e failed seven local-media policy, optimizer, decode, and console checks twice and reproduced Next's private-IP 400 response in both routes. This approval is an evaluator-contract approval only and is not independent blinded model-output review."
   },
   "oracle": {
     "candidateIndependent": true,
@@ -24,10 +24,15 @@
         "--workspace",
         "${WORKSPACE}",
         "--project-path",
-        "${PROJECT_PATH}"
+        "${PROJECT_PATH}",
+        "--evaluator-runtime",
+        "${EVALUATOR_RUNTIME}"
       ],
       "cwd": "${EVALUATOR_ROOT}",
-      "timeoutMs": 120000,
+      "environment": {
+        "PLAYWRIGHT_BROWSERS_PATH": "/tmp/decantr-3-10-playwright-browsers"
+      },
+      "timeoutMs": 300000,
       "required": true,
       "resultFormat": "json-stdout"
     },

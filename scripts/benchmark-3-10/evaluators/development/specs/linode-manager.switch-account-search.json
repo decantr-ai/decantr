@@ -3,10 +3,10 @@
   "taskId": "linode-manager.switch-account-search",
   "contractId": "linode-manager.switch-account-search.v1",
   "review": {
-    "status": "draft",
-    "reviewedBy": "OpenAI Codex independent evaluator reviewer",
-    "reviewedAt": "2026-07-22T14:20:13Z",
-    "notes": "Independent exact-commit review reproduced stable source-oracle polarity twice: base 235b26d39d939344c3f26f58dd53a815ac7bae7d passed 3/5 checks and expected c30ee087ba9f91d6ba0e59bd8d4a37a70e2ca544 passed 5/5. BLOCKED: the evaluator parses one JSX tag and evaluates conditions isolated by English copy; it never renders SwitchAccountDrawer with mocked IAM queries. The repository's component tests do not cover typing through rerenders. Focus retention, typed-value survival, debounce timing, pagination loading, and settled empty-state transitions therefore remain unobserved, and equivalent implementations can fail the source parser. Keep draft until a component/browser harness exercises these states at both commits."
+    "status": "approved",
+    "reviewedBy": "David Aimi (sole maintainer), execution assisted by OpenAI Codex",
+    "reviewedAt": "2026-07-24T13:26:00Z",
+    "notes": "Sole-maintainer approval after replacing the source-shape parser with an evaluator-owned Vitest scenario that renders the real SwitchAccountDrawer through repository test utilities and mocked IAM query boundaries. Two clean executions at frozen expected commit c30ee087ba9f91d6ba0e59bd8d4a37a70e2ca544 passed 2/2 behavioral checks; two clean executions at frozen base commit 235b26d39d939344c3f26f58dd53a815ac7bae7d failed 2/2. The oracle observes input identity, typed-value and focus retention across the real 400 ms debounce, suppresses the no-access state while loading, and requires it after an empty result settles. It does not inspect implementation source shape. This approval is maintainer qualification, not independent model-output review."
   },
   "oracle": {
     "candidateIndependent": true,

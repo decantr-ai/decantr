@@ -3,10 +3,10 @@
   "taskId": "emdash-simple.visual-edit-field-focus",
   "contractId": "emdash-simple.visual-edit-field-focus.v1",
   "review": {
-    "status": "draft",
-    "reviewedBy": "OpenAI Codex independent evaluator reviewer",
-    "reviewedAt": "2026-07-22T14:20:13Z",
-    "notes": "Independent exact-commit review reproduced stable source-oracle polarity twice: base 156ba7350070400e5877e3a54d33486cd0d33640 passed 1/8 checks and expected e3f7db8bb670bb7444632ab0cd4e680e4c9029b3 passed 8/8. BLOCKED: all assertions remain regexes or identifier counts over the expected source shape. No seeded visual-editing flow waits for asynchronous content, scrolls and focuses the requested field, preserves unrelated query parameters, verifies replace-history/back behavior, or opens equivalent demo/template annotations. Existing visual-editing E2E coverage does not exercise this field-selection change. Keep draft until a deterministic browser harness observes those outcomes at both frozen revisions."
+    "status": "approved",
+    "reviewedBy": "David Aimi (sole maintainer), execution assisted by OpenAI Codex",
+    "reviewedAt": "2026-07-24T14:31:48Z",
+    "notes": "Sole-maintainer review reproduced stable exact-commit polarity twice after the required real package build. A Vite/Chromium harness mounts the built AdminApp, holds the seeded content API response to prove asynchronous loading, then observes actual scrollIntoView centering, DOM focus, unrelated-query preservation, replace-history behavior, renderer IDs, scoped Axe output, screenshot pixels, and browser errors. The Astro compiler parses all seven bundled demo/template pages to verify equivalent excerpt annotations structurally. Expected e3f7db8bb670bb7444632ab0cd4e680e4c9029b3 passed all 10 checks twice; base 156ba7350070400e5877e3a54d33486cd0d33640 failed the six requested selection, URL/history, renderer-addressability, and annotation behaviors twice. This approval is an evaluator-contract approval only and is not independent blinded model-output review."
   },
   "oracle": {
     "candidateIndependent": true,
@@ -14,23 +14,6 @@
     "sourcePath": "sources/emdash-simple.visual-edit-field-focus.mjs"
   },
   "commands": [
-    {
-      "id": "behavior",
-      "kind": "functional",
-      "runtime": "controller",
-      "executable": "node",
-      "args": [
-        "${EVALUATOR_ROOT}/sources/emdash-simple.visual-edit-field-focus.mjs",
-        "--workspace",
-        "${WORKSPACE}",
-        "--project-path",
-        "${PROJECT_PATH}"
-      ],
-      "cwd": "${EVALUATOR_ROOT}",
-      "timeoutMs": 120000,
-      "required": true,
-      "resultFormat": "json-stdout"
-    },
     {
       "id": "host-package-build",
       "kind": "build",
@@ -43,6 +26,28 @@
       "timeoutMs": 1800000,
       "required": true,
       "resultFormat": "exit-code"
+    },
+    {
+      "id": "behavior",
+      "kind": "functional",
+      "runtime": "controller",
+      "executable": "node",
+      "args": [
+        "${EVALUATOR_ROOT}/sources/emdash-simple.visual-edit-field-focus.mjs",
+        "--workspace",
+        "${WORKSPACE}",
+        "--project-path",
+        "${PROJECT_PATH}",
+        "--evaluator-runtime",
+        "${EVALUATOR_RUNTIME}"
+      ],
+      "cwd": "${EVALUATOR_ROOT}",
+      "environment": {
+        "PLAYWRIGHT_BROWSERS_PATH": "/tmp/decantr-3-10-playwright-browsers"
+      },
+      "timeoutMs": 240000,
+      "required": true,
+      "resultFormat": "json-stdout"
     },
     {
       "id": "host-demo-build",

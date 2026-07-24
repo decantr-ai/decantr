@@ -48,6 +48,7 @@ const FIXED_DEPENDENCY_HOSTS = Object.freeze([
 ]);
 const CONTROLLER_CLOSURE = Object.freeze([
   'environments/contracts.mjs',
+  'environments/npm-ci-public-lock-fallback.mjs',
   'environments/runtime-matrix.mjs',
   'evaluator/run-evaluator.mjs',
   'evaluators/container-orchestrator.mjs',

@@ -3,10 +3,10 @@
   "taskId": "openstatus-dashboard.api-key-dialog-interactivity",
   "contractId": "openstatus-dashboard.api-key-dialog-interactivity.v1",
   "review": {
-    "status": "draft",
-    "reviewedBy": "OpenAI Codex independent evaluator reviewer",
-    "reviewedAt": "2026-07-22T14:20:13Z",
-    "notes": "Independent exact-commit review reproduced stable source-oracle polarity twice: base ed757d14304d4f693c8a0e5d6374dca945fb32b0 passed 2/5 checks and expected 255bc215222d9d7222c14f50516d1f017c7dc934 passed 5/5. BLOCKED: the evaluator requires the expected Popover and cleanup-handler source forms and executes extracted handlers against a synthetic style object. It does not render the Radix dialog/popover stack or repeat picker close, Cancel, Escape, successful creation, success-dialog close, hit-testing, and focus assertions. Equivalent fixes can fail while a source-shaped but ineffective fix can pass. Keep draft until a deterministic component/browser harness observes page interactivity at both commits."
+    "status": "approved",
+    "reviewedBy": "David Aimi (sole maintainer), execution assisted by OpenAI Codex",
+    "reviewedAt": "2026-07-24T13:45:34Z",
+    "notes": "Sole-maintainer approval after replacing JSX parsing and synthetic handler execution with a candidate-independent Chromium harness that mounts the real FormApiKey through mocked query and mutation boundaries. Two isolated executions at expected commit 255bc215222d9d7222c14f50516d1f017c7dc934 passed all 9 checks; two at base commit ed757d14304d4f693c8a0e5d6374dca945fb32b0 consistently failed the 3 nested-picker scenarios because opening the modal expiration picker made its parent creation dialog inaccessible. Cancel, repeated picker, creation Escape, successful result Done/Escape, residual layers, body pointer events, page-control hit testing/focus, scoped Axe, and browser-console behavior are observed from rendered Radix components. This approval is maintainer qualification, not independent model-output review."
   },
   "oracle": {
     "candidateIndependent": true,
@@ -24,10 +24,15 @@
         "--workspace",
         "${WORKSPACE}",
         "--project-path",
-        "${PROJECT_PATH}"
+        "${PROJECT_PATH}",
+        "--evaluator-runtime",
+        "${EVALUATOR_RUNTIME}"
       ],
       "cwd": "${EVALUATOR_ROOT}",
-      "timeoutMs": 120000,
+      "environment": {
+        "PLAYWRIGHT_BROWSERS_PATH": "/tmp/decantr-3-10-playwright-browsers"
+      },
+      "timeoutMs": 180000,
       "required": true,
       "resultFormat": "json-stdout"
     },

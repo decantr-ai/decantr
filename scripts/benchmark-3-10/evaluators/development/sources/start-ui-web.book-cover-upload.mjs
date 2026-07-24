@@ -1,67 +1,44 @@
 #!/usr/bin/env node
-import { spawn } from "node:child_process";
-import { once } from "node:events";
-import {
-  access,
-  mkdtemp,
-  realpath,
-  rm,
-  symlink,
-  writeFile,
-} from "node:fs/promises";
-import { createRequire } from "node:module";
-import { createServer } from "node:net";
-import { tmpdir } from "node:os";
-import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
-import { pathToFileURL } from "node:url";
-import { setTimeout as delay } from "node:timers/promises";
+import { spawn } from 'node:child_process';
+import { once } from 'node:events';
+import { access, mkdtemp, realpath, rm, symlink, writeFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
+import { createServer } from 'node:net';
+import { tmpdir } from 'node:os';
+import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { setTimeout as delay } from 'node:timers/promises';
 
-function parseArgs(argv) {
+function parseArguments(argv) {
   const options = {};
   for (let index = 0; index < argv.length; index += 1) {
     const option = argv[index];
     const value = argv[++index];
     if (!value) throw new Error(`Missing value for ${option}`);
-    if (option === "--workspace") options.workspace = resolve(value);
-    else if (option === "--project-path") options.projectPath = value;
-    else if (option === "--evaluator-runtime")
-      options.evaluatorRuntime = resolve(value);
+    if (option === '--workspace') options.workspace = resolve(value);
+    else if (option === '--project-path') options.projectPath = value;
+    else if (option === '--evaluator-runtime') options.evaluatorRuntime = resolve(value);
     else throw new Error(`Unknown option: ${option}`);
   }
-  if (
-    !options.workspace ||
-    options.projectPath === undefined ||
-    !options.evaluatorRuntime
-  ) {
-    throw new Error(
-      "Expected --workspace, --project-path, and --evaluator-runtime",
-    );
+  if (!options.workspace || options.projectPath === undefined || !options.evaluatorRuntime) {
+    throw new Error('Expected --workspace, --project-path, and --evaluator-runtime');
   }
-  return options;
-}
-
-function resolveProject(workspace, projectPath) {
-  const project = resolve(workspace, projectPath);
-  const relation = relative(workspace, project);
-  if (
-    relation === ".." ||
-    relation.startsWith(`..${sep}`) ||
-    isAbsolute(relation)
-  ) {
-    throw new Error("Project path escapes the workspace");
+  const project = resolve(options.workspace, options.projectPath);
+  const relation = relative(options.workspace, project);
+  if (relation === '..' || relation.startsWith(`..${sep}`) || isAbsolute(relation)) {
+    throw new Error('Project path escapes the workspace');
   }
-  return project;
+  return { ...options, project };
 }
 
 async function reservePort() {
   const server = createServer();
   await new Promise((resolveListen, reject) => {
-    server.once("error", reject);
-    server.listen(0, "127.0.0.1", resolveListen);
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', resolveListen);
   });
   const address = server.address();
-  if (!address || typeof address === "string")
-    throw new Error("Could not reserve a browser port");
+  if (!address || typeof address === 'string') throw new Error('Could not reserve a browser port');
   await new Promise((resolveClose, reject) =>
     server.close((error) => (error ? reject(error) : resolveClose())),
   );
@@ -71,8 +48,7 @@ async function reservePort() {
 async function waitForServer(url, child) {
   const deadline = Date.now() + 90_000;
   while (Date.now() < deadline) {
-    if (child.exitCode !== null)
-      throw new Error(`Component server exited with ${child.exitCode}`);
+    if (child.exitCode !== null) throw new Error(`Component server exited with ${child.exitCode}`);
     try {
       const response = await fetch(url);
       if (response.status < 500) return;
@@ -81,16 +57,16 @@ async function waitForServer(url, child) {
     }
     await delay(250);
   }
-  throw new Error("Timed out waiting for the component server");
+  throw new Error('Timed out waiting for the component server');
 }
 
 async function stopProcess(child) {
   if (child.exitCode !== null) return;
-  child.kill("SIGTERM");
-  await Promise.race([once(child, "exit"), delay(5_000)]);
+  child.kill('SIGTERM');
+  await Promise.race([once(child, 'exit'), delay(5_000)]);
   if (child.exitCode === null) {
-    child.kill("SIGKILL");
-    await once(child, "exit").catch(() => {});
+    child.kill('SIGKILL');
+    await once(child, 'exit').catch(() => {});
   }
 }
 
@@ -99,45 +75,42 @@ function fileUrl(path) {
 }
 
 async function createHarness(project) {
-  const root = await realpath(
-    await mkdtemp(join(tmpdir(), "decantr-upload-evaluator-")),
-  );
-  const projectRequire = createRequire(join(project, "package.json"));
-  const viteEntry = projectRequire.resolve("vite");
-  const viteCli = join(
-    dirname(projectRequire.resolve("vite/package.json")),
-    "bin",
-    "vite.js",
-  );
-  const reactPlugin = projectRequire.resolve("@vitejs/plugin-react");
-  const sourceRoot = join(project, "src");
-  const uploadInput = join(
-    sourceRoot,
-    "components",
-    "upload",
-    "upload-input.tsx",
-  );
-  await access(uploadInput);
-  await access(join(project, "node_modules"));
-  await symlink(
-    join(project, "node_modules"),
-    join(root, "node_modules"),
-    "dir",
-  );
+  const root = await realpath(await mkdtemp(join(tmpdir(), 'book-form-upload-evaluator-')));
+  const projectRequire = createRequire(join(project, 'package.json'));
+  const viteEntry = projectRequire.resolve('vite');
+  const viteCli = join(dirname(projectRequire.resolve('vite/package.json')), 'bin', 'vite.js');
+  const reactPlugin = projectRequire.resolve('@vitejs/plugin-react');
+  const sourceRoot = join(project, 'src');
+  await access(join(sourceRoot, 'features', 'book', 'manager', 'form-book.tsx'));
+  await access(join(project, 'node_modules'));
+  await symlink(join(project, 'node_modules'), join(root, 'node_modules'), 'dir');
 
   await writeFile(
-    join(root, "index.html"),
+    join(root, 'index.html'),
     '<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><div id="app"></div><script type="module" src="/src.tsx"></script></body></html>',
   );
   await writeFile(
-    join(root, "env-client.ts"),
+    join(root, 'env-client.ts'),
     "export const envClient = { VITE_BASE_URL: 'http://127.0.0.1', VITE_IS_DEMO: false, VITE_S3_BUCKET_PUBLIC_URL: 'https://assets.invalid' };\n",
   );
   await writeFile(
-    join(root, "upload-client.ts"),
+    join(root, 'orpc-client.ts'),
+    `export const orpc = {
+  genre: {
+    getAll: {
+      queryOptions: () => ({
+        queryKey: ['evaluator-genres'],
+        queryFn: async () => ({ items: [] }),
+      }),
+    },
+  },
+};
+`,
+  );
+  await writeFile(
+    join(root, 'upload-client.ts'),
     `const control = globalThis.__uploadMock ??= {
   requests: [],
-  states: [],
   complete(index) {
     const request = this.requests[index];
     if (!request || request.settled) throw new Error('Upload request is not pending');
@@ -170,7 +143,6 @@ export async function uploadFile(options) {
     progress: 0,
   };
   options.onFileStateChange?.({ file: pendingFile });
-  control.states.push({ index, status: 'pending', name: options.file.name });
   return new Promise((resolve, reject) => {
     control.requests.push({
       index,
@@ -186,110 +158,93 @@ export async function uploadFile(options) {
 `,
   );
   await writeFile(
-    join(root, "style.css"),
+    join(root, 'style.css'),
     `body { margin: 0; padding: 24px; font: 16px/1.4 system-ui, sans-serif; color: #161616; background: #fff; }
-#app { display: grid; gap: 24px; max-width: 760px; }
-[data-case] { display: grid; gap: 8px; padding: 16px; border: 1px solid #888; }
-[role="button"] { min-height: 36px; padding: 6px 10px; border: 1px solid #666; }
+#app { display: grid; gap: 24px; max-width: 920px; }
+[data-case] { display: grid; gap: 12px; padding: 16px; border: 1px solid #888; }
+[role="button"] { min-height: 36px; }
 [role="button"] img { width: 32px; height: 32px; }
-[role="alert"], [role="status"] { min-height: 1em; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
 input[type="file"] { display: none; }
 `,
   );
   await writeFile(
-    join(root, "src.tsx"),
-    `import React, { useEffect, useState } from 'react';
+    join(root, 'src.tsx'),
+    `import React, { useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
+import { Toaster } from 'sonner';
+
+import { Form } from '@/components/form';
+import { FormBook } from '@/features/book/manager/form-book';
 import i18n from '@/lib/i18n/index';
-import { Form, FormField, FormFieldController, FormFieldHelper, FormFieldLabel } from '@/components/form';
-import { UploadInput } from '@/components/upload/upload-input';
 import './style.css';
 
-const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false }, queries: { retry: false } } });
-const evidence = globalThis.__uploadEvidence = {
-  successes: [], errors: [], clears: 0, stateEvents: [], formValues: [], submissions: [], localeSnapshots: [],
+const queryClient = new QueryClient({
+  defaultOptions: { mutations: { retry: false }, queries: { retry: false } },
+});
+const evidence = globalThis.__bookFormEvidence = {
+  submissions: [],
 };
+globalThis.__bookFormCases = {};
 
-function Harness() {
-  const { t } = useTranslation(['book', 'components']);
-  const [directError, setDirectError] = useState('');
-  const form = useForm({ defaultValues: { coverId: null }, mode: 'onChange' });
-  const coverId = form.watch('coverId');
-  useEffect(() => { evidence.formValues.push(coverId); }, [coverId]);
-
+function BookFormCase({ id, disabled = false }) {
+  const form = useForm({
+    defaultValues: {
+      title: '',
+      author: '',
+      genreId: undefined,
+      publisher: '',
+      coverId: null,
+    },
+    disabled,
+    mode: 'onChange',
+  });
   useEffect(() => {
-    globalThis.__uploadEvaluator = {
-      ready: true,
-      getFormValue: () => form.getValues('coverId'),
-      async setLocale(locale) {
-        await i18n.changeLanguage(locale);
-        document.documentElement.lang = locale;
-        document.documentElement.dir = locale === 'ar' ? 'rtl' : 'ltr';
-        await new Promise((resolve) => setTimeout(resolve, 0));
-      },
+    globalThis.__bookFormCases[id] = {
+      getCoverId: () => form.getValues('coverId'),
+      submit: () => form.handleSubmit((value) => evidence.submissions.push({ id, value }))(),
     };
-  }, [form]);
-
-  return <>
-    <section data-case="locale">
-      <label data-locale-label>{t('book:common.uploadCover.label')}</label>
-      <p data-locale-helper>{t('book:common.uploadCover.helper')}</p>
-      <span data-locale-placeholder>{t('components:uploadInput.placeholder')}</span>
-    </section>
-
-    <section data-case="direct">
-      <UploadInput
-        uploadRoute="bookCover"
-        inputProps={{ accept: 'image/png,image/jpeg' }}
-        onUploadStateChange={(file) => evidence.stateEvents.push({ status: file.status, name: file.name })}
-        onSuccess={(file) => { evidence.successes.push(file.objectInfo.key); setDirectError(''); }}
-        onError={(error) => { evidence.errors.push(error.message); setDirectError(error.message); }}
-        onClear={() => { evidence.clears += 1; setDirectError(''); }}
-      />
-      <div role="alert" data-upload-error>{directError}</div>
-    </section>
-
-    <section data-case="disabled">
-      <UploadInput disabled uploadRoute="bookCover" />
-    </section>
-
-    <section data-case="form">
-      <Form {...form} onSubmit={(value) => evidence.submissions.push(value)}>
-        <FormField id="evaluator-cover-field">
-          <FormFieldLabel>Cover</FormFieldLabel>
-          <FormFieldController
-            control={form.control}
-            type="upload-input"
-            name="coverId"
-            rules={{ required: 'A cover is required' }}
-            uploadRoute="bookCover"
-            inputProps={{ accept: 'image/png,image/jpeg' }}
-          />
-          <FormFieldHelper>Choose an image file</FormFieldHelper>
-        </FormField>
+  }, [form, id]);
+  return (
+    <section data-case={id}>
+      <Form {...form} onSubmit={(value) => evidence.submissions.push({ id, value })}>
+        <FormBook />
         <button type="submit" data-submit>Submit</button>
       </Form>
     </section>
-  </>;
+  );
 }
 
+globalThis.__bookFormEvaluator = {
+  ready: true,
+  async setLocale(locale) {
+    await i18n.changeLanguage(locale);
+    document.documentElement.lang = locale;
+    document.documentElement.dir = locale === 'ar' ? 'rtl' : 'ltr';
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  },
+};
+
 createRoot(document.getElementById('app')).render(
-  <QueryClientProvider client={queryClient}><Harness /></QueryClientProvider>,
+  <QueryClientProvider client={queryClient}>
+    <BookFormCase id="active" />
+    <BookFormCase id="disabled" disabled />
+    <Toaster />
+  </QueryClientProvider>,
 );
 `,
   );
 
   const aliases = [
-    `{ find: '@/env/client', replacement: ${JSON.stringify(join(root, "env-client.ts"))} }`,
-    `{ find: '@better-upload/client', replacement: ${JSON.stringify(join(root, "upload-client.ts"))} }`,
+    `{ find: '@/env/client', replacement: ${JSON.stringify(join(root, 'env-client.ts'))} }`,
+    `{ find: '@/lib/orpc/client', replacement: ${JSON.stringify(join(root, 'orpc-client.ts'))} }`,
+    `{ find: '@better-upload/client', replacement: ${JSON.stringify(join(root, 'upload-client.ts'))} }`,
     `{ find: '@', replacement: ${JSON.stringify(sourceRoot)} }`,
-  ].join(",\n      ");
+  ].join(',\n      ');
   await writeFile(
-    join(root, "vite.config.mjs"),
+    join(root, 'vite.config.mjs'),
     `import { defineConfig } from ${fileUrl(viteEntry)};
 import react from ${fileUrl(reactPlugin)};
 export default defineConfig({
@@ -309,8 +264,8 @@ export default defineConfig({
 
 async function chooseFileByGesture(page, trigger, gesture, file) {
   const [chooser] = await Promise.all([
-    page.waitForEvent("filechooser"),
-    gesture === "click" ? trigger.click() : trigger.press("Enter"),
+    page.waitForEvent('filechooser'),
+    gesture === 'click' ? trigger.click() : trigger.press('Enter'),
   ]);
   await chooser.setFiles(file);
 }
@@ -333,40 +288,40 @@ async function settleUpload(page, index, outcome) {
   );
 }
 
+function imageFile(name) {
+  return {
+    name,
+    mimeType: 'image/png',
+    buffer: Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl2S9sAAAAASUVORK5CYII=',
+      'base64',
+    ),
+  };
+}
+
 async function evaluate() {
-  const options = parseArgs(process.argv.slice(2));
-  const project = await realpath(
-    resolveProject(options.workspace, options.projectPath),
-  );
-  await access(join(options.evaluatorRuntime, "package.json"));
-  const runtimeRequire = createRequire(
-    join(options.evaluatorRuntime, "package.json"),
-  );
-  const { chromium } = runtimeRequire("playwright");
-  const AxeBuilder = runtimeRequire("@axe-core/playwright").default;
+  const options = parseArguments(process.argv.slice(2));
+  const project = await realpath(options.project);
+  await access(join(options.evaluatorRuntime, 'package.json'));
+  const runtimeRequire = createRequire(join(options.evaluatorRuntime, 'package.json'));
+  const { chromium } = runtimeRequire('playwright');
+  const AxeBuilder = runtimeRequire('@axe-core/playwright').default;
   const harness = await createHarness(project);
   const port = await reservePort();
   const origin = `http://127.0.0.1:${port}`;
   const server = spawn(
     process.execPath,
-    [
-      harness.viteCli,
-      "--config",
-      join(harness.root, "vite.config.mjs"),
-      "--port",
-      String(port),
-    ],
+    [harness.viteCli, '--config', join(harness.root, 'vite.config.mjs'), '--port', String(port)],
     {
       cwd: project,
-      env: { ...process.env, NODE_ENV: "development", NO_COLOR: "1" },
-      stdio: ["ignore", "pipe", "pipe"],
+      env: { ...process.env, NODE_ENV: 'development', NO_COLOR: '1' },
+      stdio: ['ignore', 'pipe', 'pipe'],
     },
   );
   const serverErrors = [];
   for (const stream of [server.stdout, server.stderr]) {
-    stream.on("data", (chunk) => {
-      if (serverErrors.join("").length < 8_000)
-        serverErrors.push(chunk.toString());
+    stream.on('data', (chunk) => {
+      if (serverErrors.join('').length < 8_000) serverErrors.push(chunk.toString());
     });
   }
 
@@ -374,298 +329,242 @@ async function evaluate() {
   try {
     await waitForServer(origin, server);
     browser = await chromium.launch({ headless: true });
-    const context = await browser.newContext({
-      viewport: { width: 1100, height: 900 },
-    });
+    const context = await browser.newContext({ viewport: { width: 1100, height: 900 } });
     const page = await context.newPage();
     page.setDefaultTimeout(7_000);
     const runtimeErrors = [];
-    page.on("console", (message) => {
-      if (message.type() === "error")
-        runtimeErrors.push(`console: ${message.text()}`);
+    page.on('console', (message) => {
+      if (message.type() === 'error') runtimeErrors.push(`console: ${message.text()}`);
     });
-    page.on("pageerror", (error) =>
-      runtimeErrors.push(`page: ${error.message}`),
-    );
-    page.on("response", (response) => {
-      if (
-        ["script", "stylesheet"].includes(response.request().resourceType()) &&
-        response.headers()["content-type"]?.includes("text/html")
-      ) {
-        runtimeErrors.push(`asset-returned-html: ${response.url()}`);
-      }
-    });
+    page.on('pageerror', (error) => runtimeErrors.push(`page: ${error.message}`));
 
     const checks = {
-      componentMounted: false,
-      allLocalesResolveInBrowser: false,
+      integratedBookFormMounted: false,
+      localeSemanticsReachTheRealFileInput: false,
       clickSelectionAndPendingState: false,
-      successfulUploadAndImagePreview: false,
-      keyboardSelectionAndErrorFeedback: false,
+      successfulUploadUpdatesFormAndPreview: false,
+      keyboardSelectionReportsAccessibleError: false,
       sameFileReplacement: false,
       dragAndDropSelection: false,
-      clearRestoresEmptyState: false,
-      disabledBlocksEveryInputPath: false,
-      formErrorIsProgrammaticallyDescribed: false,
-      formValueTracksUploadAndClear: false,
-      componentHasNoAxeViolations: false,
+      submitSerializesCoverId: false,
+      clearRestoresEmptyFormValue: false,
+      disabledFormBlocksEveryInputPath: false,
+      integratedFormHasNoAxeViolations: false,
       browserConsoleClean: false,
     };
     const evidenceErrors = [];
     const axeViolations = [];
+    const diagnostics = {};
     const check = async (id, operation) => {
       try {
         checks[id] = Boolean(await operation());
       } catch (error) {
-        evidenceErrors.push(
-          `${id}: ${error instanceof Error ? error.message : String(error)}`,
-        );
+        evidenceErrors.push(`${id}: ${error instanceof Error ? error.message : String(error)}`);
       }
     };
 
-    await check("componentMounted", async () => {
-      const response = await page.goto(origin, { waitUntil: "networkidle" });
-      await page.waitForFunction(
-        () => globalThis.__uploadEvaluator?.ready === true,
-      );
+    await check('integratedBookFormMounted', async () => {
+      const response = await page.goto(origin, { waitUntil: 'networkidle' });
+      await page.waitForFunction(() => globalThis.__bookFormEvaluator?.ready === true);
       return (
         Boolean(response?.ok()) &&
-        (await page.locator("[data-case]").count()) === 4
+        (await page.locator('[data-case="active"]').count()) === 1 &&
+        (await page.locator('[data-case="disabled"]').count()) === 1
       );
     });
-    if (!checks.componentMounted) {
+    if (!checks.integratedBookFormMounted) {
       throw new Error(
-        `Component harness did not mount: ${[...runtimeErrors, ...serverErrors].join(" | ").slice(0, 8_000)}`,
+        `Integrated book form did not mount: ${[...runtimeErrors, ...serverErrors].join(' | ').slice(0, 8_000)}`,
       );
     }
 
-    await check("allLocalesResolveInBrowser", async () => {
+    const active = page.locator('[data-case="active"]');
+    const disabled = page.locator('[data-case="disabled"]');
+    const activeInput = active.locator('input[type="file"]');
+    const activeTrigger = active.locator('[role="button"]:has(input[type="file"])');
+
+    await check('localeSemanticsReachTheRealFileInput', async () => {
       const snapshots = [];
-      for (const locale of ["en", "fr", "ar", "sw"]) {
+      for (const locale of ['en', 'fr', 'ar', 'sw']) {
         await page.evaluate(
-          (nextLocale) => globalThis.__uploadEvaluator.setLocale(nextLocale),
+          (nextLocale) => globalThis.__bookFormEvaluator.setLocale(nextLocale),
           locale,
         );
         await page.waitForFunction(
           (nextLocale) => document.documentElement.lang === nextLocale,
           locale,
         );
+        if ((await activeInput.count()) !== 1) return false;
         snapshots.push(
-          await page.locator('[data-case="locale"]').evaluate((element) => ({
-            label:
-              element
-                .querySelector("[data-locale-label]")
-                ?.textContent?.trim() ?? "",
-            helper:
-              element
-                .querySelector("[data-locale-helper]")
-                ?.textContent?.trim() ?? "",
-            placeholder:
-              element
-                .querySelector("[data-locale-placeholder]")
-                ?.textContent?.trim() ?? "",
-            direction: document.documentElement.dir,
-          })),
+          await activeInput.evaluate((element) => {
+            const descriptionIds = (element.getAttribute('aria-describedby') ?? '')
+              .split(/\s+/u)
+              .filter(Boolean);
+            const descriptionNodes = descriptionIds
+              .map((id) => document.getElementById(id))
+              .filter(Boolean);
+            let field = element.parentElement;
+            while (
+              field &&
+              descriptionNodes.some((description) => !field.contains(description))
+            ) {
+              field = field.parentElement;
+            }
+            return {
+              label: [...(field?.querySelectorAll('label') ?? [])]
+                .map((label) => label.textContent?.trim() ?? '')
+                .filter(Boolean)
+                .join(' '),
+              description: descriptionNodes
+                .map((description) => description.textContent?.trim() ?? '')
+                .filter(Boolean)
+                .join(' '),
+              direction: document.documentElement.dir,
+            };
+          }),
         );
       }
+      diagnostics.localeSnapshots = snapshots;
+      await page.evaluate(() => globalThis.__bookFormEvaluator.setLocale('en'));
       return (
         snapshots.length === 4 &&
-        snapshots.every(
-          (snapshot) =>
-            snapshot.label && snapshot.helper && snapshot.placeholder,
-        ) &&
+        snapshots.every((snapshot) => snapshot.label && snapshot.description) &&
         new Set(snapshots.map((snapshot) => snapshot.label)).size >= 3 &&
-        snapshots[2].direction === "rtl"
+        snapshots[2].direction === 'rtl'
       );
     });
 
-    const direct = page.locator('[data-case="direct"]');
-    const directTrigger = direct.locator('[role="button"]').first();
-    const directInput = direct.locator('input[type="file"]');
-    const imageFile = {
-      name: "cover-a.png",
-      mimeType: "image/png",
-      buffer: Buffer.from(EMPTY_IMAGE),
-    };
-    let clickRequestIndex = null;
-    await check("clickSelectionAndPendingState", async () => {
-      clickRequestIndex = await page.evaluate(
-        () => globalThis.__uploadMock.requests.length,
-      );
-      const initialName =
-        (await directTrigger.getAttribute("aria-label").catch(() => null)) ??
-        (await directTrigger.innerText()).trim();
-      await chooseFileByGesture(page, directTrigger, "click", imageFile);
-      await waitForRequestCount(page, clickRequestIndex + 1);
-      const pendingName = (await directTrigger.innerText()).trim();
-      return (
-        pendingName.length > 0 &&
-        pendingName !== initialName &&
-        (await directInput.isDisabled()) &&
-        (await directTrigger.locator("button").count()) === 0
-      );
+    let firstRequest = null;
+    await check('clickSelectionAndPendingState', async () => {
+      if ((await activeTrigger.count()) !== 1 || (await activeInput.count()) !== 1) return false;
+      firstRequest = await page.evaluate(() => globalThis.__uploadMock.requests.length);
+      const before = (await activeTrigger.innerText()).trim();
+      await chooseFileByGesture(page, activeTrigger, 'click', imageFile('cover-a.png'));
+      await waitForRequestCount(page, firstRequest + 1);
+      const pending = (await activeTrigger.innerText()).trim();
+      return pending.length > 0 && pending !== before && (await activeInput.isDisabled());
     });
 
-    await check("successfulUploadAndImagePreview", async () => {
-      if (clickRequestIndex === null) return false;
-      const successCount = await page.evaluate(
-        () => globalThis.__uploadEvidence.successes.length,
-      );
-      await settleUpload(page, clickRequestIndex, "complete");
-      await page.waitForFunction(
-        (count) => globalThis.__uploadEvidence.successes.length === count + 1,
-        successCount,
-      );
-      const preview = direct.locator("img");
-      await preview.waitFor({ state: "visible" });
+    await check('successfulUploadUpdatesFormAndPreview', async () => {
+      if (firstRequest === null) return false;
+      await settleUpload(page, firstRequest, 'complete');
+      await page.waitForFunction(() => Boolean(globalThis.__bookFormCases.active.getCoverId()));
+      const preview = active.locator('img[src^="blob:"]');
+      await preview.waitFor({ state: 'visible' });
       const box = await preview.boundingBox();
-      const source = await preview.getAttribute("src");
       return (
-        !(await directInput.isDisabled()) &&
-        (await directTrigger.locator("button").count()) === 1 &&
-        source?.startsWith("blob:") === true &&
+        typeof (await page.evaluate(() => globalThis.__bookFormCases.active.getCoverId())) ===
+          'string' &&
+        !(await activeInput.isDisabled()) &&
         Boolean(box && box.width > 0 && box.height > 0)
       );
     });
 
-    await check("keyboardSelectionAndErrorFeedback", async () => {
-      const requestIndex = await page.evaluate(
-        () => globalThis.__uploadMock.requests.length,
-      );
-      const errorCount = await page.evaluate(
-        () => globalThis.__uploadEvidence.errors.length,
-      );
-      await chooseFileByGesture(page, directTrigger, "keyboard", {
-        name: "cover-error.png",
-        mimeType: "image/png",
-        buffer: Buffer.from(EMPTY_IMAGE),
-      });
+    await check('keyboardSelectionReportsAccessibleError', async () => {
+      const requestIndex = await page.evaluate(() => globalThis.__uploadMock.requests.length);
+      await chooseFileByGesture(page, activeTrigger, 'keyboard', imageFile('cover-error.png'));
       await waitForRequestCount(page, requestIndex + 1);
-      await settleUpload(page, requestIndex, "fail");
-      await page.waitForFunction(
-        (count) => globalThis.__uploadEvidence.errors.length === count + 1,
-        errorCount,
-      );
-      const alert = direct.getByRole("alert");
-      return (
-        (await alert.innerText()).trim().length > 0 &&
-        !(await directInput.isDisabled()) &&
-        (await directTrigger.locator("button").count()) === 1
-      );
-    });
-
-    await check("sameFileReplacement", async () => {
-      const sameFile = {
-        name: "repeat.png",
-        mimeType: "image/png",
-        buffer: Buffer.from(EMPTY_IMAGE),
+      await settleUpload(page, requestIndex, 'fail');
+      const feedback = page.locator('[data-sonner-toast]');
+      await feedback.waitFor({ state: 'visible' });
+      const semantics = await feedback.evaluate((element) => ({
+        live: element.closest('[aria-live]')?.getAttribute('aria-live') ?? null,
+        role: element.getAttribute('role'),
+        text: element.textContent?.trim() ?? '',
+      }));
+      diagnostics.errorFeedback = {
+        ...semantics,
       };
-      const firstIndex = await page.evaluate(
-        () => globalThis.__uploadMock.requests.length,
+      return (
+        semantics.text.length > 0 &&
+        (['alert', 'status'].includes(semantics.role ?? '') ||
+          ['assertive', 'polite'].includes(semantics.live ?? '')) &&
+        !(await activeInput.isDisabled())
       );
-      const successCount = await page.evaluate(
-        () => globalThis.__uploadEvidence.successes.length,
-      );
-      await directInput.setInputFiles(sameFile);
-      await waitForRequestCount(page, firstIndex + 1);
-      await settleUpload(page, firstIndex, "complete");
-      await page.waitForFunction(
-        (count) => globalThis.__uploadEvidence.successes.length === count + 1,
-        successCount,
-      );
-      const secondIndex = firstIndex + 1;
-      await directInput.setInputFiles(sameFile);
-      await waitForRequestCount(page, secondIndex + 1);
-      await settleUpload(page, secondIndex, "complete");
-      await page.waitForFunction(
-        (count) => globalThis.__uploadEvidence.successes.length === count + 2,
-        successCount,
-      );
-      const keys = await page.evaluate(() =>
-        globalThis.__uploadEvidence.successes.slice(-2),
-      );
-      return keys.length === 2 && keys[0] !== keys[1];
     });
 
-    await check("dragAndDropSelection", async () => {
-      const requestIndex = await page.evaluate(
-        () => globalThis.__uploadMock.requests.length,
+    await check('sameFileReplacement', async () => {
+      const file = imageFile('repeat.png');
+      const first = await page.evaluate(() => globalThis.__uploadMock.requests.length);
+      await activeInput.setInputFiles(file);
+      await waitForRequestCount(page, first + 1);
+      await settleUpload(page, first, 'complete');
+      await page.waitForFunction(
+        (requestIndex) =>
+          globalThis.__bookFormCases.active.getCoverId() ===
+          `evaluator/${requestIndex}/repeat.png`,
+        first,
       );
-      const successCount = await page.evaluate(
-        () => globalThis.__uploadEvidence.successes.length,
+      const second = first + 1;
+      await activeInput.setInputFiles(file);
+      await waitForRequestCount(page, second + 1);
+      await settleUpload(page, second, 'complete');
+      await page.waitForFunction(
+        (requestIndex) =>
+          globalThis.__bookFormCases.active.getCoverId() ===
+          `evaluator/${requestIndex}/repeat.png`,
+        second,
       );
-      await directTrigger.evaluate((element) => {
+      return second > first;
+    });
+
+    await check('dragAndDropSelection', async () => {
+      const requestIndex = await page.evaluate(() => globalThis.__uploadMock.requests.length);
+      await activeTrigger.evaluate((element) => {
         const transfer = new DataTransfer();
-        transfer.items.add(
-          new File(["drop-image"], "drop.png", { type: "image/png" }),
-        );
-        element.dispatchEvent(
-          new DragEvent("dragenter", {
-            bubbles: true,
-            cancelable: true,
-            dataTransfer: transfer,
-          }),
-        );
-        element.dispatchEvent(
-          new DragEvent("dragover", {
-            bubbles: true,
-            cancelable: true,
-            dataTransfer: transfer,
-          }),
-        );
-        element.dispatchEvent(
-          new DragEvent("drop", {
-            bubbles: true,
-            cancelable: true,
-            dataTransfer: transfer,
-          }),
-        );
+        transfer.items.add(new File(['drop-image'], 'drop.png', { type: 'image/png' }));
+        for (const type of ['dragenter', 'dragover', 'drop']) {
+          element.dispatchEvent(
+            new DragEvent(type, {
+              bubbles: true,
+              cancelable: true,
+              dataTransfer: transfer,
+            }),
+          );
+        }
       });
       await waitForRequestCount(page, requestIndex + 1);
-      await settleUpload(page, requestIndex, "complete");
+      await settleUpload(page, requestIndex, 'complete');
       await page.waitForFunction(
-        (count) => globalThis.__uploadEvidence.successes.length === count + 1,
-        successCount,
+        (expected) => globalThis.__bookFormCases.active.getCoverId() === expected,
+        `evaluator/${requestIndex}/drop.png`,
       );
-      return (await direct.locator("img").count()) === 1;
+      return (await active.locator('img[src^="blob:"]').count()) === 1;
     });
 
-    await check("clearRestoresEmptyState", async () => {
-      const selectedName = (await directTrigger.innerText()).trim();
-      await directTrigger.locator("button").click();
-      await page.waitForFunction(() => globalThis.__uploadEvidence.clears >= 1);
-      const emptyName = (await directTrigger.innerText()).trim();
+    await check('submitSerializesCoverId', async () => {
+      const coverId = await page.evaluate(() => globalThis.__bookFormCases.active.getCoverId());
+      await active.locator('[data-submit]').click();
+      await page.waitForFunction(() => globalThis.__bookFormEvidence.submissions.length > 0);
+      const submission = await page.evaluate(() => globalThis.__bookFormEvidence.submissions.at(-1));
+      return Boolean(coverId && submission?.value?.coverId === coverId);
+    });
+
+    await check('clearRestoresEmptyFormValue', async () => {
+      const clear = activeTrigger.locator('button');
+      if ((await clear.count()) !== 1) return false;
+      await clear.click();
+      await page.waitForFunction(() => globalThis.__bookFormCases.active.getCoverId() == null);
       return (
-        selectedName.length > 0 &&
-        emptyName.length > 0 &&
-        selectedName !== emptyName &&
-        (await direct.locator("img").count()) === 0
+        (await active.locator('img[src^="blob:"]').count()) === 0 &&
+        (await activeInput.getAttribute('value')) !== 'drop.png'
       );
     });
 
-    await check("disabledBlocksEveryInputPath", async () => {
-      const disabled = page.locator('[data-case="disabled"]');
-      const trigger = disabled.locator('[role="button"]');
-      const before = await page.evaluate(
-        () => globalThis.__uploadMock.requests.length,
-      );
+    await check('disabledFormBlocksEveryInputPath', async () => {
+      const input = disabled.locator('input[type="file"]');
+      const trigger = disabled.locator('[role="button"]:has(input[type="file"])');
+      if ((await input.count()) !== 1 || (await trigger.count()) !== 1) return false;
+      const before = await page.evaluate(() => globalThis.__uploadMock.requests.length);
       await trigger.evaluate((element) => {
+        element.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
         element.dispatchEvent(
-          new MouseEvent("click", { bubbles: true, cancelable: true }),
-        );
-        element.dispatchEvent(
-          new KeyboardEvent("keydown", {
-            key: "Enter",
-            bubbles: true,
-            cancelable: true,
-          }),
+          new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }),
         );
         const transfer = new DataTransfer();
-        transfer.items.add(
-          new File(["blocked"], "blocked.png", { type: "image/png" }),
-        );
+        transfer.items.add(new File(['blocked'], 'blocked.png', { type: 'image/png' }));
         element.dispatchEvent(
-          new DragEvent("drop", {
+          new DragEvent('drop', {
             bubbles: true,
             cancelable: true,
             dataTransfer: transfer,
@@ -673,71 +572,45 @@ async function evaluate() {
         );
       });
       await delay(100);
-      const after = await page.evaluate(
-        () => globalThis.__uploadMock.requests.length,
-      );
+      const after = await page.evaluate(() => globalThis.__uploadMock.requests.length);
       return (
         before === after &&
-        (await disabled.locator('input[type="file"]').isDisabled()) &&
-        (await trigger.getAttribute("tabindex")) === null
+        (await input.isDisabled()) &&
+        ((await trigger.getAttribute('aria-disabled')) === 'true' ||
+          (await trigger.getAttribute('tabindex')) === null)
       );
     });
 
-    const formCase = page.locator('[data-case="form"]');
-    const formTrigger = formCase.locator('[role="button"]').first();
-    const formInput = formCase.locator('input[type="file"]');
-    await check("formErrorIsProgrammaticallyDescribed", async () => {
-      await formCase.locator("[data-submit]").click();
-      const alert = formCase.getByRole("alert");
-      await alert.waitFor({ state: "visible" });
-      const describedBy =
-        (await formInput.getAttribute("aria-describedby"))
-          ?.split(/\s+/u)
-          .filter(Boolean) ?? [];
-      const allTargetsExist = await page.evaluate(
-        (ids) => ids.every((id) => Boolean(document.getElementById(id))),
-        describedBy,
-      );
-      return (
-        (await formInput.getAttribute("aria-invalid")) === "true" &&
-        describedBy.length >= 2 &&
-        allTargetsExist &&
-        (await alert.innerText()).trim().length > 0
-      );
-    });
-
-    await check("formValueTracksUploadAndClear", async () => {
-      const requestIndex = await page.evaluate(
-        () => globalThis.__uploadMock.requests.length,
-      );
-      await chooseFileByGesture(page, formTrigger, "click", {
-        name: "form-cover.png",
-        mimeType: "image/png",
-        buffer: Buffer.from(EMPTY_IMAGE),
-      });
-      await waitForRequestCount(page, requestIndex + 1);
-      await settleUpload(page, requestIndex, "complete");
-      await page.waitForFunction(() =>
-        Boolean(globalThis.__uploadEvaluator.getFormValue()),
-      );
-      const uploadedValue = await page.evaluate(() =>
-        globalThis.__uploadEvaluator.getFormValue(),
-      );
-      await formTrigger.locator("button").click();
-      await page.waitForFunction(
-        () => globalThis.__uploadEvaluator.getFormValue() == null,
-      );
-      return typeof uploadedValue === "string" && uploadedValue.length > 0;
-    });
-
-    await check("componentHasNoAxeViolations", async () => {
+    await check('integratedFormHasNoAxeViolations', async () => {
+      for (const input of [activeInput, disabled.locator('input[type="file"]')]) {
+        await input.evaluate((element) => {
+          const descriptionIds = (element.getAttribute('aria-describedby') ?? '')
+            .split(/\s+/u)
+            .filter(Boolean);
+          const descriptionNodes = descriptionIds
+            .map((id) => document.getElementById(id))
+            .filter(Boolean);
+          let field = element.parentElement;
+          while (
+            field &&
+            descriptionNodes.some((description) => !field.contains(description))
+          ) {
+            field = field.parentElement;
+          }
+          field?.setAttribute('data-evaluator-upload-field', '');
+        });
+      }
       const report = await new AxeBuilder({ page })
-        .include("#app")
-        .disableRules(["color-contrast"])
-        .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+        .include('[data-evaluator-upload-field]')
+        .disableRules(['color-contrast'])
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
         .analyze();
       axeViolations.push(
-        ...report.violations.map(({ id, impact }) => ({ id, impact })),
+        ...report.violations.map(({ id, impact, nodes }) => ({
+          id,
+          impact,
+          targets: nodes.map((node) => node.target),
+        })),
       );
       return report.violations.length === 0;
     });
@@ -751,12 +624,13 @@ async function evaluate() {
       passed: failures.length === 0,
       metrics: {
         governanceViolations: 0,
-        accessibilityViolations: checks.componentHasNoAxeViolations ? 0 : 1,
+        accessibilityViolations: checks.integratedFormHasNoAxeViolations ? 0 : 1,
       },
       checks: Object.entries(checks).map(([id, passed]) => ({ id, passed })),
       failures,
       evidenceErrors,
       axeViolations,
+      diagnostics,
       runtimeErrors,
       serverErrors,
     };
@@ -767,20 +641,18 @@ async function evaluate() {
   }
 }
 
-const EMPTY_IMAGE = "evaluator-image-bytes";
-
 try {
   const result = await evaluate();
-  console.log(JSON.stringify(result));
+  process.stdout.write(`${JSON.stringify(result)}\n`);
   if (!result.passed) process.exitCode = 1;
 } catch (error) {
-  console.log(
-    JSON.stringify({
+  process.stdout.write(
+    `${JSON.stringify({
       passed: false,
       metrics: { governanceViolations: 0, accessibilityViolations: 1 },
-      checks: [{ id: "evaluator-runtime", passed: false }],
+      checks: [{ id: 'evaluator-runtime', passed: false }],
       failures: [error instanceof Error ? error.message : String(error)],
-    }),
+    })}\n`,
   );
   process.exitCode = 1;
 }

@@ -3,10 +3,10 @@
   "taskId": "start-ui-web.book-cover-upload",
   "contractId": "start-ui-web.book-cover-upload.v1",
   "review": {
-    "status": "draft",
-    "reviewedBy": "OpenAI Codex independent evaluator reviewer",
-    "reviewedAt": "2026-07-22T14:46:27Z",
-    "notes": "Draft after an independent exact frozen-worktree rerun under Node 22.19.0/pnpm 10.33.0. Expected bb32b7a5c94a5b4de37fda0a8669f3d26e0b9c27 passes all 13 browser checks for click, keyboard, drop, pending/success/error, preview, replacement, clear, disabled behavior, form state, four locales, Axe, and console. Both revisions build and pass 150 tests with the pinned Chromium 1228 cache. Approval remains blocked because the oracle imports src/components/upload/upload-input.tsx directly: base 795d311d1d8b8e502eb7f33b9b6d4475691d3101 fails on that expected-only module before executable behavior, and a valid alternative implemented through the allowed field-upload-input, form-book, or form-book-cover paths would also be rejected. The harness must exercise the integrated book-form contract without naming an expected implementation module before this task is candidate-independent."
+    "status": "approved",
+    "reviewedBy": "David Aimi (sole maintainer), execution assisted by OpenAI Codex",
+    "reviewedAt": "2026-07-24T13:32:40Z",
+    "notes": "Sole-maintainer approval after replacing the expected-only UploadInput import with a candidate-independent browser harness that mounts the real FormBook path present at both frozen revisions. Two clean Chromium 1228 executions at expected commit bb32b7a5c94a5b4de37fda0a8669f3d26e0b9c27 passed all 12 integrated checks; two clean executions at base commit 795d311d1d8b8e502eb7f33b9b6d4475691d3101 failed the 10 absent upload behaviors while still mounting the book form and retaining a clean console. The oracle observes four-locale label/helper rendering, RTL direction, click and keyboard selection, pending/success/error, live-region feedback, preview, same-file replacement, drag/drop, form serialization, clear, disabled behavior, scoped Axe results, and console errors without naming any allowed implementation module. This approval is maintainer qualification, not independent model-output review."
   },
   "oracle": {
     "candidateIndependent": true,

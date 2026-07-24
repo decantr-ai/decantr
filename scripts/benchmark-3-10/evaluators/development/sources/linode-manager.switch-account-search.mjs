@@ -1,197 +1,221 @@
 #!/usr/bin/env node
-import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
-import vm from 'node:vm';
+import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { rm, writeFile } from 'node:fs/promises';
+import { isAbsolute, join, relative, resolve } from 'node:path';
 
-const checks = [];
+const TEST_SOURCE = `import { profileFactory } from '@linode/utilities';
+import { waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import * as React from 'react';
 
-function record(name, passed, detail) {
-  checks.push({ name, passed: Boolean(passed), detail });
+import { accountFactory } from 'src/factories';
+import { renderWithTheme } from 'src/utilities/testHelpers';
+
+import { SwitchAccountDrawer } from './SwitchAccountDrawer';
+
+const queryMocks = vi.hoisted(() => ({
+  useProfile: vi.fn().mockReturnValue({}),
+  useMyDelegatedChildAccountsQuery: vi.fn().mockReturnValue({}),
+  useChildAccountsInfiniteQuery: vi.fn().mockReturnValue({}),
+  useIsIAMDelegationEnabled: vi.fn().mockReturnValue({ isIAMDelegationEnabled: true }),
+}));
+
+vi.mock('@linode/queries', async () => {
+  const actual = await vi.importActual('@linode/queries');
+  return {
+    ...actual,
+    useProfile: queryMocks.useProfile,
+    useMyDelegatedChildAccountsQuery: queryMocks.useMyDelegatedChildAccountsQuery,
+    useChildAccountsInfiniteQuery: queryMocks.useChildAccountsInfiniteQuery,
+  };
+});
+
+vi.mock('src/features/IAM/hooks/useIsIAMEnabled', async () => {
+  const actual = await vi.importActual('src/features/IAM/hooks/useIsIAMEnabled');
+  return {
+    ...actual,
+    useIsIAMDelegationEnabled: queryMocks.useIsIAMDelegationEnabled,
+  };
+});
+
+const props = { onClose: vi.fn(), open: true, userType: undefined };
+const accounts = accountFactory.buildList(5, { company: 'Child Account' });
+
+function settledAccounts(overrides = {}) {
+  return {
+    data: { data: accounts, results: accounts.length, page: 1, pages: 1 },
+    isLoading: false,
+    isRefetching: false,
+    ...overrides,
+  };
 }
 
-function parseArgs(argv) {
+describe('Decantr account-switch search behavior', () => {
+  beforeEach(() => {
+    Object.defineProperty(window, 'localStorage', {
+      configurable: true,
+      value: {
+        clear: vi.fn(),
+        getItem: vi.fn().mockReturnValue(null),
+        key: vi.fn().mockReturnValue(null),
+        length: 0,
+        removeItem: vi.fn(),
+        setItem: vi.fn(),
+      },
+    });
+    queryMocks.useProfile.mockReturnValue({
+      data: profileFactory.build({ user_type: 'parent' }),
+    });
+    queryMocks.useIsIAMDelegationEnabled.mockReturnValue({
+      isIAMDelegationEnabled: true,
+    });
+    queryMocks.useMyDelegatedChildAccountsQuery.mockReturnValue(settledAccounts());
+    queryMocks.useChildAccountsInfiniteQuery.mockReturnValue({
+      data: { pages: [settledAccounts().data], pageParams: [] },
+      isInitialLoading: false,
+      isRefetching: false,
+      isFetchingNextPage: false,
+      hasNextPage: false,
+      fetchNextPage: vi.fn(),
+      refetch: vi.fn(),
+    });
+  });
+
+  it('preserves the real search input, typed value, and focus after debounce', async () => {
+    const user = userEvent.setup();
+    const view = renderWithTheme(<SwitchAccountDrawer {...props} />);
+    const search = view.getByRole('textbox', { name: 'Search' });
+
+    await user.click(search);
+    await user.type(search, 'child');
+    expect(search).toHaveValue('child');
+    expect(document.activeElement).toBe(search);
+
+    await new Promise((resolveDelay) => setTimeout(resolveDelay, 400));
+    await waitFor(() => {
+      const current = view.getByRole('textbox', { name: 'Search' });
+      expect(current).toBe(search);
+      expect(current).toHaveValue('child');
+      expect(document.activeElement).toBe(current);
+    });
+  });
+
+  it('does not show the no-access state until an empty query settles', async () => {
+    queryMocks.useMyDelegatedChildAccountsQuery.mockReturnValue(
+      settledAccounts({
+        data: { data: [], results: 0, page: 1, pages: 1 },
+        isLoading: true,
+      })
+    );
+    const view = renderWithTheme(<SwitchAccountDrawer {...props} />);
+    expect(
+      view.queryByText('You don’t have access to other accounts.')
+    ).not.toBeInTheDocument();
+
+    queryMocks.useMyDelegatedChildAccountsQuery.mockReturnValue(
+      settledAccounts({ data: { data: [], results: 0, page: 1, pages: 1 } })
+    );
+    view.rerender(<SwitchAccountDrawer {...props} />);
+    await waitFor(() => {
+      expect(
+        view.getByText('You don’t have access to other accounts.')
+      ).toBeVisible();
+    });
+  });
+});
+`;
+
+function parseArguments(argv) {
   const options = {};
   for (let index = 0; index < argv.length; index += 1) {
-    if (argv[index] === '--workspace') options.workspace = resolve(argv[++index]);
-    else if (argv[index] === '--project-path') options.projectPath = argv[++index];
-    else throw new Error(`Unknown option: ${argv[index]}`);
+    const argument = argv[index];
+    if (argument === '--workspace') options.workspace = resolve(argv[++index]);
+    else if (argument === '--project-path') options.projectPath = argv[++index];
+    else throw new Error(`Unknown option: ${argument}`);
   }
-  if (!options.workspace || !options.projectPath) throw new Error('Missing workspace or project path');
-  return options;
-}
-
-function findMatching(source, start, open, close) {
-  let depth = 0;
-  let quote = null;
-  let escaped = false;
-  for (let index = start; index < source.length; index += 1) {
-    const char = source[index];
-    if (quote) {
-      if (escaped) escaped = false;
-      else if (char === '\\') escaped = true;
-      else if (char === quote) quote = null;
-      continue;
-    }
-    if (char === '"' || char === "'" || char === '`') {
-      quote = char;
-      continue;
-    }
-    if (char === open) depth += 1;
-    else if (char === close) {
-      depth -= 1;
-      if (depth === 0) return index;
-    }
+  if (!options.workspace || options.projectPath === undefined) {
+    throw new Error('Expected --workspace and --project-path');
   }
-  throw new Error(`Unmatched ${open}`);
-}
-
-function openingTag(source, component) {
-  const start = source.indexOf(`<${component}`);
-  if (start < 0) throw new Error(`Missing ${component}`);
-  let braces = 0;
-  let quote = null;
-  let escaped = false;
-  for (let index = start; index < source.length; index += 1) {
-    const char = source[index];
-    if (quote) {
-      if (escaped) escaped = false;
-      else if (char === '\\') escaped = true;
-      else if (char === quote) quote = null;
-      continue;
-    }
-    if (char === '"' || char === "'" || char === '`') {
-      quote = char;
-      continue;
-    }
-    if (char === '{') braces += 1;
-    else if (char === '}') braces -= 1;
-    else if (char === '>' && braces === 0) return source.slice(start, index + 1);
+  const project = resolve(options.workspace, options.projectPath);
+  const relation = relative(options.workspace, project);
+  if (relation === '..' || relation.startsWith('../') || isAbsolute(relation)) {
+    throw new Error('Project path escapes the workspace');
   }
-  throw new Error(`Unclosed ${component}`);
+  return { ...options, project };
 }
 
-function jsxProperty(tag, name) {
-  const match = new RegExp(`\\b${name}\\b`, 'u').exec(tag);
-  if (!match) return undefined;
-  let cursor = match.index + name.length;
-  while (/\s/u.test(tag[cursor])) cursor += 1;
-  if (tag[cursor] !== '=') return true;
-  cursor += 1;
-  while (/\s/u.test(tag[cursor])) cursor += 1;
-  if (tag[cursor] === '{') {
-    const end = findMatching(tag, cursor, '{', '}');
-    return tag.slice(cursor + 1, end).trim();
-  }
-  const quote = tag[cursor];
-  if (quote === '"' || quote === "'") {
-    const end = tag.indexOf(quote, cursor + 1);
-    return tag.slice(cursor + 1, end);
-  }
-  return tag.slice(cursor).split(/\s|\/>/u)[0];
-}
-
-function conditionBefore(source, marker, anchor, terminator) {
-  const markerIndex = source.indexOf(marker);
-  if (markerIndex < 0) throw new Error(`Missing UI text: ${marker}`);
-  const start = source.lastIndexOf(anchor, markerIndex);
-  if (start < 0) throw new Error(`Missing condition before ${marker}`);
-  const end = terminator === 'last-and'
-    ? source.lastIndexOf('&& (', markerIndex)
-    : source.indexOf('?', start);
-  if (end < start || end > markerIndex) throw new Error(`Cannot isolate condition before ${marker}`);
-  return source.slice(start + 1, end).trim();
-}
-
-function evaluate(expression, values) {
-  return Boolean(vm.runInNewContext(`(${expression})`, values, { timeout: 1000 }));
-}
-
-async function main() {
-  const options = parseArgs(process.argv.slice(2));
-  const source = await readFile(
-    resolve(options.workspace, options.projectPath, 'src/features/Account/SwitchAccountDrawer.tsx'),
-    'utf8',
+async function evaluate() {
+  const options = parseArguments(process.argv.slice(2));
+  const testPath = join(
+    options.project,
+    'src/features/Account/SwitchAccountDrawer.decantr-evaluator.test.tsx',
   );
-  const searchTag = openingTag(source, 'DebouncedSearchTextField');
-  const keyExpression = jsxProperty(searchTag, 'key');
-  let stableIdentity = keyExpression === undefined;
-  let identityDetail = 'no explicit key remounts the controlled search field';
-  if (typeof keyExpression === 'string') {
-    try {
-      const first = vm.runInNewContext(`(${keyExpression})`, {
-        searchQuery: 'a', value: 'a', page: 1, isLoading: false, filter: {}, childAccounts: [],
-      });
-      const second = vm.runInNewContext(`(${keyExpression})`, {
-        searchQuery: 'ab', value: 'ab', page: 1, isLoading: false, filter: {}, childAccounts: [],
-      });
-      stableIdentity = Object.is(first, second);
-      identityDetail = `key resolves to ${String(first)} then ${String(second)}`;
-    } catch (error) {
-      stableIdentity = !/searchQuery|\bvalue\b|\bpage\b|isLoading|childAccounts|filter/u.test(keyExpression);
-      identityDetail = `key expression could not be executed: ${error instanceof Error ? error.message : String(error)}`;
-    }
-  } else if (keyExpression === true) {
-    stableIdentity = false;
-    identityDetail = 'key is present without a stable value';
+  let result;
+  try {
+    await writeFile(testPath, TEST_SOURCE, { encoding: 'utf8', flag: 'wx', mode: 0o600 });
+    const startedAt = Date.now();
+    const processResult = spawnSync(
+      join(options.workspace, 'node_modules/.bin/vitest'),
+      [
+        'run',
+        'src/features/Account/SwitchAccountDrawer.decantr-evaluator.test.tsx',
+        '--reporter=dot',
+      ],
+      {
+        cwd: options.project,
+        env: { ...process.env, CI: '1', NO_COLOR: '1' },
+        timeout: 300_000,
+        encoding: 'utf8',
+        maxBuffer: 8 * 1024 * 1024,
+        shell: false,
+      },
+    );
+    result = {
+      exitCode: Number.isInteger(processResult.status) ? processResult.status : null,
+      signal: processResult.signal ?? null,
+      stdout: processResult.stdout ?? '',
+      stderr: processResult.stderr ?? processResult.error?.message ?? '',
+      durationMs: Date.now() - startedAt,
+    };
+  } finally {
+    await rm(testPath, { force: true });
   }
-  record('typing preserves search field identity', stableIdentity, identityDetail);
-  record(
-    'search remains controlled and labeled',
-    jsxProperty(searchTag, 'value') === 'searchQuery' &&
-      typeof jsxProperty(searchTag, 'onSearch') === 'string' &&
-      jsxProperty(searchTag, 'label') === 'Search',
-    'the search field must retain its controlled value, callback, and accessible label',
-  );
-
-  const noAccessCondition = conditionBefore(
-    source,
-    'You don’t have access to other accounts.',
-    '{childAccounts',
-    'ternary',
-  );
-  const noAccessBase = {
-    childAccounts: [], isIAMDelegationEnabled: true, filter: {}, isLoading: false,
+  const passed = result.exitCode === 0;
+  return {
+    passed,
+    metrics: {
+      governanceViolations: 0,
+      accessibilityViolations: passed ? 0 : 1,
+      visualScore: passed ? 100 : 0,
+    },
+    checks: {
+      realComponentScenarioPassed: passed,
+      temporaryEvaluatorFileRemoved: true,
+    },
+    evidence: {
+      exitCode: result.exitCode,
+      signal: result.signal,
+      durationMs: result.durationMs,
+      stdoutSha256: digest(result.stdout),
+      stderrSha256: digest(result.stderr),
+    },
   };
-  record(
-    'no-access state waits for loading',
-    !evaluate(noAccessCondition, { ...noAccessBase, isLoading: true }) &&
-      evaluate(noAccessCondition, noAccessBase),
-    `condition: ${noAccessCondition.replace(/\s+/gu, ' ')}`,
-  );
-  record(
-    'filtered state does not become no-access',
-    !evaluate(noAccessCondition, { ...noAccessBase, filter: { company: 'acme' } }),
-    'a company filter must suppress the no-access state',
-  );
+}
 
-  const filteredCondition = conditionBefore(
-    source,
-    'No search results',
-    '{isIAMDelegationEnabled',
-    'last-and',
-  );
-  const filteredBase = {
-    childAccounts: [], isIAMDelegationEnabled: true, searchQuery: 'missing', isLoading: false,
-  };
-  record(
-    'filtered empty state appears only after settlement',
-    evaluate(filteredCondition, filteredBase) &&
-      !evaluate(filteredCondition, { ...filteredBase, isLoading: true }) &&
-      !evaluate(filteredCondition, { ...filteredBase, searchQuery: '' }) &&
-      !evaluate(filteredCondition, { ...filteredBase, childAccounts: [{ id: 1 }] }),
-    `condition: ${filteredCondition.replace(/\s+/gu, ' ')}`,
-  );
+function digest(value) {
+  return createHash('sha256').update(value).digest('hex');
 }
 
 try {
-  await main();
+  process.stdout.write(`${JSON.stringify(await evaluate())}\n`);
 } catch (error) {
-  record('oracle execution', false, error instanceof Error ? error.message : String(error));
+  process.stdout.write(
+    `${JSON.stringify({
+      passed: false,
+      metrics: { governanceViolations: 0, accessibilityViolations: 1, visualScore: 0 },
+      checks: { evaluatorExecuted: false },
+      error: error instanceof Error ? error.message : String(error),
+    })}\n`,
+  );
 }
-
-const passed = checks.length > 0 && checks.every((check) => check.passed);
-process.stdout.write(`${JSON.stringify({
-  passed,
-  metrics: { governanceViolations: 0, accessibilityViolations: 0 },
-  checks,
-})}\n`);
