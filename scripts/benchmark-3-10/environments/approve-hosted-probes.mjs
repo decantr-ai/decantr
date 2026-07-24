@@ -169,7 +169,7 @@ export function assertHostedProbeEvidence(input) {
   const expectedWorkflow = `${repository}/.github/workflows/${workflowFile}@refs/heads/main`;
   const expectedSpecPath = relative(root, specPath).replaceAll('\\', '/');
   const expectedRuntime = spec.profile.nodeVersion ?? spec.profile.bunVersion;
-  const expectedResolvedPrefix = `${profile.benchmarkImage.reference}@sha256:`;
+  const expectedResolvedPrefix = `${untaggedImageReference(profile.benchmarkImage.reference)}@sha256:`;
 
   if (
     subject?.schemaVersion !== 'decantr-benchmark-task-environment-probe-subject.v1' ||
@@ -384,6 +384,12 @@ function normalizeVersion(value) {
   return String(value ?? '').trim().replace(/^v/u, '');
 }
 
+function untaggedImageReference(reference) {
+  const separator = reference.lastIndexOf(':');
+  const slash = reference.lastIndexOf('/');
+  return separator > slash ? reference.slice(0, separator) : reference;
+}
+
 function withoutKey(value, key) {
   const output = structuredClone(value);
   delete output[key];
@@ -407,6 +413,8 @@ function parseArgs(argv) {
     else if (argument === '--run-id') options.runId = argv[++index];
     else if (argument === '--reviewed-by') options.reviewedBy = argv[++index];
     else if (argument === '--reviewed-at') options.reviewedAt = argv[++index];
+    else if (argument === '--repository-root') options.repositoryRoot = argv[++index];
+    else if (argument === '--source-commit') options.sourceCommit = argv[++index];
     else if (argument === '--task-id') options.taskIds.push(argv[++index]);
     else if (argument === '--apply') options.apply = true;
     else throw new Error(`unknown option: ${argument}`);

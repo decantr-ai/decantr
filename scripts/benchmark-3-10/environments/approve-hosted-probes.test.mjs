@@ -44,12 +44,13 @@ const specBytes = Buffer.from(`${JSON.stringify(spec, null, 2)}\n`);
 const sourceCommit = 'e'.repeat(40);
 const imageDigest = `sha256:${'f'.repeat(64)}`;
 const imageReference = 'ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.17.0-pnpm-10.13.1';
+const resolvedImageReference = `ghcr.io/decantr-ai/decantr-benchmark-3-10@${imageDigest}`;
 const containerResult = {
   schemaVersion: 'decantr-benchmark-task-environment-container-probe.v1',
   taskId: spec.taskId,
   ok: true,
   versions: { runtime: 'v22.17.0', packageManager: '10.13.1' },
-  benchmarkImage: `${imageReference}@${imageDigest}`,
+  benchmarkImage: resolvedImageReference,
   commands: [
     {
       ...spec.preparation[0],
@@ -82,7 +83,7 @@ function makeSubject() {
     profile: spec.profile,
     benchmarkImage: {
       requested: imageReference,
-      resolved: `${imageReference}@${imageDigest}`,
+      resolved: resolvedImageReference,
       imageId: `sha256:${'3'.repeat(64)}`,
     },
     execution: {
