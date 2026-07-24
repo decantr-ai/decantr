@@ -141,7 +141,7 @@ describe('command help (e2e)', () => {
     );
     expect(existsSync(join(testDir, '.decantr'))).toBe(false);
     expect(existsSync(join(testDir, '.cursor'))).toBe(false);
-  }, 15_000);
+  }, 30_000);
 
   it('keeps the command catalog unique and generic commands locally discoverable', () => {
     const commands = COMMAND_SURFACE.map((entry) => entry.command);

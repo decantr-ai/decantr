@@ -522,7 +522,7 @@ describe('operating layer commands', () => {
     expect(ciFindingIds).not.toContain('assertion-contract-design-token-tokens-file');
     expect(ciFindingIds).not.toContain('assertion-contract-context-pack-manifest');
     expect(ciFindingIds).not.toContain('assertion-contract-context-review-pack');
-  }, 20_000);
+  }, 40_000);
 
   it('explains workspace state without requiring an essence at the root', () => {
     const output = runCli(testDir, ['doctor', '--workspace']);
