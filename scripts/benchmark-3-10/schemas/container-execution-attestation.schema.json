@@ -158,10 +158,19 @@
     "preparation": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["networkPolicy", "directTaskEgress", "proxy", "roles"],
+      "required": [
+        "networkPolicy",
+        "directTaskEgress",
+        "preparedEnvironment",
+        "proxy",
+        "roles"
+      ],
       "properties": {
         "networkPolicy": { "const": "isolated-forward-proxy" },
         "directTaskEgress": { "const": false },
+        "preparedEnvironment": {
+          "$ref": "#/$defs/preparedEnvironmentEvidence"
+        },
         "proxy": {
           "type": "object",
           "additionalProperties": false,
@@ -384,6 +393,24 @@
           }
         }
       ]
+    },
+    "preparedEnvironmentEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "logicalPath",
+        "fileSha256",
+        "canonicalSha256",
+        "environmentSha256",
+        "attestationSha256"
+      ],
+      "properties": {
+        "logicalPath": { "type": "string", "minLength": 1 },
+        "fileSha256": { "$ref": "#/$defs/sha256" },
+        "canonicalSha256": { "$ref": "#/$defs/sha256" },
+        "environmentSha256": { "$ref": "#/$defs/sha256" },
+        "attestationSha256": { "$ref": "#/$defs/sha256" }
+      }
     },
     "dependencyRoot": {
       "type": "object",

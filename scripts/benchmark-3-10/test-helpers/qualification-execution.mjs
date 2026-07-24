@@ -51,6 +51,12 @@ export function makeFixtureQualificationInput(candidate) {
 export async function makeFixtureExecutionAttestation(input) {
   const controller = input.controller ?? await calculateContainerControllerClosure();
   const proxyDigest = `sha256:${'f'.repeat(64)}`;
+  const preparedEnvironment = input.preparedEnvironment ?? {
+    schemaVersion: 'decantr-benchmark-prepared-environment.v1',
+    environmentSha256: 'a'.repeat(64),
+    attestationSha256: 'b'.repeat(64),
+  };
+  const preparedEnvironmentBytes = Buffer.from(prettyCanonicalJson(preparedEnvironment));
   const sourceClosure = input.sourceClosure ?? [
     {
       path: input.sourcePath,
@@ -62,7 +68,9 @@ export async function makeFixtureExecutionAttestation(input) {
   ];
   const preparationRole = (role) => ({
     workspaceBeforeSha256: role === 'base' ? '1'.repeat(64) : '2'.repeat(64),
-    workspacePreparedSha256: role === 'base' ? '3'.repeat(64) : '4'.repeat(64),
+    workspacePreparedSha256:
+      input.workspacePreparedSha256?.[role] ??
+      (role === 'base' ? '3'.repeat(64) : '4'.repeat(64)),
     networkPolicy: 'isolated-forward-proxy',
     directTaskEgress: false,
     steps: [
@@ -182,6 +190,13 @@ export async function makeFixtureExecutionAttestation(input) {
     preparation: {
       networkPolicy: 'isolated-forward-proxy',
       directTaskEgress: false,
+      preparedEnvironment: {
+        logicalPath: 'prepared-environment.json',
+        fileSha256: sha256(preparedEnvironmentBytes),
+        canonicalSha256: sha256Canonical(preparedEnvironment),
+        environmentSha256: preparedEnvironment.environmentSha256,
+        attestationSha256: preparedEnvironment.attestationSha256,
+      },
       proxy: {
         image: { reference: 'docker.io/ubuntu/squid', digest: proxyDigest },
         configSha256: 'f'.repeat(64),

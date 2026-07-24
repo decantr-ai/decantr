@@ -16,6 +16,13 @@ import {
 import { isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assertTaskEnvironmentSpec, taskEnvironmentSubstanceSha256 } from '../environments/contracts.mjs';
+import {
+  assertPreparedEnvironment,
+  calculatePreparedAttestationDigest,
+  calculatePreparedEnvironmentIdentity,
+  discoverDependencyRoots,
+  hashDependencyRoots,
+} from '../environments/prepared-environment.mjs';
 import { assertRuntimeMatrix } from '../environments/runtime-matrix.mjs';
 import { executeEvaluator } from '../evaluator/run-evaluator.mjs';
 import {
@@ -93,6 +100,7 @@ const FIXED_DEPENDENCY_HOSTS = Object.freeze([
 const CONTROLLER_CLOSURE = Object.freeze([
   'environments/contracts.mjs',
   'environments/npm-ci-public-lock-fallback.mjs',
+  'environments/prepared-environment.mjs',
   'environments/runtime-matrix.mjs',
   'evaluator/run-evaluator.mjs',
   'evaluators/container-orchestrator.mjs',
@@ -154,6 +162,11 @@ export async function orchestrateEvaluatorQualification(inputOptions) {
         cleanup,
       });
     }
+    const preparedEnvironment = await bindPreparedBaseEnvironment({
+      request,
+      preparation: roles.base,
+      evidenceRoot,
+    });
 
     await stopAndRemoveContainer(runner, proxy.containerId, cleanup);
     proxy.containerId = null;
@@ -188,6 +201,7 @@ export async function orchestrateEvaluatorQualification(inputOptions) {
       controller,
       proxy,
       roles,
+      preparedEnvironment,
       runnerCommit,
       executionIdentity: executionIdentity(options.environment),
     });
@@ -664,6 +678,7 @@ async function runPreparationCommand(context) {
     Buffer.from(`${logs.stdout}${logs.stderr}`, 'utf8'),
     false,
   );
+  const endedAt = new Date().toISOString();
   const exitCode = Number.parseInt(wait.stdout.trim(), 10);
   if (exitCode !== 0) throw new Error(`${role} preparation command ${command.id} exited ${exitCode}`);
   const fatalDiagnostic = packageManagerFatalDiagnostic(
@@ -690,9 +705,73 @@ async function runPreparationCommand(context) {
     logsEvidence,
     dependencyRoot,
     startedAt,
-    endedAt: new Date().toISOString(),
+    endedAt,
+    durationMs: Math.max(0, Date.parse(endedAt) - Date.parse(startedAt)),
+    preparationNetwork: command.network,
+    stdoutSha256: sha256(logs.stdout),
+    stderrSha256: sha256(logs.stderr),
     exitCode,
   };
+}
+
+async function bindPreparedBaseEnvironment({ request, preparation, evidenceRoot }) {
+  const attestation = await createPreparedBaseEnvironment({ request, preparation });
+  const outputPath = resolve(optionsArtifactRoot(evidenceRoot), 'prepared-environment.json');
+  await writeCanonicalFile(outputPath, attestation);
+  const bytes = await readFile(outputPath);
+  return {
+    logicalPath: relative(optionsArtifactRoot(evidenceRoot), outputPath).replaceAll('\\', '/'),
+    fileSha256: sha256(bytes),
+    canonicalSha256: sha256Canonical(attestation),
+    environmentSha256: attestation.environmentSha256,
+    attestationSha256: attestation.attestationSha256,
+  };
+}
+
+export async function createPreparedBaseEnvironment({ request, preparation }) {
+  const workspace = request.roles.base.workspace;
+  const dependencyRoots = await discoverDependencyRoots(workspace);
+  if (dependencyRoots.length === 0) {
+    throw new Error(`${request.taskId}: base preparation produced no dependency roots`);
+  }
+  const dependencyTree = await hashDependencyRoots(workspace, dependencyRoots);
+  const steps = preparation.steps.map((step) => ({
+    id: step.id,
+    network: step.preparationNetwork,
+    commandSha256: step.commandSha256,
+    exitCode: step.exitCode,
+    durationMs: step.durationMs,
+    stdoutSha256: step.stdoutSha256,
+    stderrSha256: step.stderrSha256,
+  }));
+  const attestation = {
+    schemaVersion: 'decantr-benchmark-prepared-environment.v1',
+    program: PROGRAM,
+    taskId: request.taskId,
+    environmentSpecSha256: request.environmentSpecFileSha256,
+    environmentSubstanceSha256: request.environmentSubstanceSha256,
+    runtimeMatrixSha256: request.runtimeMatrix.matrixSha256,
+    runtimeProfileId: request.profile.id,
+    benchmarkImageDigest: request.profile.benchmarkImage.digest,
+    base: structuredClone(request.candidate.base),
+    revisionRole: 'base',
+    revision: structuredClone(request.candidate.base),
+    candidateSha256: null,
+    lockfiles: structuredClone(request.environmentSpec.lockfiles),
+    steps,
+    dependencyRoots,
+    dependencyTreeSha256: dependencyTree.sha256,
+    dependencyEntryCount: dependencyTree.entryCount,
+    trackedClean: true,
+    preparedAt: preparation.steps.at(-1).endedAt,
+  };
+  attestation.environmentSha256 = calculatePreparedEnvironmentIdentity(attestation);
+  attestation.attestationSha256 = calculatePreparedAttestationDigest(attestation);
+  assertPreparedEnvironment(attestation, {
+    environmentSpec: request.environmentSpec,
+    runtimeMatrix: request.runtimeMatrix,
+  });
+  return attestation;
 }
 
 async function evaluateRole(context) {
@@ -1198,6 +1277,7 @@ function buildExecutionAttestation(context) {
     preparation: {
       networkPolicy: 'isolated-forward-proxy',
       directTaskEgress: false,
+      preparedEnvironment: context.preparedEnvironment,
       proxy: {
         image: proxy.image,
         configSha256: proxy.configSha256,
@@ -1434,6 +1514,10 @@ async function hashFilesystem(root) {
   return sha256Canonical(entries);
 }
 
+export async function hashQualificationWorkspace(root) {
+  return hashFilesystem(root);
+}
+
 async function verifySourceEvidence(spec, workspace) {
   for (const evidence of spec.sourceEvidence) {
     assertSafeRelative(evidence.path, 'source evidence path');
@@ -1630,7 +1714,18 @@ function preparationRecord(record) {
     workspacePreparedSha256: record.workspacePreparedSha256,
     networkPolicy: record.networkPolicy,
     directTaskEgress: record.directTaskEgress,
-    steps: record.steps,
+    steps: record.steps.map((step) => ({
+      id: step.id,
+      commandSha256: step.commandSha256,
+      network: step.network,
+      imageDigest: step.imageDigest,
+      inspectEvidence: step.inspectEvidence,
+      logsEvidence: step.logsEvidence,
+      dependencyRoot: step.dependencyRoot,
+      startedAt: step.startedAt,
+      endedAt: step.endedAt,
+      exitCode: step.exitCode,
+    })),
   };
 }
 
@@ -1775,9 +1870,34 @@ function assertExecutionBindings(bindings) {
 function assertPreparationEvidence(preparation) {
   assertExactKeys(
     preparation,
-    ['networkPolicy', 'directTaskEgress', 'proxy', 'roles'],
+    ['networkPolicy', 'directTaskEgress', 'preparedEnvironment', 'proxy', 'roles'],
     'preparation evidence',
   );
+  assertExactKeys(
+    preparation.preparedEnvironment,
+    [
+      'logicalPath',
+      'fileSha256',
+      'canonicalSha256',
+      'environmentSha256',
+      'attestationSha256',
+    ],
+    'prepared environment evidence',
+  );
+  assertJsonEvidence(
+    {
+      logicalPath: preparation.preparedEnvironment.logicalPath,
+      fileSha256: preparation.preparedEnvironment.fileSha256,
+      canonicalSha256: preparation.preparedEnvironment.canonicalSha256,
+    },
+    'prepared environment file evidence',
+  );
+  if (
+    !SHA256.test(preparation.preparedEnvironment.environmentSha256 ?? '') ||
+    !SHA256.test(preparation.preparedEnvironment.attestationSha256 ?? '')
+  ) {
+    throw new Error('prepared environment identity evidence is invalid');
+  }
   assertExactKeys(
     preparation.proxy,
     [

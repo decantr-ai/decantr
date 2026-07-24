@@ -6,7 +6,9 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { sha256Canonical } from '../runner/canonical.mjs';
 import {
+  createPreparedBaseEnvironment,
   dependencyProxyReadinessArgs,
   deriveDependencyAllowlist,
   inspectPreparedDependencyRoot,
@@ -26,7 +28,7 @@ test('evaluator workflow uses a fixed GitHub host and read-only GHCR credentials
     'utf8',
   );
   const actionReferences = [...workflow.matchAll(/uses:\s+[^@\s]+@([^\s]+)/gu)].map((match) => match[1]);
-  assert.equal(actionReferences.length, 6);
+  assert.equal(actionReferences.length, 7);
   assert.equal(actionReferences.every((reference) => /^[a-f0-9]{40}$/u.test(reference)), true);
   assert.equal(workflow.includes('runs-on: ubuntu-24.04'), true);
   assert.equal(workflow.includes('runs-on: self-hosted'), false);
@@ -53,6 +55,14 @@ test('evaluator workflow uses a fixed GitHub host and read-only GHCR credentials
   assert.equal(workflow.includes(`grep -Fx 'user:10001:rwx'`), true);
   assert.equal(workflow.includes('setpriv --reuid=10001'), false);
   assert.equal(workflow.includes('chmod -R a+rwX'), false);
+  assert.equal(
+    workflow.includes(
+      'benchmark-3-10-prepared-workspace-${{ github.run_id }}-${{ github.run_attempt }}',
+    ),
+    true,
+  );
+  assert.equal(workflow.includes('.preparation.preparedEnvironment.fileSha256'), true);
+  assert.equal(workflow.includes('workspace.tar'), true);
 });
 
 test('private input workflow is repository-gated and uses the shared controller', async () => {
@@ -153,6 +163,69 @@ test('prepared dependency evidence requires a nonempty contained node_modules ro
       kind: 'directory',
       entryCount: 1,
     });
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('base preparation emits a canonical environment identity from the installed dependency tree', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'decantr-container-prepared-environment-'));
+  try {
+    await mkdir(join(root, 'node_modules', 'fixture'), { recursive: true });
+    await writeFile(join(root, 'node_modules', 'fixture', 'index.js'), 'export {};\n');
+    const base = { commit: '1'.repeat(40), tree: '2'.repeat(40) };
+    const command = {
+      id: 'install-dependencies',
+      executable: 'npm',
+      args: ['ci'],
+      cwd: '.',
+      timeoutMs: 10_000,
+      network: 'dependency-registry',
+      required: true,
+    };
+    const profile = {
+      id: 'node-20.19.4-npm-10.8.2',
+      benchmarkImage: { digest: IMAGE },
+    };
+    const request = {
+      taskId: 'fixture.prepare-environment',
+      environmentSpecFileSha256: '3'.repeat(64),
+      environmentSubstanceSha256: '4'.repeat(64),
+      runtimeMatrix: {
+        matrixSha256: '5'.repeat(64),
+        profiles: [profile],
+      },
+      profile,
+      candidate: { base },
+      environmentSpec: {
+        base,
+        lockfiles: [{ path: 'package-lock.json', sha256: '6'.repeat(64) }],
+        preparation: [command],
+      },
+      roles: { base: { workspace: root } },
+    };
+    const attestation = await createPreparedBaseEnvironment({
+      request,
+      preparation: {
+        steps: [
+          {
+            id: command.id,
+            commandSha256: sha256Canonical(command),
+            preparationNetwork: command.network,
+            exitCode: 0,
+            durationMs: 12,
+            stdoutSha256: sha256ForTest('installed\n'),
+            stderrSha256: sha256ForTest(''),
+            endedAt: '2026-07-24T20:00:00Z',
+          },
+        ],
+      },
+    });
+    assert.equal(attestation.taskId, request.taskId);
+    assert.deepEqual(attestation.dependencyRoots, ['node_modules']);
+    assert.ok(attestation.dependencyEntryCount > 0);
+    assert.match(attestation.environmentSha256, /^[a-f0-9]{64}$/u);
+    assert.match(attestation.attestationSha256, /^[a-f0-9]{64}$/u);
   } finally {
     await rm(root, { recursive: true, force: true });
   }
@@ -296,6 +369,10 @@ test('the execution-attestation schema is a strict Draft 2020-12 document', asyn
   assert.equal(schema.$defs.evaluationRole.properties.siblingWorkspaceVisible.const, false);
   assert.equal(
     schema.properties.preparation.properties.proxy.required.includes('readinessEvidence'),
+    true,
+  );
+  assert.equal(
+    schema.properties.preparation.required.includes('preparedEnvironment'),
     true,
   );
   assert.equal(schema.$defs.preparationStep.required.includes('dependencyRoot'), true);

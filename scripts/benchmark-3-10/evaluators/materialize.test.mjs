@@ -19,6 +19,10 @@ import {
 import { makeFixtureLockedRuntimeMatrix } from '../environments/runtime-matrix.test-helper.mjs';
 import { taskEnvironmentSubstanceSha256 } from '../environments/contracts.mjs';
 import {
+  calculatePreparedAttestationDigest,
+  calculatePreparedEnvironmentIdentity,
+} from '../environments/prepared-environment.mjs';
+import {
   calculateQualificationControllerDigest,
   calculateQualificationReceiptDigest,
   calculatePrequalificationBundleDigest,
@@ -586,6 +590,39 @@ async function writeQualificationReceipts(options) {
     const prequalificationBundleFileSha256 = sha256(await readFile(prequalificationPath));
     const prequalificationBundleSha256 = prequalification.bundleSha256;
     const qualificationInput = makeFixtureQualificationInput(candidate);
+    const preparedEnvironment = {
+      schemaVersion: 'decantr-benchmark-prepared-environment.v1',
+      program: PROGRAM,
+      taskId: candidate.taskId,
+      environmentSpecSha256: sha256(environmentBytes),
+      environmentSubstanceSha256: taskEnvironmentSubstanceSha256(environmentSpec),
+      runtimeMatrixSha256: options.runtimeMatrix.matrixSha256,
+      runtimeProfileId: profile.id,
+      benchmarkImageDigest: profile.benchmarkImage.digest,
+      base: structuredClone(candidate.base),
+      revisionRole: 'base',
+      revision: structuredClone(candidate.base),
+      candidateSha256: null,
+      lockfiles: structuredClone(environmentSpec.lockfiles),
+      steps: environmentSpec.preparation.map((command) => ({
+        id: command.id,
+        network: command.network,
+        commandSha256: sha256Canonical(command),
+        exitCode: 0,
+        durationMs: 1,
+        stdoutSha256: sha256(''),
+        stderrSha256: sha256(''),
+      })),
+      dependencyRoots: ['node_modules'],
+      dependencyTreeSha256: 'c'.repeat(64),
+      dependencyEntryCount: 1,
+      trackedClean: true,
+      preparedAt: '2026-07-22T14:00:00Z',
+    };
+    preparedEnvironment.environmentSha256 =
+      calculatePreparedEnvironmentIdentity(preparedEnvironment);
+    preparedEnvironment.attestationSha256 =
+      calculatePreparedAttestationDigest(preparedEnvironment);
     const attestation = await makeFixtureExecutionAttestation({
       candidate,
       candidateSha256: sha256Canonical(candidate),
@@ -605,10 +642,12 @@ async function writeQualificationReceipts(options) {
       results,
       qualifiedAt: QUALIFIED_AT,
       qualificationInput,
+      preparedEnvironment,
     });
     const attestationRoot = join(receiptRoot, 'attestations');
     const provenanceRoot = join(receiptRoot, 'provenance');
     const qualificationInputRoot = join(receiptRoot, 'qualification-input');
+    const preparedEnvironmentRoot = join(receiptRoot, 'prepared-environments');
     const provenancePolicy = qualificationProvenancePolicy(candidate.partition, {
       sourceDigest: FIXTURE_RUNNER_COMMIT,
       sourceRef: FIXTURE_SOURCE_REF,
@@ -617,6 +656,7 @@ async function writeQualificationReceipts(options) {
       mkdir(attestationRoot, { recursive: true }),
       mkdir(provenanceRoot, { recursive: true }),
       mkdir(qualificationInputRoot, { recursive: true }),
+      mkdir(preparedEnvironmentRoot, { recursive: true }),
     ]);
     const attestationPath = join(attestationRoot, `${candidate.taskId}.json`);
     const provenancePath = join(
@@ -626,6 +666,10 @@ async function writeQualificationReceipts(options) {
     await writeJson(attestationPath, attestation);
     await writeFile(provenancePath, `${JSON.stringify({ fixture: candidate.taskId })}\n`);
     await Promise.all([
+      writeJson(
+        join(preparedEnvironmentRoot, `${candidate.taskId}.json`),
+        preparedEnvironment,
+      ),
       writeFile(
         join(qualificationInputRoot, `${candidate.taskId}.request.json`),
         qualificationInput.requestBytes,
@@ -802,6 +846,13 @@ function makeExecutionAttestation(input) {
     preparation: {
       networkPolicy: 'isolated-forward-proxy',
       directTaskEgress: false,
+      preparedEnvironment: {
+        logicalPath: 'prepared-environment.json',
+        fileSha256: '8'.repeat(64),
+        canonicalSha256: '9'.repeat(64),
+        environmentSha256: 'a'.repeat(64),
+        attestationSha256: 'b'.repeat(64),
+      },
       proxy: {
         image: { reference: 'docker.io/ubuntu/squid', digest: proxyDigest },
         configSha256: 'f'.repeat(64),

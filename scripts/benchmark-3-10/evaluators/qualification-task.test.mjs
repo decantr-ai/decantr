@@ -1,6 +1,14 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import {
+  cp,
+  copyFile,
+  mkdtemp,
+  mkdir,
+  readFile,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -19,6 +27,8 @@ import {
   makeFixtureExecutionAttestation,
   makeFixtureQualificationInput,
 } from '../test-helpers/qualification-execution.mjs';
+import { hashQualificationWorkspace } from './container-orchestrator.mjs';
+import { verifyPreparedWorkspaceArtifact } from '../runner/prepared-workspace-artifact.mjs';
 
 const TASK_ID = 'fixture-ui.change-state';
 const REPOSITORY_ID = 'fixture-ui';
@@ -77,6 +87,40 @@ test('container attestation plus offline GitHub provenance finalizes a materiali
     const runtimeMatrix = JSON.parse(runtimeMatrixBytes);
     const sourceBytes = await readFile(fixture.sourcePath);
     const bundleBytes = await readFile(prepared.bundlePath);
+    const preparedEnvironment = JSON.parse(
+      await readFile(
+        join(fixture.executeOptions.preparedRoot, TASK_ID, 'base.json'),
+        'utf8',
+      ),
+    );
+    const probedBaseWorkspace = join(
+      fixture.executeOptions.workspaceRoot,
+      TASK_ID,
+      'base',
+    );
+    const baseWorkspace = join(fixture.root, 'portable-prepared-base');
+    await mkdir(baseWorkspace, { recursive: true });
+    git(baseWorkspace, ['init', '--quiet']);
+    git(baseWorkspace, [
+      'fetch',
+      '--quiet',
+      '--no-tags',
+      probedBaseWorkspace,
+      fixture.base.commit,
+    ]);
+    git(baseWorkspace, [
+      'checkout',
+      '--quiet',
+      '--detach',
+      fixture.base.commit,
+    ]);
+    await cp(
+      join(probedBaseWorkspace, 'node_modules'),
+      join(baseWorkspace, 'node_modules'),
+      { recursive: true, preserveTimestamps: true },
+    );
+    const baseWorkspaceSha256 =
+      await hashQualificationWorkspace(baseWorkspace);
     const qualificationInput = makeFixtureQualificationInput(fixture.candidate);
     const attestation = await makeFixtureExecutionAttestation({
       candidate: fixture.candidate,
@@ -98,11 +142,14 @@ test('container attestation plus offline GitHub provenance finalizes a materiali
       startedAt: '2026-07-22T18:45:00.000Z',
       preparedAt: '2026-07-22T18:50:00.000Z',
       qualifiedAt: QUALIFIED_AT,
+      preparedEnvironment,
+      workspacePreparedSha256: { base: baseWorkspaceSha256 },
     });
     const attestationPath = join(artifactRoot, 'execution-attestation.json');
     const provenancePath = join(artifactRoot, 'execution-attestation.provenance.jsonl');
     await Promise.all([
       writeCanonicalFile(attestationPath, attestation),
+      writeCanonicalFile(join(artifactRoot, 'prepared-environment.json'), preparedEnvironment),
       writeFile(provenancePath, '{"fixture":"verified"}\n'),
       mkdir(join(artifactRoot, 'qualification-input'), { recursive: true }),
     ]);
@@ -123,6 +170,96 @@ test('container attestation plus offline GitHub provenance finalizes a materiali
     assert.equal(finalized.receipt.execution.attestationSha256, attestation.attestationSha256);
     assert.equal(assertQualificationReceipt(finalized.receipt), finalized.receipt);
     assert.equal(environmentSpec.taskId, TASK_ID);
+
+    const preparedArtifactRoot = join(
+      fixture.root,
+      'prepared-workspace-artifact',
+    );
+    const workspaceTarPath = join(preparedArtifactRoot, 'workspace.tar');
+    await mkdir(preparedArtifactRoot, { recursive: true });
+    await Promise.all([
+      copyFile(
+        attestationPath,
+        join(preparedArtifactRoot, 'execution-attestation.json'),
+      ),
+      copyFile(
+        join(artifactRoot, 'prepared-environment.json'),
+        join(preparedArtifactRoot, 'prepared-environment.json'),
+      ),
+      copyFile(
+        provenancePath,
+        join(
+          preparedArtifactRoot,
+          'execution-attestation.provenance.jsonl',
+        ),
+      ),
+      writeCanonicalFile(
+        join(
+          preparedArtifactRoot,
+          'execution-attestation.provenance-verification.json',
+        ),
+        { fixture: 'verified' },
+      ),
+    ]);
+    execFileSync(
+      'tar',
+      [
+        '--create',
+        '--file',
+        workspaceTarPath,
+        '--directory',
+        baseWorkspace,
+        '.',
+      ],
+      {
+        env: { ...process.env, COPYFILE_DISABLE: '1' },
+        stdio: 'ignore',
+      },
+    );
+    const workspaceTarBytes = await readFile(workspaceTarPath);
+    await writeCanonicalFile(join(preparedArtifactRoot, 'manifest.json'), {
+      schemaVersion: 'decantr-benchmark-prepared-workspace-artifact.v1',
+      executionAttestationFileSha256: sha256(
+        await readFile(attestationPath),
+      ),
+      preparedEnvironmentFileSha256: sha256(
+        await readFile(join(artifactRoot, 'prepared-environment.json')),
+      ),
+      workspaceTarFileSha256: sha256(workspaceTarBytes),
+      workspacePreparedSha256: baseWorkspaceSha256,
+      environmentSha256: preparedEnvironment.environmentSha256,
+      provenanceFile: 'execution-attestation.provenance.jsonl',
+    });
+
+    const workspaceOutput = join(fixture.root, 'verified-workspace');
+    const verification = await verifyPreparedWorkspaceArtifact({
+      artifactRoot: preparedArtifactRoot,
+      workspaceOutput,
+      verificationOutput: join(fixture.root, 'workspace-verification.json'),
+      provenanceVerifier: fixtureProvenanceVerifier,
+    });
+    assert.equal(verification.taskId, TASK_ID);
+    assert.equal(
+      verification.workspacePreparedSha256,
+      baseWorkspaceSha256,
+    );
+    assert.equal(
+      git(workspaceOutput, ['rev-parse', 'HEAD']),
+      fixture.base.commit,
+    );
+
+    await writeFile(
+      workspaceTarPath,
+      Buffer.concat([workspaceTarBytes, Buffer.from('tampered')]),
+    );
+    await assert.rejects(
+      verifyPreparedWorkspaceArtifact({
+        artifactRoot: preparedArtifactRoot,
+        workspaceOutput: join(fixture.root, 'tampered-workspace'),
+        provenanceVerifier: fixtureProvenanceVerifier,
+      }),
+      /prepared workspace artifact differs from the signed execution/u,
+    );
   } finally {
     await rm(fixture.root, { recursive: true, force: true });
   }

@@ -27,6 +27,7 @@ import {
   assertTaskEnvironmentSpec,
   taskEnvironmentSubstanceSha256,
 } from '../environments/contracts.mjs';
+import { assertPreparedEnvironment } from '../environments/prepared-environment.mjs';
 import { assertRuntimeMatrix } from '../environments/runtime-matrix.mjs';
 import {
   assertQualificationReceipt,
@@ -282,6 +283,8 @@ async function materializePartition(options) {
       sourceSha256,
       environmentSpecSha256: sha256(environmentSpecBytes),
       environmentSubstanceSha256: taskEnvironmentSubstanceSha256(environmentSpec),
+      environmentSpec,
+      runtimeMatrix: options.runtimeMatrix,
       runtimeMatrixFileSha256: options.runtimeMatrixFileSha256,
       runtimeMatrixSha256: options.runtimeMatrix.matrixSha256,
       profile,
@@ -403,14 +406,43 @@ async function verifyQualificationExecutionEvidence(options) {
     'qualification-input',
     `${options.candidate.taskId}.manifest.json`,
   );
-  const [attestationBytes, provenanceBytes, prequalificationBytes, inputRequestBytes, inputManifestBytes] = await Promise.all([
+  const preparedEnvironmentPath = join(
+    options.receiptRoot,
+    'prepared-environments',
+    `${options.candidate.taskId}.json`,
+  );
+  const [
+    attestationBytes,
+    provenanceBytes,
+    prequalificationBytes,
+    inputRequestBytes,
+    inputManifestBytes,
+    preparedEnvironmentBytes,
+  ] = await Promise.all([
     readFile(attestationPath),
     readFile(provenancePath),
     readFile(prequalificationPath),
     readFile(inputRequestPath),
     readFile(inputManifestPath),
+    readFile(preparedEnvironmentPath),
   ]);
   const attestation = assertExecutionAttestation(JSON.parse(attestationBytes));
+  const preparedEnvironment = assertPreparedEnvironment(
+    JSON.parse(preparedEnvironmentBytes),
+    {
+      task: {
+        taskId: options.candidate.taskId,
+        base: options.candidate.base,
+        environment: {
+          specSha256: options.environmentSpecSha256,
+          substanceSha256: options.environmentSubstanceSha256,
+          runtimeProfileId: options.profile.id,
+        },
+      },
+      environmentSpec: options.environmentSpec,
+      runtimeMatrix: options.runtimeMatrix,
+    },
+  );
   const prequalification = JSON.parse(prequalificationBytes);
   const execution = options.receipt.execution;
   const sourceClosure = attestation.bindings.evaluator.sourceClosure;
@@ -477,6 +509,15 @@ async function verifyQualificationExecutionEvidence(options) {
     attestation.bindings.runtimeProfile.profileSha256 !== options.profile.profileSha256 ||
     attestation.bindings.benchmarkImage.reference !== options.profile.benchmarkImage.reference ||
     attestation.bindings.benchmarkImage.digest !== options.profile.benchmarkImage.digest ||
+    !preparedEnvironmentBytes.equals(Buffer.from(prettyCanonicalJson(preparedEnvironment))) ||
+    sha256(preparedEnvironmentBytes) !==
+      attestation.preparation.preparedEnvironment.fileSha256 ||
+    sha256Canonical(preparedEnvironment) !==
+      attestation.preparation.preparedEnvironment.canonicalSha256 ||
+    preparedEnvironment.environmentSha256 !==
+      attestation.preparation.preparedEnvironment.environmentSha256 ||
+    preparedEnvironment.attestationSha256 !==
+      attestation.preparation.preparedEnvironment.attestationSha256 ||
     attestation.runnerRepositoryCommit !== execution.runnerRepositoryCommit ||
     attestation.executionIdentity.provider !== 'github-actions' ||
     attestation.executionIdentity.repository !== execution.repository ||

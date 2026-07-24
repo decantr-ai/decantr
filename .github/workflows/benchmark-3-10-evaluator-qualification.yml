@@ -207,6 +207,58 @@ jobs:
             --cosign "$HOME/.cosign/cosign" \
             --out "$VERIFICATION"
 
+      - name: Assemble the bound prepared base workspace
+        if: success()
+        run: |
+          set -euo pipefail
+          QUALIFICATION_ROOT="$RUNNER_TEMP/qualification-output"
+          WORKSPACE_ROOT="$RUNNER_TEMP/qualification-workspaces/base"
+          OUTPUT_ROOT="$RUNNER_TEMP/prepared-workspace-output"
+          mkdir -p "$OUTPUT_ROOT"
+          EXECUTION="$QUALIFICATION_ROOT/execution-attestation.json"
+          PREPARED="$QUALIFICATION_ROOT/prepared-environment.json"
+          test -f "$EXECUTION"
+          test -f "$PREPARED"
+          test "$(sha256sum "$PREPARED" | cut -d ' ' -f 1)" = \
+            "$(jq -r .preparation.preparedEnvironment.fileSha256 "$EXECUTION")"
+          test "$(jq -r .environmentSha256 "$PREPARED")" = \
+            "$(jq -r .preparation.preparedEnvironment.environmentSha256 "$EXECUTION")"
+          test "$(jq -r .attestationSha256 "$PREPARED")" = \
+            "$(jq -r .preparation.preparedEnvironment.attestationSha256 "$EXECUTION")"
+          cp "$EXECUTION" "$OUTPUT_ROOT/execution-attestation.json"
+          cp "$PREPARED" "$OUTPUT_ROOT/prepared-environment.json"
+          cp "$QUALIFICATION_ROOT/execution-attestation.provenance-verification.json" \
+            "$OUTPUT_ROOT/execution-attestation.provenance-verification.json"
+          if [ "$GITHUB_REPOSITORY" = "decantr-ai/decantr" ]; then
+            PROVENANCE_FILE="execution-attestation.provenance.jsonl"
+          else
+            PROVENANCE_FILE="execution-attestation.provenance.sigstore.json"
+          fi
+          cp "$QUALIFICATION_ROOT/$PROVENANCE_FILE" "$OUTPUT_ROOT/$PROVENANCE_FILE"
+          tar --create --file "$OUTPUT_ROOT/workspace.tar" \
+            --directory "$WORKSPACE_ROOT" .
+          if tar --list --file "$OUTPUT_ROOT/workspace.tar" |
+            grep -Eq '(^/|(^|/)\.\.(/|$))'; then
+            echo "prepared workspace tar contains an unsafe path" >&2
+            exit 1
+          fi
+          jq -n -S \
+            --arg executionAttestationFileSha256 "$(sha256sum "$EXECUTION" | cut -d ' ' -f 1)" \
+            --arg preparedEnvironmentFileSha256 "$(sha256sum "$PREPARED" | cut -d ' ' -f 1)" \
+            --arg workspaceTarFileSha256 "$(sha256sum "$OUTPUT_ROOT/workspace.tar" | cut -d ' ' -f 1)" \
+            --arg workspacePreparedSha256 "$(jq -r .preparation.roles.base.workspacePreparedSha256 "$EXECUTION")" \
+            --arg environmentSha256 "$(jq -r .environmentSha256 "$PREPARED")" \
+            --arg provenanceFile "$PROVENANCE_FILE" \
+            '{
+              schemaVersion: "decantr-benchmark-prepared-workspace-artifact.v1",
+              executionAttestationFileSha256: $executionAttestationFileSha256,
+              preparedEnvironmentFileSha256: $preparedEnvironmentFileSha256,
+              workspaceTarFileSha256: $workspaceTarFileSha256,
+              workspacePreparedSha256: $workspacePreparedSha256,
+              environmentSha256: $environmentSha256,
+              provenanceFile: $provenanceFile
+            }' > "$OUTPUT_ROOT/manifest.json"
+
       - name: Upload retained qualification evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -214,4 +266,13 @@ jobs:
           name: benchmark-3-10-qualification-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/qualification-output
           if-no-files-found: warn
+          retention-days: 30
+
+      - name: Upload the prepared base workspace
+        if: success()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: benchmark-3-10-prepared-workspace-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/prepared-workspace-output
+          if-no-files-found: error
           retention-days: 30

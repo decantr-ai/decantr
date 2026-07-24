@@ -287,6 +287,11 @@ export async function finalizeContainerQualificationTask(inputOptions) {
     options.executionArtifactRoot,
     attestation,
   );
+  const preparedEnvironment = await verifyRetainedPreparedEnvironment(
+    options.executionArtifactRoot,
+    attestation,
+    inputs,
+  );
   const containerController = await calculateContainerControllerClosure();
   const sourceClosure = attestation.bindings.evaluator.sourceClosure;
   const expectedSourcePath = inputs.authored.spec.oracle.sourcePath;
@@ -359,6 +364,7 @@ export async function finalizeContainerQualificationTask(inputOptions) {
     mkdir(join(options.receiptRoot, 'provenance'), { recursive: true, mode: 0o700 }),
     mkdir(join(options.receiptRoot, 'prequalification'), { recursive: true, mode: 0o700 }),
     mkdir(join(options.receiptRoot, 'qualification-input'), { recursive: true, mode: 0o700 }),
+    mkdir(join(options.receiptRoot, 'prepared-environments'), { recursive: true, mode: 0o700 }),
   ]);
   const executions = {};
   const resultBindings = {};
@@ -428,12 +434,18 @@ export async function finalizeContainerQualificationTask(inputOptions) {
     'qualification-input',
     `${inputs.candidate.taskId}.manifest.json`,
   );
+  const retainedPreparedEnvironmentPath = join(
+    options.receiptRoot,
+    'prepared-environments',
+    `${inputs.candidate.taskId}.json`,
+  );
   await Promise.all([
     writeFile(retainedAttestationPath, attestationBytes, { mode: 0o600 }),
     writeFile(retainedProvenancePath, provenanceBytes, { mode: 0o600 }),
     writeFile(retainedPrequalificationPath, bundleBytes, { mode: 0o600 }),
     writeFile(retainedInputRequestPath, qualificationInput.requestBytes, { mode: 0o600 }),
     writeFile(retainedInputManifestPath, qualificationInput.manifestBytes, { mode: 0o600 }),
+    writeFile(retainedPreparedEnvironmentPath, preparedEnvironment.bytes, { mode: 0o600 }),
   ]);
 
   const receipt = {
@@ -498,7 +510,45 @@ export async function finalizeContainerQualificationTask(inputOptions) {
     retainedPrequalificationPath,
     retainedInputRequestPath,
     retainedInputManifestPath,
+    retainedPreparedEnvironmentPath,
   };
+}
+
+async function verifyRetainedPreparedEnvironment(executionArtifactRoot, execution, inputs) {
+  const evidence = execution.preparation.preparedEnvironment;
+  const path = containedArtifactPath(
+    executionArtifactRoot,
+    evidence.logicalPath,
+    `${inputs.candidate.taskId}: prepared environment`,
+  );
+  const bytes = await readFile(path);
+  const attestation = assertPreparedEnvironment(JSON.parse(bytes), {
+    task: {
+      taskId: inputs.candidate.taskId,
+      base: inputs.candidate.base,
+      environment: {
+        specSha256: inputs.environmentSpecFileSha256,
+        substanceSha256: taskEnvironmentSubstanceSha256(inputs.environmentSpec),
+        runtimeProfileId: inputs.profile.id,
+      },
+    },
+    environmentSpec: inputs.environmentSpec,
+    runtimeMatrix: inputs.runtimeMatrix,
+  });
+  if (
+    !bytes.equals(Buffer.from(prettyCanonicalJson(attestation))) ||
+    sha256(bytes) !== evidence.fileSha256 ||
+    sha256Canonical(attestation) !== evidence.canonicalSha256 ||
+    attestation.environmentSha256 !== evidence.environmentSha256 ||
+    attestation.attestationSha256 !== evidence.attestationSha256 ||
+    attestation.revisionRole !== 'base' ||
+    attestation.candidateSha256 !== null
+  ) {
+    throw new Error(
+      `${inputs.candidate.taskId}: prepared environment differs from the signed execution attestation`,
+    );
+  }
+  return { attestation, bytes };
 }
 
 async function verifyRetainedQualificationInput(executionArtifactRoot, attestation) {
