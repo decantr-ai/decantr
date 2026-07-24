@@ -1,11 +1,11 @@
 {
   "blockers": {
-    "unapprovedTaskSpecs": 32,
+    "unapprovedTaskSpecs": 5,
     "unbuiltProfiles": 26,
     "unverifiedProfiles": 26
   },
   "frozenAt": "2026-07-22T11:29:02Z",
-  "matrixSha256": "a228fa7d897ab1d95ab0c6a14b852a6ae5d4123fef79f57b2461c907f338b597",
+  "matrixSha256": "fac0e317f9447bee9a19e25bf8ea7c190e995e0c27325a2ea50210e01c7beae6",
   "paidExecutionAuthorized": false,
   "profiles": [
     {
@@ -148,17 +148,17 @@
       },
       "benchmarkImage": {
         "digest": null,
-        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-20.5.0-pnpm-9.0.0"
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-20.5.0-pnpm-8.6.12"
       },
       "bunVersion": null,
-      "id": "node-20.5.0-pnpm-9.0.0",
+      "id": "node-20.5.0-pnpm-8.6.12",
       "nodeVersion": "20.5.0",
       "os": "linux",
       "packageManager": {
         "name": "pnpm",
-        "version": "9.0.0"
+        "version": "8.6.12"
       },
-      "profileSha256": "404105eea388a729b64c0a7e5315904367740d4ea63175c8b95b3d7c260fe625",
+      "profileSha256": "8f8d7fdfeb28ad18259236f7287b18e9701d91b74d90defb6c4b19d8297962cc",
       "taskCount": 1,
       "verification": null
     },
@@ -583,10 +583,10 @@
   ],
   "program": "decantr-3.10-ui-change-control-proof",
   "schemaVersion": "decantr-benchmark-runtime-matrix.v1",
-  "sourceSpecSetSha256": "835a08352f4b17625a1c34e453906a553ef6fc8fc8802d9356ec906f12c09b93",
+  "sourceSpecSetSha256": "b858cefc74d451757364c1272503433da659ddad9cca99316639a8d8d3224a6a",
   "status": "draft",
   "taskCounts": {
-    "approved": 8,
+    "approved": 35,
     "development": 24,
     "qualification": 16,
     "total": 40

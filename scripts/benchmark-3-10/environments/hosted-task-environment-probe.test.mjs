@@ -50,6 +50,9 @@ test('uses valid Docker mount syntax for writable and read-only probe inputs', (
     'type=bind,src=/evidence,dst=/evidence',
   ]);
   assert.ok(mounts.every((mount) => !mount.split(',').includes('rw')));
+  assert.ok(
+    args.includes('/home/benchmark-empty:rw,exec,nosuid,nodev,uid=10001,gid=10001,mode=0700'),
+  );
 });
 
 test('retains bounded failure context while redacting credential-shaped values', () => {

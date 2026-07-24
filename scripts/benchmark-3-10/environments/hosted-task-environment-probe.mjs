@@ -170,7 +170,7 @@ export function buildProbeDockerArgs(options) {
     '--tmpfs',
     '/tmp:rw,uid=10001,gid=10001,mode=1777',
     '--tmpfs',
-    '/home/benchmark-empty:rw,uid=10001,gid=10001,mode=0700',
+    '/home/benchmark-empty:rw,exec,nosuid,nodev,uid=10001,gid=10001,mode=0700',
     '--mount',
     `type=bind,src=${options.workspace},dst=/work/task`,
     '--mount',

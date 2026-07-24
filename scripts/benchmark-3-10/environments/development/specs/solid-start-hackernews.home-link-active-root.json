@@ -28,17 +28,17 @@
   "profile": {
     "arch": "x64",
     "bunVersion": null,
-    "id": "node-20.5.0-pnpm-9.0.0",
+    "id": "node-20.5.0-pnpm-8.6.12",
     "nodeVersion": "20.5.0",
     "os": "linux",
     "packageManager": {
       "name": "pnpm",
-      "version": "9.0.0"
+      "version": "8.6.12"
     }
   },
   "projectPath": "examples/hackernews",
   "review": {
-    "notes": "Independent source-evidence re-review verified 5 frozen Git blobs and exact SHA-256 values at 431feefd1be365ba45c034da7c9b33616108bc66. Independent review corrects the generated pnpm 8 profile to the frozen CI's pnpm 9 line while retaining exact .node-version 20.5.0. Version 9.0.0 is only a provisional exact floor: source pins no pnpm patch, and the frozen lock unexpectedly regressed to lockfileVersion 6 after the pnpm 9 transition. Exact Linux x64 frozen-install validation is required before approval.",
+    "notes": "Independent source-evidence re-review verified 5 frozen Git blobs and exact SHA-256 values at 431feefd1be365ba45c034da7c9b33616108bc66. Hosted Linux x64 probe 30106405179 disproved the provisional pnpm 9 override: pnpm 9.0.0 rejects the frozen lockfileVersion 6 lock under the repository's required frozen-install command. The exact .node-version 20.5.0 remains authoritative, and the previously reviewed 8.6.12 fallback is restored as the compatible pnpm 8 toolchain pending a successful exact clean preparation probe.",
     "reviewedAt": null,
     "reviewedBy": null,
     "status": "draft"
@@ -49,7 +49,7 @@
       "kind": "reviewer-override",
       "path": ".github/workflows/typecheck.yml",
       "sha256": "e89536c1d0a5939a5f146666e55f01a4fa2281e84ab3687482673d3aaa718c20",
-      "statement": "Frozen Ubuntu workflow explicitly selects pnpm 9 and runs pnpm install --frozen-lockfile, overriding the generated pnpm 8 choice."
+      "statement": "Frozen Ubuntu workflow selects pnpm major 9 and requests a frozen install, but hosted probe 30106405179 proves that pnpm 9.0.0 is incompatible with the frozen lockfileVersion 6 bytes."
     },
     {
       "kind": "runtime-hint",
@@ -73,7 +73,7 @@
       "kind": "lockfile",
       "path": "pnpm-lock.yaml",
       "sha256": "6a81b20f708f0ba56a9812e589111e85aa0a54a4c46fcc917d028d160e19a2c0",
-      "statement": "Frozen root workspace lock is bound exactly; its lockfileVersion 6 conflicts with the repository's pnpm 9 CI transition and needs a probe."
+      "statement": "Frozen root workspace lockfileVersion 6 is bound exactly and requires the reviewed pnpm 8.6.12 compatibility profile after pnpm 9 failed closed."
     }
   ],
   "taskId": "solid-start-hackernews.home-link-active-root"
