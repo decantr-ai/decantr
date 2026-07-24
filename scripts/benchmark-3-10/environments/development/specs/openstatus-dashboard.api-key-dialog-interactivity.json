@@ -51,10 +51,10 @@
   },
   "projectPath": "apps/dashboard",
   "review": {
-    "notes": "Independent source-evidence re-review verified 5 frozen Git blobs and exact SHA-256 values at ed757d14304d4f693c8a0e5d6374dca945fb32b0. The frozen tree pins pnpm 10.26.0 but identifies only a Node 24 line; the OCI digest is not mapped to exact Node 24.12.0 in retained evidence.",
-    "reviewedAt": null,
-    "reviewedBy": null,
-    "status": "draft"
+    "notes": "Independent source-evidence re-review verified 5 frozen Git blobs and exact SHA-256 values at ed757d14304d4f693c8a0e5d6374dca945fb32b0. The frozen tree pins pnpm 10.26.0 but identifies only a Node 24 line; the OCI digest is not mapped to exact Node 24.12.0 in retained evidence. Approved by the sole maintainer after independent review of the frozen source, lockfile, runtime, and preparation contract and successful exact GitHub-hosted Linux x64 probe run 30103459515, attempt 1. Offline OIDC provenance re-verification bound source commit 8cadaf2b6f89ebfe75603ddc71ba0ebb4fc520f8, subject ae65103ce2ddbefc24e57d992aff2eca575b0ff819275a89832cbaaa3eb70a1b, immutable image ghcr.io/decantr-ai/decantr-benchmark-3-10@sha256:170aed9f8afcca4238d82f2172bdfc0c7e4cf885270acece0a0f5076577d7ce4, zero failed required commands, and a clean worktree before and after preparation.",
+    "reviewedAt": "2026-07-24T15:19:00Z",
+    "reviewedBy": "David Aimi (sole maintainer), execution assisted by OpenAI Codex",
+    "status": "approved"
   },
   "schemaVersion": "decantr-benchmark-task-environment.v1",
   "sourceEvidence": [

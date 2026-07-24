@@ -37,10 +37,10 @@
   },
   "projectPath": ".",
   "review": {
-    "notes": "Independent source-evidence re-review verified 3 frozen Git blobs and exact SHA-256 values at 7bd1b9313c2c99044626693f67e7709d83d67608. Independent review rejects the generated Node 12 fallback. Frozen Travis covers Node 8, 9, and 10 but mutates each job with npm@latest, so it proves no exact pair. Node 10.15.1/npm 6.4.1 remains a provisional date-aligned profile; the legacy lock and dependency graph still require an exact Linux x64 npm ci and build probe before approval.",
-    "reviewedAt": null,
-    "reviewedBy": null,
-    "status": "draft"
+    "notes": "Independent source-evidence re-review verified 3 frozen Git blobs and exact SHA-256 values at 7bd1b9313c2c99044626693f67e7709d83d67608. Independent review rejects the generated Node 12 fallback. Frozen Travis covers Node 8, 9, and 10 but mutates each job with npm@latest, so it proves no exact pair. Node 10.15.1/npm 6.4.1 remains a provisional date-aligned profile; the legacy lock and dependency graph still require an exact Linux x64 npm ci and build probe before approval. Approved by the sole maintainer after independent review of the frozen source, lockfile, runtime, and preparation contract and successful exact GitHub-hosted Linux x64 probe run 30103459515, attempt 1. Offline OIDC provenance re-verification bound source commit 8cadaf2b6f89ebfe75603ddc71ba0ebb4fc520f8, subject 84061e2c6bff136dcf182e5487e43a3bd245a25c313ada00506e6ff377209f8a, immutable image ghcr.io/decantr-ai/decantr-benchmark-3-10@sha256:90c8cd2433b85c48d4853886a618e1c1d319da4367beb2bae0082f987f63d00b, zero failed required commands, and a clean worktree before and after preparation.",
+    "reviewedAt": "2026-07-24T15:19:00Z",
+    "reviewedBy": "David Aimi (sole maintainer), execution assisted by OpenAI Codex",
+    "status": "approved"
   },
   "schemaVersion": "decantr-benchmark-task-environment.v1",
   "sourceEvidence": [

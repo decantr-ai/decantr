@@ -110,10 +110,10 @@
   },
   "projectPath": ".",
   "review": {
-    "notes": "Independent source-evidence re-review verified 3 frozen Git blobs and exact SHA-256 values at dafaa9650bdcbfc9ad5487afe3e228bd751f594c. Independent review confirms the frozen Ubuntu 22.04 command sequence and all bound hashes, but approval remains blocked: the exact Node 22.19.0/npm 10.9.3 Linux x64 probe failed at prisma migrate deploy with a schema-engine error. The tree pins only Node 22, not the exact patch or npm version; migration, generation, and seed must complete at the exact profile before approval.",
-    "reviewedAt": null,
-    "reviewedBy": null,
-    "status": "draft"
+    "notes": "Independent source-evidence re-review verified 3 frozen Git blobs and exact SHA-256 values at dafaa9650bdcbfc9ad5487afe3e228bd751f594c. Independent review confirms the frozen Ubuntu 22.04 command sequence and all bound hashes, but approval remains blocked: the exact Node 22.19.0/npm 10.9.3 Linux x64 probe failed at prisma migrate deploy with a schema-engine error. The tree pins only Node 22, not the exact patch or npm version; migration, generation, and seed must complete at the exact profile before approval. Approved by the sole maintainer after independent review of the frozen source, lockfile, runtime, and preparation contract and successful exact GitHub-hosted Linux x64 probe run 30103459515, attempt 1. Offline OIDC provenance re-verification bound source commit 8cadaf2b6f89ebfe75603ddc71ba0ebb4fc520f8, subject ff4a9a703b56b3d93c457271122b125278158f484c4e7120442406a263107633, immutable image ghcr.io/decantr-ai/decantr-benchmark-3-10@sha256:685b07dfeb37c1181267c18e32545c7f3def9ff0760d91dd042080af096a8379, zero failed required commands, and a clean worktree before and after preparation.",
+    "reviewedAt": "2026-07-24T15:19:00Z",
+    "reviewedBy": "David Aimi (sole maintainer), execution assisted by OpenAI Codex",
+    "status": "approved"
   },
   "schemaVersion": "decantr-benchmark-task-environment.v1",
   "sourceEvidence": [

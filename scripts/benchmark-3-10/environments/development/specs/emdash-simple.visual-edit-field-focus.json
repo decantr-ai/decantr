@@ -38,10 +38,10 @@
   },
   "projectPath": "demos/simple",
   "review": {
-    "notes": "Independent source-evidence re-review verified 4 frozen Git blobs and exact SHA-256 values at 156ba7350070400e5877e3a54d33486cd0d33640. The frozen tree pins pnpm 10.28.0 but only a floating Node 22 line, not exact Node 22.19.0.",
-    "reviewedAt": null,
-    "reviewedBy": null,
-    "status": "draft"
+    "notes": "Independent source-evidence re-review verified 4 frozen Git blobs and exact SHA-256 values at 156ba7350070400e5877e3a54d33486cd0d33640. The frozen tree pins pnpm 10.28.0 but only a floating Node 22 line, not exact Node 22.19.0. Approved by the sole maintainer after independent review of the frozen source, lockfile, runtime, and preparation contract and successful exact GitHub-hosted Linux x64 probe run 30103459515, attempt 1. Offline OIDC provenance re-verification bound source commit 8cadaf2b6f89ebfe75603ddc71ba0ebb4fc520f8, subject 9bdd0fa088f2d13ac38b53f4dc5652c3b3dc25a689f10e9d1af9ed1f1d5c0ab0, immutable image ghcr.io/decantr-ai/decantr-benchmark-3-10@sha256:3f34ff162801c5c146e3335b791a5628f1491173bb49b09d1d01af7237555501, zero failed required commands, and a clean worktree before and after preparation.",
+    "reviewedAt": "2026-07-24T15:19:00Z",
+    "reviewedBy": "David Aimi (sole maintainer), execution assisted by OpenAI Codex",
+    "status": "approved"
   },
   "schemaVersion": "decantr-benchmark-task-environment.v1",
   "sourceEvidence": [

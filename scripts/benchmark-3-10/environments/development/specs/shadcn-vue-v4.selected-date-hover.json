@@ -38,10 +38,10 @@
   },
   "projectPath": "apps/v4",
   "review": {
-    "notes": "Independent source-evidence re-review verified 4 frozen Git blobs and exact SHA-256 values at c74b5848035567efc876a6488469daf71653ac8e. Independent review confirms pnpm 10.25.0, the root workspace lock, root install cwd, and Ubuntu pnpm install evidence. The workflows never select Node, and no runtime file or engines field authenticates candidate Node 22.19.0; an exact Linux x64 Node 22.19.0 preparation probe is required before approval.",
-    "reviewedAt": null,
-    "reviewedBy": null,
-    "status": "draft"
+    "notes": "Independent source-evidence re-review verified 4 frozen Git blobs and exact SHA-256 values at c74b5848035567efc876a6488469daf71653ac8e. Independent review confirms pnpm 10.25.0, the root workspace lock, root install cwd, and Ubuntu pnpm install evidence. The workflows never select Node, and no runtime file or engines field authenticates candidate Node 22.19.0; an exact Linux x64 Node 22.19.0 preparation probe is required before approval. Approved by the sole maintainer after independent review of the frozen source, lockfile, runtime, and preparation contract and successful exact GitHub-hosted Linux x64 probe run 30103459515, attempt 1. Offline OIDC provenance re-verification bound source commit 8cadaf2b6f89ebfe75603ddc71ba0ebb4fc520f8, subject bc91b9eb2ac7d7c70c5b4d55251de160f6d1e8274b97b582e4666f39b098b984, immutable image ghcr.io/decantr-ai/decantr-benchmark-3-10@sha256:0962c0ad9fbce351e739aa02d757d8fd30d6bc2b513a079ec2f2ac5910ba6f7c, zero failed required commands, and a clean worktree before and after preparation.",
+    "reviewedAt": "2026-07-24T15:19:00Z",
+    "reviewedBy": "David Aimi (sole maintainer), execution assisted by OpenAI Codex",
+    "status": "approved"
   },
   "schemaVersion": "decantr-benchmark-task-environment.v1",
   "sourceEvidence": [

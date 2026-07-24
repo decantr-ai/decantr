@@ -37,10 +37,10 @@
   },
   "projectPath": ".",
   "review": {
-    "notes": "Independent source-evidence re-review verified 2 frozen Git blobs and exact SHA-256 values at 03ef1236f0226283c2bfe6e316585115ab0b7a62. Independent review confirms the frozen root npm lock and deterministic npm ci argv. The February 2025 tree has no engines, packageManager, runtime file, Dockerfile, or CI workflow, so it cannot authenticate candidate Node 22.19.0/npm 10.9.3 or establish an exact Linux x64 preparation result; status remains draft.",
-    "reviewedAt": null,
-    "reviewedBy": null,
-    "status": "draft"
+    "notes": "Independent source-evidence re-review verified 2 frozen Git blobs and exact SHA-256 values at 03ef1236f0226283c2bfe6e316585115ab0b7a62. Independent review confirms the frozen root npm lock and deterministic npm ci argv. The February 2025 tree has no engines, packageManager, runtime file, Dockerfile, or CI workflow, so it cannot authenticate candidate Node 22.19.0/npm 10.9.3 or establish an exact Linux x64 preparation result; status remains draft. Approved by the sole maintainer after independent review of the frozen source, lockfile, runtime, and preparation contract and successful exact GitHub-hosted Linux x64 probe run 30103459515, attempt 1. Offline OIDC provenance re-verification bound source commit 8cadaf2b6f89ebfe75603ddc71ba0ebb4fc520f8, subject 868f414669e04d0b71f65442bc7477fe88873d3d409b70745e2c9a0f875a589d, immutable image ghcr.io/decantr-ai/decantr-benchmark-3-10@sha256:685b07dfeb37c1181267c18e32545c7f3def9ff0760d91dd042080af096a8379, zero failed required commands, and a clean worktree before and after preparation.",
+    "reviewedAt": "2026-07-24T15:19:00Z",
+    "reviewedBy": "David Aimi (sole maintainer), execution assisted by OpenAI Codex",
+    "status": "approved"
   },
   "schemaVersion": "decantr-benchmark-task-environment.v1",
   "sourceEvidence": [

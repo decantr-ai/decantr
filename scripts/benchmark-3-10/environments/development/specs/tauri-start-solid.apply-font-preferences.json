@@ -38,10 +38,10 @@
   },
   "projectPath": ".",
   "review": {
-    "notes": "Independent source-evidence re-review verified 3 frozen Git blobs and exact SHA-256 values at 860729230392c15d3eb9e28c270edc63baf15ea2. Independent review confirms exact Node >=24.12.0 and pnpm 10.32.1 source pins and removes --ignore-scripts because it contradicts the repository's allowed-build and frozen-install behavior. Approval remains blocked: the only tracked test workflow is an inactive example with macOS as its sole active matrix entry and Linux commented out, so the lifecycle-enabled install needs an exact Linux x64 clean preparation probe.",
-    "reviewedAt": null,
-    "reviewedBy": null,
-    "status": "draft"
+    "notes": "Independent source-evidence re-review verified 3 frozen Git blobs and exact SHA-256 values at 860729230392c15d3eb9e28c270edc63baf15ea2. Independent review confirms exact Node >=24.12.0 and pnpm 10.32.1 source pins and removes --ignore-scripts because it contradicts the repository's allowed-build and frozen-install behavior. Approval remains blocked: the only tracked test workflow is an inactive example with macOS as its sole active matrix entry and Linux commented out, so the lifecycle-enabled install needs an exact Linux x64 clean preparation probe. Approved by the sole maintainer after independent review of the frozen source, lockfile, runtime, and preparation contract and successful exact GitHub-hosted Linux x64 probe run 30103459515, attempt 1. Offline OIDC provenance re-verification bound source commit 8cadaf2b6f89ebfe75603ddc71ba0ebb4fc520f8, subject a6f5a1dc1f1cea98802975be482b52cabb9ff2e897650a14952c5d9b10328d95, immutable image ghcr.io/decantr-ai/decantr-benchmark-3-10@sha256:cefc6c832e535f08299fe01f39931ad1b3c6b40940b14b3f80956c5cf12b1fd5, zero failed required commands, and a clean worktree before and after preparation.",
+    "reviewedAt": "2026-07-24T15:19:00Z",
+    "reviewedBy": "David Aimi (sole maintainer), execution assisted by OpenAI Codex",
+    "status": "approved"
   },
   "schemaVersion": "decantr-benchmark-task-environment.v1",
   "sourceEvidence": [
