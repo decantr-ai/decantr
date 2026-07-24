@@ -38,10 +38,10 @@
   },
   "projectPath": "examples/hackernews",
   "review": {
-    "notes": "Independent source-evidence re-review verified 5 frozen Git blobs and exact SHA-256 values at 431feefd1be365ba45c034da7c9b33616108bc66. Hosted Linux x64 probe 30106405179 disproved the provisional pnpm 9 override: pnpm 9.0.0 rejects the frozen lockfileVersion 6 lock under the repository's required frozen-install command. The exact .node-version 20.5.0 remains authoritative, and the previously reviewed 8.6.12 fallback is restored as the compatible pnpm 8 toolchain pending a successful exact clean preparation probe.",
-    "reviewedAt": null,
-    "reviewedBy": null,
-    "status": "draft"
+    "notes": "Independent source-evidence re-review verified 5 frozen Git blobs and exact SHA-256 values at 431feefd1be365ba45c034da7c9b33616108bc66. Hosted Linux x64 probe 30106405179 disproved the provisional pnpm 9 override: pnpm 9.0.0 rejects the frozen lockfileVersion 6 lock under the repository's required frozen-install command. The exact .node-version 20.5.0 remains authoritative, and the previously reviewed 8.6.12 fallback is restored as the compatible pnpm 8 toolchain pending a successful exact clean preparation probe. Approved by the sole maintainer after independent review of the frozen source, lockfile, runtime, and preparation contract and successful exact GitHub-hosted Linux x64 probe run 30107456188, attempt 1. Offline retained GitHub OIDC provenance re-verification bound source commit 3ffbb8f779a6b55ba38bb93dc596f7ce1614b7f3, subject 9df929d4e7be723031cf0d9cd9e6dcbb165b91a512b40d35e3b61cbebf9c8230, immutable image ghcr.io/decantr-ai/decantr-benchmark-3-10@sha256:88310b76b430065c150c8981db7962c7e4711057ebaebc48c953b6ba355f44c4, zero failed required commands, and a clean worktree before and after preparation.",
+    "reviewedAt": "2026-07-24T16:05:50Z",
+    "reviewedBy": "david-aimi",
+    "status": "approved"
   },
   "schemaVersion": "decantr-benchmark-task-environment.v1",
   "sourceEvidence": [

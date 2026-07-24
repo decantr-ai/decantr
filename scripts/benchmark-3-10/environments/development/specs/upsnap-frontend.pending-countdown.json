@@ -39,10 +39,10 @@
   },
   "projectPath": "frontend",
   "review": {
-    "notes": "Independent source-evidence re-review verified 3 frozen Git blobs and exact SHA-256 values at af655d3621b32327b8fb9fb985dfb597be6105a4. Independent review confirms the frontend lock hash, cwd, and fixed install flags from frozen Ubuntu release CI. The workflow and Dockerfile both float toolchains (pnpm latest, Node latest or node:alpine), while package.json has no engines or packageManager; candidate Node 22.19.0/pnpm 10.33.0 is therefore unauthenticated pending an exact Linux x64 clean preparation probe.",
-    "reviewedAt": null,
-    "reviewedBy": null,
-    "status": "draft"
+    "notes": "Independent source-evidence re-review verified 3 frozen Git blobs and exact SHA-256 values at af655d3621b32327b8fb9fb985dfb597be6105a4. Independent review confirms the frontend lock hash, cwd, and fixed install flags from frozen Ubuntu release CI. The workflow and Dockerfile both float toolchains (pnpm latest, Node latest or node:alpine), while package.json has no engines or packageManager; candidate Node 22.19.0/pnpm 10.33.0 is therefore unauthenticated pending an exact Linux x64 clean preparation probe. Approved by the sole maintainer after independent review of the frozen source, lockfile, runtime, and preparation contract and successful exact GitHub-hosted Linux x64 probe run 30107456188, attempt 1. Offline retained GitHub OIDC provenance re-verification bound source commit 3ffbb8f779a6b55ba38bb93dc596f7ce1614b7f3, subject 867c4f9d91c629132a90d1c1b30cc6c60acc3dffeb0ef64c7d5ac05766657715, immutable image ghcr.io/decantr-ai/decantr-benchmark-3-10@sha256:29aa4549ed34bc3e4b963c5cff2a91e00ed34f14c4cdd93704a5c2a1559e355e, zero failed required commands, and a clean worktree before and after preparation.",
+    "reviewedAt": "2026-07-24T16:05:50Z",
+    "reviewedBy": "david-aimi",
+    "status": "approved"
   },
   "schemaVersion": "decantr-benchmark-task-environment.v1",
   "sourceEvidence": [

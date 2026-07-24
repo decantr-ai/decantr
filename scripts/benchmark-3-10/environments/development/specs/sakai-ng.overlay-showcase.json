@@ -50,10 +50,10 @@
   },
   "projectPath": ".",
   "review": {
-    "notes": "Independent source-evidence re-review verified 3 frozen Git blobs and exact SHA-256 values at 219fe4a1e9fe00783d4b14cc2dde879c08d27cc9. Independent review confirms the root lock hash and the src/assets gitlink, but the tree has no engines, packageManager, runtime file, or CI toolchain. Node 22.19.0/npm 10.9.3 therefore remains an unauthenticated fallback, and git submodule status only inspects an already-materialized submodule. Exact Linux x64 install and submodule validation are required before approval.",
-    "reviewedAt": null,
-    "reviewedBy": null,
-    "status": "draft"
+    "notes": "Independent source-evidence re-review verified 3 frozen Git blobs and exact SHA-256 values at 219fe4a1e9fe00783d4b14cc2dde879c08d27cc9. Independent review confirms the root lock hash and the src/assets gitlink, but the tree has no engines, packageManager, runtime file, or CI toolchain. Node 22.19.0/npm 10.9.3 therefore remains an unauthenticated fallback, and git submodule status only inspects an already-materialized submodule. Exact Linux x64 install and submodule validation are required before approval. Approved by the sole maintainer after independent review of the frozen source, lockfile, runtime, and preparation contract and successful exact GitHub-hosted Linux x64 probe run 30107456188, attempt 1. Offline retained GitHub OIDC provenance re-verification bound source commit 3ffbb8f779a6b55ba38bb93dc596f7ce1614b7f3, subject 5de3bb1f8452225a46910f4c15088115297ca70380d34e7e067239fe2f7578ed, immutable image ghcr.io/decantr-ai/decantr-benchmark-3-10@sha256:bb4e50a94d55863d1a48f1a2a08325fe211d6d9a63906ffeaeff56278fdfc7a2, zero failed required commands, and a clean worktree before and after preparation.",
+    "reviewedAt": "2026-07-24T16:05:50Z",
+    "reviewedBy": "david-aimi",
+    "status": "approved"
   },
   "schemaVersion": "decantr-benchmark-task-environment.v1",
   "sourceEvidence": [

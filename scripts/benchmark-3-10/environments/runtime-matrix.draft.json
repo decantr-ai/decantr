@@ -1,11 +1,11 @@
 {
   "blockers": {
-    "unapprovedTaskSpecs": 5,
+    "unapprovedTaskSpecs": 0,
     "unbuiltProfiles": 26,
     "unverifiedProfiles": 26
   },
   "frozenAt": "2026-07-22T11:29:02Z",
-  "matrixSha256": "fac0e317f9447bee9a19e25bf8ea7c190e995e0c27325a2ea50210e01c7beae6",
+  "matrixSha256": "a80b4a1a83538242b143443e48b6289a2d8ea69adb57ccc0cf6681cdb2ca0c16",
   "paidExecutionAuthorized": false,
   "profiles": [
     {
@@ -583,10 +583,10 @@
   ],
   "program": "decantr-3.10-ui-change-control-proof",
   "schemaVersion": "decantr-benchmark-runtime-matrix.v1",
-  "sourceSpecSetSha256": "b858cefc74d451757364c1272503433da659ddad9cca99316639a8d8d3224a6a",
+  "sourceSpecSetSha256": "431db40a730d005133e2b8a1862e56639b6f4f455a181abd66780a1f0a257d22",
   "status": "draft",
   "taskCounts": {
-    "approved": 35,
+    "approved": 40,
     "development": 24,
     "qualification": 16,
     "total": 40
