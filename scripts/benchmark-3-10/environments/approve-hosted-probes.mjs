@@ -10,6 +10,11 @@ import {
   sha256Canonical,
   writeCanonicalFile,
 } from '../runner/canonical.mjs';
+import {
+  SIGSTORE_KEYLESS_PROVIDER,
+  assertSigstoreKeylessVerification,
+  verifySigstoreKeylessBlob,
+} from '../provenance/sigstore-keyless.mjs';
 import { assertTaskEnvironmentSpec } from './contracts.mjs';
 
 const directory = dirname(fileURLToPath(import.meta.url));
@@ -83,10 +88,10 @@ export async function approveHostedProbes(input) {
       evidenceByName,
       `${spec.taskId}.container-result.json`,
     );
-    const provenancePath = requireEvidencePath(
-      evidenceByName,
-      `${spec.taskId}.provenance.jsonl`,
-    );
+    const provenancePath = requireEvidencePath(evidenceByName, provenanceName(
+      spec.taskId,
+      options.provenanceProvider,
+    ));
     const retainedVerificationPath = requireEvidencePath(
       evidenceByName,
       `${spec.taskId}.provenance-verification.json`,
@@ -111,20 +116,26 @@ export async function approveHostedProbes(input) {
       sourceCommit,
       runId: options.runId,
     });
-    await options.provenanceVerifier({
+    const independentVerification = await options.provenanceVerifier({
       subjectPath,
       provenancePath,
       repository: options.repository,
       workflowFile: options.workflowFile,
       sourceCommit,
+      sourceRef: 'refs/heads/main',
+      eventName: 'workflow_dispatch',
+      cosignPath: options.cosignPath,
     });
+    if (options.provenanceProvider === SIGSTORE_KEYLESS_PROVIDER) {
+      assertMatchingSigstoreVerification(retainedVerification, independentVerification);
+    }
 
     const approved = structuredClone(spec);
     approved.review = {
       status: 'approved',
       reviewedBy: options.reviewedBy,
       reviewedAt: options.reviewedAt,
-      notes: approvalNotes(spec.review.notes, subject),
+      notes: approvalNotes(spec.review.notes, subject, options.provenanceProvider),
     };
     assertTaskEnvironmentSpec(approved, candidate, { reviewStatus: 'approved' });
     approvals.push({
@@ -303,10 +314,28 @@ async function verifyProvenance(input) {
     ],
     { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 },
   );
+  return { provider: 'github-attestation' };
 }
 
-function approvalNotes(existing, subject) {
-  return `${existing.trim()} Approved by the sole maintainer after independent review of the frozen source, lockfile, runtime, and preparation contract and successful exact GitHub-hosted Linux x64 probe run ${subject.execution.runId}, attempt ${subject.execution.runAttempt}. Offline OIDC provenance re-verification bound source commit ${subject.execution.sourceCommit}, subject ${subject.subjectSha256}, immutable image ${subject.benchmarkImage.resolved}, zero failed required commands, and a clean worktree before and after preparation.`;
+async function verifySigstoreProvenance(input) {
+  return verifySigstoreKeylessBlob({
+    subjectPath: input.subjectPath,
+    bundlePath: input.provenancePath,
+    repository: input.repository,
+    workflowFile: input.workflowFile,
+    sourceDigest: input.sourceCommit,
+    sourceRef: input.sourceRef,
+    eventName: input.eventName,
+    cosignPath: input.cosignPath,
+  });
+}
+
+function approvalNotes(existing, subject, provenanceProvider) {
+  const provider =
+    provenanceProvider === SIGSTORE_KEYLESS_PROVIDER
+      ? 'retained keyless Sigstore'
+      : 'retained GitHub';
+  return `${existing.trim()} Approved by the sole maintainer after independent review of the frozen source, lockfile, runtime, and preparation contract and successful exact GitHub-hosted Linux x64 probe run ${subject.execution.runId}, attempt ${subject.execution.runAttempt}. Offline ${provider} OIDC provenance re-verification bound source commit ${subject.execution.sourceCommit}, subject ${subject.subjectSha256}, immutable image ${subject.benchmarkImage.resolved}, zero failed required commands, and a clean worktree before and after preparation.`;
 }
 
 async function listRegularFiles(root) {
@@ -343,6 +372,7 @@ function requireEvidencePath(index, name) {
 }
 
 function normalizeOptions(input) {
+  const provenanceProvider = input.provenanceProvider ?? 'github-attestation';
   const options = {
     repositoryRoot: resolve(input.repositoryRoot ?? repositoryRoot),
     specRoot: resolve(input.specRoot),
@@ -358,7 +388,13 @@ function normalizeOptions(input) {
     apply: input.apply === true,
     requireClean: input.requireClean !== false,
     sourceCommit: input.sourceCommit ?? null,
-    provenanceVerifier: input.provenanceVerifier ?? verifyProvenance,
+    provenanceProvider,
+    cosignPath: input.cosignPath ?? null,
+    provenanceVerifier:
+      input.provenanceVerifier ??
+      (provenanceProvider === SIGSTORE_KEYLESS_PROVIDER
+        ? verifySigstoreProvenance
+        : verifyProvenance),
   };
   for (const key of ['specRoot', 'candidatesPath', 'matrixPath', 'evidenceRoot']) {
     if (typeof input[key] !== 'string' || input[key].length === 0) {
@@ -377,7 +413,30 @@ function normalizeOptions(input) {
   if (options.runId !== null && !/^[1-9][0-9]*$/u.test(options.runId)) {
     throw new Error('runId must be a GitHub Actions run ID');
   }
+  if (!['github-attestation', SIGSTORE_KEYLESS_PROVIDER].includes(options.provenanceProvider)) {
+    throw new Error('provenanceProvider must be github-attestation or sigstore-keyless');
+  }
+  if (
+    options.provenanceProvider === SIGSTORE_KEYLESS_PROVIDER &&
+    (typeof options.cosignPath !== 'string' || options.cosignPath.length === 0)
+  ) {
+    throw new Error('cosignPath is required for Sigstore keyless provenance');
+  }
   return options;
+}
+
+function provenanceName(taskId, provider) {
+  return provider === SIGSTORE_KEYLESS_PROVIDER
+    ? `${taskId}.provenance.sigstore.json`
+    : `${taskId}.provenance.jsonl`;
+}
+
+function assertMatchingSigstoreVerification(retained, independent) {
+  assertSigstoreKeylessVerification(retained);
+  assertSigstoreKeylessVerification(independent);
+  if (sha256Canonical(retained) !== sha256Canonical(independent)) {
+    throw new Error('retained Sigstore verification differs from independent verification');
+  }
 }
 
 function normalizeVersion(value) {
@@ -415,6 +474,8 @@ function parseArgs(argv) {
     else if (argument === '--reviewed-at') options.reviewedAt = argv[++index];
     else if (argument === '--repository-root') options.repositoryRoot = argv[++index];
     else if (argument === '--source-commit') options.sourceCommit = argv[++index];
+    else if (argument === '--provenance-provider') options.provenanceProvider = argv[++index];
+    else if (argument === '--cosign') options.cosignPath = argv[++index];
     else if (argument === '--task-id') options.taskIds.push(argv[++index]);
     else if (argument === '--apply') options.apply = true;
     else throw new Error(`unknown option: ${argument}`);
