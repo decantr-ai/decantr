@@ -1,0 +1,122 @@
+name: Decantr 3.10 task environment probes
+
+on:
+  workflow_dispatch:
+    inputs:
+      task_id:
+        description: Optional exact public development task ID; empty probes every draft spec
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: benchmark-3-10-environment-probes-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  matrix:
+    name: Resolve draft development environments
+    runs-on: ubuntu-24.04
+    outputs:
+      tasks: ${{ steps.tasks.outputs.tasks }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.17.0
+          cache: ''
+      - id: tasks
+        env:
+          REQUESTED_TASK_ID: ${{ inputs.task_id }}
+        run: |
+          TASKS="$(
+            node scripts/benchmark-3-10/environments/hosted-task-environment-probe.mjs \
+              --mode list \
+              --spec-root scripts/benchmark-3-10/environments/development/specs \
+              --task-id "$REQUESTED_TASK_ID"
+          )"
+          echo "tasks=$TASKS" >> "$GITHUB_OUTPUT"
+
+  probe:
+    name: Probe ${{ matrix.task }}
+    needs: matrix
+    if: needs.matrix.outputs.tasks != '[]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        task: ${{ fromJSON(needs.matrix.outputs.tasks) }}
+    permissions:
+      attestations: write
+      contents: read
+      id-token: write
+      packages: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.17.0
+          cache: ''
+      - name: Authenticate the probe to GHCR
+        env:
+          GHCR_TOKEN: ${{ github.token }}
+        run: printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+      - name: Run exact Linux preparation probe
+        env:
+          TASK_ID: ${{ matrix.task }}
+        run: |
+          node scripts/benchmark-3-10/environments/hosted-task-environment-probe.mjs \
+            --mode host \
+            --spec "scripts/benchmark-3-10/environments/development/specs/$TASK_ID.json" \
+            --candidates scripts/benchmark-3-10/tasks/development-candidates.json \
+            --matrix scripts/benchmark-3-10/environments/runtime-matrix.draft.json \
+            --output-root "$RUNNER_TEMP/task-environment-probe"
+      - name: Remove GHCR reader credentials
+        if: always()
+        run: docker logout ghcr.io
+      - name: Sign the retained probe subject
+        if: success()
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373
+        with:
+          subject-path: ${{ runner.temp }}/task-environment-probe/evidence/${{ matrix.task }}.subject.json
+      - name: Retain and verify offline provenance
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TASK_ID: ${{ matrix.task }}
+        run: |
+          SUBJECT="$RUNNER_TEMP/task-environment-probe/evidence/$TASK_ID.subject.json"
+          mkdir -p "$RUNNER_TEMP/task-environment-probe/evidence/provenance"
+          cd "$RUNNER_TEMP/task-environment-probe/evidence/provenance"
+          gh attestation download "$SUBJECT" --repo "$GITHUB_REPOSITORY"
+          BUNDLE_PATH="$(find . -maxdepth 1 -type f -name 'sha256*.jsonl' -print -quit)"
+          test -n "$BUNDLE_PATH"
+          gh attestation verify "$SUBJECT" \
+            --repo "$GITHUB_REPOSITORY" \
+            --bundle "$BUNDLE_PATH" \
+            --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/benchmark-3-10-environment-probes.yml" \
+            --source-digest "$GITHUB_SHA" \
+            --source-ref "$GITHUB_REF" \
+            --predicate-type "https://slsa.dev/provenance/v1" \
+            --deny-self-hosted-runners \
+            --format json > verification.json
+          mv "$BUNDLE_PATH" "../$TASK_ID.provenance.jsonl"
+          mv verification.json "../$TASK_ID.provenance-verification.json"
+          cd "$GITHUB_WORKSPACE"
+          rmdir "$RUNNER_TEMP/task-environment-probe/evidence/provenance"
+      - name: Upload retained task environment evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: benchmark-3-10-environment-${{ matrix.task }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/task-environment-probe/evidence
+          if-no-files-found: warn
+          retention-days: 30
