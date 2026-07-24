@@ -13,6 +13,7 @@ import {
   deriveDependencyAllowlist,
   inspectPreparedDependencyRoot,
   packageManagerFatalDiagnostic,
+  resolveDependencyProxyAddress,
   resolveImagePullReference,
   verifyRunnerCommit,
   verifyRunningEvaluationContainer,
@@ -117,6 +118,7 @@ test('dependency proxy readiness uses a hardened container on only the internal 
     name: 'qualification-proxy-readiness',
     networkName: 'qualification-dependencies',
     imageDigest: IMAGE,
+    proxyAddress: '172.18.0.2',
   });
   assert.equal(args[0], 'run');
   assert.equal(args.includes('--rm'), true);
@@ -124,12 +126,60 @@ test('dependency proxy readiness uses a hardened container on only the internal 
     '--network',
     'qualification-dependencies',
   ]);
+  assert.deepEqual(args.slice(args.indexOf('--add-host'), args.indexOf('--add-host') + 2), [
+    '--add-host',
+    'dependency-proxy:172.18.0.2',
+  ]);
   assert.equal(args.includes('--read-only'), true);
   assert.equal(args.includes('--mount'), false);
   assert.equal(args.includes('--env'), false);
   assert.equal(args.at(-2), '--eval');
   assert.match(args.at(-1), /dependency-proxy/u);
   assert.match(args.at(-1), /connection timed out/u);
+});
+
+test('dependency proxy address is derived from the inspected internal network', () => {
+  assert.equal(
+    resolveDependencyProxyAddress(
+      {
+        NetworkSettings: {
+          Networks: {
+            'qualification-dependencies': {
+              IPAddress: '172.18.0.2',
+            },
+          },
+        },
+      },
+      'qualification-dependencies',
+    ),
+    '172.18.0.2',
+  );
+  assert.throws(
+    () =>
+      resolveDependencyProxyAddress(
+        {
+          NetworkSettings: {
+            Networks: {
+              'qualification-dependencies': {
+                IPAddress: '',
+              },
+            },
+          },
+        },
+        'qualification-dependencies',
+      ),
+    /internal IPv4 address is invalid/u,
+  );
+  assert.throws(
+    () =>
+      dependencyProxyReadinessArgs({
+        name: 'qualification-proxy-readiness',
+        networkName: 'qualification-dependencies',
+        imageDigest: IMAGE,
+        proxyAddress: 'not-an-ip',
+      }),
+    /readiness container binding is invalid/u,
+  );
 });
 
 test('preparation rejects fatal package-manager diagnostics even when the process exits zero', () => {

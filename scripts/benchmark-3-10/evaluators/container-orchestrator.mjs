@@ -2,6 +2,7 @@
 import { randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { constants } from 'node:fs';
+import { isIP } from 'node:net';
 import {
   access,
   lstat,
@@ -627,6 +628,9 @@ async function runPreparationCommand(context) {
   const containerName = `${names[role]}-prepare-${slug(command.id)}`;
   const network = command.network === 'dependency-registry' ? proxy.networkName : 'none';
   const args = hardeningArgs(containerName, network, request.profile.benchmarkImage.digest, true);
+  if (command.network === 'dependency-registry') {
+    args.push('--add-host', dependencyProxyHostEntry(proxy.internalAddress));
+  }
   args.push('--mount', bindMount(roleRequest.workspace, '/work/source', false));
   args.push('--workdir', containerWorkspacePath(command.cwd));
   args.push(
@@ -651,6 +655,7 @@ async function runPreparationCommand(context) {
     network,
     workspace: roleRequest.workspace,
     siblingWorkspace: request.roles[otherRole(role)].workspace,
+    proxyAddress: command.network === 'dependency-registry' ? proxy.internalAddress : null,
   });
   const inspectEvidence = await persistEvidence(
     evidenceRoot,
@@ -947,17 +952,20 @@ async function startDependencyProxy(context) {
     internalNetwork: networkName,
     configPath,
   });
+  const internalAddress = resolveDependencyProxyAddress(inspect.value, networkName);
   const inspectEvidence = await persistEvidence(evidenceRoot, 'proxy.inspect.json', inspect.raw);
   const readinessEvidence = await waitForDependencyProxy({
     runner,
     name: `${names.proxy}-readiness`,
     networkName,
     imageDigest: request.profile.benchmarkImage.digest,
+    proxyAddress: internalAddress,
     evidenceRoot,
   });
   return {
     containerId,
     networkName,
+    internalAddress,
     image: structuredClone(request.dependencyProxy.image),
     configSha256: sha256(config),
     allowlist,
@@ -972,12 +980,13 @@ async function waitForDependencyProxy({
   name,
   networkName,
   imageDigest,
+  proxyAddress,
   evidenceRoot,
 }) {
   const result = await runOrThrow(
     runner,
     'docker',
-    dependencyProxyReadinessArgs({ name, networkName, imageDigest }),
+    dependencyProxyReadinessArgs({ name, networkName, imageDigest, proxyAddress }),
     'wait for dependency proxy DNS and TCP readiness',
     { timeoutMs: DEPENDENCY_PROXY_READINESS_TIMEOUT_MS + 15_000 },
   );
@@ -1009,13 +1018,14 @@ async function waitForDependencyProxy({
   );
 }
 
-export function dependencyProxyReadinessArgs({ name, networkName, imageDigest }) {
+export function dependencyProxyReadinessArgs({ name, networkName, imageDigest, proxyAddress }) {
   if (
     typeof name !== 'string' ||
     name.length === 0 ||
     typeof networkName !== 'string' ||
     networkName.length === 0 ||
-    !IMAGE_DIGEST.test(imageDigest ?? '')
+    !IMAGE_DIGEST.test(imageDigest ?? '') ||
+    isIP(proxyAddress ?? '') !== 4
   ) {
     throw new Error('dependency proxy readiness container binding is invalid');
   }
@@ -1026,6 +1036,8 @@ export function dependencyProxyReadinessArgs({ name, networkName, imageDigest })
     name,
     '--network',
     networkName,
+    '--add-host',
+    dependencyProxyHostEntry(proxyAddress),
     '--cap-drop',
     'ALL',
     '--security-opt',
@@ -1102,6 +1114,16 @@ export async function verifyRunningEvaluationContainer(commandRunner, containerI
 function verifyPreparationInspect(value, expected) {
   verifyCommonInspect(value, expected.imageDigest, expected.network);
   if (value.HostConfig?.ReadonlyRootfs !== true) throw new Error('preparation container root filesystem is writable');
+  const extraHosts = value.HostConfig?.ExtraHosts ?? [];
+  const expectedHost = expected.proxyAddress
+    ? dependencyProxyHostEntry(expected.proxyAddress)
+    : null;
+  if (
+    !Array.isArray(extraHosts) ||
+    (expectedHost === null ? extraHosts.length !== 0 : extraHosts.length !== 1 || extraHosts[0] !== expectedHost)
+  ) {
+    throw new Error('preparation container dependency proxy host binding is invalid');
+  }
   const mounts = normalizeInspectMounts(value.Mounts);
   requireMount(mounts, expected.workspace, '/work/source', true);
   rejectSiblingMount(mounts, expected.siblingWorkspace);
@@ -1122,6 +1144,21 @@ function verifyProxyInspect(value, expected) {
   }
   const mounts = normalizeInspectMounts(value.Mounts);
   requireMount(mounts, expected.configPath, '/etc/squid/squid.conf', false);
+}
+
+export function resolveDependencyProxyAddress(value, networkName) {
+  const address = value?.NetworkSettings?.Networks?.[networkName]?.IPAddress;
+  if (isIP(address ?? '') !== 4) {
+    throw new Error('dependency proxy internal IPv4 address is invalid');
+  }
+  return address;
+}
+
+function dependencyProxyHostEntry(address) {
+  if (isIP(address ?? '') !== 4) {
+    throw new Error('dependency proxy host address is invalid');
+  }
+  return `${DEPENDENCY_PROXY_HOST}:${address}`;
 }
 
 function verifyCommonInspect(value, imageDigest, networkMode) {
