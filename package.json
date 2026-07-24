@@ -97,7 +97,7 @@
     "@types/node": "^25.9.1",
     "entities": "^8.0.0",
     "fflate": "0.8.3",
-    "tar": "7.5.20",
+    "tar": "7.5.22",
     "tsup": "^8.0.0",
     "tsx": "^4.22.3",
     "typescript": "^6.0.3",
@@ -110,7 +110,7 @@
   "pnpm": {
     "overrides": {
       "path-to-regexp": "8.4.0",
-      "postcss": "8.5.12",
+      "postcss": "8.5.23",
       "ip-address": "10.2.0",
       "qs": "6.15.2",
       "vite": "8.1.0",
