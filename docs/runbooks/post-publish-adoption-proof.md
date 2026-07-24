@@ -111,7 +111,7 @@ Run each target's own install, build, and source check after Decantr adoption:
 
 Capture pristine greenfield source-check and build results before adoption. Hash the emitted client and server assets, then compare those hashes with a clean post-adoption build. If a post-adoption check or build differs, inspect `git diff` and the build manifest before assigning responsibility.
 
-Contract-only adoption may create Decantr governance artifacts and narrowly update ignore files. Authored application source must remain untouched except for Decantr's marked Tailwind v4 source-isolation block in a detected CSS entry. That block may contain only `@source not` directives for dedicated Decantr governance paths, must be reported as an exact approved mutation in `.decantr/project.json`, and must restore the pristine build's emitted asset hashes. Host-generated files such as TanStack's `routeTree.gen.ts` are allowed only when the host build generated them and the audit records that provenance.
+Contract-only Brownfield and Hybrid adoption may create Decantr governance artifacts but must not create or update formatter ignore files. Authored application source must remain untouched except for Decantr's marked Tailwind v4 source-isolation block in a detected CSS entry. That block may contain only `@source not` directives for dedicated Decantr governance paths, must be reported as an exact approved mutation in `.decantr/project.json`, and must restore the pristine build's emitted asset hashes. Host-generated files such as TanStack's `routeTree.gen.ts` are allowed only when the host build generated them and the audit records that provenance.
 
 ## Required Evidence
 

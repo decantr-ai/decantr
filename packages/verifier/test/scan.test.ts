@@ -409,6 +409,114 @@ describe('scanProject', () => {
     );
   });
 
+  it('resolves lazy Angular NgModules through their imported routing modules', async () => {
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      JSON.stringify({
+        dependencies: {
+          '@angular/core': '^21.0.0',
+          '@angular/router': '^21.0.0',
+        },
+      }),
+    );
+    mkdirSync(join(projectRoot, 'src', 'app', 'feature'), { recursive: true });
+    writeFileSync(
+      join(projectRoot, 'angular.json'),
+      JSON.stringify({
+        version: 1,
+        projects: {
+          frontend: {
+            root: '',
+            sourceRoot: 'src',
+            architect: {
+              build: {
+                options: {
+                  browser: 'src/main.ts',
+                  tsConfig: 'tsconfig.json',
+                },
+              },
+            },
+          },
+        },
+      }),
+    );
+    writeFileSync(join(projectRoot, 'tsconfig.json'), JSON.stringify({ compilerOptions: {} }));
+    writeFileSync(
+      join(projectRoot, 'src', 'main.ts'),
+      [
+        'import { bootstrapApplication } from "@angular/platform-browser";',
+        'import { appConfig } from "./app/app.config";',
+        'bootstrapApplication(class App {}, appConfig);',
+        '',
+      ].join('\n'),
+    );
+    writeFileSync(
+      join(projectRoot, 'src', 'app', 'app.config.ts'),
+      [
+        'import { provideRouter } from "@angular/router";',
+        'import { routes } from "./app.routes";',
+        'export const appConfig = { providers: [provideRouter(routes)] };',
+        '',
+      ].join('\n'),
+    );
+    writeFileSync(
+      join(projectRoot, 'src', 'app', 'app.routes.ts'),
+      [
+        'import { Routes } from "@angular/router";',
+        'export const routes: Routes = [',
+        '  { path: "feature", loadChildren: () => import("./feature/feature.module").then((m) => m.FeatureModule) },',
+        '];',
+        '',
+      ].join('\n'),
+    );
+    writeFileSync(
+      join(projectRoot, 'src', 'app', 'feature', 'feature.module.ts'),
+      [
+        'import { NgModule } from "@angular/core";',
+        'import { FeatureRoutingModule } from "./feature-routing.module";',
+        '@NgModule({ imports: [FeatureRoutingModule] })',
+        'export class FeatureModule {}',
+        '',
+      ].join('\n'),
+    );
+    writeFileSync(
+      join(projectRoot, 'src', 'app', 'feature', 'feature-routing.module.ts'),
+      [
+        'import { NgModule } from "@angular/core";',
+        'import { RouterModule, Routes } from "@angular/router";',
+        'import { ChildComponent } from "./child.component";',
+        'const routes: Routes = [{ path: "child", component: ChildComponent }];',
+        '@NgModule({ imports: [RouterModule.forChild(routes)] })',
+        'export class FeatureRoutingModule {}',
+        '',
+      ].join('\n'),
+    );
+    writeFileSync(
+      join(projectRoot, 'src', 'app', 'feature', 'child.component.ts'),
+      [
+        'import { Component } from "@angular/core";',
+        '@Component({ template: "<main>Child</main>" })',
+        'export class ChildComponent {}',
+        '',
+      ].join('\n'),
+    );
+
+    const report = await scanProject(projectRoot);
+
+    expect(report.routes.authority).toBe('proven');
+    expect(report.routes.completeness).toBe('complete');
+    expect(report.routes.items).toContainEqual(
+      expect.objectContaining({
+        path: '/feature/child',
+        file: 'src/app/feature/child.component.ts',
+      }),
+    );
+    expect(report.routes.authorityFiles).toContain('src/app/feature/feature-routing.module.ts');
+    expect(report.discovery?.limitations.join('\n')).not.toContain(
+      'Lazy Angular route array could not be resolved',
+    );
+  });
+
   it('fails closed when Angular route arrays are not reachable from the selected bootstrap', async () => {
     writeFileSync(
       join(projectRoot, 'package.json'),

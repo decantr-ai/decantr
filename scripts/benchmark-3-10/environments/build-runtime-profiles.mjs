@@ -87,7 +87,7 @@ export async function buildRuntimeProfiles(options) {
         '--tmpfs',
         '/tmp:rw,noexec,nosuid,nodev,size=2g',
         '--tmpfs',
-        '/home/benchmark-empty:rw,noexec,nosuid,nodev,size=128m',
+        '/home/benchmark-empty:rw,noexec,nosuid,nodev,size=128m,mode=0700,uid=10001,gid=10001',
         '--network=none',
         profile.benchmarkImage.reference,
         '--self-check',

@@ -288,6 +288,30 @@ describe('V4 scaffold', () => {
     expect(ignore).toContain('apps/web/decantr.essence.json');
   });
 
+  it.each([
+    'brownfield-attach',
+    'hybrid-compose',
+  ] as const)('does not create formatter ignores during %s adoption', (workflowMode) => {
+    writeFileSync(
+      join(testDir, 'package.json'),
+      JSON.stringify({ devDependencies: { prettier: '^3.0.0' } }),
+    );
+
+    const result = scaffoldMinimal(testDir, { workflowMode });
+
+    expect(result.formatterIgnoreUpdated).toBe(false);
+    expect(existsSync(join(testDir, '.prettierignore'))).toBe(false);
+  });
+
+  it('does not edit an existing formatter ignore during brownfield adoption', () => {
+    writeFileSync(join(testDir, '.prettierignore'), 'dist/\n', 'utf-8');
+
+    const result = scaffoldMinimal(testDir, { workflowMode: 'brownfield-attach' });
+
+    expect(result.formatterIgnoreUpdated).toBe(false);
+    expect(readFileSync(join(testDir, '.prettierignore'), 'utf-8')).toBe('dist/\n');
+  });
+
   it('scaffoldMinimal and scaffoldProject both produce V4', async () => {
     // Test that both paths produce consistent V4 output
     const minimalResult = scaffoldMinimal(testDir);

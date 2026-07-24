@@ -1,4 +1,8 @@
-import { type DiscoveryRouteStrategy, discoverProject } from '@decantr/verifier';
+import {
+  type DiscoveryRouteStrategy,
+  discoverProject,
+  type ProjectDiscovery,
+} from '@decantr/verifier';
 
 export interface RouteInfo {
   path: string;
@@ -18,8 +22,10 @@ export interface RoutesAnalysis {
 /**
  * Read the shared verifier discovery result used by scan, analyze, adopt, and task context.
  */
-export function scanRoutes(projectRoot: string): RoutesAnalysis {
-  const discovery = discoverProject(projectRoot);
+export function scanRoutes(
+  projectRoot: string,
+  discovery: ProjectDiscovery = discoverProject(projectRoot),
+): RoutesAnalysis {
   const candidateRoutes = discovery.routes.taskableRoutes.map(({ path, file, hasLayout }) => ({
     path,
     file,

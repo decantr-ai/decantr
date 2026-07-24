@@ -26,6 +26,7 @@ import {
   finalizeRuntimeProfileAttestation,
   runtimeArtifactNames,
   runtimeAttestationFileBinding,
+  runtimeBaseImageReference,
   runtimeBenchmarkImageReference,
 } from './runtime-profile-attestation.mjs';
 import { listRuntimeProfiles } from './list-runtime-profiles.mjs';
@@ -51,6 +52,30 @@ test('runtime profile workflow uses only commit-pinned actions on a fixed GitHub
   assert.equal(workflow.includes('test "$RUNNER_ENVIRONMENT" = "github-hosted"'), true);
 });
 
+test('runtime base images follow the distributions published for each runtime generation', () => {
+  assert.equal(
+    runtimeBaseImageReference({ nodeVersion: '10.15.1', bunVersion: null }),
+    'node:10.15.1-stretch-slim',
+  );
+  assert.equal(
+    runtimeBaseImageReference({ nodeVersion: '12.22.12', bunVersion: null }),
+    'node:12.22.12-buster-slim',
+  );
+  assert.equal(
+    runtimeBaseImageReference({ nodeVersion: '16.20.2', bunVersion: null }),
+    'node:16.20.2-buster-slim',
+  );
+  assert.equal(
+    runtimeBaseImageReference({ nodeVersion: '18.20.8', bunVersion: null }),
+    'node:18.20.8-bookworm-slim',
+  );
+  assert.equal(
+    runtimeBaseImageReference({ nodeVersion: null, bunVersion: '1.3.10' }),
+    'oven/bun:1.3.10-debian',
+  );
+  assert.throws(() => runtimeBaseImageReference({ nodeVersion: null, bunVersion: null }));
+});
+
 test('runtime Docker context excludes local private material and nested dependencies', async () => {
   const dockerignore = await readFile(join(repositoryRoot, '.dockerignore'), 'utf8');
   const patterns = new Set(
@@ -61,6 +86,21 @@ test('runtime Docker context excludes local private material and nested dependen
   );
   assert.equal(patterns.has('.private/'), true);
   assert.equal(patterns.has('**/node_modules/'), true);
+});
+
+test('runtime probes mount the empty home for the non-root benchmark identity', async () => {
+  const builder = await readFile(
+    join(environmentRoot, 'build-runtime-profiles.mjs'),
+    'utf8',
+  );
+  const securityGuide = await readFile(
+    join(repositoryRoot, 'scripts', 'benchmark-3-10', 'container', 'SECURITY.md'),
+    'utf8',
+  );
+  const homeMount =
+    '/home/benchmark-empty:rw,noexec,nosuid,nodev,size=128m,mode=0700,uid=10001,gid=10001';
+  assert.equal(builder.includes(homeMount), true);
+  assert.equal((securityGuide.match(new RegExp(homeMount, 'gu')) ?? []).length, 2);
 });
 
 test('runtime publication selects the exact GHCR repository manifest digest', () => {

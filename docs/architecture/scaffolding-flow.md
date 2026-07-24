@@ -255,7 +255,7 @@
 │  .decantr/project.json ◄── Detection results + init metadata        │
 │  .decantr/context/*.md ◄── compiled packs + task and section context │
 │  .gitignore            ◄── Adds .decantr/cache/ if not present      │
-│  .prettierignore       ◄── Generated artifact boundary for formatters│
+│  .prettierignore       ◄── Greenfield-only formatter boundary        │
 │                                                                     │
 └──────────────────────────┬──────────────────────────────────────────┘
                            │

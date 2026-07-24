@@ -1,4 +1,4 @@
-import { execSync } from 'node:child_process';
+import { execSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -110,6 +110,35 @@ describe('scan command', () => {
     expect(report.graphPreview?.nextCommand).toBeNull();
     expect(report.graphPreview?.diff).toBeNull();
     expect(existsSync(join(testDir, 'apps', 'web', '.decantr'))).toBe(false);
+  });
+
+  it('emits a structured JSON error and conventional app candidate for an ambiguous root', () => {
+    mkdirSync(join(testDir, 'src', 'frontend', 'src'), { recursive: true });
+    writeFileSync(
+      join(testDir, 'src', 'frontend', 'package.json'),
+      JSON.stringify({ dependencies: { svelte: '^5.0.0' } }, null, 2),
+    );
+    writeFileSync(join(testDir, 'src', 'frontend', 'svelte.config.js'), 'export default {};\n');
+
+    const result = spawnSync('node', [cliPath, 'scan', '--json'], {
+      cwd: testDir,
+      encoding: 'utf-8',
+    });
+    const payload = JSON.parse(result.stdout) as {
+      schemaVersion?: string;
+      ok?: boolean;
+      error?: { code?: string };
+      workspace?: { appCandidates?: Array<{ path?: string; category?: string }> };
+    };
+
+    expect(result.status).toBe(1);
+    expect(payload.schemaVersion).toBe('decantr-command-error.v1');
+    expect(payload.ok).toBe(false);
+    expect(payload.error?.code).toBe('project_selection_required');
+    expect(payload.workspace?.appCandidates).toContainEqual(
+      expect.objectContaining({ path: 'src/frontend', category: 'product-ui' }),
+    );
+    expect(result.stdout).not.toContain('\u001b[');
   });
 
   it('reports non-web repositories without failing', () => {

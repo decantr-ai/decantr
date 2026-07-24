@@ -4,13 +4,13 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-function runCli(cwd: string, args: string[]): string {
+function runCli(cwd: string, args: string[], env: NodeJS.ProcessEnv = {}): string {
   const cliPath = join(__dirname, '..', '..', 'dist', 'index.js');
   return execFileSync('node', [cliPath, ...args], {
     cwd,
     encoding: 'utf-8',
     timeout: 10_000,
-    env: { ...process.env, DECANTR_OFFLINE: 'true' },
+    env: { ...process.env, DECANTR_OFFLINE: 'true', ...env },
   });
 }
 
@@ -198,15 +198,32 @@ describe('brownfield monorepo onboarding', () => {
     );
     const recordedChanges = projectJson.initialized?.adoption?.changes;
     expect(recordedChanges?.created).toContain('.github/workflows/decantr-ci.yml');
-    expect(recordedChanges?.updated).toContain('.prettierignore');
+    expect(recordedChanges?.updated).not.toContain('.prettierignore');
     expect(recordedChanges?.allowedGenerated?.created).toContain(
       '.github/workflows/decantr-ci.yml',
     );
-    expect(recordedChanges?.hostOther?.updated).toContain('.prettierignore');
+    expect(recordedChanges?.hostOther?.updated).not.toContain('.prettierignore');
+    expect(readFileSync(join(testDir, '.prettierignore'), 'utf-8')).toBe('dist/\n');
     expect(existsSync(join(testDir, '.github', 'workflows', 'decantr-ci.yml'))).toBe(true);
     expect(existsSync(join(testDir, 'decantr.essence.json'))).toBe(false);
 
     const refreshOutput = runCli(testDir, ['refresh', '--project', 'apps/web', '--check']);
     expect(refreshOutput).toContain('Generated Decantr context looks fresh');
+  });
+
+  it('keeps bulk content packs opt-in during adoption', () => {
+    const defaultOutput = runCli(
+      testDir,
+      ['adopt', '--project', 'apps/web', '--dry-run', '--yes'],
+      { DECANTR_OFFLINE: 'false' },
+    );
+    const packsOutput = runCli(
+      testDir,
+      ['adopt', '--project', 'apps/web', '--dry-run', '--yes', '--packs'],
+      { DECANTR_OFFLINE: 'false' },
+    );
+
+    expect(defaultOutput).not.toContain('hydrate official content execution packs');
+    expect(packsOutput).toContain('hydrate official content execution packs');
   });
 });

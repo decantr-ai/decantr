@@ -211,11 +211,11 @@
       "ships": ["dist", "src/templates", "src/bundled", "README.md", "package.json"],
       "filesystem": {
         "read": ["Selected project/workspace files, including project-local Playwright and axe-core packages when browser evidence is explicitly requested", "bounded workspace file snapshots during explicit decantr init or decantr adopt for authored-source integrity receipts", "package manifests", "routing/style/config files", ".decantr artifacts including .decantr/graph typed graph artifacts", "Decantr cache/config files"],
-        "write": ["decantr.essence.json", "DECANTR.md", ".decantr artifacts including the adoption receipt stored in .decantr/project.json", ".decantr/drift-log.json through explicit resolve drift-log actions", "generated context packs", ".decantr/graph typed graph artifacts including local snapshot history", "optional CI workflows/snippets", "optional Cursor MCP/rule files through decantr connect cursor", ".prettierignore entries for generated Decantr governance artifacts when a compatible formatter is detected", "a deterministic marked `@source not` block in detected Tailwind v4 CSS entry files, with exact path and before/after hashes recorded in the adoption receipt", "optional style/export files", "Decantr config for auth/telemetry when explicitly enabled"],
+        "write": ["decantr.essence.json", "DECANTR.md", ".decantr artifacts including the adoption receipt stored in .decantr/project.json", ".decantr/drift-log.json through explicit resolve drift-log actions", "generated context packs", ".decantr/graph typed graph artifacts including local snapshot history", "optional CI workflows/snippets", "optional Cursor MCP/rule files through decantr connect cursor", ".prettierignore entries for generated Decantr governance artifacts during greenfield scaffolding only; Brownfield and Hybrid adoption do not mutate formatter configuration", "a deterministic marked `@source not` block in detected Tailwind v4 CSS entry files, with exact path and before/after hashes recorded in the adoption receipt", "optional style/export files", "Decantr config for auth/telemetry when explicitly enabled"],
         "delete": ["Generated Decantr artifacts or explicit command targets such as removed generated context/theme outputs"]
       },
       "network": {
-        "outbound": ["Content API reads", "content API pack hydration", "caller-configured private telemetry endpoints only", "user-provided browser/base-url checks"],
+        "outbound": ["Content API reads", "explicit content API pack hydration through `adopt --packs` or content compilation", "caller-configured private telemetry endpoints only", "user-provided browser/base-url checks"],
         "inbound": true
       },
       "process": {

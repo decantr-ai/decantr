@@ -17,6 +17,7 @@ import {
   calculateRuntimeBuildSubjectDigest,
   runtimeArtifactNames,
   runtimeAttestationFileBinding,
+  runtimeBaseImageReference,
   runtimeBenchmarkImageReference,
   runtimeProvenancePolicy,
 } from './runtime-profile-attestation.mjs';
@@ -57,7 +58,7 @@ export function makeFixtureLockedRuntimeMatrix(options = {}) {
   const verifiedAt = options.verifiedAt ?? draftFrozenAt;
   const sourceSpecSetSha256 = options.sourceSpecSetSha256 ?? '4'.repeat(64);
   const profileSha256 = sha256Canonical(sourceProfile);
-  const baseImageReference = options.baseImageReference ?? expectedBaseImageReference(sourceProfile);
+  const baseImageReference = options.baseImageReference ?? runtimeBaseImageReference(sourceProfile);
   const benchmarkImageTagReference =
     options.benchmarkImageReference ?? runtimeBenchmarkImageReference(sourceProfile.id);
   const benchmarkImageReference = runtimeBenchmarkImageReference(
@@ -198,12 +199,4 @@ export function makeFixtureLockedRuntimeMatrix(options = {}) {
 
 function artifactBinding(path, bytes) {
   return { path, sha256: sha256(bytes), bytes: bytes.byteLength };
-}
-
-function expectedBaseImageReference(profile) {
-  if (profile.nodeVersion) {
-    const major = Number(profile.nodeVersion.split('.')[0]);
-    return `node:${profile.nodeVersion}-${major < 18 ? 'buster' : 'bookworm'}-slim`;
-  }
-  return `oven/bun:${profile.bunVersion}-debian`;
 }

@@ -1,16 +1,9 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { discoverProject, type ProjectDiscovery } from '@decantr/verifier';
 
 export interface StylingAnalysis {
-  approach:
-    | 'tailwind'
-    | 'css-modules'
-    | 'css'
-    | 'decantr-css'
-    | 'bootstrap'
-    | 'mui'
-    | 'chakra'
-    | 'unknown';
+  approach: string;
   configFile?: string;
   colors: Record<string, string>;
   darkMode: boolean;
@@ -246,7 +239,10 @@ function collectCssFiles(projectRoot: string): string[] {
 /**
  * Scan for styling approach, CSS variables, colors, and dark mode.
  */
-export function scanStyling(projectRoot: string): StylingAnalysis {
+export function scanStyling(
+  projectRoot: string,
+  discovery: ProjectDiscovery = discoverProject(projectRoot),
+): StylingAnalysis {
   let approach: StylingAnalysis['approach'] = 'unknown';
   let configFile: string | undefined;
   let packageDeps: Record<string, string> = {};
@@ -349,11 +345,15 @@ export function scanStyling(projectRoot: string): StylingAnalysis {
 
   cssVariables = [...new Set(cssVariables)];
 
-  const darkMode = detectDarkMode(projectRoot, cssContents);
+  const darkMode = detectDarkMode(projectRoot, cssContents) || discovery.styling.darkMode;
 
   if (approach === 'unknown' && cssContents.length > 0) {
     approach = 'css';
     configFile = cssFiles[0];
+  }
+  if (approach !== 'decantr-css' && discovery.styling.approach !== 'unknown') {
+    approach = discovery.styling.approach;
+    configFile = discovery.styling.configFile ?? configFile;
   }
 
   return {

@@ -2,6 +2,7 @@ import { execSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { validateEssence } from '@decantr/essence-spec';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 describe('analyze command', () => {
@@ -137,6 +138,68 @@ describe('analyze command', () => {
     expect(themeInventory.darkModeDetected).toBe(true);
     expect(themeInventory.modes).toEqual(expect.arrayContaining(['base', 'dark', 'holiday']));
     expect(themeInventory.modes).not.toContain('switcher');
+  });
+
+  it('shares scan authority with adoption analysis and normalizes numeric route IDs', () => {
+    writeFileSync(
+      join(testDir, 'package.json'),
+      JSON.stringify({
+        name: 'numeric-route-app',
+        dependencies: {
+          react: '^19.0.0',
+          'react-dom': '^19.0.0',
+          'react-router-dom': '^7.0.0',
+        },
+      }),
+    );
+    mkdirSync(join(testDir, 'src'), { recursive: true });
+    writeFileSync(
+      join(testDir, 'src', 'main.tsx'),
+      'import "./styles.scss"; import { App } from "./App"; void App;\n',
+    );
+    writeFileSync(
+      join(testDir, 'src', 'App.tsx'),
+      'import { Route } from "react-router-dom"; export function App() { return <Route path="/404" element={<NotFound />} />; }\n',
+    );
+    writeFileSync(
+      join(testDir, 'src', 'NotFound.tsx'),
+      'export function NotFound() { return <main>Not found</main>; }\n',
+    );
+    writeFileSync(join(testDir, 'src', 'styles.scss'), '$surface: #fff;\n');
+
+    const scan = JSON.parse(
+      execSync(`node ${cliPath} scan --json`, { cwd: testDir, encoding: 'utf-8' }),
+    ) as {
+      components: { componentCount: number };
+      styling: { approach: string };
+    };
+    execSync(`node ${cliPath} analyze`, { cwd: testDir, stdio: 'pipe' });
+
+    const analysis = JSON.parse(
+      readFileSync(join(testDir, '.decantr', 'analysis.json'), 'utf-8'),
+    ) as {
+      components?: { componentCount?: number };
+      styling?: { approach?: string };
+    };
+    const proposal = JSON.parse(
+      readFileSync(join(testDir, '.decantr', 'observed-essence.proposal.json'), 'utf-8'),
+    ) as {
+      essence: {
+        blueprint: {
+          routes: Record<string, { page: string }>;
+          sections: Array<{ pages: Array<{ id: string }> }>;
+        };
+      };
+    };
+    const pageIds = proposal.essence.blueprint.sections.flatMap((section) =>
+      section.pages.map((page) => page.id),
+    );
+
+    expect(analysis.components?.componentCount).toBe(scan.components.componentCount);
+    expect(analysis.styling?.approach).toBe(scan.styling.approach);
+    expect(proposal.essence.blueprint.routes['/404']?.page).toBe('route-404');
+    expect(pageIds).toContain('route-404');
+    expect(validateEssence(proposal.essence).valid).toBe(true);
   });
 
   it('recognizes React Router and Decantr starter structure in an attached app', () => {

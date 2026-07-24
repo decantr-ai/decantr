@@ -2503,7 +2503,7 @@ describe('verifier project and runtime evidence', () => {
     }
   });
 
-  it('does not flag focus-visible styles when the project CSS defines a focus-visible treatment', async () => {
+  it('does not flag focus-visible styles when project Sass defines a focus-visible treatment', async () => {
     const projectRoot = createProjectRoot();
     try {
       mkdirSync(join(projectRoot, 'src', 'styles'), { recursive: true });
@@ -2551,7 +2551,7 @@ describe('verifier project and runtime evidence', () => {
         ),
       );
       writeFileSync(
-        join(projectRoot, 'src', 'styles', 'global.css'),
+        join(projectRoot, 'src', 'styles', 'global.scss'),
         ':focus-visible { outline: 2px solid var(--d-primary); outline-offset: 2px; }\n',
       );
 

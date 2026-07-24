@@ -95,7 +95,16 @@ function version(command, args, environment = isolatedChildEnvironment()) {
     shell: false,
     timeout: 10_000,
   });
-  if (result.status !== 0) throw new Error(`${command} version check failed: ${result.stderr ?? ''}`);
+  if (result.status !== 0) {
+    const details = [
+      `status=${result.status ?? 'none'}`,
+      `signal=${result.signal ?? 'none'}`,
+      result.error?.message,
+      result.stdout?.trim(),
+      result.stderr?.trim(),
+    ].filter(Boolean);
+    throw new Error(`${command} version check failed: ${details.join(' | ')}`);
+  }
   return (result.stdout ?? result.stderr ?? '').trim();
 }
 

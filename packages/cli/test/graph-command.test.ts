@@ -958,7 +958,7 @@ describe('graph command artifacts', () => {
     );
     writeFileSync(
       join(testDir, 'src', 'routes', 'index.tsx'),
-      "import { createFileRoute } from '@tanstack/react-router';\nexport const Route = createFileRoute('/')({ component: () => <main>Home</main> });\n",
+      "import { createFileRoute } from '@tanstack/react-router';\nfunction Home() { return <main>Home</main>; }\nexport const Route = createFileRoute('/')({ component: Home });\n",
     );
 
     const artifacts = buildGraphArtifacts(testDir);
@@ -973,6 +973,15 @@ describe('graph command artifacts', () => {
             payload: expect.objectContaining({ route: '/', strategy: 'source-declared' }),
           }),
         }),
+        expect.objectContaining({
+          id: 'cmp:home',
+          type: 'Component',
+          payload: expect.objectContaining({
+            name: 'Home',
+            source: 'discovery',
+            confidence: 'high',
+          }),
+        }),
       ]),
     );
     expect(artifacts?.snapshot.edges).toEqual(
@@ -982,6 +991,12 @@ describe('graph command artifacts', () => {
           dst: 'src:src/routes/index.tsx',
           relation: 'NODE_DERIVED_FROM_SOURCE',
           payload: expect.objectContaining({ role: 'route-implementation' }),
+        }),
+        expect.objectContaining({
+          src: 'cmp:home',
+          dst: 'src:src/routes/index.tsx',
+          relation: 'NODE_DERIVED_FROM_SOURCE',
+          payload: expect.objectContaining({ role: 'component-inventory' }),
         }),
       ]),
     );

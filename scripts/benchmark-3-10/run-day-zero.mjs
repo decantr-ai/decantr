@@ -145,7 +145,12 @@ for (const repository of corpus.repositories) {
         }
       : null,
     limitations: parsed?.discovery?.limitations ?? [],
-    error: scan.status === 0 && parsed ? null : scan.stderr.trim() || 'scan output was not valid JSON',
+    error:
+      scan.status === 0 && parsed
+        ? null
+        : parsed?.error?.message ||
+          scan.stderr.trim() ||
+          `scan exited ${scan.status ?? 'without a status'}`,
   });
 }
 

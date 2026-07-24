@@ -694,6 +694,11 @@ function scanFileRoutes(
   });
 }
 
+function isAstroPublicPageSignal(signal: DiscoveryRouteSignal): boolean {
+  const pageRelativePath = signal.file.replace(/^(?:src\/)?pages\//u, '');
+  return !pageRelativePath.split('/').some((segment) => segment.startsWith('_'));
+}
+
 function reactRouterFileRouteFromPath(file: string, baseDir: string): string {
   let withoutExt = file.slice(0, -extname(file).length);
   withoutExt = withoutExt.replace(
@@ -1285,6 +1290,38 @@ function collectVueRouterObjectRoutes(
   return signals;
 }
 
+function isTanstackServerOnlyRouteFile(sourceFile: ts.SourceFile): boolean {
+  let declarationCount = 0;
+  let serverOnlyCount = 0;
+  const visit = (node: ts.Node): void => {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isCallExpression(node.expression) &&
+      ts.isIdentifier(node.expression.expression) &&
+      (node.expression.expression.text === 'createFileRoute' ||
+        node.expression.expression.text === 'createLazyFileRoute')
+    ) {
+      const options = node.arguments[0] ? unwrapExpression(node.arguments[0]) : null;
+      if (options && ts.isObjectLiteralExpression(options)) {
+        declarationCount += 1;
+        const keys = options.properties
+          .map((property) =>
+            ts.isPropertyAssignment(property) ||
+            ts.isMethodDeclaration(property) ||
+            ts.isShorthandPropertyAssignment(property)
+              ? propertyNameText(property.name)
+              : null,
+          )
+          .filter((key): key is string => Boolean(key));
+        if (keys.length === 1 && keys[0] === 'server') serverOnlyCount += 1;
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sourceFile);
+  return declarationCount > 0 && declarationCount === serverOnlyCount;
+}
+
 function detectSourceRouteSignals(
   projectRoot: string,
   identity: DiscoveryProjectIdentity,
@@ -1346,7 +1383,7 @@ function detectSourceRouteSignals(
       /(?:^|\/)(?:router|routes)(?:\/|$)/u.test(file) &&
       /\bpath\s*:/u.test(content);
 
-    if (isTanstackFile && !isGeneratedFile) {
+    if (isTanstackFile && !isGeneratedFile && !isTanstackServerOnlyRouteFile(sourceFile)) {
       collectRouteLiterals(TANSTACK_FILE_ROUTE_RE, content, file, formalSignals, 'tanstack-router');
       if (/\bcreateRoute\s*\(/.test(content)) {
         collectRouteLiterals(OBJECT_ROUTE_PATH_RE, content, file, formalSignals, 'tanstack-router');
@@ -1493,6 +1530,8 @@ function discoverRoutes(
     scanFileRoutes(projectRoot, dir, PAGE_EXTENSIONS, new Set(['page'])),
   );
   const pagesSignals = ['src/pages', 'pages'].flatMap((dir) => scanFileRoutes(projectRoot, dir));
+  const frameworkPageSignals =
+    identity.framework === 'astro' ? pagesSignals.filter(isAstroPublicPageSignal) : pagesSignals;
   if (identity.framework === 'nextjs') {
     fileRouteSignals.push(...nextAppSignals, ...pagesSignals);
   } else if (identity.framework === 'svelte') {
@@ -1508,7 +1547,7 @@ function discoverRoutes(
     fileRouteSignals.push(...scanFileRoutes(projectRoot, 'pages', new Set(['.vue'])));
     fileRouteSignals.push(...scanFileRoutes(projectRoot, 'app/pages', new Set(['.vue'])));
   } else if (identity.framework !== 'react') {
-    fileRouteSignals.push(...pagesSignals);
+    fileRouteSignals.push(...frameworkPageSignals);
   }
 
   const reactRouterFileSignals =
@@ -1548,6 +1587,9 @@ function discoverRoutes(
   } else if (identity.framework === 'nuxt' && fileRouteSignals.length > 0) {
     selectedSignals = fileRouteSignals;
     strategy = 'nuxt-router';
+  } else if (identity.framework === 'astro' && fileRouteSignals.length > 0) {
+    selectedSignals = fileRouteSignals;
+    strategy = 'pages-router';
   } else if (reactRouterFileSignals.length > 0) {
     selectedSignals = reactRouterFileSignals;
     strategy = 'react-router-file-router';
@@ -1662,11 +1704,11 @@ function discoverComponents(
     });
   }
   for (const file of sourceFiles) {
-    if (!/\.(tsx|jsx|vue|svelte)$/.test(file) && !/\.(ts|js)$/.test(file)) continue;
+    if (!/\.(tsx|jsx|vue|svelte|astro)$/.test(file) && !/\.(ts|js)$/.test(file)) continue;
     if (EXCLUDED_SOURCE_FILE_RE.test(file) || !isProductionAuthorityPath(file)) continue;
     const content = readTextFile(join(projectRoot, file), 256 * 1024) ?? '';
     if (identity.framework === 'angular' && /@Component\s*\(/u.test(content)) continue;
-    if (!/[<][A-Za-z][^>]*>/.test(content) && !/\.(vue|svelte)$/.test(file)) continue;
+    if (!/[<][A-Za-z][^>]*>/.test(content) && !/\.(vue|svelte|astro)$/.test(file)) continue;
     const base = file.split('/').pop() ?? file;
     const nameFromFile = base.slice(0, -extname(base).length);
     const names = new Set<string>();
@@ -1692,7 +1734,7 @@ function discoverComponents(
       ))
         names.add(match[1] ?? '');
     }
-    if (/^[A-Z][A-Za-z0-9_-]*$/.test(nameFromFile) && /\.(tsx|jsx|vue|svelte)$/.test(file))
+    if (/^[A-Z][A-Za-z0-9_-]*$/.test(nameFromFile) && /\.(tsx|jsx|vue|svelte|astro)$/.test(file))
       names.add(nameFromFile);
     for (const name of [...names].filter(Boolean)) {
       const key = `${file}:${name}`;

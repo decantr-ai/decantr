@@ -3,6 +3,7 @@ import { dirname, isAbsolute, join, resolve } from 'node:path';
 
 export type ProjectScope = 'single-app' | 'workspace-app';
 export type WorkspaceAppCandidateCategory = 'product-ui' | 'supporting-ui' | 'low-confidence-ui';
+type WorkspaceAppCandidateSource = 'apps' | 'packages' | 'conventional';
 
 export interface WorkspaceAppCandidateRank {
   path: string;
@@ -136,18 +137,18 @@ function hasUiSource(dir: string): boolean {
 
 function rankWorkspaceAppCandidate(
   workspaceRoot: string,
-  base: 'apps' | 'packages',
-  name: string,
+  path: string,
+  source: WorkspaceAppCandidateSource,
 ): WorkspaceAppCandidateRank {
-  const path = `${base}/${name}`;
   const dir = join(workspaceRoot, path);
   const pkg = readPackageJson(dir);
   const deps = { ...pkg?.dependencies, ...pkg?.devDependencies };
   const lowerPath = path.toLowerCase();
   const reasons: string[] = [];
-  let score = base === 'apps' ? 25 : -20;
-  if (base === 'apps') reasons.push('under apps/');
-  if (base === 'packages') reasons.push('under packages/');
+  let score = source === 'apps' ? 25 : source === 'packages' ? -20 : 10;
+  if (source === 'apps') reasons.push('under apps/');
+  if (source === 'packages') reasons.push('under packages/');
+  if (source === 'conventional') reasons.push('conventional frontend path');
 
   const frontendDeps = [
     'react',
@@ -236,14 +237,26 @@ function listWorkspaceAppDetails(workspaceRoot: string): WorkspaceAppCandidateRa
       ) {
         const ranked = rankWorkspaceAppCandidate(
           workspaceRoot,
+          `${base}/${entry.name}`,
           base as 'apps' | 'packages',
-          entry.name,
         );
         if (ranked.score <= 0) continue;
         if (base === 'packages' && ranked.category !== 'product-ui') continue;
         candidates.push(ranked);
       }
     }
+  }
+  for (const path of ['frontend', 'web', 'client', 'src/frontend', 'src/web', 'src/client']) {
+    const candidate = join(workspaceRoot, path);
+    if (
+      candidates.some((item) => item.path === path) ||
+      !existsSync(candidate) ||
+      !looksLikeApp(candidate)
+    ) {
+      continue;
+    }
+    const ranked = rankWorkspaceAppCandidate(workspaceRoot, path, 'conventional');
+    if (ranked.score > 0) candidates.push(ranked);
   }
   return candidates.sort((a, b) => b.score - a.score || a.path.localeCompare(b.path));
 }

@@ -117,7 +117,7 @@ Yes.
 
 ## What does adoption write?
 
-Brownfield adoption can write an accepted Decantr contract, project context, graph/evidence artifacts, project state, formatter ignore entries for generated artifacts, and optional CI configuration. Production source and runtime configuration remain first authority; the accepted Essence contract is project law beneath that source, not a replacement for it. The 3.9.4 flow records an adoption receipt so these writes can be distinguished from host source.
+Brownfield adoption can write an accepted Decantr contract, compact project context, graph/evidence artifacts, project state, and optional CI configuration when explicitly requested. It does not create or edit formatter ignore files. Production source and runtime configuration remain first authority; the accepted Essence contract is project law beneath that source, not a replacement for it. The adoption receipt distinguishes these writes from host source.
 
 Review `scan` first. Use `adopt --force` only as a visible, manual override when you understand an unresolved discovery result; an override does not make the evidence proven.
 

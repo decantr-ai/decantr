@@ -84,12 +84,19 @@ describe('framework route authority adapters', () => {
       join(projectRoot, 'src', 'routes', 'index.tsx'),
       'import { createFileRoute } from "@tanstack/react-router"; export const Route = createFileRoute("/")({ component: () => <main /> });\n',
     );
+    writeFileSync(
+      join(projectRoot, 'src', 'routes', 'api.auth.$.ts'),
+      'import { createFileRoute } from "@tanstack/react-router"; export const Route = createFileRoute("/api/auth/$")({ server: { handlers: { GET: () => new Response() } } });\n',
+    );
 
     const routes = discoverProject(projectRoot).routes;
 
     expect(routes.authority).toBe('proven');
     expect(routes.completeness).toBe('complete');
     expect(routes.taskableRouteCount).toBe(1);
+    expect(routes.taskableRoutes).not.toContainEqual(
+      expect.objectContaining({ path: '/api/auth/$' }),
+    );
   });
 
   it('uses Astro pages as complete file-route authority', () => {
@@ -104,9 +111,26 @@ describe('framework route authority adapters', () => {
       join(projectRoot, 'src', 'pages', 'posts', '[slug].astro'),
       '<main>Post</main>\n',
     );
+    mkdirSync(join(projectRoot, 'src', 'pages', 'posts', '_components'), { recursive: true });
+    writeFileSync(
+      join(projectRoot, 'src', 'pages', 'posts', '_components', 'AdjacentPostNav.astro'),
+      '<nav>Adjacent posts</nav>\n',
+    );
+    mkdirSync(join(projectRoot, 'src', 'pages', 'archives', '_utils'), { recursive: true });
+    writeFileSync(
+      join(projectRoot, 'src', 'pages', 'archives', '_utils', 'getPosts.ts'),
+      'export const getPosts = () => [];\n',
+    );
+    mkdirSync(join(projectRoot, 'src', 'components'), { recursive: true });
+    writeFileSync(
+      join(projectRoot, 'src', 'components', 'Header.astro'),
+      '---\nconst pathname = Astro.url.pathname;\n---\n<header><a href="/about">About</a>{pathname}</header>\n',
+    );
 
-    const routes = discoverProject(projectRoot).routes;
+    const discovery = discoverProject(projectRoot);
+    const routes = discovery.routes;
 
+    expect(routes.strategy).toBe('pages-router');
     expect(routes.authority).toBe('proven');
     expect(routes.completeness).toBe('complete');
     expect(routes.taskableRoutes).toEqual(
@@ -114,6 +138,30 @@ describe('framework route authority adapters', () => {
         expect.objectContaining({ path: '/', file: 'src/pages/index.astro' }),
         expect.objectContaining({ path: '/posts/:slug', file: 'src/pages/posts/[slug].astro' }),
       ]),
+    );
+    expect(routes.taskableRoutes).not.toContainEqual(
+      expect.objectContaining({ path: '/about', file: 'src/components/Header.astro' }),
+    );
+    expect(routes.taskableRoutes).not.toContainEqual(
+      expect.objectContaining({
+        file: 'src/pages/posts/_components/AdjacentPostNav.astro',
+      }),
+    );
+    expect(routes.taskableRoutes).not.toContainEqual(
+      expect.objectContaining({ file: 'src/pages/archives/_utils/getPosts.ts' }),
+    );
+    expect(discovery.components.items).toContainEqual(
+      expect.objectContaining({
+        name: 'Header',
+        file: 'src/components/Header.astro',
+        kind: 'pascal-file',
+      }),
+    );
+    expect(discovery.components.items).toContainEqual(
+      expect.objectContaining({
+        name: 'AdjacentPostNav',
+        file: 'src/pages/posts/_components/AdjacentPostNav.astro',
+      }),
     );
   });
 

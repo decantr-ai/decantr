@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { discoverProject } from '@decantr/verifier';
 import { scanAmbientContext } from '../ambient-context.js';
 import { scanComponents } from '../analyzers/components.js';
 import { scanDependencies } from '../analyzers/dependencies.js';
@@ -36,18 +37,19 @@ export async function cmdAnalyze(
   console.log(`\n${BOLD}Analyzing project...${RESET}\n`);
 
   // 1. Detect project basics
-  const project = detectProject(projectRoot);
+  const discovery = discoverProject(projectRoot);
+  const project = detectProject(projectRoot, discovery);
   console.log(`${DIM}Detected:${RESET} ${formatDetection(project).split('\n').join(', ')}`);
 
   // 2. Run all scanners
   console.log(`${DIM}Scanning routes...${RESET}`);
-  const routes = scanRoutes(projectRoot);
+  const routes = scanRoutes(projectRoot, discovery);
 
   console.log(`${DIM}Scanning components...${RESET}`);
-  const components = scanComponents(projectRoot);
+  const components = scanComponents(projectRoot, discovery);
 
   console.log(`${DIM}Scanning styling...${RESET}`);
-  const styling = scanStyling(projectRoot);
+  const styling = scanStyling(projectRoot, discovery);
 
   console.log(`${DIM}Scanning layout...${RESET}`);
   const layout = scanLayout(projectRoot);

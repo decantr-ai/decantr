@@ -49,6 +49,19 @@ export const CONTROLLER_NODE_VERSION = '22.17.0';
 export const CONTROLLER_CODEX_VERSION = '0.145.0-alpha.27';
 export const CONTROLLER_CLAUDE_CODE_VERSION = '2.1.153';
 
+export function runtimeBaseImageReference(profile) {
+  if (typeof profile?.nodeVersion === 'string') {
+    const major = Number(profile.nodeVersion.split('.')[0]);
+    if (!Number.isInteger(major) || major < 1) throw new Error('runtime Node version is invalid');
+    const distribution = major < 12 ? 'stretch' : major < 18 ? 'buster' : 'bookworm';
+    return `node:${profile.nodeVersion}-${distribution}-slim`;
+  }
+  if (typeof profile?.bunVersion === 'string') {
+    return `oven/bun:${profile.bunVersion}-debian`;
+  }
+  throw new Error('runtime profile version is invalid');
+}
+
 export function runtimeBenchmarkImageReference(profileId, manifestDigest = null) {
   if (!profileIdPattern.test(profileId ?? '')) throw new Error('runtime profile ID is invalid');
   const tag = `${RUNTIME_BENCHMARK_IMAGE_REPOSITORY}:${profileId}`;
@@ -185,7 +198,7 @@ export function assertRuntimeBuildSubject(subject) {
     !versionPattern.test(subject.packageManagerVersion ?? '') ||
     subject.profileId !== expectedProfileId(subject) ||
     subject.profileSha256 !== sha256Canonical(profile) ||
-    subject.baseImage.reference !== expectedBaseImageReference(subject) ||
+    subject.baseImage.reference !== runtimeBaseImageReference(profile) ||
     subject.browserSmokePassed !== true ||
     subject.host?.os !== 'linux' ||
     subject.host?.arch !== 'x64' ||
@@ -542,12 +555,6 @@ function profileFromSubject(subject) {
 
 function expectedProfileId(subject) {
   return `${subject.runtimeKind}-${subject.runtimeVersion}-${subject.packageManagerName}-${subject.packageManagerVersion}`;
-}
-
-function expectedBaseImageReference(subject) {
-  if (subject.runtimeKind === 'bun') return `oven/bun:${subject.runtimeVersion}-debian`;
-  const major = Number(subject.runtimeVersion.split('.')[0]);
-  return `node:${subject.runtimeVersion}-${major < 18 ? 'buster' : 'bookworm'}-slim`;
 }
 
 function assertController(controller) {

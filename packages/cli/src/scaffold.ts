@@ -3106,10 +3106,10 @@ export async function scaffoldProject(
 
   // Update .gitignore
   const gitignoreUpdated = updateGitignore(projectRoot);
-  const formatterIgnoreUpdated = updateFormatterIgnore(
-    projectRoot,
-    options.workspaceRoot || projectRoot,
-  );
+  const formatterIgnoreUpdated =
+    !options.workflowMode || options.workflowMode.startsWith('greenfield')
+      ? updateFormatterIgnore(projectRoot, options.workspaceRoot || projectRoot)
+      : false;
 
   return {
     essencePath,
@@ -3346,10 +3346,10 @@ When available, use the eight consolidated Decantr tools:
 
   // Update .gitignore
   const gitignoreUpdated = updateGitignore(projectRoot);
-  const formatterIgnoreUpdated = updateFormatterIgnore(
-    projectRoot,
-    options.workspaceRoot || projectRoot,
-  );
+  const formatterIgnoreUpdated =
+    !options.workflowMode || options.workflowMode.startsWith('greenfield')
+      ? updateFormatterIgnore(projectRoot, options.workspaceRoot || projectRoot)
+      : false;
 
   return {
     essencePath,

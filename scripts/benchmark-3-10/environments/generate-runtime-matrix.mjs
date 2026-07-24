@@ -10,7 +10,10 @@ import {
   writeCanonicalFile,
 } from '../runner/canonical.mjs';
 import { calculateRuntimeMatrixDigest } from './runtime-matrix.mjs';
-import { runtimeBenchmarkImageReference } from './runtime-profile-attestation.mjs';
+import {
+  runtimeBaseImageReference,
+  runtimeBenchmarkImageReference,
+} from './runtime-profile-attestation.mjs';
 
 const benchmarkRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const repositoryRoot = resolve(benchmarkRoot, '..', '..');
@@ -41,7 +44,7 @@ export async function generateRuntimeMatrix(options) {
       taskCount: group.taskCount,
       profileSha256: group.profileSha256,
       baseImage: {
-        reference: baseImageReference(group.profile),
+        reference: runtimeBaseImageReference(group.profile),
         digest: null,
       },
       benchmarkImage: {
@@ -99,14 +102,6 @@ async function readPartition(root, partition, expectedCount) {
     output.push({ spec, sha256: sha256(bytes) });
   }
   return output;
-}
-
-function baseImageReference(profile) {
-  if (profile.nodeVersion) {
-    const major = Number(profile.nodeVersion.split('.')[0]);
-    return `node:${profile.nodeVersion}-${major < 18 ? 'buster' : 'bookworm'}-slim`;
-  }
-  return `oven/bun:${profile.bunVersion}-debian`;
 }
 
 function parseArgs(argv) {

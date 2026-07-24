@@ -589,6 +589,29 @@ function forChildExpression(sourceFile: ts.SourceFile): ts.Expression | null {
   return result;
 }
 
+function importedRoutingExpression(
+  state: RouteParseState,
+  sourceFile: ts.SourceFile,
+): { expression: ts.Expression; sourceFile: ts.SourceFile } | null {
+  const candidates = collectSourceImports(state.context, sourceFile).flatMap((imported) => {
+    if (
+      !imported.resolved.relativePath ||
+      !['static-import', 're-export', 'require', 'import-equals'].includes(imported.kind) ||
+      !/(?:^|\/)[^/]*(?:routes?|routing(?:\.module)?)\.[cm]?[jt]sx?$/iu.test(
+        imported.resolved.relativePath,
+      )
+    ) {
+      return [];
+    }
+    const importedSource = getProjectSourceFile(state.context, imported.resolved.relativePath);
+    if (!importedSource) return [];
+    const expression =
+      exportedRouteExpression(importedSource, null) ?? forChildExpression(importedSource);
+    return expression ? [{ expression, sourceFile: importedSource }] : [];
+  });
+  return candidates.length === 1 ? candidates[0] : null;
+}
+
 function implementationFileForExpression(
   state: RouteParseState,
   expression: ts.Expression | null,
@@ -628,13 +651,18 @@ function parseLazyChildren(
   const exported =
     exportedRouteExpression(target.sourceFile, target.exportName) ??
     forChildExpression(target.sourceFile);
-  if (!exported) {
+  const imported = exported ? null : importedRoutingExpression(state, target.sourceFile);
+  const routeExpression = exported ?? imported?.expression;
+  if (!routeExpression) {
     state.unresolved.add(
       `Lazy Angular route array could not be resolved in ${sourceRelative(state.context, target.sourceFile)}.`,
     );
     return;
   }
-  parseRouteExpression(state, exported, parentPath);
+  if (imported) {
+    state.authorityFiles.add(sourceRelative(state.context, imported.sourceFile));
+  }
+  parseRouteExpression(state, routeExpression, parentPath);
 }
 
 function parseRouteObject(

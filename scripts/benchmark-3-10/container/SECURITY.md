@@ -14,7 +14,7 @@ docker run --rm \
   --security-opt=no-new-privileges:true \
   --read-only \
   --tmpfs /tmp:rw,noexec,nosuid,nodev,size=2g \
-  --tmpfs /home/benchmark-empty:rw,noexec,nosuid,nodev,size=128m \
+  --tmpfs /home/benchmark-empty:rw,noexec,nosuid,nodev,size=128m,mode=0700,uid=10001,gid=10001 \
   --mount type=bind,src="$FRESH_CHECKOUT",dst=/work,rw \
   --mount type=bind,src="$EVIDENCE_ROOT",dst=/evidence,rw \
   --mount type=bind,src="$TASK_ENVIRONMENT_SPEC",dst=/inputs/environment.json,ro \
@@ -40,7 +40,7 @@ docker run --rm \
   --memory=12g \
   --cpus=8 \
   --tmpfs /tmp:rw,noexec,nosuid,nodev,size=2g \
-  --tmpfs /home/benchmark-empty:rw,noexec,nosuid,nodev,size=128m \
+  --tmpfs /home/benchmark-empty:rw,noexec,nosuid,nodev,size=128m,mode=0700,uid=10001,gid=10001 \
   --mount type=bind,src="$FRESH_CHECKOUT",dst=/work,rw \
   --mount type=bind,src="$EVIDENCE_ROOT",dst=/evidence,rw \
   --mount type=bind,src="$CANDIDATE_ROOT",dst=/candidate,ro \

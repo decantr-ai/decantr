@@ -5,7 +5,7 @@
     "unverifiedProfiles": 26
   },
   "frozenAt": "2026-07-22T11:29:02Z",
-  "matrixSha256": "e25bb1e59f20572fd1f4393e4d93ec5f2518256526e93ace61e9afbee431fcde",
+  "matrixSha256": "a228fa7d897ab1d95ab0c6a14b852a6ae5d4123fef79f57b2461c907f338b597",
   "paidExecutionAuthorized": false,
   "profiles": [
     {
@@ -34,7 +34,7 @@
       "arch": "x64",
       "baseImage": {
         "digest": null,
-        "reference": "node:10.15.1-buster-slim"
+        "reference": "node:10.15.1-stretch-slim"
       },
       "benchmarkImage": {
         "digest": null,

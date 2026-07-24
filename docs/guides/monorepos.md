@@ -12,7 +12,7 @@ pnpm exec decantr adopt --project apps/web --yes
 pnpm exec decantr doctor --project apps/web
 ```
 
-`setup` and `workspace list` are non-mutating orientation commands. Before adoption, `setup` shows app candidates and the attach command. After adoption, it points at the day-two loop. `adopt --project apps/web --yes` writes the Brownfield contract, hydrates content API packs when online, and keeps `.decantr/*` context inside the app. When the workspace uses Prettier or Oxfmt, Decantr adds `apps/web/.decantr/`, `apps/web/DECANTR.md`, and `apps/web/decantr.essence.json` to the root `.prettierignore` so root format checks ignore generated governance artifacts.
+`setup` and `workspace list` are non-mutating orientation commands. Before adoption, `setup` shows app candidates and the attach command. After adoption, it points at the day-two loop. `adopt --project apps/web --yes` writes the Brownfield contract and compact app-scoped context. Bulk content packs require explicit `--packs`. Brownfield and Hybrid adoption do not create or edit `.prettierignore`; formatter configuration remains owned by the host workspace.
 
 Decantr 3.7 introduced the read-only discovery substrate that Decantr 3.9 now projects through `AdoptionTruthV1` for scan/setup/workspace/adopt/doctor/opt-in CI v3/MCP/Studio. When you pass `--project apps/web`, discovery walks upward to find the package manager and repository-level assistant rules, while framework, language, routes, components, and styling stay app-scoped. Formal TanStack route source outranks generated trees, nested React Router objects resolve lazy implementation files, and pathname-only fallback routes carry medium confidence. Angular app selection uses the matching workspace project root and configured build entry, not the workspace package name or a sibling/test route file; route authority is proven only through the selected bootstrap import graph. The contract records provenance and limitations for those facts instead of allowing sibling apps or root HTML to contaminate the selected app.
 
@@ -109,7 +109,7 @@ pnpm exec decantr doctor --project apps/web
 
 Workspace discovery favors deployable UI apps. Server-only API packages and React component libraries under `packages/*` are not suggested as Brownfield app candidates unless they expose a frontend app config such as Next, Vite, SvelteKit, Angular, or Astro.
 
-In contract-only Brownfield, content API packs are optional context. If you attach with `--no-packs` or offline mode, `doctor`, `health`, and `refresh --check` should not make pack hydration the next required step. If a `pack-manifest.json` exists and references missing files, hydrate the app-scoped pack bundle from the monorepo root with the app essence path:
+In contract-only Brownfield, content API packs are optional context and adoption leaves bulk hydration off by default. `doctor`, `health`, and `refresh --check` should not make pack hydration the next required step. Use `decantr adopt --packs` only when you want the full local page/review pack set. If a `pack-manifest.json` exists and references missing files, hydrate the app-scoped pack bundle from the monorepo root with the app essence path:
 
 ```bash
 pnpm exec decantr content compile-packs apps/web/decantr.essence.json --write-context
@@ -150,7 +150,7 @@ Commit canonical Decantr files and accepted local law:
 - `.decantr/local-patterns.json` after `decantr codify --accept --confirm-reviewed`
 - `.decantr/rules.json` after `decantr codify --accept --confirm-reviewed`
 - `.decantr/style-bridge.json` after `decantr codify --accept --confirm-reviewed --accept-style-bridge`
-- `.prettierignore` when Decantr adds generated-artifact boundaries
+- existing formatter configuration remains unchanged during Brownfield/Hybrid adoption
 - root `.github/workflows/decantr-ci.yml` or your edited internal pipeline hook
 
 Treat `.decantr/local-patterns.proposal.json`, `.decantr/rules.proposal.json`, `.decantr/style-bridge.proposal.json`, `.decantr/evidence/*`, `.decantr/ci/*`, and `.decantr/health-baseline-diff.json` as review/local/CI artifacts unless your team intentionally archives them.

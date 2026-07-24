@@ -58,7 +58,8 @@ function slugify(value: string, fallback: string): string {
     .replace(/[^a-zA-Z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .toLowerCase();
-  return slug || fallback;
+  if (!slug) return fallback;
+  return /^[a-z]/u.test(slug) ? slug : `route-${slug}`;
 }
 
 interface RouteDomain {

@@ -175,7 +175,6 @@ import {
   scaffoldMinimal,
   scaffoldProject,
   type ThemeData,
-  updateFormatterIgnore,
   writeExecutionPackBundleArtifacts,
   type ZoneInput,
 } from './scaffold.js';
@@ -2258,10 +2257,6 @@ async function applyAcceptedBrownfieldProposal(input: {
     input.projectRoot,
     input.workspaceInfo.workspaceRoot,
   );
-  const formatterIgnoreUpdated = updateFormatterIgnore(
-    input.projectRoot,
-    input.workspaceInfo.workspaceRoot,
-  );
 
   console.log(success('\nBrownfield proposal accepted.\n'));
   const projectLabel =
@@ -2288,9 +2283,6 @@ async function applyAcceptedBrownfieldProposal(input: {
   }
   if (appliedRuleFiles.length > 0) {
     console.log(`    ${dim(`Rule bridge applied: ${appliedRuleFiles.join(', ')}`)}`);
-  }
-  if (formatterIgnoreUpdated) {
-    console.log(`    ${dim('.prettierignore updated for generated Decantr artifacts')}`);
   }
   printTailwindSourceIsolation(tailwindSourceIsolation);
   if (backupPath) {
@@ -3752,6 +3744,35 @@ function printWorkspaceProjectSelection(
   );
 }
 
+function printWorkspaceProjectSelectionJson(
+  workspaceInfo: ReturnType<typeof resolveWorkspaceInfo>,
+  commandName: string,
+): void {
+  const candidate = firstWorkspaceCandidate(workspaceInfo);
+  console.log(
+    JSON.stringify(
+      {
+        schemaVersion: 'decantr-command-error.v1',
+        ok: false,
+        command: commandName,
+        error: {
+          code: 'project_selection_required',
+          message: `decantr ${commandName} needs an app path in this monorepo.`,
+        },
+        workspace: {
+          appCandidates: workspaceInfo.appCandidateDetails,
+        },
+        recommendedCommands: [
+          `decantr ${commandName} --project ${candidate}`,
+          `decantr adopt --project ${candidate} --yes`,
+        ],
+      },
+      null,
+      2,
+    ),
+  );
+}
+
 function printMonorepoSetupGuidance(workspaceInfo: ReturnType<typeof resolveWorkspaceInfo>): void {
   const candidate = firstWorkspaceCandidate(workspaceInfo);
   const attachedProjects = workspaceInfo.appCandidates.filter((appCandidate) =>
@@ -3829,6 +3850,7 @@ function resolveWorkflowProject(
     requireExisting?: boolean;
     requireAppCandidate?: boolean;
     allowPackageProject?: boolean;
+    machineReadableErrors?: boolean;
   } = {},
 ) {
   const projectArg = flagString(flags, 'project');
@@ -3871,7 +3893,11 @@ function resolveWorkflowProject(
     }
   }
   if (workspaceInfo.requiresProjectSelection) {
-    printWorkspaceProjectSelection(workspaceInfo, commandName);
+    if (options.machineReadableErrors) {
+      printWorkspaceProjectSelectionJson(workspaceInfo, commandName);
+    } else {
+      printWorkspaceProjectSelection(workspaceInfo, commandName);
+    }
     process.exitCode = 1;
     return null;
   }
@@ -4207,9 +4233,11 @@ function printScanReport(
 async function cmdScanWorkflow(args: string[]): Promise<void> {
   const { flags } = parseLooseArgs(args);
   if (!ensureAllowedFlags(flags, ['project', 'json'], 'scan')) return;
-  const workspaceInfo = resolveWorkflowProject(flags, 'scan');
-  if (!workspaceInfo) return;
   const jsonOutput = flagBoolean(flags, 'json');
+  const workspaceInfo = resolveWorkflowProject(flags, 'scan', {
+    machineReadableErrors: jsonOutput,
+  });
+  if (!workspaceInfo) return;
   const projectArg = flagString(flags, 'project');
   const inputValue = projectArg ?? '.';
   const report = await scanProjectReadOnly(workspaceInfo.appRoot, {
@@ -4370,7 +4398,7 @@ async function cmdAdoptWorkflow(args: string[]): Promise<void> {
   const evidence = flagBoolean(flags, 'evidence') || runBrowser;
   const saveBaseline = flagBoolean(flags, 'baseline', true) || flagBoolean(flags, 'save-baseline');
   const hydratePacks =
-    flagBoolean(flags, 'packs', true) &&
+    flagBoolean(flags, 'packs') &&
     !flagBoolean(flags, 'skip-packs') &&
     !flagBoolean(flags, 'offline') &&
     process.env.DECANTR_OFFLINE !== 'true';
@@ -6839,11 +6867,11 @@ ${BOLD}Examples:${RESET}
 
 function cmdAdoptHelp() {
   console.log(`
-${BOLD}decantr adopt${RESET} — Brownfield one-liner: analyze, attach, hydrate packs, verify, and show the operating loop
+${BOLD}decantr adopt${RESET} — Brownfield one-liner: analyze, attach, verify, and show the operating loop
 
 ${BOLD}Usage:${RESET}
-  decantr adopt [--project <path>] [--yes] [--dry-run] [--no-packs] [--force]
-  decantr adopt [--project <path>] --base-url <url> [--evidence] [--ci] [--yes] [--no-packs] [--force]
+  decantr adopt [--project <path>] [--yes] [--dry-run] [--packs] [--force]
+  decantr adopt [--project <path>] --base-url <url> [--evidence] [--ci] [--yes] [--packs] [--force]
 
 ${BOLD}Options:${RESET}
   --project           App path inside a workspace/monorepo
@@ -6854,7 +6882,8 @@ ${BOLD}Options:${RESET}
   --baseline          Save a health baseline (default)
   --no-baseline       Skip baseline save
   --no-verify         Skip the verification step
-  --no-packs          Skip official content-pack hydration
+  --packs             Opt in to bulk official content-pack hydration
+  --no-packs          Legacy explicit skip; hydration is already off by default
   --ci, --init-ci     Install the Decantr CI gate after adoption
   --telemetry         Enable the local preference; delivery requires DECANTR_TELEMETRY_ENDPOINT
   --merge-proposal    Merge the observed proposal into an existing essence

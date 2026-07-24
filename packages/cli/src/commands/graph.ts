@@ -85,7 +85,7 @@ interface GraphArtifactBuild {
   staleArtifacts: string[];
 }
 
-type ProjectRouteDiscovery = ReturnType<typeof discoverProject>['routes'];
+type ProjectDiscovery = ReturnType<typeof discoverProject>;
 
 interface GraphSnapshotSelection {
   selector: string;
@@ -623,7 +623,7 @@ function addEdge(edges: Map<string, GraphEdge>, edge: GraphEdge): void {
 function sourceArtifacts(
   projectRoot: string,
   componentReuseAudit: ComponentReuseAudit | null = null,
-  routeDiscovery?: ProjectRouteDiscovery,
+  discovery?: ProjectDiscovery,
 ): SourceArtifact[] {
   const sources: SourceArtifact[] = [];
   const essencePath = join(projectRoot, 'decantr.essence.json');
@@ -699,7 +699,7 @@ function sourceArtifacts(
     }
   }
 
-  for (const route of routeDiscovery?.taskableRoutes ?? []) {
+  for (const route of discovery?.routes.taskableRoutes ?? []) {
     const routeFile = projectRelativePath(projectRoot, route.file);
     if (!routeFile) continue;
     const routeFilePath = join(projectRoot, routeFile);
@@ -712,7 +712,26 @@ function sourceArtifacts(
       payload: {
         route: route.path,
         hasLayout: route.hasLayout,
-        strategy: routeDiscovery?.strategy,
+        strategy: discovery?.routes.strategy,
+      },
+    });
+  }
+
+  for (const component of discovery?.components.items ?? []) {
+    const componentFile = projectRelativePath(projectRoot, component.file);
+    if (!componentFile) continue;
+    const componentPath = join(projectRoot, componentFile);
+    if (!pathIsFile(componentPath)) continue;
+    if (sources.some((source) => source.id === `src:${componentFile}`)) continue;
+    sources.push({
+      id: `src:${componentFile}`,
+      kind: 'component-source',
+      path: componentFile,
+      hash: hashFile(componentPath),
+      payload: {
+        component: component.name,
+        kind: component.kind,
+        confidence: component.confidence,
       },
     });
   }
@@ -905,7 +924,7 @@ function augmentProjectGraph(
   projectRoot: string,
   sources: SourceArtifact[],
   componentReuseAudit: ComponentReuseAudit | null = null,
-  routeDiscovery?: ProjectRouteDiscovery,
+  discovery?: ProjectDiscovery,
 ): GraphSnapshot {
   const nodes = new Map(snapshot.nodes.map((node) => [node.id, node]));
   const edges = new Map(snapshot.edges.map((edge) => [graphEdgeKey(edge), edge]));
@@ -1142,6 +1161,42 @@ function augmentProjectGraph(
     });
   }
 
+  for (const component of discovery?.components.items ?? []) {
+    const componentFile = projectRelativePath(projectRoot, component.file);
+    const sourceId = componentFile ? `src:${componentFile}` : null;
+    if (!componentFile || !sourceId || !nodes.has(sourceId)) continue;
+    const baseId = `cmp:${graphSlug(component.name, 'component')}`;
+    const baseAlreadyRepresentsSource = [...edges.values()].some(
+      (edge) =>
+        edge.src === baseId &&
+        edge.dst === sourceId &&
+        edge.relation === 'NODE_DERIVED_FROM_SOURCE',
+    );
+    if (baseAlreadyRepresentsSource) continue;
+    const componentId = nodes.has(baseId)
+      ? `${baseId}:${graphSlug(componentFile.replace(/\.[^.]+$/u, ''), 'source')}`
+      : baseId;
+    addNode(nodes, {
+      id: componentId,
+      type: 'Component',
+      payload: {
+        name: component.name,
+        source: 'discovery',
+        kind: component.kind,
+        confidence: component.confidence,
+      },
+    });
+    addEdge(edges, {
+      src: componentId,
+      dst: sourceId,
+      relation: 'NODE_DERIVED_FROM_SOURCE',
+      payload: {
+        role: 'component-inventory',
+        confidence: component.confidence,
+      },
+    });
+  }
+
   for (const importReference of componentReuseAudit?.imports ?? []) {
     const importingFile = projectRelativePath(projectRoot, importReference.file);
     if (!importingFile || !nodes.has(`src:${importingFile}`)) continue;
@@ -1363,7 +1418,7 @@ function augmentProjectGraph(
     }
   }
 
-  for (const route of routeDiscovery?.taskableRoutes ?? []) {
+  for (const route of discovery?.routes.taskableRoutes ?? []) {
     const routeFile = projectRelativePath(projectRoot, route.file);
     if (!routeFile || !nodes.has(`src:${routeFile}`)) continue;
     const routeId = `rt:${route.path}`;
@@ -1374,7 +1429,7 @@ function augmentProjectGraph(
         relation: 'NODE_DERIVED_FROM_SOURCE',
         payload: {
           role: 'route-implementation',
-          strategy: routeDiscovery?.strategy,
+          strategy: discovery?.routes.strategy,
           hasLayout: route.hasLayout,
         },
       });
@@ -1389,7 +1444,7 @@ function augmentProjectGraph(
         payload: {
           role: 'page-implementation',
           route: route.path,
-          strategy: routeDiscovery?.strategy,
+          strategy: discovery?.routes.strategy,
         },
       });
     }
@@ -1435,8 +1490,8 @@ export function buildGraphArtifacts(
     projectRoot,
     collectProjectSourceFiles(projectRoot),
   );
-  const routeDiscovery = discoverProject(projectRoot).routes;
-  const sources = sourceArtifacts(projectRoot, componentReuseAudit, routeDiscovery);
+  const discovery = discoverProject(projectRoot);
+  const sources = sourceArtifacts(projectRoot, componentReuseAudit, discovery);
   const combinedSourceHash = sourceHash(sources);
   const previousSnapshot = readJsonFile<GraphSnapshot>(paths.snapshot);
   const previousDiff = readJsonFile<GraphDiff>(paths.diff);
@@ -1460,7 +1515,7 @@ export function buildGraphArtifacts(
     projectRoot,
     sources,
     componentReuseAudit,
-    routeDiscovery,
+    discovery,
   );
   const diff =
     sourceUnchanged && previousDiff?.to === snapshot.id

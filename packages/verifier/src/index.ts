@@ -1696,7 +1696,7 @@ function buildSourceAuditEvidence(
 }
 
 function isAuditableStyleFile(filePath: string): boolean {
-  return /\.css$/i.test(filePath);
+  return /\.(?:css|scss|sass|less)$/i.test(filePath);
 }
 
 function collectProjectStyleFiles(projectRoot: string): string[] {

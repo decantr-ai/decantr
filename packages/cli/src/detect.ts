@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { discoverProject } from '@decantr/verifier';
+import { discoverProject, type ProjectDiscovery } from '@decantr/verifier';
 
 export interface DetectedProject {
   framework:
@@ -27,8 +27,10 @@ export interface DetectedProject {
  * Detect project configuration from the file system.
  * Scans for framework, package manager, TypeScript, Tailwind, and existing rule files.
  */
-export function detectProject(projectRoot: string = process.cwd()): DetectedProject {
-  const discovery = discoverProject(projectRoot);
+export function detectProject(
+  projectRoot: string = process.cwd(),
+  discovery: ProjectDiscovery = discoverProject(projectRoot),
+): DetectedProject {
   return {
     framework: discovery.project.framework,
     version: discovery.project.frameworkVersion ?? undefined,

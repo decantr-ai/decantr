@@ -59,9 +59,9 @@ In a monorepo:
 pnpm exec decantr adopt --project apps/web --yes
 ```
 
-Adoption is the one-time attachment boundary. It can write an accepted Decantr contract, project context, graph and evidence artifacts, project state, formatter ignore entries for generated artifacts, and optional CI configuration. In Brownfield, production source and runtime configuration remain first authority; accepted Essence is project law beneath that source and any conflict remains visible. The 3.9.4 receipt distinguishes Decantr governance writes from host source and records any narrowly approved source mutation.
+Adoption is the one-time attachment boundary. It can write an accepted Decantr contract, compact project context, graph and evidence artifacts, project state, and explicitly requested CI configuration. It does not create or edit formatter ignore files. In Brownfield, production source and runtime configuration remain first authority; accepted Essence is project law beneath that source and any conflict remains visible. The adoption receipt distinguishes Decantr governance writes from host source and records any narrowly approved source mutation.
 
-Use `--no-packs` when the attach must remain fully offline. Official content is optional reference material, not authority over the app.
+Official content is optional reference material, not authority over the app. Adoption does not bulk-hydrate it by default; use `--packs` only when you want the full page/review pack set materialized locally. `--no-packs` remains a compatibility spelling for scripts that explicitly disabled the old default.
 
 ### What Decantr Does Not Take Over
 
