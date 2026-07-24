@@ -14,7 +14,10 @@ ARG TASK_RUNTIME_VERSION=22.19.0
 ARG PACKAGE_MANAGER_NAME=pnpm
 ARG PACKAGE_MANAGER_VERSION=10.33.0
 
-RUN npm install --global --omit=dev \
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends ca-certificates git \
+    && rm -rf /var/lib/apt/lists/* \
+    && npm install --global --omit=dev \
       "@openai/codex@${CODEX_VERSION}" \
       "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}" \
     && npm cache clean --force \

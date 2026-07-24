@@ -6,6 +6,7 @@ import { test } from 'node:test';
 import {
   buildProbeDockerArgs,
   listProbeTasks,
+  redactedDiagnosticTail,
 } from './hosted-task-environment-probe.mjs';
 
 test('lists only draft task environment specs in stable order', async () => {
@@ -49,4 +50,20 @@ test('uses valid Docker mount syntax for writable and read-only probe inputs', (
     'type=bind,src=/evidence,dst=/evidence',
   ]);
   assert.ok(mounts.every((mount) => !mount.split(',').includes('rw')));
+});
+
+test('retains bounded failure context while redacting credential-shaped values', () => {
+  const noisy = Array.from({ length: 50 }, (_, index) => `line ${index}`).join('\n');
+  const diagnostic = redactedDiagnosticTail(
+    `${noisy}\nhttps://user:password@example.com/package.tgz`,
+    'Authorization: Bearer secret-value\nNPM_TOKEN=npm_abcdefghijklmnopqrstuvwxyz123456',
+  );
+
+  assert.equal(diagnostic.includes('line 0'), false);
+  assert.equal(diagnostic.includes('line 49'), true);
+  assert.equal(diagnostic.includes('password'), false);
+  assert.equal(diagnostic.includes('secret-value'), false);
+  assert.equal(diagnostic.includes('npm_abcdefghijklmnopqrstuvwxyz123456'), false);
+  assert.match(diagnostic, /\[REDACTED/u);
+  assert.ok(diagnostic.length <= 4000);
 });

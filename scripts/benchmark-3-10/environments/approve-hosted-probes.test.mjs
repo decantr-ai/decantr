@@ -74,6 +74,7 @@ function makeSubject() {
       commit: spec.base.commit,
       tree: spec.base.tree,
       projectPath: spec.projectPath,
+      submodules: [],
     },
     spec: {
       path: 'specs/fixture.task.json',

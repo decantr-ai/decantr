@@ -5,6 +5,10 @@ import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:pat
 import { fileURLToPath } from 'node:url';
 import { sha256, sha256Canonical, writeCanonicalFile } from '../runner/canonical.mjs';
 import { runFixed, sanitizedEnvironment } from '../runner/process.mjs';
+import {
+  materializeReviewedSubmoduleClosure,
+  reviewedSubmoduleBindings,
+} from './submodules.mjs';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 const benchmarkRoot = resolve(directory, '..');
@@ -55,7 +59,7 @@ export async function runHostedProbe(input) {
   await mkdir(workspace, { recursive: true, mode: 0o700 });
   await mkdir(evidenceRoot, { recursive: true, mode: 0o700 });
   const gitEnvironment = sanitizedEnvironment(join(options.outputRoot, 'git-home'));
-  acquireCandidate(workspace, candidate, gitEnvironment);
+  const submodules = acquireCandidate(workspace, candidate, gitEnvironment);
   await verifyBoundFiles(workspace, spec);
 
   const cleanBefore = gitOutput(workspace, ['status', '--porcelain=v1', '--untracked-files=all'], gitEnvironment) === '';
@@ -93,13 +97,10 @@ export async function runHostedProbe(input) {
     containerResult = await readJson(containerResultPath);
   } catch {
     throw new Error(
-      `${spec.taskId}: container probe emitted no result: ${[
-        dockerResult.stdout.trim(),
-        dockerResult.stderr.trim(),
-      ]
-        .filter(Boolean)
-        .join(' | ')
-        .slice(-4000)}`,
+      `${spec.taskId}: container probe emitted no result: ${redactedDiagnosticTail(
+        dockerResult.stdout,
+        dockerResult.stderr,
+      )}`,
     );
   }
   const cleanAfter =
@@ -118,6 +119,7 @@ export async function runHostedProbe(input) {
       commit: candidate.base.commit,
       tree: candidate.base.tree,
       projectPath: candidate.repository.projectPath,
+      submodules,
     },
     spec: {
       path: relative(repositoryRoot, options.specPath).replaceAll('\\', '/'),
@@ -143,8 +145,16 @@ export async function runHostedProbe(input) {
   const subjectPath = join(evidenceRoot, `${safeName(spec.taskId)}.subject.json`);
   await writeCanonicalFile(subjectPath, subject);
   if (!success) {
+    const failedCommand = containerResult.commands?.find(
+      (command) => command.required === true && command.exitCode !== 0,
+    );
+    const diagnostic = redactedDiagnosticTail(dockerResult.stdout, dockerResult.stderr);
     throw new Error(
-      `${spec.taskId}: hosted preparation probe failed (${dockerResult.exitCode ?? dockerResult.signal ?? 'unknown'})`,
+      `${spec.taskId}: hosted preparation probe failed at ${
+        failedCommand?.id ?? 'container execution'
+      } (${dockerResult.exitCode ?? dockerResult.signal ?? 'unknown'})${
+        diagnostic ? `: ${diagnostic}` : ''
+      }`,
     );
   }
   return { subjectPath, subject };
@@ -213,6 +223,7 @@ export async function runContainerProbe(input) {
   await verifyBoundFiles(options.workspace, spec);
   const commands = [];
   let ok = true;
+  let failureDiagnostic = '';
   for (const command of spec.preparation) {
     const startedAt = Date.now();
     const result = runFixed(command.executable, command.args, {
@@ -240,6 +251,7 @@ export async function runContainerProbe(input) {
     commands.push(record);
     if (command.required && result.exitCode !== 0) {
       ok = false;
+      failureDiagnostic = redactedDiagnosticTail(result.stdout, result.stderr);
       break;
     }
   }
@@ -252,8 +264,42 @@ export async function runContainerProbe(input) {
     commands,
   };
   await writeCanonicalFile(options.outputPath, result);
-  if (!ok) throw new Error(`${spec.taskId}: required preparation command failed`);
+  if (!ok) {
+    const failedCommand = commands.at(-1);
+    throw new Error(
+      `${spec.taskId}: required preparation command ${failedCommand?.id ?? 'unknown'} failed${
+        failureDiagnostic ? `: ${failureDiagnostic}` : ''
+      }`,
+    );
+  }
   return result;
+}
+
+export function redactedDiagnosticTail(...values) {
+  const text = values
+    .filter((value) => typeof value === 'string' && value.length > 0)
+    .join('\n')
+    .replace(/\u001b\[[0-?]*[ -/]*[@-~]/gu, '')
+    .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/gu, '')
+    .replace(
+      /\b(https?:\/\/)[^/\s:@]+:[^@\s/]+@/giu,
+      '$1[REDACTED]@',
+    )
+    .replace(
+      /\b(Bearer)\s+[A-Za-z0-9._~+/-]+=*/giu,
+      '$1 [REDACTED]',
+    )
+    .replace(
+      /((?:authorization|auth[_-]?token|npm[_-]?token|github[_-]?token|password|secret)\s*[:=]\s*)(?:"[^"]*"|'[^']*'|[^\s]+)/giu,
+      '$1[REDACTED]',
+    )
+    .replace(/\b(?:gh[pousr]_|npm_)[A-Za-z0-9]{20,}\b/gu, '[REDACTED_TOKEN]');
+  return text
+    .split(/\r?\n/u)
+    .slice(-40)
+    .join('\n')
+    .trim()
+    .slice(-4000);
 }
 
 function acquireCandidate(workspace, candidate, environment) {
@@ -272,6 +318,9 @@ function acquireCandidate(workspace, candidate, environment) {
   ) {
     throw new Error(`${candidate.taskId}: acquired Git identity differs`);
   }
+  return reviewedSubmoduleBindings(
+    materializeReviewedSubmoduleClosure(workspace, candidate.base.commit),
+  );
 }
 
 async function verifyBoundFiles(workspace, spec) {
@@ -402,7 +451,12 @@ function runRequired(command, args, cwd, timeoutMs) {
     maxBuffer: 8 * 1024 * 1024,
   });
   if (result.exitCode !== 0) {
-    throw new Error(`${command} ${args[0] ?? ''} failed: ${result.stderr.slice(-2000)}`);
+    throw new Error(
+      `${command} ${args[0] ?? ''} failed: ${redactedDiagnosticTail(
+        result.stdout,
+        result.stderr,
+      ).slice(-2000)}`,
+    );
   }
 }
 

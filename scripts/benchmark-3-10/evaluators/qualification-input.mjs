@@ -1,10 +1,23 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
-import { lstat, open, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
-import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
+import {
+  lstat,
+  open,
+  mkdir,
+  mkdtemp,
+  readFile,
+  readdir,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
+import { delimiter, dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { taskEnvironmentSubstanceSha256 } from '../environments/contracts.mjs';
 import { assertRuntimeMatrix } from '../environments/runtime-matrix.mjs';
+import {
+  hydratePackedSubmodules,
+  materializeReviewedSubmoduleClosure,
+} from '../environments/submodules.mjs';
 import { checkoutDirectory } from '../lib.mjs';
 import { prettyCanonicalJson, sha256, sha256Canonical, writeCanonicalFile } from '../runner/canonical.mjs';
 import { runFixed, sanitizedEnvironment } from '../runner/process.mjs';
@@ -220,36 +233,66 @@ export function calculateQualificationInputRequestDigest(request) {
   return sha256Canonical(body);
 }
 
-async function writeSnapshotPack(checkout, revision, outputPath) {
+export async function writeSnapshotPack(checkout, revision, outputPath) {
   if (
     git(checkout, ['rev-parse', `${revision.commit}^{commit}`]) !== revision.commit ||
     git(checkout, ['rev-parse', `${revision.commit}^{tree}`]) !== revision.tree
   ) {
     throw new Error(`snapshot revision is absent or has the wrong tree: ${revision.commit}`);
   }
-  const objects = new Set([revision.commit, revision.tree]);
-  const listing = git(checkout, ['ls-tree', '-r', '-t', '--full-tree', revision.commit]);
-  for (const line of listing.split('\n').filter(Boolean)) {
-    const match = line.match(/^[0-7]{6}\s+(?:blob|tree)\s+([a-f0-9]{40})\t/u);
-    if (!match) throw new Error(`unable to parse Git tree entry for ${revision.commit}`);
-    objects.add(match[1]);
-  }
   await mkdir(dirname(outputPath), { recursive: true, mode: 0o700 });
-  const output = await open(outputPath, 'w', 0o600);
+  const worktree = await mkdtemp(join(dirname(outputPath), '.snapshot-worktree-'));
+  let worktreeAdded = false;
   try {
-    const result = spawnSync('git', ['-C', checkout, 'pack-objects', '--stdout'], {
-      input: `${[...objects].sort().join('\n')}\n`,
-      encoding: 'utf8',
-      shell: false,
-      stdio: ['pipe', output.fd, 'pipe'],
-    });
-    if (result.status !== 0) throw new Error(`git pack-objects failed: ${result.stderr ?? ''}`);
+    runGit(checkout, ['worktree', 'add', '--quiet', '--detach', worktree, revision.commit]);
+    worktreeAdded = true;
+    const submodules = materializeReviewedSubmoduleClosure(worktree, revision.commit);
+    const objects = new Set();
+    addRevisionObjects(worktree, revision.commit, objects);
+    for (const submodule of submodules) {
+      addRevisionObjects(submodule.repository, submodule.commit, objects);
+    }
+    const alternateObjectDirectories = submodules.map((submodule) =>
+      absoluteGitObjectDirectory(submodule.repository),
+    );
+    const output = await open(outputPath, 'w', 0o600);
+    try {
+      const environment = sanitizedEnvironment(join(worktree, '.snapshot-pack-home'), {
+        ...(alternateObjectDirectories.length > 0
+          ? {
+              GIT_ALTERNATE_OBJECT_DIRECTORIES:
+                alternateObjectDirectories.join(delimiter),
+            }
+          : {}),
+      });
+      const result = spawnSync('git', ['-C', worktree, 'pack-objects', '--stdout'], {
+        input: `${[...objects].sort().join('\n')}\n`,
+        encoding: 'utf8',
+        env: environment,
+        shell: false,
+        stdio: ['pipe', output.fd, 'pipe'],
+      });
+      if (result.status !== 0) {
+        throw new Error(`git pack-objects failed: ${result.stderr ?? ''}`);
+      }
+    } finally {
+      await output.close();
+    }
   } finally {
-    await output.close();
+    if (worktreeAdded) {
+      try {
+        runGit(checkout, ['worktree', 'remove', '--force', worktree]);
+      } catch {
+        await rm(worktree, { recursive: true, force: true });
+        runGit(checkout, ['worktree', 'prune']);
+      }
+    } else {
+      await rm(worktree, { recursive: true, force: true });
+    }
   }
 }
 
-async function hydrateSnapshot(packPath, workspace, revision) {
+export async function hydrateSnapshot(packPath, workspace, revision) {
   await mkdir(workspace, { recursive: true, mode: 0o700 });
   if ((await readdir(workspace)).length !== 0) throw new Error(`snapshot workspace is not empty: ${workspace}`);
   runGit(workspace, ['init', '--quiet']);
@@ -267,6 +310,7 @@ async function hydrateSnapshot(packPath, workspace, revision) {
   runGit(workspace, ['config', 'core.hooksPath', '/dev/null']);
   runGit(workspace, ['update-ref', 'refs/heads/snapshot', revision.commit]);
   runGit(workspace, ['checkout', '--quiet', '--detach', revision.commit]);
+  hydratePackedSubmodules(workspace, revision.commit);
   if (
     git(workspace, ['rev-parse', 'HEAD']) !== revision.commit ||
     git(workspace, ['rev-parse', 'HEAD^{tree}']) !== revision.tree ||
@@ -274,6 +318,24 @@ async function hydrateSnapshot(packPath, workspace, revision) {
   ) {
     throw new Error('hydrated source snapshot differs from the sealed revision');
   }
+}
+
+function addRevisionObjects(repository, commit, objects) {
+  objects.add(commit);
+  objects.add(git(repository, ['rev-parse', `${commit}^{tree}`]));
+  const listing = git(repository, ['ls-tree', '-r', '-t', '--full-tree', commit]);
+  for (const line of listing.split('\n').filter(Boolean)) {
+    const match = line.match(
+      /^[0-7]{6}\s+(?:blob|tree|commit)\s+([a-f0-9]{40})\t/u,
+    );
+    if (!match) throw new Error(`unable to parse Git tree entry for ${commit}`);
+    objects.add(match[1]);
+  }
+}
+
+function absoluteGitObjectDirectory(repository) {
+  const path = git(repository, ['rev-parse', '--git-path', 'objects']);
+  return isAbsolute(path) ? resolve(path) : resolve(repository, path);
 }
 
 async function collectInputFiles(root, paths) {

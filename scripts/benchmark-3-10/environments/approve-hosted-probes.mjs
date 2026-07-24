@@ -197,7 +197,8 @@ export function assertHostedProbeEvidence(input) {
     subject.source?.repository !== candidate.repository.url ||
     subject.source?.commit !== spec.base.commit ||
     subject.source?.tree !== spec.base.tree ||
-    subject.source?.projectPath !== spec.projectPath
+    subject.source?.projectPath !== spec.projectPath ||
+    !validSubmoduleBindings(subject.source?.submodules)
   ) {
     throw new Error(`${spec.taskId}: hosted probe source binding differs`);
   }
@@ -447,6 +448,33 @@ function untaggedImageReference(reference) {
   const separator = reference.lastIndexOf(':');
   const slash = reference.lastIndexOf('/');
   return separator > slash ? reference.slice(0, separator) : reference;
+}
+
+function validSubmoduleBindings(value) {
+  if (!Array.isArray(value)) return false;
+  const paths = new Set();
+  let previous = '';
+  for (const binding of value) {
+    if (
+      typeof binding?.path !== 'string' ||
+      !/^[A-Za-z0-9._/-]+$/u.test(binding.path) ||
+      binding.path.startsWith('/') ||
+      binding.path.split('/').some((segment) => ['', '.', '..', '.git'].includes(segment)) ||
+      paths.has(binding.path) ||
+      (previous && previous.localeCompare(binding.path) >= 0) ||
+      typeof binding.url !== 'string' ||
+      !/^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+(?:\.git)?$/u.test(
+        binding.url,
+      ) ||
+      !/^[a-f0-9]{40}$/u.test(binding.commit ?? '') ||
+      !/^[a-f0-9]{40}$/u.test(binding.tree ?? '')
+    ) {
+      return false;
+    }
+    paths.add(binding.path);
+    previous = binding.path;
+  }
+  return true;
 }
 
 function withoutKey(value, key) {
