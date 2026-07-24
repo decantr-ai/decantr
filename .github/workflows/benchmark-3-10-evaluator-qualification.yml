@@ -108,6 +108,22 @@ jobs:
             --request request.json \
             --workspace-root "$RUNNER_TEMP/qualification-workspaces"
 
+      - name: Grant the fixed non-root identity workspace access
+        run: |
+          WORKSPACE_ROOT="$RUNNER_TEMP/qualification-workspaces"
+          RUNNER_UID="$(id -u)"
+          command -v setfacl
+          find "$WORKSPACE_ROOT" -type d -print0 |
+            xargs -0 -r setfacl -m "u:10001:rwx,u:${RUNNER_UID}:rwx,d:u:${RUNNER_UID}:rwx"
+          find "$WORKSPACE_ROOT" -type f -perm /111 -print0 |
+            xargs -0 -r setfacl -m "u:10001:rwx,u:${RUNNER_UID}:rwx"
+          find "$WORKSPACE_ROOT" -type f ! -perm /111 -print0 |
+            xargs -0 -r setfacl -m "u:10001:rw-,u:${RUNNER_UID}:rw-"
+          for role in base expected; do
+            sudo -u '#10001' test -r "$WORKSPACE_ROOT/$role/.git/HEAD"
+            sudo -u '#10001' test -w "$WORKSPACE_ROOT/$role"
+          done
+
       - name: Preload the reviewed Linux amd64 dependency proxy
         env:
           PROXY_MANIFEST_REFERENCE: docker.io/ubuntu/squid@sha256:8fafd41d6ddceb295d26eea9938321d825ac5351c7e46cf6a8aa5d093b8ed1ce

@@ -46,6 +46,9 @@ test('evaluator workflow uses a fixed GitHub host and read-only GHCR credentials
     ),
     true,
   );
+  assert.equal(workflow.includes('xargs -0 -r setfacl'), true);
+  assert.equal(workflow.includes(`sudo -u '#10001' test -w`), true);
+  assert.equal(workflow.includes('chmod -R a+rwX'), false);
 });
 
 test('private input workflow is repository-gated and uses the shared controller', async () => {
