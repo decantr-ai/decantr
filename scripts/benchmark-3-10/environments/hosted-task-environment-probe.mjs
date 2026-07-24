@@ -84,14 +84,14 @@ export async function runHostedProbe(input) {
         '--mount',
         `type=bind,src=${options.specPath},dst=/input/spec.json,readonly`,
         '--mount',
-        `type=bind,src=${fileURLToPath(import.meta.url)},dst=/input/hosted-task-environment-probe.mjs,readonly`,
+        `type=bind,src=${benchmarkRoot},dst=/input/benchmark,readonly`,
         '--mount',
         `type=bind,src=${evidenceRoot},dst=/evidence,rw`,
         '--env',
         `DECANTR_BENCHMARK_IMAGE_DIGEST=${resolvedImage}`,
         resolvedImage,
         '/usr/local/bin/node',
-        '/input/hosted-task-environment-probe.mjs',
+        '/input/benchmark/environments/hosted-task-environment-probe.mjs',
         '--mode',
         'container',
         '--spec',
@@ -112,7 +112,20 @@ export async function runHostedProbe(input) {
     chownBack(workspace, evidenceRoot);
   }
 
-  const containerResult = await readJson(containerResultPath);
+  let containerResult;
+  try {
+    containerResult = await readJson(containerResultPath);
+  } catch {
+    throw new Error(
+      `${spec.taskId}: container probe emitted no result: ${[
+        dockerResult.stdout.trim(),
+        dockerResult.stderr.trim(),
+      ]
+        .filter(Boolean)
+        .join(' | ')
+        .slice(-4000)}`,
+    );
+  }
   const cleanAfter =
     gitOutput(workspace, ['status', '--porcelain=v1', '--untracked-files=all'], gitEnvironment) === '';
   const success =
