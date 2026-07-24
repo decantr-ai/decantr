@@ -4,7 +4,7 @@ Decantr is an **agent-neutral UI change-control layer**. It observes project-own
 
 **Decantr 3.9.4 is the current published stable release. Decantr 3.10 is an active proof program and is neither released nor value-proven.**
 
-The 3.10 no-cost harness is testable, but the experiment is not runnable: 31/40 evaluator specs and 8/40 environment specs carry approval metadata, all 26 runtime profiles remain unbuilt/unverified, no external container-qualified evaluator receipt or human-approved Day-0 oracle exists, private qualification transfer is unresolved, and no paid model result exists. See the active program for the full evidence ledger.
+The 3.10 no-cost harness is testable, but the experiment is not runnable: 31/40 evaluator specs and 8/40 environment specs carry approval metadata. All 26 hosted runtime-profile probes passed on candidate commit `37c10c88`, but the matrix remains draft and unlocked because 32 environment specs are unapproved. No external container-qualified evaluator receipt or human-approved Day-0 oracle exists, private qualification transfer is unresolved, and no paid model result exists. See the active program for the full evidence ledger.
 
 The unreleased 3.10 candidate loop is:
 
@@ -28,6 +28,7 @@ The approved 3.10 model treats routes, layouts, components, stories, overlays, f
 ## Current Program And Evidence
 
 - [Decantr 3.10 UI Change Control Proof](programs/2026-07-22-decantr-3-10-ui-change-control-proof.md): active implementation and falsification boundary.
+- [Decantr 3.10 exploratory adoption evidence](benchmarks/2026-07-24-decantr-3-10-exploratory-adoption-evidence.md): five external Brownfield targets, one generated Greenfield control, the 28-repository scanner rerun, and hosted runtime-profile evidence. This is deterministic development evidence, not model-lift proof.
 - [Decantr 3.9.4 Day-0 Authority Baseline](benchmarks/2026-07-22-decantr-3-9-4-day-zero.md): 28-repository scanner baseline. A parseable scan is explicitly not a correctness result.
 - [Decantr 3.9 Governed Change Proof program](programs/2026-07-16-decantr-3-9-adoption-proof-program.md): historical program for the current published line.
 - [Decantr 3.9.4 release note](releases/2026-07-21-decantr-3-9-4-tailwind-source-isolation.md): current stable release history.

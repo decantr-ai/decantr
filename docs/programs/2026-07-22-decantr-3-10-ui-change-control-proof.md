@@ -109,7 +109,7 @@ Before model A/B runs, Decantr must pass an automatic authority audit against hu
 
 The original Angular failure is a release-blocking regression target: test navigation metadata must not outrank the production `routes.ts` graph, and a Tailwind dependency must not outrank PrimeNG, Angular builder styles, or SCSS authority.
 
-The current candidate Day-0 rerun reports 16 `ready`, 12 `limited`, and zero `blocked` or `unsupported` targets. That is a scanner/discovery diagnostic on the pinned corpus. It is not the human-oracle Day-0 gate, a task-outcome result, or evidence that Decantr improves model performance.
+The current candidate Day-0 rerun reports 17 `ready`, 11 `limited`, and zero `blocked` or `unsupported` targets. That is a scanner/discovery diagnostic on the pinned corpus. It is not the human-oracle Day-0 gate, a task-outcome result, or evidence that Decantr improves model performance.
 
 ## A/B Design
 
@@ -155,14 +155,14 @@ Official provider pricing was reviewed and locked on 2026-07-22 in [`scripts/ben
 
 ## Current Evidence State
 
-As of 2026-07-22, the no-cost harness tests pass, but the experiment is not runnable and no value result exists:
+As of 2026-07-24, the no-cost harness tests pass, but the experiment is not runnable and no value result exists:
 
 - all 28 corpus repositories and the 24/16 task partition are frozen;
 - 31 of 40 evaluator specs carry independent review metadata: 18 of 24 development and 13 of 16 qualification; nine remain draft;
 - 8 of 40 task environment specs are approved: 2 development and 6 qualification; 32 remain draft;
-- the draft runtime matrix contains 26 profiles, all unbuilt and unverified;
+- all 26 hosted runtime-profile probes passed on candidate commit `37c10c88`, and their retained OIDC provenance bundles passed local re-verification; the checked-in matrix remains draft and unlocked because 32 task environment specs are still unapproved;
 - no external container-qualified evaluator receipt has been retained;
-- the candidate Day-0 scanner report is 16 `ready` and 12 `limited`, but no human-approved Day-0 authority oracle exists;
+- the candidate Day-0 scanner report is 17 `ready` and 11 `limited`, but no human-approved Day-0 authority oracle exists;
 - no candidate tarball set, audited paid provider adapter, budget approval, provider run, blinded review, power pilot, or qualification statistic exists;
 - no signed GitHub-hosted split-stage agent/evaluator executor exists; host-run records are explicitly test-only;
 - private qualification input transfer remains an unresolved security boundary.

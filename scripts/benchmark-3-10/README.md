@@ -289,7 +289,7 @@ The tests make no provider calls and spend no money.
 
 ## Current Day-0 Diagnostic
 
-The current candidate Day-0 rerun reports 16 `ready`, 12 `limited`, and zero `blocked` or `unsupported` targets across the 28 pinned repositories. This result describes current scanner/discovery output only. It has not replaced the required human-approved authority oracle, does not score task outcomes, and does not show that Decantr makes either locked model better.
+The current candidate Day-0 rerun reports 17 `ready`, 11 `limited`, and zero `blocked` or `unsupported` targets across the 28 pinned repositories. This result describes current scanner/discovery output only. It has not replaced the required human-approved authority oracle, does not score task outcomes, and does not show that Decantr makes either locked model better.
 
 ## Evidence Still Required
 
@@ -297,10 +297,10 @@ The task candidate set and 24/16 partition are frozen, but the harness cannot pr
 
 - evaluator review metadata: 31/40 approved, comprising 18/24 development and 13/16 qualification; nine remain draft;
 - environment review metadata: 8/40 approved, comprising 2/24 development and 6/16 qualification; 32 remain draft;
-- runtime matrix: 26 profiles, all unbuilt and unverified; the matrix remains draft;
+- runtime profiles: all 26 hosted probes passed on candidate commit `37c10c88`, and every retained OIDC provenance bundle passed local re-verification; the checked-in matrix remains draft and unlocked because 32 environment specs are still unapproved;
 - evaluator qualification: zero retained external container attestations or materializable receipts;
 - runnable task manifests: zero, because the qualification and runtime gates are incomplete;
-- Day-0: 16 `ready` and 12 `limited` scanner results, with no human-approved authority oracle;
+- Day-0: 17 `ready` and 11 `limited` scanner results, with no human-approved authority oracle;
 - paid execution: no audited OpenAI or Anthropic adapter, candidate tarball set, budget approval, provider credentials, power pilot, paid trajectory, blinded review, or qualification statistic;
 - model execution: no signed GitHub-hosted split-stage agent/evaluator workflow exists, so host `run-one` records are test-only and cannot become release evidence;
 - private qualification transfer: no reviewed secret-preserving source-artifact path.

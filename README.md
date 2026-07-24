@@ -171,6 +171,7 @@ Paid benchmark execution is not implied by local validation. The 320-run experim
 - [Command surface](docs/reference/command-surface.md)
 - [FAQ](docs/faq.md)
 - [3.10 UI Change Control Proof program](docs/programs/2026-07-22-decantr-3-10-ui-change-control-proof.md)
+- [3.10 exploratory adoption evidence](docs/benchmarks/2026-07-24-decantr-3-10-exploratory-adoption-evidence.md) (deterministic development evidence, not model-lift proof)
 - [3.9.4 Day-0 authority baseline](docs/benchmarks/2026-07-22-decantr-3-9-4-day-zero.md)
 - [3.9 Governed Change Proof program](docs/programs/2026-07-16-decantr-3-9-adoption-proof-program.md) (historical current-release evidence)
 - [3.9.4 release note](docs/releases/2026-07-21-decantr-3-9-4-tailwind-source-isolation.md) (published stable history)
