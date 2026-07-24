@@ -1,6 +1,10 @@
 # Day-0 Target Oracle
 
-This directory contains the fail-closed audit mechanism for Decantr 3.10 UI target discovery. It does not contain an approved 28-repository oracle yet. A generated draft is deliberately not audit-ready.
+This directory contains the fail-closed audit mechanism and the sole-maintainer-approved
+28-repository authority oracle for Decantr 3.10 UI target discovery. The oracle was
+approved on 2026-07-24 after review of the pinned production authority and styling
+sources. It establishes the Day-0 discovery gate only; it is not an independent
+model-outcome review.
 
 The audit compares a normalized `decantr-day-zero-report.v1` report with a corpus-bound, human-approved expectation for every repository. It checks:
 

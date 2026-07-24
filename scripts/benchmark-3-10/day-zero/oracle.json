@@ -1,0 +1,2561 @@
+{
+  "schemaVersion": "decantr-day-zero-target-oracle.v1",
+  "program": "decantr-3.10-ui-change-control-proof",
+  "corpus": {
+    "schemaVersion": "decantr-benchmark-corpus.v1",
+    "sha256": "44af2396816fcacac0d1e939d8b0c3380f1b1295974a791a75369dfd6aa7d91f",
+    "repositoryCount": 28,
+    "repositoryIds": [
+      "angular-realworld",
+      "sakai-ng",
+      "ng-matero",
+      "ngx-admin",
+      "spartan",
+      "tanstack-start-dashboard",
+      "start-ui-web",
+      "bulletproof-react-vite",
+      "openstatus-dashboard",
+      "payload-website-template",
+      "linode-manager",
+      "epic-stack",
+      "hoppscotch-selfhost-web",
+      "sakai-vue",
+      "nuxt-ui-dashboard",
+      "shadcn-vue-v4",
+      "vben-web-antd",
+      "soybean-admin",
+      "immich-web",
+      "kener",
+      "upsnap-frontend",
+      "svgl",
+      "emdash-simple",
+      "tauri-start-solid",
+      "solid-start-hackernews",
+      "primer-react",
+      "figma-sds",
+      "forma-36"
+    ]
+  },
+  "sourceReport": {
+    "schemaVersion": "decantr-day-zero-report.v1",
+    "sha256": "d602aa83337c5c8047f2e1a52d3841eddbe003f5d7b4a4c1419ae832b105fa81"
+  },
+  "review": {
+    "status": "approved",
+    "approvedBy": "David Aimi (sole maintainer), source review executed with OpenAI Codex",
+    "approvedAt": "2026-07-24T13:15:00.000Z",
+    "method": "Reviewed every pinned selected app root, canonical route or component authority source, styling configuration or entrypoint, excluded-path behavior, and disclosed limitation. Limited and unresolved design-system targets remain explicitly limited.",
+    "notes": [
+      "Sole-maintainer approval establishes the Day-0 authority oracle only; it is not a second independent model-outcome review.",
+      "Observed minimums are accepted only at the exact frozen corpus commits and remain fail-closed on authority, completeness, inventory, styling, or limitation regression."
+    ]
+  },
+  "repositories": [
+    {
+      "id": "angular-realworld",
+      "observedAtDraft": {
+        "status": "completed",
+        "applicability": "strong_fit",
+        "projectMode": "application",
+        "routeStrategy": "angular-router",
+        "routeAuthority": "proven",
+        "routeCompleteness": "complete",
+        "taskableTargets": 10,
+        "components": 25,
+        "stylingApproach": "css",
+        "stylingConfidence": "high",
+        "limitations": [
+          {
+            "source": "discovery",
+            "text": "Configured Angular style entry is not present inside the selected app: realworld/assets/theme/styles.css"
+          },
+          {
+            "source": "discovery",
+            "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+          },
+          {
+            "source": "discovery",
+            "text": "Angular component inventory is static and advisory; runtime-created components are not proven."
+          },
+          {
+            "source": "discovery",
+            "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+          },
+          {
+            "source": "styling",
+            "text": "Configured Angular style entry is not present inside the selected app: realworld/assets/theme/styles.css"
+          }
+        ]
+      },
+      "expectations": {
+        "projectMode": "application",
+        "routeAuthority": {
+          "family": "angular-realworld-production-ui-authority",
+          "acceptedStrategies": [
+            "angular-router"
+          ],
+          "minimumLevel": "proven",
+          "minimumCompleteness": "complete"
+        },
+        "minimums": {
+          "taskableTargets": 10,
+          "components": 25
+        },
+        "stylingAuthority": {
+          "family": "angular-realworld-project-owned-styling",
+          "acceptedApproaches": [
+            "css"
+          ],
+          "minimumConfidence": "high"
+        },
+        "knownLimitations": {
+          "allowUnexpected": false,
+          "required": [
+            {
+              "id": "reviewed-01",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Configured Angular style entry is not present inside the selected app: realworld/assets/theme/styles.css"
+            },
+            {
+              "id": "reviewed-02",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+            },
+            {
+              "id": "reviewed-03",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Angular component inventory is static and advisory; runtime-created components are not proven."
+            },
+            {
+              "id": "reviewed-04",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+            },
+            {
+              "id": "reviewed-05",
+              "source": "styling",
+              "match": "exact",
+              "text": "Configured Angular style entry is not present inside the selected app: realworld/assets/theme/styles.css"
+            }
+          ],
+          "allowed": []
+        }
+      },
+      "review": {
+        "status": "approved",
+        "evidence": [
+          "Pinned commit dd99ed2cf39c805d719f943c5d7061a5683d98a8",
+          "src/app/app.config.ts",
+          "src/app/app.routes.ts",
+          "angular.json"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "id": "sakai-ng",
+      "observedAtDraft": {
+        "status": "completed",
+        "applicability": "strong_fit",
+        "projectMode": "application",
+        "routeStrategy": "angular-router",
+        "routeAuthority": "proven",
+        "routeCompleteness": "complete",
+        "taskableTargets": 25,
+        "components": 45,
+        "stylingApproach": "primeng-tailwind-scss",
+        "stylingConfidence": "high",
+        "limitations": [
+          {
+            "source": "discovery",
+            "text": "Configured Angular style entry is not present inside the selected app: src/assets/styles.scss"
+          },
+          {
+            "source": "discovery",
+            "text": "Configured Angular style entry is not present inside the selected app: src/assets/tailwind.css"
+          },
+          {
+            "source": "discovery",
+            "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+          },
+          {
+            "source": "discovery",
+            "text": "Angular component inventory is static and advisory; runtime-created components are not proven."
+          },
+          {
+            "source": "discovery",
+            "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+          },
+          {
+            "source": "styling",
+            "text": "Configured Angular style entry is not present inside the selected app: src/assets/styles.scss"
+          },
+          {
+            "source": "styling",
+            "text": "Configured Angular style entry is not present inside the selected app: src/assets/tailwind.css"
+          }
+        ]
+      },
+      "expectations": {
+        "projectMode": "application",
+        "routeAuthority": {
+          "family": "sakai-ng-production-ui-authority",
+          "acceptedStrategies": [
+            "angular-router"
+          ],
+          "minimumLevel": "proven",
+          "minimumCompleteness": "complete"
+        },
+        "minimums": {
+          "taskableTargets": 25,
+          "components": 45
+        },
+        "stylingAuthority": {
+          "family": "sakai-ng-project-owned-styling",
+          "acceptedApproaches": [
+            "primeng-tailwind-scss"
+          ],
+          "minimumConfidence": "high"
+        },
+        "knownLimitations": {
+          "allowUnexpected": false,
+          "required": [
+            {
+              "id": "reviewed-01",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Configured Angular style entry is not present inside the selected app: src/assets/styles.scss"
+            },
+            {
+              "id": "reviewed-02",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Configured Angular style entry is not present inside the selected app: src/assets/tailwind.css"
+            },
+            {
+              "id": "reviewed-03",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+            },
+            {
+              "id": "reviewed-04",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Angular component inventory is static and advisory; runtime-created components are not proven."
+            },
+            {
+              "id": "reviewed-05",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+            },
+            {
+              "id": "reviewed-06",
+              "source": "styling",
+              "match": "exact",
+              "text": "Configured Angular style entry is not present inside the selected app: src/assets/styles.scss"
+            },
+            {
+              "id": "reviewed-07",
+              "source": "styling",
+              "match": "exact",
+              "text": "Configured Angular style entry is not present inside the selected app: src/assets/tailwind.css"
+            }
+          ],
+          "allowed": []
+        }
+      },
+      "review": {
+        "status": "approved",
+        "evidence": [
+          "Pinned commit 96d71496d685b5c110efd2875abaa2bf89a56ad2",
+          "src/app.config.ts",
+          "src/app.routes.ts",
+          "angular.json"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "id": "ng-matero",
+      "observedAtDraft": {
+        "status": "completed",
+        "applicability": "strong_fit",
+        "projectMode": "application",
+        "routeStrategy": "angular-router",
+        "routeAuthority": "proven",
+        "routeCompleteness": "complete",
+        "taskableTargets": 66,
+        "components": 115,
+        "stylingApproach": "scss",
+        "stylingConfidence": "high",
+        "limitations": [
+          {
+            "source": "discovery",
+            "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+          },
+          {
+            "source": "discovery",
+            "text": "Angular component inventory is static and advisory; runtime-created components are not proven."
+          },
+          {
+            "source": "discovery",
+            "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+          }
+        ]
+      },
+      "expectations": {
+        "projectMode": "application",
+        "routeAuthority": {
+          "family": "ng-matero-production-ui-authority",
+          "acceptedStrategies": [
+            "angular-router"
+          ],
+          "minimumLevel": "proven",
+          "minimumCompleteness": "complete"
+        },
+        "minimums": {
+          "taskableTargets": 66,
+          "components": 115
+        },
+        "stylingAuthority": {
+          "family": "ng-matero-project-owned-styling",
+          "acceptedApproaches": [
+            "scss"
+          ],
+          "minimumConfidence": "high"
+        },
+        "knownLimitations": {
+          "allowUnexpected": false,
+          "required": [
+            {
+              "id": "reviewed-01",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+            },
+            {
+              "id": "reviewed-02",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Angular component inventory is static and advisory; runtime-created components are not proven."
+            },
+            {
+              "id": "reviewed-03",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+            }
+          ],
+          "allowed": []
+        }
+      },
+      "review": {
+        "status": "approved",
+        "evidence": [
+          "Pinned commit 9e9d3af2ae8a03dff55bc671914afe9f0a0b6329",
+          "src/app/app.routes.ts",
+          "src/app/routes/design/design.routes.ts",
+          "src/styles.scss"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "id": "ngx-admin",
+      "observedAtDraft": {
+        "status": "completed",
+        "applicability": "strong_fit",
+        "projectMode": "application",
+        "routeStrategy": "angular-router",
+        "routeAuthority": "proven",
+        "routeCompleteness": "complete",
+        "taskableTargets": 57,
+        "components": 168,
+        "stylingApproach": "nebular-scss",
+        "stylingConfidence": "high",
+        "limitations": [
+          {
+            "source": "discovery",
+            "text": "Configured Angular style entry is not present inside the selected app: node_modules/@fortawesome/fontawesome-free/css/all.css"
+          },
+          {
+            "source": "discovery",
+            "text": "Configured Angular style entry is not present inside the selected app: node_modules/bootstrap/dist/css/bootstrap.css"
+          },
+          {
+            "source": "discovery",
+            "text": "Configured Angular style entry is not present inside the selected app: node_modules/ionicons/scss/ionicons.scss"
+          },
+          {
+            "source": "discovery",
+            "text": "Configured Angular style entry is not present inside the selected app: node_modules/leaflet/dist/leaflet.css"
+          },
+          {
+            "source": "discovery",
+            "text": "Configured Angular style entry is not present inside the selected app: node_modules/nebular-icons/scss/nebular-icons.scss"
+          },
+          {
+            "source": "discovery",
+            "text": "Configured Angular style entry is not present inside the selected app: node_modules/pace-js/templates/pace-theme-flash.tmpl.css"
+          },
+          {
+            "source": "discovery",
+            "text": "Configured Angular style entry is not present inside the selected app: node_modules/roboto-fontface/css/roboto/roboto-fontface.css"
+          },
+          {
+            "source": "discovery",
+            "text": "Configured Angular style entry is not present inside the selected app: node_modules/socicon/css/socicon.css"
+          },
+          {
+            "source": "discovery",
+            "text": "Configured Angular style entry is not present inside the selected app: node_modules/typeface-exo/index.css"
+          },
+          {
+            "source": "discovery",
+            "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+          },
+          {
+            "source": "discovery",
+            "text": "Angular component inventory is static and advisory; runtime-created components are not proven."
+          },
+          {
+            "source": "discovery",
+            "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+          },
+          {
+            "source": "styling",
+            "text": "Configured Angular style entry is not present inside the selected app: node_modules/@fortawesome/fontawesome-free/css/all.css"
+          },
+          {
+            "source": "styling",
+            "text": "Configured Angular style entry is not present inside the selected app: node_modules/bootstrap/dist/css/bootstrap.css"
+          },
+          {
+            "source": "styling",
+            "text": "Configured Angular style entry is not present inside the selected app: node_modules/ionicons/scss/ionicons.scss"
+          },
+          {
+            "source": "styling",
+            "text": "Configured Angular style entry is not present inside the selected app: node_modules/leaflet/dist/leaflet.css"
+          },
+          {
+            "source": "styling",
+            "text": "Configured Angular style entry is not present inside the selected app: node_modules/nebular-icons/scss/nebular-icons.scss"
+          },
+          {
+            "source": "styling",
+            "text": "Configured Angular style entry is not present inside the selected app: node_modules/pace-js/templates/pace-theme-flash.tmpl.css"
+          },
+          {
+            "source": "styling",
+            "text": "Configured Angular style entry is not present inside the selected app: node_modules/roboto-fontface/css/roboto/roboto-fontface.css"
+          },
+          {
+            "source": "styling",
+            "text": "Configured Angular style entry is not present inside the selected app: node_modules/socicon/css/socicon.css"
+          },
+          {
+            "source": "styling",
+            "text": "Configured Angular style entry is not present inside the selected app: node_modules/typeface-exo/index.css"
+          }
+        ]
+      },
+      "expectations": {
+        "projectMode": "application",
+        "routeAuthority": {
+          "family": "ngx-admin-production-ui-authority",
+          "acceptedStrategies": [
+            "angular-router"
+          ],
+          "minimumLevel": "proven",
+          "minimumCompleteness": "complete"
+        },
+        "minimums": {
+          "taskableTargets": 57,
+          "components": 168
+        },
+        "stylingAuthority": {
+          "family": "ngx-admin-project-owned-styling",
+          "acceptedApproaches": [
+            "nebular-scss"
+          ],
+          "minimumConfidence": "high"
+        },
+        "knownLimitations": {
+          "allowUnexpected": false,
+          "required": [
+            {
+              "id": "reviewed-01",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Configured Angular style entry is not present inside the selected app: node_modules/@fortawesome/fontawesome-free/css/all.css"
+            },
+            {
+              "id": "reviewed-02",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Configured Angular style entry is not present inside the selected app: node_modules/bootstrap/dist/css/bootstrap.css"
+            },
+            {
+              "id": "reviewed-03",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Configured Angular style entry is not present inside the selected app: node_modules/ionicons/scss/ionicons.scss"
+            },
+            {
+              "id": "reviewed-04",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Configured Angular style entry is not present inside the selected app: node_modules/leaflet/dist/leaflet.css"
+            },
+            {
+              "id": "reviewed-05",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Configured Angular style entry is not present inside the selected app: node_modules/nebular-icons/scss/nebular-icons.scss"
+            },
+            {
+              "id": "reviewed-06",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Configured Angular style entry is not present inside the selected app: node_modules/pace-js/templates/pace-theme-flash.tmpl.css"
+            },
+            {
+              "id": "reviewed-07",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Configured Angular style entry is not present inside the selected app: node_modules/roboto-fontface/css/roboto/roboto-fontface.css"
+            },
+            {
+              "id": "reviewed-08",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Configured Angular style entry is not present inside the selected app: node_modules/socicon/css/socicon.css"
+            },
+            {
+              "id": "reviewed-09",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Configured Angular style entry is not present inside the selected app: node_modules/typeface-exo/index.css"
+            },
+            {
+              "id": "reviewed-10",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+            },
+            {
+              "id": "reviewed-11",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Angular component inventory is static and advisory; runtime-created components are not proven."
+            },
+            {
+              "id": "reviewed-12",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+            },
+            {
+              "id": "reviewed-13",
+              "source": "styling",
+              "match": "exact",
+              "text": "Configured Angular style entry is not present inside the selected app: node_modules/@fortawesome/fontawesome-free/css/all.css"
+            },
+            {
+              "id": "reviewed-14",
+              "source": "styling",
+              "match": "exact",
+              "text": "Configured Angular style entry is not present inside the selected app: node_modules/bootstrap/dist/css/bootstrap.css"
+            },
+            {
+              "id": "reviewed-15",
+              "source": "styling",
+              "match": "exact",
+              "text": "Configured Angular style entry is not present inside the selected app: node_modules/ionicons/scss/ionicons.scss"
+            },
+            {
+              "id": "reviewed-16",
+              "source": "styling",
+              "match": "exact",
+              "text": "Configured Angular style entry is not present inside the selected app: node_modules/leaflet/dist/leaflet.css"
+            },
+            {
+              "id": "reviewed-17",
+              "source": "styling",
+              "match": "exact",
+              "text": "Configured Angular style entry is not present inside the selected app: node_modules/nebular-icons/scss/nebular-icons.scss"
+            },
+            {
+              "id": "reviewed-18",
+              "source": "styling",
+              "match": "exact",
+              "text": "Configured Angular style entry is not present inside the selected app: node_modules/pace-js/templates/pace-theme-flash.tmpl.css"
+            },
+            {
+              "id": "reviewed-19",
+              "source": "styling",
+              "match": "exact",
+              "text": "Configured Angular style entry is not present inside the selected app: node_modules/roboto-fontface/css/roboto/roboto-fontface.css"
+            },
+            {
+              "id": "reviewed-20",
+              "source": "styling",
+              "match": "exact",
+              "text": "Configured Angular style entry is not present inside the selected app: node_modules/socicon/css/socicon.css"
+            },
+            {
+              "id": "reviewed-21",
+              "source": "styling",
+              "match": "exact",
+              "text": "Configured Angular style entry is not present inside the selected app: node_modules/typeface-exo/index.css"
+            }
+          ],
+          "allowed": []
+        }
+      },
+      "review": {
+        "status": "approved",
+        "evidence": [
+          "Pinned commit dc6a442704bfef34b776b5eb15faf852d9e2f75c",
+          "src/app/app-routing.module.ts",
+          "src/app/pages/pages-routing.module.ts",
+          "angular.json"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "id": "spartan",
+      "observedAtDraft": {
+        "status": "completed",
+        "applicability": "partial_fit",
+        "projectMode": "component-library",
+        "routeStrategy": "angular-router",
+        "routeAuthority": "unresolved",
+        "routeCompleteness": "unknown",
+        "taskableTargets": 0,
+        "components": 710,
+        "stylingApproach": "tailwind",
+        "stylingConfidence": "high",
+        "limitations": [
+          {
+            "source": "discovery",
+            "text": "No bootstrap-reachable provideRouter or RouterModule.forRoot declaration was resolved; route-scoped governance is not proven."
+          },
+          {
+            "source": "discovery",
+            "text": "No taskable route declarations were discovered from static source evidence."
+          },
+          {
+            "source": "discovery",
+            "text": "Angular component inventory is static and advisory; runtime-created components are not proven."
+          },
+          {
+            "source": "discovery",
+            "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+          }
+        ]
+      },
+      "expectations": {
+        "projectMode": "component-library",
+        "routeAuthority": {
+          "family": "spartan-production-ui-authority",
+          "acceptedStrategies": [
+            "angular-router"
+          ],
+          "minimumLevel": "unresolved",
+          "minimumCompleteness": "unknown"
+        },
+        "minimums": {
+          "taskableTargets": 0,
+          "components": 710
+        },
+        "stylingAuthority": {
+          "family": "spartan-project-owned-styling",
+          "acceptedApproaches": [
+            "tailwind"
+          ],
+          "minimumConfidence": "high"
+        },
+        "knownLimitations": {
+          "allowUnexpected": false,
+          "required": [
+            {
+              "id": "reviewed-01",
+              "source": "discovery",
+              "match": "exact",
+              "text": "No bootstrap-reachable provideRouter or RouterModule.forRoot declaration was resolved; route-scoped governance is not proven."
+            },
+            {
+              "id": "reviewed-02",
+              "source": "discovery",
+              "match": "exact",
+              "text": "No taskable route declarations were discovered from static source evidence."
+            },
+            {
+              "id": "reviewed-03",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Angular component inventory is static and advisory; runtime-created components are not proven."
+            },
+            {
+              "id": "reviewed-04",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+            }
+          ],
+          "allowed": []
+        }
+      },
+      "review": {
+        "status": "approved",
+        "evidence": [
+          "Pinned commit 5399f195fa25f9e613a17098775a4514abf5c13e",
+          "apps/app/src/main.ts",
+          "apps/app/src/styles.css",
+          "apps/app/package.json"
+        ],
+        "notes": [
+          "Reviewed as an intentionally limited non-application or unresolved topology target."
+        ]
+      }
+    },
+    {
+      "id": "tanstack-start-dashboard",
+      "observedAtDraft": {
+        "status": "completed",
+        "applicability": "strong_fit",
+        "projectMode": "application",
+        "routeStrategy": "source-declared",
+        "routeAuthority": "proven",
+        "routeCompleteness": "complete",
+        "taskableTargets": 22,
+        "components": 392,
+        "stylingApproach": "tailwind",
+        "stylingConfidence": "high",
+        "limitations": [
+          {
+            "source": "discovery",
+            "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+          },
+          {
+            "source": "discovery",
+            "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+          }
+        ]
+      },
+      "expectations": {
+        "projectMode": "application",
+        "routeAuthority": {
+          "family": "tanstack-start-dashboard-production-ui-authority",
+          "acceptedStrategies": [
+            "source-declared"
+          ],
+          "minimumLevel": "proven",
+          "minimumCompleteness": "complete"
+        },
+        "minimums": {
+          "taskableTargets": 22,
+          "components": 392
+        },
+        "stylingAuthority": {
+          "family": "tanstack-start-dashboard-project-owned-styling",
+          "acceptedApproaches": [
+            "tailwind"
+          ],
+          "minimumConfidence": "high"
+        },
+        "knownLimitations": {
+          "allowUnexpected": false,
+          "required": [
+            {
+              "id": "reviewed-01",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+            },
+            {
+              "id": "reviewed-02",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+            }
+          ],
+          "allowed": []
+        }
+      },
+      "review": {
+        "status": "approved",
+        "evidence": [
+          "Pinned commit 433a5a073c944d25dcd59922b4de7193bde3c03e",
+          "src/routes/index.tsx",
+          "src/routes/dashboard.tsx",
+          "vite.config.ts"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "id": "start-ui-web",
+      "observedAtDraft": {
+        "status": "completed",
+        "applicability": "strong_fit",
+        "projectMode": "application",
+        "routeStrategy": "source-declared",
+        "routeAuthority": "proven",
+        "routeCompleteness": "complete",
+        "taskableTargets": 20,
+        "components": 292,
+        "stylingApproach": "tailwind",
+        "stylingConfidence": "high",
+        "limitations": [
+          {
+            "source": "discovery",
+            "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+          },
+          {
+            "source": "discovery",
+            "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+          }
+        ]
+      },
+      "expectations": {
+        "projectMode": "application",
+        "routeAuthority": {
+          "family": "start-ui-web-production-ui-authority",
+          "acceptedStrategies": [
+            "source-declared"
+          ],
+          "minimumLevel": "proven",
+          "minimumCompleteness": "complete"
+        },
+        "minimums": {
+          "taskableTargets": 20,
+          "components": 292
+        },
+        "stylingAuthority": {
+          "family": "start-ui-web-project-owned-styling",
+          "acceptedApproaches": [
+            "tailwind"
+          ],
+          "minimumConfidence": "high"
+        },
+        "knownLimitations": {
+          "allowUnexpected": false,
+          "required": [
+            {
+              "id": "reviewed-01",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+            },
+            {
+              "id": "reviewed-02",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+            }
+          ],
+          "allowed": []
+        }
+      },
+      "review": {
+        "status": "approved",
+        "evidence": [
+          "Pinned commit 81d5424df382e73f757bafdf7fdc2d51e4370a9f",
+          "src/routes/app/route.tsx",
+          "src/routes/manager/route.tsx",
+          "vite.config.ts"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "id": "bulletproof-react-vite",
+      "observedAtDraft": {
+        "status": "completed",
+        "applicability": "partial_fit",
+        "projectMode": "application",
+        "routeStrategy": "react-router",
+        "routeAuthority": "proven",
+        "routeCompleteness": "partial",
+        "taskableTargets": 8,
+        "components": 95,
+        "stylingApproach": "tailwind",
+        "stylingConfidence": "high",
+        "limitations": [
+          {
+            "source": "discovery",
+            "text": "Production reachability is proven, but generic source extraction cannot prove a complete framework route graph."
+          },
+          {
+            "source": "discovery",
+            "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+          },
+          {
+            "source": "discovery",
+            "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+          }
+        ]
+      },
+      "expectations": {
+        "projectMode": "application",
+        "routeAuthority": {
+          "family": "bulletproof-react-vite-production-ui-authority",
+          "acceptedStrategies": [
+            "react-router"
+          ],
+          "minimumLevel": "proven",
+          "minimumCompleteness": "partial"
+        },
+        "minimums": {
+          "taskableTargets": 8,
+          "components": 95
+        },
+        "stylingAuthority": {
+          "family": "bulletproof-react-vite-project-owned-styling",
+          "acceptedApproaches": [
+            "tailwind"
+          ],
+          "minimumConfidence": "high"
+        },
+        "knownLimitations": {
+          "allowUnexpected": false,
+          "required": [
+            {
+              "id": "reviewed-01",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Production reachability is proven, but generic source extraction cannot prove a complete framework route graph."
+            },
+            {
+              "id": "reviewed-02",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+            },
+            {
+              "id": "reviewed-03",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+            }
+          ],
+          "allowed": []
+        }
+      },
+      "review": {
+        "status": "approved",
+        "evidence": [
+          "Pinned commit 9506629ed003a561c6627735480cce4994244bb4",
+          "apps/react-vite/src/app/router.tsx",
+          "apps/react-vite/src/main.tsx",
+          "apps/react-vite/src/index.css"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "id": "openstatus-dashboard",
+      "observedAtDraft": {
+        "status": "completed",
+        "applicability": "strong_fit",
+        "projectMode": "application",
+        "routeStrategy": "app-router",
+        "routeAuthority": "proven",
+        "routeCompleteness": "complete",
+        "taskableTargets": 34,
+        "components": 446,
+        "stylingApproach": "tailwind",
+        "stylingConfidence": "high",
+        "limitations": [
+          {
+            "source": "discovery",
+            "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+          }
+        ]
+      },
+      "expectations": {
+        "projectMode": "application",
+        "routeAuthority": {
+          "family": "openstatus-dashboard-production-ui-authority",
+          "acceptedStrategies": [
+            "app-router"
+          ],
+          "minimumLevel": "proven",
+          "minimumCompleteness": "complete"
+        },
+        "minimums": {
+          "taskableTargets": 34,
+          "components": 446
+        },
+        "stylingAuthority": {
+          "family": "openstatus-dashboard-project-owned-styling",
+          "acceptedApproaches": [
+            "tailwind"
+          ],
+          "minimumConfidence": "high"
+        },
+        "knownLimitations": {
+          "allowUnexpected": false,
+          "required": [
+            {
+              "id": "reviewed-01",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+            }
+          ],
+          "allowed": []
+        }
+      },
+      "review": {
+        "status": "approved",
+        "evidence": [
+          "Pinned commit bbe43a401ebc4e71c57f428202d80a4df1dd22bc",
+          "apps/dashboard/src/app/(dashboard)/page.tsx",
+          "apps/dashboard/src/app/(dashboard)/overview/page.tsx",
+          "apps/dashboard/package.json"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "id": "payload-website-template",
+      "observedAtDraft": {
+        "status": "completed",
+        "applicability": "strong_fit",
+        "projectMode": "application",
+        "routeStrategy": "app-router",
+        "routeAuthority": "proven",
+        "routeCompleteness": "complete",
+        "taskableTargets": 7,
+        "components": 113,
+        "stylingApproach": "tailwind",
+        "stylingConfidence": "high",
+        "limitations": [
+          {
+            "source": "discovery",
+            "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+          }
+        ]
+      },
+      "expectations": {
+        "projectMode": "application",
+        "routeAuthority": {
+          "family": "payload-website-template-production-ui-authority",
+          "acceptedStrategies": [
+            "app-router"
+          ],
+          "minimumLevel": "proven",
+          "minimumCompleteness": "complete"
+        },
+        "minimums": {
+          "taskableTargets": 7,
+          "components": 113
+        },
+        "stylingAuthority": {
+          "family": "payload-website-template-project-owned-styling",
+          "acceptedApproaches": [
+            "tailwind"
+          ],
+          "minimumConfidence": "high"
+        },
+        "knownLimitations": {
+          "allowUnexpected": false,
+          "required": [
+            {
+              "id": "reviewed-01",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+            }
+          ],
+          "allowed": []
+        }
+      },
+      "review": {
+        "status": "approved",
+        "evidence": [
+          "Pinned commit 5e500633299ebaefb62baca350460d8b1089e2de",
+          "templates/website/src/app/(frontend)/page.tsx",
+          "templates/website/src/app/(frontend)/[slug]/page.tsx",
+          "templates/website/package.json"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "id": "linode-manager",
+      "observedAtDraft": {
+        "status": "completed",
+        "applicability": "partial_fit",
+        "projectMode": "application",
+        "routeStrategy": "source-declared",
+        "routeAuthority": "inferred",
+        "routeCompleteness": "partial",
+        "taskableTargets": 190,
+        "components": 1000,
+        "stylingApproach": "mui",
+        "stylingConfidence": "high",
+        "limitations": [
+          {
+            "source": "discovery",
+            "text": "Route declaration files are not all reachable from the selected entrypoint: src/utilities/testHelpers.tsx"
+          },
+          {
+            "source": "discovery",
+            "text": "Generic source signals are supporting evidence and are not promoted to complete framework authority."
+          },
+          {
+            "source": "discovery",
+            "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+          },
+          {
+            "source": "discovery",
+            "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+          },
+          {
+            "source": "discovery",
+            "text": "Component inventory was bounded to 1000 entries; 560 additional candidate(s) were omitted."
+          }
+        ]
+      },
+      "expectations": {
+        "projectMode": "application",
+        "routeAuthority": {
+          "family": "linode-manager-production-ui-authority",
+          "acceptedStrategies": [
+            "source-declared"
+          ],
+          "minimumLevel": "inferred",
+          "minimumCompleteness": "partial"
+        },
+        "minimums": {
+          "taskableTargets": 190,
+          "components": 1000
+        },
+        "stylingAuthority": {
+          "family": "linode-manager-project-owned-styling",
+          "acceptedApproaches": [
+            "mui"
+          ],
+          "minimumConfidence": "high"
+        },
+        "knownLimitations": {
+          "allowUnexpected": false,
+          "required": [
+            {
+              "id": "reviewed-01",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Route declaration files are not all reachable from the selected entrypoint: src/utilities/testHelpers.tsx"
+            },
+            {
+              "id": "reviewed-02",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Generic source signals are supporting evidence and are not promoted to complete framework authority."
+            },
+            {
+              "id": "reviewed-03",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+            },
+            {
+              "id": "reviewed-04",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+            },
+            {
+              "id": "reviewed-05",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Component inventory was bounded to 1000 entries; 560 additional candidate(s) were omitted."
+            }
+          ],
+          "allowed": []
+        }
+      },
+      "review": {
+        "status": "approved",
+        "evidence": [
+          "Pinned commit 6503a875f7a4e82dd8335d4ce16fcbd8ae492e21",
+          "packages/manager/src/routes/index.tsx",
+          "packages/manager/src/routes/account/index.ts",
+          "packages/manager/src/index.css"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "id": "epic-stack",
+      "observedAtDraft": {
+        "status": "completed",
+        "applicability": "strong_fit",
+        "projectMode": "application",
+        "routeStrategy": "react-router-file-router",
+        "routeAuthority": "proven",
+        "routeCompleteness": "complete",
+        "taskableTargets": 30,
+        "components": 99,
+        "stylingApproach": "tailwind",
+        "stylingConfidence": "high",
+        "limitations": [
+          {
+            "source": "discovery",
+            "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+          },
+          {
+            "source": "discovery",
+            "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+          }
+        ]
+      },
+      "expectations": {
+        "projectMode": "application",
+        "routeAuthority": {
+          "family": "epic-stack-production-ui-authority",
+          "acceptedStrategies": [
+            "react-router-file-router"
+          ],
+          "minimumLevel": "proven",
+          "minimumCompleteness": "complete"
+        },
+        "minimums": {
+          "taskableTargets": 30,
+          "components": 99
+        },
+        "stylingAuthority": {
+          "family": "epic-stack-project-owned-styling",
+          "acceptedApproaches": [
+            "tailwind"
+          ],
+          "minimumConfidence": "high"
+        },
+        "knownLimitations": {
+          "allowUnexpected": false,
+          "required": [
+            {
+              "id": "reviewed-01",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+            },
+            {
+              "id": "reviewed-02",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+            }
+          ],
+          "allowed": []
+        }
+      },
+      "review": {
+        "status": "approved",
+        "evidence": [
+          "Pinned commit faaa21779c66002ba4c50890828b1b917cadbef2",
+          "app/routes.ts",
+          "app/routes/_marketing/index.tsx",
+          "app/tailwind.css"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "id": "hoppscotch-selfhost-web",
+      "observedAtDraft": {
+        "status": "completed",
+        "applicability": "partial_fit",
+        "projectMode": "application",
+        "routeStrategy": "pages-router",
+        "routeAuthority": "inferred",
+        "routeCompleteness": "partial",
+        "taskableTargets": 1,
+        "components": 8,
+        "stylingApproach": "tailwind",
+        "stylingConfidence": "high",
+        "limitations": [
+          {
+            "source": "discovery",
+            "text": "Route declaration files are not all reachable from the selected entrypoint: src/pages/device-login.vue"
+          },
+          {
+            "source": "discovery",
+            "text": "Generic source signals are supporting evidence and are not promoted to complete framework authority."
+          },
+          {
+            "source": "discovery",
+            "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+          }
+        ]
+      },
+      "expectations": {
+        "projectMode": "application",
+        "routeAuthority": {
+          "family": "hoppscotch-selfhost-web-production-ui-authority",
+          "acceptedStrategies": [
+            "pages-router"
+          ],
+          "minimumLevel": "inferred",
+          "minimumCompleteness": "partial"
+        },
+        "minimums": {
+          "taskableTargets": 1,
+          "components": 8
+        },
+        "stylingAuthority": {
+          "family": "hoppscotch-selfhost-web-project-owned-styling",
+          "acceptedApproaches": [
+            "tailwind"
+          ],
+          "minimumConfidence": "high"
+        },
+        "knownLimitations": {
+          "allowUnexpected": false,
+          "required": [
+            {
+              "id": "reviewed-01",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Route declaration files are not all reachable from the selected entrypoint: src/pages/device-login.vue"
+            },
+            {
+              "id": "reviewed-02",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Generic source signals are supporting evidence and are not promoted to complete framework authority."
+            },
+            {
+              "id": "reviewed-03",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+            }
+          ],
+          "allowed": []
+        }
+      },
+      "review": {
+        "status": "approved",
+        "evidence": [
+          "Pinned commit a4395b3e7c41541de1d769e8701ea110ba8f96c2",
+          "packages/hoppscotch-selfhost-web/src/pages/device-login.vue",
+          "packages/hoppscotch-selfhost-web/tailwind.config.ts",
+          "packages/hoppscotch-selfhost-web/vite.config.ts"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "id": "sakai-vue",
+      "observedAtDraft": {
+        "status": "completed",
+        "applicability": "partial_fit",
+        "projectMode": "application",
+        "routeStrategy": "vue-router",
+        "routeAuthority": "proven",
+        "routeCompleteness": "partial",
+        "taskableTargets": 25,
+        "components": 46,
+        "stylingApproach": "primevue",
+        "stylingConfidence": "high",
+        "limitations": [
+          {
+            "source": "discovery",
+            "text": "Production reachability is proven, but generic source extraction cannot prove a complete framework route graph."
+          },
+          {
+            "source": "discovery",
+            "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+          },
+          {
+            "source": "discovery",
+            "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+          },
+          {
+            "source": "discovery",
+            "text": "Tailwind is installed but no selected-app config, PostCSS plugin, or CSS directive proves it is active style authority."
+          },
+          {
+            "source": "styling",
+            "text": "Tailwind is installed but no selected-app config, PostCSS plugin, or CSS directive proves it is active style authority."
+          }
+        ]
+      },
+      "expectations": {
+        "projectMode": "application",
+        "routeAuthority": {
+          "family": "sakai-vue-production-ui-authority",
+          "acceptedStrategies": [
+            "vue-router"
+          ],
+          "minimumLevel": "proven",
+          "minimumCompleteness": "partial"
+        },
+        "minimums": {
+          "taskableTargets": 25,
+          "components": 46
+        },
+        "stylingAuthority": {
+          "family": "sakai-vue-project-owned-styling",
+          "acceptedApproaches": [
+            "primevue"
+          ],
+          "minimumConfidence": "high"
+        },
+        "knownLimitations": {
+          "allowUnexpected": false,
+          "required": [
+            {
+              "id": "reviewed-01",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Production reachability is proven, but generic source extraction cannot prove a complete framework route graph."
+            },
+            {
+              "id": "reviewed-02",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+            },
+            {
+              "id": "reviewed-03",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+            },
+            {
+              "id": "reviewed-04",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Tailwind is installed but no selected-app config, PostCSS plugin, or CSS directive proves it is active style authority."
+            },
+            {
+              "id": "reviewed-05",
+              "source": "styling",
+              "match": "exact",
+              "text": "Tailwind is installed but no selected-app config, PostCSS plugin, or CSS directive proves it is active style authority."
+            }
+          ],
+          "allowed": []
+        }
+      },
+      "review": {
+        "status": "approved",
+        "evidence": [
+          "Pinned commit ec6b6ef53ad4fa7f2861277f50f2d9e236c40372",
+          "src/router/index.js",
+          "src/main.js",
+          "package.json"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "id": "nuxt-ui-dashboard",
+      "observedAtDraft": {
+        "status": "completed",
+        "applicability": "strong_fit",
+        "projectMode": "application",
+        "routeStrategy": "nuxt-router",
+        "routeAuthority": "proven",
+        "routeCompleteness": "complete",
+        "taskableTargets": 7,
+        "components": 12,
+        "stylingApproach": "tailwind",
+        "stylingConfidence": "high",
+        "limitations": [
+          {
+            "source": "discovery",
+            "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+          },
+          {
+            "source": "discovery",
+            "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+          }
+        ]
+      },
+      "expectations": {
+        "projectMode": "application",
+        "routeAuthority": {
+          "family": "nuxt-ui-dashboard-production-ui-authority",
+          "acceptedStrategies": [
+            "nuxt-router"
+          ],
+          "minimumLevel": "proven",
+          "minimumCompleteness": "complete"
+        },
+        "minimums": {
+          "taskableTargets": 7,
+          "components": 12
+        },
+        "stylingAuthority": {
+          "family": "nuxt-ui-dashboard-project-owned-styling",
+          "acceptedApproaches": [
+            "tailwind"
+          ],
+          "minimumConfidence": "high"
+        },
+        "knownLimitations": {
+          "allowUnexpected": false,
+          "required": [
+            {
+              "id": "reviewed-01",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+            },
+            {
+              "id": "reviewed-02",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+            }
+          ],
+          "allowed": []
+        }
+      },
+      "review": {
+        "status": "approved",
+        "evidence": [
+          "Pinned commit 419abb0f674c819e387846fd0938933bbedb1eec",
+          "app/pages/index.vue",
+          "app/pages/settings.vue",
+          "app/assets/css/main.css"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "id": "shadcn-vue-v4",
+      "observedAtDraft": {
+        "status": "completed",
+        "applicability": "strong_fit",
+        "projectMode": "application",
+        "routeStrategy": "nuxt-router",
+        "routeAuthority": "proven",
+        "routeCompleteness": "complete",
+        "taskableTargets": 11,
+        "components": 1000,
+        "stylingApproach": "tailwind",
+        "stylingConfidence": "high",
+        "limitations": [
+          {
+            "source": "discovery",
+            "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+          },
+          {
+            "source": "discovery",
+            "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+          },
+          {
+            "source": "discovery",
+            "text": "Component inventory was bounded to 1000 entries; 3035 additional candidate(s) were omitted."
+          }
+        ]
+      },
+      "expectations": {
+        "projectMode": "application",
+        "routeAuthority": {
+          "family": "shadcn-vue-v4-production-ui-authority",
+          "acceptedStrategies": [
+            "nuxt-router"
+          ],
+          "minimumLevel": "proven",
+          "minimumCompleteness": "complete"
+        },
+        "minimums": {
+          "taskableTargets": 11,
+          "components": 1000
+        },
+        "stylingAuthority": {
+          "family": "shadcn-vue-v4-project-owned-styling",
+          "acceptedApproaches": [
+            "tailwind"
+          ],
+          "minimumConfidence": "high"
+        },
+        "knownLimitations": {
+          "allowUnexpected": false,
+          "required": [
+            {
+              "id": "reviewed-01",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+            },
+            {
+              "id": "reviewed-02",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+            },
+            {
+              "id": "reviewed-03",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Component inventory was bounded to 1000 entries; 3035 additional candidate(s) were omitted."
+            }
+          ],
+          "allowed": []
+        }
+      },
+      "review": {
+        "status": "approved",
+        "evidence": [
+          "Pinned commit de6c4e272b4b42d395d3601e4a6f277f0b26e0b1",
+          "apps/v4/pages/index.vue",
+          "apps/v4/pages/docs.vue",
+          "apps/v4/nuxt.config.ts"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "id": "vben-web-antd",
+      "observedAtDraft": {
+        "status": "completed",
+        "applicability": "partial_fit",
+        "projectMode": "application",
+        "routeStrategy": "vue-router",
+        "routeAuthority": "proven",
+        "routeCompleteness": "partial",
+        "taskableTargets": 18,
+        "components": 0,
+        "stylingApproach": "ant-design-vue-workspace-styles",
+        "stylingConfidence": "high",
+        "limitations": [
+          {
+            "source": "discovery",
+            "text": "Production reachability is proven, but generic source extraction cannot prove a complete framework route graph."
+          },
+          {
+            "source": "discovery",
+            "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+          },
+          {
+            "source": "discovery",
+            "text": "Component inventory is partial because only weak static component signals were found."
+          }
+        ]
+      },
+      "expectations": {
+        "projectMode": "application",
+        "routeAuthority": {
+          "family": "vben-web-antd-production-ui-authority",
+          "acceptedStrategies": [
+            "vue-router"
+          ],
+          "minimumLevel": "proven",
+          "minimumCompleteness": "partial"
+        },
+        "minimums": {
+          "taskableTargets": 18,
+          "components": 0
+        },
+        "stylingAuthority": {
+          "family": "vben-web-antd-project-owned-styling",
+          "acceptedApproaches": [
+            "ant-design-vue-workspace-styles"
+          ],
+          "minimumConfidence": "high"
+        },
+        "knownLimitations": {
+          "allowUnexpected": false,
+          "required": [
+            {
+              "id": "reviewed-01",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Production reachability is proven, but generic source extraction cannot prove a complete framework route graph."
+            },
+            {
+              "id": "reviewed-02",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+            },
+            {
+              "id": "reviewed-03",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Component inventory is partial because only weak static component signals were found."
+            }
+          ],
+          "allowed": []
+        }
+      },
+      "review": {
+        "status": "approved",
+        "evidence": [
+          "Pinned commit 899910547f26f6dc67c60a9b6821a131a94c7c58",
+          "apps/web-antd/src/router/routes/core.ts",
+          "apps/web-antd/src/router/routes/modules/dashboard.ts",
+          "apps/web-antd/vite.config.ts"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "id": "soybean-admin",
+      "observedAtDraft": {
+        "status": "completed",
+        "applicability": "partial_fit",
+        "projectMode": "application",
+        "routeStrategy": "vue-router",
+        "routeAuthority": "proven",
+        "routeCompleteness": "partial",
+        "taskableTargets": 6,
+        "components": 6,
+        "stylingApproach": "naive-ui-unocss-scss",
+        "stylingConfidence": "high",
+        "limitations": [
+          {
+            "source": "discovery",
+            "text": "Production reachability is proven, but generic source extraction cannot prove a complete framework route graph."
+          },
+          {
+            "source": "discovery",
+            "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+          },
+          {
+            "source": "discovery",
+            "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+          }
+        ]
+      },
+      "expectations": {
+        "projectMode": "application",
+        "routeAuthority": {
+          "family": "soybean-admin-production-ui-authority",
+          "acceptedStrategies": [
+            "vue-router"
+          ],
+          "minimumLevel": "proven",
+          "minimumCompleteness": "partial"
+        },
+        "minimums": {
+          "taskableTargets": 6,
+          "components": 6
+        },
+        "stylingAuthority": {
+          "family": "soybean-admin-project-owned-styling",
+          "acceptedApproaches": [
+            "naive-ui-unocss-scss"
+          ],
+          "minimumConfidence": "high"
+        },
+        "knownLimitations": {
+          "allowUnexpected": false,
+          "required": [
+            {
+              "id": "reviewed-01",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Production reachability is proven, but generic source extraction cannot prove a complete framework route graph."
+            },
+            {
+              "id": "reviewed-02",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+            },
+            {
+              "id": "reviewed-03",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+            }
+          ],
+          "allowed": []
+        }
+      },
+      "review": {
+        "status": "approved",
+        "evidence": [
+          "Pinned commit 3d3613f20cd4add3cd20fd6cc884abead165c6d2",
+          "src/router/elegant/routes.ts",
+          "src/router/routes/builtin.ts",
+          "vite.config.ts"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "id": "immich-web",
+      "observedAtDraft": {
+        "status": "completed",
+        "applicability": "strong_fit",
+        "projectMode": "application",
+        "routeStrategy": "sveltekit-router",
+        "routeAuthority": "proven",
+        "routeCompleteness": "complete",
+        "taskableTargets": 60,
+        "components": 362,
+        "stylingApproach": "tailwind",
+        "stylingConfidence": "high",
+        "limitations": [
+          {
+            "source": "discovery",
+            "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+          },
+          {
+            "source": "discovery",
+            "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+          }
+        ]
+      },
+      "expectations": {
+        "projectMode": "application",
+        "routeAuthority": {
+          "family": "immich-web-production-ui-authority",
+          "acceptedStrategies": [
+            "sveltekit-router"
+          ],
+          "minimumLevel": "proven",
+          "minimumCompleteness": "complete"
+        },
+        "minimums": {
+          "taskableTargets": 60,
+          "components": 362
+        },
+        "stylingAuthority": {
+          "family": "immich-web-project-owned-styling",
+          "acceptedApproaches": [
+            "tailwind"
+          ],
+          "minimumConfidence": "high"
+        },
+        "knownLimitations": {
+          "allowUnexpected": false,
+          "required": [
+            {
+              "id": "reviewed-01",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+            },
+            {
+              "id": "reviewed-02",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+            }
+          ],
+          "allowed": []
+        }
+      },
+      "review": {
+        "status": "approved",
+        "evidence": [
+          "Pinned commit 8435d219e4206dca41ad648c13cadd511c0c5621",
+          "web/src/routes/(user)/albums/+page.svelte",
+          "web/src/app.css",
+          "web/vite.config.ts"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "id": "kener",
+      "observedAtDraft": {
+        "status": "completed",
+        "applicability": "strong_fit",
+        "projectMode": "application",
+        "routeStrategy": "sveltekit-router",
+        "routeAuthority": "proven",
+        "routeCompleteness": "complete",
+        "taskableTargets": 39,
+        "components": 363,
+        "stylingApproach": "tailwind",
+        "stylingConfidence": "high",
+        "limitations": [
+          {
+            "source": "discovery",
+            "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+          }
+        ]
+      },
+      "expectations": {
+        "projectMode": "application",
+        "routeAuthority": {
+          "family": "kener-production-ui-authority",
+          "acceptedStrategies": [
+            "sveltekit-router"
+          ],
+          "minimumLevel": "proven",
+          "minimumCompleteness": "complete"
+        },
+        "minimums": {
+          "taskableTargets": 39,
+          "components": 363
+        },
+        "stylingAuthority": {
+          "family": "kener-project-owned-styling",
+          "acceptedApproaches": [
+            "tailwind"
+          ],
+          "minimumConfidence": "high"
+        },
+        "knownLimitations": {
+          "allowUnexpected": false,
+          "required": [
+            {
+              "id": "reviewed-01",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+            }
+          ],
+          "allowed": []
+        }
+      },
+      "review": {
+        "status": "approved",
+        "evidence": [
+          "Pinned commit 9d99a5c11f45973394f7884d7c383356ceb27a4d",
+          "src/routes/(kener)/+page.svelte",
+          "src/routes/(manage)/manage/app/+layout.svelte",
+          "vite.config.ts"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "id": "upsnap-frontend",
+      "observedAtDraft": {
+        "status": "completed",
+        "applicability": "strong_fit",
+        "projectMode": "application",
+        "routeStrategy": "sveltekit-router",
+        "routeAuthority": "proven",
+        "routeCompleteness": "complete",
+        "taskableTargets": 8,
+        "components": 8,
+        "stylingApproach": "tailwind",
+        "stylingConfidence": "high",
+        "limitations": [
+          {
+            "source": "discovery",
+            "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+          }
+        ]
+      },
+      "expectations": {
+        "projectMode": "application",
+        "routeAuthority": {
+          "family": "upsnap-frontend-production-ui-authority",
+          "acceptedStrategies": [
+            "sveltekit-router"
+          ],
+          "minimumLevel": "proven",
+          "minimumCompleteness": "complete"
+        },
+        "minimums": {
+          "taskableTargets": 8,
+          "components": 8
+        },
+        "stylingAuthority": {
+          "family": "upsnap-frontend-project-owned-styling",
+          "acceptedApproaches": [
+            "tailwind"
+          ],
+          "minimumConfidence": "high"
+        },
+        "knownLimitations": {
+          "allowUnexpected": false,
+          "required": [
+            {
+              "id": "reviewed-01",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+            }
+          ],
+          "allowed": []
+        }
+      },
+      "review": {
+        "status": "approved",
+        "evidence": [
+          "Pinned commit c4cf00683202083745ed9f840be2442e3896f2ea",
+          "frontend/src/routes/+page.svelte",
+          "frontend/src/app.css",
+          "frontend/vite.config.ts"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "id": "svgl",
+      "observedAtDraft": {
+        "status": "completed",
+        "applicability": "strong_fit",
+        "projectMode": "application",
+        "routeStrategy": "sveltekit-router",
+        "routeAuthority": "proven",
+        "routeCompleteness": "complete",
+        "taskableTargets": 4,
+        "components": 0,
+        "stylingApproach": "tailwind",
+        "stylingConfidence": "high",
+        "limitations": [
+          {
+            "source": "discovery",
+            "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+          },
+          {
+            "source": "discovery",
+            "text": "Component inventory is partial because only weak static component signals were found."
+          }
+        ]
+      },
+      "expectations": {
+        "projectMode": "application",
+        "routeAuthority": {
+          "family": "svgl-production-ui-authority",
+          "acceptedStrategies": [
+            "sveltekit-router"
+          ],
+          "minimumLevel": "proven",
+          "minimumCompleteness": "complete"
+        },
+        "minimums": {
+          "taskableTargets": 4,
+          "components": 0
+        },
+        "stylingAuthority": {
+          "family": "svgl-project-owned-styling",
+          "acceptedApproaches": [
+            "tailwind"
+          ],
+          "minimumConfidence": "high"
+        },
+        "knownLimitations": {
+          "allowUnexpected": false,
+          "required": [
+            {
+              "id": "reviewed-01",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+            },
+            {
+              "id": "reviewed-02",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Component inventory is partial because only weak static component signals were found."
+            }
+          ],
+          "allowed": []
+        }
+      },
+      "review": {
+        "status": "approved",
+        "evidence": [
+          "Pinned commit a5a7fdef6454504902c33f571517e8302af3448c",
+          "src/routes/+page.svelte",
+          "src/routes/directory/[category]/+page.svelte",
+          "vite.config.ts"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "id": "emdash-simple",
+      "observedAtDraft": {
+        "status": "completed",
+        "applicability": "strong_fit",
+        "projectMode": "application",
+        "routeStrategy": "pages-router",
+        "routeAuthority": "proven",
+        "routeCompleteness": "complete",
+        "taskableTargets": 9,
+        "components": 4,
+        "stylingApproach": "css",
+        "stylingConfidence": "high",
+        "limitations": [
+          {
+            "source": "discovery",
+            "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+          }
+        ]
+      },
+      "expectations": {
+        "projectMode": "application",
+        "routeAuthority": {
+          "family": "emdash-simple-production-ui-authority",
+          "acceptedStrategies": [
+            "pages-router"
+          ],
+          "minimumLevel": "proven",
+          "minimumCompleteness": "complete"
+        },
+        "minimums": {
+          "taskableTargets": 9,
+          "components": 4
+        },
+        "stylingAuthority": {
+          "family": "emdash-simple-project-owned-styling",
+          "acceptedApproaches": [
+            "css"
+          ],
+          "minimumConfidence": "high"
+        },
+        "knownLimitations": {
+          "allowUnexpected": false,
+          "required": [
+            {
+              "id": "reviewed-01",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+            }
+          ],
+          "allowed": []
+        }
+      },
+      "review": {
+        "status": "approved",
+        "evidence": [
+          "Pinned commit ab351d289e0c725dbf74e1455b1c557a255b51ff",
+          "demos/simple/src/pages/index.astro",
+          "demos/simple/src/pages/posts/[slug].astro",
+          "demos/simple/astro.config.mjs"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "id": "tauri-start-solid",
+      "observedAtDraft": {
+        "status": "completed",
+        "applicability": "partial_fit",
+        "projectMode": "application",
+        "routeStrategy": "source-declared",
+        "routeAuthority": "inferred",
+        "routeCompleteness": "partial",
+        "taskableTargets": 6,
+        "components": 20,
+        "stylingApproach": "tailwind",
+        "stylingConfidence": "high",
+        "limitations": [
+          {
+            "source": "discovery",
+            "text": "No selected-app production entrypoint was found for route reachability."
+          },
+          {
+            "source": "discovery",
+            "text": "Generic source signals are supporting evidence and are not promoted to complete framework authority."
+          },
+          {
+            "source": "discovery",
+            "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+          },
+          {
+            "source": "discovery",
+            "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+          }
+        ]
+      },
+      "expectations": {
+        "projectMode": "application",
+        "routeAuthority": {
+          "family": "tauri-start-solid-production-ui-authority",
+          "acceptedStrategies": [
+            "source-declared"
+          ],
+          "minimumLevel": "inferred",
+          "minimumCompleteness": "partial"
+        },
+        "minimums": {
+          "taskableTargets": 6,
+          "components": 20
+        },
+        "stylingAuthority": {
+          "family": "tauri-start-solid-project-owned-styling",
+          "acceptedApproaches": [
+            "tailwind"
+          ],
+          "minimumConfidence": "high"
+        },
+        "knownLimitations": {
+          "allowUnexpected": false,
+          "required": [
+            {
+              "id": "reviewed-01",
+              "source": "discovery",
+              "match": "exact",
+              "text": "No selected-app production entrypoint was found for route reachability."
+            },
+            {
+              "id": "reviewed-02",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Generic source signals are supporting evidence and are not promoted to complete framework authority."
+            },
+            {
+              "id": "reviewed-03",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Some duplicate or non-taskable route signals were collapsed before task context."
+            },
+            {
+              "id": "reviewed-04",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+            }
+          ],
+          "allowed": []
+        }
+      },
+      "review": {
+        "status": "approved",
+        "evidence": [
+          "Pinned commit 5840faef1ae2b2c29bc70dbb46728bbe0f3a02f8",
+          "src-app/routes/(primary)/route.tsx",
+          "src-app/routes/(settings)/route.tsx",
+          "vite.config.ts"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "id": "solid-start-hackernews",
+      "observedAtDraft": {
+        "status": "completed",
+        "applicability": "strong_fit",
+        "projectMode": "application",
+        "routeStrategy": "solidstart-router",
+        "routeAuthority": "proven",
+        "routeCompleteness": "complete",
+        "taskableTargets": 2,
+        "components": 7,
+        "stylingApproach": "css",
+        "stylingConfidence": "high",
+        "limitations": [
+          {
+            "source": "discovery",
+            "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+          }
+        ]
+      },
+      "expectations": {
+        "projectMode": "application",
+        "routeAuthority": {
+          "family": "solid-start-hackernews-production-ui-authority",
+          "acceptedStrategies": [
+            "solidstart-router"
+          ],
+          "minimumLevel": "proven",
+          "minimumCompleteness": "complete"
+        },
+        "minimums": {
+          "taskableTargets": 2,
+          "components": 7
+        },
+        "stylingAuthority": {
+          "family": "solid-start-hackernews-project-owned-styling",
+          "acceptedApproaches": [
+            "css"
+          ],
+          "minimumConfidence": "high"
+        },
+        "knownLimitations": {
+          "allowUnexpected": false,
+          "required": [
+            {
+              "id": "reviewed-01",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+            }
+          ],
+          "allowed": []
+        }
+      },
+      "review": {
+        "status": "approved",
+        "evidence": [
+          "Pinned commit eeff49a8766f718722e4adcfb519f487cbdf6f9a",
+          "apps/fixtures/hackernews/src/routes/[...stories].tsx",
+          "apps/fixtures/hackernews/src/routes/users/[id].tsx",
+          "apps/fixtures/hackernews/src/app.css"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "id": "primer-react",
+      "observedAtDraft": {
+        "status": "completed",
+        "applicability": "partial_fit",
+        "projectMode": "design-system",
+        "routeStrategy": "none",
+        "routeAuthority": "unresolved",
+        "routeCompleteness": "unknown",
+        "taskableTargets": 0,
+        "components": 238,
+        "stylingApproach": "css-modules",
+        "stylingConfidence": "high",
+        "limitations": [
+          {
+            "source": "discovery",
+            "text": "No route declaration was discovered from production-scoped source."
+          },
+          {
+            "source": "discovery",
+            "text": "No taskable route declarations were discovered from static source evidence."
+          },
+          {
+            "source": "discovery",
+            "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+          }
+        ]
+      },
+      "expectations": {
+        "projectMode": "design-system",
+        "routeAuthority": {
+          "family": "primer-react-production-ui-authority",
+          "acceptedStrategies": [
+            "none"
+          ],
+          "minimumLevel": "unresolved",
+          "minimumCompleteness": "unknown"
+        },
+        "minimums": {
+          "taskableTargets": 0,
+          "components": 238
+        },
+        "stylingAuthority": {
+          "family": "primer-react-project-owned-styling",
+          "acceptedApproaches": [
+            "css-modules"
+          ],
+          "minimumConfidence": "high"
+        },
+        "knownLimitations": {
+          "allowUnexpected": false,
+          "required": [
+            {
+              "id": "reviewed-01",
+              "source": "discovery",
+              "match": "exact",
+              "text": "No route declaration was discovered from production-scoped source."
+            },
+            {
+              "id": "reviewed-02",
+              "source": "discovery",
+              "match": "exact",
+              "text": "No taskable route declarations were discovered from static source evidence."
+            },
+            {
+              "id": "reviewed-03",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+            }
+          ],
+          "allowed": []
+        }
+      },
+      "review": {
+        "status": "approved",
+        "evidence": [
+          "Pinned commit cb1d245506841529d4df34f6efe8e6294464a631",
+          "packages/react/src/Banner",
+          "packages/react/src/Blankslate",
+          "packages/react/package.json"
+        ],
+        "notes": [
+          "Reviewed as an intentionally limited non-application or unresolved topology target."
+        ]
+      }
+    },
+    {
+      "id": "figma-sds",
+      "observedAtDraft": {
+        "status": "completed",
+        "applicability": "partial_fit",
+        "projectMode": "design-system",
+        "routeStrategy": "static-html",
+        "routeAuthority": "inferred",
+        "routeCompleteness": "partial",
+        "taskableTargets": 1,
+        "components": 438,
+        "stylingApproach": "css",
+        "stylingConfidence": "high",
+        "limitations": [
+          {
+            "source": "discovery",
+            "text": "Route declaration files are not all reachable from the selected entrypoint: index.html"
+          },
+          {
+            "source": "discovery",
+            "text": "Generic source signals are supporting evidence and are not promoted to complete framework authority."
+          },
+          {
+            "source": "discovery",
+            "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+          }
+        ]
+      },
+      "expectations": {
+        "projectMode": "design-system",
+        "routeAuthority": {
+          "family": "figma-sds-production-ui-authority",
+          "acceptedStrategies": [
+            "static-html"
+          ],
+          "minimumLevel": "inferred",
+          "minimumCompleteness": "partial"
+        },
+        "minimums": {
+          "taskableTargets": 1,
+          "components": 438
+        },
+        "stylingAuthority": {
+          "family": "figma-sds-project-owned-styling",
+          "acceptedApproaches": [
+            "css"
+          ],
+          "minimumConfidence": "high"
+        },
+        "knownLimitations": {
+          "allowUnexpected": false,
+          "required": [
+            {
+              "id": "reviewed-01",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Route declaration files are not all reachable from the selected entrypoint: index.html"
+            },
+            {
+              "id": "reviewed-02",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Generic source signals are supporting evidence and are not promoted to complete framework authority."
+            },
+            {
+              "id": "reviewed-03",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+            }
+          ],
+          "allowed": []
+        }
+      },
+      "review": {
+        "status": "approved",
+        "evidence": [
+          "Pinned commit 335befd6ff70aa1f3a2a62fb39c2b2db3c0c9527",
+          "index.html",
+          "src/index.css",
+          "vite.config.ts"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "id": "forma-36",
+      "observedAtDraft": {
+        "status": "completed",
+        "applicability": "partial_fit",
+        "projectMode": "design-system",
+        "routeStrategy": "none",
+        "routeAuthority": "unresolved",
+        "routeCompleteness": "unknown",
+        "taskableTargets": 0,
+        "components": 284,
+        "stylingApproach": "css",
+        "stylingConfidence": "high",
+        "limitations": [
+          {
+            "source": "discovery",
+            "text": "No route declaration was discovered from production-scoped source."
+          },
+          {
+            "source": "discovery",
+            "text": "No taskable route declarations were discovered from static source evidence."
+          },
+          {
+            "source": "discovery",
+            "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+          }
+        ]
+      },
+      "expectations": {
+        "projectMode": "design-system",
+        "routeAuthority": {
+          "family": "forma-36-production-ui-authority",
+          "acceptedStrategies": [
+            "none"
+          ],
+          "minimumLevel": "unresolved",
+          "minimumCompleteness": "unknown"
+        },
+        "minimums": {
+          "taskableTargets": 0,
+          "components": 284
+        },
+        "stylingAuthority": {
+          "family": "forma-36-project-owned-styling",
+          "acceptedApproaches": [
+            "css"
+          ],
+          "minimumConfidence": "high"
+        },
+        "knownLimitations": {
+          "allowUnexpected": false,
+          "required": [
+            {
+              "id": "reviewed-01",
+              "source": "discovery",
+              "match": "exact",
+              "text": "No route declaration was discovered from production-scoped source."
+            },
+            {
+              "id": "reviewed-02",
+              "source": "discovery",
+              "match": "exact",
+              "text": "No taskable route declarations were discovered from static source evidence."
+            },
+            {
+              "id": "reviewed-03",
+              "source": "discovery",
+              "match": "exact",
+              "text": "Component inventory is static and advisory, not proof that every reusable component was found."
+            }
+          ],
+          "allowed": []
+        }
+      },
+      "review": {
+        "status": "approved",
+        "evidence": [
+          "Pinned commit 5c4e73d7bf3ae44632dd0419eb0160cf08e6769a",
+          "packages/components/button",
+          "packages/components/table",
+          "package.json"
+        ],
+        "notes": [
+          "Reviewed as an intentionally limited non-application or unresolved topology target."
+        ]
+      }
+    }
+  ]
+}
