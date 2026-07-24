@@ -1,11 +1,11 @@
-name: Decantr 3.10 development qualification input
-run-name: Decantr 3.10 development input - ${{ inputs.task_id }}
+name: Decantr 3.10 private qualification input
+run-name: Decantr 3.10 private input - ${{ inputs.task_id }}
 
 on:
   workflow_dispatch:
     inputs:
       task_id:
-        description: Exact public development task ID
+        description: Exact sealed qualification task ID
         required: true
         type: string
       proxy_image_digest:
@@ -17,16 +17,25 @@ permissions:
   contents: read
 
 concurrency:
-  group: benchmark-3-10-qualification-input-${{ github.ref }}-${{ inputs.task_id }}
+  group: benchmark-3-10-private-qualification-input-${{ github.ref }}-${{ inputs.task_id }}
   cancel-in-progress: false
 
 jobs:
   seal:
-    name: Seal public development input
-    if: github.repository == 'decantr-ai/decantr' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+    name: Seal private qualification input
+    if: github.repository == 'decantr-ai/decantr-qualification-private' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
     steps:
+      - name: Enforce the private producer identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$GITHUB_REPOSITORY" = "decantr-ai/decantr-qualification-private"
+          test "$GITHUB_REF" = "refs/heads/main"
+          test "$GITHUB_EVENT_NAME" = "workflow_dispatch"
+          test "$RUNNER_ENVIRONMENT" = "github-hosted"
+          test "$(gh api "repos/$GITHUB_REPOSITORY" --jq .private)" = "true"
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
@@ -38,20 +47,20 @@ jobs:
         env:
           PROXY_IMAGE_DIGEST: ${{ inputs.proxy_image_digest }}
         run: '[[ "$PROXY_IMAGE_DIGEST" =~ ^sha256:[a-f0-9]{64}$ ]]'
-      - name: Acquire frozen revisions and seal the input
+      - name: Acquire frozen revisions and seal the private input
         env:
           PROXY_IMAGE_DIGEST: ${{ inputs.proxy_image_digest }}
           TASK_ID: ${{ inputs.task_id }}
         run: |
-          node scripts/benchmark-3-10/evaluators/prepare-development-input.mjs \
+          node scripts/benchmark-3-10/evaluators/prepare-private-input.mjs \
             --task-id "$TASK_ID" \
             --corpus-root "$RUNNER_TEMP/corpus" \
             --output-root "$RUNNER_TEMP/qualification-input" \
             --proxy-image-digest "$PROXY_IMAGE_DIGEST"
-      - name: Upload sealed short-lived input
+      - name: Upload sealed short-lived private input
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: benchmark-3-10-qualification-input-${{ inputs.task_id }}
+          name: benchmark-3-10-private-qualification-input-${{ inputs.task_id }}
           path: ${{ runner.temp }}/qualification-input
           if-no-files-found: error
           retention-days: 3

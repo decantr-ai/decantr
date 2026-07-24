@@ -363,6 +363,7 @@ function assertControllerCommitted(root, runnerCommit) {
     'scripts/benchmark-3-10',
     '.github/workflows/benchmark-3-10-evaluator-qualification.yml',
     '.github/workflows/benchmark-3-10-qualification-input.yml',
+    '.github/workflows/benchmark-3-10-private-qualification-input.yml',
     '.github/workflows/benchmark-3-10-runtime-profiles.yml',
   ]);
   if (changed !== '') throw new Error('qualification controller sources must be committed before staging input');

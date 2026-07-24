@@ -1,0 +1,3942 @@
+{
+  "blockers": {
+    "unapprovedTaskSpecs": 0,
+    "unbuiltProfiles": 0,
+    "unverifiedProfiles": 0
+  },
+  "frozenAt": "2026-07-24T19:11:44.205Z",
+  "matrixSha256": "def6deb33d7b9d523f3c4c416e623e4082a8c5ec530946571e9cc07bfdd56c1a",
+  "paidExecutionAuthorized": false,
+  "profiles": [
+    {
+      "agentImage": {
+        "digest": "sha256:bb04e924a4b821499250e1a54a677b4d54c1074f56b0c010b37867882fd20fd6",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:bun-1.3.10-bun-1.3.10@sha256:e152934556352e902bf20eb358bb9e1b2236185eb0ad180388679bc9a3f8ec1d"
+      },
+      "arch": "x64",
+      "baseImage": {
+        "digest": "sha256:367842b35abbdf23f39e23c71f3a08eee940ff2679a14e08a5afcf4a1436cd89",
+        "reference": "oven/bun:1.3.10-debian"
+      },
+      "benchmarkImage": {
+        "digest": "sha256:3fbcd7e20b4e2e96c27e0c6a9a9faf2e853de0f002afff00ad815be444c2a971",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:bun-1.3.10-bun-1.3.10@sha256:2730eeca221a00ab2ecb81ca12a6c51417cd130ac1a9581c294620a68b535f1f"
+      },
+      "bunVersion": "1.3.10",
+      "id": "bun-1.3.10-bun-1.3.10",
+      "nodeVersion": null,
+      "os": "linux",
+      "packageManager": {
+        "name": "bun",
+        "version": "1.3.10"
+      },
+      "profileSha256": "66242440265e626446e2ff071c74529bf585c0e83250727f45373eaa778809c6",
+      "taskCount": 1,
+      "verification": {
+        "attestation": {
+          "attestationSha256": "6208692767c7edb3ddf1f2a3e7975a38a39cafc311c889ed87dc1fd913b6cb2f",
+          "provenance": {
+            "bundleFile": {
+              "bytes": 11189,
+              "path": "bun-1.3.10-bun-1.3.10.provenance.jsonl",
+              "sha256": "339fd3a038c00fdbc0d4dfadb22390648e950ec8db4142939113b57b7f0d38ec"
+            },
+            "policy": {
+              "denySelfHostedRunners": true,
+              "predicateType": "https://slsa.dev/provenance/v1",
+              "repository": "decantr-ai/decantr",
+              "signerDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "signerWorkflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "sourceDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main"
+            },
+            "subjectFile": {
+              "bytes": 3563,
+              "path": "bun-1.3.10-bun-1.3.10.subject.json",
+              "sha256": "064dc29b67f0fb602a733fe3c1b4b9ea27f6d75215d575e7032cbf123a33bb3d"
+            },
+            "verificationFile": {
+              "bytes": 16452,
+              "path": "bun-1.3.10-bun-1.3.10.provenance-verification.json",
+              "sha256": "9901f40c39c7d5ecf076a24dd0ccc72233789114a34bbe76583a1056e077b746"
+            },
+            "verificationSha256": "1f22b665dc5b17b968a263d924a7d196dd5070c54eca0c9a2b69a0d91857be40"
+          },
+          "schemaVersion": "decantr-benchmark-runtime-profile-attestation.v3",
+          "subject": {
+            "agentImage": {
+              "digest": "sha256:bb04e924a4b821499250e1a54a677b4d54c1074f56b0c010b37867882fd20fd6",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:bun-1.3.10-bun-1.3.10@sha256:e152934556352e902bf20eb358bb9e1b2236185eb0ad180388679bc9a3f8ec1d"
+            },
+            "agentIsolationSmokePassed": true,
+            "agentTooling": {
+              "claudeCodeIntegrity": "sha512-BHV951ruIa6QXaZFDF1wRhwxAOkAiafB2AOWG6wGRUJ4apaJ9mlzp1BFLAhGfG0SknwAyqBenqeT6nit6at4uQ==",
+              "claudeCodeVersion": "2.1.218",
+              "codexIntegrity": "sha512-/PSPSFujjjmiyVFvG2yu/grOFhsWdokTH8t2KGWhXSo/M5n/dIDsnbsnO82/7bLtIoDuzQf7ATBUMWqPWQINlQ==",
+              "codexVersion": "0.145.0",
+              "controllerNode": "v22.17.0"
+            },
+            "baseImage": {
+              "digest": "sha256:367842b35abbdf23f39e23c71f3a08eee940ff2679a14e08a5afcf4a1436cd89",
+              "reference": "oven/bun:1.3.10-debian"
+            },
+            "benchmarkImage": {
+              "digest": "sha256:3fbcd7e20b4e2e96c27e0c6a9a9faf2e853de0f002afff00ad815be444c2a971",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:bun-1.3.10-bun-1.3.10@sha256:2730eeca221a00ab2ecb81ca12a6c51417cd130ac1a9581c294620a68b535f1f"
+            },
+            "browserSmokePassed": true,
+            "controller": {
+              "image": {
+                "digest": "sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0",
+                "reference": "node:22.17.0-bookworm-slim"
+              },
+              "nodeVersion": "v22.17.0"
+            },
+            "execution": {
+              "eventName": "workflow_dispatch",
+              "job": "probe",
+              "repository": "decantr-ai/decantr",
+              "runAttempt": "1",
+              "runId": "30116606965",
+              "runnerArch": "X64",
+              "runnerEnvironment": "github-hosted",
+              "runnerImage": "ubuntu24",
+              "runnerImageVersion": "20260720.247.2",
+              "runnerOs": "Linux",
+              "sourceCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main",
+              "workflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "workflowRef": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml@refs/heads/main",
+              "workflowSha": "30e37b79e2f1acf1f2d264d173d9411cd313faf0"
+            },
+            "host": {
+              "arch": "x64",
+              "os": "linux"
+            },
+            "matrix": {
+              "draftSha256": "80f54f62a461dc59a041da2676d9bed37d126b8c6e5ee7de1b5425f42791890e",
+              "sourceSpecSetSha256": "431db40a730d005133e2b8a1862e56639b6f4f455a181abd66780a1f0a257d22"
+            },
+            "packageManagerName": "bun",
+            "packageManagerVersion": "1.3.10",
+            "profileId": "bun-1.3.10-bun-1.3.10",
+            "profileSha256": "66242440265e626446e2ff071c74529bf585c0e83250727f45373eaa778809c6",
+            "runtimeKind": "bun",
+            "runtimeVersion": "1.3.10",
+            "schemaVersion": "decantr-benchmark-runtime-profile-build-subject.v2",
+            "source": {
+              "buildContext": {
+                "fileCount": 269,
+                "filesSha256": "c86a24086064565b15c558b1230baf46a665ef0287208d30a69a1f1e5ca9ccb2",
+                "roots": [
+                  ".dockerignore",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "controller": {
+                "fileCount": 270,
+                "filesSha256": "aa6c07e0d8e0d8d52c13aaec27cc0e41654dbe725742bb1e6c0b215be0d945e5",
+                "roots": [
+                  ".dockerignore",
+                  ".github/workflows/benchmark-3-10-runtime-profiles.yml",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "policy": "exact-clean-git-files-v1",
+              "repositoryCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "schemaVersion": "decantr-benchmark-runtime-source-closure.v1",
+              "sourceClosureSha256": "0036dfa71dfa25f254fa434a679e92e681ef703831d24521f260b0e2769e4247"
+            },
+            "subjectSha256": "1e35953f5efdf2fe44873cbc25a4bec1fcedae9f9ae0320238ea3d21a607f890",
+            "verifiedAt": "2026-07-24T18:22:06Z"
+          }
+        },
+        "attestationFile": {
+          "bytes": 5036,
+          "sha256": "b53b6ac77db2f26586e010be9a0d30529f356f225efde89923fdb93d56cfa478"
+        }
+      }
+    },
+    {
+      "agentImage": {
+        "digest": "sha256:2170c89f4b7068075594a3cffdfa4e31e9474851784955b0b478bd5b599aeeef",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-10.15.1-npm-6.4.1@sha256:9bb8c3e118b91762191a20b4b4933359b7da666e0923726720ef250f7e838a73"
+      },
+      "arch": "x64",
+      "baseImage": {
+        "digest": "sha256:18f831507f1c6953563105b973ee4db037b1d94f35985a984378e31a522e4cfa",
+        "reference": "node:10.15.1-stretch-slim"
+      },
+      "benchmarkImage": {
+        "digest": "sha256:6f45b616d079c884731f8104d41c0d61f13aff33687bf66756f577d0fc6183f2",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-10.15.1-npm-6.4.1@sha256:56bd4e80aab60520fd6ca69d397f34d2ae9535bc5eff776ead30e2bb0d9786d7"
+      },
+      "bunVersion": null,
+      "id": "node-10.15.1-npm-6.4.1",
+      "nodeVersion": "10.15.1",
+      "os": "linux",
+      "packageManager": {
+        "name": "npm",
+        "version": "6.4.1"
+      },
+      "profileSha256": "ce92cc30e412ba97478fd2abde95dc452005ae2b7eca8d4087eebdc4e13a8c09",
+      "taskCount": 1,
+      "verification": {
+        "attestation": {
+          "attestationSha256": "7f7de4436c645b10e0170979f748ed4f51e022ed069f874e2eb6c1b32c27c807",
+          "provenance": {
+            "bundleFile": {
+              "bytes": 11146,
+              "path": "node-10.15.1-npm-6.4.1.provenance.jsonl",
+              "sha256": "1e2882e7f268b5510775cdc0258842d437fc2928fb593eaa32bfee5ea8f3eeb5"
+            },
+            "policy": {
+              "denySelfHostedRunners": true,
+              "predicateType": "https://slsa.dev/provenance/v1",
+              "repository": "decantr-ai/decantr",
+              "signerDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "signerWorkflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "sourceDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main"
+            },
+            "subjectFile": {
+              "bytes": 3570,
+              "path": "node-10.15.1-npm-6.4.1.subject.json",
+              "sha256": "5e39dac2df541fd0d5ca9088f809ae9e8dbf14e6c158ca8687f0a13669929234"
+            },
+            "verificationFile": {
+              "bytes": 16391,
+              "path": "node-10.15.1-npm-6.4.1.provenance-verification.json",
+              "sha256": "306906bfbb9406eb373d44ab2135621a69b938edc964030b7e1fa173a4ae1679"
+            },
+            "verificationSha256": "164f5a9593468ab652193c4bbbb985f7c0f6c48f3b36dd653756b344d55e90e4"
+          },
+          "schemaVersion": "decantr-benchmark-runtime-profile-attestation.v3",
+          "subject": {
+            "agentImage": {
+              "digest": "sha256:2170c89f4b7068075594a3cffdfa4e31e9474851784955b0b478bd5b599aeeef",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-10.15.1-npm-6.4.1@sha256:9bb8c3e118b91762191a20b4b4933359b7da666e0923726720ef250f7e838a73"
+            },
+            "agentIsolationSmokePassed": true,
+            "agentTooling": {
+              "claudeCodeIntegrity": "sha512-BHV951ruIa6QXaZFDF1wRhwxAOkAiafB2AOWG6wGRUJ4apaJ9mlzp1BFLAhGfG0SknwAyqBenqeT6nit6at4uQ==",
+              "claudeCodeVersion": "2.1.218",
+              "codexIntegrity": "sha512-/PSPSFujjjmiyVFvG2yu/grOFhsWdokTH8t2KGWhXSo/M5n/dIDsnbsnO82/7bLtIoDuzQf7ATBUMWqPWQINlQ==",
+              "codexVersion": "0.145.0",
+              "controllerNode": "v22.17.0"
+            },
+            "baseImage": {
+              "digest": "sha256:18f831507f1c6953563105b973ee4db037b1d94f35985a984378e31a522e4cfa",
+              "reference": "node:10.15.1-stretch-slim"
+            },
+            "benchmarkImage": {
+              "digest": "sha256:6f45b616d079c884731f8104d41c0d61f13aff33687bf66756f577d0fc6183f2",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-10.15.1-npm-6.4.1@sha256:56bd4e80aab60520fd6ca69d397f34d2ae9535bc5eff776ead30e2bb0d9786d7"
+            },
+            "browserSmokePassed": true,
+            "controller": {
+              "image": {
+                "digest": "sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0",
+                "reference": "node:22.17.0-bookworm-slim"
+              },
+              "nodeVersion": "v22.17.0"
+            },
+            "execution": {
+              "eventName": "workflow_dispatch",
+              "job": "probe",
+              "repository": "decantr-ai/decantr",
+              "runAttempt": "1",
+              "runId": "30116606965",
+              "runnerArch": "X64",
+              "runnerEnvironment": "github-hosted",
+              "runnerImage": "ubuntu24",
+              "runnerImageVersion": "20260720.247.2",
+              "runnerOs": "Linux",
+              "sourceCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main",
+              "workflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "workflowRef": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml@refs/heads/main",
+              "workflowSha": "30e37b79e2f1acf1f2d264d173d9411cd313faf0"
+            },
+            "host": {
+              "arch": "x64",
+              "os": "linux"
+            },
+            "matrix": {
+              "draftSha256": "80f54f62a461dc59a041da2676d9bed37d126b8c6e5ee7de1b5425f42791890e",
+              "sourceSpecSetSha256": "431db40a730d005133e2b8a1862e56639b6f4f455a181abd66780a1f0a257d22"
+            },
+            "packageManagerName": "npm",
+            "packageManagerVersion": "6.4.1",
+            "profileId": "node-10.15.1-npm-6.4.1",
+            "profileSha256": "ce92cc30e412ba97478fd2abde95dc452005ae2b7eca8d4087eebdc4e13a8c09",
+            "runtimeKind": "node",
+            "runtimeVersion": "10.15.1",
+            "schemaVersion": "decantr-benchmark-runtime-profile-build-subject.v2",
+            "source": {
+              "buildContext": {
+                "fileCount": 269,
+                "filesSha256": "c86a24086064565b15c558b1230baf46a665ef0287208d30a69a1f1e5ca9ccb2",
+                "roots": [
+                  ".dockerignore",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "controller": {
+                "fileCount": 270,
+                "filesSha256": "aa6c07e0d8e0d8d52c13aaec27cc0e41654dbe725742bb1e6c0b215be0d945e5",
+                "roots": [
+                  ".dockerignore",
+                  ".github/workflows/benchmark-3-10-runtime-profiles.yml",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "policy": "exact-clean-git-files-v1",
+              "repositoryCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "schemaVersion": "decantr-benchmark-runtime-source-closure.v1",
+              "sourceClosureSha256": "0036dfa71dfa25f254fa434a679e92e681ef703831d24521f260b0e2769e4247"
+            },
+            "subjectSha256": "97e541d1e82322af3a882a2eb85e80efa876d561a8892d24d2953d75339651da",
+            "verifiedAt": "2026-07-24T18:22:03Z"
+          }
+        },
+        "attestationFile": {
+          "bytes": 5046,
+          "sha256": "105cae4a2737379c097b6cf1722ee7e6fde043590caeaed65bb70f7890638048"
+        }
+      }
+    },
+    {
+      "agentImage": {
+        "digest": "sha256:72cdfd67611f108e3c6b0ebbc3f9d206fddd58644fa5c149a31e9b8b401609bf",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-20.16.0-yarn-1.22.22@sha256:ea404e55316603d37b2dd3294c925854630b248780a39686316fb56dbbf5e16a"
+      },
+      "arch": "x64",
+      "baseImage": {
+        "digest": "sha256:2d4585684de1a8483b91ed507cefb6270e8e0f3feff1a2d586e95d3e13c1af39",
+        "reference": "node:20.16.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": "sha256:53c0f3ef20419aaeae4066d5c82e62a8371842c2bf6d279113af25ebc4ebaa3b",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-20.16.0-yarn-1.22.22@sha256:290a334defa1189d93a091277c401240c2457c287dbd2ed01b057c992bae52b2"
+      },
+      "bunVersion": null,
+      "id": "node-20.16.0-yarn-1.22.22",
+      "nodeVersion": "20.16.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "yarn",
+        "version": "1.22.22"
+      },
+      "profileSha256": "7e3f19d80151f1fe7c5e7048de255d622655d459a591ac3d5ca2d69a42c3d9cc",
+      "taskCount": 1,
+      "verification": {
+        "attestation": {
+          "attestationSha256": "87b4bd9d02312b34b439beb90cc5a0f1c591a94605e88bd86820fa3b4af5fe8e",
+          "provenance": {
+            "bundleFile": {
+              "bytes": 11201,
+              "path": "node-20.16.0-yarn-1.22.22.provenance.jsonl",
+              "sha256": "f7086f144ef5ad03ebe0645e9dbca1ac464731cdfcdad60b1dcdbe4b2f99c026"
+            },
+            "policy": {
+              "denySelfHostedRunners": true,
+              "predicateType": "https://slsa.dev/provenance/v1",
+              "repository": "decantr-ai/decantr",
+              "signerDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "signerWorkflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "sourceDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main"
+            },
+            "subjectFile": {
+              "bytes": 3583,
+              "path": "node-20.16.0-yarn-1.22.22.subject.json",
+              "sha256": "50d9b62ec139dfdc4dc9dd86cac564250706fbe3563a772a801ee6a6c3678f47"
+            },
+            "verificationFile": {
+              "bytes": 16468,
+              "path": "node-20.16.0-yarn-1.22.22.provenance-verification.json",
+              "sha256": "ccd27f090da0665dbe4ee80e941835fe89984a3a963bfc40e24c745d8723ecc4"
+            },
+            "verificationSha256": "5071e5bd48db05a617424256763c6e333c405e893ad3d14ae22ece704000f6bc"
+          },
+          "schemaVersion": "decantr-benchmark-runtime-profile-attestation.v3",
+          "subject": {
+            "agentImage": {
+              "digest": "sha256:72cdfd67611f108e3c6b0ebbc3f9d206fddd58644fa5c149a31e9b8b401609bf",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-20.16.0-yarn-1.22.22@sha256:ea404e55316603d37b2dd3294c925854630b248780a39686316fb56dbbf5e16a"
+            },
+            "agentIsolationSmokePassed": true,
+            "agentTooling": {
+              "claudeCodeIntegrity": "sha512-BHV951ruIa6QXaZFDF1wRhwxAOkAiafB2AOWG6wGRUJ4apaJ9mlzp1BFLAhGfG0SknwAyqBenqeT6nit6at4uQ==",
+              "claudeCodeVersion": "2.1.218",
+              "codexIntegrity": "sha512-/PSPSFujjjmiyVFvG2yu/grOFhsWdokTH8t2KGWhXSo/M5n/dIDsnbsnO82/7bLtIoDuzQf7ATBUMWqPWQINlQ==",
+              "codexVersion": "0.145.0",
+              "controllerNode": "v22.17.0"
+            },
+            "baseImage": {
+              "digest": "sha256:2d4585684de1a8483b91ed507cefb6270e8e0f3feff1a2d586e95d3e13c1af39",
+              "reference": "node:20.16.0-bookworm-slim"
+            },
+            "benchmarkImage": {
+              "digest": "sha256:53c0f3ef20419aaeae4066d5c82e62a8371842c2bf6d279113af25ebc4ebaa3b",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-20.16.0-yarn-1.22.22@sha256:290a334defa1189d93a091277c401240c2457c287dbd2ed01b057c992bae52b2"
+            },
+            "browserSmokePassed": true,
+            "controller": {
+              "image": {
+                "digest": "sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0",
+                "reference": "node:22.17.0-bookworm-slim"
+              },
+              "nodeVersion": "v22.17.0"
+            },
+            "execution": {
+              "eventName": "workflow_dispatch",
+              "job": "probe",
+              "repository": "decantr-ai/decantr",
+              "runAttempt": "1",
+              "runId": "30116606965",
+              "runnerArch": "X64",
+              "runnerEnvironment": "github-hosted",
+              "runnerImage": "ubuntu24",
+              "runnerImageVersion": "20260720.247.2",
+              "runnerOs": "Linux",
+              "sourceCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main",
+              "workflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "workflowRef": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml@refs/heads/main",
+              "workflowSha": "30e37b79e2f1acf1f2d264d173d9411cd313faf0"
+            },
+            "host": {
+              "arch": "x64",
+              "os": "linux"
+            },
+            "matrix": {
+              "draftSha256": "80f54f62a461dc59a041da2676d9bed37d126b8c6e5ee7de1b5425f42791890e",
+              "sourceSpecSetSha256": "431db40a730d005133e2b8a1862e56639b6f4f455a181abd66780a1f0a257d22"
+            },
+            "packageManagerName": "yarn",
+            "packageManagerVersion": "1.22.22",
+            "profileId": "node-20.16.0-yarn-1.22.22",
+            "profileSha256": "7e3f19d80151f1fe7c5e7048de255d622655d459a591ac3d5ca2d69a42c3d9cc",
+            "runtimeKind": "node",
+            "runtimeVersion": "20.16.0",
+            "schemaVersion": "decantr-benchmark-runtime-profile-build-subject.v2",
+            "source": {
+              "buildContext": {
+                "fileCount": 269,
+                "filesSha256": "c86a24086064565b15c558b1230baf46a665ef0287208d30a69a1f1e5ca9ccb2",
+                "roots": [
+                  ".dockerignore",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "controller": {
+                "fileCount": 270,
+                "filesSha256": "aa6c07e0d8e0d8d52c13aaec27cc0e41654dbe725742bb1e6c0b215be0d945e5",
+                "roots": [
+                  ".dockerignore",
+                  ".github/workflows/benchmark-3-10-runtime-profiles.yml",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "policy": "exact-clean-git-files-v1",
+              "repositoryCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "schemaVersion": "decantr-benchmark-runtime-source-closure.v1",
+              "sourceClosureSha256": "0036dfa71dfa25f254fa434a679e92e681ef703831d24521f260b0e2769e4247"
+            },
+            "subjectSha256": "4e8ee259ebaa062a497ea5318fb68e432d14a7b6da1e30272d1ae9de6959c732",
+            "verifiedAt": "2026-07-24T18:25:14Z"
+          }
+        },
+        "attestationFile": {
+          "bytes": 5068,
+          "sha256": "9f0f673623cdefa6f7f34a124f578953aa0788702e55a6a9611ccb6829bb1b6e"
+        }
+      }
+    },
+    {
+      "agentImage": {
+        "digest": "sha256:a7a52b57abc1cf644520a5aefd4d2ed808f2feb37e35019ece20c59cadebe260",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-20.19.2-npm-10.8.2@sha256:d73a7932c8256dc8c394ba7b606d125303df7dd8159c371a1e39436373447cda"
+      },
+      "arch": "x64",
+      "baseImage": {
+        "digest": "sha256:7cd3fbc830c75c92256fe1122002add9a1c025831af8770cd0bf8e45688ef661",
+        "reference": "node:20.19.2-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": "sha256:78948a6cc1b15f2a16a01c0c56a87e6a4b252c3a5c1f602f97c5840424e11f84",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-20.19.2-npm-10.8.2@sha256:aadfede545b4eec7077ad580ba43282c4c908fff117fb5696601ea75970ab806"
+      },
+      "bunVersion": null,
+      "id": "node-20.19.2-npm-10.8.2",
+      "nodeVersion": "20.19.2",
+      "os": "linux",
+      "packageManager": {
+        "name": "npm",
+        "version": "10.8.2"
+      },
+      "profileSha256": "356c875e34793bed5bf73d8684bfc0b25a2c0e2caaf0602b23658b8b202c017d",
+      "taskCount": 1,
+      "verification": {
+        "attestation": {
+          "attestationSha256": "11653836ada83764a267466cd86321e504b9566ea56e0b5d44d24442b85e8792",
+          "provenance": {
+            "bundleFile": {
+              "bytes": 11240,
+              "path": "node-20.19.2-npm-10.8.2.provenance.jsonl",
+              "sha256": "5027b93e20c5a6723e283ef099c5dbf7f368269ec7a7777535b55893f0589475"
+            },
+            "policy": {
+              "denySelfHostedRunners": true,
+              "predicateType": "https://slsa.dev/provenance/v1",
+              "repository": "decantr-ai/decantr",
+              "signerDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "signerWorkflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "sourceDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main"
+            },
+            "subjectFile": {
+              "bytes": 3575,
+              "path": "node-20.19.2-npm-10.8.2.subject.json",
+              "sha256": "20e79e68b363453cd199074cf52fb8f423a9c6503baf805e96a9b7e27dc939e4"
+            },
+            "verificationFile": {
+              "bytes": 16524,
+              "path": "node-20.19.2-npm-10.8.2.provenance-verification.json",
+              "sha256": "c4242b6af115e8fbc093437d2614bfd906433985d018a9206d1a54d51c1201ce"
+            },
+            "verificationSha256": "1a1a44f6bab64c870883d6da6b4381be4debd1e2058896609e26b29526232a49"
+          },
+          "schemaVersion": "decantr-benchmark-runtime-profile-attestation.v3",
+          "subject": {
+            "agentImage": {
+              "digest": "sha256:a7a52b57abc1cf644520a5aefd4d2ed808f2feb37e35019ece20c59cadebe260",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-20.19.2-npm-10.8.2@sha256:d73a7932c8256dc8c394ba7b606d125303df7dd8159c371a1e39436373447cda"
+            },
+            "agentIsolationSmokePassed": true,
+            "agentTooling": {
+              "claudeCodeIntegrity": "sha512-BHV951ruIa6QXaZFDF1wRhwxAOkAiafB2AOWG6wGRUJ4apaJ9mlzp1BFLAhGfG0SknwAyqBenqeT6nit6at4uQ==",
+              "claudeCodeVersion": "2.1.218",
+              "codexIntegrity": "sha512-/PSPSFujjjmiyVFvG2yu/grOFhsWdokTH8t2KGWhXSo/M5n/dIDsnbsnO82/7bLtIoDuzQf7ATBUMWqPWQINlQ==",
+              "codexVersion": "0.145.0",
+              "controllerNode": "v22.17.0"
+            },
+            "baseImage": {
+              "digest": "sha256:7cd3fbc830c75c92256fe1122002add9a1c025831af8770cd0bf8e45688ef661",
+              "reference": "node:20.19.2-bookworm-slim"
+            },
+            "benchmarkImage": {
+              "digest": "sha256:78948a6cc1b15f2a16a01c0c56a87e6a4b252c3a5c1f602f97c5840424e11f84",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-20.19.2-npm-10.8.2@sha256:aadfede545b4eec7077ad580ba43282c4c908fff117fb5696601ea75970ab806"
+            },
+            "browserSmokePassed": true,
+            "controller": {
+              "image": {
+                "digest": "sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0",
+                "reference": "node:22.17.0-bookworm-slim"
+              },
+              "nodeVersion": "v22.17.0"
+            },
+            "execution": {
+              "eventName": "workflow_dispatch",
+              "job": "probe",
+              "repository": "decantr-ai/decantr",
+              "runAttempt": "1",
+              "runId": "30116606965",
+              "runnerArch": "X64",
+              "runnerEnvironment": "github-hosted",
+              "runnerImage": "ubuntu24",
+              "runnerImageVersion": "20260720.247.2",
+              "runnerOs": "Linux",
+              "sourceCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main",
+              "workflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "workflowRef": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml@refs/heads/main",
+              "workflowSha": "30e37b79e2f1acf1f2d264d173d9411cd313faf0"
+            },
+            "host": {
+              "arch": "x64",
+              "os": "linux"
+            },
+            "matrix": {
+              "draftSha256": "80f54f62a461dc59a041da2676d9bed37d126b8c6e5ee7de1b5425f42791890e",
+              "sourceSpecSetSha256": "431db40a730d005133e2b8a1862e56639b6f4f455a181abd66780a1f0a257d22"
+            },
+            "packageManagerName": "npm",
+            "packageManagerVersion": "10.8.2",
+            "profileId": "node-20.19.2-npm-10.8.2",
+            "profileSha256": "356c875e34793bed5bf73d8684bfc0b25a2c0e2caaf0602b23658b8b202c017d",
+            "runtimeKind": "node",
+            "runtimeVersion": "20.19.2",
+            "schemaVersion": "decantr-benchmark-runtime-profile-build-subject.v2",
+            "source": {
+              "buildContext": {
+                "fileCount": 269,
+                "filesSha256": "c86a24086064565b15c558b1230baf46a665ef0287208d30a69a1f1e5ca9ccb2",
+                "roots": [
+                  ".dockerignore",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "controller": {
+                "fileCount": 270,
+                "filesSha256": "aa6c07e0d8e0d8d52c13aaec27cc0e41654dbe725742bb1e6c0b215be0d945e5",
+                "roots": [
+                  ".dockerignore",
+                  ".github/workflows/benchmark-3-10-runtime-profiles.yml",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "policy": "exact-clean-git-files-v1",
+              "repositoryCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "schemaVersion": "decantr-benchmark-runtime-source-closure.v1",
+              "sourceClosureSha256": "0036dfa71dfa25f254fa434a679e92e681ef703831d24521f260b0e2769e4247"
+            },
+            "subjectSha256": "86c33b1b3c1c9c2728f6045dc92c38ed396ef9c94337ee7d2b912114e7d01527",
+            "verifiedAt": "2026-07-24T18:26:12Z"
+          }
+        },
+        "attestationFile": {
+          "bytes": 5054,
+          "sha256": "d9fed8a3db7b606b6b4edd5d7178478b86761377d8555cad3af448df46d9bac1"
+        }
+      }
+    },
+    {
+      "agentImage": {
+        "digest": "sha256:4968633f1858bcad4781d7661d062ab23e280c7389445f394e5b9ecdd3b53892",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-20.19.4-npm-10.8.2@sha256:4909a7a18601f1b08ea1bda9abe69bd5e44c849366ff5c3bdc60a88c782b916e"
+      },
+      "arch": "x64",
+      "baseImage": {
+        "digest": "sha256:6db5e436948af8f0244488a1f658c2c8e55a3ae51ca2e1686ed042be8f25f70a",
+        "reference": "node:20.19.4-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": "sha256:478570c901b6dba4d4cd4b2d32b92e366c583132180c02ba5474af81407c651c",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-20.19.4-npm-10.8.2@sha256:93309a6cde8b9046e2de0cf9fdc6aaa1da2223818d68bc7e6ebd8676de76a2d3"
+      },
+      "bunVersion": null,
+      "id": "node-20.19.4-npm-10.8.2",
+      "nodeVersion": "20.19.4",
+      "os": "linux",
+      "packageManager": {
+        "name": "npm",
+        "version": "10.8.2"
+      },
+      "profileSha256": "1586b320dbce71a6142f96764f0ff26c25e0ee74d5ab575bc8bff73253a32553",
+      "taskCount": 1,
+      "verification": {
+        "attestation": {
+          "attestationSha256": "5c1dd50e95545e4c75b20de7a604cf05b5445aa7b54cf24207dfd5acaae8d928",
+          "provenance": {
+            "bundleFile": {
+              "bytes": 11338,
+              "path": "node-20.19.4-npm-10.8.2.provenance.jsonl",
+              "sha256": "62fe1c94235b21be119e95a96ed9e53270e19f3fda3c0006fb312295b3970eb6"
+            },
+            "policy": {
+              "denySelfHostedRunners": true,
+              "predicateType": "https://slsa.dev/provenance/v1",
+              "repository": "decantr-ai/decantr",
+              "signerDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "signerWorkflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "sourceDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main"
+            },
+            "subjectFile": {
+              "bytes": 3575,
+              "path": "node-20.19.4-npm-10.8.2.subject.json",
+              "sha256": "f6405d472741050454e1411783884293982513e0b073344f5633efed8e0ae487"
+            },
+            "verificationFile": {
+              "bytes": 16660,
+              "path": "node-20.19.4-npm-10.8.2.provenance-verification.json",
+              "sha256": "fc9a69a1d31de315ceda4db9782b737700531b508335ee6b41cbe4d05a55cabe"
+            },
+            "verificationSha256": "35be4a444b52c5e230edb854d86c56f700a6815c8d4421223214200b442eb9e1"
+          },
+          "schemaVersion": "decantr-benchmark-runtime-profile-attestation.v3",
+          "subject": {
+            "agentImage": {
+              "digest": "sha256:4968633f1858bcad4781d7661d062ab23e280c7389445f394e5b9ecdd3b53892",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-20.19.4-npm-10.8.2@sha256:4909a7a18601f1b08ea1bda9abe69bd5e44c849366ff5c3bdc60a88c782b916e"
+            },
+            "agentIsolationSmokePassed": true,
+            "agentTooling": {
+              "claudeCodeIntegrity": "sha512-BHV951ruIa6QXaZFDF1wRhwxAOkAiafB2AOWG6wGRUJ4apaJ9mlzp1BFLAhGfG0SknwAyqBenqeT6nit6at4uQ==",
+              "claudeCodeVersion": "2.1.218",
+              "codexIntegrity": "sha512-/PSPSFujjjmiyVFvG2yu/grOFhsWdokTH8t2KGWhXSo/M5n/dIDsnbsnO82/7bLtIoDuzQf7ATBUMWqPWQINlQ==",
+              "codexVersion": "0.145.0",
+              "controllerNode": "v22.17.0"
+            },
+            "baseImage": {
+              "digest": "sha256:6db5e436948af8f0244488a1f658c2c8e55a3ae51ca2e1686ed042be8f25f70a",
+              "reference": "node:20.19.4-bookworm-slim"
+            },
+            "benchmarkImage": {
+              "digest": "sha256:478570c901b6dba4d4cd4b2d32b92e366c583132180c02ba5474af81407c651c",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-20.19.4-npm-10.8.2@sha256:93309a6cde8b9046e2de0cf9fdc6aaa1da2223818d68bc7e6ebd8676de76a2d3"
+            },
+            "browserSmokePassed": true,
+            "controller": {
+              "image": {
+                "digest": "sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0",
+                "reference": "node:22.17.0-bookworm-slim"
+              },
+              "nodeVersion": "v22.17.0"
+            },
+            "execution": {
+              "eventName": "workflow_dispatch",
+              "job": "probe",
+              "repository": "decantr-ai/decantr",
+              "runAttempt": "1",
+              "runId": "30116606965",
+              "runnerArch": "X64",
+              "runnerEnvironment": "github-hosted",
+              "runnerImage": "ubuntu24",
+              "runnerImageVersion": "20260720.247.2",
+              "runnerOs": "Linux",
+              "sourceCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main",
+              "workflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "workflowRef": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml@refs/heads/main",
+              "workflowSha": "30e37b79e2f1acf1f2d264d173d9411cd313faf0"
+            },
+            "host": {
+              "arch": "x64",
+              "os": "linux"
+            },
+            "matrix": {
+              "draftSha256": "80f54f62a461dc59a041da2676d9bed37d126b8c6e5ee7de1b5425f42791890e",
+              "sourceSpecSetSha256": "431db40a730d005133e2b8a1862e56639b6f4f455a181abd66780a1f0a257d22"
+            },
+            "packageManagerName": "npm",
+            "packageManagerVersion": "10.8.2",
+            "profileId": "node-20.19.4-npm-10.8.2",
+            "profileSha256": "1586b320dbce71a6142f96764f0ff26c25e0ee74d5ab575bc8bff73253a32553",
+            "runtimeKind": "node",
+            "runtimeVersion": "20.19.4",
+            "schemaVersion": "decantr-benchmark-runtime-profile-build-subject.v2",
+            "source": {
+              "buildContext": {
+                "fileCount": 269,
+                "filesSha256": "c86a24086064565b15c558b1230baf46a665ef0287208d30a69a1f1e5ca9ccb2",
+                "roots": [
+                  ".dockerignore",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "controller": {
+                "fileCount": 270,
+                "filesSha256": "aa6c07e0d8e0d8d52c13aaec27cc0e41654dbe725742bb1e6c0b215be0d945e5",
+                "roots": [
+                  ".dockerignore",
+                  ".github/workflows/benchmark-3-10-runtime-profiles.yml",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "policy": "exact-clean-git-files-v1",
+              "repositoryCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "schemaVersion": "decantr-benchmark-runtime-source-closure.v1",
+              "sourceClosureSha256": "0036dfa71dfa25f254fa434a679e92e681ef703831d24521f260b0e2769e4247"
+            },
+            "subjectSha256": "bac8658e4815e3219bbf8144ead7134e96f40744c48cfd588077009b52da4df4",
+            "verifiedAt": "2026-07-24T18:28:45Z"
+          }
+        },
+        "attestationFile": {
+          "bytes": 5054,
+          "sha256": "2a71f5843c61eadddb2fbba110d8f15c890196d0f4df2fb27e577fc88d7f643a"
+        }
+      }
+    },
+    {
+      "agentImage": {
+        "digest": "sha256:668a050f98e0029fbc1b25a727fc19d0388ff75fbbd5f56cb0eb7e53885f0036",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-20.19.5-npm-10.8.2@sha256:b9a790173f8729d133f3784afbda933d56e307921c02d509fb0f1a9b772b676a"
+      },
+      "arch": "x64",
+      "baseImage": {
+        "digest": "sha256:9e70124bd00f47dd023e349cd587132ae61892acc0e47ed641416c3e18f401c3",
+        "reference": "node:20.19.5-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": "sha256:54c24a3f6bd6c19752d608e4e62cc0a923e7434aa615af67e862e72f01f390d7",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-20.19.5-npm-10.8.2@sha256:6ffdb0de419d5cabb88111a3ed2862569e43b8af8755d369c55249808d631fc6"
+      },
+      "bunVersion": null,
+      "id": "node-20.19.5-npm-10.8.2",
+      "nodeVersion": "20.19.5",
+      "os": "linux",
+      "packageManager": {
+        "name": "npm",
+        "version": "10.8.2"
+      },
+      "profileSha256": "ff0fb34f230a1917104343652da0bc0e95c1e74bde6f89cbba72961d2f06e120",
+      "taskCount": 1,
+      "verification": {
+        "attestation": {
+          "attestationSha256": "c8b88a20c3baf6c020f616888456623ee662d5d35bfb121b95172633066c1bf0",
+          "provenance": {
+            "bundleFile": {
+              "bytes": 11287,
+              "path": "node-20.19.5-npm-10.8.2.provenance.jsonl",
+              "sha256": "e0faf38f8c17be301825f35950110ca1f51d015a69933cffe6c75a0986f5204d"
+            },
+            "policy": {
+              "denySelfHostedRunners": true,
+              "predicateType": "https://slsa.dev/provenance/v1",
+              "repository": "decantr-ai/decantr",
+              "signerDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "signerWorkflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "sourceDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main"
+            },
+            "subjectFile": {
+              "bytes": 3575,
+              "path": "node-20.19.5-npm-10.8.2.subject.json",
+              "sha256": "a6b930006b2d15fc4fec6b493f468cffd0c80f9ce11a68ba6acd588f6d50ec5c"
+            },
+            "verificationFile": {
+              "bytes": 16590,
+              "path": "node-20.19.5-npm-10.8.2.provenance-verification.json",
+              "sha256": "e5d17ee4b3be14c2144dacdcb1f728e9a7c60707b0b4390831d503468e110a1e"
+            },
+            "verificationSha256": "9fa717934278f79ff76061e78294802d6fd8fe5b718de832e3354b7efa0db9a9"
+          },
+          "schemaVersion": "decantr-benchmark-runtime-profile-attestation.v3",
+          "subject": {
+            "agentImage": {
+              "digest": "sha256:668a050f98e0029fbc1b25a727fc19d0388ff75fbbd5f56cb0eb7e53885f0036",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-20.19.5-npm-10.8.2@sha256:b9a790173f8729d133f3784afbda933d56e307921c02d509fb0f1a9b772b676a"
+            },
+            "agentIsolationSmokePassed": true,
+            "agentTooling": {
+              "claudeCodeIntegrity": "sha512-BHV951ruIa6QXaZFDF1wRhwxAOkAiafB2AOWG6wGRUJ4apaJ9mlzp1BFLAhGfG0SknwAyqBenqeT6nit6at4uQ==",
+              "claudeCodeVersion": "2.1.218",
+              "codexIntegrity": "sha512-/PSPSFujjjmiyVFvG2yu/grOFhsWdokTH8t2KGWhXSo/M5n/dIDsnbsnO82/7bLtIoDuzQf7ATBUMWqPWQINlQ==",
+              "codexVersion": "0.145.0",
+              "controllerNode": "v22.17.0"
+            },
+            "baseImage": {
+              "digest": "sha256:9e70124bd00f47dd023e349cd587132ae61892acc0e47ed641416c3e18f401c3",
+              "reference": "node:20.19.5-bookworm-slim"
+            },
+            "benchmarkImage": {
+              "digest": "sha256:54c24a3f6bd6c19752d608e4e62cc0a923e7434aa615af67e862e72f01f390d7",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-20.19.5-npm-10.8.2@sha256:6ffdb0de419d5cabb88111a3ed2862569e43b8af8755d369c55249808d631fc6"
+            },
+            "browserSmokePassed": true,
+            "controller": {
+              "image": {
+                "digest": "sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0",
+                "reference": "node:22.17.0-bookworm-slim"
+              },
+              "nodeVersion": "v22.17.0"
+            },
+            "execution": {
+              "eventName": "workflow_dispatch",
+              "job": "probe",
+              "repository": "decantr-ai/decantr",
+              "runAttempt": "1",
+              "runId": "30116606965",
+              "runnerArch": "X64",
+              "runnerEnvironment": "github-hosted",
+              "runnerImage": "ubuntu24",
+              "runnerImageVersion": "20260720.247.2",
+              "runnerOs": "Linux",
+              "sourceCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main",
+              "workflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "workflowRef": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml@refs/heads/main",
+              "workflowSha": "30e37b79e2f1acf1f2d264d173d9411cd313faf0"
+            },
+            "host": {
+              "arch": "x64",
+              "os": "linux"
+            },
+            "matrix": {
+              "draftSha256": "80f54f62a461dc59a041da2676d9bed37d126b8c6e5ee7de1b5425f42791890e",
+              "sourceSpecSetSha256": "431db40a730d005133e2b8a1862e56639b6f4f455a181abd66780a1f0a257d22"
+            },
+            "packageManagerName": "npm",
+            "packageManagerVersion": "10.8.2",
+            "profileId": "node-20.19.5-npm-10.8.2",
+            "profileSha256": "ff0fb34f230a1917104343652da0bc0e95c1e74bde6f89cbba72961d2f06e120",
+            "runtimeKind": "node",
+            "runtimeVersion": "20.19.5",
+            "schemaVersion": "decantr-benchmark-runtime-profile-build-subject.v2",
+            "source": {
+              "buildContext": {
+                "fileCount": 269,
+                "filesSha256": "c86a24086064565b15c558b1230baf46a665ef0287208d30a69a1f1e5ca9ccb2",
+                "roots": [
+                  ".dockerignore",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "controller": {
+                "fileCount": 270,
+                "filesSha256": "aa6c07e0d8e0d8d52c13aaec27cc0e41654dbe725742bb1e6c0b215be0d945e5",
+                "roots": [
+                  ".dockerignore",
+                  ".github/workflows/benchmark-3-10-runtime-profiles.yml",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "policy": "exact-clean-git-files-v1",
+              "repositoryCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "schemaVersion": "decantr-benchmark-runtime-source-closure.v1",
+              "sourceClosureSha256": "0036dfa71dfa25f254fa434a679e92e681ef703831d24521f260b0e2769e4247"
+            },
+            "subjectSha256": "06b9346032380789d24c17c7428df5fafbf480cadb7f31cfab7ad7a13bfe7bae",
+            "verifiedAt": "2026-07-24T18:29:24Z"
+          }
+        },
+        "attestationFile": {
+          "bytes": 5054,
+          "sha256": "359de4fabfcd950e6ee6ceb26a6d717b85b15daac50f06adab85ca5fdd7fccd0"
+        }
+      }
+    },
+    {
+      "agentImage": {
+        "digest": "sha256:e5f242e5e24601f53b4e25882b082349200ae7e55203a0ef0d0c96b800141fae",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-20.5.0-pnpm-8.6.12@sha256:4d755bbaa938b987ffe105108d016cef0644183efe0329eeba5b114bd4c5e3c6"
+      },
+      "arch": "x64",
+      "baseImage": {
+        "digest": "sha256:e7fc9de8feaab876fbd39ebe5fdcc79e99e59635eb5ae2b6f3e77d727c41b8b9",
+        "reference": "node:20.5.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": "sha256:cbacdc5887aa3b3d80423de5ca87a7b26aa0a6f34e395379fee831c3a8ba855c",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-20.5.0-pnpm-8.6.12@sha256:adcb276144b71d797e6c08a77c334183762abac5de50d0cd6e7e67e7c35927b1"
+      },
+      "bunVersion": null,
+      "id": "node-20.5.0-pnpm-8.6.12",
+      "nodeVersion": "20.5.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "pnpm",
+        "version": "8.6.12"
+      },
+      "profileSha256": "8f8d7fdfeb28ad18259236f7287b18e9701d91b74d90defb6c4b19d8297962cc",
+      "taskCount": 1,
+      "verification": {
+        "attestation": {
+          "attestationSha256": "094eaaff983c3ac1a25159ba762b1d9393979f167c258c20edda3986fdb1a3c8",
+          "provenance": {
+            "bundleFile": {
+              "bytes": 11334,
+              "path": "node-20.5.0-pnpm-8.6.12.provenance.jsonl",
+              "sha256": "66f31a1d866fd0f84a1ab0b1fb6ec5563bf636f0136ab8d9847808efffc488f9"
+            },
+            "policy": {
+              "denySelfHostedRunners": true,
+              "predicateType": "https://slsa.dev/provenance/v1",
+              "repository": "decantr-ai/decantr",
+              "signerDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "signerWorkflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "sourceDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main"
+            },
+            "subjectFile": {
+              "bytes": 3574,
+              "path": "node-20.5.0-pnpm-8.6.12.subject.json",
+              "sha256": "c92078d1b2c33562694295af4a86fa5c811590c34e5a27e231464b6d6aedd0e6"
+            },
+            "verificationFile": {
+              "bytes": 16656,
+              "path": "node-20.5.0-pnpm-8.6.12.provenance-verification.json",
+              "sha256": "09a2d35c64b2d6f54cf270accd3dab23d11d457aab39117237ad59fc1d0364d2"
+            },
+            "verificationSha256": "1b7dd33d4d187e3be8e085faa26d479077a6cf808f6e78af14fc5d52d346118e"
+          },
+          "schemaVersion": "decantr-benchmark-runtime-profile-attestation.v3",
+          "subject": {
+            "agentImage": {
+              "digest": "sha256:e5f242e5e24601f53b4e25882b082349200ae7e55203a0ef0d0c96b800141fae",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-20.5.0-pnpm-8.6.12@sha256:4d755bbaa938b987ffe105108d016cef0644183efe0329eeba5b114bd4c5e3c6"
+            },
+            "agentIsolationSmokePassed": true,
+            "agentTooling": {
+              "claudeCodeIntegrity": "sha512-BHV951ruIa6QXaZFDF1wRhwxAOkAiafB2AOWG6wGRUJ4apaJ9mlzp1BFLAhGfG0SknwAyqBenqeT6nit6at4uQ==",
+              "claudeCodeVersion": "2.1.218",
+              "codexIntegrity": "sha512-/PSPSFujjjmiyVFvG2yu/grOFhsWdokTH8t2KGWhXSo/M5n/dIDsnbsnO82/7bLtIoDuzQf7ATBUMWqPWQINlQ==",
+              "codexVersion": "0.145.0",
+              "controllerNode": "v22.17.0"
+            },
+            "baseImage": {
+              "digest": "sha256:e7fc9de8feaab876fbd39ebe5fdcc79e99e59635eb5ae2b6f3e77d727c41b8b9",
+              "reference": "node:20.5.0-bookworm-slim"
+            },
+            "benchmarkImage": {
+              "digest": "sha256:cbacdc5887aa3b3d80423de5ca87a7b26aa0a6f34e395379fee831c3a8ba855c",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-20.5.0-pnpm-8.6.12@sha256:adcb276144b71d797e6c08a77c334183762abac5de50d0cd6e7e67e7c35927b1"
+            },
+            "browserSmokePassed": true,
+            "controller": {
+              "image": {
+                "digest": "sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0",
+                "reference": "node:22.17.0-bookworm-slim"
+              },
+              "nodeVersion": "v22.17.0"
+            },
+            "execution": {
+              "eventName": "workflow_dispatch",
+              "job": "probe",
+              "repository": "decantr-ai/decantr",
+              "runAttempt": "1",
+              "runId": "30116606965",
+              "runnerArch": "X64",
+              "runnerEnvironment": "github-hosted",
+              "runnerImage": "ubuntu24",
+              "runnerImageVersion": "20260720.247.2",
+              "runnerOs": "Linux",
+              "sourceCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main",
+              "workflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "workflowRef": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml@refs/heads/main",
+              "workflowSha": "30e37b79e2f1acf1f2d264d173d9411cd313faf0"
+            },
+            "host": {
+              "arch": "x64",
+              "os": "linux"
+            },
+            "matrix": {
+              "draftSha256": "80f54f62a461dc59a041da2676d9bed37d126b8c6e5ee7de1b5425f42791890e",
+              "sourceSpecSetSha256": "431db40a730d005133e2b8a1862e56639b6f4f455a181abd66780a1f0a257d22"
+            },
+            "packageManagerName": "pnpm",
+            "packageManagerVersion": "8.6.12",
+            "profileId": "node-20.5.0-pnpm-8.6.12",
+            "profileSha256": "8f8d7fdfeb28ad18259236f7287b18e9701d91b74d90defb6c4b19d8297962cc",
+            "runtimeKind": "node",
+            "runtimeVersion": "20.5.0",
+            "schemaVersion": "decantr-benchmark-runtime-profile-build-subject.v2",
+            "source": {
+              "buildContext": {
+                "fileCount": 269,
+                "filesSha256": "c86a24086064565b15c558b1230baf46a665ef0287208d30a69a1f1e5ca9ccb2",
+                "roots": [
+                  ".dockerignore",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "controller": {
+                "fileCount": 270,
+                "filesSha256": "aa6c07e0d8e0d8d52c13aaec27cc0e41654dbe725742bb1e6c0b215be0d945e5",
+                "roots": [
+                  ".dockerignore",
+                  ".github/workflows/benchmark-3-10-runtime-profiles.yml",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "policy": "exact-clean-git-files-v1",
+              "repositoryCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "schemaVersion": "decantr-benchmark-runtime-source-closure.v1",
+              "sourceClosureSha256": "0036dfa71dfa25f254fa434a679e92e681ef703831d24521f260b0e2769e4247"
+            },
+            "subjectSha256": "76acd19f16d12327d254dceaeba6625d29b68968fa2e733de2a11f647086b51f",
+            "verifiedAt": "2026-07-24T18:32:32Z"
+          }
+        },
+        "attestationFile": {
+          "bytes": 5053,
+          "sha256": "aba05c538b8d9c35a66864e05f4e67e10afc3b26f2fd580b9acb5abebd3e91ba"
+        }
+      }
+    },
+    {
+      "agentImage": {
+        "digest": "sha256:62204da251941810df11e6c07c145225b31cb3e783b4bea877f6ace6882ce511",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.15.0-pnpm-10.30.3@sha256:f19a4070ac325f5d7f151679f594da6606e5f7e997f2c1671080a65f61cef8b3"
+      },
+      "arch": "x64",
+      "baseImage": {
+        "digest": "sha256:557e52a0fcb928ee113df7e1fb5d4f60c1341dbda53f55e3d815ca10807efdce",
+        "reference": "node:22.15.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": "sha256:306a82edaa52c586e14b7bf3836a8a3c58ad2049e83f17634537c1b07b826343",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.15.0-pnpm-10.30.3@sha256:6e4947a384254086c92bebf5f65245699125919854622e87cc3800f253ccbbf1"
+      },
+      "bunVersion": null,
+      "id": "node-22.15.0-pnpm-10.30.3",
+      "nodeVersion": "22.15.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "pnpm",
+        "version": "10.30.3"
+      },
+      "profileSha256": "df11db38fdd11a882bd8be021b0eb50a3b247f7c614a11510619e8bb781d242a",
+      "taskCount": 3,
+      "verification": {
+        "attestation": {
+          "attestationSha256": "6f91bfdaa18ae3efb7fd9223347d47fb36f44070a06a19b27acb7e1cfe9ef411",
+          "provenance": {
+            "bundleFile": {
+              "bytes": 11193,
+              "path": "node-22.15.0-pnpm-10.30.3.provenance.jsonl",
+              "sha256": "266388fb96903cac90f89fde07caaabc56b0898836412b27253f44bcf96a7d0f"
+            },
+            "policy": {
+              "denySelfHostedRunners": true,
+              "predicateType": "https://slsa.dev/provenance/v1",
+              "repository": "decantr-ai/decantr",
+              "signerDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "signerWorkflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "sourceDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main"
+            },
+            "subjectFile": {
+              "bytes": 3583,
+              "path": "node-22.15.0-pnpm-10.30.3.subject.json",
+              "sha256": "29a14941db8ac53ae1085be1c9674c1cb9068939e80bf532e5f2234b7dc15d05"
+            },
+            "verificationFile": {
+              "bytes": 16460,
+              "path": "node-22.15.0-pnpm-10.30.3.provenance-verification.json",
+              "sha256": "0e92908a7364659e5e0319db63121969c844b2843ed79ef61bb1aff4ad9b7b33"
+            },
+            "verificationSha256": "00dda2ee5c5327bd4ee478e1ac041e2910d1d5d1d48457104b54e99dd9de9d7c"
+          },
+          "schemaVersion": "decantr-benchmark-runtime-profile-attestation.v3",
+          "subject": {
+            "agentImage": {
+              "digest": "sha256:62204da251941810df11e6c07c145225b31cb3e783b4bea877f6ace6882ce511",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.15.0-pnpm-10.30.3@sha256:f19a4070ac325f5d7f151679f594da6606e5f7e997f2c1671080a65f61cef8b3"
+            },
+            "agentIsolationSmokePassed": true,
+            "agentTooling": {
+              "claudeCodeIntegrity": "sha512-BHV951ruIa6QXaZFDF1wRhwxAOkAiafB2AOWG6wGRUJ4apaJ9mlzp1BFLAhGfG0SknwAyqBenqeT6nit6at4uQ==",
+              "claudeCodeVersion": "2.1.218",
+              "codexIntegrity": "sha512-/PSPSFujjjmiyVFvG2yu/grOFhsWdokTH8t2KGWhXSo/M5n/dIDsnbsnO82/7bLtIoDuzQf7ATBUMWqPWQINlQ==",
+              "codexVersion": "0.145.0",
+              "controllerNode": "v22.17.0"
+            },
+            "baseImage": {
+              "digest": "sha256:557e52a0fcb928ee113df7e1fb5d4f60c1341dbda53f55e3d815ca10807efdce",
+              "reference": "node:22.15.0-bookworm-slim"
+            },
+            "benchmarkImage": {
+              "digest": "sha256:306a82edaa52c586e14b7bf3836a8a3c58ad2049e83f17634537c1b07b826343",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.15.0-pnpm-10.30.3@sha256:6e4947a384254086c92bebf5f65245699125919854622e87cc3800f253ccbbf1"
+            },
+            "browserSmokePassed": true,
+            "controller": {
+              "image": {
+                "digest": "sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0",
+                "reference": "node:22.17.0-bookworm-slim"
+              },
+              "nodeVersion": "v22.17.0"
+            },
+            "execution": {
+              "eventName": "workflow_dispatch",
+              "job": "probe",
+              "repository": "decantr-ai/decantr",
+              "runAttempt": "1",
+              "runId": "30116606965",
+              "runnerArch": "X64",
+              "runnerEnvironment": "github-hosted",
+              "runnerImage": "ubuntu24",
+              "runnerImageVersion": "20260720.247.2",
+              "runnerOs": "Linux",
+              "sourceCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main",
+              "workflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "workflowRef": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml@refs/heads/main",
+              "workflowSha": "30e37b79e2f1acf1f2d264d173d9411cd313faf0"
+            },
+            "host": {
+              "arch": "x64",
+              "os": "linux"
+            },
+            "matrix": {
+              "draftSha256": "80f54f62a461dc59a041da2676d9bed37d126b8c6e5ee7de1b5425f42791890e",
+              "sourceSpecSetSha256": "431db40a730d005133e2b8a1862e56639b6f4f455a181abd66780a1f0a257d22"
+            },
+            "packageManagerName": "pnpm",
+            "packageManagerVersion": "10.30.3",
+            "profileId": "node-22.15.0-pnpm-10.30.3",
+            "profileSha256": "df11db38fdd11a882bd8be021b0eb50a3b247f7c614a11510619e8bb781d242a",
+            "runtimeKind": "node",
+            "runtimeVersion": "22.15.0",
+            "schemaVersion": "decantr-benchmark-runtime-profile-build-subject.v2",
+            "source": {
+              "buildContext": {
+                "fileCount": 269,
+                "filesSha256": "c86a24086064565b15c558b1230baf46a665ef0287208d30a69a1f1e5ca9ccb2",
+                "roots": [
+                  ".dockerignore",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "controller": {
+                "fileCount": 270,
+                "filesSha256": "aa6c07e0d8e0d8d52c13aaec27cc0e41654dbe725742bb1e6c0b215be0d945e5",
+                "roots": [
+                  ".dockerignore",
+                  ".github/workflows/benchmark-3-10-runtime-profiles.yml",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "policy": "exact-clean-git-files-v1",
+              "repositoryCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "schemaVersion": "decantr-benchmark-runtime-source-closure.v1",
+              "sourceClosureSha256": "0036dfa71dfa25f254fa434a679e92e681ef703831d24521f260b0e2769e4247"
+            },
+            "subjectSha256": "242555a6a659e7f3998588fa80dfc0364fc39d7a3b7a1f43c1df523f946898d4",
+            "verifiedAt": "2026-07-24T18:32:46Z"
+          }
+        },
+        "attestationFile": {
+          "bytes": 5068,
+          "sha256": "70e4772ce7e88adfd74528919fead7de1e019c613de0b7fd554cd1da4be8b597"
+        }
+      }
+    },
+    {
+      "agentImage": {
+        "digest": "sha256:8cb1a49ff2580e25f1411b96f332061b8db9073f32e7df4ad72a6b3a82b2fc15",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.17.0-pnpm-10.13.1@sha256:060f4f883c41bec612a318a36560c58836712c9efedee9c29c203180910bec77"
+      },
+      "arch": "x64",
+      "baseImage": {
+        "digest": "sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0",
+        "reference": "node:22.17.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": "sha256:3b41c3c7a4a20a4abb5dc4ccd4c8f6e2bbafd5458f2ff449d66031c46347bc3f",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.17.0-pnpm-10.13.1@sha256:4b8feb134e49ecd4895146e9c323248d10e06b3cac085bb3bedde96de93c7b43"
+      },
+      "bunVersion": null,
+      "id": "node-22.17.0-pnpm-10.13.1",
+      "nodeVersion": "22.17.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "pnpm",
+        "version": "10.13.1"
+      },
+      "profileSha256": "91ddcf1669f997a598eaf6e8a6c4ebb71a730484b7ef9cb5c6b3571b0bbad30b",
+      "taskCount": 1,
+      "verification": {
+        "attestation": {
+          "attestationSha256": "345bc13eebf9017c9bf17e61253684db79b8f10bf33f2d3433e9f6fca9674a9e",
+          "provenance": {
+            "bundleFile": {
+              "bytes": 11244,
+              "path": "node-22.17.0-pnpm-10.13.1.provenance.jsonl",
+              "sha256": "e11dba90ad89a71afd514ef51f6eade419b849a53cd9fa9d658a0a2a2faae9a0"
+            },
+            "policy": {
+              "denySelfHostedRunners": true,
+              "predicateType": "https://slsa.dev/provenance/v1",
+              "repository": "decantr-ai/decantr",
+              "signerDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "signerWorkflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "sourceDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main"
+            },
+            "subjectFile": {
+              "bytes": 3583,
+              "path": "node-22.17.0-pnpm-10.13.1.subject.json",
+              "sha256": "1e2cfee99a57a26aac5d6383f760dd0903633536fa219a3c05d4e9b2f325c820"
+            },
+            "verificationFile": {
+              "bytes": 16530,
+              "path": "node-22.17.0-pnpm-10.13.1.provenance-verification.json",
+              "sha256": "4885915f5be54e8b2feb255c4017e450f00f4cc9c407b0cca93b94de9ecbefcb"
+            },
+            "verificationSha256": "f2d3e1e875e789cb74b13d8f96ad4374d90d2775cb1b28f9309fcf3107d54ab0"
+          },
+          "schemaVersion": "decantr-benchmark-runtime-profile-attestation.v3",
+          "subject": {
+            "agentImage": {
+              "digest": "sha256:8cb1a49ff2580e25f1411b96f332061b8db9073f32e7df4ad72a6b3a82b2fc15",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.17.0-pnpm-10.13.1@sha256:060f4f883c41bec612a318a36560c58836712c9efedee9c29c203180910bec77"
+            },
+            "agentIsolationSmokePassed": true,
+            "agentTooling": {
+              "claudeCodeIntegrity": "sha512-BHV951ruIa6QXaZFDF1wRhwxAOkAiafB2AOWG6wGRUJ4apaJ9mlzp1BFLAhGfG0SknwAyqBenqeT6nit6at4uQ==",
+              "claudeCodeVersion": "2.1.218",
+              "codexIntegrity": "sha512-/PSPSFujjjmiyVFvG2yu/grOFhsWdokTH8t2KGWhXSo/M5n/dIDsnbsnO82/7bLtIoDuzQf7ATBUMWqPWQINlQ==",
+              "codexVersion": "0.145.0",
+              "controllerNode": "v22.17.0"
+            },
+            "baseImage": {
+              "digest": "sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0",
+              "reference": "node:22.17.0-bookworm-slim"
+            },
+            "benchmarkImage": {
+              "digest": "sha256:3b41c3c7a4a20a4abb5dc4ccd4c8f6e2bbafd5458f2ff449d66031c46347bc3f",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.17.0-pnpm-10.13.1@sha256:4b8feb134e49ecd4895146e9c323248d10e06b3cac085bb3bedde96de93c7b43"
+            },
+            "browserSmokePassed": true,
+            "controller": {
+              "image": {
+                "digest": "sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0",
+                "reference": "node:22.17.0-bookworm-slim"
+              },
+              "nodeVersion": "v22.17.0"
+            },
+            "execution": {
+              "eventName": "workflow_dispatch",
+              "job": "probe",
+              "repository": "decantr-ai/decantr",
+              "runAttempt": "1",
+              "runId": "30116606965",
+              "runnerArch": "X64",
+              "runnerEnvironment": "github-hosted",
+              "runnerImage": "ubuntu24",
+              "runnerImageVersion": "20260720.247.2",
+              "runnerOs": "Linux",
+              "sourceCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main",
+              "workflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "workflowRef": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml@refs/heads/main",
+              "workflowSha": "30e37b79e2f1acf1f2d264d173d9411cd313faf0"
+            },
+            "host": {
+              "arch": "x64",
+              "os": "linux"
+            },
+            "matrix": {
+              "draftSha256": "80f54f62a461dc59a041da2676d9bed37d126b8c6e5ee7de1b5425f42791890e",
+              "sourceSpecSetSha256": "431db40a730d005133e2b8a1862e56639b6f4f455a181abd66780a1f0a257d22"
+            },
+            "packageManagerName": "pnpm",
+            "packageManagerVersion": "10.13.1",
+            "profileId": "node-22.17.0-pnpm-10.13.1",
+            "profileSha256": "91ddcf1669f997a598eaf6e8a6c4ebb71a730484b7ef9cb5c6b3571b0bbad30b",
+            "runtimeKind": "node",
+            "runtimeVersion": "22.17.0",
+            "schemaVersion": "decantr-benchmark-runtime-profile-build-subject.v2",
+            "source": {
+              "buildContext": {
+                "fileCount": 269,
+                "filesSha256": "c86a24086064565b15c558b1230baf46a665ef0287208d30a69a1f1e5ca9ccb2",
+                "roots": [
+                  ".dockerignore",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "controller": {
+                "fileCount": 270,
+                "filesSha256": "aa6c07e0d8e0d8d52c13aaec27cc0e41654dbe725742bb1e6c0b215be0d945e5",
+                "roots": [
+                  ".dockerignore",
+                  ".github/workflows/benchmark-3-10-runtime-profiles.yml",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "policy": "exact-clean-git-files-v1",
+              "repositoryCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "schemaVersion": "decantr-benchmark-runtime-source-closure.v1",
+              "sourceClosureSha256": "0036dfa71dfa25f254fa434a679e92e681ef703831d24521f260b0e2769e4247"
+            },
+            "subjectSha256": "67cd2dd80fd5aca04c7c4055dbbf798f0b761c8c09b7a0279db9d30cdc3d765d",
+            "verifiedAt": "2026-07-24T18:35:34Z"
+          }
+        },
+        "attestationFile": {
+          "bytes": 5068,
+          "sha256": "2cf75ef62ce25c6f426e26eee19889ba0c63aaa407032bf1c1c00dbcdc616ba0"
+        }
+      }
+    },
+    {
+      "agentImage": {
+        "digest": "sha256:c7066ec46cbcb476438ec113dd811c7e766049b5a38660c01120a563d1ad240b",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.18.0-npm-8.11.0@sha256:e5b8cc74532ac15cf8d7289296887385872205509f241aefffafd9a063c4baf7"
+      },
+      "arch": "x64",
+      "baseImage": {
+        "digest": "sha256:752ea8a2f758c34002a0461bd9f1cee4f9a3c36d48494586f60ffce1fc708e0e",
+        "reference": "node:22.18.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": "sha256:47bbd5d4c74da99dd57957aaba902f93783b542aad8d4b03f8e46da5b51469f4",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.18.0-npm-8.11.0@sha256:ece3f73f73749811fa672a5a116f666514148d420f5cb820759be0055cc1faa5"
+      },
+      "bunVersion": null,
+      "id": "node-22.18.0-npm-8.11.0",
+      "nodeVersion": "22.18.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "npm",
+        "version": "8.11.0"
+      },
+      "profileSha256": "b5013a41369bad6bfdba7ff864d0ed7e517adc380576e1177b0f7462310a6edb",
+      "taskCount": 1,
+      "verification": {
+        "attestation": {
+          "attestationSha256": "aa242331e803372196ebf0740d8a5495192d5fa78fb6e6b667935b3ae8f70455",
+          "provenance": {
+            "bundleFile": {
+              "bytes": 11381,
+              "path": "node-22.18.0-npm-8.11.0.provenance.jsonl",
+              "sha256": "966a4c704eba4493fbaf6bc1af1b974dad62335c8c2fa3e9ff36653b339303a6"
+            },
+            "policy": {
+              "denySelfHostedRunners": true,
+              "predicateType": "https://slsa.dev/provenance/v1",
+              "repository": "decantr-ai/decantr",
+              "signerDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "signerWorkflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "sourceDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main"
+            },
+            "subjectFile": {
+              "bytes": 3575,
+              "path": "node-22.18.0-npm-8.11.0.subject.json",
+              "sha256": "06963c40335a2c0a24ac4001712e905382ed24f1b5296f5c12a676a7eb65acde"
+            },
+            "verificationFile": {
+              "bytes": 16722,
+              "path": "node-22.18.0-npm-8.11.0.provenance-verification.json",
+              "sha256": "696d2685e805026a807b398ddf320adbfaf185ebe59cddb21577464f2f3f2019"
+            },
+            "verificationSha256": "590c4075da1e98b26b878ae8671e879cc4e365c089fbde0ef50aafba13c23794"
+          },
+          "schemaVersion": "decantr-benchmark-runtime-profile-attestation.v3",
+          "subject": {
+            "agentImage": {
+              "digest": "sha256:c7066ec46cbcb476438ec113dd811c7e766049b5a38660c01120a563d1ad240b",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.18.0-npm-8.11.0@sha256:e5b8cc74532ac15cf8d7289296887385872205509f241aefffafd9a063c4baf7"
+            },
+            "agentIsolationSmokePassed": true,
+            "agentTooling": {
+              "claudeCodeIntegrity": "sha512-BHV951ruIa6QXaZFDF1wRhwxAOkAiafB2AOWG6wGRUJ4apaJ9mlzp1BFLAhGfG0SknwAyqBenqeT6nit6at4uQ==",
+              "claudeCodeVersion": "2.1.218",
+              "codexIntegrity": "sha512-/PSPSFujjjmiyVFvG2yu/grOFhsWdokTH8t2KGWhXSo/M5n/dIDsnbsnO82/7bLtIoDuzQf7ATBUMWqPWQINlQ==",
+              "codexVersion": "0.145.0",
+              "controllerNode": "v22.17.0"
+            },
+            "baseImage": {
+              "digest": "sha256:752ea8a2f758c34002a0461bd9f1cee4f9a3c36d48494586f60ffce1fc708e0e",
+              "reference": "node:22.18.0-bookworm-slim"
+            },
+            "benchmarkImage": {
+              "digest": "sha256:47bbd5d4c74da99dd57957aaba902f93783b542aad8d4b03f8e46da5b51469f4",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.18.0-npm-8.11.0@sha256:ece3f73f73749811fa672a5a116f666514148d420f5cb820759be0055cc1faa5"
+            },
+            "browserSmokePassed": true,
+            "controller": {
+              "image": {
+                "digest": "sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0",
+                "reference": "node:22.17.0-bookworm-slim"
+              },
+              "nodeVersion": "v22.17.0"
+            },
+            "execution": {
+              "eventName": "workflow_dispatch",
+              "job": "probe",
+              "repository": "decantr-ai/decantr",
+              "runAttempt": "1",
+              "runId": "30116606965",
+              "runnerArch": "X64",
+              "runnerEnvironment": "github-hosted",
+              "runnerImage": "ubuntu24",
+              "runnerImageVersion": "20260720.247.2",
+              "runnerOs": "Linux",
+              "sourceCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main",
+              "workflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "workflowRef": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml@refs/heads/main",
+              "workflowSha": "30e37b79e2f1acf1f2d264d173d9411cd313faf0"
+            },
+            "host": {
+              "arch": "x64",
+              "os": "linux"
+            },
+            "matrix": {
+              "draftSha256": "80f54f62a461dc59a041da2676d9bed37d126b8c6e5ee7de1b5425f42791890e",
+              "sourceSpecSetSha256": "431db40a730d005133e2b8a1862e56639b6f4f455a181abd66780a1f0a257d22"
+            },
+            "packageManagerName": "npm",
+            "packageManagerVersion": "8.11.0",
+            "profileId": "node-22.18.0-npm-8.11.0",
+            "profileSha256": "b5013a41369bad6bfdba7ff864d0ed7e517adc380576e1177b0f7462310a6edb",
+            "runtimeKind": "node",
+            "runtimeVersion": "22.18.0",
+            "schemaVersion": "decantr-benchmark-runtime-profile-build-subject.v2",
+            "source": {
+              "buildContext": {
+                "fileCount": 269,
+                "filesSha256": "c86a24086064565b15c558b1230baf46a665ef0287208d30a69a1f1e5ca9ccb2",
+                "roots": [
+                  ".dockerignore",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "controller": {
+                "fileCount": 270,
+                "filesSha256": "aa6c07e0d8e0d8d52c13aaec27cc0e41654dbe725742bb1e6c0b215be0d945e5",
+                "roots": [
+                  ".dockerignore",
+                  ".github/workflows/benchmark-3-10-runtime-profiles.yml",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "policy": "exact-clean-git-files-v1",
+              "repositoryCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "schemaVersion": "decantr-benchmark-runtime-source-closure.v1",
+              "sourceClosureSha256": "0036dfa71dfa25f254fa434a679e92e681ef703831d24521f260b0e2769e4247"
+            },
+            "subjectSha256": "275a3e44dd62ec3ba4bce78aaf1cae21f5856add1bdb3607a0c102d77803ac7a",
+            "verifiedAt": "2026-07-24T18:35:58Z"
+          }
+        },
+        "attestationFile": {
+          "bytes": 5054,
+          "sha256": "5a6cbbbbd0151f64ae68c96c1e354ef1726d044eeee9e06254127e7b45ede4ea"
+        }
+      }
+    },
+    {
+      "agentImage": {
+        "digest": "sha256:0a5ef662890817c88ddf594ab3fb4bde56fe3646f0fc224bceece5249e8fadc2",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.18.0-npm-8.5.0@sha256:47e7c47634f4303e5a4809c1dd30baef02807cb5d9c99ed520848615e0f07f2f"
+      },
+      "arch": "x64",
+      "baseImage": {
+        "digest": "sha256:752ea8a2f758c34002a0461bd9f1cee4f9a3c36d48494586f60ffce1fc708e0e",
+        "reference": "node:22.18.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": "sha256:2cd597089eae9a40bb1a894e402afabe8c0970b8184ef7b3dcdf7c832d0bc779",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.18.0-npm-8.5.0@sha256:20608da5fd65083b108c7c09d08f7fd264ec5c186e8c190d84105fa5198a2d5a"
+      },
+      "bunVersion": null,
+      "id": "node-22.18.0-npm-8.5.0",
+      "nodeVersion": "22.18.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "npm",
+        "version": "8.5.0"
+      },
+      "profileSha256": "aff17f05452efdbab0df4fcf7e6f17eb9ead13af2f0c90a4dcb925fba95c1411",
+      "taskCount": 1,
+      "verification": {
+        "attestation": {
+          "attestationSha256": "3b115f858cad059bd14f6ed83d3ddb2ee8be1f17ccb9895e1f657de88cff40f2",
+          "provenance": {
+            "bundleFile": {
+              "bytes": 11377,
+              "path": "node-22.18.0-npm-8.5.0.provenance.jsonl",
+              "sha256": "54b755e2f68135921a5c4cc1e6adcaaea0ffdafebf85e79414938daa49fdd031"
+            },
+            "policy": {
+              "denySelfHostedRunners": true,
+              "predicateType": "https://slsa.dev/provenance/v1",
+              "repository": "decantr-ai/decantr",
+              "signerDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "signerWorkflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "sourceDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main"
+            },
+            "subjectFile": {
+              "bytes": 3571,
+              "path": "node-22.18.0-npm-8.5.0.subject.json",
+              "sha256": "85fe855d47c865055a560cfd4589b3074d246f6bf9debf4f43273e1c4ddd2a22"
+            },
+            "verificationFile": {
+              "bytes": 16717,
+              "path": "node-22.18.0-npm-8.5.0.provenance-verification.json",
+              "sha256": "23c0954fba0f88446e470eb0ed1bd96e000767748af0d728a07db70099ac042f"
+            },
+            "verificationSha256": "631d554aa633e6ce6f77729c48d30991a207e539183e04693fb82f8a004033d3"
+          },
+          "schemaVersion": "decantr-benchmark-runtime-profile-attestation.v3",
+          "subject": {
+            "agentImage": {
+              "digest": "sha256:0a5ef662890817c88ddf594ab3fb4bde56fe3646f0fc224bceece5249e8fadc2",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.18.0-npm-8.5.0@sha256:47e7c47634f4303e5a4809c1dd30baef02807cb5d9c99ed520848615e0f07f2f"
+            },
+            "agentIsolationSmokePassed": true,
+            "agentTooling": {
+              "claudeCodeIntegrity": "sha512-BHV951ruIa6QXaZFDF1wRhwxAOkAiafB2AOWG6wGRUJ4apaJ9mlzp1BFLAhGfG0SknwAyqBenqeT6nit6at4uQ==",
+              "claudeCodeVersion": "2.1.218",
+              "codexIntegrity": "sha512-/PSPSFujjjmiyVFvG2yu/grOFhsWdokTH8t2KGWhXSo/M5n/dIDsnbsnO82/7bLtIoDuzQf7ATBUMWqPWQINlQ==",
+              "codexVersion": "0.145.0",
+              "controllerNode": "v22.17.0"
+            },
+            "baseImage": {
+              "digest": "sha256:752ea8a2f758c34002a0461bd9f1cee4f9a3c36d48494586f60ffce1fc708e0e",
+              "reference": "node:22.18.0-bookworm-slim"
+            },
+            "benchmarkImage": {
+              "digest": "sha256:2cd597089eae9a40bb1a894e402afabe8c0970b8184ef7b3dcdf7c832d0bc779",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.18.0-npm-8.5.0@sha256:20608da5fd65083b108c7c09d08f7fd264ec5c186e8c190d84105fa5198a2d5a"
+            },
+            "browserSmokePassed": true,
+            "controller": {
+              "image": {
+                "digest": "sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0",
+                "reference": "node:22.17.0-bookworm-slim"
+              },
+              "nodeVersion": "v22.17.0"
+            },
+            "execution": {
+              "eventName": "workflow_dispatch",
+              "job": "probe",
+              "repository": "decantr-ai/decantr",
+              "runAttempt": "1",
+              "runId": "30116606965",
+              "runnerArch": "X64",
+              "runnerEnvironment": "github-hosted",
+              "runnerImage": "ubuntu24",
+              "runnerImageVersion": "20260720.247.2",
+              "runnerOs": "Linux",
+              "sourceCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main",
+              "workflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "workflowRef": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml@refs/heads/main",
+              "workflowSha": "30e37b79e2f1acf1f2d264d173d9411cd313faf0"
+            },
+            "host": {
+              "arch": "x64",
+              "os": "linux"
+            },
+            "matrix": {
+              "draftSha256": "80f54f62a461dc59a041da2676d9bed37d126b8c6e5ee7de1b5425f42791890e",
+              "sourceSpecSetSha256": "431db40a730d005133e2b8a1862e56639b6f4f455a181abd66780a1f0a257d22"
+            },
+            "packageManagerName": "npm",
+            "packageManagerVersion": "8.5.0",
+            "profileId": "node-22.18.0-npm-8.5.0",
+            "profileSha256": "aff17f05452efdbab0df4fcf7e6f17eb9ead13af2f0c90a4dcb925fba95c1411",
+            "runtimeKind": "node",
+            "runtimeVersion": "22.18.0",
+            "schemaVersion": "decantr-benchmark-runtime-profile-build-subject.v2",
+            "source": {
+              "buildContext": {
+                "fileCount": 269,
+                "filesSha256": "c86a24086064565b15c558b1230baf46a665ef0287208d30a69a1f1e5ca9ccb2",
+                "roots": [
+                  ".dockerignore",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "controller": {
+                "fileCount": 270,
+                "filesSha256": "aa6c07e0d8e0d8d52c13aaec27cc0e41654dbe725742bb1e6c0b215be0d945e5",
+                "roots": [
+                  ".dockerignore",
+                  ".github/workflows/benchmark-3-10-runtime-profiles.yml",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "policy": "exact-clean-git-files-v1",
+              "repositoryCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "schemaVersion": "decantr-benchmark-runtime-source-closure.v1",
+              "sourceClosureSha256": "0036dfa71dfa25f254fa434a679e92e681ef703831d24521f260b0e2769e4247"
+            },
+            "subjectSha256": "c3d87d1ea291c1b38b8476dc697b450ddf710daaa429768601a25b85b4f70906",
+            "verifiedAt": "2026-07-24T18:39:10Z"
+          }
+        },
+        "attestationFile": {
+          "bytes": 5047,
+          "sha256": "123c379453450e95df353b524312e2f4c3c25409287e9bd924d698f62fe13060"
+        }
+      }
+    },
+    {
+      "agentImage": {
+        "digest": "sha256:8c05c09c6c320a26b70db13404bacdc70f8593f168985b96bad3902deab6f32b",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.19.0-npm-10.9.3@sha256:94ec336f6c303265296655768c70913c594b2073a8990fce469b8a07174133b7"
+      },
+      "arch": "x64",
+      "baseImage": {
+        "digest": "sha256:4a4884e8a44826194dff92ba316264f392056cbe243dcc9fd3551e71cea02b90",
+        "reference": "node:22.19.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": "sha256:46062c89fb9903e5cc4a5552db3bbe97f595099b593728f1bb1b815c4b18da6c",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.19.0-npm-10.9.3@sha256:d11173f00758c7a1f8bfc255044c068e35b19e31d4f1bc3ef2bc53187e3f73ea"
+      },
+      "bunVersion": null,
+      "id": "node-22.19.0-npm-10.9.3",
+      "nodeVersion": "22.19.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "npm",
+        "version": "10.9.3"
+      },
+      "profileSha256": "e4fd777eb81d647980e77859992ffc1a5623d76b7b698608e9954144da296ac2",
+      "taskCount": 3,
+      "verification": {
+        "attestation": {
+          "attestationSha256": "f01b8b02203dc7b152c9404da035fedfe6ec94f5dd750d3313b20882a1311911",
+          "provenance": {
+            "bundleFile": {
+              "bytes": 11287,
+              "path": "node-22.19.0-npm-10.9.3.provenance.jsonl",
+              "sha256": "29eaa4a76da1e4897ca8174e5bc9f10a81ea4b73d523f3f1174c1d0a6d68770e"
+            },
+            "policy": {
+              "denySelfHostedRunners": true,
+              "predicateType": "https://slsa.dev/provenance/v1",
+              "repository": "decantr-ai/decantr",
+              "signerDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "signerWorkflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "sourceDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main"
+            },
+            "subjectFile": {
+              "bytes": 3575,
+              "path": "node-22.19.0-npm-10.9.3.subject.json",
+              "sha256": "be74a81b9844f85d68364dc1f1cf35222fd4a514fd6278294dbea196046bc153"
+            },
+            "verificationFile": {
+              "bytes": 16590,
+              "path": "node-22.19.0-npm-10.9.3.provenance-verification.json",
+              "sha256": "f4ea6e2106b53fb9a15bfd2690c3780fa534ea1c36b5b0bc2ef6a97cfb3da305"
+            },
+            "verificationSha256": "9b3bdd9f6ae9aa2feaee4d204b7ff146d7c0c7836bc101f79e00429ee8a27d62"
+          },
+          "schemaVersion": "decantr-benchmark-runtime-profile-attestation.v3",
+          "subject": {
+            "agentImage": {
+              "digest": "sha256:8c05c09c6c320a26b70db13404bacdc70f8593f168985b96bad3902deab6f32b",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.19.0-npm-10.9.3@sha256:94ec336f6c303265296655768c70913c594b2073a8990fce469b8a07174133b7"
+            },
+            "agentIsolationSmokePassed": true,
+            "agentTooling": {
+              "claudeCodeIntegrity": "sha512-BHV951ruIa6QXaZFDF1wRhwxAOkAiafB2AOWG6wGRUJ4apaJ9mlzp1BFLAhGfG0SknwAyqBenqeT6nit6at4uQ==",
+              "claudeCodeVersion": "2.1.218",
+              "codexIntegrity": "sha512-/PSPSFujjjmiyVFvG2yu/grOFhsWdokTH8t2KGWhXSo/M5n/dIDsnbsnO82/7bLtIoDuzQf7ATBUMWqPWQINlQ==",
+              "codexVersion": "0.145.0",
+              "controllerNode": "v22.17.0"
+            },
+            "baseImage": {
+              "digest": "sha256:4a4884e8a44826194dff92ba316264f392056cbe243dcc9fd3551e71cea02b90",
+              "reference": "node:22.19.0-bookworm-slim"
+            },
+            "benchmarkImage": {
+              "digest": "sha256:46062c89fb9903e5cc4a5552db3bbe97f595099b593728f1bb1b815c4b18da6c",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.19.0-npm-10.9.3@sha256:d11173f00758c7a1f8bfc255044c068e35b19e31d4f1bc3ef2bc53187e3f73ea"
+            },
+            "browserSmokePassed": true,
+            "controller": {
+              "image": {
+                "digest": "sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0",
+                "reference": "node:22.17.0-bookworm-slim"
+              },
+              "nodeVersion": "v22.17.0"
+            },
+            "execution": {
+              "eventName": "workflow_dispatch",
+              "job": "probe",
+              "repository": "decantr-ai/decantr",
+              "runAttempt": "1",
+              "runId": "30116606965",
+              "runnerArch": "X64",
+              "runnerEnvironment": "github-hosted",
+              "runnerImage": "ubuntu24",
+              "runnerImageVersion": "20260720.247.2",
+              "runnerOs": "Linux",
+              "sourceCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main",
+              "workflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "workflowRef": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml@refs/heads/main",
+              "workflowSha": "30e37b79e2f1acf1f2d264d173d9411cd313faf0"
+            },
+            "host": {
+              "arch": "x64",
+              "os": "linux"
+            },
+            "matrix": {
+              "draftSha256": "80f54f62a461dc59a041da2676d9bed37d126b8c6e5ee7de1b5425f42791890e",
+              "sourceSpecSetSha256": "431db40a730d005133e2b8a1862e56639b6f4f455a181abd66780a1f0a257d22"
+            },
+            "packageManagerName": "npm",
+            "packageManagerVersion": "10.9.3",
+            "profileId": "node-22.19.0-npm-10.9.3",
+            "profileSha256": "e4fd777eb81d647980e77859992ffc1a5623d76b7b698608e9954144da296ac2",
+            "runtimeKind": "node",
+            "runtimeVersion": "22.19.0",
+            "schemaVersion": "decantr-benchmark-runtime-profile-build-subject.v2",
+            "source": {
+              "buildContext": {
+                "fileCount": 269,
+                "filesSha256": "c86a24086064565b15c558b1230baf46a665ef0287208d30a69a1f1e5ca9ccb2",
+                "roots": [
+                  ".dockerignore",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "controller": {
+                "fileCount": 270,
+                "filesSha256": "aa6c07e0d8e0d8d52c13aaec27cc0e41654dbe725742bb1e6c0b215be0d945e5",
+                "roots": [
+                  ".dockerignore",
+                  ".github/workflows/benchmark-3-10-runtime-profiles.yml",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "policy": "exact-clean-git-files-v1",
+              "repositoryCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "schemaVersion": "decantr-benchmark-runtime-source-closure.v1",
+              "sourceClosureSha256": "0036dfa71dfa25f254fa434a679e92e681ef703831d24521f260b0e2769e4247"
+            },
+            "subjectSha256": "f2ac54161e157a829ed5338c93a00cc1ca1a4b55e090513b31bbb8e002838157",
+            "verifiedAt": "2026-07-24T18:39:22Z"
+          }
+        },
+        "attestationFile": {
+          "bytes": 5054,
+          "sha256": "ffa6e510dc53cfe812d1683b62ced17ee08015091a458930a7aa4794397e7f2d"
+        }
+      }
+    },
+    {
+      "agentImage": {
+        "digest": "sha256:8eaefbaaf15196959890e78b7fce9c8f756b166aec6838df4bdfd34f17d425b9",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.19.0-pnpm-10.25.0@sha256:a55c2eeb3a58fb594731d293cd1e62350efe26b8db154254948bb7a86c92bb02"
+      },
+      "arch": "x64",
+      "baseImage": {
+        "digest": "sha256:4a4884e8a44826194dff92ba316264f392056cbe243dcc9fd3551e71cea02b90",
+        "reference": "node:22.19.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": "sha256:83e34c8c8c95df2babeb38073b27073d970a2c3f1ef833c02fb1b0a0623be5ea",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.19.0-pnpm-10.25.0@sha256:245ef425cbfe3b9776a125d27cad1b5eb9a4a673856100b197e0dd9b4194bda0"
+      },
+      "bunVersion": null,
+      "id": "node-22.19.0-pnpm-10.25.0",
+      "nodeVersion": "22.19.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "pnpm",
+        "version": "10.25.0"
+      },
+      "profileSha256": "d0bd1bc80e965c9247986e0e539a1ed7bf285fe32942c9c1e7a3e46b1551bac9",
+      "taskCount": 2,
+      "verification": {
+        "attestation": {
+          "attestationSha256": "2aaa7423a3bee9e7ecdf9333069d0cc06cbe80983934f5e0aec9ad03ee397d79",
+          "provenance": {
+            "bundleFile": {
+              "bytes": 11240,
+              "path": "node-22.19.0-pnpm-10.25.0.provenance.jsonl",
+              "sha256": "d8f03d584900d36c3a94e4383a76c985ce701f33bf8dfb24a03cc13c46c19b88"
+            },
+            "policy": {
+              "denySelfHostedRunners": true,
+              "predicateType": "https://slsa.dev/provenance/v1",
+              "repository": "decantr-ai/decantr",
+              "signerDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "signerWorkflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "sourceDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main"
+            },
+            "subjectFile": {
+              "bytes": 3583,
+              "path": "node-22.19.0-pnpm-10.25.0.subject.json",
+              "sha256": "ab6321af66ce00fa89e51650a1f465c349cbf7f8e8149cf9d32e8ccc0def5302"
+            },
+            "verificationFile": {
+              "bytes": 16526,
+              "path": "node-22.19.0-pnpm-10.25.0.provenance-verification.json",
+              "sha256": "4e624aa02aa860d81e9047f35314fdb72b65ca0f7cbca3613ea8d15bbabcf151"
+            },
+            "verificationSha256": "d9e4f56043ce537addb42d0acd8f283b16c7c4894e8676858514e30897550ea8"
+          },
+          "schemaVersion": "decantr-benchmark-runtime-profile-attestation.v3",
+          "subject": {
+            "agentImage": {
+              "digest": "sha256:8eaefbaaf15196959890e78b7fce9c8f756b166aec6838df4bdfd34f17d425b9",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.19.0-pnpm-10.25.0@sha256:a55c2eeb3a58fb594731d293cd1e62350efe26b8db154254948bb7a86c92bb02"
+            },
+            "agentIsolationSmokePassed": true,
+            "agentTooling": {
+              "claudeCodeIntegrity": "sha512-BHV951ruIa6QXaZFDF1wRhwxAOkAiafB2AOWG6wGRUJ4apaJ9mlzp1BFLAhGfG0SknwAyqBenqeT6nit6at4uQ==",
+              "claudeCodeVersion": "2.1.218",
+              "codexIntegrity": "sha512-/PSPSFujjjmiyVFvG2yu/grOFhsWdokTH8t2KGWhXSo/M5n/dIDsnbsnO82/7bLtIoDuzQf7ATBUMWqPWQINlQ==",
+              "codexVersion": "0.145.0",
+              "controllerNode": "v22.17.0"
+            },
+            "baseImage": {
+              "digest": "sha256:4a4884e8a44826194dff92ba316264f392056cbe243dcc9fd3551e71cea02b90",
+              "reference": "node:22.19.0-bookworm-slim"
+            },
+            "benchmarkImage": {
+              "digest": "sha256:83e34c8c8c95df2babeb38073b27073d970a2c3f1ef833c02fb1b0a0623be5ea",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.19.0-pnpm-10.25.0@sha256:245ef425cbfe3b9776a125d27cad1b5eb9a4a673856100b197e0dd9b4194bda0"
+            },
+            "browserSmokePassed": true,
+            "controller": {
+              "image": {
+                "digest": "sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0",
+                "reference": "node:22.17.0-bookworm-slim"
+              },
+              "nodeVersion": "v22.17.0"
+            },
+            "execution": {
+              "eventName": "workflow_dispatch",
+              "job": "probe",
+              "repository": "decantr-ai/decantr",
+              "runAttempt": "1",
+              "runId": "30116606965",
+              "runnerArch": "X64",
+              "runnerEnvironment": "github-hosted",
+              "runnerImage": "ubuntu24",
+              "runnerImageVersion": "20260720.247.2",
+              "runnerOs": "Linux",
+              "sourceCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main",
+              "workflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "workflowRef": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml@refs/heads/main",
+              "workflowSha": "30e37b79e2f1acf1f2d264d173d9411cd313faf0"
+            },
+            "host": {
+              "arch": "x64",
+              "os": "linux"
+            },
+            "matrix": {
+              "draftSha256": "80f54f62a461dc59a041da2676d9bed37d126b8c6e5ee7de1b5425f42791890e",
+              "sourceSpecSetSha256": "431db40a730d005133e2b8a1862e56639b6f4f455a181abd66780a1f0a257d22"
+            },
+            "packageManagerName": "pnpm",
+            "packageManagerVersion": "10.25.0",
+            "profileId": "node-22.19.0-pnpm-10.25.0",
+            "profileSha256": "d0bd1bc80e965c9247986e0e539a1ed7bf285fe32942c9c1e7a3e46b1551bac9",
+            "runtimeKind": "node",
+            "runtimeVersion": "22.19.0",
+            "schemaVersion": "decantr-benchmark-runtime-profile-build-subject.v2",
+            "source": {
+              "buildContext": {
+                "fileCount": 269,
+                "filesSha256": "c86a24086064565b15c558b1230baf46a665ef0287208d30a69a1f1e5ca9ccb2",
+                "roots": [
+                  ".dockerignore",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "controller": {
+                "fileCount": 270,
+                "filesSha256": "aa6c07e0d8e0d8d52c13aaec27cc0e41654dbe725742bb1e6c0b215be0d945e5",
+                "roots": [
+                  ".dockerignore",
+                  ".github/workflows/benchmark-3-10-runtime-profiles.yml",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "policy": "exact-clean-git-files-v1",
+              "repositoryCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "schemaVersion": "decantr-benchmark-runtime-source-closure.v1",
+              "sourceClosureSha256": "0036dfa71dfa25f254fa434a679e92e681ef703831d24521f260b0e2769e4247"
+            },
+            "subjectSha256": "07e889859ef92d136de9a43eedcaf9c26316a88934c6ba3bab401fd197b6408e",
+            "verifiedAt": "2026-07-24T18:42:19Z"
+          }
+        },
+        "attestationFile": {
+          "bytes": 5068,
+          "sha256": "6fd387bd2d8f147a3ee70f2424c63806b4df71cf7522d93dd74b13c1b0b991fa"
+        }
+      }
+    },
+    {
+      "agentImage": {
+        "digest": "sha256:239af65102854996e914525f73fcef0543edbbd204d64535903c25b9bb65d715",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.19.0-pnpm-10.28.0@sha256:78b85ecc35f8429714999ae858ed15479cc9dda643ee84a60ea71904f68913fc"
+      },
+      "arch": "x64",
+      "baseImage": {
+        "digest": "sha256:4a4884e8a44826194dff92ba316264f392056cbe243dcc9fd3551e71cea02b90",
+        "reference": "node:22.19.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": "sha256:565f780b979454a165640bfe8a35283b2b577bf00716d19ed4d3e65bd5ddbe6a",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.19.0-pnpm-10.28.0@sha256:a2ca60a28f2a127f479f5268c3886a16de1180463d13ea2216f6a71ab49f1572"
+      },
+      "bunVersion": null,
+      "id": "node-22.19.0-pnpm-10.28.0",
+      "nodeVersion": "22.19.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "pnpm",
+        "version": "10.28.0"
+      },
+      "profileSha256": "8a61389b5fbfb0549e523d62b67e00caebe3ca3928475760edef909fb795f05d",
+      "taskCount": 1,
+      "verification": {
+        "attestation": {
+          "attestationSha256": "87121ee9164986468283ed87d8770741e2788b63cac53a14f30faf732ac28f5f",
+          "provenance": {
+            "bundleFile": {
+              "bytes": 11291,
+              "path": "node-22.19.0-pnpm-10.28.0.provenance.jsonl",
+              "sha256": "a6f5944640e865685e8566efdd10efc82e8aecaf1555ade342debd8bc532e37e"
+            },
+            "policy": {
+              "denySelfHostedRunners": true,
+              "predicateType": "https://slsa.dev/provenance/v1",
+              "repository": "decantr-ai/decantr",
+              "signerDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "signerWorkflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "sourceDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main"
+            },
+            "subjectFile": {
+              "bytes": 3583,
+              "path": "node-22.19.0-pnpm-10.28.0.subject.json",
+              "sha256": "76048d466dac75e21d094f8676f6818dedcbbd373cc8dc46c06cbbc01cc0dfa2"
+            },
+            "verificationFile": {
+              "bytes": 16596,
+              "path": "node-22.19.0-pnpm-10.28.0.provenance-verification.json",
+              "sha256": "9686c676661e59ef1d0290a4932a2195b78a5099e4b13a947bd0f0c7c8b2f986"
+            },
+            "verificationSha256": "848c958d848c5b3c2275f80a35d0fe89b0766b27991596c9fe103eca231aeebc"
+          },
+          "schemaVersion": "decantr-benchmark-runtime-profile-attestation.v3",
+          "subject": {
+            "agentImage": {
+              "digest": "sha256:239af65102854996e914525f73fcef0543edbbd204d64535903c25b9bb65d715",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.19.0-pnpm-10.28.0@sha256:78b85ecc35f8429714999ae858ed15479cc9dda643ee84a60ea71904f68913fc"
+            },
+            "agentIsolationSmokePassed": true,
+            "agentTooling": {
+              "claudeCodeIntegrity": "sha512-BHV951ruIa6QXaZFDF1wRhwxAOkAiafB2AOWG6wGRUJ4apaJ9mlzp1BFLAhGfG0SknwAyqBenqeT6nit6at4uQ==",
+              "claudeCodeVersion": "2.1.218",
+              "codexIntegrity": "sha512-/PSPSFujjjmiyVFvG2yu/grOFhsWdokTH8t2KGWhXSo/M5n/dIDsnbsnO82/7bLtIoDuzQf7ATBUMWqPWQINlQ==",
+              "codexVersion": "0.145.0",
+              "controllerNode": "v22.17.0"
+            },
+            "baseImage": {
+              "digest": "sha256:4a4884e8a44826194dff92ba316264f392056cbe243dcc9fd3551e71cea02b90",
+              "reference": "node:22.19.0-bookworm-slim"
+            },
+            "benchmarkImage": {
+              "digest": "sha256:565f780b979454a165640bfe8a35283b2b577bf00716d19ed4d3e65bd5ddbe6a",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.19.0-pnpm-10.28.0@sha256:a2ca60a28f2a127f479f5268c3886a16de1180463d13ea2216f6a71ab49f1572"
+            },
+            "browserSmokePassed": true,
+            "controller": {
+              "image": {
+                "digest": "sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0",
+                "reference": "node:22.17.0-bookworm-slim"
+              },
+              "nodeVersion": "v22.17.0"
+            },
+            "execution": {
+              "eventName": "workflow_dispatch",
+              "job": "probe",
+              "repository": "decantr-ai/decantr",
+              "runAttempt": "1",
+              "runId": "30116606965",
+              "runnerArch": "X64",
+              "runnerEnvironment": "github-hosted",
+              "runnerImage": "ubuntu24",
+              "runnerImageVersion": "20260720.247.2",
+              "runnerOs": "Linux",
+              "sourceCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main",
+              "workflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "workflowRef": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml@refs/heads/main",
+              "workflowSha": "30e37b79e2f1acf1f2d264d173d9411cd313faf0"
+            },
+            "host": {
+              "arch": "x64",
+              "os": "linux"
+            },
+            "matrix": {
+              "draftSha256": "80f54f62a461dc59a041da2676d9bed37d126b8c6e5ee7de1b5425f42791890e",
+              "sourceSpecSetSha256": "431db40a730d005133e2b8a1862e56639b6f4f455a181abd66780a1f0a257d22"
+            },
+            "packageManagerName": "pnpm",
+            "packageManagerVersion": "10.28.0",
+            "profileId": "node-22.19.0-pnpm-10.28.0",
+            "profileSha256": "8a61389b5fbfb0549e523d62b67e00caebe3ca3928475760edef909fb795f05d",
+            "runtimeKind": "node",
+            "runtimeVersion": "22.19.0",
+            "schemaVersion": "decantr-benchmark-runtime-profile-build-subject.v2",
+            "source": {
+              "buildContext": {
+                "fileCount": 269,
+                "filesSha256": "c86a24086064565b15c558b1230baf46a665ef0287208d30a69a1f1e5ca9ccb2",
+                "roots": [
+                  ".dockerignore",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "controller": {
+                "fileCount": 270,
+                "filesSha256": "aa6c07e0d8e0d8d52c13aaec27cc0e41654dbe725742bb1e6c0b215be0d945e5",
+                "roots": [
+                  ".dockerignore",
+                  ".github/workflows/benchmark-3-10-runtime-profiles.yml",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "policy": "exact-clean-git-files-v1",
+              "repositoryCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "schemaVersion": "decantr-benchmark-runtime-source-closure.v1",
+              "sourceClosureSha256": "0036dfa71dfa25f254fa434a679e92e681ef703831d24521f260b0e2769e4247"
+            },
+            "subjectSha256": "c7a643c2708132488e7f05a0964eb422e9f9dbabbe701c8e012f8bd603338a1c",
+            "verifiedAt": "2026-07-24T18:42:59Z"
+          }
+        },
+        "attestationFile": {
+          "bytes": 5068,
+          "sha256": "bf087d440be2f8b124dbfb761562e6acd31de18dba5b3069323b4e97f331761b"
+        }
+      }
+    },
+    {
+      "agentImage": {
+        "digest": "sha256:861a6dce33bf148ef9b0af0b72727a8a0aa1af8fbd996fb94f9acc0e971ef9de",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.19.0-pnpm-10.32.1@sha256:e798537300666caad196432d0de5895b3f6151942b28f81f297e4b66c894ceae"
+      },
+      "arch": "x64",
+      "baseImage": {
+        "digest": "sha256:4a4884e8a44826194dff92ba316264f392056cbe243dcc9fd3551e71cea02b90",
+        "reference": "node:22.19.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": "sha256:bcbfceeb9a836ac2855c9298821e2ff5babea0fcfdfd7c13686963f435afcfc2",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.19.0-pnpm-10.32.1@sha256:818744ea7ff22b0c793a96de55e81022ca719c91e7c7d0a7f4bb0a06764b5fb3"
+      },
+      "bunVersion": null,
+      "id": "node-22.19.0-pnpm-10.32.1",
+      "nodeVersion": "22.19.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "pnpm",
+        "version": "10.32.1"
+      },
+      "profileSha256": "5005939cbeefec765081ce16a78c4895b537250f19fa0872caec97161affb5b6",
+      "taskCount": 3,
+      "verification": {
+        "attestation": {
+          "attestationSha256": "8a5106ad3945b227ebd13fb4e1a12032b4a8b52167906aa6bfbff88862ae81cf",
+          "provenance": {
+            "bundleFile": {
+              "bytes": 11154,
+              "path": "node-22.19.0-pnpm-10.32.1.provenance.jsonl",
+              "sha256": "6be61e920980ee7d05a9ddb8dff76f333b36d0d15b5622bd8e11312d3a7de559"
+            },
+            "policy": {
+              "denySelfHostedRunners": true,
+              "predicateType": "https://slsa.dev/provenance/v1",
+              "repository": "decantr-ai/decantr",
+              "signerDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "signerWorkflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "sourceDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main"
+            },
+            "subjectFile": {
+              "bytes": 3583,
+              "path": "node-22.19.0-pnpm-10.32.1.subject.json",
+              "sha256": "bb981bc784095ee41d6c530a9279c8ad165866d871241ac9b0721ab550214da5"
+            },
+            "verificationFile": {
+              "bytes": 16402,
+              "path": "node-22.19.0-pnpm-10.32.1.provenance-verification.json",
+              "sha256": "47cbeb24ee03b386f6b1497c483ab66721ca3df87f4412ee460ad11fb3ead4d9"
+            },
+            "verificationSha256": "3631a9db93c99c094f3fd162a6d34d1eee86217c8a09e0fdcac16fe65fc8c9dc"
+          },
+          "schemaVersion": "decantr-benchmark-runtime-profile-attestation.v3",
+          "subject": {
+            "agentImage": {
+              "digest": "sha256:861a6dce33bf148ef9b0af0b72727a8a0aa1af8fbd996fb94f9acc0e971ef9de",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.19.0-pnpm-10.32.1@sha256:e798537300666caad196432d0de5895b3f6151942b28f81f297e4b66c894ceae"
+            },
+            "agentIsolationSmokePassed": true,
+            "agentTooling": {
+              "claudeCodeIntegrity": "sha512-BHV951ruIa6QXaZFDF1wRhwxAOkAiafB2AOWG6wGRUJ4apaJ9mlzp1BFLAhGfG0SknwAyqBenqeT6nit6at4uQ==",
+              "claudeCodeVersion": "2.1.218",
+              "codexIntegrity": "sha512-/PSPSFujjjmiyVFvG2yu/grOFhsWdokTH8t2KGWhXSo/M5n/dIDsnbsnO82/7bLtIoDuzQf7ATBUMWqPWQINlQ==",
+              "codexVersion": "0.145.0",
+              "controllerNode": "v22.17.0"
+            },
+            "baseImage": {
+              "digest": "sha256:4a4884e8a44826194dff92ba316264f392056cbe243dcc9fd3551e71cea02b90",
+              "reference": "node:22.19.0-bookworm-slim"
+            },
+            "benchmarkImage": {
+              "digest": "sha256:bcbfceeb9a836ac2855c9298821e2ff5babea0fcfdfd7c13686963f435afcfc2",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.19.0-pnpm-10.32.1@sha256:818744ea7ff22b0c793a96de55e81022ca719c91e7c7d0a7f4bb0a06764b5fb3"
+            },
+            "browserSmokePassed": true,
+            "controller": {
+              "image": {
+                "digest": "sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0",
+                "reference": "node:22.17.0-bookworm-slim"
+              },
+              "nodeVersion": "v22.17.0"
+            },
+            "execution": {
+              "eventName": "workflow_dispatch",
+              "job": "probe",
+              "repository": "decantr-ai/decantr",
+              "runAttempt": "1",
+              "runId": "30116606965",
+              "runnerArch": "X64",
+              "runnerEnvironment": "github-hosted",
+              "runnerImage": "ubuntu24",
+              "runnerImageVersion": "20260720.247.2",
+              "runnerOs": "Linux",
+              "sourceCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main",
+              "workflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "workflowRef": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml@refs/heads/main",
+              "workflowSha": "30e37b79e2f1acf1f2d264d173d9411cd313faf0"
+            },
+            "host": {
+              "arch": "x64",
+              "os": "linux"
+            },
+            "matrix": {
+              "draftSha256": "80f54f62a461dc59a041da2676d9bed37d126b8c6e5ee7de1b5425f42791890e",
+              "sourceSpecSetSha256": "431db40a730d005133e2b8a1862e56639b6f4f455a181abd66780a1f0a257d22"
+            },
+            "packageManagerName": "pnpm",
+            "packageManagerVersion": "10.32.1",
+            "profileId": "node-22.19.0-pnpm-10.32.1",
+            "profileSha256": "5005939cbeefec765081ce16a78c4895b537250f19fa0872caec97161affb5b6",
+            "runtimeKind": "node",
+            "runtimeVersion": "22.19.0",
+            "schemaVersion": "decantr-benchmark-runtime-profile-build-subject.v2",
+            "source": {
+              "buildContext": {
+                "fileCount": 269,
+                "filesSha256": "c86a24086064565b15c558b1230baf46a665ef0287208d30a69a1f1e5ca9ccb2",
+                "roots": [
+                  ".dockerignore",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "controller": {
+                "fileCount": 270,
+                "filesSha256": "aa6c07e0d8e0d8d52c13aaec27cc0e41654dbe725742bb1e6c0b215be0d945e5",
+                "roots": [
+                  ".dockerignore",
+                  ".github/workflows/benchmark-3-10-runtime-profiles.yml",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "policy": "exact-clean-git-files-v1",
+              "repositoryCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "schemaVersion": "decantr-benchmark-runtime-source-closure.v1",
+              "sourceClosureSha256": "0036dfa71dfa25f254fa434a679e92e681ef703831d24521f260b0e2769e4247"
+            },
+            "subjectSha256": "2960eef9d3892179b7d78fb325eff49d4a36cd279c3c03e860a88cd10ed5cda0",
+            "verifiedAt": "2026-07-24T18:46:44Z"
+          }
+        },
+        "attestationFile": {
+          "bytes": 5068,
+          "sha256": "36b8c0634cc8fb2e5f8a65cf4f38314f1ebc02d882cd80354e4c04f83a2617f5"
+        }
+      }
+    },
+    {
+      "agentImage": {
+        "digest": "sha256:cd76fb59cf69ffdb9e64d0c567736b5514889487888c4c8d63862d2260d4c9bc",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.19.0-pnpm-10.33.0@sha256:daba4b72f679cbe03244df083383693754776b439d6c5691a2f988a6b3970ba9"
+      },
+      "arch": "x64",
+      "baseImage": {
+        "digest": "sha256:4a4884e8a44826194dff92ba316264f392056cbe243dcc9fd3551e71cea02b90",
+        "reference": "node:22.19.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": "sha256:9d80fc96185cf965c3c4f02f6f0cd259624f4ff6c2a1c8270c60990b373729b0",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.19.0-pnpm-10.33.0@sha256:d338397e3d9b01c7ed3a1986d0b4583a9fb48f5363de66f0bd6ffe91afc6351f"
+      },
+      "bunVersion": null,
+      "id": "node-22.19.0-pnpm-10.33.0",
+      "nodeVersion": "22.19.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "pnpm",
+        "version": "10.33.0"
+      },
+      "profileSha256": "f72699bb20063732468bed1e180f653c9f93c42ab24a2e0ba2847aab06701181",
+      "taskCount": 5,
+      "verification": {
+        "attestation": {
+          "attestationSha256": "ab068d88a294926f9d1c07b67696cd46877d33d6d31507e687eaa07936bb6abf",
+          "provenance": {
+            "bundleFile": {
+              "bytes": 11193,
+              "path": "node-22.19.0-pnpm-10.33.0.provenance.jsonl",
+              "sha256": "b8677a9746b9b2962b52b357861316748105cb9c0dac42f5d13815fd2b215703"
+            },
+            "policy": {
+              "denySelfHostedRunners": true,
+              "predicateType": "https://slsa.dev/provenance/v1",
+              "repository": "decantr-ai/decantr",
+              "signerDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "signerWorkflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "sourceDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main"
+            },
+            "subjectFile": {
+              "bytes": 3583,
+              "path": "node-22.19.0-pnpm-10.33.0.subject.json",
+              "sha256": "f7e89bc204efb2ee3747eeb4d27a6158590cf679118ab7021708f6a4bf3a3768"
+            },
+            "verificationFile": {
+              "bytes": 16460,
+              "path": "node-22.19.0-pnpm-10.33.0.provenance-verification.json",
+              "sha256": "18e6deb3b5035fbab41e98d40296260f607156950ff0b51a9ad4bddb8390483b"
+            },
+            "verificationSha256": "b40e5aaf753f83a06e168086ad5919660e16e7f2a0cb825af33e34c11e043276"
+          },
+          "schemaVersion": "decantr-benchmark-runtime-profile-attestation.v3",
+          "subject": {
+            "agentImage": {
+              "digest": "sha256:cd76fb59cf69ffdb9e64d0c567736b5514889487888c4c8d63862d2260d4c9bc",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.19.0-pnpm-10.33.0@sha256:daba4b72f679cbe03244df083383693754776b439d6c5691a2f988a6b3970ba9"
+            },
+            "agentIsolationSmokePassed": true,
+            "agentTooling": {
+              "claudeCodeIntegrity": "sha512-BHV951ruIa6QXaZFDF1wRhwxAOkAiafB2AOWG6wGRUJ4apaJ9mlzp1BFLAhGfG0SknwAyqBenqeT6nit6at4uQ==",
+              "claudeCodeVersion": "2.1.218",
+              "codexIntegrity": "sha512-/PSPSFujjjmiyVFvG2yu/grOFhsWdokTH8t2KGWhXSo/M5n/dIDsnbsnO82/7bLtIoDuzQf7ATBUMWqPWQINlQ==",
+              "codexVersion": "0.145.0",
+              "controllerNode": "v22.17.0"
+            },
+            "baseImage": {
+              "digest": "sha256:4a4884e8a44826194dff92ba316264f392056cbe243dcc9fd3551e71cea02b90",
+              "reference": "node:22.19.0-bookworm-slim"
+            },
+            "benchmarkImage": {
+              "digest": "sha256:9d80fc96185cf965c3c4f02f6f0cd259624f4ff6c2a1c8270c60990b373729b0",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.19.0-pnpm-10.33.0@sha256:d338397e3d9b01c7ed3a1986d0b4583a9fb48f5363de66f0bd6ffe91afc6351f"
+            },
+            "browserSmokePassed": true,
+            "controller": {
+              "image": {
+                "digest": "sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0",
+                "reference": "node:22.17.0-bookworm-slim"
+              },
+              "nodeVersion": "v22.17.0"
+            },
+            "execution": {
+              "eventName": "workflow_dispatch",
+              "job": "probe",
+              "repository": "decantr-ai/decantr",
+              "runAttempt": "1",
+              "runId": "30116606965",
+              "runnerArch": "X64",
+              "runnerEnvironment": "github-hosted",
+              "runnerImage": "ubuntu24",
+              "runnerImageVersion": "20260720.247.2",
+              "runnerOs": "Linux",
+              "sourceCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main",
+              "workflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "workflowRef": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml@refs/heads/main",
+              "workflowSha": "30e37b79e2f1acf1f2d264d173d9411cd313faf0"
+            },
+            "host": {
+              "arch": "x64",
+              "os": "linux"
+            },
+            "matrix": {
+              "draftSha256": "80f54f62a461dc59a041da2676d9bed37d126b8c6e5ee7de1b5425f42791890e",
+              "sourceSpecSetSha256": "431db40a730d005133e2b8a1862e56639b6f4f455a181abd66780a1f0a257d22"
+            },
+            "packageManagerName": "pnpm",
+            "packageManagerVersion": "10.33.0",
+            "profileId": "node-22.19.0-pnpm-10.33.0",
+            "profileSha256": "f72699bb20063732468bed1e180f653c9f93c42ab24a2e0ba2847aab06701181",
+            "runtimeKind": "node",
+            "runtimeVersion": "22.19.0",
+            "schemaVersion": "decantr-benchmark-runtime-profile-build-subject.v2",
+            "source": {
+              "buildContext": {
+                "fileCount": 269,
+                "filesSha256": "c86a24086064565b15c558b1230baf46a665ef0287208d30a69a1f1e5ca9ccb2",
+                "roots": [
+                  ".dockerignore",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "controller": {
+                "fileCount": 270,
+                "filesSha256": "aa6c07e0d8e0d8d52c13aaec27cc0e41654dbe725742bb1e6c0b215be0d945e5",
+                "roots": [
+                  ".dockerignore",
+                  ".github/workflows/benchmark-3-10-runtime-profiles.yml",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "policy": "exact-clean-git-files-v1",
+              "repositoryCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "schemaVersion": "decantr-benchmark-runtime-source-closure.v1",
+              "sourceClosureSha256": "0036dfa71dfa25f254fa434a679e92e681ef703831d24521f260b0e2769e4247"
+            },
+            "subjectSha256": "2c28a55f1e50246d6553c1c96d0e9fb35ac3998b6874e9cc4f85f9d92e0ec554",
+            "verifiedAt": "2026-07-24T18:47:15Z"
+          }
+        },
+        "attestationFile": {
+          "bytes": 5068,
+          "sha256": "c9b73fa180af28f6a8af75f28e595421fe8ae3af48e7f7b3923bea6199d2978c"
+        }
+      }
+    },
+    {
+      "agentImage": {
+        "digest": "sha256:9688cf12b46946191e64bebcf6a29f3578bde7068425e53dc8451c79c212f79a",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.19.0-pnpm-11.9.0@sha256:44a70a399a0b122023ffc4ee7c9746b8de60632678a1c815928f2d37f5539def"
+      },
+      "arch": "x64",
+      "baseImage": {
+        "digest": "sha256:4a4884e8a44826194dff92ba316264f392056cbe243dcc9fd3551e71cea02b90",
+        "reference": "node:22.19.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": "sha256:a1a07c212e4f467ec1bff3174c962c29ce6e51b3714984330de4045d2e165cbc",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.19.0-pnpm-11.9.0@sha256:3e15498a08bbb736fec912bea21c160624dd752c2172f8ebc51d1b2c0c9f63cb"
+      },
+      "bunVersion": null,
+      "id": "node-22.19.0-pnpm-11.9.0",
+      "nodeVersion": "22.19.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "pnpm",
+        "version": "11.9.0"
+      },
+      "profileSha256": "d04d95830c7a1f38b5b0fee58b959817d02a07c66ca549ac4974553cf31bcf49",
+      "taskCount": 1,
+      "verification": {
+        "attestation": {
+          "attestationSha256": "54d660a05abd0695ec268c114095e5d914869a1c91617ea6ec3ace455ce54c77",
+          "provenance": {
+            "bundleFile": {
+              "bytes": 11389,
+              "path": "node-22.19.0-pnpm-11.9.0.provenance.jsonl",
+              "sha256": "8fcff7242def80da2a184c3600e97f41854a499c2d69c6740312f0b458a7687f"
+            },
+            "policy": {
+              "denySelfHostedRunners": true,
+              "predicateType": "https://slsa.dev/provenance/v1",
+              "repository": "decantr-ai/decantr",
+              "signerDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "signerWorkflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "sourceDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main"
+            },
+            "subjectFile": {
+              "bytes": 3579,
+              "path": "node-22.19.0-pnpm-11.9.0.subject.json",
+              "sha256": "a21db201eda94b823e1c32e2eee0c51e870fb01cbe42482a6fe843973f480345"
+            },
+            "verificationFile": {
+              "bytes": 16731,
+              "path": "node-22.19.0-pnpm-11.9.0.provenance-verification.json",
+              "sha256": "b3bfe73232a79fcce5d4ef8b0da8bc4b8d73f7439c1c3f4f2c59b13d17b9599e"
+            },
+            "verificationSha256": "8ce6b68b625e2ea4a78367b8808a49caab275bfd9510b4b3ed60163245e243ba"
+          },
+          "schemaVersion": "decantr-benchmark-runtime-profile-attestation.v3",
+          "subject": {
+            "agentImage": {
+              "digest": "sha256:9688cf12b46946191e64bebcf6a29f3578bde7068425e53dc8451c79c212f79a",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.19.0-pnpm-11.9.0@sha256:44a70a399a0b122023ffc4ee7c9746b8de60632678a1c815928f2d37f5539def"
+            },
+            "agentIsolationSmokePassed": true,
+            "agentTooling": {
+              "claudeCodeIntegrity": "sha512-BHV951ruIa6QXaZFDF1wRhwxAOkAiafB2AOWG6wGRUJ4apaJ9mlzp1BFLAhGfG0SknwAyqBenqeT6nit6at4uQ==",
+              "claudeCodeVersion": "2.1.218",
+              "codexIntegrity": "sha512-/PSPSFujjjmiyVFvG2yu/grOFhsWdokTH8t2KGWhXSo/M5n/dIDsnbsnO82/7bLtIoDuzQf7ATBUMWqPWQINlQ==",
+              "codexVersion": "0.145.0",
+              "controllerNode": "v22.17.0"
+            },
+            "baseImage": {
+              "digest": "sha256:4a4884e8a44826194dff92ba316264f392056cbe243dcc9fd3551e71cea02b90",
+              "reference": "node:22.19.0-bookworm-slim"
+            },
+            "benchmarkImage": {
+              "digest": "sha256:a1a07c212e4f467ec1bff3174c962c29ce6e51b3714984330de4045d2e165cbc",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.19.0-pnpm-11.9.0@sha256:3e15498a08bbb736fec912bea21c160624dd752c2172f8ebc51d1b2c0c9f63cb"
+            },
+            "browserSmokePassed": true,
+            "controller": {
+              "image": {
+                "digest": "sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0",
+                "reference": "node:22.17.0-bookworm-slim"
+              },
+              "nodeVersion": "v22.17.0"
+            },
+            "execution": {
+              "eventName": "workflow_dispatch",
+              "job": "probe",
+              "repository": "decantr-ai/decantr",
+              "runAttempt": "1",
+              "runId": "30116606965",
+              "runnerArch": "X64",
+              "runnerEnvironment": "github-hosted",
+              "runnerImage": "ubuntu24",
+              "runnerImageVersion": "20260720.247.2",
+              "runnerOs": "Linux",
+              "sourceCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main",
+              "workflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "workflowRef": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml@refs/heads/main",
+              "workflowSha": "30e37b79e2f1acf1f2d264d173d9411cd313faf0"
+            },
+            "host": {
+              "arch": "x64",
+              "os": "linux"
+            },
+            "matrix": {
+              "draftSha256": "80f54f62a461dc59a041da2676d9bed37d126b8c6e5ee7de1b5425f42791890e",
+              "sourceSpecSetSha256": "431db40a730d005133e2b8a1862e56639b6f4f455a181abd66780a1f0a257d22"
+            },
+            "packageManagerName": "pnpm",
+            "packageManagerVersion": "11.9.0",
+            "profileId": "node-22.19.0-pnpm-11.9.0",
+            "profileSha256": "d04d95830c7a1f38b5b0fee58b959817d02a07c66ca549ac4974553cf31bcf49",
+            "runtimeKind": "node",
+            "runtimeVersion": "22.19.0",
+            "schemaVersion": "decantr-benchmark-runtime-profile-build-subject.v2",
+            "source": {
+              "buildContext": {
+                "fileCount": 269,
+                "filesSha256": "c86a24086064565b15c558b1230baf46a665ef0287208d30a69a1f1e5ca9ccb2",
+                "roots": [
+                  ".dockerignore",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "controller": {
+                "fileCount": 270,
+                "filesSha256": "aa6c07e0d8e0d8d52c13aaec27cc0e41654dbe725742bb1e6c0b215be0d945e5",
+                "roots": [
+                  ".dockerignore",
+                  ".github/workflows/benchmark-3-10-runtime-profiles.yml",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "policy": "exact-clean-git-files-v1",
+              "repositoryCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "schemaVersion": "decantr-benchmark-runtime-source-closure.v1",
+              "sourceClosureSha256": "0036dfa71dfa25f254fa434a679e92e681ef703831d24521f260b0e2769e4247"
+            },
+            "subjectSha256": "964ec6d398305ff1f0a107ecd99f3b7271676f8df264621cdbde2ded8a3d1295",
+            "verifiedAt": "2026-07-24T18:50:28Z"
+          }
+        },
+        "attestationFile": {
+          "bytes": 5061,
+          "sha256": "38ae908a2a9044cd54137bde0ac489f6bac049b47f60e1ee1278746b27a73e73"
+        }
+      }
+    },
+    {
+      "agentImage": {
+        "digest": "sha256:da7d31191a190fb33e42a6aad1ed7daca45589e77b7fe4a96097d3b73961f5f0",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.19.0-yarn-1.22.22@sha256:f8fa0c2016a0fc5df75bda24483b35e1083c42d66edbb8730d25d03e49be4098"
+      },
+      "arch": "x64",
+      "baseImage": {
+        "digest": "sha256:4a4884e8a44826194dff92ba316264f392056cbe243dcc9fd3551e71cea02b90",
+        "reference": "node:22.19.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": "sha256:194815f1a4ddc65545cbddc92254fb729e80dd848e6c935de4ca31da5cd4a451",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.19.0-yarn-1.22.22@sha256:46be02d7385f094ed83a2b48f462dfb10e88c671b84ee8e42ddcd8cbc56443b0"
+      },
+      "bunVersion": null,
+      "id": "node-22.19.0-yarn-1.22.22",
+      "nodeVersion": "22.19.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "yarn",
+        "version": "1.22.22"
+      },
+      "profileSha256": "ab0d9b23d4788d323d164e41ba20f09611a67d8d0d952e15c17ff4fc9885295c",
+      "taskCount": 1,
+      "verification": {
+        "attestation": {
+          "attestationSha256": "9edafdb117a6f6208c67e554516ba159ae31b73ebb255f907ab29d783f4a6174",
+          "provenance": {
+            "bundleFile": {
+              "bytes": 11291,
+              "path": "node-22.19.0-yarn-1.22.22.provenance.jsonl",
+              "sha256": "b9212451cc820f53acb68b10e6cab0a0641927002b01d2eb8a780694b824bb0d"
+            },
+            "policy": {
+              "denySelfHostedRunners": true,
+              "predicateType": "https://slsa.dev/provenance/v1",
+              "repository": "decantr-ai/decantr",
+              "signerDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "signerWorkflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "sourceDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main"
+            },
+            "subjectFile": {
+              "bytes": 3583,
+              "path": "node-22.19.0-yarn-1.22.22.subject.json",
+              "sha256": "6ff0d9aac7ca75de89e666c9ded9f788b04624ed6c6059c6994421300dd1beb6"
+            },
+            "verificationFile": {
+              "bytes": 16596,
+              "path": "node-22.19.0-yarn-1.22.22.provenance-verification.json",
+              "sha256": "58bd7135ef0362df4b5e82b0dae8906dac32fc0a72813671bfc23d4f3e8f3b82"
+            },
+            "verificationSha256": "7e048d63b9540f6292ea84f423303925c43e7e090b79217f12da3df5836dbed9"
+          },
+          "schemaVersion": "decantr-benchmark-runtime-profile-attestation.v3",
+          "subject": {
+            "agentImage": {
+              "digest": "sha256:da7d31191a190fb33e42a6aad1ed7daca45589e77b7fe4a96097d3b73961f5f0",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.19.0-yarn-1.22.22@sha256:f8fa0c2016a0fc5df75bda24483b35e1083c42d66edbb8730d25d03e49be4098"
+            },
+            "agentIsolationSmokePassed": true,
+            "agentTooling": {
+              "claudeCodeIntegrity": "sha512-BHV951ruIa6QXaZFDF1wRhwxAOkAiafB2AOWG6wGRUJ4apaJ9mlzp1BFLAhGfG0SknwAyqBenqeT6nit6at4uQ==",
+              "claudeCodeVersion": "2.1.218",
+              "codexIntegrity": "sha512-/PSPSFujjjmiyVFvG2yu/grOFhsWdokTH8t2KGWhXSo/M5n/dIDsnbsnO82/7bLtIoDuzQf7ATBUMWqPWQINlQ==",
+              "codexVersion": "0.145.0",
+              "controllerNode": "v22.17.0"
+            },
+            "baseImage": {
+              "digest": "sha256:4a4884e8a44826194dff92ba316264f392056cbe243dcc9fd3551e71cea02b90",
+              "reference": "node:22.19.0-bookworm-slim"
+            },
+            "benchmarkImage": {
+              "digest": "sha256:194815f1a4ddc65545cbddc92254fb729e80dd848e6c935de4ca31da5cd4a451",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.19.0-yarn-1.22.22@sha256:46be02d7385f094ed83a2b48f462dfb10e88c671b84ee8e42ddcd8cbc56443b0"
+            },
+            "browserSmokePassed": true,
+            "controller": {
+              "image": {
+                "digest": "sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0",
+                "reference": "node:22.17.0-bookworm-slim"
+              },
+              "nodeVersion": "v22.17.0"
+            },
+            "execution": {
+              "eventName": "workflow_dispatch",
+              "job": "probe",
+              "repository": "decantr-ai/decantr",
+              "runAttempt": "1",
+              "runId": "30116606965",
+              "runnerArch": "X64",
+              "runnerEnvironment": "github-hosted",
+              "runnerImage": "ubuntu24",
+              "runnerImageVersion": "20260720.247.2",
+              "runnerOs": "Linux",
+              "sourceCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main",
+              "workflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "workflowRef": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml@refs/heads/main",
+              "workflowSha": "30e37b79e2f1acf1f2d264d173d9411cd313faf0"
+            },
+            "host": {
+              "arch": "x64",
+              "os": "linux"
+            },
+            "matrix": {
+              "draftSha256": "80f54f62a461dc59a041da2676d9bed37d126b8c6e5ee7de1b5425f42791890e",
+              "sourceSpecSetSha256": "431db40a730d005133e2b8a1862e56639b6f4f455a181abd66780a1f0a257d22"
+            },
+            "packageManagerName": "yarn",
+            "packageManagerVersion": "1.22.22",
+            "profileId": "node-22.19.0-yarn-1.22.22",
+            "profileSha256": "ab0d9b23d4788d323d164e41ba20f09611a67d8d0d952e15c17ff4fc9885295c",
+            "runtimeKind": "node",
+            "runtimeVersion": "22.19.0",
+            "schemaVersion": "decantr-benchmark-runtime-profile-build-subject.v2",
+            "source": {
+              "buildContext": {
+                "fileCount": 269,
+                "filesSha256": "c86a24086064565b15c558b1230baf46a665ef0287208d30a69a1f1e5ca9ccb2",
+                "roots": [
+                  ".dockerignore",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "controller": {
+                "fileCount": 270,
+                "filesSha256": "aa6c07e0d8e0d8d52c13aaec27cc0e41654dbe725742bb1e6c0b215be0d945e5",
+                "roots": [
+                  ".dockerignore",
+                  ".github/workflows/benchmark-3-10-runtime-profiles.yml",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "policy": "exact-clean-git-files-v1",
+              "repositoryCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "schemaVersion": "decantr-benchmark-runtime-source-closure.v1",
+              "sourceClosureSha256": "0036dfa71dfa25f254fa434a679e92e681ef703831d24521f260b0e2769e4247"
+            },
+            "subjectSha256": "8419149265d0013232f430cfe0167c6cbaf3523b56d3460c41eddb355e5f544f",
+            "verifiedAt": "2026-07-24T18:51:47Z"
+          }
+        },
+        "attestationFile": {
+          "bytes": 5068,
+          "sha256": "0256f56b5b13c4fb5abc1b1c06d30f018dbb851337629e7d7c3a261cdd23cfbe"
+        }
+      }
+    },
+    {
+      "agentImage": {
+        "digest": "sha256:4cc476dcc04e47cc5be9a3c58cd5e420d7052548ab81e4b6572dfdebe17f7c57",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-24.12.0-pnpm-10.26.0@sha256:7ced551f89fabb28a6a1efdb035af80b9c1934ab8d4d1b368b078fded07798f4"
+      },
+      "arch": "x64",
+      "baseImage": {
+        "digest": "sha256:7326fb2dbdce998edd72140946851be64ef4a643e8715e138ca467e8e9d92c99",
+        "reference": "node:24.12.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": "sha256:fe6ed6c9bb5421fc488177c43a4ea4854d7f5479f8afd703bca7ae53e53d9ef5",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-24.12.0-pnpm-10.26.0@sha256:6b848af1c6038aaaa01819b062ec52174d8be052787ce84e9485318ed1e2594b"
+      },
+      "bunVersion": null,
+      "id": "node-24.12.0-pnpm-10.26.0",
+      "nodeVersion": "24.12.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "pnpm",
+        "version": "10.26.0"
+      },
+      "profileSha256": "cf70e38e8a68b794500dda45809e78a88c9048da1c42fa57f51275015afce63c",
+      "taskCount": 1,
+      "verification": {
+        "attestation": {
+          "attestationSha256": "088d973d5623109872468e5cdc83aa9522d4912ce87b44bb333d421146cb28c5",
+          "provenance": {
+            "bundleFile": {
+              "bytes": 11287,
+              "path": "node-24.12.0-pnpm-10.26.0.provenance.jsonl",
+              "sha256": "7253a6cb488923b42824d848db6acc334180948dafdeba1258f54c586c5dad52"
+            },
+            "policy": {
+              "denySelfHostedRunners": true,
+              "predicateType": "https://slsa.dev/provenance/v1",
+              "repository": "decantr-ai/decantr",
+              "signerDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "signerWorkflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "sourceDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main"
+            },
+            "subjectFile": {
+              "bytes": 3583,
+              "path": "node-24.12.0-pnpm-10.26.0.subject.json",
+              "sha256": "1c340d30e0a0b0b8122101a142f2b400605a59d1e137d3e4bf177528b91053b5"
+            },
+            "verificationFile": {
+              "bytes": 16592,
+              "path": "node-24.12.0-pnpm-10.26.0.provenance-verification.json",
+              "sha256": "2af61604e68e949c47a5847cec05e706e3519801b56e4c047b8c15e35d7af3e9"
+            },
+            "verificationSha256": "16d1ddd842c6665c83179a39415da0f3393cce76337688c60dab1e9e4b17ef6e"
+          },
+          "schemaVersion": "decantr-benchmark-runtime-profile-attestation.v3",
+          "subject": {
+            "agentImage": {
+              "digest": "sha256:4cc476dcc04e47cc5be9a3c58cd5e420d7052548ab81e4b6572dfdebe17f7c57",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-24.12.0-pnpm-10.26.0@sha256:7ced551f89fabb28a6a1efdb035af80b9c1934ab8d4d1b368b078fded07798f4"
+            },
+            "agentIsolationSmokePassed": true,
+            "agentTooling": {
+              "claudeCodeIntegrity": "sha512-BHV951ruIa6QXaZFDF1wRhwxAOkAiafB2AOWG6wGRUJ4apaJ9mlzp1BFLAhGfG0SknwAyqBenqeT6nit6at4uQ==",
+              "claudeCodeVersion": "2.1.218",
+              "codexIntegrity": "sha512-/PSPSFujjjmiyVFvG2yu/grOFhsWdokTH8t2KGWhXSo/M5n/dIDsnbsnO82/7bLtIoDuzQf7ATBUMWqPWQINlQ==",
+              "codexVersion": "0.145.0",
+              "controllerNode": "v22.17.0"
+            },
+            "baseImage": {
+              "digest": "sha256:7326fb2dbdce998edd72140946851be64ef4a643e8715e138ca467e8e9d92c99",
+              "reference": "node:24.12.0-bookworm-slim"
+            },
+            "benchmarkImage": {
+              "digest": "sha256:fe6ed6c9bb5421fc488177c43a4ea4854d7f5479f8afd703bca7ae53e53d9ef5",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-24.12.0-pnpm-10.26.0@sha256:6b848af1c6038aaaa01819b062ec52174d8be052787ce84e9485318ed1e2594b"
+            },
+            "browserSmokePassed": true,
+            "controller": {
+              "image": {
+                "digest": "sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0",
+                "reference": "node:22.17.0-bookworm-slim"
+              },
+              "nodeVersion": "v22.17.0"
+            },
+            "execution": {
+              "eventName": "workflow_dispatch",
+              "job": "probe",
+              "repository": "decantr-ai/decantr",
+              "runAttempt": "1",
+              "runId": "30116606965",
+              "runnerArch": "X64",
+              "runnerEnvironment": "github-hosted",
+              "runnerImage": "ubuntu24",
+              "runnerImageVersion": "20260720.247.2",
+              "runnerOs": "Linux",
+              "sourceCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main",
+              "workflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "workflowRef": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml@refs/heads/main",
+              "workflowSha": "30e37b79e2f1acf1f2d264d173d9411cd313faf0"
+            },
+            "host": {
+              "arch": "x64",
+              "os": "linux"
+            },
+            "matrix": {
+              "draftSha256": "80f54f62a461dc59a041da2676d9bed37d126b8c6e5ee7de1b5425f42791890e",
+              "sourceSpecSetSha256": "431db40a730d005133e2b8a1862e56639b6f4f455a181abd66780a1f0a257d22"
+            },
+            "packageManagerName": "pnpm",
+            "packageManagerVersion": "10.26.0",
+            "profileId": "node-24.12.0-pnpm-10.26.0",
+            "profileSha256": "cf70e38e8a68b794500dda45809e78a88c9048da1c42fa57f51275015afce63c",
+            "runtimeKind": "node",
+            "runtimeVersion": "24.12.0",
+            "schemaVersion": "decantr-benchmark-runtime-profile-build-subject.v2",
+            "source": {
+              "buildContext": {
+                "fileCount": 269,
+                "filesSha256": "c86a24086064565b15c558b1230baf46a665ef0287208d30a69a1f1e5ca9ccb2",
+                "roots": [
+                  ".dockerignore",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "controller": {
+                "fileCount": 270,
+                "filesSha256": "aa6c07e0d8e0d8d52c13aaec27cc0e41654dbe725742bb1e6c0b215be0d945e5",
+                "roots": [
+                  ".dockerignore",
+                  ".github/workflows/benchmark-3-10-runtime-profiles.yml",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "policy": "exact-clean-git-files-v1",
+              "repositoryCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "schemaVersion": "decantr-benchmark-runtime-source-closure.v1",
+              "sourceClosureSha256": "0036dfa71dfa25f254fa434a679e92e681ef703831d24521f260b0e2769e4247"
+            },
+            "subjectSha256": "3dec6c12a3a6df2a5119dc6a59f3503fee6d5974c6aa8479d5d6d3686c62dc34",
+            "verifiedAt": "2026-07-24T18:54:16Z"
+          }
+        },
+        "attestationFile": {
+          "bytes": 5068,
+          "sha256": "f1e69bb06d4f66724e705b1c1cfde65c537ffbc04cc04eb3fa01392e9df146e9"
+        }
+      }
+    },
+    {
+      "agentImage": {
+        "digest": "sha256:c4855d3e0068e4ef4280ba07dbe2f390e763f4a4678470796ba096faa017cb76",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-24.12.0-pnpm-10.32.1@sha256:437adcc42742cfe1f2a7fe431d78623ef48f3980dfe77902ea0c8c97ad0fe414"
+      },
+      "arch": "x64",
+      "baseImage": {
+        "digest": "sha256:7326fb2dbdce998edd72140946851be64ef4a643e8715e138ca467e8e9d92c99",
+        "reference": "node:24.12.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": "sha256:7a8312b45fab7d18c1657bffaefebf856f7fe0f75a38b199610ac52a3bb5064f",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-24.12.0-pnpm-10.32.1@sha256:d89f88fe38a051993ca34ba06771e0284602df1a5ed7206f5ff868fab56d0f43"
+      },
+      "bunVersion": null,
+      "id": "node-24.12.0-pnpm-10.32.1",
+      "nodeVersion": "24.12.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "pnpm",
+        "version": "10.32.1"
+      },
+      "profileSha256": "8255018c89a1fa9229595f4c5a8de30004cd0bba1385d8ed1fce08a9d2c228eb",
+      "taskCount": 1,
+      "verification": {
+        "attestation": {
+          "attestationSha256": "348ed2d82da6ad4560fdb1c2435770616ea671582ac19f1ad1833d42187ff6ea",
+          "provenance": {
+            "bundleFile": {
+              "bytes": 11334,
+              "path": "node-24.12.0-pnpm-10.32.1.provenance.jsonl",
+              "sha256": "b1aaeab12f3a922e66ead457d2507bbd07adbea63d89d531d8291bb90872db0e"
+            },
+            "policy": {
+              "denySelfHostedRunners": true,
+              "predicateType": "https://slsa.dev/provenance/v1",
+              "repository": "decantr-ai/decantr",
+              "signerDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "signerWorkflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "sourceDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main"
+            },
+            "subjectFile": {
+              "bytes": 3583,
+              "path": "node-24.12.0-pnpm-10.32.1.subject.json",
+              "sha256": "37cd35664299704ad362ccd787f5414c0f587d93060eb13ddf8161f5ef9c4207"
+            },
+            "verificationFile": {
+              "bytes": 16658,
+              "path": "node-24.12.0-pnpm-10.32.1.provenance-verification.json",
+              "sha256": "70edb3ee36ad50bd109563b0aa943c9e4276c39e27d3777c4b2a4a02f4fc6426"
+            },
+            "verificationSha256": "31fd9111c3d277c9c0b57931f6553eadb7e758a91f362bfa93b93af538fcce8e"
+          },
+          "schemaVersion": "decantr-benchmark-runtime-profile-attestation.v3",
+          "subject": {
+            "agentImage": {
+              "digest": "sha256:c4855d3e0068e4ef4280ba07dbe2f390e763f4a4678470796ba096faa017cb76",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-24.12.0-pnpm-10.32.1@sha256:437adcc42742cfe1f2a7fe431d78623ef48f3980dfe77902ea0c8c97ad0fe414"
+            },
+            "agentIsolationSmokePassed": true,
+            "agentTooling": {
+              "claudeCodeIntegrity": "sha512-BHV951ruIa6QXaZFDF1wRhwxAOkAiafB2AOWG6wGRUJ4apaJ9mlzp1BFLAhGfG0SknwAyqBenqeT6nit6at4uQ==",
+              "claudeCodeVersion": "2.1.218",
+              "codexIntegrity": "sha512-/PSPSFujjjmiyVFvG2yu/grOFhsWdokTH8t2KGWhXSo/M5n/dIDsnbsnO82/7bLtIoDuzQf7ATBUMWqPWQINlQ==",
+              "codexVersion": "0.145.0",
+              "controllerNode": "v22.17.0"
+            },
+            "baseImage": {
+              "digest": "sha256:7326fb2dbdce998edd72140946851be64ef4a643e8715e138ca467e8e9d92c99",
+              "reference": "node:24.12.0-bookworm-slim"
+            },
+            "benchmarkImage": {
+              "digest": "sha256:7a8312b45fab7d18c1657bffaefebf856f7fe0f75a38b199610ac52a3bb5064f",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-24.12.0-pnpm-10.32.1@sha256:d89f88fe38a051993ca34ba06771e0284602df1a5ed7206f5ff868fab56d0f43"
+            },
+            "browserSmokePassed": true,
+            "controller": {
+              "image": {
+                "digest": "sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0",
+                "reference": "node:22.17.0-bookworm-slim"
+              },
+              "nodeVersion": "v22.17.0"
+            },
+            "execution": {
+              "eventName": "workflow_dispatch",
+              "job": "probe",
+              "repository": "decantr-ai/decantr",
+              "runAttempt": "1",
+              "runId": "30116606965",
+              "runnerArch": "X64",
+              "runnerEnvironment": "github-hosted",
+              "runnerImage": "ubuntu24",
+              "runnerImageVersion": "20260720.247.2",
+              "runnerOs": "Linux",
+              "sourceCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main",
+              "workflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "workflowRef": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml@refs/heads/main",
+              "workflowSha": "30e37b79e2f1acf1f2d264d173d9411cd313faf0"
+            },
+            "host": {
+              "arch": "x64",
+              "os": "linux"
+            },
+            "matrix": {
+              "draftSha256": "80f54f62a461dc59a041da2676d9bed37d126b8c6e5ee7de1b5425f42791890e",
+              "sourceSpecSetSha256": "431db40a730d005133e2b8a1862e56639b6f4f455a181abd66780a1f0a257d22"
+            },
+            "packageManagerName": "pnpm",
+            "packageManagerVersion": "10.32.1",
+            "profileId": "node-24.12.0-pnpm-10.32.1",
+            "profileSha256": "8255018c89a1fa9229595f4c5a8de30004cd0bba1385d8ed1fce08a9d2c228eb",
+            "runtimeKind": "node",
+            "runtimeVersion": "24.12.0",
+            "schemaVersion": "decantr-benchmark-runtime-profile-build-subject.v2",
+            "source": {
+              "buildContext": {
+                "fileCount": 269,
+                "filesSha256": "c86a24086064565b15c558b1230baf46a665ef0287208d30a69a1f1e5ca9ccb2",
+                "roots": [
+                  ".dockerignore",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "controller": {
+                "fileCount": 270,
+                "filesSha256": "aa6c07e0d8e0d8d52c13aaec27cc0e41654dbe725742bb1e6c0b215be0d945e5",
+                "roots": [
+                  ".dockerignore",
+                  ".github/workflows/benchmark-3-10-runtime-profiles.yml",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "policy": "exact-clean-git-files-v1",
+              "repositoryCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "schemaVersion": "decantr-benchmark-runtime-source-closure.v1",
+              "sourceClosureSha256": "0036dfa71dfa25f254fa434a679e92e681ef703831d24521f260b0e2769e4247"
+            },
+            "subjectSha256": "7d5561af520b58a513a5afcf771792f9e82296992b25f55e0db91b6cad2e9e0f",
+            "verifiedAt": "2026-07-24T18:55:00Z"
+          }
+        },
+        "attestationFile": {
+          "bytes": 5068,
+          "sha256": "d9aaa2650588c8bbba382beddf4866abb2ca20776bf840dfa891ec041767446f"
+        }
+      }
+    },
+    {
+      "agentImage": {
+        "digest": "sha256:f562d2572561a4fd9913f7c53722d38f108f112984468fe099a66fed54da47a7",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-24.12.0-pnpm-11.2.1@sha256:d6fb5480acf086396413aa9e7bf5ddf8826c86baf574c380be822a9cfbbaf0d0"
+      },
+      "arch": "x64",
+      "baseImage": {
+        "digest": "sha256:7326fb2dbdce998edd72140946851be64ef4a643e8715e138ca467e8e9d92c99",
+        "reference": "node:24.12.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": "sha256:5effcc105353496397347cd9a6a6f96684deff8b2874548a26279e1be8b36b7b",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-24.12.0-pnpm-11.2.1@sha256:6bb2cd1bf299f47e30c4922ed86a7c55099e1bf2b5998c70ccfe75c5e61b759b"
+      },
+      "bunVersion": null,
+      "id": "node-24.12.0-pnpm-11.2.1",
+      "nodeVersion": "24.12.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "pnpm",
+        "version": "11.2.1"
+      },
+      "profileSha256": "2b9f7ceced556878e385adafab458e46a6875349a8c24618599c78401e7bcc84",
+      "taskCount": 2,
+      "verification": {
+        "attestation": {
+          "attestationSha256": "d21c272d74b75b8779aa124bb657c77a46a5480fe088e7c07601078587e7f393",
+          "provenance": {
+            "bundleFile": {
+              "bytes": 11193,
+              "path": "node-24.12.0-pnpm-11.2.1.provenance.jsonl",
+              "sha256": "1440e62d83faa789bd8700a478d82dc0ea95fda0a1c3941818ebd6ef378399f7"
+            },
+            "policy": {
+              "denySelfHostedRunners": true,
+              "predicateType": "https://slsa.dev/provenance/v1",
+              "repository": "decantr-ai/decantr",
+              "signerDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "signerWorkflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "sourceDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main"
+            },
+            "subjectFile": {
+              "bytes": 3579,
+              "path": "node-24.12.0-pnpm-11.2.1.subject.json",
+              "sha256": "df7168687ff4d092d933c2f7dbd9089c3ac77df340997dfe06195459f9ca3375"
+            },
+            "verificationFile": {
+              "bytes": 16459,
+              "path": "node-24.12.0-pnpm-11.2.1.provenance-verification.json",
+              "sha256": "ca4171b92da1c1bf7f3f607c5906ea074b4217699e4ebd4790977a0b3f8ccc07"
+            },
+            "verificationSha256": "70cd9ff54ceabf3180bff6e42fc1e38c04a0f8f7d87cdf4ca79333c4e99f1391"
+          },
+          "schemaVersion": "decantr-benchmark-runtime-profile-attestation.v3",
+          "subject": {
+            "agentImage": {
+              "digest": "sha256:f562d2572561a4fd9913f7c53722d38f108f112984468fe099a66fed54da47a7",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-24.12.0-pnpm-11.2.1@sha256:d6fb5480acf086396413aa9e7bf5ddf8826c86baf574c380be822a9cfbbaf0d0"
+            },
+            "agentIsolationSmokePassed": true,
+            "agentTooling": {
+              "claudeCodeIntegrity": "sha512-BHV951ruIa6QXaZFDF1wRhwxAOkAiafB2AOWG6wGRUJ4apaJ9mlzp1BFLAhGfG0SknwAyqBenqeT6nit6at4uQ==",
+              "claudeCodeVersion": "2.1.218",
+              "codexIntegrity": "sha512-/PSPSFujjjmiyVFvG2yu/grOFhsWdokTH8t2KGWhXSo/M5n/dIDsnbsnO82/7bLtIoDuzQf7ATBUMWqPWQINlQ==",
+              "codexVersion": "0.145.0",
+              "controllerNode": "v22.17.0"
+            },
+            "baseImage": {
+              "digest": "sha256:7326fb2dbdce998edd72140946851be64ef4a643e8715e138ca467e8e9d92c99",
+              "reference": "node:24.12.0-bookworm-slim"
+            },
+            "benchmarkImage": {
+              "digest": "sha256:5effcc105353496397347cd9a6a6f96684deff8b2874548a26279e1be8b36b7b",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-24.12.0-pnpm-11.2.1@sha256:6bb2cd1bf299f47e30c4922ed86a7c55099e1bf2b5998c70ccfe75c5e61b759b"
+            },
+            "browserSmokePassed": true,
+            "controller": {
+              "image": {
+                "digest": "sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0",
+                "reference": "node:22.17.0-bookworm-slim"
+              },
+              "nodeVersion": "v22.17.0"
+            },
+            "execution": {
+              "eventName": "workflow_dispatch",
+              "job": "probe",
+              "repository": "decantr-ai/decantr",
+              "runAttempt": "1",
+              "runId": "30116606965",
+              "runnerArch": "X64",
+              "runnerEnvironment": "github-hosted",
+              "runnerImage": "ubuntu24",
+              "runnerImageVersion": "20260720.247.2",
+              "runnerOs": "Linux",
+              "sourceCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main",
+              "workflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "workflowRef": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml@refs/heads/main",
+              "workflowSha": "30e37b79e2f1acf1f2d264d173d9411cd313faf0"
+            },
+            "host": {
+              "arch": "x64",
+              "os": "linux"
+            },
+            "matrix": {
+              "draftSha256": "80f54f62a461dc59a041da2676d9bed37d126b8c6e5ee7de1b5425f42791890e",
+              "sourceSpecSetSha256": "431db40a730d005133e2b8a1862e56639b6f4f455a181abd66780a1f0a257d22"
+            },
+            "packageManagerName": "pnpm",
+            "packageManagerVersion": "11.2.1",
+            "profileId": "node-24.12.0-pnpm-11.2.1",
+            "profileSha256": "2b9f7ceced556878e385adafab458e46a6875349a8c24618599c78401e7bcc84",
+            "runtimeKind": "node",
+            "runtimeVersion": "24.12.0",
+            "schemaVersion": "decantr-benchmark-runtime-profile-build-subject.v2",
+            "source": {
+              "buildContext": {
+                "fileCount": 269,
+                "filesSha256": "c86a24086064565b15c558b1230baf46a665ef0287208d30a69a1f1e5ca9ccb2",
+                "roots": [
+                  ".dockerignore",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "controller": {
+                "fileCount": 270,
+                "filesSha256": "aa6c07e0d8e0d8d52c13aaec27cc0e41654dbe725742bb1e6c0b215be0d945e5",
+                "roots": [
+                  ".dockerignore",
+                  ".github/workflows/benchmark-3-10-runtime-profiles.yml",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "policy": "exact-clean-git-files-v1",
+              "repositoryCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "schemaVersion": "decantr-benchmark-runtime-source-closure.v1",
+              "sourceClosureSha256": "0036dfa71dfa25f254fa434a679e92e681ef703831d24521f260b0e2769e4247"
+            },
+            "subjectSha256": "75b377ce49c891225aeb8f4c6fed13172ae8a9ee257f64fd1aaa9615fad111b6",
+            "verifiedAt": "2026-07-24T18:57:25Z"
+          }
+        },
+        "attestationFile": {
+          "bytes": 5061,
+          "sha256": "6c3014cc0e35c2e94852a8f724f25077a3337c8bf5c11889632054c6076ff6b8"
+        }
+      }
+    },
+    {
+      "agentImage": {
+        "digest": "sha256:fec068f04b39a25bb484cf70495cffe8d31da43f80a946bfadcf6972e142347b",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-24.13.0-pnpm-10.27.0@sha256:235fcaf4403447960608ca0e83438e7583fc456804d3672c682d949025624466"
+      },
+      "arch": "x64",
+      "baseImage": {
+        "digest": "sha256:4660b1ca8b28d6d1906fd644abe34b2ed81d15434d26d845ef0aced307cf4b6f",
+        "reference": "node:24.13.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": "sha256:77c7e2f2d383e4afc79681d238c8c6263f292daf6589cc014aa05a19752d51de",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-24.13.0-pnpm-10.27.0@sha256:274e29b83c8b24800c9c0edbd6caf4cfee880e6cdcdf903ac3bec46b4b4302c0"
+      },
+      "bunVersion": null,
+      "id": "node-24.13.0-pnpm-10.27.0",
+      "nodeVersion": "24.13.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "pnpm",
+        "version": "10.27.0"
+      },
+      "profileSha256": "ee8ce19481132c56088c19311e46a7f5810c6c437b6935e8e2e9fcf4f204b4ce",
+      "taskCount": 1,
+      "verification": {
+        "attestation": {
+          "attestationSha256": "08d1d3806f8b5811884c9d8c4e7d8da31abc7390faf122199e3044af3c89707a",
+          "provenance": {
+            "bundleFile": {
+              "bytes": 11146,
+              "path": "node-24.13.0-pnpm-10.27.0.provenance.jsonl",
+              "sha256": "38536c9afee42787984f4f4781c37290a7781d6802e69ff350362b90b2bb277d"
+            },
+            "policy": {
+              "denySelfHostedRunners": true,
+              "predicateType": "https://slsa.dev/provenance/v1",
+              "repository": "decantr-ai/decantr",
+              "signerDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "signerWorkflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "sourceDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main"
+            },
+            "subjectFile": {
+              "bytes": 3583,
+              "path": "node-24.13.0-pnpm-10.27.0.subject.json",
+              "sha256": "213ea463ff1d3a0de9b260c6b791df0a25dba2813aa9b3d0cca0c6a12dc8d088"
+            },
+            "verificationFile": {
+              "bytes": 16394,
+              "path": "node-24.13.0-pnpm-10.27.0.provenance-verification.json",
+              "sha256": "ae545b519dbfe9f50b43a499bc5923f4398a56e3e7c7d8fc7f1236c1c12195b1"
+            },
+            "verificationSha256": "c56e444351d858470fe2c1c1cd300f75b1f7747df81b21895e6018cad3c071da"
+          },
+          "schemaVersion": "decantr-benchmark-runtime-profile-attestation.v3",
+          "subject": {
+            "agentImage": {
+              "digest": "sha256:fec068f04b39a25bb484cf70495cffe8d31da43f80a946bfadcf6972e142347b",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-24.13.0-pnpm-10.27.0@sha256:235fcaf4403447960608ca0e83438e7583fc456804d3672c682d949025624466"
+            },
+            "agentIsolationSmokePassed": true,
+            "agentTooling": {
+              "claudeCodeIntegrity": "sha512-BHV951ruIa6QXaZFDF1wRhwxAOkAiafB2AOWG6wGRUJ4apaJ9mlzp1BFLAhGfG0SknwAyqBenqeT6nit6at4uQ==",
+              "claudeCodeVersion": "2.1.218",
+              "codexIntegrity": "sha512-/PSPSFujjjmiyVFvG2yu/grOFhsWdokTH8t2KGWhXSo/M5n/dIDsnbsnO82/7bLtIoDuzQf7ATBUMWqPWQINlQ==",
+              "codexVersion": "0.145.0",
+              "controllerNode": "v22.17.0"
+            },
+            "baseImage": {
+              "digest": "sha256:4660b1ca8b28d6d1906fd644abe34b2ed81d15434d26d845ef0aced307cf4b6f",
+              "reference": "node:24.13.0-bookworm-slim"
+            },
+            "benchmarkImage": {
+              "digest": "sha256:77c7e2f2d383e4afc79681d238c8c6263f292daf6589cc014aa05a19752d51de",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-24.13.0-pnpm-10.27.0@sha256:274e29b83c8b24800c9c0edbd6caf4cfee880e6cdcdf903ac3bec46b4b4302c0"
+            },
+            "browserSmokePassed": true,
+            "controller": {
+              "image": {
+                "digest": "sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0",
+                "reference": "node:22.17.0-bookworm-slim"
+              },
+              "nodeVersion": "v22.17.0"
+            },
+            "execution": {
+              "eventName": "workflow_dispatch",
+              "job": "probe",
+              "repository": "decantr-ai/decantr",
+              "runAttempt": "1",
+              "runId": "30116606965",
+              "runnerArch": "X64",
+              "runnerEnvironment": "github-hosted",
+              "runnerImage": "ubuntu24",
+              "runnerImageVersion": "20260720.247.2",
+              "runnerOs": "Linux",
+              "sourceCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main",
+              "workflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "workflowRef": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml@refs/heads/main",
+              "workflowSha": "30e37b79e2f1acf1f2d264d173d9411cd313faf0"
+            },
+            "host": {
+              "arch": "x64",
+              "os": "linux"
+            },
+            "matrix": {
+              "draftSha256": "80f54f62a461dc59a041da2676d9bed37d126b8c6e5ee7de1b5425f42791890e",
+              "sourceSpecSetSha256": "431db40a730d005133e2b8a1862e56639b6f4f455a181abd66780a1f0a257d22"
+            },
+            "packageManagerName": "pnpm",
+            "packageManagerVersion": "10.27.0",
+            "profileId": "node-24.13.0-pnpm-10.27.0",
+            "profileSha256": "ee8ce19481132c56088c19311e46a7f5810c6c437b6935e8e2e9fcf4f204b4ce",
+            "runtimeKind": "node",
+            "runtimeVersion": "24.13.0",
+            "schemaVersion": "decantr-benchmark-runtime-profile-build-subject.v2",
+            "source": {
+              "buildContext": {
+                "fileCount": 269,
+                "filesSha256": "c86a24086064565b15c558b1230baf46a665ef0287208d30a69a1f1e5ca9ccb2",
+                "roots": [
+                  ".dockerignore",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "controller": {
+                "fileCount": 270,
+                "filesSha256": "aa6c07e0d8e0d8d52c13aaec27cc0e41654dbe725742bb1e6c0b215be0d945e5",
+                "roots": [
+                  ".dockerignore",
+                  ".github/workflows/benchmark-3-10-runtime-profiles.yml",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "policy": "exact-clean-git-files-v1",
+              "repositoryCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "schemaVersion": "decantr-benchmark-runtime-source-closure.v1",
+              "sourceClosureSha256": "0036dfa71dfa25f254fa434a679e92e681ef703831d24521f260b0e2769e4247"
+            },
+            "subjectSha256": "0ea209820a69ff5e20a1dee2379112440b755d8af1fc738223c4dcf542779f2a",
+            "verifiedAt": "2026-07-24T18:59:01Z"
+          }
+        },
+        "attestationFile": {
+          "bytes": 5068,
+          "sha256": "1a7260fceb59c337fc6d070b273738a0c0080be258a7e4cc6d89a2172f7b389a"
+        }
+      }
+    },
+    {
+      "agentImage": {
+        "digest": "sha256:b86e057b72d828df9bc45f1b335a62acf7622f93031e80edaf043fa48cee094b",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-24.15.0-pnpm-11.13.1@sha256:944be88fee18788658906de088b35985b70b7c266fcedc3a5dcd02116c68b69a"
+      },
+      "arch": "x64",
+      "baseImage": {
+        "digest": "sha256:4e6b70dd6cbfc88c8157ba19aa3d9f9cce6ba4703576d55459e45efcbc9c5f5d",
+        "reference": "node:24.15.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": "sha256:8a4d62faf696e20e413a7d95290dca2a050096678dc95726c5f2544cdc2a9eae",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-24.15.0-pnpm-11.13.1@sha256:690646df20ab13ca2a71187437a3d4b3dc6c082eea6c9ddebb8b74788a53d4ac"
+      },
+      "bunVersion": null,
+      "id": "node-24.15.0-pnpm-11.13.1",
+      "nodeVersion": "24.15.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "pnpm",
+        "version": "11.13.1"
+      },
+      "profileSha256": "45ff8a13ec32aded7f42b6945e65e47d4a81e50f32acfdbe87d3759caac029df",
+      "taskCount": 1,
+      "verification": {
+        "attestation": {
+          "attestationSha256": "0fa9172866239a9b7cdefdc6b0e29a7d7e094a66035ad64a8f6bf823f8bb1767",
+          "provenance": {
+            "bundleFile": {
+              "bytes": 11287,
+              "path": "node-24.15.0-pnpm-11.13.1.provenance.jsonl",
+              "sha256": "09f259276c3b161f589cf8e7d3a3db5a6cc97bdab270777c1f6a54885357f2c0"
+            },
+            "policy": {
+              "denySelfHostedRunners": true,
+              "predicateType": "https://slsa.dev/provenance/v1",
+              "repository": "decantr-ai/decantr",
+              "signerDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "signerWorkflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "sourceDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main"
+            },
+            "subjectFile": {
+              "bytes": 3583,
+              "path": "node-24.15.0-pnpm-11.13.1.subject.json",
+              "sha256": "0a56ae3ee5679be05646b4389d7234a1c04e127784f9a74081ba2acb3f065669"
+            },
+            "verificationFile": {
+              "bytes": 16592,
+              "path": "node-24.15.0-pnpm-11.13.1.provenance-verification.json",
+              "sha256": "b7b9da6d6089b3c4df066c5bcb3d8c5c0c6163d7c2de39937708ffe2109acc65"
+            },
+            "verificationSha256": "d5f8654441412308706b65a22fe777c1af3449d2fcba090a835d5d597575a357"
+          },
+          "schemaVersion": "decantr-benchmark-runtime-profile-attestation.v3",
+          "subject": {
+            "agentImage": {
+              "digest": "sha256:b86e057b72d828df9bc45f1b335a62acf7622f93031e80edaf043fa48cee094b",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-24.15.0-pnpm-11.13.1@sha256:944be88fee18788658906de088b35985b70b7c266fcedc3a5dcd02116c68b69a"
+            },
+            "agentIsolationSmokePassed": true,
+            "agentTooling": {
+              "claudeCodeIntegrity": "sha512-BHV951ruIa6QXaZFDF1wRhwxAOkAiafB2AOWG6wGRUJ4apaJ9mlzp1BFLAhGfG0SknwAyqBenqeT6nit6at4uQ==",
+              "claudeCodeVersion": "2.1.218",
+              "codexIntegrity": "sha512-/PSPSFujjjmiyVFvG2yu/grOFhsWdokTH8t2KGWhXSo/M5n/dIDsnbsnO82/7bLtIoDuzQf7ATBUMWqPWQINlQ==",
+              "codexVersion": "0.145.0",
+              "controllerNode": "v22.17.0"
+            },
+            "baseImage": {
+              "digest": "sha256:4e6b70dd6cbfc88c8157ba19aa3d9f9cce6ba4703576d55459e45efcbc9c5f5d",
+              "reference": "node:24.15.0-bookworm-slim"
+            },
+            "benchmarkImage": {
+              "digest": "sha256:8a4d62faf696e20e413a7d95290dca2a050096678dc95726c5f2544cdc2a9eae",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-24.15.0-pnpm-11.13.1@sha256:690646df20ab13ca2a71187437a3d4b3dc6c082eea6c9ddebb8b74788a53d4ac"
+            },
+            "browserSmokePassed": true,
+            "controller": {
+              "image": {
+                "digest": "sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0",
+                "reference": "node:22.17.0-bookworm-slim"
+              },
+              "nodeVersion": "v22.17.0"
+            },
+            "execution": {
+              "eventName": "workflow_dispatch",
+              "job": "probe",
+              "repository": "decantr-ai/decantr",
+              "runAttempt": "1",
+              "runId": "30116606965",
+              "runnerArch": "X64",
+              "runnerEnvironment": "github-hosted",
+              "runnerImage": "ubuntu24",
+              "runnerImageVersion": "20260720.247.2",
+              "runnerOs": "Linux",
+              "sourceCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main",
+              "workflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "workflowRef": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml@refs/heads/main",
+              "workflowSha": "30e37b79e2f1acf1f2d264d173d9411cd313faf0"
+            },
+            "host": {
+              "arch": "x64",
+              "os": "linux"
+            },
+            "matrix": {
+              "draftSha256": "80f54f62a461dc59a041da2676d9bed37d126b8c6e5ee7de1b5425f42791890e",
+              "sourceSpecSetSha256": "431db40a730d005133e2b8a1862e56639b6f4f455a181abd66780a1f0a257d22"
+            },
+            "packageManagerName": "pnpm",
+            "packageManagerVersion": "11.13.1",
+            "profileId": "node-24.15.0-pnpm-11.13.1",
+            "profileSha256": "45ff8a13ec32aded7f42b6945e65e47d4a81e50f32acfdbe87d3759caac029df",
+            "runtimeKind": "node",
+            "runtimeVersion": "24.15.0",
+            "schemaVersion": "decantr-benchmark-runtime-profile-build-subject.v2",
+            "source": {
+              "buildContext": {
+                "fileCount": 269,
+                "filesSha256": "c86a24086064565b15c558b1230baf46a665ef0287208d30a69a1f1e5ca9ccb2",
+                "roots": [
+                  ".dockerignore",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "controller": {
+                "fileCount": 270,
+                "filesSha256": "aa6c07e0d8e0d8d52c13aaec27cc0e41654dbe725742bb1e6c0b215be0d945e5",
+                "roots": [
+                  ".dockerignore",
+                  ".github/workflows/benchmark-3-10-runtime-profiles.yml",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "policy": "exact-clean-git-files-v1",
+              "repositoryCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "schemaVersion": "decantr-benchmark-runtime-source-closure.v1",
+              "sourceClosureSha256": "0036dfa71dfa25f254fa434a679e92e681ef703831d24521f260b0e2769e4247"
+            },
+            "subjectSha256": "3b2b36163a5f67ace0a99605eb9784994be0b9e358fe5ea690b45c783447ab6f",
+            "verifiedAt": "2026-07-24T19:02:21Z"
+          }
+        },
+        "attestationFile": {
+          "bytes": 5068,
+          "sha256": "3d98cc4295b94e88cf31f61aa2f4fc01acdcab6b1cd0154c4349f42da52774f9"
+        }
+      }
+    },
+    {
+      "agentImage": {
+        "digest": "sha256:6246e6ae201b3d749feacf27c56d1b5dfda1a4a57dd8643a3f91eddf829ab49e",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-24.16.0-npm-11.6.3@sha256:e9f3c72a343eda959552412db2661b41cb3529bff4cc121ed0d4a207cabb1a0d"
+      },
+      "arch": "x64",
+      "baseImage": {
+        "digest": "sha256:2c87ef9bd3c6a3bd4b472b4bec2ce9d16354b0c574f736c476489d09f560a203",
+        "reference": "node:24.16.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": "sha256:dc7f60c844bc5f3f104944f3a065bcf4892e483980288dc9f71caa13d9c4e315",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-24.16.0-npm-11.6.3@sha256:009704bb4531206b5b1a3e09d1202b51edac415b6d177297f413021b10a43edb"
+      },
+      "bunVersion": null,
+      "id": "node-24.16.0-npm-11.6.3",
+      "nodeVersion": "24.16.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "npm",
+        "version": "11.6.3"
+      },
+      "profileSha256": "953a9af0ec1d2a52f142ab8134e1353eac8bdc9d391f745169da2a09f66a0626",
+      "taskCount": 2,
+      "verification": {
+        "attestation": {
+          "attestationSha256": "06662976e6381dfede12cc4e4e8725f8bdb9bf3cf81cd77476aedc766c542812",
+          "provenance": {
+            "bundleFile": {
+              "bytes": 11240,
+              "path": "node-24.16.0-npm-11.6.3.provenance.jsonl",
+              "sha256": "ba1537bee51c4f72baa17e6c8b72b95b21203399eb7dd1b95b4b41abac08bb94"
+            },
+            "policy": {
+              "denySelfHostedRunners": true,
+              "predicateType": "https://slsa.dev/provenance/v1",
+              "repository": "decantr-ai/decantr",
+              "signerDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "signerWorkflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "sourceDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main"
+            },
+            "subjectFile": {
+              "bytes": 3575,
+              "path": "node-24.16.0-npm-11.6.3.subject.json",
+              "sha256": "32776f22e7aa5f89bfcd352f6dbd3fd1b7e98050d5ef8305b1e3bf4be12f6a1f"
+            },
+            "verificationFile": {
+              "bytes": 16524,
+              "path": "node-24.16.0-npm-11.6.3.provenance-verification.json",
+              "sha256": "b56d69288a10ba416cf308f8ee3d5945a77d2558bab772ae15c4bb7b2a32c813"
+            },
+            "verificationSha256": "c76bb1e29e1064583e5bd3b3825b8ebb483ba38d67a4419185afc21504f6d487"
+          },
+          "schemaVersion": "decantr-benchmark-runtime-profile-attestation.v3",
+          "subject": {
+            "agentImage": {
+              "digest": "sha256:6246e6ae201b3d749feacf27c56d1b5dfda1a4a57dd8643a3f91eddf829ab49e",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-24.16.0-npm-11.6.3@sha256:e9f3c72a343eda959552412db2661b41cb3529bff4cc121ed0d4a207cabb1a0d"
+            },
+            "agentIsolationSmokePassed": true,
+            "agentTooling": {
+              "claudeCodeIntegrity": "sha512-BHV951ruIa6QXaZFDF1wRhwxAOkAiafB2AOWG6wGRUJ4apaJ9mlzp1BFLAhGfG0SknwAyqBenqeT6nit6at4uQ==",
+              "claudeCodeVersion": "2.1.218",
+              "codexIntegrity": "sha512-/PSPSFujjjmiyVFvG2yu/grOFhsWdokTH8t2KGWhXSo/M5n/dIDsnbsnO82/7bLtIoDuzQf7ATBUMWqPWQINlQ==",
+              "codexVersion": "0.145.0",
+              "controllerNode": "v22.17.0"
+            },
+            "baseImage": {
+              "digest": "sha256:2c87ef9bd3c6a3bd4b472b4bec2ce9d16354b0c574f736c476489d09f560a203",
+              "reference": "node:24.16.0-bookworm-slim"
+            },
+            "benchmarkImage": {
+              "digest": "sha256:dc7f60c844bc5f3f104944f3a065bcf4892e483980288dc9f71caa13d9c4e315",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-24.16.0-npm-11.6.3@sha256:009704bb4531206b5b1a3e09d1202b51edac415b6d177297f413021b10a43edb"
+            },
+            "browserSmokePassed": true,
+            "controller": {
+              "image": {
+                "digest": "sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0",
+                "reference": "node:22.17.0-bookworm-slim"
+              },
+              "nodeVersion": "v22.17.0"
+            },
+            "execution": {
+              "eventName": "workflow_dispatch",
+              "job": "probe",
+              "repository": "decantr-ai/decantr",
+              "runAttempt": "1",
+              "runId": "30116606965",
+              "runnerArch": "X64",
+              "runnerEnvironment": "github-hosted",
+              "runnerImage": "ubuntu24",
+              "runnerImageVersion": "20260720.247.2",
+              "runnerOs": "Linux",
+              "sourceCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main",
+              "workflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "workflowRef": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml@refs/heads/main",
+              "workflowSha": "30e37b79e2f1acf1f2d264d173d9411cd313faf0"
+            },
+            "host": {
+              "arch": "x64",
+              "os": "linux"
+            },
+            "matrix": {
+              "draftSha256": "80f54f62a461dc59a041da2676d9bed37d126b8c6e5ee7de1b5425f42791890e",
+              "sourceSpecSetSha256": "431db40a730d005133e2b8a1862e56639b6f4f455a181abd66780a1f0a257d22"
+            },
+            "packageManagerName": "npm",
+            "packageManagerVersion": "11.6.3",
+            "profileId": "node-24.16.0-npm-11.6.3",
+            "profileSha256": "953a9af0ec1d2a52f142ab8134e1353eac8bdc9d391f745169da2a09f66a0626",
+            "runtimeKind": "node",
+            "runtimeVersion": "24.16.0",
+            "schemaVersion": "decantr-benchmark-runtime-profile-build-subject.v2",
+            "source": {
+              "buildContext": {
+                "fileCount": 269,
+                "filesSha256": "c86a24086064565b15c558b1230baf46a665ef0287208d30a69a1f1e5ca9ccb2",
+                "roots": [
+                  ".dockerignore",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "controller": {
+                "fileCount": 270,
+                "filesSha256": "aa6c07e0d8e0d8d52c13aaec27cc0e41654dbe725742bb1e6c0b215be0d945e5",
+                "roots": [
+                  ".dockerignore",
+                  ".github/workflows/benchmark-3-10-runtime-profiles.yml",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "policy": "exact-clean-git-files-v1",
+              "repositoryCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "schemaVersion": "decantr-benchmark-runtime-source-closure.v1",
+              "sourceClosureSha256": "0036dfa71dfa25f254fa434a679e92e681ef703831d24521f260b0e2769e4247"
+            },
+            "subjectSha256": "e9b3fe6228b830c0d27a1af0acacd2d375ddaa9d73bfea2b3d1a44d31044f5c8",
+            "verifiedAt": "2026-07-24T19:02:31Z"
+          }
+        },
+        "attestationFile": {
+          "bytes": 5054,
+          "sha256": "6c77c54175a248c85371cdcd6e9c849e6d847164201477f36ecfd3764da4e893"
+        }
+      }
+    },
+    {
+      "agentImage": {
+        "digest": "sha256:9d4d6b1f25da158de4d5a3a09438b5875d83f69ecc801b866bee8e92c88a31ca",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-24.16.0-npm-11.7.0@sha256:a6dedf5b2c34a333bafee7fe5ca1ea58c06d6b8ae14f7ed2042a9d3b7d889a87"
+      },
+      "arch": "x64",
+      "baseImage": {
+        "digest": "sha256:2c87ef9bd3c6a3bd4b472b4bec2ce9d16354b0c574f736c476489d09f560a203",
+        "reference": "node:24.16.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": "sha256:70e183c2542e3adf4cc1e443f7163b26f2a8046e1421d5113a032873b748f2d1",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-24.16.0-npm-11.7.0@sha256:3c9c0998ac80c93792cdbae842975fd14288edbc471c1beed0732e5916fa0aff"
+      },
+      "bunVersion": null,
+      "id": "node-24.16.0-npm-11.7.0",
+      "nodeVersion": "24.16.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "npm",
+        "version": "11.7.0"
+      },
+      "profileSha256": "a53cc08af5ba4fc4728d3218b8c6f242c960c83f9c6f74834acabfbdf10f14d2",
+      "taskCount": 1,
+      "verification": {
+        "attestation": {
+          "attestationSha256": "f9881e1a63997f589387af9289f5ff6debe70c98431a580c7ea79d9e8272a25a",
+          "provenance": {
+            "bundleFile": {
+              "bytes": 11334,
+              "path": "node-24.16.0-npm-11.7.0.provenance.jsonl",
+              "sha256": "84a493955e8e10b1d82b80cb223b5332e4af264bd7ecb81a91a325a39b780df3"
+            },
+            "policy": {
+              "denySelfHostedRunners": true,
+              "predicateType": "https://slsa.dev/provenance/v1",
+              "repository": "decantr-ai/decantr",
+              "signerDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "signerWorkflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "sourceDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main"
+            },
+            "subjectFile": {
+              "bytes": 3575,
+              "path": "node-24.16.0-npm-11.7.0.subject.json",
+              "sha256": "96dc4b47c9df1e439f6438dfe599dedff338009874088c8213916760310f4239"
+            },
+            "verificationFile": {
+              "bytes": 16656,
+              "path": "node-24.16.0-npm-11.7.0.provenance-verification.json",
+              "sha256": "682b1ff938cc2e4145a9f2869616ee65b7482a0e0cc6354d5d057bea6dbd0f13"
+            },
+            "verificationSha256": "0ca8b9d4c50882d94cc990da9ae2b24887dc2c1e3b640eb9789635b20d5d82a7"
+          },
+          "schemaVersion": "decantr-benchmark-runtime-profile-attestation.v3",
+          "subject": {
+            "agentImage": {
+              "digest": "sha256:9d4d6b1f25da158de4d5a3a09438b5875d83f69ecc801b866bee8e92c88a31ca",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-24.16.0-npm-11.7.0@sha256:a6dedf5b2c34a333bafee7fe5ca1ea58c06d6b8ae14f7ed2042a9d3b7d889a87"
+            },
+            "agentIsolationSmokePassed": true,
+            "agentTooling": {
+              "claudeCodeIntegrity": "sha512-BHV951ruIa6QXaZFDF1wRhwxAOkAiafB2AOWG6wGRUJ4apaJ9mlzp1BFLAhGfG0SknwAyqBenqeT6nit6at4uQ==",
+              "claudeCodeVersion": "2.1.218",
+              "codexIntegrity": "sha512-/PSPSFujjjmiyVFvG2yu/grOFhsWdokTH8t2KGWhXSo/M5n/dIDsnbsnO82/7bLtIoDuzQf7ATBUMWqPWQINlQ==",
+              "codexVersion": "0.145.0",
+              "controllerNode": "v22.17.0"
+            },
+            "baseImage": {
+              "digest": "sha256:2c87ef9bd3c6a3bd4b472b4bec2ce9d16354b0c574f736c476489d09f560a203",
+              "reference": "node:24.16.0-bookworm-slim"
+            },
+            "benchmarkImage": {
+              "digest": "sha256:70e183c2542e3adf4cc1e443f7163b26f2a8046e1421d5113a032873b748f2d1",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-24.16.0-npm-11.7.0@sha256:3c9c0998ac80c93792cdbae842975fd14288edbc471c1beed0732e5916fa0aff"
+            },
+            "browserSmokePassed": true,
+            "controller": {
+              "image": {
+                "digest": "sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0",
+                "reference": "node:22.17.0-bookworm-slim"
+              },
+              "nodeVersion": "v22.17.0"
+            },
+            "execution": {
+              "eventName": "workflow_dispatch",
+              "job": "probe",
+              "repository": "decantr-ai/decantr",
+              "runAttempt": "1",
+              "runId": "30116606965",
+              "runnerArch": "X64",
+              "runnerEnvironment": "github-hosted",
+              "runnerImage": "ubuntu24",
+              "runnerImageVersion": "20260720.247.2",
+              "runnerOs": "Linux",
+              "sourceCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main",
+              "workflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "workflowRef": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml@refs/heads/main",
+              "workflowSha": "30e37b79e2f1acf1f2d264d173d9411cd313faf0"
+            },
+            "host": {
+              "arch": "x64",
+              "os": "linux"
+            },
+            "matrix": {
+              "draftSha256": "80f54f62a461dc59a041da2676d9bed37d126b8c6e5ee7de1b5425f42791890e",
+              "sourceSpecSetSha256": "431db40a730d005133e2b8a1862e56639b6f4f455a181abd66780a1f0a257d22"
+            },
+            "packageManagerName": "npm",
+            "packageManagerVersion": "11.7.0",
+            "profileId": "node-24.16.0-npm-11.7.0",
+            "profileSha256": "a53cc08af5ba4fc4728d3218b8c6f242c960c83f9c6f74834acabfbdf10f14d2",
+            "runtimeKind": "node",
+            "runtimeVersion": "24.16.0",
+            "schemaVersion": "decantr-benchmark-runtime-profile-build-subject.v2",
+            "source": {
+              "buildContext": {
+                "fileCount": 269,
+                "filesSha256": "c86a24086064565b15c558b1230baf46a665ef0287208d30a69a1f1e5ca9ccb2",
+                "roots": [
+                  ".dockerignore",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "controller": {
+                "fileCount": 270,
+                "filesSha256": "aa6c07e0d8e0d8d52c13aaec27cc0e41654dbe725742bb1e6c0b215be0d945e5",
+                "roots": [
+                  ".dockerignore",
+                  ".github/workflows/benchmark-3-10-runtime-profiles.yml",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "policy": "exact-clean-git-files-v1",
+              "repositoryCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "schemaVersion": "decantr-benchmark-runtime-source-closure.v1",
+              "sourceClosureSha256": "0036dfa71dfa25f254fa434a679e92e681ef703831d24521f260b0e2769e4247"
+            },
+            "subjectSha256": "39b1fc36e0050413c68cb4d17926970c063c3ab8badf3edc73aafda1c468138f",
+            "verifiedAt": "2026-07-24T19:05:42Z"
+          }
+        },
+        "attestationFile": {
+          "bytes": 5054,
+          "sha256": "d8eea1a1ad04776b65ee575b5453a5091a222ef5f93ffa63f450080ed7268b5e"
+        }
+      }
+    },
+    {
+      "agentImage": {
+        "digest": "sha256:e97dea9fdbc7b53d069e4191484c8e22f3cb1c6f141dd304242d48e32d357504",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-24.16.0-pnpm-11.7.0@sha256:9762d1be705ef8eb1acdb2a81b40b3d127f85c4bb588f9cb8e244f9a64ce5253"
+      },
+      "arch": "x64",
+      "baseImage": {
+        "digest": "sha256:2c87ef9bd3c6a3bd4b472b4bec2ce9d16354b0c574f736c476489d09f560a203",
+        "reference": "node:24.16.0-bookworm-slim"
+      },
+      "benchmarkImage": {
+        "digest": "sha256:3a7437b538821a17d54791febe97711d34915829e6c8ce5c05d2a35ca9e3f462",
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-24.16.0-pnpm-11.7.0@sha256:f16f9f7750550c117f19ef0b3dda65765ad55ee08ec4f9f1c88b4f95b58de41e"
+      },
+      "bunVersion": null,
+      "id": "node-24.16.0-pnpm-11.7.0",
+      "nodeVersion": "24.16.0",
+      "os": "linux",
+      "packageManager": {
+        "name": "pnpm",
+        "version": "11.7.0"
+      },
+      "profileSha256": "2ffd1e20b862716c156f6ec2c471fa8c05c2f77d78e6dd91a8fbb89e81f52726",
+      "taskCount": 2,
+      "verification": {
+        "attestation": {
+          "attestationSha256": "7df3ffe0d37c2eeddc0fd6d7068d884eb24375ce1c2fd2704fe2556416421705",
+          "provenance": {
+            "bundleFile": {
+              "bytes": 11381,
+              "path": "node-24.16.0-pnpm-11.7.0.provenance.jsonl",
+              "sha256": "4106dba6dc5a3f69c47236670099b4f4f1c209aa32df5ca6f75cf7690aa30bec"
+            },
+            "policy": {
+              "denySelfHostedRunners": true,
+              "predicateType": "https://slsa.dev/provenance/v1",
+              "repository": "decantr-ai/decantr",
+              "signerDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "signerWorkflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "sourceDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main"
+            },
+            "subjectFile": {
+              "bytes": 3579,
+              "path": "node-24.16.0-pnpm-11.7.0.subject.json",
+              "sha256": "dec776660a46b0d59fc028d7d9560be2747af36e2c4991ada8b92ed5a439e206"
+            },
+            "verificationFile": {
+              "bytes": 16723,
+              "path": "node-24.16.0-pnpm-11.7.0.provenance-verification.json",
+              "sha256": "6b31dd47d7039bfc6d65bf28a5ba59752c3029f3faf58de9bc54e5bf6a3d6502"
+            },
+            "verificationSha256": "aba97ce53aea6a9deed15a0945271ad96d7da86c72e66c553cf60f514e9e791d"
+          },
+          "schemaVersion": "decantr-benchmark-runtime-profile-attestation.v3",
+          "subject": {
+            "agentImage": {
+              "digest": "sha256:e97dea9fdbc7b53d069e4191484c8e22f3cb1c6f141dd304242d48e32d357504",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-24.16.0-pnpm-11.7.0@sha256:9762d1be705ef8eb1acdb2a81b40b3d127f85c4bb588f9cb8e244f9a64ce5253"
+            },
+            "agentIsolationSmokePassed": true,
+            "agentTooling": {
+              "claudeCodeIntegrity": "sha512-BHV951ruIa6QXaZFDF1wRhwxAOkAiafB2AOWG6wGRUJ4apaJ9mlzp1BFLAhGfG0SknwAyqBenqeT6nit6at4uQ==",
+              "claudeCodeVersion": "2.1.218",
+              "codexIntegrity": "sha512-/PSPSFujjjmiyVFvG2yu/grOFhsWdokTH8t2KGWhXSo/M5n/dIDsnbsnO82/7bLtIoDuzQf7ATBUMWqPWQINlQ==",
+              "codexVersion": "0.145.0",
+              "controllerNode": "v22.17.0"
+            },
+            "baseImage": {
+              "digest": "sha256:2c87ef9bd3c6a3bd4b472b4bec2ce9d16354b0c574f736c476489d09f560a203",
+              "reference": "node:24.16.0-bookworm-slim"
+            },
+            "benchmarkImage": {
+              "digest": "sha256:3a7437b538821a17d54791febe97711d34915829e6c8ce5c05d2a35ca9e3f462",
+              "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10:node-24.16.0-pnpm-11.7.0@sha256:f16f9f7750550c117f19ef0b3dda65765ad55ee08ec4f9f1c88b4f95b58de41e"
+            },
+            "browserSmokePassed": true,
+            "controller": {
+              "image": {
+                "digest": "sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0",
+                "reference": "node:22.17.0-bookworm-slim"
+              },
+              "nodeVersion": "v22.17.0"
+            },
+            "execution": {
+              "eventName": "workflow_dispatch",
+              "job": "probe",
+              "repository": "decantr-ai/decantr",
+              "runAttempt": "1",
+              "runId": "30116606965",
+              "runnerArch": "X64",
+              "runnerEnvironment": "github-hosted",
+              "runnerImage": "ubuntu24",
+              "runnerImageVersion": "20260720.247.2",
+              "runnerOs": "Linux",
+              "sourceCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "sourceRef": "refs/heads/main",
+              "workflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+              "workflowRef": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml@refs/heads/main",
+              "workflowSha": "30e37b79e2f1acf1f2d264d173d9411cd313faf0"
+            },
+            "host": {
+              "arch": "x64",
+              "os": "linux"
+            },
+            "matrix": {
+              "draftSha256": "80f54f62a461dc59a041da2676d9bed37d126b8c6e5ee7de1b5425f42791890e",
+              "sourceSpecSetSha256": "431db40a730d005133e2b8a1862e56639b6f4f455a181abd66780a1f0a257d22"
+            },
+            "packageManagerName": "pnpm",
+            "packageManagerVersion": "11.7.0",
+            "profileId": "node-24.16.0-pnpm-11.7.0",
+            "profileSha256": "2ffd1e20b862716c156f6ec2c471fa8c05c2f77d78e6dd91a8fbb89e81f52726",
+            "runtimeKind": "node",
+            "runtimeVersion": "24.16.0",
+            "schemaVersion": "decantr-benchmark-runtime-profile-build-subject.v2",
+            "source": {
+              "buildContext": {
+                "fileCount": 269,
+                "filesSha256": "c86a24086064565b15c558b1230baf46a665ef0287208d30a69a1f1e5ca9ccb2",
+                "roots": [
+                  ".dockerignore",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "controller": {
+                "fileCount": 270,
+                "filesSha256": "aa6c07e0d8e0d8d52c13aaec27cc0e41654dbe725742bb1e6c0b215be0d945e5",
+                "roots": [
+                  ".dockerignore",
+                  ".github/workflows/benchmark-3-10-runtime-profiles.yml",
+                  "scripts/benchmark-3-10"
+                ]
+              },
+              "policy": "exact-clean-git-files-v1",
+              "repositoryCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+              "schemaVersion": "decantr-benchmark-runtime-source-closure.v1",
+              "sourceClosureSha256": "0036dfa71dfa25f254fa434a679e92e681ef703831d24521f260b0e2769e4247"
+            },
+            "subjectSha256": "2546ad1597673c082778c7cd2474ae91d31d9043ddbf4406db9f9f8f4a7d12f0",
+            "verifiedAt": "2026-07-24T19:07:00Z"
+          }
+        },
+        "attestationFile": {
+          "bytes": 5061,
+          "sha256": "e8a1915dd432b22392d5dfebcc46d99b9002c0d2005215b7fea686c26119a638"
+        }
+      }
+    }
+  ],
+  "program": "decantr-3.10-ui-change-control-proof",
+  "provenance": {
+    "controller": {
+      "image": {
+        "digest": "sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0",
+        "reference": "node:22.17.0-bookworm-slim"
+      },
+      "nodeVersion": "v22.17.0"
+    },
+    "draftMatrix": {
+      "frozenAt": "2026-07-22T11:29:02Z",
+      "sha256": "80f54f62a461dc59a041da2676d9bed37d126b8c6e5ee7de1b5425f42791890e",
+      "sourceSpecSetSha256": "431db40a730d005133e2b8a1862e56639b6f4f455a181abd66780a1f0a257d22"
+    },
+    "executionPolicy": {
+      "denySelfHostedRunners": true,
+      "predicateType": "https://slsa.dev/provenance/v1",
+      "repository": "decantr-ai/decantr",
+      "signerDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+      "signerWorkflow": "decantr-ai/decantr/.github/workflows/benchmark-3-10-runtime-profiles.yml",
+      "sourceDigest": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+      "sourceRef": "refs/heads/main"
+    },
+    "source": {
+      "buildContext": {
+        "fileCount": 269,
+        "filesSha256": "c86a24086064565b15c558b1230baf46a665ef0287208d30a69a1f1e5ca9ccb2",
+        "roots": [
+          ".dockerignore",
+          "scripts/benchmark-3-10"
+        ]
+      },
+      "controller": {
+        "fileCount": 270,
+        "filesSha256": "aa6c07e0d8e0d8d52c13aaec27cc0e41654dbe725742bb1e6c0b215be0d945e5",
+        "roots": [
+          ".dockerignore",
+          ".github/workflows/benchmark-3-10-runtime-profiles.yml",
+          "scripts/benchmark-3-10"
+        ]
+      },
+      "policy": "exact-clean-git-files-v1",
+      "repositoryCommit": "30e37b79e2f1acf1f2d264d173d9411cd313faf0",
+      "schemaVersion": "decantr-benchmark-runtime-source-closure.v1",
+      "sourceClosureSha256": "0036dfa71dfa25f254fa434a679e92e681ef703831d24521f260b0e2769e4247"
+    }
+  },
+  "schemaVersion": "decantr-benchmark-runtime-matrix.v1",
+  "sourceSpecSetSha256": "431db40a730d005133e2b8a1862e56639b6f4f455a181abd66780a1f0a257d22",
+  "status": "locked",
+  "taskCounts": {
+    "approved": 40,
+    "development": 24,
+    "qualification": 16,
+    "total": 40
+  }
+}

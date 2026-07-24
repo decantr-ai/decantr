@@ -159,12 +159,12 @@ As of 2026-07-24, the no-cost harness tests pass, but the experiment is not runn
 
 - all 28 corpus repositories and the 24/16 task partition are frozen;
 - all 40 evaluator specs and all 40 task environment specs have explicit sole-maintainer approval; this is not independent blinded outcome review;
-- the former single-image runtime profiles passed on commit `37c10c88`, but that evidence is superseded by the dual-image design. The current 26-profile draft has no retained v3 attestations and remains unlocked;
+- all 26 dual-image runtime profiles passed GitHub-hosted run `30116606965` from source commit `30e37b79e2f1acf1f2d264d173d9411cd313faf0`; retained v3 attestations bind both image roles and the independently reverified locked matrix has digest `def6deb33d7b9d523f3c4c416e623e4082a8c5ec530946571e9cc07bfdd56c1a`;
 - no external container-qualified evaluator receipt has been retained;
 - the candidate Day-0 scanner report is 17 `ready` and 11 `limited`, and the sole maintainer approved the 28-repository authority oracle; the final frozen candidate must still pass that audit;
 - exact-model OpenAI and Anthropic adapters and a credential-owning audited proxy exist, but no candidate tarball set, budget approval, configured benchmark credential, provider run, blinded review, power pilot, or qualification statistic exists;
 - the GitHub-hosted split-stage agent/evaluator workflow, dual provenance subjects, v3 run records, and release re-verification are implemented and pass no-cost local tests, but no hosted signed model run exists;
-- private evaluator-input production, disjoint short-lived split artifacts, and one-shot per-run hosted reservation exist, but the hosted run-materialization packet producer is still missing; no path has been exercised end to end with materialized split-run inputs.
+- public and repository-gated private evaluator-input production now share one committed, data-free controller; sealed private candidates and oracles remain only in the private repository. Disjoint short-lived split artifacts and one-shot per-run hosted reservation exist, but the hosted run-materialization packet producer is still missing and no path has been exercised end to end with materialized split-run inputs.
 
 These are blockers, not administrative TODOs. A test-green harness proves only harness mechanics.
 

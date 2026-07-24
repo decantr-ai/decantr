@@ -1,4 +1,5 @@
 name: Decantr 3.10 evaluator qualification
+run-name: Decantr 3.10 evaluator qualification - source ${{ inputs.source_run_id }}
 
 on:
   workflow_dispatch:
@@ -22,6 +23,7 @@ concurrency:
 jobs:
   qualify:
     name: Host-isolated evaluator qualification
+    if: (github.repository == 'decantr-ai/decantr' || github.repository == 'decantr-ai/decantr-qualification-private') && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 360
     permissions:
@@ -37,10 +39,26 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           SOURCE_RUN_ID: ${{ inputs.source_run_id }}
         run: |
+          case "$GITHUB_REPOSITORY" in
+            decantr-ai/decantr)
+              EXPECTED_SOURCE_PATH=".github/workflows/benchmark-3-10-qualification-input.yml"
+              test "$(gh api "repos/$GITHUB_REPOSITORY" --jq .private)" = "false"
+              ;;
+            decantr-ai/decantr-qualification-private)
+              EXPECTED_SOURCE_PATH=".github/workflows/benchmark-3-10-private-qualification-input.yml"
+              test "$(gh api "repos/$GITHUB_REPOSITORY" --jq .private)" = "true"
+              ;;
+            *)
+              exit 1
+              ;;
+          esac
+          test "$GITHUB_REF" = "refs/heads/main"
+          test "$GITHUB_EVENT_NAME" = "workflow_dispatch"
+          test "$RUNNER_ENVIRONMENT" = "github-hosted"
           SOURCE_RUN="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN_ID")"
           SOURCE_SHA="$(jq -r .head_sha <<<"$SOURCE_RUN")"
           test "$(jq -r .head_repository.full_name <<<"$SOURCE_RUN")" = "$GITHUB_REPOSITORY"
-          test "$(jq -r .path <<<"$SOURCE_RUN")" = ".github/workflows/benchmark-3-10-qualification-input.yml"
+          test "$(jq -r .path <<<"$SOURCE_RUN")" = "$EXPECTED_SOURCE_PATH"
           test "$(jq -r .event <<<"$SOURCE_RUN")" = "workflow_dispatch"
           test "$(jq -r .conclusion <<<"$SOURCE_RUN")" = "success"
           test "$(jq -r .head_branch <<<"$SOURCE_RUN")" = "main"
@@ -58,6 +76,12 @@ jobs:
         with:
           node-version: 22.17.0
           cache: ''
+
+      - name: Install the pinned Sigstore verifier for private evidence
+        if: github.repository == 'decantr-ai/decantr-qualification-private'
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6
+        with:
+          cosign-release: v3.0.6
 
       - name: Download sealed qualification inputs
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
@@ -98,13 +122,13 @@ jobs:
         run: docker logout ghcr.io
 
       - name: Create GitHub OIDC provenance for retained evidence
-        if: success()
+        if: success() && github.repository == 'decantr-ai/decantr'
         uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373
         with:
           subject-path: ${{ runner.temp }}/qualification-output/execution-attestation.json
 
       - name: Retain and verify the offline provenance bundle
-        if: success()
+        if: success() && github.repository == 'decantr-ai/decantr'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -126,6 +150,35 @@ jobs:
           mv verification.json ../execution-attestation.provenance-verification.json
           cd "$GITHUB_WORKSPACE"
           rmdir "$RUNNER_TEMP/qualification-output/provenance-download"
+
+      - name: Sign and independently verify private retained evidence
+        if: success() && github.repository == 'decantr-ai/decantr-qualification-private'
+        run: |
+          test "$GITHUB_REPOSITORY" = "decantr-ai/decantr-qualification-private"
+          test "$GITHUB_REF" = "refs/heads/main"
+          test "$GITHUB_EVENT_NAME" = "workflow_dispatch"
+          test "$RUNNER_ENVIRONMENT" = "github-hosted"
+          test "$RUNNER_OS" = "Linux"
+          test "$RUNNER_ARCH" = "X64"
+          test "$GITHUB_WORKFLOW_REF" = "$GITHUB_REPOSITORY/.github/workflows/benchmark-3-10-evaluator-qualification.yml@$GITHUB_REF"
+          test "$GITHUB_WORKFLOW_SHA" = "$GITHUB_SHA"
+          SUBJECT="$RUNNER_TEMP/qualification-output/execution-attestation.json"
+          BUNDLE="$RUNNER_TEMP/qualification-output/execution-attestation.provenance.sigstore.json"
+          VERIFICATION="$RUNNER_TEMP/qualification-output/execution-attestation.provenance-verification.json"
+          "$HOME/.cosign/cosign" sign-blob \
+            --yes \
+            --bundle "$BUNDLE" \
+            "$SUBJECT" > /dev/null
+          node scripts/benchmark-3-10/provenance/sigstore-keyless.mjs \
+            --subject "$SUBJECT" \
+            --bundle "$BUNDLE" \
+            --repository "$GITHUB_REPOSITORY" \
+            --workflow benchmark-3-10-evaluator-qualification.yml \
+            --source-digest "$GITHUB_SHA" \
+            --source-ref "$GITHUB_REF" \
+            --event "$GITHUB_EVENT_NAME" \
+            --cosign "$HOME/.cosign/cosign" \
+            --out "$VERIFICATION"
 
       - name: Upload retained qualification evidence
         if: always()

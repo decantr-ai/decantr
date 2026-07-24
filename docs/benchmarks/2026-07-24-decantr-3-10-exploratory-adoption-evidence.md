@@ -6,6 +6,12 @@
 - **Evidence class:** development and falsification evidence only
 - **Local evidence root:** `/tmp/decantr-3-10-exploratory-holdout-20260724`
 
+> Point-in-time report: the blocker ledger below records the state at commit
+> `37c10c88`. The active 3.10 program now has 40/40 approved evaluator specs,
+> 40/40 approved environment specs, an approved Day-0 oracle, and a locked
+> 26-profile dual-image runtime matrix. It still has no materializable evaluator
+> receipts or paid model result.
+
 ## Verdict
 
 The candidate materially improves the deterministic foundation needed before an

@@ -23,14 +23,49 @@ test('evaluator workflow uses a fixed GitHub host and read-only GHCR credentials
     'utf8',
   );
   const actionReferences = [...workflow.matchAll(/uses:\s+[^@\s]+@([^\s]+)/gu)].map((match) => match[1]);
-  assert.equal(actionReferences.length, 5);
+  assert.equal(actionReferences.length, 6);
   assert.equal(actionReferences.every((reference) => /^[a-f0-9]{40}$/u.test(reference)), true);
   assert.equal(workflow.includes('runs-on: ubuntu-24.04'), true);
   assert.equal(workflow.includes('runs-on: self-hosted'), false);
+  assert.equal(workflow.includes('decantr-ai/decantr-qualification-private'), true);
+  assert.equal(workflow.includes('benchmark-3-10-private-qualification-input.yml'), true);
   assert.equal(workflow.includes('packages: read'), true);
   assert.equal(workflow.includes('packages: write'), false);
   assert.equal(workflow.includes('docker login ghcr.io'), true);
   assert.equal(workflow.includes('docker logout ghcr.io'), true);
+});
+
+test('private input workflow is repository-gated and uses the shared controller', async () => {
+  const workflow = await readFile(
+    join(
+      repositoryRoot,
+      '.github',
+      'workflows',
+      'benchmark-3-10-private-qualification-input.yml',
+    ),
+    'utf8',
+  );
+  const actionReferences = [...workflow.matchAll(/uses:\s+[^@\s]+@([^\s]+)/gu)].map(
+    (match) => match[1],
+  );
+  assert.equal(actionReferences.length, 3);
+  assert.equal(
+    actionReferences.every((reference) => /^[a-f0-9]{40}$/u.test(reference)),
+    true,
+  );
+  assert.equal(
+    workflow.includes(
+      "if: github.repository == 'decantr-ai/decantr-qualification-private'",
+    ),
+    true,
+  );
+  assert.equal(
+    workflow.includes(
+      'node scripts/benchmark-3-10/evaluators/prepare-private-input.mjs',
+    ),
+    true,
+  );
+  assert.equal(workflow.includes('.private/benchmark-3-10/evaluators/prepare-private-input.mjs'), false);
 });
 
 test('image retrieval preserves a manifest-pinned reference and separately verifies the config digest', () => {

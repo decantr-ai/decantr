@@ -562,6 +562,7 @@ export async function calculateQualificationControllerDigest() {
   paths.push(
     resolve(repoRoot, '.github', 'workflows', 'benchmark-3-10-evaluator-qualification.yml'),
     resolve(repoRoot, '.github', 'workflows', 'benchmark-3-10-qualification-input.yml'),
+    resolve(repoRoot, '.github', 'workflows', 'benchmark-3-10-private-qualification-input.yml'),
     resolve(repoRoot, '.github', 'workflows', 'benchmark-3-10-runtime-profiles.yml'),
   );
   const entries = await Promise.all(
