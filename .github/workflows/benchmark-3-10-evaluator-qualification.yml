@@ -119,9 +119,12 @@ jobs:
             xargs -0 -r setfacl -m "u:10001:rwx,u:${RUNNER_UID}:rwx"
           find "$WORKSPACE_ROOT" -type f ! -perm /111 -print0 |
             xargs -0 -r setfacl -m "u:10001:rw-,u:${RUNNER_UID}:rw-"
+          command -v setpriv
           for role in base expected; do
-            sudo -u '#10001' test -r "$WORKSPACE_ROOT/$role/.git/HEAD"
-            sudo -u '#10001' test -w "$WORKSPACE_ROOT/$role"
+            sudo setpriv --reuid=10001 --regid=10001 --clear-groups \
+              test -r "$WORKSPACE_ROOT/$role/.git/HEAD"
+            sudo setpriv --reuid=10001 --regid=10001 --clear-groups \
+              test -w "$WORKSPACE_ROOT/$role"
           done
 
       - name: Preload the reviewed Linux amd64 dependency proxy

@@ -47,7 +47,10 @@ test('evaluator workflow uses a fixed GitHub host and read-only GHCR credentials
     true,
   );
   assert.equal(workflow.includes('xargs -0 -r setfacl'), true);
-  assert.equal(workflow.includes(`sudo -u '#10001' test -w`), true);
+  assert.equal(
+    workflow.includes('sudo setpriv --reuid=10001 --regid=10001 --clear-groups'),
+    true,
+  );
   assert.equal(workflow.includes('chmod -R a+rwX'), false);
 });
 
