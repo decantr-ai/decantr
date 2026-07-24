@@ -33,6 +33,19 @@ test('evaluator workflow uses a fixed GitHub host and read-only GHCR credentials
   assert.equal(workflow.includes('packages: write'), false);
   assert.equal(workflow.includes('docker login ghcr.io'), true);
   assert.equal(workflow.includes('docker logout ghcr.io'), true);
+  assert.equal(
+    workflow.includes(
+      'docker.io/ubuntu/squid@sha256:8fafd41d6ddceb295d26eea9938321d825ac5351c7e46cf6a8aa5d093b8ed1ce',
+    ),
+    true,
+  );
+  assert.equal(workflow.includes('docker pull --platform linux/amd64'), true);
+  assert.equal(
+    workflow.includes(
+      `docker image inspect --format '{{.Id}}' "$PROXY_MANIFEST_REFERENCE"`,
+    ),
+    true,
+  );
 });
 
 test('private input workflow is repository-gated and uses the shared controller', async () => {

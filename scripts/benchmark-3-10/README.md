@@ -72,6 +72,8 @@ The production path is:
 5. Run `pnpm benchmark:3-10:qualification-task -- --mode finalize-container ...` against the retained output. Finalization independently verifies the attestation, result artifacts, controller closure, evaluator-source closure, provenance, and strict base-fails/expected-passes polarity before writing a v3 receipt.
 6. Materialization independently rechecks that retained chain. The receipt's canonical request and manifest file/self digests, attestation, controller, source-closure, runner-commit, and provenance bindings then flow through the task manifest, run plan, run records, and release audit.
 
+The hosted consumer preloads the reviewed Linux amd64 `docker.io/ubuntu/squid` manifest `sha256:8fafd41d6ddceb295d26eea9938321d825ac5351c7e46cf6a8aa5d093b8ed1ce` and verifies its Docker config digest against the sealed request. Do not use the multi-platform manifest-list digest as the config digest.
+
 The workflow receives no provider/model credentials. Evaluation networking is Docker `none`; dependency access exists only during the separately attested preparation phase. A caller-supplied digest, local host result, unsigned attestation, self-hosted runner, changed controller tree, changed artifact file, or missing provenance bundle is not qualification evidence.
 
 The public producer accepts development tasks only. The shared controller also contains a repository-gated private producer, but its sealed candidates, evaluator sources, and oracles exist only in the private mirror and its three-day artifacts stay inside that repository. Neither path may upload private oracle material to a public artifact or commit it to the public repository.

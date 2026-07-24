@@ -108,6 +108,16 @@ jobs:
             --request request.json \
             --workspace-root "$RUNNER_TEMP/qualification-workspaces"
 
+      - name: Preload the reviewed Linux amd64 dependency proxy
+        env:
+          PROXY_MANIFEST_REFERENCE: docker.io/ubuntu/squid@sha256:8fafd41d6ddceb295d26eea9938321d825ac5351c7e46cf6a8aa5d093b8ed1ce
+        run: |
+          REQUEST_DIGEST="$(jq -r .dependencyProxy.image.digest qualification-input/request.json)"
+          [[ "$REQUEST_DIGEST" =~ ^sha256:[a-f0-9]{64}$ ]]
+          docker pull --platform linux/amd64 "$PROXY_MANIFEST_REFERENCE"
+          test "$(docker image inspect --format '{{.Os}}/{{.Architecture}}' "$PROXY_MANIFEST_REFERENCE")" = "linux/amd64"
+          test "$(docker image inspect --format '{{.Id}}' "$PROXY_MANIFEST_REFERENCE")" = "$REQUEST_DIGEST"
+
       - name: Execute isolated preparation and evaluator qualification
         run: |
           node scripts/benchmark-3-10/evaluators/container-orchestrator.mjs \

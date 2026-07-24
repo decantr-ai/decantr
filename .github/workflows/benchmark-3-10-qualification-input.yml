@@ -9,7 +9,7 @@ on:
         required: true
         type: string
       proxy_image_digest:
-        description: Reviewed docker.io/ubuntu/squid image digest
+        description: Config digest for the pinned Linux amd64 docker.io/ubuntu/squid image
         required: true
         type: string
 

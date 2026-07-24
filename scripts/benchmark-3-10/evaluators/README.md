@@ -109,4 +109,6 @@ The v3 receipt binds the execution-attestation file and self digest, container-c
 
 Public development input artifacts may use ordinary short-lived GitHub Actions storage. The data-free private producer controller is shared, while private qualification sources and oracles remain in the private repository and its three-day artifacts. The split-run staging workflow separates the agent-safe tar from the evaluator-only tar and verifies their common content binding before either execution stage. Never commit private evaluator material to the public repository or upload it to a publicly readable artifact.
 
+Hosted qualification preloads the reviewed Linux amd64 Squid manifest `sha256:8fafd41d6ddceb295d26eea9938321d825ac5351c7e46cf6a8aa5d093b8ed1ce` and verifies that Docker exposes the request-bound config digest before the controller starts the proxy. The manifest-list digest is not interchangeable with the local image config digest.
+
 Current authored-spec state is 24/24 approved for development and 16/16 approved for qualification under explicit sole-maintainer review. These are review metadata counts, not materialized tasks, external evaluator qualification, or human model-outcome review. Zero external container-qualified receipts currently exist.
