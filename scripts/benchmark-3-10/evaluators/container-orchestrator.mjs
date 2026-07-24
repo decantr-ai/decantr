@@ -37,6 +37,50 @@ const IMAGE_DIGEST = /^sha256:[a-f0-9]{64}$/u;
 const TASK_ID = /^[a-z0-9][a-z0-9._-]{2,95}$/u;
 const GIT_SHA = /^[a-f0-9]{40}$/u;
 const SAFE_HOST = /^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/u;
+const DEPENDENCY_PROXY_HOST = 'dependency-proxy';
+const DEPENDENCY_PROXY_PORT = 3128;
+const DEPENDENCY_PROXY_READINESS_TIMEOUT_MS = 30_000;
+const DEPENDENCY_PROXY_READINESS_SCRIPT = String.raw`
+const net = require('node:net');
+const host = '${DEPENDENCY_PROXY_HOST}';
+const port = ${DEPENDENCY_PROXY_PORT};
+const deadline = Date.now() + ${DEPENDENCY_PROXY_READINESS_TIMEOUT_MS};
+const connect = () => new Promise((resolve, reject) => {
+  const socket = net.connect({ host, port });
+  const finish = (error) => {
+    socket.destroy();
+    error ? reject(error) : resolve();
+  };
+  socket.setTimeout(1_000, () => finish(new Error('connection timed out')));
+  socket.once('connect', () => finish());
+  socket.once('error', finish);
+});
+(async () => {
+  let attempts = 0;
+  let lastError = 'proxy was not reachable';
+  while (Date.now() < deadline) {
+    attempts += 1;
+    try {
+      await connect();
+      process.stdout.write(JSON.stringify({
+        schemaVersion: 'decantr-benchmark-dependency-proxy-readiness.v1',
+        status: 'ready',
+        host,
+        port,
+        attempts,
+      }));
+      return;
+    } catch (error) {
+      lastError = error instanceof Error ? error.message : String(error);
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+  }
+  throw new Error(lastError);
+})().catch((error) => {
+  process.stderr.write(error instanceof Error ? error.message : String(error));
+  process.exitCode = 1;
+});
+`.trim();
 const FIXED_DEPENDENCY_HOSTS = Object.freeze([
   'codeload.github.com',
   'github.com',
@@ -601,8 +645,19 @@ async function runPreparationCommand(context) {
   );
   const startedAt = new Date().toISOString();
   await runOrThrow(runner, 'docker', ['start', containerId], `start ${role} preparation container`);
-  const wait = await runOrThrow(runner, 'docker', ['wait', containerId], `wait for ${role} preparation container`);
-  const logs = await runner.run('docker', ['logs', containerId]);
+  const wait = await runOrThrow(
+    runner,
+    'docker',
+    ['wait', containerId],
+    `wait for ${role} preparation container`,
+    { timeoutMs: command.timeoutMs },
+  );
+  const logs = await runOrThrow(
+    runner,
+    'docker',
+    ['logs', containerId],
+    `read ${role} preparation container logs`,
+  );
   const logsEvidence = await persistEvidence(
     evidenceRoot,
     `${role}.prepare.${slug(command.id)}.log.txt`,
@@ -611,6 +666,20 @@ async function runPreparationCommand(context) {
   );
   const exitCode = Number.parseInt(wait.stdout.trim(), 10);
   if (exitCode !== 0) throw new Error(`${role} preparation command ${command.id} exited ${exitCode}`);
+  const fatalDiagnostic = packageManagerFatalDiagnostic(
+    request.profile.packageManager.name,
+    logs.stdout,
+    logs.stderr,
+  );
+  if (fatalDiagnostic) {
+    throw new Error(
+      `${role} preparation command ${command.id} emitted a fatal package-manager diagnostic despite exit 0: ${fatalDiagnostic}`,
+    );
+  }
+  const dependencyRoot =
+    command.network === 'dependency-registry'
+      ? await inspectPreparedDependencyRoot(roleRequest.workspace, command.cwd)
+      : null;
   await stopAndRemoveContainer(runner, containerId, cleanup);
   return {
     id: command.id,
@@ -619,6 +688,7 @@ async function runPreparationCommand(context) {
     imageDigest: request.profile.benchmarkImage.digest,
     inspectEvidence,
     logsEvidence,
+    dependencyRoot,
     startedAt,
     endedAt: new Date().toISOString(),
     exitCode,
@@ -799,6 +869,13 @@ async function startDependencyProxy(context) {
     configPath,
   });
   const inspectEvidence = await persistEvidence(evidenceRoot, 'proxy.inspect.json', inspect.raw);
+  const readinessEvidence = await waitForDependencyProxy({
+    runner,
+    name: `${names.proxy}-readiness`,
+    networkName,
+    imageDigest: request.profile.benchmarkImage.digest,
+    evidenceRoot,
+  });
   return {
     containerId,
     networkName,
@@ -807,7 +884,84 @@ async function startDependencyProxy(context) {
     allowlist,
     inspectEvidence,
     networkInspectEvidence,
+    readinessEvidence,
   };
+}
+
+async function waitForDependencyProxy({
+  runner,
+  name,
+  networkName,
+  imageDigest,
+  evidenceRoot,
+}) {
+  const result = await runOrThrow(
+    runner,
+    'docker',
+    dependencyProxyReadinessArgs({ name, networkName, imageDigest }),
+    'wait for dependency proxy DNS and TCP readiness',
+    { timeoutMs: DEPENDENCY_PROXY_READINESS_TIMEOUT_MS + 15_000 },
+  );
+  let readiness;
+  try {
+    readiness = JSON.parse(result.stdout);
+  } catch {
+    throw new Error('dependency proxy readiness probe returned invalid JSON');
+  }
+  assertExactKeys(
+    readiness,
+    ['schemaVersion', 'status', 'host', 'port', 'attempts'],
+    'dependency proxy readiness',
+  );
+  if (
+    readiness.schemaVersion !== 'decantr-benchmark-dependency-proxy-readiness.v1' ||
+    readiness.status !== 'ready' ||
+    readiness.host !== DEPENDENCY_PROXY_HOST ||
+    readiness.port !== DEPENDENCY_PROXY_PORT ||
+    !Number.isInteger(readiness.attempts) ||
+    readiness.attempts < 1
+  ) {
+    throw new Error('dependency proxy readiness probe returned invalid evidence');
+  }
+  return persistEvidence(
+    evidenceRoot,
+    'proxy.readiness.json',
+    Buffer.from(prettyCanonicalJson(readiness)),
+  );
+}
+
+export function dependencyProxyReadinessArgs({ name, networkName, imageDigest }) {
+  if (
+    typeof name !== 'string' ||
+    name.length === 0 ||
+    typeof networkName !== 'string' ||
+    networkName.length === 0 ||
+    !IMAGE_DIGEST.test(imageDigest ?? '')
+  ) {
+    throw new Error('dependency proxy readiness container binding is invalid');
+  }
+  return [
+    'run',
+    '--rm',
+    '--name',
+    name,
+    '--network',
+    networkName,
+    '--cap-drop',
+    'ALL',
+    '--security-opt',
+    'no-new-privileges',
+    '--pids-limit',
+    '32',
+    '--user',
+    '10001:10001',
+    '--read-only',
+    '--entrypoint',
+    '/usr/local/bin/node',
+    imageDigest,
+    '--eval',
+    DEPENDENCY_PROXY_READINESS_SCRIPT,
+  ];
 }
 
 async function captureControllerClosure(context) {
@@ -1053,6 +1207,7 @@ function buildExecutionAttestation(context) {
         lockfiles: proxy.allowlist.lockfiles,
         inspectEvidence: proxy.inspectEvidence,
         networkInspectEvidence: proxy.networkInspectEvidence,
+        readinessEvidence: proxy.readinessEvidence,
       },
       roles: {
         base: preparationRecord(roles.base),
@@ -1634,6 +1789,7 @@ function assertPreparationEvidence(preparation) {
       'lockfiles',
       'inspectEvidence',
       'networkInspectEvidence',
+      'readinessEvidence',
     ],
     'preparation proxy evidence',
   );
@@ -1643,6 +1799,7 @@ function assertPreparationEvidence(preparation) {
   }
   assertJsonEvidence(preparation.proxy.inspectEvidence, 'preparation proxy inspect evidence');
   assertJsonEvidence(preparation.proxy.networkInspectEvidence, 'preparation proxy network evidence');
+  assertJsonEvidence(preparation.proxy.readinessEvidence, 'preparation proxy readiness evidence');
   assertExactKeys(preparation.roles, ['base', 'expected'], 'preparation roles');
   for (const role of ['base', 'expected']) {
     const record = preparation.roles[role];
@@ -1664,6 +1821,7 @@ function assertPreparationEvidence(preparation) {
           'imageDigest',
           'inspectEvidence',
           'logsEvidence',
+          'dependencyRoot',
           'startedAt',
           'endedAt',
           'exitCode',
@@ -1672,6 +1830,7 @@ function assertPreparationEvidence(preparation) {
       );
       assertJsonEvidence(step.inspectEvidence, `${role} preparation inspect evidence`);
       assertFileEvidence(step.logsEvidence, `${role} preparation logs evidence`);
+      assertDependencyRootEvidence(step.dependencyRoot, step.network, role);
       if (
         !['none', 'isolated-forward-proxy'].includes(step.network) ||
         !IMAGE_DIGEST.test(step.imageDigest ?? '') ||
@@ -1683,6 +1842,76 @@ function assertPreparationEvidence(preparation) {
       }
     }
   }
+}
+
+function assertDependencyRootEvidence(dependencyRoot, network, role) {
+  if (network === 'none') {
+    if (dependencyRoot !== null) {
+      throw new Error(`${role} non-network preparation step has dependency-root evidence`);
+    }
+    return;
+  }
+  assertExactKeys(dependencyRoot, ['path', 'kind', 'entryCount'], `${role} dependency root`);
+  assertSafeRelative(dependencyRoot.path, `${role} dependency root path`);
+  if (
+    !['directory', 'symlink'].includes(dependencyRoot.kind) ||
+    !Number.isInteger(dependencyRoot.entryCount) ||
+    dependencyRoot.entryCount < 1
+  ) {
+    throw new Error(`${role} dependency root evidence is invalid`);
+  }
+}
+
+export function packageManagerFatalDiagnostic(packageManager, stdout = '', stderr = '') {
+  const output = `${stdout}\n${stderr}`;
+  const patterns = {
+    npm: /^\s*npm (?:ERR!|error)\b.*$/imu,
+    pnpm: /^\s*(?:ERR_PNPM_[A-Z0-9_]+|pnpm:\s+error)\b.*$/imu,
+    yarn: /^\s*error\b.*$/imu,
+    bun: /^\s*error:\s+.*$/imu,
+  };
+  const pattern = patterns[packageManager];
+  if (!pattern) throw new Error(`unsupported package manager diagnostic contract: ${packageManager}`);
+  const match = output.match(pattern);
+  return match ? match[0].trim() : null;
+}
+
+export async function inspectPreparedDependencyRoot(workspace, cwd) {
+  const projectRoot = containedPath(workspace, cwd, 'preparation cwd');
+  const dependencyRoot = resolve(projectRoot, 'node_modules');
+  const relation = relative(resolve(workspace), dependencyRoot);
+  if (relation.startsWith('..') || isAbsolute(relation)) {
+    throw new Error('prepared dependency root escapes its workspace');
+  }
+  let stat;
+  try {
+    stat = await lstat(dependencyRoot);
+  } catch (error) {
+    if (error?.code === 'ENOENT') {
+      throw new Error(`dependency installation did not create ${relative(workspace, dependencyRoot)}`);
+    }
+    throw error;
+  }
+  let kind = 'directory';
+  if (stat.isSymbolicLink()) {
+    kind = 'symlink';
+    const target = await realpath(dependencyRoot);
+    const targetRelation = relative(resolve(workspace), target);
+    if (targetRelation.startsWith('..') || isAbsolute(targetRelation)) {
+      throw new Error('prepared dependency root symlink escapes its workspace');
+    }
+    const targetStat = await lstat(target);
+    if (!targetStat.isDirectory()) throw new Error('prepared dependency root is not a directory');
+  } else if (!stat.isDirectory()) {
+    throw new Error('prepared dependency root is not a directory');
+  }
+  const entries = await readdir(dependencyRoot);
+  if (entries.length === 0) throw new Error('prepared dependency root is empty');
+  return {
+    path: relation.replaceAll('\\', '/'),
+    kind,
+    entryCount: entries.length,
+  };
 }
 
 function assertEvaluationEvidence(evaluation) {
@@ -1782,8 +2011,8 @@ function optionsArtifactRoot(evidenceRoot) {
   return resolve(evidenceRoot, '..');
 }
 
-async function runOrThrow(runner, command, args, label) {
-  const result = await runner.run(command, args);
+async function runOrThrow(runner, command, args, label, options = {}) {
+  const result = await runner.run(command, args, options);
   if (result.exitCode !== 0) throw new Error(`${label} failed: ${result.stderr || result.stdout}`.trim());
   return result;
 }

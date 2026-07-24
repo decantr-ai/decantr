@@ -173,7 +173,8 @@
             "allowedHosts",
             "lockfiles",
             "inspectEvidence",
-            "networkInspectEvidence"
+            "networkInspectEvidence",
+            "readinessEvidence"
           ],
           "properties": {
             "image": { "$ref": "#/$defs/image" },
@@ -187,7 +188,8 @@
               "items": { "$ref": "#/$defs/lockfile" }
             },
             "inspectEvidence": { "$ref": "#/$defs/jsonEvidence" },
-            "networkInspectEvidence": { "$ref": "#/$defs/jsonEvidence" }
+            "networkInspectEvidence": { "$ref": "#/$defs/jsonEvidence" },
+            "readinessEvidence": { "$ref": "#/$defs/jsonEvidence" }
           }
         },
         "roles": {
@@ -334,6 +336,7 @@
         "imageDigest",
         "inspectEvidence",
         "logsEvidence",
+        "dependencyRoot",
         "startedAt",
         "endedAt",
         "exitCode"
@@ -345,9 +348,51 @@
         "imageDigest": { "$ref": "#/$defs/imageDigest" },
         "inspectEvidence": { "$ref": "#/$defs/jsonEvidence" },
         "logsEvidence": { "$ref": "#/$defs/fileEvidence" },
+        "dependencyRoot": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/dependencyRoot" }
+          ]
+        },
         "startedAt": { "type": "string", "format": "date-time" },
         "endedAt": { "type": "string", "format": "date-time" },
         "exitCode": { "const": 0 }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "network": { "const": "none" }
+            }
+          },
+          "then": {
+            "properties": {
+              "dependencyRoot": { "type": "null" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "network": { "const": "isolated-forward-proxy" }
+            }
+          },
+          "then": {
+            "properties": {
+              "dependencyRoot": { "$ref": "#/$defs/dependencyRoot" }
+            }
+          }
+        }
+      ]
+    },
+    "dependencyRoot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "kind", "entryCount"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "kind": { "enum": ["directory", "symlink"] },
+        "entryCount": { "type": "integer", "minimum": 1 }
       }
     },
     "preparationRole": {

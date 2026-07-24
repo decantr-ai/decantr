@@ -73,6 +73,11 @@ export async function makeFixtureExecutionAttestation(input) {
         imageDigest: input.profile.benchmarkImage.digest,
         inspectEvidence: jsonEvidence(`${role}.prepare.inspect.json`, '6'),
         logsEvidence: fileEvidence(`${role}.prepare.log.txt`, '7'),
+        dependencyRoot: {
+          path: 'node_modules',
+          kind: 'directory',
+          entryCount: 1,
+        },
         startedAt: input.startedAt ?? '2026-07-22T14:00:00Z',
         endedAt: input.preparedAt ?? '2026-07-22T14:05:00Z',
         exitCode: 0,
@@ -186,6 +191,7 @@ export async function makeFixtureExecutionAttestation(input) {
         lockfiles: [{ path: 'package-lock.json', sha256: '1'.repeat(64) }],
         inspectEvidence: jsonEvidence('proxy.inspect.json', '2'),
         networkInspectEvidence: jsonEvidence('proxy-network.inspect.json', '3'),
+        readinessEvidence: jsonEvidence('proxy.readiness.json', '4'),
       },
       roles: {
         base: preparationRole('base'),

@@ -7,7 +7,10 @@ import { dirname, join, resolve } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import {
+  dependencyProxyReadinessArgs,
   deriveDependencyAllowlist,
+  inspectPreparedDependencyRoot,
+  packageManagerFatalDiagnostic,
   resolveImagePullReference,
   verifyRunnerCommit,
   verifyRunningEvaluationContainer,
@@ -97,6 +100,62 @@ test('image retrieval preserves a manifest-pinned reference and separately verif
     () => resolveImagePullReference({ reference: 'ghcr.io/decantr-ai/image@mutable', digest: IMAGE }),
     /immutable container image reference is invalid/u,
   );
+});
+
+test('dependency proxy readiness uses a hardened container on only the internal network', () => {
+  const args = dependencyProxyReadinessArgs({
+    name: 'qualification-proxy-readiness',
+    networkName: 'qualification-dependencies',
+    imageDigest: IMAGE,
+  });
+  assert.equal(args[0], 'run');
+  assert.equal(args.includes('--rm'), true);
+  assert.deepEqual(args.slice(args.indexOf('--network'), args.indexOf('--network') + 2), [
+    '--network',
+    'qualification-dependencies',
+  ]);
+  assert.equal(args.includes('--read-only'), true);
+  assert.equal(args.includes('--mount'), false);
+  assert.equal(args.includes('--env'), false);
+  assert.equal(args.at(-2), '--eval');
+  assert.match(args.at(-1), /dependency-proxy/u);
+  assert.match(args.at(-1), /connection timed out/u);
+});
+
+test('preparation rejects fatal package-manager diagnostics even when the process exits zero', () => {
+  assert.equal(
+    packageManagerFatalDiagnostic(
+      'npm',
+      '',
+      'npm error Exit handler never called!\nnpm error A complete log is available\n',
+    ),
+    'npm error Exit handler never called!',
+  );
+  assert.equal(
+    packageManagerFatalDiagnostic('pnpm', 'ERR_PNPM_FETCH_503 GET https://registry.npmjs.org\n'),
+    'ERR_PNPM_FETCH_503 GET https://registry.npmjs.org',
+  );
+  assert.equal(packageManagerFatalDiagnostic('npm', 'npm warn deprecated fixture\n'), null);
+});
+
+test('prepared dependency evidence requires a nonempty contained node_modules root', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'decantr-container-dependencies-'));
+  try {
+    await assert.rejects(
+      inspectPreparedDependencyRoot(root, '.'),
+      /dependency installation did not create node_modules/u,
+    );
+    await mkdir(join(root, 'node_modules'));
+    await assert.rejects(inspectPreparedDependencyRoot(root, '.'), /dependency root is empty/u);
+    await writeFile(join(root, 'node_modules', 'fixture.txt'), 'prepared\n');
+    assert.deepEqual(await inspectPreparedDependencyRoot(root, '.'), {
+      path: 'node_modules',
+      kind: 'directory',
+      entryCount: 1,
+    });
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
 
 test('host inspection accepts only the locked image, no-network mode, and isolated role mounts', async () => {
@@ -235,6 +294,11 @@ test('the execution-attestation schema is a strict Draft 2020-12 document', asyn
   assert.equal(schema.additionalProperties, false);
   assert.equal(schema.properties.evaluation.properties.networkMode.const, 'none');
   assert.equal(schema.$defs.evaluationRole.properties.siblingWorkspaceVisible.const, false);
+  assert.equal(
+    schema.properties.preparation.properties.proxy.required.includes('readinessEvidence'),
+    true,
+  );
+  assert.equal(schema.$defs.preparationStep.required.includes('dependencyRoot'), true);
 });
 
 async function makeInspectFixture() {
