@@ -69,38 +69,14 @@ export async function runHostedProbe(input) {
   try {
     dockerResult = runFixed(
       'docker',
-      [
-        'run',
-        '--rm',
-        '--network',
-        'bridge',
-        '--read-only',
-        '--tmpfs',
-        '/tmp:rw,uid=10001,gid=10001,mode=1777',
-        '--tmpfs',
-        '/home/benchmark-empty:rw,uid=10001,gid=10001,mode=0700',
-        '--mount',
-        `type=bind,src=${workspace},dst=/work/task,rw`,
-        '--mount',
-        `type=bind,src=${options.specPath},dst=/input/spec.json,readonly`,
-        '--mount',
-        `type=bind,src=${benchmarkRoot},dst=/input/benchmark,readonly`,
-        '--mount',
-        `type=bind,src=${evidenceRoot},dst=/evidence,rw`,
-        '--env',
-        `DECANTR_BENCHMARK_IMAGE_DIGEST=${resolvedImage}`,
+      buildProbeDockerArgs({
+        workspace,
+        specPath: options.specPath,
+        benchmarkRoot,
+        evidenceRoot,
         resolvedImage,
-        '/usr/local/bin/node',
-        '/input/benchmark/environments/hosted-task-environment-probe.mjs',
-        '--mode',
-        'container',
-        '--spec',
-        '/input/spec.json',
-        '--workspace',
-        '/work/task',
-        '--out',
-        `/evidence/${basename(containerResultPath)}`,
-      ],
+        containerResultPath,
+      }),
       {
         cwd: repositoryRoot,
         env: process.env,
@@ -172,6 +148,41 @@ export async function runHostedProbe(input) {
     );
   }
   return { subjectPath, subject };
+}
+
+export function buildProbeDockerArgs(options) {
+  return [
+    'run',
+    '--rm',
+    '--network',
+    'bridge',
+    '--read-only',
+    '--tmpfs',
+    '/tmp:rw,uid=10001,gid=10001,mode=1777',
+    '--tmpfs',
+    '/home/benchmark-empty:rw,uid=10001,gid=10001,mode=0700',
+    '--mount',
+    `type=bind,src=${options.workspace},dst=/work/task`,
+    '--mount',
+    `type=bind,src=${options.specPath},dst=/input/spec.json,readonly`,
+    '--mount',
+    `type=bind,src=${options.benchmarkRoot},dst=/input/benchmark,readonly`,
+    '--mount',
+    `type=bind,src=${options.evidenceRoot},dst=/evidence`,
+    '--env',
+    `DECANTR_BENCHMARK_IMAGE_DIGEST=${options.resolvedImage}`,
+    options.resolvedImage,
+    '/usr/local/bin/node',
+    '/input/benchmark/environments/hosted-task-environment-probe.mjs',
+    '--mode',
+    'container',
+    '--spec',
+    '/input/spec.json',
+    '--workspace',
+    '/work/task',
+    '--out',
+    `/evidence/${basename(options.containerResultPath)}`,
+  ];
 }
 
 export async function runContainerProbe(input) {
