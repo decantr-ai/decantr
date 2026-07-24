@@ -5,10 +5,14 @@
     "unverifiedProfiles": 26
   },
   "frozenAt": "2026-07-22T11:29:02Z",
-  "matrixSha256": "a80b4a1a83538242b143443e48b6289a2d8ea69adb57ccc0cf6681cdb2ca0c16",
+  "matrixSha256": "80f54f62a461dc59a041da2676d9bed37d126b8c6e5ee7de1b5425f42791890e",
   "paidExecutionAuthorized": false,
   "profiles": [
     {
+      "agentImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:bun-1.3.10-bun-1.3.10"
+      },
       "arch": "x64",
       "baseImage": {
         "digest": null,
@@ -31,6 +35,10 @@
       "verification": null
     },
     {
+      "agentImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-10.15.1-npm-6.4.1"
+      },
       "arch": "x64",
       "baseImage": {
         "digest": null,
@@ -53,6 +61,10 @@
       "verification": null
     },
     {
+      "agentImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-20.16.0-yarn-1.22.22"
+      },
       "arch": "x64",
       "baseImage": {
         "digest": null,
@@ -75,6 +87,10 @@
       "verification": null
     },
     {
+      "agentImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-20.19.2-npm-10.8.2"
+      },
       "arch": "x64",
       "baseImage": {
         "digest": null,
@@ -97,6 +113,10 @@
       "verification": null
     },
     {
+      "agentImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-20.19.4-npm-10.8.2"
+      },
       "arch": "x64",
       "baseImage": {
         "digest": null,
@@ -119,6 +139,10 @@
       "verification": null
     },
     {
+      "agentImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-20.19.5-npm-10.8.2"
+      },
       "arch": "x64",
       "baseImage": {
         "digest": null,
@@ -141,6 +165,10 @@
       "verification": null
     },
     {
+      "agentImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-20.5.0-pnpm-8.6.12"
+      },
       "arch": "x64",
       "baseImage": {
         "digest": null,
@@ -163,6 +191,10 @@
       "verification": null
     },
     {
+      "agentImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.15.0-pnpm-10.30.3"
+      },
       "arch": "x64",
       "baseImage": {
         "digest": null,
@@ -185,6 +217,10 @@
       "verification": null
     },
     {
+      "agentImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.17.0-pnpm-10.13.1"
+      },
       "arch": "x64",
       "baseImage": {
         "digest": null,
@@ -207,6 +243,10 @@
       "verification": null
     },
     {
+      "agentImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.18.0-npm-8.11.0"
+      },
       "arch": "x64",
       "baseImage": {
         "digest": null,
@@ -229,6 +269,10 @@
       "verification": null
     },
     {
+      "agentImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.18.0-npm-8.5.0"
+      },
       "arch": "x64",
       "baseImage": {
         "digest": null,
@@ -251,6 +295,10 @@
       "verification": null
     },
     {
+      "agentImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.19.0-npm-10.9.3"
+      },
       "arch": "x64",
       "baseImage": {
         "digest": null,
@@ -273,6 +321,10 @@
       "verification": null
     },
     {
+      "agentImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.19.0-pnpm-10.25.0"
+      },
       "arch": "x64",
       "baseImage": {
         "digest": null,
@@ -295,6 +347,10 @@
       "verification": null
     },
     {
+      "agentImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.19.0-pnpm-10.28.0"
+      },
       "arch": "x64",
       "baseImage": {
         "digest": null,
@@ -317,6 +373,10 @@
       "verification": null
     },
     {
+      "agentImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.19.0-pnpm-10.32.1"
+      },
       "arch": "x64",
       "baseImage": {
         "digest": null,
@@ -339,6 +399,10 @@
       "verification": null
     },
     {
+      "agentImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.19.0-pnpm-10.33.0"
+      },
       "arch": "x64",
       "baseImage": {
         "digest": null,
@@ -361,6 +425,10 @@
       "verification": null
     },
     {
+      "agentImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.19.0-pnpm-11.9.0"
+      },
       "arch": "x64",
       "baseImage": {
         "digest": null,
@@ -383,6 +451,10 @@
       "verification": null
     },
     {
+      "agentImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-22.19.0-yarn-1.22.22"
+      },
       "arch": "x64",
       "baseImage": {
         "digest": null,
@@ -405,6 +477,10 @@
       "verification": null
     },
     {
+      "agentImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-24.12.0-pnpm-10.26.0"
+      },
       "arch": "x64",
       "baseImage": {
         "digest": null,
@@ -427,6 +503,10 @@
       "verification": null
     },
     {
+      "agentImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-24.12.0-pnpm-10.32.1"
+      },
       "arch": "x64",
       "baseImage": {
         "digest": null,
@@ -449,6 +529,10 @@
       "verification": null
     },
     {
+      "agentImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-24.12.0-pnpm-11.2.1"
+      },
       "arch": "x64",
       "baseImage": {
         "digest": null,
@@ -471,6 +555,10 @@
       "verification": null
     },
     {
+      "agentImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-24.13.0-pnpm-10.27.0"
+      },
       "arch": "x64",
       "baseImage": {
         "digest": null,
@@ -493,6 +581,10 @@
       "verification": null
     },
     {
+      "agentImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-24.15.0-pnpm-11.13.1"
+      },
       "arch": "x64",
       "baseImage": {
         "digest": null,
@@ -515,6 +607,10 @@
       "verification": null
     },
     {
+      "agentImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-24.16.0-npm-11.6.3"
+      },
       "arch": "x64",
       "baseImage": {
         "digest": null,
@@ -537,6 +633,10 @@
       "verification": null
     },
     {
+      "agentImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-24.16.0-npm-11.7.0"
+      },
       "arch": "x64",
       "baseImage": {
         "digest": null,
@@ -559,6 +659,10 @@
       "verification": null
     },
     {
+      "agentImage": {
+        "digest": null,
+        "reference": "ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:node-24.16.0-pnpm-11.7.0"
+      },
       "arch": "x64",
       "baseImage": {
         "digest": null,

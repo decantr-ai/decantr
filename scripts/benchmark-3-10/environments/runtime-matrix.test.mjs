@@ -12,7 +12,9 @@ import { lockRuntimeMatrix } from './lock-runtime-matrix.mjs';
 import { assertRuntimeMatrix, calculateRuntimeMatrixDigest } from './runtime-matrix.mjs';
 import { makeFixtureRuntimeSourceClosure } from './runtime-matrix.test-helper.mjs';
 import {
+  CONTROLLER_CLAUDE_CODE_INTEGRITY,
   CONTROLLER_CLAUDE_CODE_VERSION,
+  CONTROLLER_CODEX_INTEGRITY,
   CONTROLLER_CODEX_VERSION,
   CONTROLLER_IMAGE_REFERENCE,
   RUNTIME_BUILD_SUBJECT_SCHEMA_VERSION,
@@ -24,6 +26,7 @@ import {
   calculateRuntimeBuildSubjectDigest,
   calculateRuntimeSourceClosure,
   finalizeRuntimeProfileAttestation,
+  runtimeAgentImageReference,
   runtimeArtifactNames,
   runtimeAttestationFileBinding,
   runtimeBaseImageReference,
@@ -139,6 +142,13 @@ test('runtime matrix deduplicates profiles without exposing sealed task identiti
       matrix.profiles.every((profile) =>
         profile.benchmarkImage.reference.startsWith(
           'ghcr.io/decantr-ai/decantr-benchmark-3-10:',
+        )),
+      true,
+    );
+    assert.equal(
+      matrix.profiles.every((profile) =>
+        profile.agentImage.reference.startsWith(
+          'ghcr.io/decantr-ai/decantr-benchmark-3-10-agent:',
         )),
       true,
     );
@@ -309,6 +319,7 @@ test('runtime matrix lock reverifies retained GitHub OIDC provenance and rejects
       assert.deepEqual(profile.verification.attestation, expected);
       assert.deepEqual(profile.verification.attestationFile, runtimeAttestationFileBinding(expected));
       assert.equal(profile.benchmarkImage.digest, expected.subject.benchmarkImage.digest);
+      assert.equal(profile.agentImage.digest, expected.subject.agentImage.digest);
     }
     assert.equal(provenanceCalls.length >= draft.profiles.length * 2, true);
     for (const call of provenanceCalls) {
@@ -426,6 +437,13 @@ function makeRuntimeBuildSubject(profile, draft, source, index) {
       ),
       digest: `sha256:${String(7 + index).repeat(64)}`,
     },
+    agentImage: {
+      reference: runtimeAgentImageReference(
+        profile.id,
+        `sha256:${String(1 + index).repeat(64)}`,
+      ),
+      digest: `sha256:${String(2 + index).repeat(64)}`,
+    },
     runtimeKind,
     runtimeVersion: profile.nodeVersion ?? profile.bunVersion,
     packageManagerName: profile.packageManager.name,
@@ -433,9 +451,15 @@ function makeRuntimeBuildSubject(profile, draft, source, index) {
     controller: {
       image: { reference: CONTROLLER_IMAGE_REFERENCE, digest: `sha256:${'4'.repeat(64)}` },
       nodeVersion: 'v22.17.0',
-      codexVersion: CONTROLLER_CODEX_VERSION,
-      claudeCodeVersion: CONTROLLER_CLAUDE_CODE_VERSION,
     },
+    agentTooling: {
+      controllerNode: 'v22.17.0',
+      codexVersion: CONTROLLER_CODEX_VERSION,
+      codexIntegrity: CONTROLLER_CODEX_INTEGRITY,
+      claudeCodeVersion: CONTROLLER_CLAUDE_CODE_VERSION,
+      claudeCodeIntegrity: CONTROLLER_CLAUDE_CODE_INTEGRITY,
+    },
+    agentIsolationSmokePassed: true,
     browserSmokePassed: true,
     verifiedAt: '2026-07-22T13:00:00.000Z',
     host: { os: 'linux', arch: 'x64' },

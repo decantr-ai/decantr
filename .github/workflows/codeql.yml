@@ -13,6 +13,7 @@ env:
 
 jobs:
   analyze:
+    if: github.event.repository.private == false
     runs-on: ubuntu-latest
     permissions:
       security-events: write

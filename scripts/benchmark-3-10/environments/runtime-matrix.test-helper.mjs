@@ -1,7 +1,9 @@
 import { prettyCanonicalJson, sha256, sha256Canonical } from '../runner/canonical.mjs';
 import { assertRuntimeMatrix, calculateRuntimeMatrixDigest } from './runtime-matrix.mjs';
 import {
+  CONTROLLER_CLAUDE_CODE_INTEGRITY,
   CONTROLLER_CLAUDE_CODE_VERSION,
+  CONTROLLER_CODEX_INTEGRITY,
   CONTROLLER_CODEX_VERSION,
   CONTROLLER_IMAGE_REFERENCE,
   RUNTIME_ATTESTATION_SCHEMA_VERSION,
@@ -16,6 +18,7 @@ import {
   calculateRuntimeAttestationDigest,
   calculateRuntimeBuildSubjectDigest,
   runtimeArtifactNames,
+  runtimeAgentImageReference,
   runtimeAttestationFileBinding,
   runtimeBaseImageReference,
   runtimeBenchmarkImageReference,
@@ -65,12 +68,19 @@ export function makeFixtureLockedRuntimeMatrix(options = {}) {
     sourceProfile.id,
     options.benchmarkImageManifestDigest ?? `sha256:${'3'.repeat(64)}`,
   );
+  const agentImageTagReference =
+    options.agentImageReference ?? runtimeAgentImageReference(sourceProfile.id);
+  const agentImageReference = runtimeAgentImageReference(
+    sourceProfile.id,
+    options.agentImageManifestDigest ?? `sha256:${'5'.repeat(64)}`,
+  );
   const draftProfile = {
     ...sourceProfile,
     taskCount: 40,
     profileSha256,
     baseImage: { reference: baseImageReference, digest: null },
     benchmarkImage: { reference: benchmarkImageTagReference, digest: null },
+    agentImage: { reference: agentImageTagReference, digest: null },
     verification: null,
   };
   const draft = {
@@ -93,8 +103,6 @@ export function makeFixtureLockedRuntimeMatrix(options = {}) {
       digest: options.controllerImageDigest ?? `sha256:${'7'.repeat(64)}`,
     },
     nodeVersion: 'v22.17.0',
-    codexVersion: CONTROLLER_CODEX_VERSION,
-    claudeCodeVersion: CONTROLLER_CLAUDE_CODE_VERSION,
   };
   const runtimeKind = sourceProfile.nodeVersion === null ? 'bun' : 'node';
   const runtimeVersion = sourceProfile.nodeVersion ?? sourceProfile.bunVersion;
@@ -128,11 +136,23 @@ export function makeFixtureLockedRuntimeMatrix(options = {}) {
       reference: benchmarkImageReference,
       digest: options.benchmarkImageDigest ?? `sha256:${'2'.repeat(64)}`,
     },
+    agentImage: {
+      reference: agentImageReference,
+      digest: options.agentImageDigest ?? `sha256:${'6'.repeat(64)}`,
+    },
     runtimeKind,
     runtimeVersion,
     packageManagerName: sourceProfile.packageManager.name,
     packageManagerVersion: sourceProfile.packageManager.version,
     controller,
+    agentTooling: {
+      controllerNode: 'v22.17.0',
+      codexVersion: CONTROLLER_CODEX_VERSION,
+      codexIntegrity: CONTROLLER_CODEX_INTEGRITY,
+      claudeCodeVersion: CONTROLLER_CLAUDE_CODE_VERSION,
+      claudeCodeIntegrity: CONTROLLER_CLAUDE_CODE_INTEGRITY,
+    },
+    agentIsolationSmokePassed: true,
     browserSmokePassed: true,
     verifiedAt,
     host: { os: 'linux', arch: 'x64' },
@@ -171,6 +191,7 @@ export function makeFixtureLockedRuntimeMatrix(options = {}) {
     ...draftProfile,
     baseImage: structuredClone(subject.baseImage),
     benchmarkImage: structuredClone(subject.benchmarkImage),
+    agentImage: structuredClone(subject.agentImage),
     verification: {
       attestation,
       attestationFile: runtimeAttestationFileBinding(attestation),

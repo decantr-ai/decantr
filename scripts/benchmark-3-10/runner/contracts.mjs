@@ -561,6 +561,26 @@ export async function assertCandidateManifest(manifest, manifestPath, options = 
 
 export function assertBudgetApproval(approval, context) {
   assertObject(approval, 'budget approval');
+  assertExactKeys(
+    approval,
+    [
+      'approvalId',
+      'approvedAt',
+      'approvedBy',
+      'authorizationStatement',
+      'candidateTarballSetSha256',
+      'expiresAt',
+      'maximumSpendUsd',
+      'modelIds',
+      ...(approval.powerPilotSha256 === undefined
+        ? []
+        : ['powerPilotSha256']),
+      'program',
+      'runPlanSha256',
+      'schemaVersion',
+    ],
+    'budget approval',
+  );
   assertEqual(approval.schemaVersion, 'decantr-benchmark-budget-approval.v1', 'approval schemaVersion');
   assertEqual(approval.program, 'decantr-3.10-ui-change-control-proof', 'approval program');
   assertString(approval.approvalId, 'approvalId');
@@ -571,7 +591,9 @@ export function assertBudgetApproval(approval, context) {
   if (!Number.isFinite(approvedAt) || !Number.isFinite(expiresAt) || expiresAt <= approvedAt) {
     throw new Error('budget approval timestamps are invalid');
   }
-  if (expiresAt <= (context.now ?? Date.now())) throw new Error('budget approval has expired');
+  const now = context.now ?? Date.now();
+  if (approvedAt > now) throw new Error('budget approval is not yet effective');
+  if (expiresAt <= now) throw new Error('budget approval has expired');
   if (!(approval.maximumSpendUsd > 0) || approval.maximumSpendUsd > context.protocolMaximumUsd) {
     throw new Error('budget approval exceeds the frozen protocol maximum');
   }
@@ -581,7 +603,13 @@ export function assertBudgetApproval(approval, context) {
     context.candidateTarballSetSha256,
     'approval candidate binding',
   );
-  if (!Array.isArray(approval.modelIds) || !approval.modelIds.includes(context.modelId)) {
+  if (
+    !Array.isArray(approval.modelIds) ||
+    approval.modelIds.length === 0 ||
+    new Set(approval.modelIds).size !== approval.modelIds.length ||
+    approval.modelIds.some((modelId) => typeof modelId !== 'string' || modelId === '') ||
+    !approval.modelIds.includes(context.modelId)
+  ) {
     throw new Error(`budget approval does not authorize model ${context.modelId}`);
   }
   if (context.powerPilotSha256) {
@@ -592,6 +620,26 @@ export function assertBudgetApproval(approval, context) {
 
 export function assertPowerPilot(report, context) {
   assertObject(report, 'power pilot');
+  assertExactKeys(
+    report,
+    [
+      'alpha',
+      'analysisCodeSha256',
+      'analysisSeed',
+      'candidateTarballSetSha256',
+      'developmentRunRecordSetSha256',
+      'developmentTaskCount',
+      'estimatedPower',
+      'frozenAt',
+      'method',
+      'program',
+      'qualificationExecutionOpenedAt',
+      'runPlanSha256',
+      'schemaVersion',
+      'targetEffectPoints',
+    ],
+    'power pilot',
+  );
   assertEqual(report.schemaVersion, 'decantr-benchmark-power-pilot.v1', 'power pilot schemaVersion');
   assertEqual(report.program, 'decantr-3.10-ui-change-control-proof', 'power pilot program');
   assertEqual(report.runPlanSha256, context.runPlanSha256, 'power pilot run-plan binding');

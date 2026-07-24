@@ -6,7 +6,9 @@ import { fileURLToPath } from 'node:url';
 import { readJsonFile, writeCanonicalFile } from '../runner/canonical.mjs';
 import { assertRuntimeMatrix } from './runtime-matrix.mjs';
 import {
+  CONTROLLER_CLAUDE_CODE_INTEGRITY,
   CONTROLLER_CLAUDE_CODE_VERSION,
+  CONTROLLER_CODEX_INTEGRITY,
   CONTROLLER_CODEX_VERSION,
   CONTROLLER_IMAGE_REFERENCE,
   RUNTIME_BUILD_SUBJECT_SCHEMA_VERSION,
@@ -14,6 +16,7 @@ import {
   assertRuntimeBuildSubject,
   calculateRuntimeBuildSubjectDigest,
   calculateRuntimeSourceClosure,
+  runtimeAgentImageReference,
   runtimeBenchmarkImageReference,
   runtimeArtifactNames,
 } from './runtime-profile-attestation.mjs';
@@ -23,6 +26,7 @@ const benchmarkRoot = resolve(environmentRoot, '..');
 const repositoryRoot = resolve(benchmarkRoot, '..', '..');
 const matrixPath = join(environmentRoot, 'runtime-matrix.draft.json');
 const dockerfilePath = join(benchmarkRoot, 'container', 'Dockerfile');
+const agentDockerfilePath = join(benchmarkRoot, 'container', 'Dockerfile.agent');
 
 export async function buildRuntimeProfiles(options) {
   assertTrustedOutputRoot(options.outputRoot);
@@ -98,6 +102,64 @@ export async function buildRuntimeProfiles(options) {
       profile.benchmarkImage.reference,
       built.configDigest,
       profile.id,
+      runtimeBenchmarkImageReference,
+    );
+    const agentTag = runtimeAgentImageReference(profile.id);
+    run(options.engine, [
+      'build',
+      '--platform',
+      'linux/amd64',
+      '--file',
+      agentDockerfilePath,
+      '--tag',
+      agentTag,
+      '--build-arg',
+      `TASK_RUNTIME_IMAGE=${taskImage}`,
+      '--build-arg',
+      `CONTROLLER_IMAGE=${CONTROLLER_IMAGE_REFERENCE}@${controllerImage.digest}`,
+      '--build-arg',
+      `CODEX_VERSION=${CONTROLLER_CODEX_VERSION}`,
+      '--build-arg',
+      `CODEX_INTEGRITY=${CONTROLLER_CODEX_INTEGRITY}`,
+      '--build-arg',
+      `CLAUDE_CODE_VERSION=${CONTROLLER_CLAUDE_CODE_VERSION}`,
+      '--build-arg',
+      `CLAUDE_CODE_INTEGRITY=${CONTROLLER_CLAUDE_CODE_INTEGRITY}`,
+      '--build-arg',
+      `TASK_RUNTIME_KIND=${profile.nodeVersion ? 'node' : 'bun'}`,
+      '--build-arg',
+      `TASK_RUNTIME_VERSION=${profile.nodeVersion ?? profile.bunVersion}`,
+      '--build-arg',
+      `PACKAGE_MANAGER_NAME=${profile.packageManager.name}`,
+      '--build-arg',
+      `PACKAGE_MANAGER_VERSION=${profile.packageManager.version}`,
+      repositoryRoot,
+    ], { maxBuffer: 32 * 1024 * 1024 });
+    const agentBuilt = inspectLocalImage(options.engine, agentTag);
+    const agentSelfCheck = JSON.parse(
+      run(options.engine, [
+        'run',
+        '--rm',
+        '--platform',
+        'linux/amd64',
+        '--cap-drop=ALL',
+        '--security-opt=no-new-privileges:true',
+        '--read-only',
+        '--tmpfs',
+        '/tmp:rw,noexec,nosuid,nodev,size=2g',
+        '--tmpfs',
+        '/home/benchmark-empty:rw,noexec,nosuid,nodev,size=128m,mode=0700,uid=10001,gid=10001',
+        '--network=none',
+        agentTag,
+        '--self-check',
+      ]).trim(),
+    );
+    const agentPublished = pushAndVerifyPublishedImage(
+      options.engine,
+      agentTag,
+      agentBuilt.configDigest,
+      profile.id,
+      runtimeAgentImageReference,
     );
     const subject = {
       schemaVersion: RUNTIME_BUILD_SUBJECT_SCHEMA_VERSION,
@@ -112,6 +174,10 @@ export async function buildRuntimeProfiles(options) {
         reference: published.reference,
         digest: built.configDigest,
       },
+      agentImage: {
+        reference: agentPublished.reference,
+        digest: agentBuilt.configDigest,
+      },
       runtimeKind: selfCheck.taskRuntime?.kind,
       runtimeVersion: normalizeVersion(selfCheck.taskRuntime?.version),
       packageManagerName: selfCheck.taskPackageManager?.name,
@@ -119,9 +185,20 @@ export async function buildRuntimeProfiles(options) {
       controller: {
         image: { reference: CONTROLLER_IMAGE_REFERENCE, digest: controllerImage.digest },
         nodeVersion: selfCheck.controllerNode,
-        codexVersion: extractVersion(selfCheck.codex, CONTROLLER_CODEX_VERSION),
-        claudeCodeVersion: extractVersion(selfCheck.claude, CONTROLLER_CLAUDE_CODE_VERSION),
       },
+      agentTooling: {
+        controllerNode: agentSelfCheck.controllerNode,
+        codexVersion: extractVersion(agentSelfCheck.codex, CONTROLLER_CODEX_VERSION),
+        codexIntegrity: CONTROLLER_CODEX_INTEGRITY,
+        claudeCodeVersion: extractVersion(
+          agentSelfCheck.claude,
+          CONTROLLER_CLAUDE_CODE_VERSION,
+        ),
+        claudeCodeIntegrity: CONTROLLER_CLAUDE_CODE_INTEGRITY,
+      },
+      agentIsolationSmokePassed:
+        agentSelfCheck.evaluatorMaterialAbsent === true &&
+        agentSelfCheck.providerCredentialsAbsent === true,
       browserSmokePassed: selfCheck.evaluatorRuntime?.ok === true,
       verifiedAt: options.verifiedAt,
       host: { os: 'linux', arch: 'x64' },
@@ -137,6 +214,8 @@ export async function buildRuntimeProfiles(options) {
       subjectPath: path,
       imageReference: published.reference,
       imageDigest: built.configDigest,
+      agentImageReference: agentPublished.reference,
+      agentImageDigest: agentBuilt.configDigest,
     });
   }
   return outputs;
@@ -156,14 +235,14 @@ function inspectLocalImage(engine, reference) {
   return { configDigest: image.Id };
 }
 
-function pushAndVerifyPublishedImage(engine, tagReference, configDigest, profileId) {
-  if (tagReference !== runtimeBenchmarkImageReference(profileId)) {
-    throw new Error(`${profileId}: benchmark image tag differs from the reviewed GHCR repository`);
+function pushAndVerifyPublishedImage(engine, tagReference, configDigest, profileId, referenceForProfile) {
+  if (tagReference !== referenceForProfile(profileId)) {
+    throw new Error(`${profileId}: image tag differs from the reviewed GHCR repository`);
   }
   run(engine, ['push', tagReference], { maxBuffer: 64 * 1024 * 1024 });
   const pushed = inspectDockerImage(engine, tagReference);
   const manifestDigest = findRepositoryDigest(pushed, tagReference);
-  const immutableReference = runtimeBenchmarkImageReference(profileId, manifestDigest);
+  const immutableReference = referenceForProfile(profileId, manifestDigest);
   run(engine, ['pull', '--platform', 'linux/amd64', immutableReference], {
     maxBuffer: 32 * 1024 * 1024,
   });

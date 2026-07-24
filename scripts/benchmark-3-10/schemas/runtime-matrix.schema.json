@@ -98,6 +98,7 @@
         "profileSha256",
         "baseImage",
         "benchmarkImage",
+        "agentImage",
         "verification"
       ],
       "properties": {
@@ -134,6 +135,18 @@
             "reference": {
               "type": "string",
               "pattern": "^ghcr\\.io/decantr-ai/decantr-benchmark-3-10:(?:node|bun)-[0-9]+\\.[0-9]+\\.[0-9]+-(?:npm|pnpm|yarn|bun)-[0-9]+\\.[0-9]+\\.[0-9]+(?:@sha256:[a-f0-9]{64})?$"
+            },
+            "digest": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/imageDigest" }] }
+          }
+        },
+        "agentImage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["reference", "digest"],
+          "properties": {
+            "reference": {
+              "type": "string",
+              "pattern": "^ghcr\\.io/decantr-ai/decantr-benchmark-3-10-agent:(?:node|bun)-[0-9]+\\.[0-9]+\\.[0-9]+-(?:npm|pnpm|yarn|bun)-[0-9]+\\.[0-9]+\\.[0-9]+(?:@sha256:[a-f0-9]{64})?$"
             },
             "digest": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/imageDigest" }] }
           }
@@ -234,7 +247,7 @@
     "controller": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["image", "nodeVersion", "codexVersion", "claudeCodeVersion"],
+      "required": ["image", "nodeVersion"],
       "properties": {
         "image": {
           "allOf": [
@@ -242,13 +255,11 @@
             { "properties": { "reference": { "const": "node:22.17.0-bookworm-slim" } } }
           ]
         },
-        "nodeVersion": { "type": "string", "pattern": "^v?22\\.17\\.0$" },
-        "codexVersion": { "const": "0.145.0-alpha.27" },
-        "claudeCodeVersion": { "const": "2.1.153" }
+        "nodeVersion": { "type": "string", "pattern": "^v?22\\.17\\.0$" }
       }
     },
     "runtimeAttestation": {
-      "$ref": "runtime-profile-attestation.v2.json"
+      "$ref": "runtime-profile-attestation.v3.json"
     }
   }
 }

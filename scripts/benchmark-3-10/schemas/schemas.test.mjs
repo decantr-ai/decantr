@@ -133,7 +133,7 @@ test('runtime schemas require retained GitHub-hosted OIDC provenance and full so
   );
   assert.equal(
     attestation.properties.schemaVersion.const,
-    'decantr-benchmark-runtime-profile-attestation.v2',
+    'decantr-benchmark-runtime-profile-attestation.v3',
   );
   assert.equal(
     attestation.$defs.executionIdentity.properties.runnerEnvironment.const,
@@ -169,9 +169,15 @@ test('runtime schemas require retained GitHub-hosted OIDC provenance and full so
     ),
     true,
   );
+  assert.equal(
+    matrix.$defs.profile.properties.agentImage.properties.reference.pattern.includes(
+      'decantr-benchmark-3-10-agent',
+    ),
+    true,
+  );
   assert.equal(matrix.properties.provenance.required.includes('executionPolicy'), true);
   assert.equal(
     matrix.$defs.runtimeAttestation.$ref,
-    'runtime-profile-attestation.v2.json',
+    'runtime-profile-attestation.v3.json',
   );
 });

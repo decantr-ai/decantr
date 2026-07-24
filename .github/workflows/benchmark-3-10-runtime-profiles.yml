@@ -58,7 +58,7 @@ jobs:
       packages: write
     strategy:
       fail-fast: false
-      max-parallel: 6
+      max-parallel: 2
       matrix:
         profile: ${{ fromJSON(needs.matrix.outputs.profiles) }}
     steps:

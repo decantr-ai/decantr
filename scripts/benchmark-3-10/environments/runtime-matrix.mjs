@@ -7,6 +7,8 @@ import {
   assertRuntimeAttestation,
   assertRuntimeAttestationFileBinding,
   assertRuntimeSourceClosure,
+  runtimeAgentImageReference,
+  runtimeAgentImageTagReference,
   runtimeBenchmarkImageReference,
   runtimeBenchmarkImageTagReference,
 } from './runtime-profile-attestation.mjs';
@@ -64,6 +66,10 @@ export function assertRuntimeMatrix(matrix, options = {}) {
       profile.benchmarkImage.reference.length === 0 ||
       runtimeBenchmarkImageTagReference(profile.benchmarkImage.reference) !==
         runtimeBenchmarkImageReference(profile.id) ||
+      typeof profile.agentImage?.reference !== 'string' ||
+      profile.agentImage.reference.length === 0 ||
+      runtimeAgentImageTagReference(profile.agentImage.reference) !==
+        runtimeAgentImageReference(profile.id) ||
       !sha256Pattern.test(profile.profileSha256 ?? '') ||
       profile.profileSha256 !== sha256Canonical({
         id: profile.id,
@@ -85,6 +91,8 @@ export function assertRuntimeMatrix(matrix, options = {}) {
       (profile.baseImage.digest !== null ||
         profile.benchmarkImage.digest !== null ||
         profile.benchmarkImage.reference.includes('@') ||
+        profile.agentImage.digest !== null ||
+        profile.agentImage.reference.includes('@') ||
         profile.verification !== null)
     ) {
       throw new Error(`${profile.id}: draft profile contains unverified image claims`);
@@ -98,6 +106,7 @@ export function assertRuntimeMatrix(matrix, options = {}) {
       if (
         !imageDigestPattern.test(profile.baseImage?.digest ?? '') ||
         !imageDigestPattern.test(profile.benchmarkImage?.digest ?? '') ||
+        !imageDigestPattern.test(profile.agentImage?.digest ?? '') ||
         subject.profileId !== profile.id ||
         subject.profileSha256 !== profile.profileSha256 ||
         subject.host.os !== profile.os ||
@@ -110,6 +119,8 @@ export function assertRuntimeMatrix(matrix, options = {}) {
         subject.baseImage.digest !== profile.baseImage.digest ||
         subject.benchmarkImage.reference !== profile.benchmarkImage.reference ||
         subject.benchmarkImage.digest !== profile.benchmarkImage.digest ||
+        subject.agentImage.reference !== profile.agentImage.reference ||
+        subject.agentImage.digest !== profile.agentImage.digest ||
         subject.matrix.draftSha256 !== provenance.draftMatrix.sha256 ||
         subject.matrix.sourceSpecSetSha256 !== matrix.sourceSpecSetSha256 ||
         sha256Canonical(subject.source) !== sha256Canonical(provenance.source) ||
@@ -163,7 +174,7 @@ function assertLockedProvenance(matrix) {
   assertRuntimeSourceClosure(provenance.source);
   assertExactKeys(
     provenance.controller,
-    ['claudeCodeVersion', 'codexVersion', 'image', 'nodeVersion'],
+    ['image', 'nodeVersion'],
     'locked runtime controller binding',
   );
   assertExactKeys(provenance.controller.image, ['digest', 'reference'], 'locked controller image binding');
@@ -222,6 +233,10 @@ function calculateReconstructedDraftDigest(matrix) {
       baseImage: { reference: profile.baseImage.reference, digest: null },
       benchmarkImage: {
         reference: runtimeBenchmarkImageTagReference(profile.benchmarkImage.reference),
+        digest: null,
+      },
+      agentImage: {
+        reference: runtimeAgentImageTagReference(profile.agentImage.reference),
         digest: null,
       },
       verification: null,

@@ -1,8 +1,8 @@
 # Decantr 3.10 Neutral Benchmark Harness
 
-This directory contains the executable skeleton for the Decantr 3.10 control-versus-treatment experiment. It is intentionally separate from Decantr product packages. The harness treats candidate tarballs, task manifests, evaluator code, model identity, trajectories, reviews, statistics, and claims as bound evidence.
+This directory contains the executable harness for the Decantr 3.10 control-versus-treatment experiment. It is intentionally separate from Decantr product packages. The harness treats candidate tarballs, task manifests, evaluator code, model identity, trajectories, reviews, statistics, and claims as bound evidence.
 
-The bundled harness can perform deterministic, no-cost dry runs. It cannot make a real provider request. A fake run proves harness mechanics only; it is not evidence that Decantr improves model output.
+The harness can perform deterministic, no-cost dry runs and includes exact-model OpenAI Codex and Anthropic Claude Code adapters behind a run-local audited proxy. No paid request is authorized by the repository, and no paid result exists. A fake run proves harness mechanics only; it is not evidence that Decantr improves model output.
 
 Decantr 3.9.4 remains the current stable release. Decantr 3.10 is unreleased and may not be described as value-proven unless the frozen confirmatory gates pass.
 
@@ -29,8 +29,8 @@ These are frozen candidate records, not yet runnable task manifests. Plan genera
 - `schemas/`: Draft 2020-12 contracts for tasks, plans, runs, trajectories, evaluators, reviews, statistics, the development power pilot, and explicit budget approval.
 - `runner/`: canonical JSON, SHA-256 binding, deterministic plan generation, per-run execution, suite execution, parity checks, and cost reservation.
 - `environments/`: independently reviewed task toolchains, immutable Linux runtime matrices, workspace preparation, and dependency-tree attestations.
-- `container/`: a non-root image with `@openai/codex@0.145.0-alpha.27` and `@anthropic-ai/claude-code@2.1.153`.
-- `model-proxy/`: a zero-cost deterministic adapter and reviewed official pricing that remains non-authorizing.
+- `container/`: separate non-root evaluator and evaluator-free agent images. The agent image pins `@openai/codex@0.145.0` and `@anthropic-ai/claude-code@2.1.218` by npm integrity.
+- `model-proxy/`: a zero-cost deterministic adapter, exact-model coding-agent adapters, a run-local credential-owning proxy, canonical provider receipts, and reviewed official pricing that remains non-authorizing.
 - `evaluator/`: candidate-independent fixed-argv evaluator execution.
 - `evaluators/`: authoring, sealed input construction, external container qualification, provenance verification, and task materialization.
 - `review/`: blinded artifact preparation and review sealing.
@@ -59,7 +59,7 @@ Evaluator commands declare an executable and argument array. Shell executables a
 
 ## Evaluator Qualification
 
-Evaluator approval and evaluator qualification are separate gates. Approval records an independent review of the authored contract and oracle. Qualification proves strict polarity and isolation at the exact frozen base and expected revisions.
+Evaluator approval and evaluator qualification are separate gates. Approval records substantive maintainer review of the authored contract and oracle. Qualification proves strict polarity and isolation at the exact frozen base and expected revisions.
 
 `qualification-task.mjs --mode host-probe` is a maintainer diagnostic only. It may prepare local worktrees and check strict polarity, but its output carries `materializable: false` and cannot authorize task materialization.
 
@@ -74,7 +74,7 @@ The production path is:
 
 The workflow receives no provider/model credentials. Evaluation networking is Docker `none`; dependency access exists only during the separately attested preparation phase. A caller-supplied digest, local host result, unsigned attestation, self-hosted runner, changed controller tree, changed artifact file, or missing provenance bundle is not qualification evidence.
 
-The checked-in producer accepts public development tasks only. Sealed qualification sources still require a reviewed secret-preserving transfer mechanism before the private qualification path can run. Do not upload private oracle material to a public artifact or commit it to the repository.
+The public producer accepts development tasks only. The private mirror contains a repository-identity-checked producer for sealed qualification tasks and keeps its three-day artifacts inside the private repository. Neither path may upload private oracle material to a public artifact or commit it to the public repository.
 
 ## Generate The Run Plan
 
@@ -115,15 +115,21 @@ node scripts/benchmark-3-10/runner/run-one.mjs \
   --output-root "$EVIDENCE_ROOT"
 ```
 
-The arm/model/repetition arguments are required even though they appear in the plan; this prevents an operator from accidentally running a different cell. Before reserving budget, the runner verifies the locked matrix bytes, attestation bytes and self-digest, reviewed environment spec, immutable image digest, lockfiles, clean Git base, and installed dependency tree. It verifies dependencies again after the adapter and evaluator, including ignored `node_modules` changes that Git cannot report. A parity file shared by paired arms binds all of those inputs plus task, evaluator, entitlement, controller, candidate tarballs, base tree, and limits. Any mismatch stops the second arm. Release-eligible model evidence additionally requires a GitHub-hosted split-stage executor with a dedicated minimal agent image that contains no evaluator, expected-patch, qualification-controller, oracle, private-task, or hidden-review bytes. The agent output and trajectory must be content-addressed before a separately attested evaluator image receives the hidden inputs. That executor and agent image are not implemented yet.
+The arm/model/repetition arguments are required even though they appear in the plan; this prevents an operator from accidentally running a different cell. Before reserving budget, the runner verifies the locked matrix bytes, attestation bytes and self-digest, reviewed environment spec, immutable image digest, lockfiles, clean Git base, and installed dependency tree. It verifies dependencies again after the adapter and evaluator, including ignored `node_modules` changes that Git cannot report. A parity file shared by paired arms binds all of those inputs plus task, evaluator, entitlement, controller, candidate tarballs, base tree, and limits. Any mismatch stops the second arm.
+
+Release-eligible execution uses `.github/workflows/benchmark-3-10-split-input.yml` and `.github/workflows/benchmark-3-10-split-run.yml`. `prepare-split-run-input.mjs` verifies one frozen run, task, candidate, locked matrix, prepared base, evaluator closure, model lock, protocol, and canonical per-run authorization before producing paired roots. The staging workflow invokes that producer from a trusted run-materialization packet, validates both roots independently, and uploads physically separate tar artifacts. A minimal immutable agent image receives only a canonical request, prepared-environment attestation, and clean prepared workspace. Authorization and approval files are not mounted into the model container. The agent image and artifact reject evaluator, expected-patch, qualification-controller, oracle, private-task, and hidden-review material. After the agent exits, the workflow verifies its Sigstore subject, content-addressed workspace delta, response, and provider receipt before downloading the separately staged evaluator artifact. The evaluator image reconstructs the delta in a fresh workspace with Docker networking disabled, signs a second subject, and only then can the finalizer emit a v3 production-eligible run record. Local and host `run-one` paths remain test-only.
+
+Paid mode is derived only from `authorization.json`; the workflow has no independent paid switch or approval-ID input. Each authorization binds the run, partition, model, plan, candidate manifest and tarball set, exact reservation, protocol maximum, development task count, and canonical approval bytes. Qualification authorizations additionally bind the frozen power pilot. The frozen plan fixes every per-run maximum and its complete worst-case sum at the protocol ceiling. GitHub concurrency serializes executions by the operator-supplied `run_id`, the staged artifact must prove that exact run identity before credentials are exposed, and a 90-day repository artifact reserves the verified run before the provider step. Paid reruns and alternate authorizations for the same run therefore fail closed. The hosted workflow that creates the trusted run-materialization packet remains a qualification blocker; neither split workflow accepts the older evaluator-qualification artifacts as a substitute.
+
+The workflow commit, candidate source commit, and runtime-image source commit are separate provenance identities. A private qualification workflow does not need to share the public candidate commit SHA. The producer instead verifies a clean candidate against its recorded public Git commit and tree, verifies the current workflow checkout independently, and binds the exact agent/evaluator controller closures to their immutable images.
 
 `run-suite.mjs` expects one already materialized clean checkout per run at `$WORKSPACE_ROOT/<run-id>` and one verified task attestation at `$PREPARED_ENVIRONMENT_ROOT/<task-id>.json`. It never reuses an agent-mutated checkout. Development task references resolve under `--development-task-root`; sealed references resolve under `--qualification-task-root`; evaluator contracts resolve as `<evaluator-root>/contracts/<task-id>.json`. The suite requires `--runtime-matrix` and `--prepared-environment-root`; it no longer accepts a free-form environment digest. `--run-id` and `--limit` are for fake CI smoke tests only. A partial suite manifest is never release evidence.
 
 The fake adapter recognizes `FAKE_UNSUPPORTED` and `FAKE_FAILURE` in a fixture prompt for failure-path tests. Unsupported targets, adapter failures, provider model substitution, usage-limit breaches, missing evaluators, evaluator failures, and build failures remain explicit run statuses.
 
-## External Adapter Protocol
+## Audited Adapter Protocol
 
-Paid model invocation is deliberately not implemented. A future audited adapter must be supplied by absolute executable path and is launched as:
+The agent image includes exact-model provider adapters. They are launched through the stage controller as:
 
 ```text
 <adapter-command> <fixed adapter args> --request <canonical request.json> --response <response.json>
@@ -137,7 +143,7 @@ The adapter response must use `decantr-benchmark-adapter-response.v1` and contai
 - actual USD cost;
 - normalized trajectory events.
 
-Any returned-model mismatch is recorded as `model_substitution`, excluded from pooling, and rejected by the release gate. The benchmark container receives only an audited proxy URL. Provider credentials belong to the proxy and must never be mounted or passed to the runner.
+The adapters disable personal configuration, MCP servers, hosted tools, web search, session persistence, and model fallback. Any returned-model mismatch is recorded as `model_substitution`, excluded from pooling, and rejected by the release gate. The agent receives only an audited proxy URL and a run-local receipt path. Provider credentials remain in the proxy container and are never mounted or passed to the agent or evaluator. The proxy serializes calls, applies remaining aggregate token limits to every turn, rejects request bodies that exceed its conservative remaining input budget, and refuses a configuration whose worst-case token cost exceeds the per-run reservation.
 
 ## Paid Execution Boundary
 
@@ -147,18 +153,17 @@ Paid execution requires all of the following before the adapter process starts:
 2. A reviewed `pricing.json` with `paidPricingLocked: true`, exact model rates, and maxima matching `models.json`.
 3. A non-expired budget approval bound to the run plan and candidate tarball set, with the exact authorization statement defined by `budget-approval.schema.json`.
 4. For qualification runs, a `power-pilot.schema.json` artifact bound to the completed development record set and candidate, demonstrating at least 80% power for the five-point primary effect at alpha 0.05 before qualification execution opens. The qualification budget approval must bind that artifact's SHA-256.
-5. A shared budget ledger path.
-6. Enough uncommitted aggregate budget to reserve the model's full per-run maximum.
+5. For local `run-one` execution, a shared budget ledger path with enough uncommitted aggregate budget to reserve the model's full per-run maximum. Hosted split execution instead uses the frozen-plan ceiling plus one-shot `run_id` concurrency and reservation artifacts.
 
-The checked-in pricing file records provider rates reviewed on 2026-07-22. That lock does not authorize spending: paid execution still requires an explicit external adapter, a candidate-bound run plan, a valid human budget approval, and the development power gate before qualification. The ledger uses an atomic directory lock, reserves the full maximum before launch, settles actual cost afterward, and records over-reservation cost as a budget breach.
+The checked-in pricing file records provider rates reviewed on 2026-07-22. That lock does not authorize spending: paid execution still requires an explicit external adapter, a candidate-bound run plan, a valid human budget approval, and the development power gate before qualification. The local ledger uses an atomic directory lock, reserves the full maximum before launch, settles actual cost afterward, and records over-reservation cost as a budget breach. The hosted path does not retry a consumed run; a failed reservation remains consumed.
 
 The protocol maximum is $4,160. A budget approval cannot exceed it. Development pilot runs may use a preliminary approval without a power-pilot binding; before qualification, the approval must be reissued with the same approval ID and the frozen power-pilot digest so the shared ledger and all run records remain connected. Approval is authorization to spend, not evidence of product value.
 
 ## Container Isolation
 
-Build and run using `container/Dockerfile` and the restrictions in `container/SECURITY.md`. The entrypoint requires a non-root UID and an empty `/home/benchmark-empty`, strips unapproved environment variables, and rejects provider keys, personal Codex or Claude configuration, MCP configuration, and shell entrypoints. Do not mount a host home, credentials, agent configuration, Docker socket, or SSH agent.
+Build and run using `container/Dockerfile`, `container/Dockerfile.agent`, and the restrictions in `container/SECURITY.md`. Both entrypoints require a non-root UID and an empty `/home/benchmark-empty`, strip unapproved environment variables, and reject provider keys in model/evaluator processes, personal Codex or Claude configuration, MCP configuration, and shell entrypoints. Do not mount a host home, credentials, agent configuration, Docker socket, or SSH agent.
 
-The locked runtime matrix binds the exact Linux amd64 base image, manifest-pinned repository-scoped GHCR benchmark reference, Docker config digest, task runtime and package manager, controller image and agent CLI versions, browser smoke result, complete committed Docker-context/controller closure, GitHub-hosted run identity, and retained OIDC provenance. The runtime workflow publishes and pulls back the exact GHCR manifest before signing; the evaluator receives package read permission only and verifies the pulled config digest before use. Matrix locking independently re-verifies each offline bundle against the exact repository, workflow, commit, main ref, SLSA predicate, and `--deny-self-hosted-runners` policy. The preparation attestation separately binds each task's lockfiles and installed dependency tree. A local self-digest, Dockerfile-only hash, mutable tag alone, or caller-supplied verification result is not runtime evidence.
+The locked runtime matrix binds separate manifest-pinned evaluator and agent images, both Docker config digests, the exact Linux amd64 base image, task runtime and package manager, agent CLI versions and integrity, browser and isolation smoke results, the complete committed Docker-context/controller closure, GitHub-hosted run identity, and retained OIDC provenance. The runtime workflow publishes and pulls back both exact GHCR manifests before signing. Matrix locking independently re-verifies each offline bundle against the exact repository, workflow, commit, main ref, SLSA predicate, and `--deny-self-hosted-runners` policy. The preparation attestation separately binds each task's lockfiles and installed dependency tree. A local self-digest, Dockerfile-only hash, mutable tag alone, or caller-supplied verification result is not runtime evidence.
 
 ## Blinded Review
 
@@ -289,21 +294,21 @@ The tests make no provider calls and spend no money.
 
 ## Current Day-0 Diagnostic
 
-The current candidate Day-0 rerun reports 17 `ready`, 11 `limited`, and zero `blocked` or `unsupported` targets across the 28 pinned repositories. This result describes current scanner/discovery output only. It has not replaced the required human-approved authority oracle, does not score task outcomes, and does not show that Decantr makes either locked model better.
+The current candidate Day-0 rerun reports 17 `ready`, 11 `limited`, and zero `blocked` or `unsupported` targets across the 28 pinned repositories. The sole maintainer approved the 28-repository authority oracle on 2026-07-24 with source-path evidence. The scanner result still describes discovery output only; the final frozen candidate must pass the oracle audit again, and neither artifact scores task outcomes or shows that Decantr makes either locked model better.
 
 ## Evidence Still Required
 
 The task candidate set and 24/16 partition are frozen, but the harness cannot produce a value claim. Current state is explicit:
 
-- evaluator review metadata: 31/40 approved, comprising 18/24 development and 13/16 qualification; nine remain draft;
-- environment review metadata: 8/40 approved, comprising 2/24 development and 6/16 qualification; 32 remain draft;
-- runtime profiles: all 26 hosted probes passed on candidate commit `37c10c88`, and every retained OIDC provenance bundle passed local re-verification; the checked-in matrix remains draft and unlocked because 32 environment specs are still unapproved;
+- evaluator review metadata: all 40 approved, comprising 24 development and 16 qualification, under explicit sole-maintainer review;
+- environment review metadata: all 40 approved, comprising 24 development and 16 qualification, under explicit sole-maintainer review;
+- runtime profiles: the former single-image profiles passed on commit `37c10c88`, but that evidence is superseded by the dual-image design. The current 26-profile draft has no agent/evaluator image digests or retained v3 attestations and remains unlocked;
 - evaluator qualification: zero retained external container attestations or materializable receipts;
 - runnable task manifests: zero, because the qualification and runtime gates are incomplete;
-- Day-0: 17 `ready` and 11 `limited` scanner results, with no human-approved authority oracle;
-- paid execution: no audited OpenAI or Anthropic adapter, candidate tarball set, budget approval, provider credentials, power pilot, paid trajectory, blinded review, or qualification statistic;
-- model execution: no signed GitHub-hosted split-stage agent/evaluator workflow exists, so host `run-one` records are test-only and cannot become release evidence;
-- private qualification transfer: no reviewed secret-preserving source-artifact path.
+- Day-0: the 28-repository sole-maintainer oracle is approved; the final candidate must still rerun and pass its audit;
+- paid execution: audited OpenAI and Anthropic adapters and a credential-owning proxy are implemented, but there is no frozen candidate tarball set, budget approval, configured benchmark credential, power pilot, paid trajectory, blinded review, or qualification statistic;
+- model execution: the dual-signed GitHub-hosted split-stage workflow and v3 release gate are implemented and pass no-cost local reconstruction tests, but no hosted signed run exists yet; host `run-one` records remain test-only;
+- private qualification transfer: the private evaluator-qualification producer and disjoint split-artifact workflows exist. The exact split-root producer and one-shot hosted run reservation are implemented and tested locally, but the trusted hosted run-materialization packet workflow is still missing; locked images, materialized tasks, and prepared workspaces are also prerequisites.
 
 Before paid qualification, all 40 task manifests must materialize, the 26 runtime profiles and 40 prepared environments must be attested, evaluator qualification receipts must exist, the development pilot must demonstrate at least 80% power for the five-point primary effect, and an explicit candidate-bound budget approval must be issued.
 

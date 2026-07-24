@@ -23,9 +23,9 @@ const profileIdPattern = /^(?:node|bun)-[0-9]+\.[0-9]+\.[0-9]+-(?:npm|pnpm|yarn|
 const positiveIntegerPattern = /^[1-9][0-9]*$/u;
 
 export const RUNTIME_ATTESTATION_SCHEMA_VERSION =
-  'decantr-benchmark-runtime-profile-attestation.v2';
+  'decantr-benchmark-runtime-profile-attestation.v3';
 export const RUNTIME_BUILD_SUBJECT_SCHEMA_VERSION =
-  'decantr-benchmark-runtime-profile-build-subject.v1';
+  'decantr-benchmark-runtime-profile-build-subject.v2';
 export const RUNTIME_SOURCE_CLOSURE_SCHEMA_VERSION =
   'decantr-benchmark-runtime-source-closure.v1';
 export const RUNTIME_REPOSITORY = 'decantr-ai/decantr';
@@ -35,6 +35,8 @@ export const RUNTIME_SOURCE_REF = 'refs/heads/main';
 export const RUNTIME_PREDICATE_TYPE = 'https://slsa.dev/provenance/v1';
 export const RUNTIME_BENCHMARK_IMAGE_REPOSITORY =
   'ghcr.io/decantr-ai/decantr-benchmark-3-10';
+export const RUNTIME_AGENT_IMAGE_REPOSITORY =
+  'ghcr.io/decantr-ai/decantr-benchmark-3-10-agent';
 export const RUNTIME_BUILD_CONTEXT_ROOTS = Object.freeze([
   '.dockerignore',
   'scripts/benchmark-3-10',
@@ -46,8 +48,12 @@ export const RUNTIME_CONTROLLER_ROOTS = Object.freeze([
 ]);
 export const CONTROLLER_IMAGE_REFERENCE = 'node:22.17.0-bookworm-slim';
 export const CONTROLLER_NODE_VERSION = '22.17.0';
-export const CONTROLLER_CODEX_VERSION = '0.145.0-alpha.27';
-export const CONTROLLER_CLAUDE_CODE_VERSION = '2.1.153';
+export const CONTROLLER_CODEX_VERSION = '0.145.0';
+export const CONTROLLER_CLAUDE_CODE_VERSION = '2.1.218';
+export const CONTROLLER_CODEX_INTEGRITY =
+  'sha512-/PSPSFujjjmiyVFvG2yu/grOFhsWdokTH8t2KGWhXSo/M5n/dIDsnbsnO82/7bLtIoDuzQf7ATBUMWqPWQINlQ==';
+export const CONTROLLER_CLAUDE_CODE_INTEGRITY =
+  'sha512-BHV951ruIa6QXaZFDF1wRhwxAOkAiafB2AOWG6wGRUJ4apaJ9mlzp1BFLAhGfG0SknwAyqBenqeT6nit6at4uQ==';
 
 export function runtimeBaseImageReference(profile) {
   if (typeof profile?.nodeVersion === 'string') {
@@ -79,6 +85,27 @@ export function runtimeBenchmarkImageTagReference(reference) {
   const parts = reference.split('@');
   if (parts.length > 2 || (parts.length === 2 && !imageDigestPattern.test(parts[1]))) {
     throw new Error('runtime benchmark image reference is invalid');
+  }
+  return parts[0];
+}
+
+export function runtimeAgentImageReference(profileId, manifestDigest = null) {
+  if (!profileIdPattern.test(profileId ?? '')) throw new Error('runtime profile ID is invalid');
+  const tag = `${RUNTIME_AGENT_IMAGE_REPOSITORY}:${profileId}`;
+  if (manifestDigest === null) return tag;
+  if (!imageDigestPattern.test(manifestDigest)) {
+    throw new Error('runtime agent image manifest digest is invalid');
+  }
+  return `${tag}@${manifestDigest}`;
+}
+
+export function runtimeAgentImageTagReference(reference) {
+  if (typeof reference !== 'string' || reference.length === 0) {
+    throw new Error('runtime agent image reference is invalid');
+  }
+  const parts = reference.split('@');
+  if (parts.length > 2 || (parts.length === 2 && !imageDigestPattern.test(parts[1]))) {
+    throw new Error('runtime agent image reference is invalid');
   }
   return parts[0];
 }
@@ -158,6 +185,9 @@ export function assertRuntimeBuildSubject(subject) {
     subject,
     [
       'baseImage',
+      'agentImage',
+      'agentIsolationSmokePassed',
+      'agentTooling',
       'benchmarkImage',
       'browserSmokePassed',
       'controller',
@@ -180,7 +210,9 @@ export function assertRuntimeBuildSubject(subject) {
   assertExactKeys(subject.matrix, ['draftSha256', 'sourceSpecSetSha256'], 'runtime build subject matrix binding');
   assertImage(subject.baseImage, 'runtime build subject base image');
   assertImmutableBenchmarkImage(subject.benchmarkImage, subject.profileId);
+  assertImmutableAgentImage(subject.agentImage, subject.profileId);
   assertController(subject.controller);
+  assertAgentTooling(subject.agentTooling);
   assertExactKeys(subject.host, ['arch', 'os'], 'runtime build subject host');
   assertRuntimeSourceClosure(subject.source);
   assertRuntimeExecutionIdentity(subject.execution);
@@ -199,6 +231,7 @@ export function assertRuntimeBuildSubject(subject) {
     subject.profileId !== expectedProfileId(subject) ||
     subject.profileSha256 !== sha256Canonical(profile) ||
     subject.baseImage.reference !== runtimeBaseImageReference(profile) ||
+    subject.agentIsolationSmokePassed !== true ||
     subject.browserSmokePassed !== true ||
     subject.host?.os !== 'linux' ||
     subject.host?.arch !== 'x64' ||
@@ -560,17 +593,32 @@ function expectedProfileId(subject) {
 function assertController(controller) {
   assertExactKeys(
     controller,
-    ['claudeCodeVersion', 'codexVersion', 'image', 'nodeVersion'],
+    ['image', 'nodeVersion'],
     'runtime build subject controller',
   );
   assertImage(controller?.image, 'runtime build subject controller image');
   if (
     controller.image.reference !== CONTROLLER_IMAGE_REFERENCE ||
-    normalizeVersion(controller.nodeVersion) !== CONTROLLER_NODE_VERSION ||
-    controller.codexVersion !== CONTROLLER_CODEX_VERSION ||
-    controller.claudeCodeVersion !== CONTROLLER_CLAUDE_CODE_VERSION
+    normalizeVersion(controller.nodeVersion) !== CONTROLLER_NODE_VERSION
   ) {
     throw new Error('runtime build subject controller is invalid');
+  }
+}
+
+function assertAgentTooling(tooling) {
+  assertExactKeys(
+    tooling,
+    ['claudeCodeIntegrity', 'claudeCodeVersion', 'codexIntegrity', 'codexVersion', 'controllerNode'],
+    'runtime build subject agent tooling',
+  );
+  if (
+    normalizeVersion(tooling.controllerNode) !== CONTROLLER_NODE_VERSION ||
+    tooling.codexVersion !== CONTROLLER_CODEX_VERSION ||
+    tooling.codexIntegrity !== CONTROLLER_CODEX_INTEGRITY ||
+    tooling.claudeCodeVersion !== CONTROLLER_CLAUDE_CODE_VERSION ||
+    tooling.claudeCodeIntegrity !== CONTROLLER_CLAUDE_CODE_INTEGRITY
+  ) {
+    throw new Error('runtime build subject agent tooling is invalid');
   }
 }
 
@@ -594,6 +642,18 @@ function assertImmutableBenchmarkImage(image, profileId) {
     !imageDigestPattern.test(referenceParts[1])
   ) {
     throw new Error('runtime build subject benchmark image must be an immutable GHCR reference');
+  }
+}
+
+function assertImmutableAgentImage(image, profileId) {
+  assertImage(image, 'runtime build subject agent image');
+  const referenceParts = image.reference.split('@');
+  if (
+    referenceParts.length !== 2 ||
+    referenceParts[0] !== runtimeAgentImageReference(profileId) ||
+    !imageDigestPattern.test(referenceParts[1])
+  ) {
+    throw new Error('runtime build subject agent image must be an immutable GHCR reference');
   }
 }
 

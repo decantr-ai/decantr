@@ -5,10 +5,8 @@ FROM ${TASK_RUNTIME_IMAGE} AS task-runtime
 FROM ${CONTROLLER_IMAGE} AS benchmark
 
 LABEL org.opencontainers.image.source="https://github.com/decantr-ai/decantr" \
-      org.opencontainers.image.title="Decantr 3.10 benchmark runtime"
+      org.opencontainers.image.title="Decantr 3.10 benchmark preparation and evaluator runtime"
 
-ARG CODEX_VERSION=0.145.0-alpha.27
-ARG CLAUDE_CODE_VERSION=2.1.153
 ARG TASK_RUNTIME_KIND=node
 ARG TASK_RUNTIME_VERSION=22.19.0
 ARG PACKAGE_MANAGER_NAME=pnpm
@@ -17,10 +15,6 @@ ARG PACKAGE_MANAGER_VERSION=10.33.0
 RUN apt-get update \
     && apt-get install --yes --no-install-recommends ca-certificates git \
     && rm -rf /var/lib/apt/lists/* \
-    && npm install --global --omit=dev \
-      "@openai/codex@${CODEX_VERSION}" \
-      "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}" \
-    && npm cache clean --force \
     && useradd --create-home --home-dir /home/benchmark --shell /usr/sbin/nologin --uid 10001 benchmark \
     && mkdir -p /home/benchmark-empty /work /evidence /opt/decantr-benchmark /opt/task-runtime /opt/task-package-manager \
     && chown -R benchmark:benchmark /home/benchmark-empty /work /evidence /opt/decantr-benchmark

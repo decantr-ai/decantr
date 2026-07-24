@@ -94,7 +94,7 @@ An authored evaluator cannot become a runnable task merely because it parses or 
 
 Materializable qualification requires an external GitHub-hosted Linux run at the exact committed controller revision. The run must verify an immutable sealed input closure, hydrate base and expected workspaces from content-addressed Git object packs into a disjoint workspace root, prepare both roles in the locked profile, execute the evaluator with no evaluation network or writable source overlay, retain exact result and isolation evidence, and create a GitHub OIDC provenance attestation for the execution record. Finalization verifies that provenance offline against the exact repository, workflow, source commit, source ref, predicate type, and GitHub-hosted-runner policy. The receipt binds the canonical request and manifest file/self digests, execution attestation, controller closure, evaluator-source closure, runner commit, and provenance bundle through materialization, run planning, every run record, and the release audit.
 
-Qualification source and oracle bytes must never enter either model arm or the public repository. The checked-in public development producer uses a pinned, short-lived GitHub Actions artifact and is accepted only when the consumer run matches its repository, workflow, dispatch event, successful `main` commit, and exact source SHA. A reviewed secret-preserving transfer path for private qualification inputs has not yet been implemented; qualification receipt generation remains closed until that boundary exists.
+Qualification source and oracle bytes must never enter either model arm or the public repository. The public development producer and private qualification producer use pinned, three-day GitHub Actions artifacts and are accepted only when the consumer run matches the repository, workflow, dispatch event, successful `main` commit, and exact source SHA. Split-run staging verifies one paired content binding and emits physically separate agent-safe and evaluator-only artifacts. The evaluator artifact is downloaded only after the signed agent subject is verified. Private execution must remain inside `decantr-ai/decantr-qualification-private`; this mechanism still requires a hosted end-to-end exercise after current runtime images and tasks materialize.
 
 ## Day-0 Discovery Gate
 
@@ -158,14 +158,13 @@ Official provider pricing was reviewed and locked on 2026-07-22 in [`scripts/ben
 As of 2026-07-24, the no-cost harness tests pass, but the experiment is not runnable and no value result exists:
 
 - all 28 corpus repositories and the 24/16 task partition are frozen;
-- 31 of 40 evaluator specs carry independent review metadata: 18 of 24 development and 13 of 16 qualification; nine remain draft;
-- 8 of 40 task environment specs are approved: 2 development and 6 qualification; 32 remain draft;
-- all 26 hosted runtime-profile probes passed on candidate commit `37c10c88`, and their retained OIDC provenance bundles passed local re-verification; the checked-in matrix remains draft and unlocked because 32 task environment specs are still unapproved;
+- all 40 evaluator specs and all 40 task environment specs have explicit sole-maintainer approval; this is not independent blinded outcome review;
+- the former single-image runtime profiles passed on commit `37c10c88`, but that evidence is superseded by the dual-image design. The current 26-profile draft has no retained v3 attestations and remains unlocked;
 - no external container-qualified evaluator receipt has been retained;
-- the candidate Day-0 scanner report is 17 `ready` and 11 `limited`, but no human-approved Day-0 authority oracle exists;
-- no candidate tarball set, audited paid provider adapter, budget approval, provider run, blinded review, power pilot, or qualification statistic exists;
-- no signed GitHub-hosted split-stage agent/evaluator executor exists; host-run records are explicitly test-only;
-- private qualification input transfer remains an unresolved security boundary.
+- the candidate Day-0 scanner report is 17 `ready` and 11 `limited`, and the sole maintainer approved the 28-repository authority oracle; the final frozen candidate must still pass that audit;
+- exact-model OpenAI and Anthropic adapters and a credential-owning audited proxy exist, but no candidate tarball set, budget approval, configured benchmark credential, provider run, blinded review, power pilot, or qualification statistic exists;
+- the GitHub-hosted split-stage agent/evaluator workflow, dual provenance subjects, v3 run records, and release re-verification are implemented and pass no-cost local tests, but no hosted signed model run exists;
+- private evaluator-input production, disjoint short-lived split artifacts, and one-shot per-run hosted reservation exist, but the hosted run-materialization packet producer is still missing; no path has been exercised end to end with materialized split-run inputs.
 
 These are blockers, not administrative TODOs. A test-green harness proves only harness mechanics.
 

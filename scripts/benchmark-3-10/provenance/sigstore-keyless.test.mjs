@@ -64,6 +64,7 @@ test('verifies a blob against an exact GitHub Actions keyless identity', async (
     '--certificate-github-workflow-trigger',
     'workflow_dispatch',
     '--new-bundle-format=true',
+    '--offline',
     '--max-workers',
     '1',
     subjectPath,

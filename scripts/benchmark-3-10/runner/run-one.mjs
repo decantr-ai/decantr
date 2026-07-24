@@ -241,6 +241,7 @@ export async function runOne(options) {
     runtimeMatrixFileSha256,
     runtimeMatrixSha256: runtimeMatrix.matrixSha256,
     benchmarkImageDigest: runtimeProfile.benchmarkImage.digest,
+    agentImageDigest: runtimeProfile.agentImage.digest,
     preparedEnvironmentAttestationSha256,
     environmentSha256: preparedEnvironment.environmentSha256,
     agentControllerSha256: controllerSha256,
@@ -318,6 +319,7 @@ export async function runOne(options) {
     provider: model.provider,
     requestedModel: model.requestedModel,
     reasoningEffort: model.reasoningEffort,
+    maxRunCostUsd: model.maxRunCostUsd,
     arm: planned.arm,
     repetition: planned.repetition,
     prompt: task.prompt,
@@ -337,6 +339,7 @@ export async function runOne(options) {
     bindings: {
       planSha256: plan.planSha256,
       taskManifestSha256: planned.taskManifestSha256,
+      candidateManifestSha256: candidate.manifestSha256,
       candidateTarballSetSha256: candidate.tarballSetSha256,
       runtimeMatrixSha256: runtimeMatrix.matrixSha256,
       preparedEnvironmentAttestationSha256,
@@ -344,8 +347,11 @@ export async function runOne(options) {
       environmentSpecSha256: task.environment.specSha256,
       environmentSubstanceSha256: task.environment.substanceSha256,
       agentControllerSha256: controllerSha256,
+      agentImageDigest: runtimeProfile.agentImage.digest,
       informationEntitlementSha256: task.informationEntitlementSha256,
       deliverySha256: deliveryArtifact.digest,
+      baseCommit: base.commit,
+      baseTree: base.tree,
     },
   };
   const requestPath = join(scratch, 'adapter-request.json');

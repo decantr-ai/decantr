@@ -85,6 +85,7 @@
     "benchmark:3-10:container-qualification": "node scripts/benchmark-3-10/evaluators/container-orchestrator.mjs",
     "benchmark:3-10:runtime-matrix": "node scripts/benchmark-3-10/environments/generate-runtime-matrix.mjs",
     "benchmark:3-10:build-runtime-profiles": "node scripts/benchmark-3-10/environments/build-runtime-profiles.mjs",
+    "benchmark:3-10:prepare-split-input": "node scripts/benchmark-3-10/runner/prepare-split-run-input.mjs",
     "benchmark:3-10:approve-environments": "node scripts/benchmark-3-10/environments/approve-hosted-probes.mjs",
     "benchmark:3-10:lock-runtime-matrix": "node scripts/benchmark-3-10/environments/lock-runtime-matrix.mjs",
     "benchmark:3-10:privacy-audit": "node scripts/benchmark-3-10/audit/audit-qualification-privacy.mjs --private-input .private/benchmark-3-10/qualification-generator-config.json",

@@ -7,19 +7,24 @@
   "models": [
     {
       "modelId": "openai-gpt-5.6-sol",
+      "provider": "openai",
       "requestedModel": "gpt-5.6-sol",
       "maximumRunCostUsd": 10,
       "inputPerMillionTokensUsd": 5,
       "cachedInputPerMillionTokensUsd": 0.5,
+      "cacheWriteInputPerMillionTokensUsd": 6.25,
       "outputPerMillionTokensUsd": 30,
       "source": "https://developers.openai.com/api/docs/models/gpt-5.6-sol"
     },
     {
       "modelId": "anthropic-claude-fable-5",
+      "provider": "anthropic",
       "requestedModel": "claude-fable-5",
       "maximumRunCostUsd": 16,
       "inputPerMillionTokensUsd": 10,
       "cachedInputPerMillionTokensUsd": 1,
+      "cacheWrite5mInputPerMillionTokensUsd": 12.5,
+      "cacheWrite1hInputPerMillionTokensUsd": 20,
       "outputPerMillionTokensUsd": 50,
       "source": "https://platform.claude.com/docs/en/about-claude/models/overview"
     }

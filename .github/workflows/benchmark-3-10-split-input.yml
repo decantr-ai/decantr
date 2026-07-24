@@ -1,0 +1,163 @@
+name: Decantr 3.10 split-input staging
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_run_id:
+        description: Trusted run-materialization workflow run
+        required: true
+        type: string
+      source_artifact:
+        description: Exact artifact containing one validated run-materialization packet
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: benchmark-3-10-split-input-${{ github.ref }}-${{ inputs.source_run_id }}-${{ inputs.source_artifact }}
+  cancel-in-progress: false
+
+jobs:
+  stage:
+    name: Validate and separate paired inputs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - name: Enforce trusted GitHub-hosted execution
+        run: |
+          test "$GITHUB_REF" = "refs/heads/main"
+          test "$GITHUB_EVENT_NAME" = "workflow_dispatch"
+          test "$RUNNER_ENVIRONMENT" = "github-hosted"
+          test "$RUNNER_OS" = "Linux"
+          test "$RUNNER_ARCH" = "X64"
+          test "$GITHUB_WORKFLOW_REF" = "$GITHUB_REPOSITORY/.github/workflows/benchmark-3-10-split-input.yml@$GITHUB_REF"
+          test "$GITHUB_WORKFLOW_SHA" = "$GITHUB_SHA"
+
+      - name: Verify the task-materialization source run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_RUN_ID: ${{ inputs.source_run_id }}
+        run: |
+          SOURCE_RUN="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN_ID")"
+          SOURCE_PATH="$(jq -r .path <<<"$SOURCE_RUN")"
+          test "$(jq -r .head_repository.full_name <<<"$SOURCE_RUN")" = "$GITHUB_REPOSITORY"
+          test "$(jq -r .event <<<"$SOURCE_RUN")" = "workflow_dispatch"
+          test "$(jq -r .conclusion <<<"$SOURCE_RUN")" = "success"
+          test "$(jq -r .head_branch <<<"$SOURCE_RUN")" = "main"
+          test "$(jq -r .head_sha <<<"$SOURCE_RUN")" = "$GITHUB_SHA"
+          test "$SOURCE_PATH" = ".github/workflows/benchmark-3-10-run-materialization.yml"
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.17.0
+          cache: ''
+
+      - name: Download paired source inputs
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: ${{ inputs.source_artifact }}
+          path: ${{ runner.temp }}/source-input
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ inputs.source_run_id }}
+
+      - name: Produce and validate each privacy boundary
+        id: identity
+        env:
+          SOURCE_ROOT: ${{ runner.temp }}/source-input
+          STAGING_ROOT: ${{ runner.temp }}/split-input
+        run: |
+          set -euo pipefail
+          RUN_ID="$(jq -r .runId "$SOURCE_ROOT/authorization.json")"
+          CANDIDATE_RUNTIME_ARGS=()
+          if [ -d "$SOURCE_ROOT/candidate/runtime" ]; then
+            CANDIDATE_RUNTIME_ARGS=(
+              --candidate-runtime-root "$SOURCE_ROOT/candidate/runtime"
+            )
+          fi
+          node scripts/benchmark-3-10/runner/prepare-split-run-input.mjs \
+            --plan "$SOURCE_ROOT/run-plan.json" \
+            --run-id "$RUN_ID" \
+            --task-manifest "$SOURCE_ROOT/task.json" \
+            --workspace "$SOURCE_ROOT/workspace" \
+            --prepared-environment "$SOURCE_ROOT/prepared-environment.json" \
+            --evaluator-contract "$SOURCE_ROOT/contract.json" \
+            --evaluator-root "$SOURCE_ROOT/evaluator" \
+            --candidate-manifest "$SOURCE_ROOT/candidate/candidate.json" \
+            "${CANDIDATE_RUNTIME_ARGS[@]}" \
+            --runtime-matrix "$SOURCE_ROOT/runtime-matrix.json" \
+            --authorization "$SOURCE_ROOT/authorization.json" \
+            --models scripts/benchmark-3-10/models.json \
+            --protocol scripts/benchmark-3-10/protocol.json \
+            --source-commit "$GITHUB_SHA" \
+            --out "$STAGING_ROOT"
+          node scripts/benchmark-3-10/runner/split-run-input.mjs \
+            --mode agent \
+            --input-root "$STAGING_ROOT/agent" \
+            --source-commit "$GITHUB_SHA"
+          node scripts/benchmark-3-10/runner/split-run-input.mjs \
+            --mode evaluator \
+            --input-root "$STAGING_ROOT/evaluator" \
+            --source-commit "$GITHUB_SHA"
+          mkdir -p "$STAGING_ROOT/artifacts"
+          mapfile -t AGENT_ENTRIES < <(
+            find "$STAGING_ROOT/agent" -mindepth 1 -maxdepth 1 \
+              ! -name manifest.json -printf '%f\n' | sort
+          )
+          mapfile -t EVALUATOR_ENTRIES < <(
+            find "$STAGING_ROOT/evaluator" -mindepth 1 -maxdepth 1 \
+              ! -name contract.json -printf '%f\n' | sort
+          )
+          tar --create --file "$STAGING_ROOT/artifacts/agent-input.tar" \
+            --directory "$STAGING_ROOT/agent" \
+            manifest.json "${AGENT_ENTRIES[@]}"
+          tar --create --file "$STAGING_ROOT/artifacts/evaluator-input.tar" \
+            --directory "$STAGING_ROOT/evaluator" \
+            contract.json "${EVALUATOR_ENTRIES[@]}"
+          test "$(tar -tf "$STAGING_ROOT/artifacts/agent-input.tar" | head -n 1)" = "manifest.json"
+          test "$(tar -tf "$STAGING_ROOT/artifacts/evaluator-input.tar" | head -n 1)" = "contract.json"
+          AGENT_PAIR="$(jq -r .pairSha256 "$STAGING_ROOT/agent/manifest.json")"
+          EVALUATOR_PAIR="$(jq -r .pairSha256 "$STAGING_ROOT/evaluator/manifest.json")"
+          RUN_ID="$(jq -r .pair.runId "$STAGING_ROOT/agent/manifest.json")"
+          test "$AGENT_PAIR" = "$EVALUATOR_PAIR"
+          echo "agent_artifact=benchmark-3-10-split-agent-input-$RUN_ID-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_OUTPUT"
+          echo "evaluator_artifact=benchmark-3-10-split-evaluator-input-$RUN_ID-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_OUTPUT"
+          echo "pair_sha256=$AGENT_PAIR" >> "$GITHUB_OUTPUT"
+          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Stage only the agent-safe tar
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ${{ steps.identity.outputs.agent_artifact }}
+          path: ${{ runner.temp }}/split-input/artifacts/agent-input.tar
+          if-no-files-found: error
+          retention-days: 3
+
+      - name: Stage the sealed evaluator tar separately
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ${{ steps.identity.outputs.evaluator_artifact }}
+          path: ${{ runner.temp }}/split-input/artifacts/evaluator-input.tar
+          if-no-files-found: error
+          retention-days: 3
+
+      - name: Report exact downstream inputs
+        env:
+          AGENT_ARTIFACT: ${{ steps.identity.outputs.agent_artifact }}
+          EVALUATOR_ARTIFACT: ${{ steps.identity.outputs.evaluator_artifact }}
+          PAIR_SHA256: ${{ steps.identity.outputs.pair_sha256 }}
+          RUN_ID: ${{ steps.identity.outputs.run_id }}
+        run: |
+          printf 'run_id=%s\npair_sha256=%s\nagent_input_artifact=%s\nevaluator_input_artifact=%s\n' \
+            "$RUN_ID" "$PAIR_SHA256" "$AGENT_ARTIFACT" "$EVALUATOR_ARTIFACT"

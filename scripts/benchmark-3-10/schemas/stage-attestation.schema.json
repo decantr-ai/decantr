@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/benchmark-3-10/stage-attestation.v1.json",
+  "title": "Decantr 3.10 split-stage execution attestation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "stage",
+    "runId",
+    "taskId",
+    "partition",
+    "arm",
+    "repetition",
+    "status",
+    "productionEligible",
+    "createdAt",
+    "execution",
+    "image",
+    "controllerSha256",
+    "attestationSha256"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "enum": [
+        "decantr-benchmark-agent-stage-attestation.v1",
+        "decantr-benchmark-evaluator-stage-attestation.v1"
+      ]
+    },
+    "stage": { "enum": ["agent", "evaluator"] },
+    "runId": { "type": "string", "minLength": 1 },
+    "taskId": { "type": "string", "minLength": 1 },
+    "partition": { "enum": ["development", "qualification"] },
+    "arm": { "enum": ["control", "treatment"] },
+    "repetition": { "type": "integer", "minimum": 1 },
+    "model": { "type": "object" },
+    "status": { "enum": ["completed", "failed", "unsupported"] },
+    "productionEligible": { "type": "boolean" },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "execution": { "$ref": "#/$defs/execution" },
+    "image": { "$ref": "#/$defs/image" },
+    "controllerSha256": { "$ref": "#/$defs/sha256" },
+    "bindings": { "type": "object" },
+    "isolation": { "type": "object" },
+    "output": { "type": "object" },
+    "agentStage": { "type": "object" },
+    "sealedInput": { "type": "object" },
+    "reconstruction": { "type": "object" },
+    "attestationSha256": { "$ref": "#/$defs/sha256" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "stage": { "const": "agent" } } },
+      "then": {
+        "required": ["model", "bindings", "isolation", "output"],
+        "properties": {
+          "schemaVersion": { "const": "decantr-benchmark-agent-stage-attestation.v1" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "stage": { "const": "evaluator" } } },
+      "then": {
+        "required": ["agentStage", "sealedInput", "isolation", "reconstruction", "output"],
+        "properties": {
+          "schemaVersion": {
+            "const": "decantr-benchmark-evaluator-stage-attestation.v1"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "imageDigest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "workflowFile",
+        "sourceDigest",
+        "sourceRef",
+        "eventName",
+        "runId",
+        "runAttempt",
+        "job",
+        "runnerEnvironment",
+        "runnerOs",
+        "runnerArch"
+      ],
+      "properties": {
+        "repository": {
+          "enum": ["decantr-ai/decantr", "decantr-ai/decantr-qualification-private"]
+        },
+        "workflowFile": { "const": "benchmark-3-10-split-run.yml" },
+        "sourceDigest": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+        "sourceRef": { "const": "refs/heads/main" },
+        "eventName": { "const": "workflow_dispatch" },
+        "runId": { "type": "string", "minLength": 1 },
+        "runAttempt": { "type": "string", "minLength": 1 },
+        "job": { "enum": ["agent", "evaluator"] },
+        "runnerEnvironment": { "enum": ["github-hosted", "local-test"] },
+        "runnerOs": { "type": "string", "minLength": 1 },
+        "runnerArch": { "type": "string", "minLength": 1 }
+      }
+    },
+    "image": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reference", "digest", "runtimeProfileId"],
+      "properties": {
+        "reference": { "type": "string", "minLength": 1 },
+        "digest": { "$ref": "#/$defs/imageDigest" },
+        "runtimeProfileId": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}
+

@@ -1,0 +1,200 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/benchmark-3-10/run-authorization.v1.json",
+  "title": "Decantr 3.10 per-run execution authorization",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "program",
+    "runId",
+    "partition",
+    "modelId",
+    "paid",
+    "runPlanSha256",
+    "candidateManifestSha256",
+    "candidateTarballSetSha256",
+    "reservedRunCostUsd",
+    "protocolMaximumUsd",
+    "developmentTaskCount",
+    "budgetApproval",
+    "powerPilot"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "decantr-benchmark-run-authorization.v1"
+    },
+    "program": {
+      "const": "decantr-3.10-ui-change-control-proof"
+    },
+    "runId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "partition": {
+      "enum": [
+        "development",
+        "qualification"
+      ]
+    },
+    "modelId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "paid": {
+      "type": "boolean"
+    },
+    "runPlanSha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "candidateManifestSha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "candidateTarballSetSha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "reservedRunCostUsd": {
+      "type": "number",
+      "minimum": 0
+    },
+    "protocolMaximumUsd": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "maximum": 4160
+    },
+    "developmentTaskCount": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "budgetApproval": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/approvalBinding"
+        }
+      ]
+    },
+    "powerPilot": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/fileBinding"
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "fileBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256",
+        "bytes"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "approvalBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256",
+        "bytes",
+        "approvalId",
+        "maximumSpendUsd"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "approvalId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "maximumSpendUsd": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 4160
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "paid": {
+            "const": false
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "reservedRunCostUsd": {
+            "const": 0
+          },
+          "budgetApproval": {
+            "type": "null"
+          },
+          "powerPilot": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "paid": {
+            "const": true
+          },
+          "partition": {
+            "const": "qualification"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "reservedRunCostUsd": {
+            "exclusiveMinimum": 0
+          },
+          "budgetApproval": {
+            "$ref": "#/$defs/approvalBinding"
+          },
+          "powerPilot": {
+            "$ref": "#/$defs/fileBinding"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -4,7 +4,7 @@ Decantr is an **agent-neutral UI change-control layer**. It observes project-own
 
 **Decantr 3.9.4 is the current published stable release. Decantr 3.10 is an active proof program and is neither released nor value-proven.**
 
-The 3.10 no-cost harness is testable, but the experiment is not runnable: 31/40 evaluator specs and 8/40 environment specs carry approval metadata. All 26 hosted runtime-profile probes passed on candidate commit `37c10c88`, but the matrix remains draft and unlocked because 32 environment specs are unapproved. No external container-qualified evaluator receipt or human-approved Day-0 oracle exists, private qualification transfer is unresolved, and no paid model result exists. See the active program for the full evidence ledger.
+The 3.10 no-cost harness and dual-signed split-stage design are testable, but the experiment is not yet runnable. All 40 evaluator specs, all 40 environment specs, and the 28-repository Day-0 oracle have explicit sole-maintainer approval. The former single-image runtime evidence is superseded: all 26 profiles must now be rebuilt and attested with separate evaluator and evaluator-free agent images before the matrix can lock. No external container-qualified evaluator receipt, hosted split-stage run, frozen candidate tarball set, paid model result, or independent blinded outcome review exists. See the active program for the full evidence ledger.
 
 The unreleased 3.10 candidate loop is:
 

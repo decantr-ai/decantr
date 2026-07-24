@@ -15,15 +15,15 @@ Each spec binds:
 - every base-commit lockfile by SHA-256;
 - fixed-argv preparation commands and their network allowance;
 - a clean-worktree requirement after ignored dependency/setup artifacts are created;
-- substantive independent review.
+- substantive maintainer review.
 
 Preparation may access only an operator-enforced dependency-registry network and only before benchmark timing. Preparation containers receive no model or provider credentials. Model and evaluator execution remain proxy-only or offline as declared by the protocol. A missing runtime, lockfile drift, unavailable dependency, setup write outside ignored paths, or failed required command is a visible harness failure, never an unsupported-task exclusion.
 
 The environment pipeline is fail-closed:
 
 1. `generate-runtime-matrix.mjs` derives unique runtime profiles from all 40 reviewed specs.
-2. `build-runtime-profiles.mjs` runs only from the exact clean `main` commit on a GitHub-hosted Linux x64 runner. It binds every committed file under the benchmark Docker build context, the runtime workflow, and the complete benchmark controller tree; publishes the verified image to repository-scoped GHCR; pulls back its exact registry-manifest reference; verifies the Docker config digest; and emits a canonical profile build subject with the exact GitHub run identity.
-3. GitHub OIDC signs that subject. The workflow retains the offline provenance bundle, verifies it against the exact repository, workflow, signer commit, source commit, source ref, SLSA predicate, and hosted-runner policy, then emits a v2 profile attestation binding the subject, bundle, and canonical verification output.
+2. `build-runtime-profiles.mjs` runs only from the exact clean `main` commit on a GitHub-hosted Linux x64 runner. It binds every committed file under the benchmark Docker build context, the runtime workflow, and the complete benchmark controller tree; publishes separate evaluator and evaluator-free agent images to repository-scoped GHCR; pulls back both exact registry-manifest references; verifies both Docker config digests; and emits a canonical profile build subject with the exact GitHub run identity.
+3. GitHub OIDC signs that subject. The workflow retains the offline provenance bundle, verifies it against the exact repository, workflow, signer commit, source commit, source ref, SLSA predicate, and hosted-runner policy, then emits a v3 profile attestation binding both images, agent tooling and isolation, the subject, bundle, and canonical verification output.
 4. `lock-runtime-matrix.mjs` independently recomputes the complete source closure and reruns `gh attestation verify` against every retained bundle with `--deny-self-hosted-runners`. A local JSON digest, missing retained file, altered bundle, different checkout, self-hosted runner, or caller-supplied verification result cannot lock the matrix.
 5. `prepare-workspace.mjs` runs the reviewed fixed preparation commands and emits a task attestation binding the spec, runtime matrix, image digest, Git base, lockfiles, and installed dependency tree.
 6. The run plan binds the locked runtime-matrix bytes. Every run independently verifies its preparation attestation, lockfiles, and dependency tree before model execution and after evaluation.
@@ -34,4 +34,4 @@ The checked-in matrix remains a draft until all 40 reviews and Linux image probe
 
 Evaluator qualification uses the same locked task profile but produces different evidence from benchmark workspace preparation. Qualification proves that a candidate-independent evaluator fails the exact base and passes the exact expected revision inside an externally attested container run. Benchmark preparation later binds the dependency tree used by both model arms. Neither artifact can substitute for the other.
 
-Current state: 2/24 development environment specs and 6/16 qualification specs are approved. The other 32 remain draft. All 26 deduplicated profiles passed the GitHub-hosted probe on candidate commit `37c10c88`, and all retained OIDC bundles passed local re-verification. The checked-in matrix remains draft and unlocked: hosted probe success cannot replace the 32 missing independent environment approvals, so evaluator qualification cannot produce valid receipts and run-plan generation remains closed.
+Current state: all 24 development and 16 qualification environment specs have explicit sole-maintainer approval. The former single-image profiles passed on commit `37c10c88`, but those attestations do not bind the new agent image and are superseded. The current 26-profile matrix is draft and unlocked with no dual-image v3 attestations. Evaluator qualification and run-plan generation remain closed until every current profile is rebuilt, externally attested, independently reverified, and locked.

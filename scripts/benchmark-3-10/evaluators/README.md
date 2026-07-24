@@ -90,7 +90,7 @@ An evaluator is not approved merely because its source parses. Review must verif
 - checks task behavior, scope, accessibility, and styling authority appropriate to the task;
 - emits failures rather than skipping when its runtime or fixture is unavailable.
 
-After independent review, set `review.status` to `approved` and record the reviewer, timestamp, and substantive notes. Approval does not directly open materialization.
+After substantive review, set `review.status` to `approved` and record the reviewer, timestamp, and notes. Approval does not directly open materialization and does not substitute for the two independent blinded outcome reviewers.
 
 ## Qualification Evidence
 
@@ -107,6 +107,6 @@ Materializable evidence comes only from `.github/workflows/benchmark-3-10-evalua
 
 The v2 receipt binds the execution-attestation file and self digest, container-controller closure, evaluator-source closure, runner repository commit, provenance bundle bytes, and provenance verification digest. Those fields remain mandatory through run planning, execution records, and release audit.
 
-Public development input artifacts may use ordinary short-lived GitHub Actions storage. Private qualification sources and oracles require a reviewed secret-preserving transfer path; that path is not implemented, so sealed qualification execution remains closed. Never commit private evaluator material or upload it to a publicly readable artifact.
+Public development input artifacts may use ordinary short-lived GitHub Actions storage. Private qualification sources and oracles use the private repository's identity-checked producer and three-day artifacts. The split-run staging workflow separates the agent-safe tar from the evaluator-only tar and verifies their common content binding before either execution stage. Never commit private evaluator material to the public repository or upload it to a publicly readable artifact.
 
-Current authored-spec state is 18/24 approved for development and 13/16 approved for qualification. These are review metadata counts, not materialized tasks or human model-outcome review. Nine specs remain draft and zero external container-qualified receipts currently exist.
+Current authored-spec state is 24/24 approved for development and 16/16 approved for qualification under explicit sole-maintainer review. These are review metadata counts, not materialized tasks, external evaluator qualification, or human model-outcome review. Zero external container-qualified receipts currently exist.

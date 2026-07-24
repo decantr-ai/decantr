@@ -1,0 +1,553 @@
+name: Decantr 3.10 split-stage run
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: Exact run ID bound by both staged input artifacts
+        required: true
+        type: string
+      source_run_id:
+        description: Run ID from the split-input staging workflow
+        required: true
+        type: string
+      agent_input_artifact:
+        description: Exact validated agent-only input artifact
+        required: true
+        type: string
+      evaluator_input_artifact:
+        description: Exact paired sealed evaluator input artifact
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: benchmark-3-10-split-run-${{ github.repository_id }}-${{ inputs.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  agent:
+    name: Evaluator-free coding agent
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+      packages: read
+    outputs:
+      artifact: ${{ steps.identity.outputs.artifact }}
+      authorization_sha256: ${{ steps.identity.outputs.authorization_sha256 }}
+      pair_sha256: ${{ steps.identity.outputs.pair_sha256 }}
+      partition: ${{ steps.identity.outputs.partition }}
+      paid: ${{ steps.identity.outputs.paid }}
+      run_id: ${{ steps.identity.outputs.run_id }}
+    steps:
+      - name: Enforce trusted GitHub-hosted execution
+        run: |
+          test "$GITHUB_REF" = "refs/heads/main"
+          test "$GITHUB_EVENT_NAME" = "workflow_dispatch"
+          test "$GITHUB_JOB" = "agent"
+          test "$RUNNER_ENVIRONMENT" = "github-hosted"
+          test "$RUNNER_OS" = "Linux"
+          test "$RUNNER_ARCH" = "X64"
+          test "$GITHUB_WORKFLOW_REF" = "$GITHUB_REPOSITORY/.github/workflows/benchmark-3-10-split-run.yml@$GITHUB_REF"
+          test "$GITHUB_WORKFLOW_SHA" = "$GITHUB_SHA"
+
+      - name: Verify the staged-input source run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_RUN_ID: ${{ inputs.source_run_id }}
+        run: |
+          SOURCE_RUN="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN_ID")"
+          test "$(jq -r .head_repository.full_name <<<"$SOURCE_RUN")" = "$GITHUB_REPOSITORY"
+          test "$(jq -r .path <<<"$SOURCE_RUN")" = ".github/workflows/benchmark-3-10-split-input.yml"
+          test "$(jq -r .event <<<"$SOURCE_RUN")" = "workflow_dispatch"
+          test "$(jq -r .conclusion <<<"$SOURCE_RUN")" = "success"
+          test "$(jq -r .head_branch <<<"$SOURCE_RUN")" = "main"
+          test "$(jq -r .head_sha <<<"$SOURCE_RUN")" = "$GITHUB_SHA"
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.17.0
+          cache: ''
+
+      - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6
+        with:
+          cosign-release: v3.1.2
+
+      - name: Download only the agent-safe input
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: ${{ inputs.agent_input_artifact }}
+          path: ${{ runner.temp }}/agent-input-download
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ inputs.source_run_id }}
+
+      - name: Verify the agent-safe artifact and move its workspace
+        env:
+          INPUT_ROOT: ${{ runner.temp }}/agent-input
+          INPUT_TAR: ${{ runner.temp }}/agent-input-download/agent-input.tar
+          WORKSPACE_ROOT: ${{ runner.temp }}/agent-workspace
+        run: |
+          mkdir -p "$INPUT_ROOT"
+          tar -tf "$INPUT_TAR" |
+            awk 'BEGIN { bad=0 } /^\// || /(^|\/)\.\.(\/|$)/ { bad=1 } END { exit bad }'
+          test "$(tar -tf "$INPUT_TAR" | head -n 1)" = "manifest.json"
+          tar --extract --file "$INPUT_TAR" --directory "$INPUT_ROOT" --no-same-owner
+          node scripts/benchmark-3-10/runner/split-run-input.mjs \
+            --mode agent \
+            --input-root "$INPUT_ROOT" \
+            --source-commit "$GITHUB_SHA"
+          mv "$INPUT_ROOT/workspace" "$WORKSPACE_ROOT"
+
+      - name: Resolve immutable run identity
+        id: identity
+        env:
+          EXPECTED_RUN_ID: ${{ inputs.run_id }}
+          INPUT_ROOT: ${{ runner.temp }}/agent-input
+        run: |
+          RUN_ID="$(jq -r .pair.runId "$INPUT_ROOT/manifest.json")"
+          PARTITION="$(jq -r .pair.partition "$INPUT_ROOT/manifest.json")"
+          PAIR_SHA256="$(jq -r .pairSha256 "$INPUT_ROOT/manifest.json")"
+          PAID="$(jq -r .paid "$INPUT_ROOT/authorization.json")"
+          AUTHORIZATION_SHA256="$(sha256sum "$INPUT_ROOT/authorization.json" | cut -d' ' -f1)"
+          test "$RUN_ID" = "$EXPECTED_RUN_ID"
+          if [ "$GITHUB_REPOSITORY" = "decantr-ai/decantr" ]; then
+            test "$PARTITION" = "development"
+          else
+            test "$GITHUB_REPOSITORY" = "decantr-ai/decantr-qualification-private"
+            test "$PARTITION" = "qualification"
+          fi
+          if [ "$PAID" = "true" ]; then
+            test "$GITHUB_RUN_ATTEMPT" = "1"
+          fi
+          echo "artifact=benchmark-3-10-agent-$RUN_ID-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_OUTPUT"
+          echo "authorization_sha256=$AUTHORIZATION_SHA256" >> "$GITHUB_OUTPUT"
+          echo "pair_sha256=$PAIR_SHA256" >> "$GITHUB_OUTPUT"
+          echo "partition=$PARTITION" >> "$GITHUB_OUTPUT"
+          echo "paid=$PAID" >> "$GITHUB_OUTPUT"
+          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Reject a replayed paid run
+        id: replay
+        env:
+          AUTHORIZATION_SHA256: ${{ steps.identity.outputs.authorization_sha256 }}
+          GH_TOKEN: ${{ github.token }}
+          PAID: ${{ steps.identity.outputs.paid }}
+          RUN_ID: ${{ steps.identity.outputs.run_id }}
+        run: |
+          MARKER="benchmark-3-10-paid-run-$RUN_ID"
+          if [ "$PAID" = "true" ]; then
+            test "$(
+              gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?name=$MARKER&per_page=100" \
+                --jq '.total_count'
+            )" = "0"
+            mkdir -p "$RUNNER_TEMP/paid-authorization-marker"
+            printf 'run_id=%s\nauthorization_sha256=%s\n' \
+              "$RUN_ID" "$AUTHORIZATION_SHA256" \
+              > "$RUNNER_TEMP/paid-authorization-marker/reservation.txt"
+          fi
+          echo "artifact=$MARKER" >> "$GITHUB_OUTPUT"
+
+      - name: Reserve this paid run before credentials are exposed
+        if: steps.identity.outputs.paid == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ${{ steps.replay.outputs.artifact }}
+          path: ${{ runner.temp }}/paid-authorization-marker/reservation.txt
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Authenticate the runtime reader to GHCR
+        env:
+          GHCR_TOKEN: ${{ github.token }}
+        run: printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+
+      - name: Pull and inspect the exact agent image
+        env:
+          INPUT_ROOT: ${{ runner.temp }}/agent-input
+        run: |
+          IMAGE="$(jq -r .agentImage.reference "$INPUT_ROOT/manifest.json")"
+          DIGEST="$(jq -r .agentImage.digest "$INPUT_ROOT/manifest.json")"
+          MANIFEST_DIGEST="${IMAGE##*@}"
+          test "$MANIFEST_DIGEST" != "$IMAGE"
+          docker pull "$IMAGE"
+          test "$(docker image inspect "$IMAGE" --format '{{.Id}}')" = "$DIGEST"
+          docker image inspect "$IMAGE" --format '{{json .RepoDigests}}' |
+            jq -e --arg digest "$MANIFEST_DIGEST" 'any(.[]; endswith("@" + $digest))'
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --pids-limit 128 \
+            --tmpfs /home/benchmark-empty:rw,nosuid,nodev,noexec,size=64m \
+            --tmpfs /tmp:rw,nosuid,nodev,noexec,size=64m \
+            "$IMAGE" --self-check
+
+      - name: Execute the isolated agent stage
+        env:
+          ANTHROPIC_API_KEY: ${{ steps.identity.outputs.paid == 'true' && secrets.ANTHROPIC_API_KEY || '' }}
+          INPUT_ROOT: ${{ runner.temp }}/agent-input
+          OPENAI_API_KEY: ${{ steps.identity.outputs.paid == 'true' && secrets.OPENAI_API_KEY || '' }}
+          OUTPUT_ROOT: ${{ runner.temp }}/agent-output
+          PAID: ${{ steps.identity.outputs.paid }}
+          PROXY_CONFIG_ROOT: ${{ runner.temp }}/proxy-config
+          RECEIPT_ROOT: ${{ runner.temp }}/proxy-receipt
+          WORKSPACE_ROOT: ${{ runner.temp }}/agent-workspace
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUTPUT_ROOT" "$PROXY_CONFIG_ROOT" "$RECEIPT_ROOT"
+          IMAGE="$(jq -r .agentImage.reference "$INPUT_ROOT/manifest.json")"
+          DIGEST="$(jq -r .agentImage.digest "$INPUT_ROOT/manifest.json")"
+          PARTITION="$(jq -r .pair.partition "$INPUT_ROOT/manifest.json")"
+          PROVIDER="$(jq -r .provider "$INPUT_ROOT/request.json")"
+          RUN_ID="$(jq -r .runId "$INPUT_ROOT/request.json")"
+          REQUESTED_MODEL="$(jq -r .requestedModel "$INPUT_ROOT/request.json")"
+          NETWORK_ARGS=(--network none)
+          ADAPTER_ARGS=(--adapter-command /usr/local/bin/node --adapter-arg /opt/decantr-agent/model-proxy/fake-adapter.mjs)
+          PAID_ARGS=()
+          PROXY_ENV=()
+          cleanup() {
+            docker rm -f model-proxy >/dev/null 2>&1 || true
+            docker network rm "agent-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+          if [ "$PAID" = "true" ]; then
+            PRICE="$(jq --arg model "$REQUESTED_MODEL" '.models[] | select(.requestedModel == $model)' scripts/benchmark-3-10/model-proxy/pricing.json)"
+            test "$(jq -r .provider <<<"$PRICE")" = "$PROVIDER"
+            jq \
+              --arg run "$RUN_ID" \
+              --arg provider "$PROVIDER" \
+              --arg model "$REQUESTED_MODEL" \
+              --argjson pricing "$PRICE" \
+              --argjson limits "$(jq '.limits + {maxCostUsd: .maxRunCostUsd}' "$INPUT_ROOT/request.json")" \
+              '{
+                schemaVersion: "decantr-benchmark-model-proxy-config.v1",
+                runId: $run,
+                provider: $provider,
+                requestedModel: $model,
+                receiptPath: "/receipt/provider-receipt.json",
+                host: "0.0.0.0",
+                port: 8080,
+                limits: $limits,
+                pricing: $pricing
+              }' > "$PROXY_CONFIG_ROOT/proxy-config.json"
+            NETWORK="agent-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+            docker network create --internal "$NETWORK"
+            if [ "$PROVIDER" = "openai" ]; then
+              test -n "$OPENAI_API_KEY"
+              SECRET_ENV=(-e OPENAI_API_KEY)
+              ADAPTER_PATH=/opt/decantr-agent/model-proxy/openai-codex-adapter.mjs
+            else
+              test "$PROVIDER" = "anthropic"
+              test -n "$ANTHROPIC_API_KEY"
+              SECRET_ENV=(-e ANTHROPIC_API_KEY)
+              ADAPTER_PATH=/opt/decantr-agent/model-proxy/anthropic-claude-adapter.mjs
+            fi
+            docker create --name model-proxy --network "$NETWORK" --network-alias model-proxy \
+              --read-only --cap-drop ALL --security-opt no-new-privileges --pids-limit 128 \
+              --tmpfs /home/benchmark-empty:rw,nosuid,nodev,noexec,size=64m \
+              --tmpfs /tmp:rw,nosuid,nodev,noexec,size=64m \
+              --mount "type=bind,src=$PROXY_CONFIG_ROOT,dst=/config,ro" \
+              --mount "type=bind,src=$RECEIPT_ROOT,dst=/receipt,rw" \
+              "${SECRET_ENV[@]}" "$IMAGE" \
+              --proxy --config /config/proxy-config.json
+            docker network connect bridge model-proxy
+            docker start model-proxy
+            for attempt in $(seq 1 30); do
+              if docker logs model-proxy 2>&1 | grep -q '"decantr-benchmark-model-proxy-ready.v1"'; then
+                break
+              fi
+              sleep 1
+            done
+            docker logs model-proxy 2>&1 | grep -q '"decantr-benchmark-model-proxy-ready.v1"'
+            NETWORK_ARGS=(--network "$NETWORK")
+            ADAPTER_ARGS=(--adapter-command /usr/local/bin/node --adapter-arg "$ADAPTER_PATH")
+            PAID_ARGS=(--paid --provider-receipt /provider/provider-receipt.json)
+            PROXY_ENV=(-e DECANTR_MODEL_PROXY_URL=http://model-proxy:8080 -e DECANTR_MODEL_PROXY_RECEIPT=/provider/provider-receipt.json)
+          fi
+          docker run --rm "${NETWORK_ARGS[@]}" --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --pids-limit 512 \
+            --tmpfs /home/benchmark-empty:rw,nosuid,nodev,noexec,size=256m \
+            --tmpfs /tmp:rw,nosuid,nodev,noexec,size=256m \
+            --mount "type=bind,src=$WORKSPACE_ROOT,dst=/work,rw" \
+            --mount "type=bind,src=$INPUT_ROOT/request.json,dst=/input/request.json,ro" \
+            --mount "type=bind,src=$INPUT_ROOT/prepared-environment.json,dst=/input/prepared-environment.json,ro" \
+            --mount "type=bind,src=$RECEIPT_ROOT,dst=/provider,ro" \
+            --mount "type=bind,src=$OUTPUT_ROOT,dst=/evidence,rw" \
+            -e GITHUB_EVENT_NAME -e GITHUB_REF -e GITHUB_RUN_ATTEMPT -e GITHUB_RUN_ID \
+            -e GITHUB_SHA -e RUNNER_ARCH -e RUNNER_ENVIRONMENT -e RUNNER_OS \
+            "${PROXY_ENV[@]}" "$IMAGE" --stage \
+            --request /input/request.json \
+            --workspace /work \
+            --prepared-environment /input/prepared-environment.json \
+            --output-root /evidence \
+            "${ADAPTER_ARGS[@]}" \
+            --task-path /opt/task-package-manager/node_modules/.bin:/opt/task-runtime/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+            --controller-root /opt/decantr-agent \
+            --agent-image-reference "$IMAGE" \
+            --agent-image-digest "$DIGEST" \
+            --partition "$PARTITION" \
+            "${PAID_ARGS[@]}"
+          if [ "$PAID" = "true" ]; then
+            test -f "$RECEIPT_ROOT/provider-receipt.json"
+            cp "$RECEIPT_ROOT/provider-receipt.json" "$OUTPUT_ROOT/provider-receipt.json"
+          fi
+          cp "$INPUT_ROOT/manifest.json" "$OUTPUT_ROOT/agent-input-manifest.json"
+          cp "$INPUT_ROOT/authorization.json" "$OUTPUT_ROOT/authorization.json"
+          cp "$INPUT_ROOT/request.json" "$OUTPUT_ROOT/request.json"
+          cp "$INPUT_ROOT/prepared-environment.json" "$OUTPUT_ROOT/prepared-environment.json"
+          BUDGET_APPROVAL="$(jq -r '.budgetApproval.path // empty' "$INPUT_ROOT/authorization.json")"
+          POWER_PILOT="$(jq -r '.powerPilot.path // empty' "$INPUT_ROOT/authorization.json")"
+          if [ -n "$BUDGET_APPROVAL" ]; then
+            cp "$INPUT_ROOT/$BUDGET_APPROVAL" "$OUTPUT_ROOT/$BUDGET_APPROVAL"
+          fi
+          if [ -n "$POWER_PILOT" ]; then
+            cp "$INPUT_ROOT/$POWER_PILOT" "$OUTPUT_ROOT/$POWER_PILOT"
+          fi
+
+      - name: Sign the exact agent-stage subject with GitHub OIDC
+        env:
+          OUTPUT_ROOT: ${{ runner.temp }}/agent-output
+        run: |
+          cosign sign-blob --yes \
+            --bundle "$OUTPUT_ROOT/agent-stage.sigstore.json" \
+            "$OUTPUT_ROOT/agent-stage-attestation.json"
+
+      - name: Remove runtime credentials and containers
+        if: always()
+        run: |
+          docker rm -f model-proxy >/dev/null 2>&1 || true
+          docker logout ghcr.io
+
+      - name: Upload the signed agent handoff
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ${{ steps.identity.outputs.artifact }}
+          path: ${{ runner.temp }}/agent-output
+          if-no-files-found: error
+          retention-days: 30
+
+  evaluator:
+    name: Offline sealed evaluator
+    needs: agent
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+      packages: read
+    steps:
+      - name: Enforce trusted GitHub-hosted execution
+        run: |
+          test "$GITHUB_REF" = "refs/heads/main"
+          test "$GITHUB_EVENT_NAME" = "workflow_dispatch"
+          test "$GITHUB_JOB" = "evaluator"
+          test "$RUNNER_ENVIRONMENT" = "github-hosted"
+          test "$RUNNER_OS" = "Linux"
+          test "$RUNNER_ARCH" = "X64"
+          test "$GITHUB_WORKFLOW_REF" = "$GITHUB_REPOSITORY/.github/workflows/benchmark-3-10-split-run.yml@$GITHUB_REF"
+          test "$GITHUB_WORKFLOW_SHA" = "$GITHUB_SHA"
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.17.0
+          cache: ''
+
+      - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6
+        with:
+          cosign-release: v3.1.2
+
+      - name: Download the signed agent handoff
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: ${{ needs.agent.outputs.artifact }}
+          path: ${{ runner.temp }}/agent-handoff
+
+      - name: Verify agent provenance before evaluator material exists
+        env:
+          HANDOFF_ROOT: ${{ runner.temp }}/agent-handoff
+          PARTITION: ${{ needs.agent.outputs.partition }}
+        run: |
+          node scripts/benchmark-3-10/runner/stage-provenance.mjs \
+            --subject "$HANDOFF_ROOT/agent-stage-attestation.json" \
+            --bundle "$HANDOFF_ROOT/agent-stage.sigstore.json" \
+            --partition "$PARTITION" \
+            --source-digest "$GITHUB_SHA" \
+            --cosign "$(command -v cosign)" \
+            --out "$HANDOFF_ROOT/pre-mount-agent-verification.json"
+
+      - name: Download sealed evaluator input after agent verification
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: ${{ inputs.evaluator_input_artifact }}
+          path: ${{ runner.temp }}/evaluator-input-download
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ inputs.source_run_id }}
+
+      - name: Verify paired sealed input and move its workspace
+        env:
+          AGENT_ROOT: ${{ runner.temp }}/agent-handoff
+          EVALUATOR_ROOT: ${{ runner.temp }}/evaluator-input
+          EVALUATOR_TAR: ${{ runner.temp }}/evaluator-input-download/evaluator-input.tar
+          EXPECTED_PAIR: ${{ needs.agent.outputs.pair_sha256 }}
+          WORKSPACE_ROOT: ${{ runner.temp }}/evaluator-workspace
+        run: |
+          mkdir -p "$EVALUATOR_ROOT"
+          tar -tf "$EVALUATOR_TAR" |
+            awk 'BEGIN { bad=0 } /^\// || /(^|\/)\.\.(\/|$)/ { bad=1 } END { exit bad }'
+          test "$(tar -tf "$EVALUATOR_TAR" | head -n 1)" = "contract.json"
+          tar --extract --file "$EVALUATOR_TAR" --directory "$EVALUATOR_ROOT" --no-same-owner
+          test "$(jq -r .pairSha256 "$AGENT_ROOT/agent-input-manifest.json")" = "$EXPECTED_PAIR"
+          test "$(jq -r .pairSha256 "$EVALUATOR_ROOT/manifest.json")" = "$EXPECTED_PAIR"
+          node scripts/benchmark-3-10/runner/split-run-input.mjs \
+            --mode evaluator \
+            --input-root "$EVALUATOR_ROOT" \
+            --source-commit "$GITHUB_SHA"
+          mv "$EVALUATOR_ROOT/workspace" "$WORKSPACE_ROOT"
+
+      - name: Authenticate the evaluator image reader to GHCR
+        env:
+          GHCR_TOKEN: ${{ github.token }}
+        run: printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+
+      - name: Pull and execute the offline evaluator stage
+        env:
+          AGENT_ROOT: ${{ runner.temp }}/agent-handoff
+          EVALUATOR_ROOT: ${{ runner.temp }}/evaluator-input
+          OUTPUT_ROOT: ${{ runner.temp }}/split-run-output
+          PAID: ${{ needs.agent.outputs.paid }}
+          PARTITION: ${{ needs.agent.outputs.partition }}
+          WORKSPACE_ROOT: ${{ runner.temp }}/evaluator-workspace
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUTPUT_ROOT"
+          IMAGE="$(jq -r .evaluatorImage.reference "$EVALUATOR_ROOT/manifest.json")"
+          DIGEST="$(jq -r .evaluatorImage.digest "$EVALUATOR_ROOT/manifest.json")"
+          MANIFEST_DIGEST="${IMAGE##*@}"
+          test "$MANIFEST_DIGEST" != "$IMAGE"
+          AGENT_DIGEST="$(jq -r .agentImageDigest "$EVALUATOR_ROOT/manifest.json")"
+          CONTROLLER="$(jq -r .evaluatorControllerSha256 "$EVALUATOR_ROOT/manifest.json")"
+          COSIGN="$(readlink -f "$(command -v cosign)")"
+          docker pull "$IMAGE"
+          test "$(docker image inspect "$IMAGE" --format '{{.Id}}')" = "$DIGEST"
+          docker image inspect "$IMAGE" --format '{{json .RepoDigests}}' |
+            jq -e --arg digest "$MANIFEST_DIGEST" 'any(.[]; endswith("@" + $digest))'
+          RECEIPT_ARGS=()
+          AUTHORIZATION_ARGS=(
+            --authorization /sealed/authorization.json
+            --protocol-maximum-usd "$(jq -r .protocolMaximumUsd "$EVALUATOR_ROOT/authorization.json")"
+            --development-task-count "$(jq -r .developmentTaskCount "$EVALUATOR_ROOT/authorization.json")"
+          )
+          AUTHORIZATION_MOUNTS=(
+            --mount "type=bind,src=$EVALUATOR_ROOT/authorization.json,dst=/sealed/authorization.json,ro"
+          )
+          if [ "$PAID" = "true" ]; then
+            test -f "$AGENT_ROOT/provider-receipt.json"
+            RECEIPT_ARGS=(--provider-receipt /agent/provider-receipt.json)
+            BUDGET_APPROVAL="$(jq -r .budgetApproval.path "$EVALUATOR_ROOT/authorization.json")"
+            test -f "$EVALUATOR_ROOT/$BUDGET_APPROVAL"
+            AUTHORIZATION_ARGS+=(--budget-approval "/sealed/$BUDGET_APPROVAL")
+            AUTHORIZATION_MOUNTS+=(
+              --mount "type=bind,src=$EVALUATOR_ROOT/$BUDGET_APPROVAL,dst=/sealed/$BUDGET_APPROVAL,ro"
+            )
+            POWER_PILOT="$(jq -r '.powerPilot.path // empty' "$EVALUATOR_ROOT/authorization.json")"
+            if [ -n "$POWER_PILOT" ]; then
+              test -f "$EVALUATOR_ROOT/$POWER_PILOT"
+              AUTHORIZATION_ARGS+=(--power-pilot "/sealed/$POWER_PILOT")
+              AUTHORIZATION_MOUNTS+=(
+                --mount "type=bind,src=$EVALUATOR_ROOT/$POWER_PILOT,dst=/sealed/$POWER_PILOT,ro"
+              )
+            fi
+          else
+            test ! -e "$AGENT_ROOT/provider-receipt.json"
+          fi
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --pids-limit 512 \
+            --tmpfs /home/benchmark-empty:rw,nosuid,nodev,noexec,size=256m \
+            --tmpfs /tmp:rw,nosuid,nodev,noexec,size=256m \
+            --mount "type=bind,src=$WORKSPACE_ROOT,dst=/work,rw" \
+            --mount "type=bind,src=$AGENT_ROOT,dst=/agent,ro" \
+            --mount "type=bind,src=$EVALUATOR_ROOT/task.json,dst=/sealed/task.json,ro" \
+            --mount "type=bind,src=$EVALUATOR_ROOT/contract.json,dst=/sealed/contract.json,ro" \
+            --mount "type=bind,src=$EVALUATOR_ROOT/evaluator,dst=/evaluator,ro" \
+            --mount "type=bind,src=$EVALUATOR_ROOT/prepared-environment.json,dst=/sealed/prepared-environment.json,ro" \
+            "${AUTHORIZATION_MOUNTS[@]}" \
+            --mount "type=bind,src=$OUTPUT_ROOT,dst=/evidence,rw" \
+            --mount "type=bind,src=$COSIGN,dst=/tools/cosign,ro" \
+            -e GITHUB_EVENT_NAME -e GITHUB_REF -e GITHUB_RUN_ATTEMPT -e GITHUB_RUN_ID \
+            -e GITHUB_SHA -e RUNNER_ARCH -e RUNNER_ENVIRONMENT -e RUNNER_OS \
+            "$IMAGE" /usr/local/bin/node /opt/decantr-benchmark/runner/evaluator-stage.mjs \
+            --agent-attestation /agent/agent-stage-attestation.json \
+            --agent-bundle /agent/agent-stage.sigstore.json \
+            --agent-image-digest "$AGENT_DIGEST" \
+            --request /agent/request.json \
+            --adapter-response /agent/adapter-response.json \
+            "${RECEIPT_ARGS[@]}" \
+            "${AUTHORIZATION_ARGS[@]}" \
+            --workspace-delta /agent/workspace-delta/workspace-delta.json \
+            --workspace-delta-root /agent/workspace-delta \
+            --workspace /work \
+            --prepared-environment /sealed/prepared-environment.json \
+            --task-manifest /sealed/task.json \
+            --evaluator-contract /sealed/contract.json \
+            --evaluator-root /evaluator \
+            --evaluator-runtime-root /opt/decantr-benchmark/evaluator-runtime \
+            --evaluator-browsers-path /opt/decantr-benchmark/evaluator-runtime/browsers \
+            --task-path /opt/task-package-manager/node_modules/.bin:/opt/task-runtime/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+            --evaluator-image-reference "$IMAGE" \
+            --evaluator-image-digest "$DIGEST" \
+            --evaluator-controller-sha256 "$CONTROLLER" \
+            --controller-root /opt/decantr-benchmark \
+            --partition "$PARTITION" \
+            --cosign /tools/cosign \
+            --output-root /evidence \
+            --agent-exited-before-mount
+
+      - name: Sign the exact evaluator-stage subject with GitHub OIDC
+        env:
+          OUTPUT_ROOT: ${{ runner.temp }}/split-run-output
+        run: |
+          cosign sign-blob --yes \
+            --bundle "$OUTPUT_ROOT/evaluator-stage.sigstore.json" \
+            "$OUTPUT_ROOT/evaluator-stage-attestation.json"
+
+      - name: Finalize production-eligible v3 evidence
+        if: needs.agent.outputs.paid == 'true'
+        env:
+          AGENT_ROOT: ${{ runner.temp }}/agent-handoff
+          OUTPUT_ROOT: ${{ runner.temp }}/split-run-output
+        run: |
+          node scripts/benchmark-3-10/runner/finalize-split-run.mjs \
+            --agent-attestation "$AGENT_ROOT/agent-stage-attestation.json" \
+            --agent-bundle "$AGENT_ROOT/agent-stage.sigstore.json" \
+            --evaluator-attestation "$OUTPUT_ROOT/evaluator-stage-attestation.json" \
+            --evaluator-bundle "$OUTPUT_ROOT/evaluator-stage.sigstore.json" \
+            --run-core "$OUTPUT_ROOT/run-core.json" \
+            --cosign "$(command -v cosign)" \
+            --output-root "$OUTPUT_ROOT"
+
+      - name: Remove GHCR reader credentials
+        if: always()
+        run: docker logout ghcr.io
+
+      - name: Upload signed split-stage evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: benchmark-3-10-split-run-${{ needs.agent.outputs.run_id }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/split-run-output
+          if-no-files-found: warn
+          retention-days: 30

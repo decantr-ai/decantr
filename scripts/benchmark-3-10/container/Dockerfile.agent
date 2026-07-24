@@ -1,0 +1,76 @@
+ARG TASK_RUNTIME_IMAGE=node:22.19.0-bookworm-slim
+ARG CONTROLLER_IMAGE=node:22.17.0-bookworm-slim
+
+FROM ${TASK_RUNTIME_IMAGE} AS task-runtime
+FROM ${CONTROLLER_IMAGE} AS agent
+
+LABEL org.opencontainers.image.source="https://github.com/decantr-ai/decantr" \
+      org.opencontainers.image.title="Decantr 3.10 evaluator-free coding-agent runtime"
+
+ARG CODEX_VERSION=0.145.0
+ARG CODEX_INTEGRITY=sha512-/PSPSFujjjmiyVFvG2yu/grOFhsWdokTH8t2KGWhXSo/M5n/dIDsnbsnO82/7bLtIoDuzQf7ATBUMWqPWQINlQ==
+ARG CLAUDE_CODE_VERSION=2.1.218
+ARG CLAUDE_CODE_INTEGRITY=sha512-BHV951ruIa6QXaZFDF1wRhwxAOkAiafB2AOWG6wGRUJ4apaJ9mlzp1BFLAhGfG0SknwAyqBenqeT6nit6at4uQ==
+ARG TASK_RUNTIME_KIND=node
+ARG TASK_RUNTIME_VERSION=22.19.0
+ARG PACKAGE_MANAGER_NAME=pnpm
+ARG PACKAGE_MANAGER_VERSION=10.33.0
+
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends ca-certificates git \
+    && rm -rf /var/lib/apt/lists/* \
+    && test "$(npm view "@openai/codex@${CODEX_VERSION}" dist.integrity)" = "${CODEX_INTEGRITY}" \
+    && test "$(npm view "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}" dist.integrity)" = "${CLAUDE_CODE_INTEGRITY}" \
+    && npm install --global --omit=dev --no-audit --no-fund \
+      "@openai/codex@${CODEX_VERSION}" \
+      "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}" \
+    && npm cache clean --force \
+    && useradd --create-home --home-dir /home/benchmark --shell /usr/sbin/nologin --uid 10001 benchmark \
+    && mkdir -p /home/benchmark-empty /work /evidence /opt/decantr-agent/container /opt/decantr-agent/environments /opt/decantr-agent/model-proxy /opt/decantr-agent/provenance /opt/decantr-agent/runner /opt/task-runtime /opt/task-package-manager \
+    && chown -R benchmark:benchmark /home/benchmark-empty /work /evidence /opt/decantr-agent
+
+COPY --from=task-runtime /usr/local/ /opt/task-runtime/
+
+RUN if [ "${PACKAGE_MANAGER_NAME}" != "bun" ]; then \
+      npm install --prefix /opt/task-package-manager --omit=dev --no-audit --no-fund \
+        "${PACKAGE_MANAGER_NAME}@${PACKAGE_MANAGER_VERSION}"; \
+    fi \
+    && npm cache clean --force
+
+COPY --chown=benchmark:benchmark scripts/benchmark-3-10/container/agent-entrypoint.mjs /opt/decantr-agent/container/agent-entrypoint.mjs
+COPY --chown=benchmark:benchmark scripts/benchmark-3-10/environments/prepared-environment.mjs /opt/decantr-agent/environments/prepared-environment.mjs
+COPY --chown=benchmark:benchmark scripts/benchmark-3-10/runner/canonical.mjs /opt/decantr-agent/runner/canonical.mjs
+COPY --chown=benchmark:benchmark scripts/benchmark-3-10/runner/process.mjs /opt/decantr-agent/runner/process.mjs
+COPY --chown=benchmark:benchmark scripts/benchmark-3-10/runner/workspace-delta.mjs /opt/decantr-agent/runner/workspace-delta.mjs
+COPY --chown=benchmark:benchmark scripts/benchmark-3-10/runner/stage-provenance.mjs /opt/decantr-agent/runner/stage-provenance.mjs
+COPY --chown=benchmark:benchmark scripts/benchmark-3-10/runner/stage-controller.mjs /opt/decantr-agent/runner/stage-controller.mjs
+COPY --chown=benchmark:benchmark scripts/benchmark-3-10/runner/agent-stage.mjs /opt/decantr-agent/runner/agent-stage.mjs
+COPY --chown=benchmark:benchmark scripts/benchmark-3-10/provenance/sigstore-keyless.mjs /opt/decantr-agent/provenance/sigstore-keyless.mjs
+COPY --chown=benchmark:benchmark scripts/benchmark-3-10/model-proxy/contracts.mjs /opt/decantr-agent/model-proxy/contracts.mjs
+COPY --chown=benchmark:benchmark scripts/benchmark-3-10/model-proxy/provider-receipt.mjs /opt/decantr-agent/model-proxy/provider-receipt.mjs
+COPY --chown=benchmark:benchmark scripts/benchmark-3-10/model-proxy/coding-agent-adapter.mjs /opt/decantr-agent/model-proxy/coding-agent-adapter.mjs
+COPY --chown=benchmark:benchmark scripts/benchmark-3-10/model-proxy/fake-adapter.mjs /opt/decantr-agent/model-proxy/fake-adapter.mjs
+COPY --chown=benchmark:benchmark scripts/benchmark-3-10/model-proxy/openai-codex-adapter.mjs /opt/decantr-agent/model-proxy/openai-codex-adapter.mjs
+COPY --chown=benchmark:benchmark scripts/benchmark-3-10/model-proxy/anthropic-claude-adapter.mjs /opt/decantr-agent/model-proxy/anthropic-claude-adapter.mjs
+COPY --chown=benchmark:benchmark scripts/benchmark-3-10/model-proxy/audited-proxy.mjs /opt/decantr-agent/model-proxy/audited-proxy.mjs
+
+ENV HOME=/home/benchmark-empty \
+    XDG_CACHE_HOME=/home/benchmark-empty/.cache \
+    XDG_CONFIG_HOME=/home/benchmark-empty/.config \
+    XDG_DATA_HOME=/home/benchmark-empty/.local/share \
+    CI=1 \
+    NO_COLOR=1 \
+    TZ=UTC \
+    DECANTR_CODEX_VERSION=${CODEX_VERSION} \
+    DECANTR_CLAUDE_CODE_VERSION=${CLAUDE_CODE_VERSION} \
+    DECANTR_TASK_RUNTIME_KIND=${TASK_RUNTIME_KIND} \
+    DECANTR_TASK_RUNTIME_VERSION=${TASK_RUNTIME_VERSION} \
+    DECANTR_TASK_PACKAGE_MANAGER=${PACKAGE_MANAGER_NAME} \
+    DECANTR_TASK_PACKAGE_MANAGER_VERSION=${PACKAGE_MANAGER_VERSION} \
+    PATH=/opt/task-package-manager/node_modules/.bin:/opt/task-runtime/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+USER benchmark
+WORKDIR /work
+
+ENTRYPOINT ["/usr/local/bin/node", "/opt/decantr-agent/container/agent-entrypoint.mjs"]
+CMD ["--self-check"]

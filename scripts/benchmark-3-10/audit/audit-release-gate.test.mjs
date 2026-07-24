@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, readFile, rm, unlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import {
@@ -13,6 +13,20 @@ import {
   writeCanonicalFile,
   writeContentAddressed,
 } from '../runner/canonical.mjs';
+import { RUN_CORE_SCHEMA_VERSION } from '../runner/run-record.mjs';
+import {
+  createAgentStageAttestation,
+  createEvaluatorStageAttestation,
+  fileBinding as stageFileBinding,
+  stageProvenancePolicy,
+  writeStageAttestation,
+} from '../runner/stage-provenance.mjs';
+import { calculateStageControllerClosure } from '../runner/stage-controller.mjs';
+import {
+  SIGSTORE_KEYLESS_PROVIDER,
+  SIGSTORE_KEYLESS_SCHEMA_VERSION,
+  SIGSTORE_OIDC_ISSUER,
+} from '../provenance/sigstore-keyless.mjs';
 import {
   assertCandidateManifest,
   AUTHORIZATION_STATEMENT,
@@ -20,6 +34,7 @@ import {
   expectedAnalysisSeed,
   expectedReviewSeed,
 } from '../runner/contracts.mjs';
+import { buildRunAuthorization } from '../runner/run-authorization.mjs';
 import { buildRunPlan } from '../runner/make-run-plan.mjs';
 import { taskEnvironmentSubstanceSha256 } from '../environments/contracts.mjs';
 import { makeFixtureLockedRuntimeMatrix } from '../environments/runtime-matrix.test-helper.mjs';
@@ -705,14 +720,154 @@ async function createReleaseFixture() {
     }),
   );
   const candidate = await assertCandidateManifest(await readJsonFile(candidateManifestPath), candidateManifestPath);
-  const controllerSha256 = sha256Canonical({ controller: 'fixture' });
+  const [agentController, evaluatorController] = await Promise.all([
+    calculateStageControllerClosure('agent', {
+      root: resolve(benchmarkDirectory, '..', '..'),
+    }),
+    calculateStageControllerClosure('evaluator', {
+      root: resolve(benchmarkDirectory, '..', '..'),
+    }),
+  ]);
+  const controllerSha256 = agentController.controllerSha256;
+  const developmentTaskCount = plan.tasks.filter(
+    (task) => task.partition === 'development',
+  ).length;
+  const preliminaryBudgetApprovalPath = join(
+    root,
+    'preliminary-budget-approval.json',
+  );
+  const preliminaryBudgetApproval = {
+    schemaVersion: 'decantr-benchmark-budget-approval.v1',
+    approvalId: 'approval-fixture',
+    program: 'decantr-3.10-ui-change-control-proof',
+    approvedBy: 'Fixture Maintainer',
+    approvedAt: '2026-07-22T09:00:00.000Z',
+    expiresAt: '2099-07-22T10:00:00.000Z',
+    maximumSpendUsd: 4160,
+    runPlanSha256: plan.planSha256,
+    candidateTarballSetSha256: candidate.tarballSetSha256,
+    modelIds: models.models.map((model) => model.id),
+    authorizationStatement: AUTHORIZATION_STATEMENT,
+  };
+  await writeCanonicalFile(
+    preliminaryBudgetApprovalPath,
+    preliminaryBudgetApproval,
+  );
+  const preliminaryBudgetApprovalRetained =
+    await retainExactContentAddressed(
+      recordRoot,
+      'budget-approvals',
+      preliminaryBudgetApprovalPath,
+    );
+  let powerPilotPath;
+  let powerPilotRetained;
+  let budgetApprovalPath;
+  let budgetApprovalRetained;
   const recordBindings = [];
   const qualificationRecordBindings = [];
   const developmentRecordBindings = [];
   const recordByRun = new Map();
-  for (const run of plan.runs) {
+  for (const partition of ['development', 'qualification']) {
+    if (partition === 'qualification') {
+      const frozenDevelopmentRecordSetSha256 = sha256Canonical(
+        [...developmentRecordBindings].sort((left, right) =>
+          left.runId.localeCompare(right.runId),
+        ),
+      );
+      powerPilotPath = join(root, 'power-pilot.json');
+      const powerPilot = {
+        schemaVersion: 'decantr-benchmark-power-pilot.v1',
+        program: 'decantr-3.10-ui-change-control-proof',
+        frozenAt: '2026-07-22T11:00:00.000Z',
+        qualificationExecutionOpenedAt: '2026-07-22T11:30:00.000Z',
+        runPlanSha256: plan.planSha256,
+        candidateTarballSetSha256: candidate.tarballSetSha256,
+        developmentRunRecordSetSha256:
+          frozenDevelopmentRecordSetSha256,
+        analysisCodeSha256: sha256Canonical({
+          powerAnalysis: 'fixture',
+        }),
+        analysisSeed: 'power-analysis-seed-0001',
+        developmentTaskCount,
+        targetEffectPoints: 5,
+        alpha: 0.05,
+        estimatedPower: 0.85,
+        method:
+          'Deterministic paired bootstrap simulation over the frozen development pilot.',
+      };
+      await writeCanonicalFile(powerPilotPath, powerPilot);
+      powerPilotRetained = await retainExactContentAddressed(
+        recordRoot,
+        'power-pilots',
+        powerPilotPath,
+      );
+      budgetApprovalPath = join(root, 'budget-approval.json');
+      const budgetApproval = {
+        schemaVersion: 'decantr-benchmark-budget-approval.v1',
+        approvalId: 'approval-fixture',
+        program: 'decantr-3.10-ui-change-control-proof',
+        approvedBy: 'Fixture Maintainer',
+        approvedAt: '2026-07-22T11:15:00.000Z',
+        expiresAt: '2099-07-22T10:00:00.000Z',
+        maximumSpendUsd: 4160,
+        runPlanSha256: plan.planSha256,
+        candidateTarballSetSha256: candidate.tarballSetSha256,
+        modelIds: models.models.map((model) => model.id),
+        powerPilotSha256: powerPilotRetained.digest,
+        authorizationStatement: AUTHORIZATION_STATEMENT,
+      };
+      await writeCanonicalFile(budgetApprovalPath, budgetApproval);
+      budgetApprovalRetained = await retainExactContentAddressed(
+        recordRoot,
+        'budget-approvals',
+        budgetApprovalPath,
+      );
+    }
+    for (const run of plan.runs.filter(
+      (item) => item.partition === partition,
+    )) {
     const task = plan.tasks.find((item) => item.taskId === run.taskId);
     const prepared = preparedByTask.get(run.taskId);
+    const model = models.models.find((item) => item.id === run.modelId);
+    const authorizationSourcePath = join(
+      root,
+      'run-authorizations',
+      `${run.runId}.json`,
+    );
+    const authorization = await buildRunAuthorization({
+      outputPath: authorizationSourcePath,
+      paid: true,
+      runId: run.runId,
+      partition: run.partition,
+      modelId: run.modelId,
+      runPlanSha256: plan.planSha256,
+      candidateManifestSha256: candidate.manifestSha256,
+      candidateTarballSetSha256: candidate.tarballSetSha256,
+      maxRunCostUsd: model.maxRunCostUsd,
+      protocolMaximumUsd: protocol.budget.maximumModelSpendUsd,
+      developmentTaskCount,
+      budgetApprovalPath:
+        partition === 'development'
+          ? preliminaryBudgetApprovalPath
+          : budgetApprovalPath,
+      powerPilotPath:
+        partition === 'qualification' ? powerPilotPath : undefined,
+      now:
+        partition === 'development'
+          ? '2026-07-22T10:00:00.000Z'
+          : '2026-07-22T12:00:00.000Z',
+    });
+    const authorizationRetained = await retainExactContentAddressed(
+      recordRoot,
+      'run-authorizations',
+      authorizationSourcePath,
+    );
+    const runBudgetApprovalRetained =
+      partition === 'development'
+        ? preliminaryBudgetApprovalRetained
+        : budgetApprovalRetained;
+    const runPowerPilotRetained =
+      partition === 'qualification' ? powerPilotRetained : null;
     const outputTokens = run.arm === 'treatment' ? 10 : 20;
     const sharedTaskInput = fixtureTaskInput();
     const armDeliveryDocument = {
@@ -756,7 +911,9 @@ async function createReleaseFixture() {
       context: canonicalJson(armDeliveryDocument),
       informationEntitlement: { policy: run.taskId, taskInput: sharedTaskInput },
       bindings: {
+        authorizationSha256: authorizationRetained.digest,
         planSha256: plan.planSha256,
+        candidateManifestSha256: candidate.manifestSha256,
         candidateTarballSetSha256: candidate.tarballSetSha256,
         taskManifestSha256: run.taskManifestSha256,
         informationEntitlementSha256: task.informationEntitlementSha256,
@@ -767,6 +924,11 @@ async function createReleaseFixture() {
         deliverySha256: armDelivery.digest,
         environmentSha256: prepared.attestation.environmentSha256,
         agentControllerSha256: controllerSha256,
+        agentImageDigest: runtimeMatrix.profiles.find(
+          (profile) => profile.id === task.runtimeProfileId,
+        ).agentImage.digest,
+        baseCommit: task.base.commit,
+        baseTree: task.base.tree,
       },
     });
     const adapterResponse = await writeContentAddressed(recordRoot, 'adapter-responses', {
@@ -805,7 +967,7 @@ async function createReleaseFixture() {
       untracked: [],
     });
     const record = {
-      schemaVersion: 'decantr-benchmark-run-record.v2',
+      schemaVersion: 'decantr-benchmark-run-record.v3',
       runId: run.runId,
       taskId: run.taskId,
       partition: run.partition,
@@ -822,6 +984,7 @@ async function createReleaseFixture() {
         signedExternalProvenance: true,
       },
       bindings: {
+        authorizationSha256: authorizationRetained.digest,
         runPlanSha256: plan.planSha256,
         candidateManifestSha256: candidate.manifestSha256,
         candidateTarballSetSha256: candidate.tarballSetSha256,
@@ -837,10 +1000,14 @@ async function createReleaseFixture() {
         runtimeMatrixFileSha256: task.runtimeMatrixFileSha256,
         runtimeMatrixSha256: runtimeMatrix.matrixSha256,
         benchmarkImageDigest: task.benchmarkImageDigest,
+        agentImageDigest: runtimeMatrix.profiles.find(
+          (profile) => profile.id === task.runtimeProfileId,
+        ).agentImage.digest,
         preparedEnvironmentAttestationSha256: prepared.fileSha256,
         deliverySha256: armDelivery.digest,
         environmentSha256: prepared.attestation.environmentSha256,
         agentControllerSha256: controllerSha256,
+        evaluatorControllerSha256: evaluatorController.controllerSha256,
       },
       model: {
         modelId: run.modelId,
@@ -860,7 +1027,7 @@ async function createReleaseFixture() {
       },
       budget: {
         paid: true,
-        reservedUsd: models.models.find((model) => model.id === run.modelId).maxRunCostUsd,
+        reservedUsd: model.maxRunCostUsd,
         actualUsd: 0.5,
         approvalId: 'approval-fixture',
       },
@@ -869,6 +1036,20 @@ async function createReleaseFixture() {
       evaluatorResultSha256: evaluator.digest,
       failure: null,
     };
+    record.provenance = await writeFixtureStageChain({
+      recordRoot,
+      record,
+      run,
+      task,
+      runtimeMatrix,
+      adapterRequest,
+      evaluator,
+      trajectory,
+      workspaceChange,
+      authorizationRetained,
+      budgetApprovalRetained: runBudgetApprovalRetained,
+      powerPilotRetained: runPowerPilotRetained,
+    });
     const artifact = await writeContentAddressed(recordRoot, 'run-records', record);
     await writeCanonicalFile(join(recordRoot, 'run-index', `${run.runId}.json`), {
       runId: run.runId,
@@ -879,6 +1060,7 @@ async function createReleaseFixture() {
     if (run.partition === 'qualification') qualificationRecordBindings.push(binding);
     else developmentRecordBindings.push(binding);
     recordByRun.set(run.runId, artifact.digest);
+    }
   }
   const qualificationRecordSetSha256 = sha256Canonical(
     qualificationRecordBindings.sort((left, right) => left.runId.localeCompare(right.runId)),
@@ -1038,45 +1220,6 @@ async function createReleaseFixture() {
   const statisticsPath = join(root, 'statistics.json');
   await writeFile(statisticsPath, prettyCanonicalJson(statistics));
   const statisticsSha256 = sha256(await readFile(statisticsPath));
-  const powerPilotPath = join(root, 'power-pilot.json');
-  await writeFile(
-    powerPilotPath,
-    prettyCanonicalJson({
-      schemaVersion: 'decantr-benchmark-power-pilot.v1',
-      program: 'decantr-3.10-ui-change-control-proof',
-      frozenAt: '2026-07-22T11:00:00.000Z',
-      qualificationExecutionOpenedAt: '2026-07-22T11:30:00.000Z',
-      runPlanSha256: plan.planSha256,
-      candidateTarballSetSha256: candidate.tarballSetSha256,
-      developmentRunRecordSetSha256: developmentRecordSetSha256,
-      analysisCodeSha256: sha256Canonical({ powerAnalysis: 'fixture' }),
-      analysisSeed: 'power-analysis-seed-0001',
-      developmentTaskCount: plan.tasks.filter((task) => task.partition === 'development').length,
-      targetEffectPoints: 5,
-      alpha: 0.05,
-      estimatedPower: 0.85,
-      method: 'Deterministic paired bootstrap simulation over the frozen development pilot.',
-    }),
-  );
-  const powerPilotSha256 = sha256(await readFile(powerPilotPath));
-  const budgetApprovalPath = join(root, 'budget-approval.json');
-  await writeFile(
-    budgetApprovalPath,
-    prettyCanonicalJson({
-      schemaVersion: 'decantr-benchmark-budget-approval.v1',
-      approvalId: 'approval-fixture',
-      program: 'decantr-3.10-ui-change-control-proof',
-      approvedBy: 'Fixture Maintainer',
-      approvedAt: '2026-07-22T11:15:00.000Z',
-      expiresAt: '2099-07-22T10:00:00.000Z',
-      maximumSpendUsd: 4160,
-      runPlanSha256: plan.planSha256,
-      candidateTarballSetSha256: candidate.tarballSetSha256,
-      modelIds: models.models.map((model) => model.id),
-      powerPilotSha256,
-      authorizationStatement: AUTHORIZATION_STATEMENT,
-    }),
-  );
   const hiddenEvaluatorManifestPath = join(hiddenRoot, 'manifest.json');
   await writeFile(
     hiddenEvaluatorManifestPath,
@@ -1136,7 +1279,347 @@ async function createReleaseFixture() {
       claimsPath,
       outputPath: join(root, 'audit.json'),
       provenanceVerifier: fixtureProvenanceVerifier,
+      stageProvenanceVerifier: fixtureStageProvenanceVerifier,
     },
+  };
+}
+
+async function retainExactContentAddressed(root, category, sourcePath) {
+  const bytes = await readFile(sourcePath);
+  const digest = sha256(bytes);
+  const path = join(root, category, 'sha256', `${digest}.json`);
+  await mkdir(dirname(path), { recursive: true });
+  await writeFile(path, bytes);
+  return { bytes, digest, path };
+}
+
+async function writeFixtureStageChain(input) {
+  const profile = input.runtimeMatrix.profiles.find(
+    (item) => item.id === input.task.runtimeProfileId,
+  );
+  const stageRoot = join(
+    input.recordRoot,
+    'stage-provenance',
+    input.run.runId,
+  );
+  const agentPath = join(stageRoot, 'agent', 'attestation.json');
+  const agentBundlePath = join(stageRoot, 'agent', 'sigstore-bundle.json');
+  const agentVerificationPath = join(stageRoot, 'agent', 'verification.json');
+  await mkdir(dirname(agentBundlePath), { recursive: true });
+  await writeFile(agentBundlePath, '{"fixture":"agent"}\n');
+  const requestBytes = await readFile(input.adapterRequest.path);
+  const agent = createAgentStageAttestation({
+    runId: input.run.runId,
+    taskId: input.run.taskId,
+    partition: input.run.partition,
+    arm: input.run.arm,
+    repetition: input.run.repetition,
+    model: {
+      modelId: input.run.modelId,
+      provider: input.run.provider,
+      requestedModel: input.run.requestedModel,
+    },
+    status: 'completed',
+    productionEligible: true,
+    createdAt:
+      input.run.partition === 'development'
+        ? '2026-07-22T10:00:00.000Z'
+        : '2026-07-22T12:00:00.000Z',
+    execution: fixtureStageExecution(input.run, 'agent'),
+    image: {
+      reference: profile.agentImage.reference,
+      digest: profile.agentImage.digest,
+      runtimeProfileId: profile.id,
+    },
+    controllerSha256: input.record.bindings.agentControllerSha256,
+    bindings: {
+      authorizationSha256:
+        input.record.bindings.authorizationSha256,
+      requestFileSha256: sha256(requestBytes),
+      requestSha256: input.adapterRequest.digest,
+      runPlanSha256: input.record.bindings.runPlanSha256,
+      taskManifestSha256: input.record.bindings.taskManifestSha256,
+      candidateManifestSha256:
+        input.record.bindings.candidateManifestSha256,
+      candidateTarballSetSha256:
+        input.record.bindings.candidateTarballSetSha256,
+      runtimeMatrixSha256: input.record.bindings.runtimeMatrixSha256,
+      preparedEnvironmentAttestationSha256:
+        input.record.bindings.preparedEnvironmentAttestationSha256,
+      environmentSha256: input.record.bindings.environmentSha256,
+      environmentSpecSha256: input.record.bindings.environmentSpecSha256,
+      environmentSubstanceSha256:
+        input.record.bindings.environmentSubstanceSha256,
+      informationEntitlementSha256:
+        input.record.bindings.informationEntitlementSha256,
+      deliverySha256: input.record.bindings.deliverySha256,
+      baseCommit: input.record.workspace.baseCommit,
+      baseTree: input.record.workspace.baseTree,
+      agentImageDigest: input.record.bindings.agentImageDigest,
+    },
+    isolation: {
+      inputMaterial: ['adapter-request', 'prepared-workspace'],
+      excludedMaterial: [
+        'evaluator-contract',
+        'evaluator-source',
+        'expected-patch',
+        'hidden-review',
+        'private-oracle',
+        'qualification-controller',
+      ],
+      providerCredentialPresent: false,
+      personalSkills: false,
+      personalMcp: false,
+      hostConfiguration: false,
+      modelNetwork: 'audited-run-local-proxy-only',
+    },
+    output: {
+      adapterResponseFile: {
+        path: 'adapter-response.json',
+        sha256: '1'.repeat(64),
+        bytes: 1,
+      },
+      providerReceiptFile: {
+        path: 'provider-receipt.json',
+        sha256: '2'.repeat(64),
+        bytes: 1,
+      },
+      workspaceDeltaFile: {
+        path: 'workspace-delta.json',
+        sha256: '3'.repeat(64),
+        bytes: 1,
+      },
+      workspaceDeltaSha256: '4'.repeat(64),
+    },
+  });
+  await writeStageAttestation(agentPath, agent);
+  const agentVerification = await fixtureStageProvenanceVerifier({
+    subjectPath: agentPath,
+    bundlePath: agentBundlePath,
+    partition: input.run.partition,
+    sourceDigest: agent.execution.sourceDigest,
+  });
+  await writeCanonicalFile(agentVerificationPath, agentVerification);
+  const [agentBytes, agentBundleBytes, agentVerificationBytes] =
+    await Promise.all([
+      readFile(agentPath),
+      readFile(agentBundlePath),
+      readFile(agentVerificationPath),
+    ]);
+
+  const runCore = structuredClone(input.record);
+  delete runCore.provenance;
+  runCore.schemaVersion = RUN_CORE_SCHEMA_VERSION;
+  const runCoreBytes = Buffer.from(prettyCanonicalJson(runCore), 'utf8');
+  const evaluatorPath = join(stageRoot, 'evaluator', 'attestation.json');
+  const evaluatorBundlePath = join(
+    stageRoot,
+    'evaluator',
+    'sigstore-bundle.json',
+  );
+  const evaluatorVerificationPath = join(
+    stageRoot,
+    'evaluator',
+    'verification.json',
+  );
+  await mkdir(dirname(evaluatorBundlePath), { recursive: true });
+  await writeFile(evaluatorBundlePath, '{"fixture":"evaluator"}\n');
+  const evaluatorResultBytes = await readFile(input.evaluator.path);
+  const trajectoryBytes = await readFile(input.trajectory.path);
+  const workspaceChangeBytes = await readFile(input.workspaceChange.path);
+  const evaluator = createEvaluatorStageAttestation({
+    runId: input.run.runId,
+    taskId: input.run.taskId,
+    partition: input.run.partition,
+    arm: input.run.arm,
+    repetition: input.run.repetition,
+    status: 'completed',
+    productionEligible: true,
+    createdAt:
+      input.run.partition === 'development'
+        ? '2026-07-22T10:01:00.000Z'
+        : '2026-07-22T12:01:00.000Z',
+    execution: fixtureStageExecution(input.run, 'evaluator'),
+    image: {
+      reference: profile.benchmarkImage.reference,
+      digest: profile.benchmarkImage.digest,
+      runtimeProfileId: profile.id,
+    },
+    controllerSha256: input.record.bindings.evaluatorControllerSha256,
+    agentStage: {
+      attestationFile: stageFileBinding(agentPath, agentBytes),
+      bundleFile: stageFileBinding(agentBundlePath, agentBundleBytes),
+      verificationFile: stageFileBinding(
+        agentVerificationPath,
+        agentVerificationBytes,
+      ),
+      verificationSha256: agentVerification.verificationSha256,
+    },
+    sealedInput: {
+      taskManifestSha256: input.record.bindings.taskManifestSha256,
+      evaluatorContractSha256:
+        input.record.bindings.evaluatorContractSha256,
+      evaluatorSourceClosureSha256:
+        input.record.bindings.qualificationEvaluatorSourceClosureSha256,
+      oracleSourceSha256: input.task.oracleSourceSha256,
+    },
+    isolation: {
+      agentExitedBeforeMount: true,
+      network: 'none',
+      providerCredentialsAbsent: true,
+    },
+    reconstruction: {
+      baseCommit: input.record.workspace.baseCommit,
+      baseTree: input.record.workspace.baseTree,
+      workspaceDeltaSha256: agent.output.workspaceDeltaSha256,
+      dependencyTreeBeforeVerified: true,
+      dependencyTreeAfterVerified: true,
+    },
+    output: {
+      authorizationFile: stageFileBinding(
+        input.authorizationRetained.path,
+        input.authorizationRetained.bytes,
+      ),
+      budgetApprovalFile: stageFileBinding(
+        input.budgetApprovalRetained.path,
+        input.budgetApprovalRetained.bytes,
+      ),
+      evaluatorResultFile: stageFileBinding(
+        input.evaluator.path,
+        evaluatorResultBytes,
+      ),
+      powerPilotFile: input.powerPilotRetained
+        ? stageFileBinding(
+            input.powerPilotRetained.path,
+            input.powerPilotRetained.bytes,
+          )
+        : null,
+      runCoreFile: {
+        path: 'run-core.json',
+        sha256: sha256(runCoreBytes),
+        bytes: runCoreBytes.byteLength,
+      },
+      trajectoryManifestFile: stageFileBinding(
+        input.trajectory.path,
+        trajectoryBytes,
+      ),
+      workspaceChangeFile: stageFileBinding(
+        input.workspaceChange.path,
+        workspaceChangeBytes,
+      ),
+    },
+  });
+  await writeStageAttestation(evaluatorPath, evaluator);
+  const evaluatorVerification = await fixtureStageProvenanceVerifier({
+    subjectPath: evaluatorPath,
+    bundlePath: evaluatorBundlePath,
+    partition: input.run.partition,
+    sourceDigest: evaluator.execution.sourceDigest,
+  });
+  await writeCanonicalFile(evaluatorVerificationPath, evaluatorVerification);
+  const [evaluatorBytes, evaluatorBundleBytes, evaluatorVerificationBytes] =
+    await Promise.all([
+      readFile(evaluatorPath),
+      readFile(evaluatorBundlePath),
+      readFile(evaluatorVerificationPath),
+    ]);
+  return {
+    agentStage: {
+      attestationFile: relativeStageFile(
+        input.recordRoot,
+        agentPath,
+        agentBytes,
+      ),
+      attestationSha256: agent.attestationSha256,
+      bundleFile: relativeStageFile(
+        input.recordRoot,
+        agentBundlePath,
+        agentBundleBytes,
+      ),
+      verificationFile: relativeStageFile(
+        input.recordRoot,
+        agentVerificationPath,
+        agentVerificationBytes,
+      ),
+      verificationSha256: agentVerification.verificationSha256,
+    },
+    evaluatorStage: {
+      attestationFile: relativeStageFile(
+        input.recordRoot,
+        evaluatorPath,
+        evaluatorBytes,
+      ),
+      attestationSha256: evaluator.attestationSha256,
+      bundleFile: relativeStageFile(
+        input.recordRoot,
+        evaluatorBundlePath,
+        evaluatorBundleBytes,
+      ),
+      verificationFile: relativeStageFile(
+        input.recordRoot,
+        evaluatorVerificationPath,
+        evaluatorVerificationBytes,
+      ),
+      verificationSha256: evaluatorVerification.verificationSha256,
+    },
+  };
+}
+
+async function fixtureStageProvenanceVerifier(input) {
+  const [subject, bundle] = await Promise.all([
+    readFile(input.subjectPath),
+    readFile(input.bundlePath),
+  ]);
+  const policy = stageProvenancePolicy(input.partition, input.sourceDigest);
+  const verification = {
+    schemaVersion: SIGSTORE_KEYLESS_SCHEMA_VERSION,
+    provider: SIGSTORE_KEYLESS_PROVIDER,
+    verified: true,
+    subject: { bytes: subject.byteLength, sha256: sha256(subject) },
+    bundle: { bytes: bundle.byteLength, sha256: sha256(bundle) },
+    policy: {
+      certificateIdentity:
+        `https://github.com/${policy.repository}/.github/workflows/` +
+        `${policy.workflowFile}@${policy.sourceRef}`,
+      certificateOidcIssuer: SIGSTORE_OIDC_ISSUER,
+      repository: policy.repository,
+      workflowFile: policy.workflowFile,
+      sourceDigest: policy.sourceDigest,
+      sourceRef: policy.sourceRef,
+      eventName: policy.eventName,
+      transparencyLogRequired: true,
+      certificateTransparencyRequired: true,
+      githubHostedRunnerRequired: true,
+    },
+  };
+  verification.verificationSha256 = sha256Canonical(verification);
+  return verification;
+}
+
+function fixtureStageExecution(run, job) {
+  return {
+    repository:
+      run.partition === 'qualification'
+        ? 'decantr-ai/decantr-qualification-private'
+        : 'decantr-ai/decantr',
+    workflowFile: 'benchmark-3-10-split-run.yml',
+    sourceDigest: FIXTURE_RUNNER_COMMIT,
+    sourceRef: 'refs/heads/main',
+    eventName: 'workflow_dispatch',
+    runId: 'fixture-split-run',
+    runAttempt: '1',
+    job,
+    runnerEnvironment: 'github-hosted',
+    runnerOs: 'Linux',
+    runnerArch: 'X64',
+  };
+}
+
+function relativeStageFile(root, path, bytes) {
+  return {
+    path: relative(root, path).replaceAll('\\', '/'),
+    sha256: sha256(bytes),
+    bytes: bytes.byteLength,
   };
 }
 

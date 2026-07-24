@@ -7,6 +7,7 @@ import { assertRuntimeMatrix, calculateRuntimeMatrixDigest } from './runtime-mat
 import {
   calculateRuntimeSourceClosure,
   parseRuntimeAttestationFile,
+  runtimeAgentImageTagReference,
   runtimeBenchmarkImageTagReference,
   verifyRuntimeAttestationProvenance,
 } from './runtime-profile-attestation.mjs';
@@ -77,6 +78,8 @@ export async function lockRuntimeMatrix(options) {
       subject.baseImage.reference !== profile.baseImage.reference ||
       runtimeBenchmarkImageTagReference(subject.benchmarkImage.reference) !==
         profile.benchmarkImage.reference ||
+      runtimeAgentImageTagReference(subject.agentImage.reference) !==
+        profile.agentImage.reference ||
       normalizeVersion(subject.runtimeVersion) !== expectedRuntimeVersion(profile) ||
       subject.packageManagerName !== profile.packageManager.name ||
       normalizeVersion(subject.packageManagerVersion) !== profile.packageManager.version
@@ -99,6 +102,7 @@ export async function lockRuntimeMatrix(options) {
     });
     profile.baseImage.digest = subject.baseImage.digest;
     profile.benchmarkImage = structuredClone(subject.benchmarkImage);
+    profile.agentImage = structuredClone(subject.agentImage);
     profile.verification = {
       attestation: structuredClone(attestation),
       attestationFile: structuredClone(item.file),

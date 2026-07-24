@@ -4,9 +4,6 @@ import { spawnSync } from 'node:child_process';
 import { basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const EXPECTED_CODEX_VERSION = '0.145.0-alpha.27';
-const EXPECTED_CLAUDE_VERSION = '2.1.153';
-const CONTROLLER_PATH = '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin';
 const FORBIDDEN_ENVIRONMENT = /^(?:ANTHROPIC_API_KEY|CLAUDE_CONFIG_DIR|CODEX_HOME|MCP_|OPENAI_API_KEY|NPM_CONFIG_USERCONFIG|XDG_CONFIG_DIRS)/u;
 
 export function assertIsolatedEnvironment(input = {}) {
@@ -40,6 +37,14 @@ export function isolatedChildEnvironment(environment = process.env) {
     'DECANTR_TASK_PACKAGE_MANAGER_VERSION',
     'DECANTR_BENCHMARK_IMAGE_DIGEST',
     'DECANTR_BENCHMARK_NETWORK_MODE',
+    'GITHUB_EVENT_NAME',
+    'GITHUB_REF',
+    'GITHUB_RUN_ATTEMPT',
+    'GITHUB_RUN_ID',
+    'GITHUB_SHA',
+    'RUNNER_ARCH',
+    'RUNNER_ENVIRONMENT',
+    'RUNNER_OS',
   ];
   const output = Object.fromEntries(
     allowed.filter((key) => typeof environment[key] === 'string').map((key) => [key, environment[key]]),
@@ -52,8 +57,6 @@ export function isolatedChildEnvironment(environment = process.env) {
 
 function selfCheck() {
   assertIsolatedEnvironment();
-  const codex = version('codex', ['--version'], controllerChildEnvironment());
-  const claude = version('claude', ['--version'], controllerChildEnvironment());
   const runtimeKind = process.env.DECANTR_TASK_RUNTIME_KIND;
   const runtimeCommand = runtimeKind === 'bun' ? 'bun' : 'node';
   const runtime = version(runtimeCommand, ['--version']);
@@ -66,20 +69,13 @@ function selfCheck() {
     '--browsers-path',
     '/opt/decantr-benchmark/evaluator-runtime/browsers',
   ]);
-  if (!codex.includes(EXPECTED_CODEX_VERSION)) {
-    throw new Error(`unexpected Codex version: ${codex}`);
-  }
-  if (!claude.includes(EXPECTED_CLAUDE_VERSION)) {
-    throw new Error(`unexpected Claude Code version: ${claude}`);
-  }
   console.log(
     JSON.stringify({
       ok: true,
       uid: typeof process.getuid === 'function' ? process.getuid() : null,
       home: process.env.HOME,
-      codex,
-      claude,
       controllerNode: process.version,
+      providerCredentialsAbsent: true,
       taskRuntime: { kind: runtimeKind, version: runtime },
       taskPackageManager: { name: packageManagerName, version: packageManager },
       evaluatorRuntime: JSON.parse(evaluatorRuntime),
@@ -106,10 +102,6 @@ function version(command, args, environment = isolatedChildEnvironment()) {
     throw new Error(`${command} version check failed: ${details.join(' | ')}`);
   }
   return (result.stdout ?? result.stderr ?? '').trim();
-}
-
-function controllerChildEnvironment() {
-  return { ...isolatedChildEnvironment(), PATH: CONTROLLER_PATH };
 }
 
 function assertVersion(actual, expected, label) {

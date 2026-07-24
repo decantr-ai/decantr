@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://decantr.ai/schemas/benchmark-3-10/run-record.v2.json",
-  "title": "Decantr 3.10 benchmark run record",
+  "$id": "https://decantr.ai/schemas/benchmark-3-10/run-record.v3.json",
+  "title": "Decantr 3.10 signed split-stage benchmark run record",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -22,10 +22,11 @@
     "usage",
     "trajectoryManifestSha256",
     "evaluatorResultSha256",
-    "failure"
+    "failure",
+    "provenance"
   ],
   "properties": {
-    "schemaVersion": { "const": "decantr-benchmark-run-record.v2" },
+    "schemaVersion": { "const": "decantr-benchmark-run-record.v3" },
     "runId": { "type": "string", "minLength": 1 },
     "taskId": { "type": "string", "minLength": 1 },
     "partition": { "enum": ["development", "qualification"] },
@@ -57,11 +58,11 @@
         "signedExternalProvenance"
       ],
       "properties": {
-        "assurance": { "enum": ["test-only-host", "github-host-split-stage-attested"] },
-        "productionEligible": { "type": "boolean" },
-        "agentEvaluatorStageSeparation": { "type": "boolean" },
-        "privateOracleAbsentDuringAgentStage": { "type": "boolean" },
-        "signedExternalProvenance": { "type": "boolean" }
+        "assurance": { "const": "github-host-split-stage-attested" },
+        "productionEligible": { "const": true },
+        "agentEvaluatorStageSeparation": { "const": true },
+        "privateOracleAbsentDuringAgentStage": { "const": true },
+        "signedExternalProvenance": { "const": true }
       }
     },
     "bindings": {
@@ -93,10 +94,13 @@
         "runtimeMatrixFileSha256",
         "runtimeMatrixSha256",
         "benchmarkImageDigest",
+        "agentImageDigest",
+        "authorizationSha256",
         "preparedEnvironmentAttestationSha256",
         "deliverySha256",
         "environmentSha256",
-        "agentControllerSha256"
+        "agentControllerSha256",
+        "evaluatorControllerSha256"
       ],
       "properties": {
         "runPlanSha256": { "$ref": "#/$defs/sha256" },
@@ -124,10 +128,13 @@
         "runtimeMatrixFileSha256": { "$ref": "#/$defs/sha256" },
         "runtimeMatrixSha256": { "$ref": "#/$defs/sha256" },
         "benchmarkImageDigest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+        "agentImageDigest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+        "authorizationSha256": { "$ref": "#/$defs/sha256" },
         "preparedEnvironmentAttestationSha256": { "$ref": "#/$defs/sha256" },
         "deliverySha256": { "$ref": "#/$defs/sha256" },
         "environmentSha256": { "$ref": "#/$defs/sha256" },
-        "agentControllerSha256": { "$ref": "#/$defs/sha256" }
+        "agentControllerSha256": { "$ref": "#/$defs/sha256" },
+        "evaluatorControllerSha256": { "$ref": "#/$defs/sha256" }
       }
     },
     "model": {
@@ -203,10 +210,47 @@
           }
         }
       ]
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["agentStage", "evaluatorStage"],
+      "properties": {
+        "agentStage": { "$ref": "#/$defs/stageReference" },
+        "evaluatorStage": { "$ref": "#/$defs/stageReference" }
+      }
     }
   },
   "$defs": {
     "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
-    "gitSha": { "type": "string", "pattern": "^[a-f0-9]{40}$" }
+    "gitSha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "fileBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "bytes"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "bytes": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "stageReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "attestationFile",
+        "attestationSha256",
+        "bundleFile",
+        "verificationFile",
+        "verificationSha256"
+      ],
+      "properties": {
+        "attestationFile": { "$ref": "#/$defs/fileBinding" },
+        "attestationSha256": { "$ref": "#/$defs/sha256" },
+        "bundleFile": { "$ref": "#/$defs/fileBinding" },
+        "verificationFile": { "$ref": "#/$defs/fileBinding" },
+        "verificationSha256": { "$ref": "#/$defs/sha256" }
+      }
+    }
   }
 }

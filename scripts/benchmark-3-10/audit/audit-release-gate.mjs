@@ -12,6 +12,19 @@ import {
   writeCanonicalFile,
 } from '../runner/canonical.mjs';
 import {
+  assertRunRecordV3,
+  runCoreFromRecord,
+} from '../runner/run-record.mjs';
+import { verifyRunAuthorization } from '../runner/run-authorization.mjs';
+import {
+  assertAgentStageAttestation,
+  assertEvaluatorStageAttestation,
+  assertStageProvenanceVerification,
+  stageProvenancePolicy,
+  verifyStageProvenance,
+} from '../runner/stage-provenance.mjs';
+import { calculateStageControllerClosure } from '../runner/stage-controller.mjs';
+import {
   assertBudgetApproval,
   assertCandidateManifest,
   assertEvaluatorContract,
@@ -186,9 +199,23 @@ export async function auditReleaseGate(options) {
     candidate,
     candidateManifestSha256: candidate.manifestSha256,
     models: loaded.models,
+    protocol: loaded.protocol,
+    budgetApprovalPath: options.budgetApprovalPath,
+    powerPilotPath: options.powerPilotPath,
     runtimeMatrix,
     preparedEnvironmentByTask,
     qualificationReceiptByTask,
+    stageProvenanceVerifier:
+      options.stageProvenanceVerifier ?? verifyStageProvenance,
+    stageControllers: {
+      agent: await calculateStageControllerClosure('agent', {
+        root: resolve(benchmarkDirectory, '..', '..'),
+      }),
+      evaluator: await calculateStageControllerClosure('evaluator', {
+        root: resolve(benchmarkDirectory, '..', '..'),
+      }),
+    },
+    cosignPath: options.cosignPath,
     errors,
   });
   const powerPilotAudit = await auditPowerPilotEvidence({
@@ -1251,9 +1278,30 @@ async function auditRunRecords(options) {
       const bytes = await readFile(recordPath);
       if (sha256(bytes) !== index.recordSha256) throw new Error('content-address digest mismatch');
       const record = JSON.parse(bytes);
-      assertRunRecordV2(record);
+      assertRunRecordV3(record);
       observed += 1;
       validateRecordBinding(record, run, options, options.errors);
+      const stageEvidence = await verifyRunStageProvenance(
+        options.recordRoot,
+        record,
+        options.runtimeMatrix,
+        options.stageProvenanceVerifier,
+        options.cosignPath,
+        options.errors,
+      );
+      await verifyRecordAuthorization({
+        root: options.recordRoot,
+        record,
+        run,
+        plan: options.plan,
+        candidate: options.candidate,
+        candidateManifestSha256:
+          options.candidateManifestSha256,
+        models: options.models,
+        protocol: options.protocol,
+        stageEvidence,
+        errors: options.errors,
+      });
       actualCostUsd += Number.isFinite(record.budget?.actualUsd) ? record.budget.actualUsd : 0;
       await verifyWorkspaceChange(
         options.recordRoot,
@@ -1326,6 +1374,346 @@ async function auditRunRecords(options) {
   };
 }
 
+async function verifyRunStageProvenance(
+  root,
+  record,
+  runtimeMatrix,
+  provenanceVerifier,
+  cosignPath,
+  errors,
+) {
+  try {
+    const agentRetained = await readRetainedStage(
+      root,
+      record.provenance.agentStage,
+      'agent',
+    );
+    const evaluatorRetained = await readRetainedStage(
+      root,
+      record.provenance.evaluatorStage,
+      'evaluator',
+    );
+    const agent = assertAgentStageAttestation(agentRetained.attestation);
+    const evaluator = assertEvaluatorStageAttestation(
+      evaluatorRetained.attestation,
+    );
+    const profile = runtimeMatrix.profiles.find(
+      (item) =>
+        item.agentImage.digest === record.bindings.agentImageDigest &&
+        item.benchmarkImage.digest === record.bindings.benchmarkImageDigest,
+    );
+    if (!profile) {
+      throw new Error('run images are absent from the locked runtime matrix');
+    }
+    if (
+      agent.attestationSha256 !== record.provenance.agentStage.attestationSha256 ||
+      evaluator.attestationSha256 !==
+        record.provenance.evaluatorStage.attestationSha256
+    ) {
+      throw new Error('stage self digests differ from the run record');
+    }
+    for (const retained of [agentRetained, evaluatorRetained]) {
+      const stage = retained.attestation;
+      const policy = stageProvenancePolicy(
+        stage.partition,
+        stage.execution.sourceDigest,
+      );
+      assertStageProvenanceVerification(retained.verification, policy);
+      const independentlyVerified = await provenanceVerifier({
+        subjectPath: retained.attestationPath,
+        bundlePath: retained.bundlePath,
+        partition: stage.partition,
+        sourceDigest: stage.execution.sourceDigest,
+        cosignPath,
+      });
+      assertStageProvenanceVerification(independentlyVerified, policy);
+      if (
+        canonicalJson(independentlyVerified) !==
+          canonicalJson(retained.verification) ||
+        independentlyVerified.verificationSha256 !==
+          retained.reference.verificationSha256
+      ) {
+        throw new Error(
+          `${stage.stage} stage offline verification differs from retained provenance`,
+        );
+      }
+    }
+    const reconstructedCoreBytes = Buffer.from(
+      prettyCanonicalJson(runCoreFromRecord(record)),
+      'utf8',
+    );
+    if (
+      evaluator.output.runCoreFile.sha256 !== sha256(reconstructedCoreBytes) ||
+      evaluator.output.runCoreFile.bytes !== reconstructedCoreBytes.byteLength ||
+      evaluator.agentStage.attestationFile.sha256 !==
+        agentRetained.reference.attestationFile.sha256 ||
+      evaluator.agentStage.attestationFile.bytes !==
+        agentRetained.reference.attestationFile.bytes ||
+      evaluator.agentStage.bundleFile.sha256 !==
+        agentRetained.reference.bundleFile.sha256 ||
+      evaluator.agentStage.bundleFile.bytes !==
+        agentRetained.reference.bundleFile.bytes ||
+      evaluator.agentStage.verificationFile.sha256 !==
+        agentRetained.reference.verificationFile.sha256 ||
+      evaluator.agentStage.verificationFile.bytes !==
+        agentRetained.reference.verificationFile.bytes ||
+      evaluator.agentStage.verificationSha256 !==
+        agentRetained.reference.verificationSha256
+    ) {
+      throw new Error('evaluator stage is bound to different agent or run-core evidence');
+    }
+    if (
+      agent.runId !== record.runId ||
+      evaluator.runId !== record.runId ||
+      agent.taskId !== record.taskId ||
+      evaluator.taskId !== record.taskId ||
+      agent.partition !== record.partition ||
+      evaluator.partition !== record.partition ||
+      agent.arm !== record.arm ||
+      evaluator.arm !== record.arm ||
+      agent.repetition !== record.repetition ||
+      evaluator.repetition !== record.repetition ||
+      agent.productionEligible !== true ||
+      evaluator.productionEligible !== true
+    ) {
+      throw new Error('stage identity or production eligibility differs from the run record');
+    }
+    if (
+      agent.execution.repository !== evaluator.execution.repository ||
+      agent.execution.sourceDigest !== evaluator.execution.sourceDigest ||
+      agent.execution.runId !== evaluator.execution.runId ||
+      agent.execution.runAttempt !== evaluator.execution.runAttempt ||
+      agent.execution.runnerEnvironment !== 'github-hosted' ||
+      evaluator.execution.runnerEnvironment !== 'github-hosted'
+    ) {
+      throw new Error('agent and evaluator were not separate jobs in one GitHub-hosted run');
+    }
+    if (
+      record.bindings.agentControllerSha256 !== agent.controllerSha256 ||
+      record.bindings.agentImageDigest !== agent.image.digest ||
+      record.bindings.authorizationSha256 !==
+        agent.bindings.authorizationSha256 ||
+      agent.image.reference !== profile?.agentImage?.reference ||
+      record.bindings.evaluatorControllerSha256 !== evaluator.controllerSha256 ||
+      record.bindings.benchmarkImageDigest !== evaluator.image.digest ||
+      evaluator.image.reference !== profile?.benchmarkImage?.reference ||
+      record.bindings.taskManifestSha256 !== agent.bindings.taskManifestSha256 ||
+      record.bindings.runPlanSha256 !== agent.bindings.runPlanSha256 ||
+      record.bindings.candidateManifestSha256 !==
+        agent.bindings.candidateManifestSha256 ||
+      record.bindings.candidateTarballSetSha256 !==
+        agent.bindings.candidateTarballSetSha256 ||
+      record.bindings.deliverySha256 !== agent.bindings.deliverySha256 ||
+      record.bindings.environmentSha256 !== agent.bindings.environmentSha256 ||
+      record.bindings.preparedEnvironmentAttestationSha256 !==
+        agent.bindings.preparedEnvironmentAttestationSha256 ||
+      record.workspace.baseCommit !== evaluator.reconstruction.baseCommit ||
+      record.workspace.baseTree !== evaluator.reconstruction.baseTree ||
+      record.bindings.evaluatorContractSha256 !==
+        evaluator.sealedInput.evaluatorContractSha256 ||
+      record.bindings.qualificationEvaluatorSourceClosureSha256 !==
+        evaluator.sealedInput.evaluatorSourceClosureSha256
+    ) {
+      throw new Error('signed stage chain differs from run-record bindings');
+    }
+    await verifyEvaluatorOutputBinding(
+      root,
+      evaluator.output.authorizationFile,
+      record.bindings.authorizationSha256,
+      'run authorization',
+    );
+    await verifyEvaluatorOutputBinding(
+      root,
+      evaluator.output.evaluatorResultFile,
+      record.evaluatorResultSha256,
+      'evaluator result',
+    );
+    await verifyEvaluatorOutputBinding(
+      root,
+      evaluator.output.trajectoryManifestFile,
+      record.trajectoryManifestSha256,
+      'trajectory manifest',
+    );
+    await verifyEvaluatorOutputBinding(
+      root,
+      evaluator.output.workspaceChangeFile,
+      record.workspace.diffSha256,
+      'workspace change',
+    );
+    return { agent, evaluator };
+  } catch (error) {
+    errors.push(
+      `${record.runId}: signed split-stage provenance is invalid (${error.message})`,
+    );
+    return null;
+  }
+}
+
+async function verifyRecordAuthorization(options) {
+  try {
+    if (!options.stageEvidence) {
+      throw new Error(
+        'signed stage evidence is unavailable for authorization validation',
+      );
+    }
+    const model = options.models.models?.find(
+      (item) => item.id === options.run.modelId,
+    );
+    if (!model) {
+      throw new Error('run model is absent from the frozen model lock');
+    }
+    const authorizationPath = join(
+      options.root,
+      'run-authorizations',
+      'sha256',
+      `${options.record.bindings.authorizationSha256}.json`,
+    );
+    const raw = JSON.parse(await readFile(authorizationPath, 'utf8'));
+    const budgetApprovalPath = raw.budgetApproval
+      ? join(
+          options.root,
+          'budget-approvals',
+          'sha256',
+          `${raw.budgetApproval.sha256}.json`,
+        )
+      : undefined;
+    const powerPilotPath = raw.powerPilot
+      ? join(
+          options.root,
+          'power-pilots',
+          'sha256',
+          `${raw.powerPilot.sha256}.json`,
+        )
+      : undefined;
+    const evidence = await verifyRunAuthorization({
+      authorizationPath,
+      budgetApprovalPath,
+      powerPilotPath,
+      retainedCompanionPaths: true,
+      expectedSha256:
+        options.record.bindings.authorizationSha256,
+      expected: {
+        runId: options.run.runId,
+        partition: options.run.partition,
+        modelId: options.run.modelId,
+        runPlanSha256: options.plan.planSha256,
+        candidateManifestSha256:
+          options.candidateManifestSha256,
+        candidateTarballSetSha256:
+          options.candidate.tarballSetSha256,
+        maxRunCostUsd: model.maxRunCostUsd,
+        protocolMaximumUsd:
+          options.protocol.budget.maximumModelSpendUsd,
+        developmentTaskCount: options.plan.tasks.filter(
+          (task) => task.partition === 'development',
+        ).length,
+      },
+      paid: true,
+      now: options.stageEvidence.agent.createdAt,
+    });
+    if (
+      evidence.authorization.budgetApproval.approvalId !==
+      options.record.budget.approvalId
+    ) {
+      throw new Error(
+        'run record approval identity differs from its authorization',
+      );
+    }
+    await verifyEvaluatorOutputBinding(
+      options.root,
+      options.stageEvidence.evaluator.output.budgetApprovalFile,
+      evidence.authorization.budgetApproval.sha256,
+      'budget approval',
+    );
+    await verifyEvaluatorOutputBinding(
+      options.root,
+      options.stageEvidence.evaluator.output.powerPilotFile,
+      evidence.authorization.powerPilot?.sha256 ?? null,
+      'power pilot',
+    );
+  } catch (error) {
+    options.errors.push(
+      `${options.run.runId}: run authorization is invalid (${error.message})`,
+    );
+  }
+}
+
+async function readRetainedStage(root, reference, expectedStage) {
+  const attestationPath = resolveContained(
+    root,
+    reference.attestationFile.path,
+    `${expectedStage} stage attestation`,
+  );
+  const bundlePath = resolveContained(
+    root,
+    reference.bundleFile.path,
+    `${expectedStage} stage bundle`,
+  );
+  const verificationPath = resolveContained(
+    root,
+    reference.verificationFile.path,
+    `${expectedStage} stage verification`,
+  );
+  const [attestationBytes, bundleBytes, verificationBytes] = await Promise.all([
+    readFile(attestationPath),
+    readFile(bundlePath),
+    readFile(verificationPath),
+  ]);
+  assertRetainedFile(reference.attestationFile, attestationBytes, 'stage attestation');
+  assertRetainedFile(reference.bundleFile, bundleBytes, 'stage bundle');
+  assertRetainedFile(reference.verificationFile, verificationBytes, 'stage verification');
+  const attestation = JSON.parse(attestationBytes);
+  if (attestation.stage !== expectedStage) {
+    throw new Error(`expected ${expectedStage} stage provenance`);
+  }
+  return {
+    reference,
+    attestation,
+    attestationPath,
+    bundlePath,
+    verification: JSON.parse(verificationBytes),
+  };
+}
+
+async function verifyEvaluatorOutputBinding(root, binding, digest, label) {
+  if (binding === null || digest === null) {
+    if (binding !== null || digest !== null) {
+      throw new Error(`${label} nullability differs between evaluator and run record`);
+    }
+    return;
+  }
+  const category =
+    label === 'evaluator result'
+      ? 'evaluator-results'
+      : label === 'trajectory manifest'
+        ? 'trajectory-manifests'
+        : label === 'workspace change'
+          ? 'workspace-changes'
+          : label === 'run authorization'
+            ? 'run-authorizations'
+            : label === 'budget approval'
+              ? 'budget-approvals'
+              : label === 'power pilot'
+                ? 'power-pilots'
+                : null;
+  if (!category) throw new Error(`unknown evaluator output binding: ${label}`);
+  const path = join(root, category, 'sha256', `${digest}.json`);
+  const bytes = await readFile(path);
+  if (
+    binding.sha256 !== sha256(bytes) ||
+    binding.bytes !== bytes.byteLength ||
+    binding.path !== `${digest}.json`
+  ) {
+    throw new Error(`${label} differs from the evaluator-stage output binding`);
+  }
+}
+
+function assertRetainedFile(binding, bytes, label) {
+  if (binding.sha256 !== sha256(bytes) || binding.bytes !== bytes.byteLength) {
+    throw new Error(`${label} file binding mismatch`);
+  }
+}
+
 async function auditPowerPilotEvidence(options) {
   let digest = null;
   try {
@@ -1356,109 +1744,6 @@ async function auditPowerPilotEvidence(options) {
     options.errors.push(`power pilot: ${error.message}`);
   }
   return { sha256: digest };
-}
-
-function assertRunRecordV2(record) {
-  assertExactKeys(
-    record,
-    [
-      'arm',
-      'bindings',
-      'budget',
-      'evaluatorResultSha256',
-      'execution',
-      'failure',
-      'framework',
-      'model',
-      'partition',
-      'repetition',
-      'repositoryId',
-      'runId',
-      'schemaVersion',
-      'status',
-      'taskId',
-      'trajectoryManifestSha256',
-      'usage',
-      'workspace',
-    ],
-    'run record',
-  );
-  if (record.schemaVersion !== 'decantr-benchmark-run-record.v2') {
-    throw new Error('run record schemaVersion is invalid');
-  }
-  assertExactKeys(
-    record.execution,
-    [
-      'assurance',
-      'productionEligible',
-      'agentEvaluatorStageSeparation',
-      'privateOracleAbsentDuringAgentStage',
-      'signedExternalProvenance',
-    ],
-    'run execution assurance',
-  );
-  assertExactKeys(
-    record.bindings,
-    [
-      'agentControllerSha256',
-      'benchmarkImageDigest',
-      'candidateManifestSha256',
-      'candidateTarballSetSha256',
-      'deliverySha256',
-      'environmentSha256',
-      'environmentSpecSha256',
-      'environmentSubstanceSha256',
-      'evaluatorContractSha256',
-      'informationEntitlementSha256',
-      'preparedEnvironmentAttestationSha256',
-      'qualificationControllerSha256',
-      'qualificationReceiptFileSha256',
-      'qualificationReceiptSha256',
-      'qualificationExecutionAttestationFileSha256',
-      'qualificationExecutionAttestationSha256',
-      'qualificationExecutionControllerSha256',
-      'qualificationEvaluatorSourceClosureSha256',
-      'qualificationInputRequestFileSha256',
-      'qualificationInputRequestSha256',
-      'qualificationInputManifestFileSha256',
-      'qualificationInputManifestSha256',
-      'qualificationRunnerRepositoryCommit',
-      'qualificationProvenanceBundleFileSha256',
-      'qualificationProvenanceVerificationSha256',
-      'runPlanSha256',
-      'runtimeMatrixFileSha256',
-      'runtimeMatrixSha256',
-      'taskManifestSha256',
-    ],
-    'run record bindings',
-  );
-  assertExactKeys(
-    record.model,
-    ['identityMatched', 'modelId', 'provider', 'requestedModel', 'returnedModel'],
-    'run record model',
-  );
-  assertExactKeys(
-    record.workspace,
-    [
-      'afterTree',
-      'baseCommit',
-      'baseTree',
-      'beforeClean',
-      'dependencyTreeAfterVerified',
-      'dependencyTreeBeforeVerified',
-      'diffSha256',
-    ],
-    'run record workspace',
-  );
-  assertExactKeys(record.budget, ['actualUsd', 'approvalId', 'paid', 'reservedUsd'], 'run record budget');
-  assertExactKeys(
-    record.usage,
-    ['cachedInputTokens', 'durationMs', 'inputTokens', 'outputTokens', 'requests'],
-    'run record usage',
-  );
-  if (record.failure !== null) {
-    assertExactKeys(record.failure, ['code', 'message', 'stage'], 'run record failure');
-  }
 }
 
 function validateRecordBinding(record, run, options, errors) {
@@ -1575,17 +1860,41 @@ function validateRecordBinding(record, run, options, errors) {
   if (record.bindings?.benchmarkImageDigest !== task?.benchmarkImageDigest) {
     errors.push(`${run.runId}: benchmark image binding mismatch`);
   }
+  const profile = options.runtimeMatrix.profiles.find(
+    (item) => item.id === task?.runtimeProfileId,
+  );
+  if (record.bindings?.agentImageDigest !== profile?.agentImage?.digest) {
+    errors.push(`${run.runId}: agent image binding mismatch`);
+  }
   if (record.bindings?.preparedEnvironmentAttestationSha256 !== prepared?.fileSha256) {
     errors.push(`${run.runId}: prepared environment attestation binding mismatch`);
   }
   if (!/^[a-f0-9]{64}$/u.test(record.bindings?.deliverySha256 ?? '')) {
     errors.push(`${run.runId}: arm-delivery digest is missing`);
   }
+  if (
+    !/^[a-f0-9]{64}$/u.test(
+      record.bindings?.authorizationSha256 ?? '',
+    )
+  ) {
+    errors.push(`${run.runId}: run-authorization digest is missing`);
+  }
   if (record.bindings?.environmentSha256 !== prepared?.attestation.environmentSha256) {
     errors.push(`${run.runId}: prepared environment identity mismatch`);
   }
   if (!/^[a-f0-9]{64}$/u.test(record.bindings?.agentControllerSha256 ?? '')) {
     errors.push(`${run.runId}: agent-controller digest is missing`);
+  }
+  if (!/^[a-f0-9]{64}$/u.test(record.bindings?.evaluatorControllerSha256 ?? '')) {
+    errors.push(`${run.runId}: evaluator-stage controller digest is missing`);
+  }
+  if (
+    record.bindings?.agentControllerSha256 !==
+      options.stageControllers.agent.controllerSha256 ||
+    record.bindings?.evaluatorControllerSha256 !==
+      options.stageControllers.evaluator.controllerSha256
+  ) {
+    errors.push(`${run.runId}: stage controller closure differs from the audited release source`);
   }
   if (
     record.workspace?.beforeClean !== true ||
@@ -1712,6 +2021,8 @@ async function verifyTrajectory(root, digest, run, record, errors) {
       request.arm !== run.arm ||
       request.repetition !== run.repetition ||
       request.bindings?.planSha256 !== record.bindings?.runPlanSha256 ||
+      request.bindings?.candidateManifestSha256 !==
+        record.bindings?.candidateManifestSha256 ||
       request.bindings?.candidateTarballSetSha256 !== record.bindings?.candidateTarballSetSha256 ||
       request.bindings?.taskManifestSha256 !== record.bindings?.taskManifestSha256 ||
       request.bindings?.informationEntitlementSha256 !== record.bindings?.informationEntitlementSha256 ||
@@ -1723,6 +2034,9 @@ async function verifyTrajectory(root, digest, run, record, errors) {
       request.bindings?.deliverySha256 !== record.bindings?.deliverySha256 ||
       request.bindings?.environmentSha256 !== record.bindings?.environmentSha256 ||
       request.bindings?.agentControllerSha256 !== record.bindings?.agentControllerSha256 ||
+      request.bindings?.agentImageDigest !== record.bindings?.agentImageDigest ||
+      request.bindings?.baseCommit !== record.workspace?.baseCommit ||
+      request.bindings?.baseTree !== record.workspace?.baseTree ||
       (delivery && request.context !== canonicalJson(delivery)) ||
       (delivery &&
         delivery.sharedTaskInputSha256 !== sha256Canonical(request.informationEntitlement?.taskInput)))

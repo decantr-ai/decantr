@@ -51,6 +51,7 @@ export async function verifySigstoreKeylessBlob(input) {
     '--certificate-github-workflow-trigger',
     options.eventName,
     '--new-bundle-format=true',
+    '--offline',
     '--max-workers',
     '1',
     options.subjectPath,

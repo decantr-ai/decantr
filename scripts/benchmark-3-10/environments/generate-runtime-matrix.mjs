@@ -11,6 +11,7 @@ import {
 } from '../runner/canonical.mjs';
 import { calculateRuntimeMatrixDigest } from './runtime-matrix.mjs';
 import {
+  runtimeAgentImageReference,
   runtimeBaseImageReference,
   runtimeBenchmarkImageReference,
 } from './runtime-profile-attestation.mjs';
@@ -49,6 +50,10 @@ export async function generateRuntimeMatrix(options) {
       },
       benchmarkImage: {
         reference: runtimeBenchmarkImageReference(group.profile.id),
+        digest: null,
+      },
+      agentImage: {
+        reference: runtimeAgentImageReference(group.profile.id),
         digest: null,
       },
       verification: null,
