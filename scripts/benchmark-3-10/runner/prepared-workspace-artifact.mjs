@@ -266,7 +266,7 @@ function assertManifest(manifest) {
   return manifest;
 }
 
-async function assertSafeTar(path) {
+export async function assertSafeTar(path) {
   const entries = [];
   await list({
     file: path,

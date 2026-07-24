@@ -125,7 +125,7 @@ jobs:
             test "$PARTITION" = "development"
           else
             test "$GITHUB_REPOSITORY" = "decantr-ai/decantr-qualification-private"
-            test "$PARTITION" = "qualification"
+            [[ "$PARTITION" = "development" || "$PARTITION" = "qualification" ]]
           fi
           if [ "$PAID" = "true" ]; then
             test "$GITHUB_RUN_ATTEMPT" = "1"
@@ -281,7 +281,8 @@ jobs:
             --mount "type=bind,src=$INPUT_ROOT/prepared-environment.json,dst=/input/prepared-environment.json,ro" \
             --mount "type=bind,src=$RECEIPT_ROOT,dst=/provider,ro" \
             --mount "type=bind,src=$OUTPUT_ROOT,dst=/evidence,rw" \
-            -e GITHUB_EVENT_NAME -e GITHUB_REF -e GITHUB_RUN_ATTEMPT -e GITHUB_RUN_ID \
+            -e GITHUB_EVENT_NAME -e GITHUB_REF -e GITHUB_REPOSITORY \
+            -e GITHUB_RUN_ATTEMPT -e GITHUB_RUN_ID \
             -e GITHUB_SHA -e RUNNER_ARCH -e RUNNER_ENVIRONMENT -e RUNNER_OS \
             "${PROXY_ENV[@]}" "$IMAGE" --stage \
             --request /input/request.json \
@@ -487,7 +488,8 @@ jobs:
             "${AUTHORIZATION_MOUNTS[@]}" \
             --mount "type=bind,src=$OUTPUT_ROOT,dst=/evidence,rw" \
             --mount "type=bind,src=$COSIGN,dst=/tools/cosign,ro" \
-            -e GITHUB_EVENT_NAME -e GITHUB_REF -e GITHUB_RUN_ATTEMPT -e GITHUB_RUN_ID \
+            -e GITHUB_EVENT_NAME -e GITHUB_REF -e GITHUB_REPOSITORY \
+            -e GITHUB_RUN_ATTEMPT -e GITHUB_RUN_ID \
             -e GITHUB_SHA -e RUNNER_ARCH -e RUNNER_ENVIRONMENT -e RUNNER_OS \
             "$IMAGE" /usr/local/bin/node /opt/decantr-benchmark/runner/evaluator-stage.mjs \
             --agent-attestation /agent/agent-stage-attestation.json \

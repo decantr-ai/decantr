@@ -355,10 +355,24 @@ function explicitAdapterEnvironment(environment) {
 }
 
 function executionIdentityFromEnvironment(partition, environment) {
-  const repository =
-    partition === 'qualification'
-      ? 'decantr-ai/decantr-qualification-private'
-      : 'decantr-ai/decantr';
+  const repository = requiredEnvironment(
+    environment,
+    'GITHUB_REPOSITORY',
+  );
+  if (
+    (partition === 'qualification' &&
+      repository !==
+        'decantr-ai/decantr-qualification-private') ||
+    (partition === 'development' &&
+      ![
+        'decantr-ai/decantr',
+        'decantr-ai/decantr-qualification-private',
+      ].includes(repository))
+  ) {
+    throw new Error(
+      'GITHUB_REPOSITORY is invalid for the run partition',
+    );
+  }
   return {
     repository,
     workflowFile: 'benchmark-3-10-split-run.yml',

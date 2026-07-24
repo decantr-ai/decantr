@@ -71,12 +71,17 @@ export async function executeEvaluatorStage(options, dependencies = {}) {
     subjectPath: resolve(options.agentAttestationPath),
     bundlePath: resolve(options.agentBundlePath),
     partition: agent.partition,
+    repository: agent.execution.repository,
     sourceDigest: agent.execution.sourceDigest,
     cosignPath: options.cosignPath,
   });
   assertStageProvenanceVerification(
     verification,
-    stageProvenancePolicy(agent.partition, agent.execution.sourceDigest),
+    stageProvenancePolicy(
+      agent.partition,
+      agent.execution.sourceDigest,
+      agent.execution.repository,
+    ),
   );
 
   const outputRoot = resolve(options.outputRoot);
@@ -924,11 +929,26 @@ function assertNoProviderCredentials(environment) {
 }
 
 function executionIdentityFromEnvironment(partition, environment) {
+  const repository = requiredEnvironment(
+    environment,
+    'GITHUB_REPOSITORY',
+  );
+  if (
+    (partition === 'qualification' &&
+      repository !==
+        'decantr-ai/decantr-qualification-private') ||
+    (partition === 'development' &&
+      ![
+        'decantr-ai/decantr',
+        'decantr-ai/decantr-qualification-private',
+      ].includes(repository))
+  ) {
+    throw new Error(
+      'GITHUB_REPOSITORY is invalid for the run partition',
+    );
+  }
   return {
-    repository:
-      partition === 'qualification'
-        ? 'decantr-ai/decantr-qualification-private'
-        : 'decantr-ai/decantr',
+    repository,
     workflowFile: 'benchmark-3-10-split-run.yml',
     sourceDigest: requiredEnvironment(environment, 'GITHUB_SHA'),
     sourceRef: requiredEnvironment(environment, 'GITHUB_REF'),

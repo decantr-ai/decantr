@@ -1,0 +1,135 @@
+name: Decantr 3.10 candidate artifact
+run-name: Decantr 3.10 candidate - ${{ github.sha }}
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: benchmark-3-10-candidate-${{ github.ref }}-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build the immutable public candidate
+    if: github.repository == 'decantr-ai/decantr' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    permissions:
+      attestations: write
+      contents: read
+      id-token: write
+    steps:
+      - name: Enforce trusted GitHub-hosted execution
+        run: |
+          test "$GITHUB_REF" = "refs/heads/main"
+          test "$GITHUB_EVENT_NAME" = "workflow_dispatch"
+          test "$RUNNER_ENVIRONMENT" = "github-hosted"
+          test "$RUNNER_OS" = "Linux"
+          test "$RUNNER_ARCH" = "X64"
+          test "$GITHUB_WORKFLOW_REF" = "$GITHUB_REPOSITORY/.github/workflows/benchmark-3-10-candidate.yml@$GITHUB_REF"
+          test "$GITHUB_WORKFLOW_SHA" = "$GITHUB_SHA"
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.17.0
+          cache: ''
+
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271
+        with:
+          version: 10.33.0
+          run_install: false
+
+      - name: Install the frozen candidate toolchain
+        run: pnpm install --frozen-lockfile
+
+      - name: Build and verify the exact candidate
+        id: candidate
+        run: |
+          set -euo pipefail
+          BUILT_AT="$(git show -s --format=%cI "$GITHUB_SHA")"
+          VERSION_LABEL="3.10.0-qualification.${GITHUB_SHA:0:12}"
+          OUTPUT_ROOT="$RUNNER_TEMP/candidate"
+          node scripts/benchmark-3-10/candidate/build.mjs \
+            --out "$OUTPUT_ROOT" \
+            --version-label "$VERSION_LABEL" \
+            --built-at "$BUILT_AT"
+          node --input-type=module - "$OUTPUT_ROOT" <<'NODE'
+          import { readFile } from 'node:fs/promises';
+          import { join } from 'node:path';
+          import { assertCandidateManifest } from './scripts/benchmark-3-10/runner/contracts.mjs';
+
+          const root = process.argv[2];
+          const path = join(root, 'candidate.json');
+          const candidate = JSON.parse(await readFile(path, 'utf8'));
+          const verified = await assertCandidateManifest(candidate, path, {
+            runtimeRoot: join(root, 'runtime'),
+          });
+          if (
+            candidate.source.commit !== process.env.GITHUB_SHA ||
+            candidate.source.clean !== true
+          ) {
+            throw new Error('candidate source identity is not clean or exact');
+          }
+          process.stdout.write(`${JSON.stringify(verified)}\n`);
+          NODE
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+          ARTIFACT="benchmark-3-10-candidate-$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          echo "artifact=$ARTIFACT" >> "$GITHUB_OUTPUT"
+
+      - name: Attest the exact candidate manifest
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373
+        with:
+          subject-path: ${{ runner.temp }}/candidate/candidate.json
+
+      - name: Retain and independently verify candidate provenance
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          OUTPUT_ROOT="$RUNNER_TEMP/candidate"
+          mkdir -p "$RUNNER_TEMP/candidate-provenance"
+          cd "$RUNNER_TEMP/candidate-provenance"
+          gh attestation download "$OUTPUT_ROOT/candidate.json" \
+            --repo "$GITHUB_REPOSITORY"
+          BUNDLE_PATH="$(find . -maxdepth 1 -type f -name 'sha256*.jsonl' -print -quit)"
+          test -n "$BUNDLE_PATH"
+          gh attestation verify "$OUTPUT_ROOT/candidate.json" \
+            --repo "$GITHUB_REPOSITORY" \
+            --bundle "$BUNDLE_PATH" \
+            --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/benchmark-3-10-candidate.yml" \
+            --source-digest "$GITHUB_SHA" \
+            --source-ref "$GITHUB_REF" \
+            --predicate-type "https://slsa.dev/provenance/v1" \
+            --deny-self-hosted-runners \
+            --format json > candidate.provenance-verification.json
+          mv "$BUNDLE_PATH" "$OUTPUT_ROOT/candidate.provenance.jsonl"
+          mv candidate.provenance-verification.json \
+            "$OUTPUT_ROOT/candidate.provenance-verification.json"
+
+      - name: Preserve candidate filesystem semantics
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/candidate-artifact"
+          tar --create --file "$RUNNER_TEMP/candidate-artifact/candidate.tar" \
+            --directory "$RUNNER_TEMP/candidate" .
+          node scripts/benchmark-3-10/runner/extract-safe-tar.mjs \
+            --tar "$RUNNER_TEMP/candidate-artifact/candidate.tar" \
+            --out "$RUNNER_TEMP/candidate-round-trip"
+          cmp "$RUNNER_TEMP/candidate/candidate.json" \
+            "$RUNNER_TEMP/candidate-round-trip/candidate.json"
+
+      - name: Retain the candidate and its exact runtime
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ${{ steps.candidate.outputs.artifact }}
+          path: ${{ runner.temp }}/candidate-artifact/candidate.tar
+          if-no-files-found: error
+          retention-days: 90

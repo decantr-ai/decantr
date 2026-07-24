@@ -39,7 +39,7 @@ test('stage subjects reject file bindings outside their artifact root', () => {
   );
 });
 
-test('stage provenance policy separates public development from private qualification', () => {
+test('stage provenance policy permits private orchestration without weakening qualification privacy', () => {
   const sourceDigest = 'a'.repeat(40);
   assert.equal(
     stageProvenancePolicy('development', sourceDigest).repository,
@@ -47,6 +47,31 @@ test('stage provenance policy separates public development from private qualific
   );
   assert.equal(
     stageProvenancePolicy('qualification', sourceDigest).repository,
+    'decantr-ai/decantr-qualification-private',
+  );
+  assert.equal(
+    stageProvenancePolicy(
+      'development',
+      sourceDigest,
+      'decantr-ai/decantr-qualification-private',
+    ).repository,
+    'decantr-ai/decantr-qualification-private',
+  );
+  assert.throws(
+    () =>
+      stageProvenancePolicy(
+        'qualification',
+        sourceDigest,
+        'decantr-ai/decantr',
+      ),
+    /partition or source digest is invalid/u,
+  );
+  const privateDevelopment = agentInput();
+  privateDevelopment.execution.repository =
+    'decantr-ai/decantr-qualification-private';
+  assert.equal(
+    createAgentStageAttestation(privateDevelopment).execution
+      .repository,
     'decantr-ai/decantr-qualification-private',
   );
 });

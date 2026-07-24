@@ -97,6 +97,8 @@ test('split workflow keeps evaluator bytes and provider credentials in disjoint 
 
 test('split workflows use commit-pinned actions and fixed GitHub-hosted images', async () => {
   for (const filename of [
+    'benchmark-3-10-candidate.yml',
+    'benchmark-3-10-run-materialization.yml',
     'benchmark-3-10-split-input.yml',
     'benchmark-3-10-split-run.yml',
   ]) {
@@ -115,6 +117,26 @@ test('split workflows use commit-pinned actions and fixed GitHub-hosted images',
   }
 });
 
+test('candidate workflow builds once from a clean public commit and attests the manifest', async () => {
+  const workflow = await readFile(
+    resolve(
+      repositoryRoot,
+      '.github/workflows/benchmark-3-10-candidate.yml',
+    ),
+    'utf8',
+  );
+  assert.match(
+    workflow,
+    /github\.repository == 'decantr-ai\/decantr'/u,
+  );
+  assert.match(workflow, /candidate\/build\.mjs/u);
+  assert.match(workflow, /--built-at "\$BUILT_AT"/u);
+  assert.match(workflow, /candidate\.source\.commit/u);
+  assert.match(workflow, /candidate\.source\.clean/u);
+  assert.match(workflow, /attest-build-provenance/u);
+  assert.doesNotMatch(workflow, /--allow-dirty/u);
+});
+
 test('split-input staging produces paired roots instead of trusting caller-supplied tar files', async () => {
   const workflow = await readFile(
     resolve(
@@ -131,6 +153,18 @@ test('split-input staging produces paired roots instead of trusting caller-suppl
     workflow,
     /runner\/prepare-split-run-input\.mjs/u,
   );
+  assert.match(
+    workflow,
+    /runner\/extract-safe-tar\.mjs/u,
+  );
+  assert.match(
+    workflow,
+    /runner\/run-materialization-packet\.mjs/u,
+  );
+  assert.match(
+    workflow,
+    /provenance\/sigstore-keyless\.mjs/u,
+  );
   assert.doesNotMatch(
     workflow,
     /benchmark-3-10-(?:private-)?qualification-input\.yml/u,
@@ -146,4 +180,44 @@ test('split-input staging produces paired roots instead of trusting caller-suppl
   );
   assert.ok(producer >= 0 && agentTar > producer);
   assert.ok(evaluatorTar > producer);
+});
+
+test('run materialization uses frozen identities and short-lived transport without provider credentials', async () => {
+  const workflow = await readFile(
+    resolve(
+      repositoryRoot,
+      '.github/workflows/benchmark-3-10-run-materialization.yml',
+    ),
+    'utf8',
+  );
+  assert.match(
+    workflow,
+    /decantr-ai\/decantr-qualification-private/u,
+  );
+  assert.match(
+    workflow,
+    /prepared-workspace-sources\.json/u,
+  );
+  assert.match(workflow, /candidate-source\.json/u);
+  assert.match(
+    workflow,
+    /--mode build/u,
+  );
+  assert.match(
+    workflow,
+    /--mode verify/u,
+  );
+  assert.match(
+    workflow,
+    /run-materialization-packet\.tar/u,
+  );
+  assert.match(
+    workflow,
+    /--deny-self-hosted-runners/u,
+  );
+  assert.doesNotMatch(
+    workflow,
+    /secrets\.(?:OPENAI|ANTHROPIC)_API_KEY/u,
+  );
+  assert.doesNotMatch(workflow, /--paid/u);
 });

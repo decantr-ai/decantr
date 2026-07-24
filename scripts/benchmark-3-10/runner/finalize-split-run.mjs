@@ -45,6 +45,7 @@ export async function finalizeSplitRun(options, dependencies = {}) {
     subjectPath: resolve(options.agentAttestationPath),
     bundlePath: resolve(options.agentBundlePath),
     partition: agent.partition,
+    repository: agent.execution.repository,
     sourceDigest: agent.execution.sourceDigest,
     cosignPath: options.cosignPath,
   });
@@ -52,6 +53,7 @@ export async function finalizeSplitRun(options, dependencies = {}) {
     subjectPath: resolve(options.evaluatorAttestationPath),
     bundlePath: resolve(options.evaluatorBundlePath),
     partition: evaluator.partition,
+    repository: evaluator.execution.repository,
     sourceDigest: evaluator.execution.sourceDigest,
     cosignPath: options.cosignPath,
   });
@@ -115,7 +117,11 @@ async function verifyAndAssert(verifier, input) {
   const verification = await verifier(input);
   return assertStageProvenanceVerification(
     verification,
-    stageProvenancePolicy(input.partition, input.sourceDigest),
+    stageProvenancePolicy(
+      input.partition,
+      input.sourceDigest,
+      input.repository,
+    ),
   );
 }
 

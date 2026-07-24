@@ -1417,12 +1417,14 @@ async function verifyRunStageProvenance(
       const policy = stageProvenancePolicy(
         stage.partition,
         stage.execution.sourceDigest,
+        stage.execution.repository,
       );
       assertStageProvenanceVerification(retained.verification, policy);
       const independentlyVerified = await provenanceVerifier({
         subjectPath: retained.attestationPath,
         bundlePath: retained.bundlePath,
         partition: stage.partition,
+        repository: stage.execution.repository,
         sourceDigest: stage.execution.sourceDigest,
         cosignPath,
       });

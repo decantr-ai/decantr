@@ -1,0 +1,283 @@
+name: Decantr 3.10 run materialization
+run-name: Decantr 3.10 materialize - ${{ inputs.run_id }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: Exact run ID from the frozen 320-run plan
+        required: true
+        type: string
+      candidate_archive_url:
+        description: Short-lived transport URL for the frozen public candidate artifact
+        required: true
+        type: string
+      prepared_archive_url:
+        description: Short-lived transport URL for the frozen prepared-workspace artifact
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: benchmark-3-10-run-materialization-${{ github.repository_id }}-${{ inputs.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    name: Build one provenance-bound no-cost run packet
+    if: github.repository == 'decantr-ai/decantr-qualification-private' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+    steps:
+      - name: Enforce trusted GitHub-hosted execution
+        run: |
+          test "$GITHUB_REPOSITORY" = "decantr-ai/decantr-qualification-private"
+          test "$GITHUB_REF" = "refs/heads/main"
+          test "$GITHUB_EVENT_NAME" = "workflow_dispatch"
+          test "$RUNNER_ENVIRONMENT" = "github-hosted"
+          test "$RUNNER_OS" = "Linux"
+          test "$RUNNER_ARCH" = "X64"
+          test "$GITHUB_WORKFLOW_REF" = "$GITHUB_REPOSITORY/.github/workflows/benchmark-3-10-run-materialization.yml@$GITHUB_REF"
+          test "$GITHUB_WORKFLOW_SHA" = "$GITHUB_SHA"
+
+      - name: Download only the short-lived frozen transports
+        env:
+          CANDIDATE_ARCHIVE_URL: ${{ inputs.candidate_archive_url }}
+          PREPARED_ARCHIVE_URL: ${{ inputs.prepared_archive_url }}
+        run: |
+          set -euo pipefail
+          [[ "$CANDIDATE_ARCHIVE_URL" =~ ^https://[^[:space:]]+$ ]]
+          [[ "$PREPARED_ARCHIVE_URL" =~ ^https://[^[:space:]]+$ ]]
+          mkdir -p "$RUNNER_TEMP/candidate-download" "$RUNNER_TEMP/prepared-download"
+          curl --fail --silent --show-error --location \
+            --proto '=https' --tlsv1.2 \
+            --output "$RUNNER_TEMP/candidate.zip" \
+            "$CANDIDATE_ARCHIVE_URL"
+          curl --fail --silent --show-error --location \
+            --proto '=https' --tlsv1.2 \
+            --output "$RUNNER_TEMP/prepared.zip" \
+            "$PREPARED_ARCHIVE_URL"
+          test "$(unzip -Z1 "$RUNNER_TEMP/candidate.zip")" = "candidate.tar"
+          unzip -q "$RUNNER_TEMP/candidate.zip" \
+            -d "$RUNNER_TEMP/candidate-download"
+          unzip -Z1 "$RUNNER_TEMP/prepared.zip" |
+            awk 'BEGIN { bad=0 } /^\// || /(^|\/)\.\.(\/|$)/ { bad=1 } END { exit bad }'
+          unzip -q "$RUNNER_TEMP/prepared.zip" \
+            -d "$RUNNER_TEMP/prepared-download"
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.17.0
+          cache: ''
+
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271
+        with:
+          version: 10.33.0
+          run_install: false
+
+      - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6
+        with:
+          cosign-release: v3.0.6
+
+      - name: Install the frozen packet controller
+        run: pnpm install --frozen-lockfile --ignore-scripts --filter .
+
+      - name: Resolve only frozen artifact identities
+        id: identity
+        env:
+          RUN_ID: ${{ inputs.run_id }}
+        run: |
+          set -euo pipefail
+          RESOLUTION="$RUNNER_TEMP/resolution.json"
+          node scripts/benchmark-3-10/runner/run-materialization-packet.mjs \
+            --mode resolve \
+            --plan .private/benchmark-3-10/runnable/run-plan.json \
+            --run-id "$RUN_ID" \
+            --prepared-source-index .private/benchmark-3-10/runnable/prepared-workspace-sources.json \
+            --candidate-source .private/benchmark-3-10/runnable/candidate-source.json \
+            > "$RESOLUTION"
+          test "$(jq -r .ok "$RESOLUTION")" = "true"
+          echo "task_id=$(jq -r .taskId "$RESOLUTION")" >> "$GITHUB_OUTPUT"
+          echo "partition=$(jq -r .partition "$RESOLUTION")" >> "$GITHUB_OUTPUT"
+          echo "candidate_repository=$(jq -r .candidateSource.repository "$RESOLUTION")" >> "$GITHUB_OUTPUT"
+          echo "candidate_run_id=$(jq -r .candidateSource.runId "$RESOLUTION")" >> "$GITHUB_OUTPUT"
+          echo "candidate_artifact=$(jq -r .candidateSource.artifact "$RESOLUTION")" >> "$GITHUB_OUTPUT"
+          echo "candidate_commit=$(jq -r .candidateSource.runnerRepositoryCommit "$RESOLUTION")" >> "$GITHUB_OUTPUT"
+          echo "candidate_archive_sha256=$(jq -r .candidateSource.candidateArchiveFileSha256 "$RESOLUTION")" >> "$GITHUB_OUTPUT"
+          echo "prepared_repository=$(jq -r .preparedSource.repository "$RESOLUTION")" >> "$GITHUB_OUTPUT"
+          echo "prepared_run_id=$(jq -r .preparedSource.runId "$RESOLUTION")" >> "$GITHUB_OUTPUT"
+          echo "prepared_artifact=$(jq -r .preparedSource.artifact "$RESOLUTION")" >> "$GITHUB_OUTPUT"
+          echo "prepared_commit=$(jq -r .preparedSource.runnerRepositoryCommit "$RESOLUTION")" >> "$GITHUB_OUTPUT"
+          echo "artifact=benchmark-3-10-run-materialization-$RUN_ID-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_OUTPUT"
+
+      - name: Verify both source workflow runs
+        env:
+          CANDIDATE_COMMIT: ${{ steps.identity.outputs.candidate_commit }}
+          CANDIDATE_REPOSITORY: ${{ steps.identity.outputs.candidate_repository }}
+          CANDIDATE_RUN_ID: ${{ steps.identity.outputs.candidate_run_id }}
+          GH_TOKEN: ${{ github.token }}
+          PREPARED_COMMIT: ${{ steps.identity.outputs.prepared_commit }}
+          PREPARED_REPOSITORY: ${{ steps.identity.outputs.prepared_repository }}
+          PREPARED_RUN_ID: ${{ steps.identity.outputs.prepared_run_id }}
+        run: |
+          set -euo pipefail
+          test "$CANDIDATE_REPOSITORY" = "decantr-ai/decantr"
+          CANDIDATE_RUN="$(curl --fail --silent --show-error --location \
+            --proto '=https' --tlsv1.2 \
+            "https://api.github.com/repos/$CANDIDATE_REPOSITORY/actions/runs/$CANDIDATE_RUN_ID")"
+          test "$(jq -r .head_repository.full_name <<<"$CANDIDATE_RUN")" = "$CANDIDATE_REPOSITORY"
+          test "$(jq -r .path <<<"$CANDIDATE_RUN")" = ".github/workflows/benchmark-3-10-candidate.yml"
+          test "$(jq -r .event <<<"$CANDIDATE_RUN")" = "workflow_dispatch"
+          test "$(jq -r .conclusion <<<"$CANDIDATE_RUN")" = "success"
+          test "$(jq -r .head_branch <<<"$CANDIDATE_RUN")" = "main"
+          test "$(jq -r .head_sha <<<"$CANDIDATE_RUN")" = "$CANDIDATE_COMMIT"
+
+          if [ "$PREPARED_REPOSITORY" = "$GITHUB_REPOSITORY" ]; then
+            PREPARED_RUN="$(gh api "repos/$PREPARED_REPOSITORY/actions/runs/$PREPARED_RUN_ID")"
+          else
+            test "$PREPARED_REPOSITORY" = "decantr-ai/decantr"
+            PREPARED_RUN="$(curl --fail --silent --show-error --location \
+              --proto '=https' --tlsv1.2 \
+              "https://api.github.com/repos/$PREPARED_REPOSITORY/actions/runs/$PREPARED_RUN_ID")"
+          fi
+          test "$(jq -r .head_repository.full_name <<<"$PREPARED_RUN")" = "$PREPARED_REPOSITORY"
+          test "$(jq -r .path <<<"$PREPARED_RUN")" = ".github/workflows/benchmark-3-10-evaluator-qualification.yml"
+          test "$(jq -r .event <<<"$PREPARED_RUN")" = "workflow_dispatch"
+          test "$(jq -r .conclusion <<<"$PREPARED_RUN")" = "success"
+          test "$(jq -r .head_branch <<<"$PREPARED_RUN")" = "main"
+          test "$(jq -r .head_sha <<<"$PREPARED_RUN")" = "$PREPARED_COMMIT"
+
+      - name: Verify and extract the public candidate
+        env:
+          CANDIDATE_ARCHIVE_SHA256: ${{ steps.identity.outputs.candidate_archive_sha256 }}
+          CANDIDATE_COMMIT: ${{ steps.identity.outputs.candidate_commit }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          CANDIDATE_TAR="$RUNNER_TEMP/candidate-download/candidate.tar"
+          test "$(sha256sum "$CANDIDATE_TAR" | cut -d ' ' -f 1)" = "$CANDIDATE_ARCHIVE_SHA256"
+          node scripts/benchmark-3-10/runner/extract-safe-tar.mjs \
+            --tar "$CANDIDATE_TAR" \
+            --out "$RUNNER_TEMP/candidate"
+          gh attestation verify "$RUNNER_TEMP/candidate/candidate.json" \
+            --repo decantr-ai/decantr \
+            --bundle "$RUNNER_TEMP/candidate/candidate.provenance.jsonl" \
+            --signer-workflow "decantr-ai/decantr/.github/workflows/benchmark-3-10-candidate.yml" \
+            --source-digest "$CANDIDATE_COMMIT" \
+            --source-ref "refs/heads/main" \
+            --predicate-type "https://slsa.dev/provenance/v1" \
+            --deny-self-hosted-runners \
+            --format json > "$RUNNER_TEMP/candidate-consumer-verification.json"
+
+      - name: Verify and extract the prepared workspace
+        env:
+          PARTITION: ${{ steps.identity.outputs.partition }}
+        run: |
+          set -euo pipefail
+          find "$RUNNER_TEMP/prepared-download" -mindepth 1 -maxdepth 1 -type f \
+            -printf '%f\n' | sort > "$RUNNER_TEMP/prepared-files.txt"
+          EXPECTED="$RUNNER_TEMP/prepared-expected.txt"
+          if [ "$PARTITION" = "development" ]; then
+            PROVENANCE="execution-attestation.provenance.jsonl"
+          else
+            test "$PARTITION" = "qualification"
+            PROVENANCE="execution-attestation.provenance.sigstore.json"
+          fi
+          printf '%s\n' \
+            execution-attestation.json \
+            execution-attestation.provenance-verification.json \
+            manifest.json \
+            prepared-environment.json \
+            "$PROVENANCE" \
+            workspace.tar | sort > "$EXPECTED"
+          cmp "$EXPECTED" "$RUNNER_TEMP/prepared-files.txt"
+          COSIGN_ARGS=()
+          if [ "$PARTITION" = "qualification" ]; then
+            COSIGN_ARGS=(--cosign "$HOME/.cosign/cosign")
+          fi
+          node scripts/benchmark-3-10/runner/prepared-workspace-artifact.mjs \
+            --artifact-root "$RUNNER_TEMP/prepared-download" \
+            --workspace-out "$RUNNER_TEMP/prepared-workspace" \
+            --verification-out "$RUNNER_TEMP/prepared-verification.json" \
+            "${COSIGN_ARGS[@]}"
+
+      - name: Build and preflight the no-cost packet
+        env:
+          RUN_ID: ${{ inputs.run_id }}
+        run: |
+          set -euo pipefail
+          node scripts/benchmark-3-10/runner/run-materialization-packet.mjs \
+            --mode build \
+            --plan .private/benchmark-3-10/runnable/run-plan.json \
+            --run-id "$RUN_ID" \
+            --prepared-source-index .private/benchmark-3-10/runnable/prepared-workspace-sources.json \
+            --candidate-source .private/benchmark-3-10/runnable/candidate-source.json \
+            --candidate-root "$RUNNER_TEMP/candidate" \
+            --prepared-environment "$RUNNER_TEMP/prepared-download/prepared-environment.json" \
+            --prepared-verification "$RUNNER_TEMP/prepared-verification.json" \
+            --workspace "$RUNNER_TEMP/prepared-workspace" \
+            --development-task-root scripts/benchmark-3-10/tasks/development \
+            --qualification-task-root .private/benchmark-3-10/runnable/tasks \
+            --development-evaluator-root scripts/benchmark-3-10/evaluators/development \
+            --qualification-evaluator-root .private/benchmark-3-10/evaluators/qualification \
+            --runtime-matrix scripts/benchmark-3-10/environments/runtime-matrix.locked.json \
+            --models scripts/benchmark-3-10/models.json \
+            --protocol scripts/benchmark-3-10/protocol.json \
+            --source-commit "$GITHUB_SHA" \
+            --materialized-at "$(date -u +%Y-%m-%dT%H:%M:%S.000Z)" \
+            --out "$RUNNER_TEMP/run-packet" \
+            --validation-out "$RUNNER_TEMP/run-packet-preflight"
+
+      - name: Sign and independently verify the packet manifest
+        run: |
+          set -euo pipefail
+          SUBJECT="$RUNNER_TEMP/run-packet/manifest.json"
+          BUNDLE="$RUNNER_TEMP/run-packet/manifest.sigstore.json"
+          VERIFICATION="$RUNNER_TEMP/run-packet/manifest.provenance-verification.json"
+          "$HOME/.cosign/cosign" sign-blob --yes \
+            --bundle "$BUNDLE" "$SUBJECT" > /dev/null
+          node scripts/benchmark-3-10/provenance/sigstore-keyless.mjs \
+            --subject "$SUBJECT" \
+            --bundle "$BUNDLE" \
+            --repository "$GITHUB_REPOSITORY" \
+            --workflow benchmark-3-10-run-materialization.yml \
+            --source-digest "$GITHUB_SHA" \
+            --source-ref "$GITHUB_REF" \
+            --event "$GITHUB_EVENT_NAME" \
+            --cosign "$HOME/.cosign/cosign" \
+            --out "$VERIFICATION"
+
+      - name: Round-trip the complete packet
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/run-packet-artifact"
+          tar --create \
+            --file "$RUNNER_TEMP/run-packet-artifact/run-materialization-packet.tar" \
+            --directory "$RUNNER_TEMP/run-packet" .
+          node scripts/benchmark-3-10/runner/extract-safe-tar.mjs \
+            --tar "$RUNNER_TEMP/run-packet-artifact/run-materialization-packet.tar" \
+            --out "$RUNNER_TEMP/run-packet-round-trip"
+          node scripts/benchmark-3-10/runner/run-materialization-packet.mjs \
+            --mode verify \
+            --packet-root "$RUNNER_TEMP/run-packet-round-trip" \
+            --source-commit "$GITHUB_SHA"
+
+      - name: Upload one filesystem-preserving packet
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ${{ steps.identity.outputs.artifact }}
+          path: ${{ runner.temp }}/run-packet-artifact/run-materialization-packet.tar
+          if-no-files-found: error
+          retention-days: 3

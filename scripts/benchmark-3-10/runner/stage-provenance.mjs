@@ -21,9 +21,18 @@ export const SPLIT_RUN_SOURCE_REF = 'refs/heads/main';
 const SHA256 = /^[a-f0-9]{64}$/u;
 const GIT_SHA = /^[a-f0-9]{40}$/u;
 const IMAGE_DIGEST = /^sha256:[a-f0-9]{64}$/u;
-const REPOSITORIES = {
+const DEFAULT_REPOSITORIES = {
   development: 'decantr-ai/decantr',
   qualification: 'decantr-ai/decantr-qualification-private',
+};
+const ALLOWED_REPOSITORIES = {
+  development: new Set([
+    'decantr-ai/decantr',
+    'decantr-ai/decantr-qualification-private',
+  ]),
+  qualification: new Set([
+    'decantr-ai/decantr-qualification-private',
+  ]),
 };
 
 export function createAgentStageAttestation(input) {
@@ -278,9 +287,15 @@ export function calculateStageAttestationDigest(attestation) {
   return sha256Canonical(body);
 }
 
-export function stageProvenancePolicy(partition, sourceDigest) {
-  const repository = REPOSITORIES[partition];
-  if (!repository || !GIT_SHA.test(sourceDigest ?? '')) {
+export function stageProvenancePolicy(
+  partition,
+  sourceDigest,
+  repository = DEFAULT_REPOSITORIES[partition],
+) {
+  if (
+    !ALLOWED_REPOSITORIES[partition]?.has(repository) ||
+    !GIT_SHA.test(sourceDigest ?? '')
+  ) {
     throw new Error('stage provenance partition or source digest is invalid');
   }
   return {
@@ -293,7 +308,11 @@ export function stageProvenancePolicy(partition, sourceDigest) {
 }
 
 export async function verifyStageProvenance(input) {
-  const policy = stageProvenancePolicy(input.partition, input.sourceDigest);
+  const policy = stageProvenancePolicy(
+    input.partition,
+    input.sourceDigest,
+    input.repository,
+  );
   const verification = await verifySigstoreKeylessBlob({
     subjectPath: input.subjectPath,
     bundlePath: input.bundlePath,
@@ -406,11 +425,11 @@ function assertExecution(execution, partition, expectedJob) {
     ],
     'stage execution',
   );
-  const expectedRepository = REPOSITORIES[partition];
+  const allowedRepositories = ALLOWED_REPOSITORIES[partition];
   const local = execution.runnerEnvironment === 'local-test';
   if (
     execution.job !== expectedJob ||
-    execution.repository !== expectedRepository ||
+    !allowedRepositories?.has(execution.repository) ||
     execution.workflowFile !== SPLIT_RUN_WORKFLOW_FILE ||
     !GIT_SHA.test(execution.sourceDigest ?? '') ||
     execution.sourceRef !== SPLIT_RUN_SOURCE_REF ||
@@ -529,6 +548,7 @@ function parseArgs(argv) {
     else if (argument === '--bundle') options.bundlePath = resolve(argv[++index]);
     else if (argument === '--verification') options.verificationPath = resolve(argv[++index]);
     else if (argument === '--partition') options.partition = argv[++index];
+    else if (argument === '--repository') options.repository = argv[++index];
     else if (argument === '--source-digest') options.sourceDigest = argv[++index];
     else if (argument === '--cosign') options.cosignPath = resolve(argv[++index]);
     else if (argument === '--out') options.outputPath = resolve(argv[++index]);
