@@ -1,0 +1,170 @@
+name: Decantr 3.10 dependency proxy network diagnostic
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    name: Compare dependency proxy network attachment order
+    if: github.repository == 'decantr-ai/decantr' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - name: Enforce the hosted diagnostic identity
+        run: |
+          test "$GITHUB_REPOSITORY" = "decantr-ai/decantr"
+          test "$GITHUB_REF" = "refs/heads/main"
+          test "$GITHUB_EVENT_NAME" = "workflow_dispatch"
+          test "$RUNNER_ENVIRONMENT" = "github-hosted"
+
+      - name: Authenticate the diagnostic to GHCR
+        env:
+          GHCR_TOKEN: ${{ github.token }}
+        run: printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+
+      - name: Compare network attachment orders
+        env:
+          CLIENT_IMAGE: ghcr.io/decantr-ai/decantr-benchmark-3-10:node-22.17.0-pnpm-10.13.1@sha256:5b46420568fc329776d485cf7a13c380ffbd1141cc4d7684b58bffa655283d9a
+          PROXY_IMAGE: docker.io/ubuntu/squid@sha256:8fafd41d6ddceb295d26eea9938321d825ac5351c7e46cf6a8aa5d093b8ed1ce
+        run: |
+          set -euo pipefail
+          OUTPUT="$RUNNER_TEMP/proxy-network-diagnostic"
+          mkdir -p "$OUTPUT"
+          docker pull --platform linux/amd64 "$CLIENT_IMAGE"
+          docker pull --platform linux/amd64 "$PROXY_IMAGE"
+          cat > "$OUTPUT/squid.conf" <<'EOF'
+          http_port 3128
+          acl CONNECT method CONNECT
+          acl allowed_ports port 443
+          acl reviewed_dependencies dstdomain registry.npmjs.org
+          http_access deny !allowed_ports
+          http_access allow reviewed_dependencies
+          http_access deny all
+          cache deny all
+          access_log stdio:/var/log/squid/access.log
+          cache_log /var/log/squid/cache.log
+          coredump_dir /var/spool/squid
+          EOF
+
+          run_case() {
+            local order="$1"
+            local network="decantr-proxy-${order}"
+            local proxy="decantr-proxy-${order}"
+            docker network create --internal "$network"
+            if [ "$order" = "internal-first" ]; then
+              docker create \
+                --name "$proxy" \
+                --network "$network" \
+                --network-alias dependency-proxy \
+                --read-only \
+                --cap-drop ALL \
+                --security-opt no-new-privileges \
+                --mount "type=bind,src=$OUTPUT/squid.conf,dst=/etc/squid/squid.conf,readonly" \
+                --tmpfs /var/log/squid:rw,nosuid,nodev,noexec,size=64m \
+                --tmpfs /var/run:rw,nosuid,nodev,noexec,size=16m \
+                --tmpfs /var/spool/squid:rw,nosuid,nodev,noexec,size=64m \
+                --entrypoint squid \
+                "$PROXY_IMAGE" -N -f /etc/squid/squid.conf
+              docker network connect bridge "$proxy"
+            else
+              docker create \
+                --name "$proxy" \
+                --network bridge \
+                --read-only \
+                --cap-drop ALL \
+                --security-opt no-new-privileges \
+                --mount "type=bind,src=$OUTPUT/squid.conf,dst=/etc/squid/squid.conf,readonly" \
+                --tmpfs /var/log/squid:rw,nosuid,nodev,noexec,size=64m \
+                --tmpfs /var/run:rw,nosuid,nodev,noexec,size=16m \
+                --tmpfs /var/spool/squid:rw,nosuid,nodev,noexec,size=64m \
+                --entrypoint squid \
+                "$PROXY_IMAGE" -N -f /etc/squid/squid.conf
+              docker network connect --alias dependency-proxy "$network" "$proxy"
+            fi
+            docker start "$proxy"
+            sleep 2
+            docker inspect "$proxy" > "$OUTPUT/${order}.proxy.inspect.json"
+            docker network inspect "$network" > "$OUTPUT/${order}.network.inspect.json"
+            docker logs "$proxy" > "$OUTPUT/${order}.proxy.log.txt" 2>&1 || true
+            local address
+            address="$(docker inspect --format "{{(index .NetworkSettings.Networks \"$network\").IPAddress}}" "$proxy")"
+            set +e
+            timeout 45s docker run --rm \
+              --name "decantr-proxy-${order}-readiness" \
+              --network "$network" \
+              --add-host "dependency-proxy:$address" \
+              --cap-drop ALL \
+              --security-opt no-new-privileges \
+              --pids-limit 32 \
+              --user 10001:10001 \
+              --read-only \
+              --entrypoint /usr/local/bin/node \
+              "$CLIENT_IMAGE" \
+              --eval '
+                const net = require("node:net");
+                const deadline = Date.now() + 30000;
+                const connect = () => new Promise((resolve, reject) => {
+                  const socket = net.connect({ host: "dependency-proxy", port: 3128 });
+                  const finish = (error) => {
+                    socket.destroy();
+                    error ? reject(error) : resolve();
+                  };
+                  socket.setTimeout(1000, () => finish(new Error("timeout")));
+                  socket.once("connect", () => finish());
+                  socket.once("error", finish);
+                });
+                (async () => {
+                  let last;
+                  while (Date.now() < deadline) {
+                    try {
+                      await connect();
+                      process.stdout.write("ready\n");
+                      return;
+                    } catch (error) {
+                      last = error;
+                      await new Promise((resolve) => setTimeout(resolve, 250));
+                    }
+                  }
+                  throw last;
+                })().catch((error) => {
+                  process.stderr.write(String(error));
+                  process.exitCode = 1;
+                });
+              ' > "$OUTPUT/${order}.readiness.log.txt" 2>&1
+            local result=$?
+            set -e
+            printf '%s\n' "$result" > "$OUTPUT/${order}.exit-code.txt"
+            docker logs "$proxy" > "$OUTPUT/${order}.proxy.final.log.txt" 2>&1 || true
+            docker rm -f "$proxy"
+            docker network rm "$network"
+            return "$result"
+          }
+
+          set +e
+          run_case internal-first
+          INTERNAL_FIRST=$?
+          run_case bridge-first
+          BRIDGE_FIRST=$?
+          set -e
+          printf 'internal_first=%s\nbridge_first=%s\n' \
+            "$INTERNAL_FIRST" "$BRIDGE_FIRST" | tee "$OUTPUT/summary.txt"
+          test "$BRIDGE_FIRST" -eq 0
+
+      - name: Remove GHCR reader credentials
+        if: always()
+        run: docker logout ghcr.io
+
+      - name: Upload diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: benchmark-3-10-proxy-network-diagnostic-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/proxy-network-diagnostic
+          if-no-files-found: warn
+          retention-days: 30
