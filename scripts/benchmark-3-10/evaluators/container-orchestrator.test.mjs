@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { sha256Canonical } from '../runner/canonical.mjs';
 import {
   createPreparedBaseEnvironment,
+  dependencyProxyContainerArgs,
   dependencyProxyReadinessArgs,
   deriveDependencyAllowlist,
   inspectPreparedDependencyRoot,
@@ -136,6 +137,47 @@ test('dependency proxy readiness uses a hardened container on only the internal 
   assert.equal(args.at(-2), '--eval');
   assert.match(args.at(-1), /dependency-proxy/u);
   assert.match(args.at(-1), /connection timed out/u);
+});
+
+test('dependency proxy runs nonroot with zero capabilities and only owned tmpfs mounts', () => {
+  const args = dependencyProxyContainerArgs({
+    name: 'qualification-proxy',
+    networkName: 'qualification-dependencies',
+    configPath: '/evidence/proxy/squid.conf',
+    imageDigest: IMAGE,
+  });
+  assert.deepEqual(args.slice(args.indexOf('--user'), args.indexOf('--user') + 2), [
+    '--user',
+    '13:13',
+  ]);
+  assert.deepEqual(args.slice(args.indexOf('--cap-drop'), args.indexOf('--cap-drop') + 2), [
+    '--cap-drop',
+    'ALL',
+  ]);
+  assert.equal(args.includes('--read-only'), true);
+  assert.equal(args.filter((item) => item === '--tmpfs').length, 3);
+  assert.equal(
+    args.includes('/var/log/squid:rw,nosuid,nodev,noexec,size=64m,uid=13,gid=13,mode=0750'),
+    true,
+  );
+  assert.equal(
+    args.includes('/var/run:rw,nosuid,nodev,noexec,size=16m,uid=13,gid=13,mode=0750'),
+    true,
+  );
+  assert.equal(
+    args.includes('/var/spool/squid:rw,nosuid,nodev,noexec,size=64m,uid=13,gid=13,mode=0750'),
+    true,
+  );
+  assert.throws(
+    () =>
+      dependencyProxyContainerArgs({
+        name: 'qualification-proxy',
+        networkName: 'qualification-dependencies',
+        configPath: 'relative/squid.conf',
+        imageDigest: IMAGE,
+      }),
+    /container binding is invalid/u,
+  );
 });
 
 test('dependency proxy address is derived from the inspected internal network', () => {

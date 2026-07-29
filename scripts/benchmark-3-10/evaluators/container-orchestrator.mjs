@@ -47,6 +47,12 @@ const GIT_SHA = /^[a-f0-9]{40}$/u;
 const SAFE_HOST = /^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/u;
 const DEPENDENCY_PROXY_HOST = 'dependency-proxy';
 const DEPENDENCY_PROXY_PORT = 3128;
+const DEPENDENCY_PROXY_USER = '13:13';
+const DEPENDENCY_PROXY_TMPFS = Object.freeze({
+  '/var/log/squid': 'rw,nosuid,nodev,noexec,size=64m,uid=13,gid=13,mode=0750',
+  '/var/run': 'rw,nosuid,nodev,noexec,size=16m,uid=13,gid=13,mode=0750',
+  '/var/spool/squid': 'rw,nosuid,nodev,noexec,size=64m,uid=13,gid=13,mode=0750',
+});
 const DEPENDENCY_PROXY_READINESS_TIMEOUT_MS = 30_000;
 const DEPENDENCY_PROXY_READINESS_SCRIPT = String.raw`
 const net = require('node:net');
@@ -909,39 +915,18 @@ async function startDependencyProxy(context) {
   await mkdir(proxyRoot, { recursive: true, mode: 0o700 });
   const configPath = join(proxyRoot, 'squid.conf');
   const config = squidConfiguration(allowlist.hosts);
-  await writeFile(configPath, config, { encoding: 'utf8', mode: 0o600 });
+  await writeFile(configPath, config, { encoding: 'utf8', mode: 0o644 });
   const networkInspect = await inspectNetwork(runner, networkName);
   if (networkInspect.value.Name !== networkName || networkInspect.value.Internal !== true) {
     throw new Error('dependency network is not an internal Docker network');
   }
   const networkInspectEvidence = await persistEvidence(evidenceRoot, 'proxy-network.inspect.json', networkInspect.raw);
-  const args = [
-    '--name',
-    names.proxy,
-    '--network',
+  const args = dependencyProxyContainerArgs({
+    name: names.proxy,
     networkName,
-    '--network-alias',
-    'dependency-proxy',
-    '--read-only',
-    '--cap-drop',
-    'ALL',
-    '--security-opt',
-    'no-new-privileges',
-    '--mount',
-    bindMount(configPath, '/etc/squid/squid.conf', true),
-    '--tmpfs',
-    '/var/log/squid:rw,nosuid,nodev,noexec,size=64m',
-    '--tmpfs',
-    '/var/run:rw,nosuid,nodev,noexec,size=16m',
-    '--tmpfs',
-    '/var/spool/squid:rw,nosuid,nodev,noexec,size=64m',
-    '--entrypoint',
-    'squid',
-    request.dependencyProxy.image.digest,
-    '-N',
-    '-f',
-    '/etc/squid/squid.conf',
-  ];
+    configPath,
+    imageDigest: request.dependencyProxy.image.digest,
+  });
   const containerId = (await runOrThrow(runner, 'docker', ['create', ...args], 'create dependency proxy')).stdout.trim();
   cleanup.containers.add(containerId);
   await runOrThrow(runner, 'docker', ['network', 'connect', 'bridge', containerId], 'attach proxy egress network');
@@ -1055,6 +1040,48 @@ export function dependencyProxyReadinessArgs({ name, networkName, imageDigest, p
   ];
 }
 
+export function dependencyProxyContainerArgs({ name, networkName, configPath, imageDigest }) {
+  if (
+    typeof name !== 'string' ||
+    name.length === 0 ||
+    typeof networkName !== 'string' ||
+    networkName.length === 0 ||
+    !isAbsolute(configPath ?? '') ||
+    !IMAGE_DIGEST.test(imageDigest ?? '')
+  ) {
+    throw new Error('dependency proxy container binding is invalid');
+  }
+  const args = [
+    '--name',
+    name,
+    '--network',
+    networkName,
+    '--network-alias',
+    DEPENDENCY_PROXY_HOST,
+    '--read-only',
+    '--cap-drop',
+    'ALL',
+    '--security-opt',
+    'no-new-privileges',
+    '--user',
+    DEPENDENCY_PROXY_USER,
+    '--mount',
+    bindMount(configPath, '/etc/squid/squid.conf', true),
+  ];
+  for (const [path, options] of Object.entries(DEPENDENCY_PROXY_TMPFS)) {
+    args.push('--tmpfs', `${path}:${options}`);
+  }
+  args.push(
+    '--entrypoint',
+    'squid',
+    imageDigest,
+    '-N',
+    '-f',
+    '/etc/squid/squid.conf',
+  );
+  return args;
+}
+
 async function captureControllerClosure(context) {
   const { runner, imageDigest, evidenceRoot, containerName, cleanup } = context;
   const created = await runOrThrow(
@@ -1133,10 +1160,23 @@ function verifyProxyInspect(value, expected) {
   if (
     value.Image !== expected.imageDigest ||
     value.Config?.Image !== expected.imageDigest ||
+    value.Config?.User !== DEPENDENCY_PROXY_USER ||
     value.State?.Running !== true ||
-    value.HostConfig?.ReadonlyRootfs !== true
+    value.HostConfig?.ReadonlyRootfs !== true ||
+    !value.HostConfig?.CapDrop?.map((item) => item.toUpperCase()).includes('ALL') ||
+    !value.HostConfig?.SecurityOpt?.includes('no-new-privileges')
   ) {
     throw new Error('dependency proxy image or running state is invalid');
+  }
+  const tmpfs = value.HostConfig?.Tmpfs;
+  if (
+    tmpfs === null ||
+    typeof tmpfs !== 'object' ||
+    Array.isArray(tmpfs) ||
+    Object.keys(tmpfs).length !== Object.keys(DEPENDENCY_PROXY_TMPFS).length ||
+    Object.entries(DEPENDENCY_PROXY_TMPFS).some(([path, options]) => tmpfs[path] !== options)
+  ) {
+    throw new Error('dependency proxy writable mounts are invalid');
   }
   const networks = Object.keys(value.NetworkSettings?.Networks ?? {}).sort();
   if (networks.length !== 2 || !networks.includes('bridge') || !networks.includes(expected.internalNetwork)) {
