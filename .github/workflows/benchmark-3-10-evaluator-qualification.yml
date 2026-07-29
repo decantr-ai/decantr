@@ -83,6 +83,12 @@ jobs:
         with:
           cosign-release: v3.0.6
 
+      - name: Reclaim reviewed hosted runner storage
+        run: |
+          bash .github/scripts/benchmark-3-10-reclaim-storage.sh \
+            "$RUNNER_TEMP/qualification-output/hosted-runner-storage" \
+            25769803776
+
       - name: Download sealed qualification inputs
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:

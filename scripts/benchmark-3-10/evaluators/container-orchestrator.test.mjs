@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { lstat, mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import test from 'node:test';
@@ -14,10 +14,13 @@ import {
   deriveDependencyAllowlist,
   inspectPreparedDependencyRoot,
   packageManagerFatalDiagnostic,
+  prepareEvaluationEvidenceRoots,
+  releaseEvaluationGate,
   resolveDependencyProxyAddress,
   resolveImagePullReference,
   verifyRunnerCommit,
   verifyRunningEvaluationContainer,
+  writeReadableCanonicalEvidence,
 } from './container-orchestrator.mjs';
 
 const IMAGE = `sha256:${'2'.repeat(64)}`;
@@ -55,6 +58,11 @@ test('evaluator workflow uses a fixed GitHub host and read-only GHCR credentials
   );
   assert.equal(workflow.includes('xargs -0 -r setfacl'), true);
   assert.equal(workflow.includes(`grep -Fx 'user:10001:rwx'`), true);
+  assert.equal(
+    workflow.includes('.github/scripts/benchmark-3-10-reclaim-storage.sh'),
+    true,
+  );
+  assert.equal(workflow.includes('25769803776'), true);
   assert.equal(workflow.includes('setpriv --reuid=10001'), false);
   assert.equal(workflow.includes('chmod -R a+rwX'), false);
   assert.equal(
@@ -65,6 +73,40 @@ test('evaluator workflow uses a fixed GitHub host and read-only GHCR credentials
   );
   assert.equal(workflow.includes('.preparation.preparedEnvironment.fileSha256'), true);
   assert.equal(workflow.includes('workspace.tar'), true);
+});
+
+test('hosted storage cleanup is allowlisted, measured, and independently diagnosable', async () => {
+  const [script, workflow] = await Promise.all([
+    readFile(
+      join(repositoryRoot, '.github', 'scripts', 'benchmark-3-10-reclaim-storage.sh'),
+      'utf8',
+    ),
+    readFile(
+      join(
+        repositoryRoot,
+        '.github',
+        'workflows',
+        'benchmark-3-10-runner-storage-diagnostic.yml',
+      ),
+      'utf8',
+    ),
+  ]);
+  const actionReferences = [...workflow.matchAll(/uses:\s+[^@\s]+@([^\s]+)/gu)].map(
+    (match) => match[1],
+  );
+  assert.equal(actionReferences.length, 3);
+  assert.equal(
+    actionReferences.every((reference) => /^[a-f0-9]{40}$/u.test(reference)),
+    true,
+  );
+  assert.equal(script.includes('RECLAIM_PATHS=('), true);
+  assert.equal(script.includes('/usr/local/lib/android'), true);
+  assert.equal(script.includes('/opt/hostedtoolcache/CodeQL'), true);
+  assert.equal(script.includes('rm -rf --one-file-system -- "$path"'), true);
+  assert.equal(script.includes('rm -rf /'), false);
+  assert.equal(script.includes('decantr-benchmark-hosted-runner-storage.v1'), true);
+  assert.equal(workflow.includes('runs-on: ubuntu-24.04'), true);
+  assert.equal(workflow.includes('github-hosted'), true);
 });
 
 test('private input workflow is repository-gated and uses the shared controller', async () => {
@@ -255,6 +297,27 @@ test('prepared dependency evidence requires a nonempty contained node_modules ro
       kind: 'directory',
       entryCount: 1,
     });
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('evaluation evidence roots permit the fixed non-root evaluator handoff', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'decantr-container-evidence-'));
+  try {
+    const paths = await prepareEvaluationEvidenceRoots(join(root, 'role'));
+    assert.equal((await lstat(paths.outputRoot)).mode & 0o777, 0o733);
+    assert.equal((await lstat(paths.controlRoot)).mode & 0o777, 0o755);
+
+    const gatePath = join(paths.controlRoot, 'release');
+    await releaseEvaluationGate(gatePath);
+    assert.equal((await lstat(gatePath)).mode & 0o777, 0o644);
+    assert.equal(await readFile(gatePath, 'utf8'), 'host-inspection-passed\n');
+
+    const resultPath = join(paths.outputRoot, 'result.json');
+    await writeReadableCanonicalEvidence(resultPath, { status: 'passed' });
+    assert.equal((await lstat(resultPath)).mode & 0o777, 0o644);
+    assert.deepEqual(JSON.parse(await readFile(resultPath, 'utf8')), { status: 'passed' });
   } finally {
     await rm(root, { recursive: true, force: true });
   }

@@ -5,6 +5,7 @@ import { constants } from 'node:fs';
 import { isIP } from 'node:net';
 import {
   access,
+  chmod,
   lstat,
   mkdir,
   readFile,
@@ -791,12 +792,7 @@ async function evaluateRole(context) {
   const siblingWorkspace = request.roles[otherRole(role)].workspace;
   const workspaceBeforeSha256 = await hashFilesystem(roleRequest.workspace);
   const roleEvidenceRoot = resolve(evidenceRoot, role);
-  const outputRoot = resolve(roleEvidenceRoot, 'output');
-  const controlRoot = resolve(roleEvidenceRoot, 'control');
-  await Promise.all([
-    mkdir(outputRoot, { recursive: true, mode: 0o700 }),
-    mkdir(controlRoot, { recursive: true, mode: 0o700 }),
-  ]);
+  const { outputRoot, controlRoot } = await prepareEvaluationEvidenceRoots(roleEvidenceRoot);
   const gatePath = join(controlRoot, 'release');
   const resultPath = join(outputRoot, 'result.json');
   const canaryPath = join(outputRoot, 'network-canary.json');
@@ -856,7 +852,7 @@ async function evaluateRole(context) {
     controlRoot,
   });
   const inspectEvidence = await persistEvidence(evidenceRoot, `${role}.evaluate.inspect.json`, inspect.raw);
-  await writeFile(gatePath, 'host-inspection-passed\n', { encoding: 'utf8', mode: 0o600 });
+  await releaseEvaluationGate(gatePath);
   const wait = await runOrThrow(runner, 'docker', ['wait', containerId], `wait for ${role} evaluation container`);
   const logs = await runner.run('docker', ['logs', containerId]);
   const logsEvidence = await persistEvidence(
@@ -1387,7 +1383,7 @@ async function runRoleExecute(argv) {
   await waitForGate(options.gatePath);
   const canary = await runNoNetworkCanary();
   if (canary.status !== 'blocked') throw new Error('network canary detected evaluation egress');
-  await writeCanonicalFile(options.canaryPath, canary);
+  await writeReadableCanonicalEvidence(options.canaryPath, canary);
   const result = await executeEvaluator({
     contractPath: options.contractPath,
     expectedContractSha256: options.expectedContractSha256,
@@ -1402,8 +1398,32 @@ async function runRoleExecute(argv) {
     taskId: options.taskId,
     contractId: options.contractId,
   });
-  await writeCanonicalFile(options.outputPath, result);
+  await writeReadableCanonicalEvidence(options.outputPath, result);
   process.stdout.write(`${prettyCanonicalJson({ schemaVersion: ROLE_RESULT_VERSION, role: options.role, status: result.status })}`);
+}
+
+export async function prepareEvaluationEvidenceRoots(roleEvidenceRoot) {
+  const outputRoot = resolve(roleEvidenceRoot, 'output');
+  const controlRoot = resolve(roleEvidenceRoot, 'control');
+  await Promise.all([
+    mkdir(outputRoot, { recursive: true, mode: 0o733 }),
+    mkdir(controlRoot, { recursive: true, mode: 0o755 }),
+  ]);
+  await Promise.all([
+    chmod(outputRoot, 0o733),
+    chmod(controlRoot, 0o755),
+  ]);
+  return { outputRoot, controlRoot };
+}
+
+export async function releaseEvaluationGate(gatePath) {
+  await writeFile(gatePath, 'host-inspection-passed\n', { encoding: 'utf8', mode: 0o644 });
+  await chmod(gatePath, 0o644);
+}
+
+export async function writeReadableCanonicalEvidence(path, value) {
+  await writeCanonicalFile(path, value);
+  await chmod(path, 0o644);
 }
 
 async function runNoNetworkCanary() {

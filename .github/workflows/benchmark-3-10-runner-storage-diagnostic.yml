@@ -1,0 +1,47 @@
+name: Decantr 3.10 hosted runner storage diagnostic
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    name: Measure reviewed hosted runner cleanup
+    if: github.repository == 'decantr-ai/decantr' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Enforce the hosted diagnostic identity
+        run: |
+          test "$GITHUB_REPOSITORY" = "decantr-ai/decantr"
+          test "$GITHUB_REF" = "refs/heads/main"
+          test "$GITHUB_EVENT_NAME" = "workflow_dispatch"
+          test "$RUNNER_ENVIRONMENT" = "github-hosted"
+          test "$RUNNER_OS" = "Linux"
+          test "$RUNNER_ARCH" = "X64"
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.17.0
+          cache: ''
+
+      - name: Reclaim and measure storage
+        run: |
+          bash .github/scripts/benchmark-3-10-reclaim-storage.sh \
+            "$RUNNER_TEMP/hosted-runner-storage" \
+            0
+
+      - name: Upload storage evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: benchmark-3-10-runner-storage-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/hosted-runner-storage
+          if-no-files-found: error
+          retention-days: 30
