@@ -32,7 +32,7 @@ jobs:
           test "$GITHUB_WORKFLOW_REF" = "$GITHUB_REPOSITORY/.github/workflows/benchmark-3-10-candidate.yml@$GITHUB_REF"
           test "$GITHUB_WORKFLOW_SHA" = "$GITHUB_SHA"
 
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
           persist-credentials: false
