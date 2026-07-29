@@ -51,6 +51,7 @@ jobs:
           cache_log /var/log/squid/cache.log
           coredump_dir /var/spool/squid
           EOF
+          chmod 0644 "$OUTPUT/squid.conf"
 
           run_case() {
             local order="$1"
@@ -65,10 +66,11 @@ jobs:
                 --read-only \
                 --cap-drop ALL \
                 --security-opt no-new-privileges \
+                --user 13:13 \
                 --mount "type=bind,src=$OUTPUT/squid.conf,dst=/etc/squid/squid.conf,readonly" \
-                --tmpfs /var/log/squid:rw,nosuid,nodev,noexec,size=64m \
-                --tmpfs /var/run:rw,nosuid,nodev,noexec,size=16m \
-                --tmpfs /var/spool/squid:rw,nosuid,nodev,noexec,size=64m \
+                --tmpfs /var/log/squid:rw,nosuid,nodev,noexec,size=64m,uid=13,gid=13,mode=0750 \
+                --tmpfs /var/run:rw,nosuid,nodev,noexec,size=16m,uid=13,gid=13,mode=0750 \
+                --tmpfs /var/spool/squid:rw,nosuid,nodev,noexec,size=64m,uid=13,gid=13,mode=0750 \
                 --entrypoint squid \
                 "$PROXY_IMAGE" -N -f /etc/squid/squid.conf
               docker network connect bridge "$proxy"
@@ -79,10 +81,11 @@ jobs:
                 --read-only \
                 --cap-drop ALL \
                 --security-opt no-new-privileges \
+                --user 13:13 \
                 --mount "type=bind,src=$OUTPUT/squid.conf,dst=/etc/squid/squid.conf,readonly" \
-                --tmpfs /var/log/squid:rw,nosuid,nodev,noexec,size=64m \
-                --tmpfs /var/run:rw,nosuid,nodev,noexec,size=16m \
-                --tmpfs /var/spool/squid:rw,nosuid,nodev,noexec,size=64m \
+                --tmpfs /var/log/squid:rw,nosuid,nodev,noexec,size=64m,uid=13,gid=13,mode=0750 \
+                --tmpfs /var/run:rw,nosuid,nodev,noexec,size=16m,uid=13,gid=13,mode=0750 \
+                --tmpfs /var/spool/squid:rw,nosuid,nodev,noexec,size=64m,uid=13,gid=13,mode=0750 \
                 --entrypoint squid \
                 "$PROXY_IMAGE" -N -f /etc/squid/squid.conf
               docker network connect --alias dependency-proxy "$network" "$proxy"
@@ -143,17 +146,17 @@ jobs:
             docker logs "$proxy" > "$OUTPUT/${order}.proxy.final.log.txt" 2>&1 || true
             docker rm -f "$proxy"
             docker network rm "$network"
-            return "$result"
+            CASE_RESULT="$result"
+            return 0
           }
 
-          set +e
           run_case internal-first
-          INTERNAL_FIRST=$?
+          INTERNAL_FIRST="$CASE_RESULT"
           run_case bridge-first
-          BRIDGE_FIRST=$?
-          set -e
+          BRIDGE_FIRST="$CASE_RESULT"
           printf 'internal_first=%s\nbridge_first=%s\n' \
             "$INTERNAL_FIRST" "$BRIDGE_FIRST" | tee "$OUTPUT/summary.txt"
+          test "$INTERNAL_FIRST" -eq 0
           test "$BRIDGE_FIRST" -eq 0
 
       - name: Remove GHCR reader credentials
