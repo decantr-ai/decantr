@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { lstat, mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { lstat, mkdtemp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import test from 'node:test';
@@ -15,9 +15,11 @@ import {
   inspectPreparedDependencyRoot,
   packageManagerFatalDiagnostic,
   prepareEvaluationEvidenceRoots,
+  preparePreparationHome,
   releaseEvaluationGate,
   resolveDependencyProxyAddress,
   resolveImagePullReference,
+  verifyPreparationInspect,
   verifyRunnerCommit,
   verifyRunningEvaluationContainer,
   writeReadableCanonicalEvidence,
@@ -318,6 +320,71 @@ test('evaluation evidence roots permit the fixed non-root evaluator handoff', as
     await writeReadableCanonicalEvidence(resultPath, { status: 'passed' });
     assert.equal((await lstat(resultPath)).mode & 0o777, 0o644);
     assert.deepEqual(JSON.parse(await readFile(resultPath, 'utf8')), { status: 'passed' });
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('preparation home is empty, role-specific, and protected by a private parent', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'decantr-container-preparation-home-'));
+  try {
+    const home = await preparePreparationHome(root, 'qualification-base');
+    assert.equal((await lstat(dirname(home))).mode & 0o777, 0o700);
+    assert.equal((await lstat(home)).mode & 0o777, 0o777);
+    assert.deepEqual(await readdir(home), []);
+    await assert.rejects(
+      preparePreparationHome(root, '../escape'),
+      /role name is invalid/u,
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('preparation inspection requires only the task workspace and empty home as writable binds', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'decantr-container-preparation-inspect-'));
+  try {
+    const workspace = join(root, 'base');
+    const siblingWorkspace = join(root, 'expected');
+    const preparationHome = join(root, 'home');
+    await Promise.all([
+      mkdir(workspace),
+      mkdir(siblingWorkspace),
+      mkdir(preparationHome),
+    ]);
+    const inspect = {
+      Image: IMAGE,
+      Config: { Image: IMAGE },
+      HostConfig: {
+        NetworkMode: 'none',
+        ReadonlyRootfs: true,
+        CapDrop: ['ALL'],
+        SecurityOpt: ['no-new-privileges'],
+        ExtraHosts: [],
+      },
+      Mounts: [
+        { Source: workspace, Destination: '/work/source', RW: true },
+        { Source: preparationHome, Destination: '/home/benchmark-empty', RW: true },
+      ],
+    };
+    const expected = {
+      imageDigest: IMAGE,
+      network: 'none',
+      workspace,
+      siblingWorkspace,
+      preparationHome,
+      proxyAddress: null,
+    };
+    assert.equal(verifyPreparationInspect(inspect, expected), undefined);
+    inspect.Mounts.push({
+      Source: join(root, 'unexpected'),
+      Destination: '/unexpected',
+      RW: true,
+    });
+    assert.throws(
+      () => verifyPreparationInspect(inspect, expected),
+      /unexpected writable preparation mount/u,
+    );
   } finally {
     await rm(root, { recursive: true, force: true });
   }

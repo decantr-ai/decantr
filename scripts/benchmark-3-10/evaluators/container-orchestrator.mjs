@@ -15,7 +15,7 @@ import {
   rm,
   writeFile,
 } from 'node:fs/promises';
-import { isAbsolute, join, relative, resolve } from 'node:path';
+import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assertTaskEnvironmentSpec, taskEnvironmentSubstanceSha256 } from '../environments/contracts.mjs';
 import {
@@ -608,12 +608,16 @@ function assertPrequalificationSeal(bundle, candidate) {
 }
 
 async function prepareRole(context) {
-  const { request, role, evidenceRoot } = context;
+  const { request, role, names, evidenceRoot } = context;
   const roleRequest = request.roles[role];
   const workspaceBeforeSha256 = await hashFilesystem(roleRequest.workspace);
+  const preparationHome = await preparePreparationHome(
+    dirname(roleRequest.workspace),
+    names[role],
+  );
   const steps = [];
   for (const command of request.environmentSpec.preparation) {
-    steps.push(await runPreparationCommand({ ...context, command }));
+    steps.push(await runPreparationCommand({ ...context, command, preparationHome }));
   }
   await verifyGitRevision(roleRequest.workspace, roleRequest.revision, role);
   await verifyLockfiles(request.environmentSpec, roleRequest.workspace);
@@ -630,7 +634,17 @@ async function prepareRole(context) {
 }
 
 async function runPreparationCommand(context) {
-  const { runner, request, role, names, proxy, evidenceRoot, cleanup, command } = context;
+  const {
+    runner,
+    request,
+    role,
+    names,
+    proxy,
+    evidenceRoot,
+    cleanup,
+    command,
+    preparationHome,
+  } = context;
   const roleRequest = request.roles[role];
   const containerName = `${names[role]}-prepare-${slug(command.id)}`;
   const network = command.network === 'dependency-registry' ? proxy.networkName : 'none';
@@ -639,12 +653,11 @@ async function runPreparationCommand(context) {
     args.push('--add-host', dependencyProxyHostEntry(proxy.internalAddress));
   }
   args.push('--mount', bindMount(roleRequest.workspace, '/work/source', false));
+  args.push('--mount', bindMount(preparationHome, '/home/benchmark-empty', false));
   args.push('--workdir', containerWorkspacePath(command.cwd));
   args.push(
     '--tmpfs',
-    '/home/benchmark-empty:rw,nosuid,nodev,noexec,size=256m,mode=0700,uid=10001,gid=10001',
-    '--tmpfs',
-    '/tmp:rw,nosuid,nodev,noexec,size=256m,mode=1777',
+    '/tmp:rw,nosuid,nodev,noexec,size=1024m,mode=1777',
   );
   if (command.network === 'dependency-registry') {
     for (const [key, value] of Object.entries(proxyEnvironment())) args.push('--env', `${key}=${value}`);
@@ -662,6 +675,7 @@ async function runPreparationCommand(context) {
     network,
     workspace: roleRequest.workspace,
     siblingWorkspace: request.roles[otherRole(role)].workspace,
+    preparationHome,
     proxyAddress: command.network === 'dependency-registry' ? proxy.internalAddress : null,
   });
   const inspectEvidence = await persistEvidence(
@@ -1134,7 +1148,7 @@ export async function verifyRunningEvaluationContainer(commandRunner, containerI
   return inspect;
 }
 
-function verifyPreparationInspect(value, expected) {
+export function verifyPreparationInspect(value, expected) {
   verifyCommonInspect(value, expected.imageDigest, expected.network);
   if (value.HostConfig?.ReadonlyRootfs !== true) throw new Error('preparation container root filesystem is writable');
   const extraHosts = value.HostConfig?.ExtraHosts ?? [];
@@ -1149,7 +1163,14 @@ function verifyPreparationInspect(value, expected) {
   }
   const mounts = normalizeInspectMounts(value.Mounts);
   requireMount(mounts, expected.workspace, '/work/source', true);
+  requireMount(mounts, expected.preparationHome, '/home/benchmark-empty', true);
   rejectSiblingMount(mounts, expected.siblingWorkspace);
+  const writableDestinations = new Set(['/work/source', '/home/benchmark-empty']);
+  for (const mount of mounts) {
+    if (mount.rw && !writableDestinations.has(mount.destination)) {
+      throw new Error(`unexpected writable preparation mount: ${mount.destination}`);
+    }
+  }
 }
 
 function verifyProxyInspect(value, expected) {
@@ -1414,6 +1435,19 @@ export async function prepareEvaluationEvidenceRoots(roleEvidenceRoot) {
     chmod(controlRoot, 0o755),
   ]);
   return { outputRoot, controlRoot };
+}
+
+export async function preparePreparationHome(workspaceRoot, roleName) {
+  if (!/^[a-z0-9][a-z0-9._-]+$/u.test(roleName ?? '')) {
+    throw new Error('preparation home role name is invalid');
+  }
+  const parent = resolve(workspaceRoot, '.decantr-preparation-homes');
+  const home = resolve(parent, roleName);
+  await mkdir(parent, { recursive: true, mode: 0o700 });
+  await mkdir(home, { mode: 0o700 });
+  // The private parent prevents host traversal; the leaf mode admits only the bind-mounted fixed UID.
+  await chmod(home, 0o777);
+  return home;
 }
 
 export async function releaseEvaluationGate(gatePath) {
