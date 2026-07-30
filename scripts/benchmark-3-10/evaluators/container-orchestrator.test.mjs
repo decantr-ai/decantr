@@ -546,6 +546,7 @@ test('dependency allowlist is derived only from bound HTTPS lockfile sources plu
       root,
     );
     assert.deepEqual(allowlist.derived, ['packages.example.org', 'registry.npmjs.org']);
+    assert.ok(allowlist.fixed.includes('cdn.npmmirror.com'));
     assert.ok(allowlist.hosts.includes('registry.yarnpkg.com'));
     assert.ok(allowlist.hosts.includes('packages.example.org'));
   } finally {

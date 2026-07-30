@@ -97,6 +97,8 @@ const connect = () => new Promise((resolve, reject) => {
 });
 `.trim();
 const FIXED_DEPENDENCY_HOSTS = Object.freeze([
+  // registry.npmmirror.com serves frozen tarballs through this exact CDN redirect.
+  'cdn.npmmirror.com',
   'codeload.github.com',
   'github.com',
   'objects.githubusercontent.com',
