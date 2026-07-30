@@ -89,6 +89,8 @@ test('runtime Docker context excludes local private material and nested dependen
   );
   assert.equal(patterns.has('.private/'), true);
   assert.equal(patterns.has('**/node_modules/'), true);
+  assert.equal(patterns.has('*.md'), true);
+  assert.equal(patterns.has('*.svg'), true);
 });
 
 test('runtime probes mount the empty home for the non-root benchmark identity', async () => {
@@ -174,7 +176,7 @@ test('runtime matrix deduplicates profiles without exposing sealed task identiti
   }
 });
 
-test('runtime source closure binds every committed build-context and controller file', async () => {
+test('runtime source closure binds executable inputs without coupling documentation assets', async () => {
   const root = await mkdtemp(join(tmpdir(), 'decantr-runtime-source-'));
   try {
     await Promise.all([
@@ -183,7 +185,7 @@ test('runtime source closure binds every committed build-context and controller 
       mkdir(join(root, 'scripts', 'benchmark-3-10', 'environments'), { recursive: true }),
     ]);
     await Promise.all([
-      writeFile(join(root, '.dockerignore'), 'node_modules/\n'),
+      writeFile(join(root, '.dockerignore'), 'node_modules/\n*.md\n*.svg\n'),
       writeFile(
         join(root, '.github', 'workflows', 'benchmark-3-10-runtime-profiles.yml'),
         'name: fixture\n',
@@ -193,6 +195,8 @@ test('runtime source closure binds every committed build-context and controller 
         join(root, 'scripts', 'benchmark-3-10', 'environments', 'build-runtime-profiles.mjs'),
         'export const fixture = true;\n',
       ),
+      writeFile(join(root, 'scripts', 'benchmark-3-10', 'README.md'), '# Fixture\n'),
+      writeFile(join(root, 'scripts', 'benchmark-3-10', 'diagram.svg'), '<svg></svg>\n'),
     ]);
     git(root, ['init', '-q']);
     git(root, ['add', '.']);
@@ -211,6 +215,14 @@ test('runtime source closure binds every committed build-context and controller 
     assert.equal(closure.buildContext.fileCount, 3);
     assert.equal(closure.controller.fileCount, 4);
     assert.notEqual(closure.buildContext.filesSha256, closure.controller.filesSha256);
+
+    await writeFile(join(root, 'scripts', 'benchmark-3-10', 'README.md'), '# Updated fixture\n');
+    await writeFile(join(root, 'scripts', 'benchmark-3-10', 'notes.md'), '# Untracked notes\n');
+    const documentationOnlyClosure = await calculateRuntimeSourceClosure({
+      repositoryRoot: root,
+      sourceCommit,
+    });
+    assert.deepEqual(documentationOnlyClosure, closure);
 
     const injected = join(root, 'scripts', 'benchmark-3-10', 'injected.mjs');
     await writeFile(injected, 'export const injected = true;\n');

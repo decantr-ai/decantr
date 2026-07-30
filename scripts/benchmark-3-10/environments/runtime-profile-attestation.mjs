@@ -46,6 +46,7 @@ export const RUNTIME_CONTROLLER_ROOTS = Object.freeze([
   '.github/workflows/benchmark-3-10-runtime-profiles.yml',
   'scripts/benchmark-3-10',
 ]);
+export const RUNTIME_NON_EXECUTABLE_SUFFIXES = Object.freeze(['.md', '.svg']);
 export const CONTROLLER_IMAGE_REFERENCE = 'node:22.17.0-bookworm-slim';
 export const CONTROLLER_NODE_VERSION = '22.17.0';
 export const CONTROLLER_CODEX_VERSION = '0.145.0';
@@ -688,6 +689,7 @@ async function calculateGitClosure(repositoryRoot, sourceCommit, roots) {
       if (!match) throw new Error('runtime source closure received malformed Git tree output');
       return { mode: match.groups.mode, type: match.groups.type, path: match.groups.path };
     })
+    .filter((entry) => isRuntimeSourcePath(entry.path))
     .sort((left, right) => compareStrings(left.path, right.path));
   if (entries.length === 0) throw new Error('runtime source closure is empty');
   if (entries.some((entry) => entry.type !== 'blob' || !['100644', '100755'].includes(entry.mode))) {
@@ -734,7 +736,7 @@ async function collectFilesystemFiles(repositoryRoot, roots) {
 async function walk(absolute, logicalPath, files) {
   const stats = await lstat(absolute);
   if (stats.isFile()) {
-    files.add(logicalPath);
+    if (isRuntimeSourcePath(logicalPath)) files.add(logicalPath);
     return;
   }
   if (!stats.isDirectory()) throw new Error(`${logicalPath}: runtime source closure forbids links and special files`);
@@ -742,6 +744,10 @@ async function walk(absolute, logicalPath, files) {
   for (const entry of entries.sort((left, right) => compareStrings(left.name, right.name))) {
     await walk(join(absolute, entry.name), `${logicalPath}/${entry.name}`, files);
   }
+}
+
+function isRuntimeSourcePath(path) {
+  return !RUNTIME_NON_EXECUTABLE_SUFFIXES.some((suffix) => path.endsWith(suffix));
 }
 
 function artifactFileBinding(path, bytes) {
