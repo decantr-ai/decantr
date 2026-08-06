@@ -155,16 +155,16 @@ Official provider pricing was reviewed and locked on 2026-07-22 in [`scripts/ben
 
 ## Current Evidence State
 
-As of 2026-07-24, the no-cost harness tests pass, but the experiment is not runnable and no value result exists:
+As of 2026-08-05, the no-cost harness tests pass, but the frozen experiment is not runnable and no value result exists:
 
 - all 28 corpus repositories and the 24/16 task partition are frozen;
 - all 40 evaluator specs and all 40 task environment specs have explicit sole-maintainer approval; this is not independent blinded outcome review;
-- all 26 dual-image runtime profiles passed GitHub-hosted run `30116606965` from source commit `30e37b79e2f1acf1f2d264d173d9411cd313faf0`; retained v3 attestations bind both image roles and the independently reverified locked matrix has digest `def6deb33d7b9d523f3c4c416e623e4082a8c5ec530946571e9cc07bfdd56c1a`;
-- no external container-qualified evaluator receipt has been retained;
+- all 26 dual-image runtime profiles passed GitHub-hosted run `30577939983`, with exact retained-evidence retries `30581534061` and `30581539933` from source commit `cfcb849454d68f2e9b8ff91fdf6b22751eb016cd`; retained v3 attestations bind both image roles and the independently reverified locked matrix has digest `ce55618610740db332d19c6314f78d0141f440bc5ca04ec79698b3359d6c93bc`;
+- no complete current-head set of 40 external container-qualified evaluator receipts and prepared workspaces has been retained; superseded partial campaigns remain failure evidence only;
 - the candidate Day-0 scanner report is 17 `ready` and 11 `limited`, and the sole maintainer approved the 28-repository authority oracle; the final frozen candidate must still pass that audit;
 - exact-model OpenAI and Anthropic adapters and a credential-owning audited proxy exist, but no candidate tarball set, budget approval, configured benchmark credential, provider run, blinded review, power pilot, or qualification statistic exists;
 - the GitHub-hosted split-stage agent/evaluator workflow, dual provenance subjects, v3 run records, and release re-verification are implemented and pass no-cost local tests, but no hosted signed model run exists;
-- public and repository-gated private evaluator-input production now share one committed, data-free controller; sealed private candidates and oracles remain only in the private repository. Disjoint short-lived split artifacts and one-shot per-run hosted reservation exist, but the hosted run-materialization packet producer is still missing and no path has been exercised end to end with materialized split-run inputs.
+- public and repository-gated private evaluator-input production share one committed, data-free controller; sealed private candidates and oracles remain only in the private repository. The hosted run-materialization packet producer, disjoint split artifacts, and one-shot per-run hosted reservation exist and pass no-cost contract tests, but no path has yet been exercised end to end from a complete materialized task set. Campaign handoff artifacts use one-day fallback retention and are archived, verified, and deleted task by task to bound GitHub Actions storage.
 
 These are blockers, not administrative TODOs. A test-green harness proves only harness mechanics.
 
