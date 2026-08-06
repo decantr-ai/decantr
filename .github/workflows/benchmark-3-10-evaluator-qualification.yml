@@ -272,7 +272,7 @@ jobs:
           name: benchmark-3-10-qualification-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/qualification-output
           if-no-files-found: warn
-          retention-days: 30
+          retention-days: 1
 
       - name: Upload the prepared base workspace
         if: success()
@@ -281,4 +281,4 @@ jobs:
           name: benchmark-3-10-prepared-workspace-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/prepared-workspace-output
           if-no-files-found: error
-          retention-days: 30
+          retention-days: 1

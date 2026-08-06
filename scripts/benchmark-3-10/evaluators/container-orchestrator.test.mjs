@@ -75,6 +75,8 @@ test('evaluator workflow uses a fixed GitHub host and read-only GHCR credentials
   );
   assert.equal(workflow.includes('.preparation.preparedEnvironment.fileSha256'), true);
   assert.equal(workflow.includes('workspace.tar'), true);
+  assert.equal(workflow.match(/retention-days: 1/gu)?.length, 2);
+  assert.equal(workflow.includes('retention-days: 30'), false);
 });
 
 test('hosted storage cleanup is allowlisted, measured, and independently diagnosable', async () => {
@@ -142,6 +144,22 @@ test('private input workflow is repository-gated and uses the shared controller'
     true,
   );
   assert.equal(workflow.includes('.private/benchmark-3-10/evaluators/prepare-private-input.mjs'), false);
+  assert.equal(workflow.includes('retention-days: 1'), true);
+  assert.equal(workflow.includes('retention-days: 3'), false);
+});
+
+test('public evaluator input uses one-day fallback retention', async () => {
+  const workflow = await readFile(
+    join(
+      repositoryRoot,
+      '.github',
+      'workflows',
+      'benchmark-3-10-qualification-input.yml',
+    ),
+    'utf8',
+  );
+  assert.equal(workflow.includes('retention-days: 1'), true);
+  assert.equal(workflow.includes('retention-days: 3'), false);
 });
 
 test('image retrieval preserves a manifest-pinned reference and separately verifies the config digest', () => {

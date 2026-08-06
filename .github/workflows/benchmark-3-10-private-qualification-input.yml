@@ -63,4 +63,4 @@ jobs:
           name: benchmark-3-10-private-qualification-input-${{ inputs.task_id }}
           path: ${{ runner.temp }}/qualification-input
           if-no-files-found: error
-          retention-days: 3
+          retention-days: 1
