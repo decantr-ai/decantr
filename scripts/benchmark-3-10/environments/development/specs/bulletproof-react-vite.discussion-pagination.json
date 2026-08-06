@@ -67,10 +67,10 @@
   },
   "projectPath": "apps/react-vite",
   "review": {
-    "notes": "Independent re-review found that proxy-isolated Yarn installation removes the tracked MSW worker at this frozen base. Preparation now restores only apps/react-vite/public/mockServiceWorker.js from each role's own HEAD after installation, preserving source fidelity without ignoring or broadly cleaning any other mutation.",
-    "reviewedAt": null,
-    "reviewedBy": null,
-    "status": "draft"
+    "notes": "Independent re-review found that proxy-isolated Yarn installation removes the tracked MSW worker at this frozen base. Preparation now restores only apps/react-vite/public/mockServiceWorker.js from each role's own HEAD after installation, preserving source fidelity without ignoring or broadly cleaning any other mutation. Approved by the sole maintainer after independent review of the frozen source, lockfile, runtime, and preparation contract and successful exact GitHub-hosted Linux x64 probe run 30636316819, attempt 1. Offline retained GitHub OIDC provenance re-verification bound source commit d1454e0d1927bdc13a1393c8a4e603f1c74ef277, subject 28d00ea623b6a69d713ae440389f90db8ea9f3d6edb89e1d26219a164e216d4c, immutable image ghcr.io/decantr-ai/decantr-benchmark-3-10@sha256:5b599f1773b75fddab773eb09b97cd955d9b6bee3d327f4628509495d53e588b, zero failed required commands, and a clean worktree before and after preparation.",
+    "reviewedAt": "2026-07-31T17:57:54Z",
+    "reviewedBy": "David Aimi (sole maintainer), execution assisted by OpenAI Codex",
+    "status": "approved"
   },
   "schemaVersion": "decantr-benchmark-task-environment.v1",
   "sourceEvidence": [
