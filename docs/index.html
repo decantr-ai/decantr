@@ -221,11 +221,25 @@
       margin: 0 auto;
       text-align: center;
     }
+    .hero-brand-anchor {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      align-items: center;
+      gap: 1rem;
+      width: min(18rem, 76vw);
+      margin: 0 auto 0.65rem;
+    }
+    .hero-brand-anchor::before,
+    .hero-brand-anchor::after {
+      content: "";
+      height: 1px;
+    }
+    .hero-brand-anchor::before { background: rgba(254, 68, 116, 0.38); }
+    .hero-brand-anchor::after { background: rgba(253, 163, 3, 0.42); }
     .hero-mark {
-      width: 3.75rem;
-      height: 3.75rem;
-      margin: 0 auto 0.6rem;
-      filter: drop-shadow(0 12px 28px rgba(254, 68, 116, 0.18));
+      width: clamp(4.5rem, 6vw, 5.75rem);
+      height: auto;
+      filter: drop-shadow(0 16px 32px rgba(254, 68, 116, 0.2));
     }
     .hero-inner .eyebrow { margin: 0 auto 0.9rem; }
     .hero-h1 {
@@ -1180,6 +1194,8 @@
     @media (max-width: 720px) {
       .nav-links { display: none; }
       .nav-cta { margin-left: 0; }
+      .hero-brand-anchor { width: min(14rem, 72vw); gap: 0.75rem; margin-bottom: 0.55rem; }
+      .hero-mark { width: 4.5rem; }
       .problems, .steps, .trust-grid, .roadmap { grid-template-columns: 1fr; }
       .problem { border-right: 0; border-bottom: 1px solid var(--border); }
       .problem:last-child { border-bottom: 0; }
@@ -1232,7 +1248,9 @@
     <!-- ============ HERO ============ -->
     <section class="section hero" aria-labelledby="hero-title">
       <div class="hero-inner reveal">
-        <img class="hero-mark" src="/logo.svg" alt="" width="60" height="60">
+        <div class="hero-brand-anchor" aria-hidden="true">
+          <img class="hero-mark" src="/logo.svg" alt="" width="92" height="92">
+        </div>
         <p class="eyebrow">AI Frontend Governance for production codebases</p>
         <h1 class="hero-h1" id="hero-title">
           UI change control for <span class="accent">AI-edited</span> codebases.
