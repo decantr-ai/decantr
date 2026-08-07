@@ -43,6 +43,10 @@ Project Health distinguishes actionable failures from broad informational observ
 
 The MCP server remains `io.github.decantr-ai/mcp-server`, keeps stdio transport, and preserves the same eight tool IDs. Authority-aware task preparation is exposed through compatible `decantr_context` behavior; no ninth tool was added.
 
+### Release security baseline
+
+The bundled MCP SDK and transitive IP parsing dependency were refreshed, and the retained content API moved to patched Hono, URI parsing, and HTTP client dependency floors. Release evidence now gates the effective publish-package closure while retaining private-workspace findings as explicit diagnostics.
+
 ## Evidence And Limits
 
 The [Culinary Platform clean-slate replay](../benchmarks/2026-08-07-culinary-platform-clean-slate-adoption.md) caught and repaired incorrect route taskability, incomplete stylesheet authority, API-handler component pollution, and unjustified confidence. It is oracle-assisted regression evidence, not a blinded control/treatment result.

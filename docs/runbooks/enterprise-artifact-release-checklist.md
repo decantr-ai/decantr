@@ -29,7 +29,7 @@ Use this checklist with [Release Stewardship](release-stewardship.md). Decantr 3
 
 The frozen 3.9 qualification packet remains historical evidence for the 3.9 line. Do not rerun or rewrite it as 3.10 publication authorization. Likewise, do not claim measured model improvement from deterministic 3.10 regression tests or product closeout.
 
-`release:evidence` attempts `pnpm audit --json` first. When npm explicitly reports that pnpm's audit endpoints were retired with HTTP 410, it queries npm's supported bulk advisory endpoint using the installed pnpm dependency graph. Any advisory, malformed response, inventory failure, or transport failure still fails the release evidence gate.
+`release:evidence` attempts `pnpm audit --json` first and gates on findings reachable from the selected publishable-package importers. The report retains findings from private apps and unrelated workspace tooling as non-gating workspace diagnostics; unknown importer formats fail closed instead of disappearing. When npm explicitly reports that pnpm's audit endpoints were retired with HTTP 410, the fallback queries npm's supported bulk advisory endpoint using only the selected packages' installed dependency inventories. Any selected-surface advisory, malformed response, inventory failure, or transport failure still fails the release evidence gate.
 
 The evidence generator and publish wrapper use the same deterministic canonical tarball helper. The SHA-256 in each package evidence directory therefore identifies the exact archive shape qualified for publication, not an npm-version- or operating-system-specific repack.
 

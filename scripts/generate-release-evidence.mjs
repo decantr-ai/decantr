@@ -12,6 +12,10 @@ import {
   loadPackageSurface,
   sortReleaseEntries,
 } from './package-surface-lib.mjs';
+import {
+  scopePnpmAuditReport,
+  selectPnpmProjects,
+} from './release-vulnerability-audit-lib.mjs';
 
 const require = createRequire(import.meta.url);
 const rawArgs = process.argv.slice(2);
@@ -293,7 +297,7 @@ function collectRegistryDependencyVersions(projects) {
   );
 }
 
-async function runBulkAdvisoryAudit(pnpmAuditResult) {
+async function runBulkAdvisoryAudit(pnpmAuditResult, selectedPackages) {
   const inventoryResult = run('pnpm', ['list', '--recursive', '--json', '--depth', 'Infinity'], {
     allowFailure: true,
   });
@@ -319,7 +323,17 @@ async function runBulkAdvisoryAudit(pnpmAuditResult) {
     };
   }
 
-  const dependencies = collectRegistryDependencyVersions(projects);
+  const selectedProjects = selectPnpmProjects(projects, root, selectedPackages);
+  if (selectedProjects.length !== selectedPackages.length) {
+    return {
+      ok: false,
+      source: 'npm-bulk-advisory',
+      error: `Expected ${selectedPackages.length} selected package inventories, found ${selectedProjects.length}.`,
+      pnpmAudit: parseJsonOrRaw(pnpmAuditResult),
+    };
+  }
+
+  const dependencies = collectRegistryDependencyVersions(selectedProjects);
   if (Object.keys(dependencies).length === 0) {
     return {
       ok: false,
@@ -383,6 +397,11 @@ async function runBulkAdvisoryAudit(pnpmAuditResult) {
       ok: advisoryCount === 0,
       source: 'npm-bulk-advisory',
       fallbackReason: 'pnpm audit endpoints retired with HTTP 410',
+      scope: {
+        mode: 'selected-package-inventory',
+        selectedPackages: selectedPackages.map(({ name, path }) => ({ name, path })),
+        policy: 'Selected package dependency inventories gate publication.',
+      },
       dependencyCount: Object.keys(dependencies).length,
       advisoryCount,
       advisories: advisoriesByPackage,
@@ -398,13 +417,69 @@ async function runBulkAdvisoryAudit(pnpmAuditResult) {
   }
 }
 
-async function runVulnerabilityAudit() {
-  const pnpmAuditResult = run('pnpm', ['audit', '--json'], { allowFailure: true });
-  if (!isRetiredPnpmAuditEndpoint(pnpmAuditResult)) {
-    return parseJsonOrRaw(pnpmAuditResult);
+function readWorkspacePackages() {
+  const result = run('pnpm', ['list', '--recursive', '--json', '--depth', '-1'], {
+    allowFailure: true,
+  });
+  if (result.status !== 0) {
+    return {
+      ok: false,
+      error: 'Unable to enumerate workspace importers for vulnerability-audit scoping.',
+      command: parseJsonOrRaw(result),
+    };
   }
 
-  return runBulkAdvisoryAudit(pnpmAuditResult);
+  try {
+    const projects = JSON.parse(result.stdout);
+    return {
+      ok: true,
+      packages: projects.map((project) => ({
+        name: project.name ?? null,
+        path: relative(root, project.path).replaceAll('\\', '/') || '.',
+      })),
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      error: `Unable to parse workspace importer inventory: ${error instanceof Error ? error.message : String(error)}`,
+    };
+  }
+}
+
+async function runVulnerabilityAudit(selectedPackages) {
+  const workspacePackages = readWorkspacePackages();
+  if (!workspacePackages.ok) {
+    return {
+      ok: false,
+      source: 'pnpm-audit-selected-package-importers',
+      error: workspacePackages.error,
+      workspaceInventory: workspacePackages.command ?? null,
+    };
+  }
+
+  const pnpmAuditResult = run('pnpm', ['audit', '--json'], { allowFailure: true });
+  if (!isRetiredPnpmAuditEndpoint(pnpmAuditResult)) {
+    try {
+      const report = JSON.parse(pnpmAuditResult.stdout);
+      if (!report?.advisories || typeof report.advisories !== 'object' || Array.isArray(report.advisories)) {
+        throw new Error('pnpm audit returned an unexpected report shape');
+      }
+
+      return {
+        ...scopePnpmAuditReport(report, selectedPackages, workspacePackages.packages),
+        commandStatus: pnpmAuditResult.status,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        source: 'pnpm-audit-selected-package-importers',
+        error: `Unable to parse pnpm audit report: ${error instanceof Error ? error.message : String(error)}`,
+        pnpmAudit: parseJsonOrRaw(pnpmAuditResult),
+      };
+    }
+  }
+
+  return runBulkAdvisoryAudit(pnpmAuditResult, selectedPackages);
 }
 
 async function main() {
@@ -422,7 +497,7 @@ async function main() {
     throw new Error('No packages selected for release evidence generation.');
   }
 
-  const auditResult = await runVulnerabilityAudit();
+  const auditResult = await runVulnerabilityAudit(selected);
   writeFileSync(join(outDir, 'vulnerability-report.json'), `${JSON.stringify(auditResult, null, 2)}\n`, 'utf8');
 
   const licenseResult = parseJsonOrRaw(run('pnpm', ['licenses', 'list', '--json'], { allowFailure: true }));

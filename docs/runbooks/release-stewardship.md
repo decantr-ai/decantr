@@ -58,6 +58,8 @@ The coordinated 3.10.0 package wave is:
 
 `@decantr/essence-spec`, `@decantr/css`, `@decantr/telemetry`, and `@decantr/vite-plugin` are not version-bumped solely for alignment. The separate frozen A/B harness may support a future bounded model-lift claim; its incomplete state does not block an honestly described product release.
 
+`pnpm release:evidence` gates known vulnerabilities against the selected package importers and their installed dependency paths. Its JSON report also preserves full-workspace findings as diagnostics, but private apps and unrelated development surfaces do not redefine the npm publication closure. Missing findings, missing paths, unknown importer formats, malformed audit output, and audit transport failures remain fail-closed.
+
 ## Historical Decantr 3.9 Stable Release Gate
 
 Decantr 3.9.0 publishes straight to the stable channel. Do not create an RC, `next`, `candidate`, canary, or alternate 3.9.0 package/tag. Implementation completeness is not release qualification. Decantr currently has one human maintainer, so stable 3.9.0 publication may use the version-bound sole-maintainer waiver without representing an agent, alias, or duplicate identity as an independent reviewer.
