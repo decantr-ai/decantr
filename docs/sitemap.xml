@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://decantr.ai/</loc>
-    <lastmod>2026-08-06T23:26:40-04:00</lastmod>
+    <lastmod>2026-08-07T00:22:37-04:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -50,13 +50,13 @@
   </url>
   <url>
     <loc>https://decantr.ai/faq.md</loc>
-    <lastmod>2026-08-06T23:26:40-04:00</lastmod>
+    <lastmod>2026-08-07T00:22:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://decantr.ai/guides/ai-assistant-setup.md</loc>
-    <lastmod>2026-07-22T11:57:42-04:00</lastmod>
+    <lastmod>2026-08-07T00:22:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -68,13 +68,13 @@
   </url>
   <url>
     <loc>https://decantr.ai/guides/existing-apps.md</loc>
-    <lastmod>2026-08-06T23:26:40-04:00</lastmod>
+    <lastmod>2026-08-07T00:22:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://decantr.ai/guides/monorepos.md</loc>
-    <lastmod>2026-08-06T23:26:40-04:00</lastmod>
+    <lastmod>2026-08-07T00:22:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -98,7 +98,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/reference/command-surface.md</loc>
-    <lastmod>2026-08-06T23:26:40-04:00</lastmod>
+    <lastmod>2026-08-07T00:22:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -122,7 +122,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/reference/package-support-matrix.md</loc>
-    <lastmod>2026-07-22T11:57:42-04:00</lastmod>
+    <lastmod>2026-08-07T00:22:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -146,7 +146,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/reference/report-schemas.md</loc>
-    <lastmod>2026-08-06T23:26:40-04:00</lastmod>
+    <lastmod>2026-08-07T00:22:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -170,13 +170,13 @@
   </url>
   <url>
     <loc>https://decantr.ai/reference/telemetry.md</loc>
-    <lastmod>2026-07-22T11:57:42-04:00</lastmod>
+    <lastmod>2026-08-07T00:22:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://decantr.ai/reference/workflow-model.md</loc>
-    <lastmod>2026-08-06T23:26:40-04:00</lastmod>
+    <lastmod>2026-08-07T00:22:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -560,7 +560,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/releases/2026-08-07-decantr-3-10-0-authority-aware-ui-change-control.md</loc>
-    <lastmod>2026-08-07T04:22:01.189Z</lastmod>
+    <lastmod>2026-08-07T00:22:37-04:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -644,19 +644,19 @@
   </url>
   <url>
     <loc>https://decantr.ai/runbooks/enterprise-artifact-release-checklist.md</loc>
-    <lastmod>2026-07-21T17:26:55-04:00</lastmod>
+    <lastmod>2026-08-07T00:22:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://decantr.ai/runbooks/post-publish-adoption-proof.md</loc>
-    <lastmod>2026-07-24T07:00:52-04:00</lastmod>
+    <lastmod>2026-08-07T00:22:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://decantr.ai/runbooks/release-stewardship.md</loc>
-    <lastmod>2026-07-21T15:27:32-04:00</lastmod>
+    <lastmod>2026-08-07T00:22:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
