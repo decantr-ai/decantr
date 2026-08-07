@@ -28,12 +28,24 @@ import {
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const scripts = join(root, 'scripts');
+const RELEASE_WORKFLOW_ENV_KEYS = [
+  'DECANTR_ONLY_PACKAGES',
+  'DECANTR_RELEASE_COMMIT',
+  'DECANTR_RELEASE_TAG',
+  'DECANTR_RELEASE_VERSION',
+];
+
+function isolatedTestEnv(overrides = {}) {
+  const env = { ...process.env };
+  for (const key of RELEASE_WORKFLOW_ENV_KEYS) delete env[key];
+  return { ...env, ...overrides };
+}
 
 function runNode(script, args = [], options = {}) {
   return spawnSync(process.execPath, [join(scripts, script), ...args], {
     cwd: options.cwd ?? root,
     encoding: 'utf8',
-    env: options.env ?? process.env,
+    env: options.env ?? isolatedTestEnv(),
   });
 }
 
@@ -477,8 +489,7 @@ console.log('{}');
   );
   chmodSync(fakeNpm, 0o755);
 
-  const env = {
-    ...process.env,
+  const env = isolatedTestEnv({
     NODE_ENV: 'test',
     DECANTR_RELEASE_TEST_ROOT: directory,
     DECANTR_RELEASE_VERSION: '3.9.0',
@@ -490,7 +501,7 @@ console.log('{}');
     GITHUB_ACTIONS: 'true',
     CI: 'true',
     PATH: `${fakeBin}:${process.env.PATH}`,
-  };
+  });
 
   return {
     directory,
@@ -539,7 +550,7 @@ test('publish selection expands internal dependencies and enforces 3.9 latest', 
     '--selection-json',
     '--only=@decantr/cli',
   ], {
-    env: { ...process.env, DECANTR_RELEASE_VERSION: '9.9.9' },
+    env: isolatedTestEnv({ DECANTR_RELEASE_VERSION: '9.9.9' }),
   });
   assert.equal(mismatchedTarget.status, 1);
   assert.match(outputOf(mismatchedTarget), /does not match any selected package manifest version/u);
@@ -788,11 +799,10 @@ test('closeout binds public npm bytes and OIDC provenance to retained release-ev
 });
 
 test('protected stable lanes require the wrapper while 3.8 pnpm patches remain allowed', (t) => {
-  const pnpmEnv = {
-    ...process.env,
+  const pnpmEnv = isolatedTestEnv({
     npm_config_user_agent: 'pnpm/10.0.0 npm/? node/v24.0.0',
     npm_execpath: '/tmp/pnpm.cjs',
-  };
+  });
   delete pnpmEnv.DECANTR_PUBLISH_WRAPPER;
 
   const direct310 = runNode('guard-pnpm-publish.mjs', [], {
@@ -856,7 +866,7 @@ echo '{}'
   chmodSync(fakeNpm, 0o755);
 
   const result = runNode('release-commands.mjs', ['--json', '--only=@decantr/cli'], {
-    env: { ...process.env, PATH: `${fakeBin}:${process.env.PATH}` },
+    env: isolatedTestEnv({ PATH: `${fakeBin}:${process.env.PATH}` }),
   });
   assert.equal(result.status, 0, outputOf(result));
   const report = JSON.parse(result.stdout);
@@ -935,11 +945,10 @@ test('readiness runs the 3.9 release-evidence gate but leaves a 3.8 patch lane a
     "console.error('qualification incomplete'); process.exit(1);\n",
     'utf8',
   );
-  const env = {
-    ...process.env,
+  const env = isolatedTestEnv({
     NODE_ENV: 'test',
     DECANTR_RELEASE_TEST_ROOT: directory,
-  };
+  });
 
   const blocked = runNode('audit-release-readiness.mjs', [], { env });
   assert.equal(blocked.status, 1);
@@ -956,11 +965,10 @@ test('readiness runs the 3.9 release-evidence gate but leaves a 3.8 patch lane a
 test('earlier closeout ignores a prepared 3.9 note on HEAD and uses tagged dependency versions', (t) => {
   const fixture = createTaggedFixture();
   t.after(() => rmSync(fixture.directory, { recursive: true, force: true }));
-  const env = {
-    ...process.env,
+  const env = isolatedTestEnv({
     NODE_ENV: 'test',
     DECANTR_RELEASE_TEST_ROOT: fixture.directory,
-  };
+  });
   const result = runNode('audit-release-closeout.mjs', [
     '--json',
     '--skip-git',
@@ -983,11 +991,10 @@ test('earlier closeout ignores a prepared 3.9 note on HEAD and uses tagged depen
 test('announcement payload is tag-bound and has no HEAD fallback', (t) => {
   const fixture = createTaggedFixture();
   t.after(() => rmSync(fixture.directory, { recursive: true, force: true }));
-  const env = {
-    ...process.env,
+  const env = isolatedTestEnv({
     NODE_ENV: 'test',
     DECANTR_RELEASE_TEST_ROOT: fixture.directory,
-  };
+  });
   const result = runNode('dispatch-community-release.mjs', [
     '--json',
     '--version=3.8.3',

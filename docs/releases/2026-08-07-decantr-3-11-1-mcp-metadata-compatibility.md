@@ -7,6 +7,7 @@ Decantr 3.11.1 is a metadata-only patch for `@decantr/mcp-server`. It includes t
 - Shortened the `server.json` description to the official MCP Registry limit of 100 characters.
 - Added a regression assertion for that external metadata constraint.
 - Kept `server.json`, the stdio runtime version, Smithery configuration, and npm package version aligned at 3.11.1.
+- Isolated release-tooling fixtures from tag-workflow environment variables so protected patch releases remain deterministic.
 
 ## Compatibility
 
