@@ -94,7 +94,7 @@ const EXPECTED_PACKAGE_PATHS = {
 const EXPECTED_PACKAGES = Object.keys(EXPECTED_PACKAGE_PATHS);
 const CURRENT_PUBLIC_PACKAGE_VERSIONS = {
   '@decantr/cli': '3.11.0',
-  '@decantr/mcp-server': '3.11.0',
+  '@decantr/mcp-server': '3.11.1',
   '@decantr/content': '3.10.0',
   '@decantr/essence-spec': '3.8.1',
   '@decantr/registry': '3.10.0',

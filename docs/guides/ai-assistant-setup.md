@@ -43,7 +43,7 @@ The current task contract supports routes and non-route UI targets. Confirm that
 Run the published server with any MCP-compatible client:
 
 ```bash
-npx @decantr/mcp-server@3.11.0
+npx @decantr/mcp-server@3.11.1
 ```
 
 Decantr 3.x preserves exactly eight public tools:

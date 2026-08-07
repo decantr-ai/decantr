@@ -8,11 +8,11 @@
 Support status: `core-supported`  
 Release channel: `stable`
 
-Stable Decantr 3.11.0 MCP integration for Changed-UI Assurance, local project state, authority-aware route and non-route task context, graph and evidence reads, and repair prompts.
+Stable Decantr 3.11.1 MCP integration for Changed-UI Assurance, local project state, authority-aware route and non-route task context, graph and evidence reads, and repair prompts.
 
 ## Release Boundary
 
-The published npm package is 3.11.0. Its eight tool IDs, route-backed `TaskCapsuleV1` path, authority-aware target discovery, verification actions, and compatibility envelopes are stable. The existing `decantr_verify` tool adds action `changes`, which returns the same `change-assurance-report.v1` used by bare CLI verify and explicit CI v3. No ninth tool is added.
+The published npm package is 3.11.1. Its eight tool IDs, route-backed `TaskCapsuleV1` path, authority-aware target discovery, verification actions, and compatibility envelopes are stable. The existing `decantr_verify` tool adds action `changes`, which returns the same `change-assurance-report.v1` used by bare CLI verify and explicit CI v3. No ninth tool is added.
 
 ![Decantr MCP demo](https://raw.githubusercontent.com/decantr-ai/decantr/main/packages/mcp-server/assets/decantr-demo.gif)
 
@@ -34,7 +34,7 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
   "mcpServers": {
     "decantr": {
       "command": "npx",
-      "args": ["@decantr/mcp-server@3.11.0"]
+      "args": ["@decantr/mcp-server@3.11.1"]
     }
   }
 }
@@ -63,7 +63,7 @@ The connector preserves existing MCP servers and writes the project rule that te
   "mcpServers": {
     "decantr": {
       "command": "npx",
-      "args": ["-y", "@decantr/mcp-server@3.11.0"]
+      "args": ["-y", "@decantr/mcp-server@3.11.1"]
     }
   }
 }
@@ -80,7 +80,7 @@ Add to your Windsurf MCP config (`~/.windsurf/mcp.json`):
   "mcpServers": {
     "decantr": {
       "command": "npx",
-      "args": ["@decantr/mcp-server@3.11.0"]
+      "args": ["@decantr/mcp-server@3.11.1"]
     }
   }
 }
@@ -95,7 +95,7 @@ Create `.vscode/mcp.json` in your workspace (or add to your user profile `mcp.js
   "servers": {
     "decantr": {
       "command": "npx",
-      "args": ["-y", "@decantr/mcp-server@3.11.0"]
+      "args": ["-y", "@decantr/mcp-server@3.11.1"]
     }
   }
 }
@@ -112,7 +112,7 @@ Add to your Zed `settings.json`:
   "context_servers": {
     "decantr": {
       "command": "npx",
-      "args": ["-y", "@decantr/mcp-server@3.11.0"],
+      "args": ["-y", "@decantr/mcp-server@3.11.1"],
       "env": {}
     }
   }
@@ -133,7 +133,7 @@ mcpServers:
     command: npx
     args:
       - "-y"
-      - "@decantr/mcp-server@3.11.0"
+      - "@decantr/mcp-server@3.11.1"
 ```
 
 MCP tools are only available in Continue.dev agent mode.
@@ -206,7 +206,7 @@ The npm tarball includes `server.json` so MCP directories can read the same stab
 
 ## How It Works
 
-Published 3.11.0 reads project-owned evidence: the Git change, application source and framework configuration, directly referenced workspace components, accepted local rules, `decantr.essence.json` when present, graph artifacts, baselines, and verification findings. In Brownfield, production source remains first authority and accepted Essence is project law beneath it. MCP clients can request Changed-UI Assurance with no adoption, request bounded task context before an edit, and inspect verification evidence after the edit. Decantr reports evidence and limitations; the coding agent remains responsible for the code change.
+Published 3.11.1 reads project-owned evidence: the Git change, application source and framework configuration, directly referenced workspace components, accepted local rules, `decantr.essence.json` when present, graph artifacts, baselines, and verification findings. In Brownfield, production source remains first authority and accepted Essence is project law beneath it. MCP clients can request Changed-UI Assurance with no adoption, request bounded task context before an edit, and inspect verification evidence after the edit. Decantr reports evidence and limitations; the coding agent remains responsible for the code change.
 
 ## Example Workflow
 

@@ -30,6 +30,7 @@ The 3.10 authority model remains the foundation beneath 3.11: routes, layouts, c
 
 ## Current Program And Evidence
 
+- [Decantr 3.11.1 MCP metadata patch](releases/2026-08-07-decantr-3-11-1-mcp-metadata-compatibility.md): corrected directory metadata packaged with `@decantr/mcp-server`.
 - [Decantr 3.11.0 stable release](releases/2026-08-07-decantr-3-11-0-changed-ui-assurance.md): current changed-UI assurance release.
 - [Decantr 3.11 qualification evidence](research/2026-08-07-decantr-3-11-change-assurance-trials.md): nine disposable repositories plus one real Brownfield replay, with explicit evidence limits.
 - [Decantr 4.0 entry criteria](reference/decantr-4-entry-criteria.md): proof and migration gates; 4.0 is not scheduled.

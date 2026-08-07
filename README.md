@@ -151,7 +151,7 @@ The MCP server preserves exactly eight public tools:
 | --- | --- |
 | `@decantr/cli` 3.11.0 | Primary changed-UI and local workflow surface |
 | `@decantr/verifier` 3.11.0 | Primary authority and evidence engine |
-| `@decantr/mcp-server` 3.11.0 | Stable eight-tool agent integration surface |
+| `@decantr/mcp-server` 3.11.1 | Stable eight-tool agent integration surface; metadata compatibility patch |
 | `@decantr/core` 3.10.0 | Supported graph and execution foundation |
 | `@decantr/essence-spec` | Supported contract foundation |
 | `@decantr/content` | Supported policy/reference foundation; no broad corpus expansion |
@@ -184,6 +184,7 @@ Paid research execution is not implied by product release validation. The option
 - [Workflow model](docs/reference/workflow-model.md)
 - [Command surface](docs/reference/command-surface.md)
 - [FAQ](docs/faq.md)
+- [3.11.1 MCP metadata patch](docs/releases/2026-08-07-decantr-3-11-1-mcp-metadata-compatibility.md)
 - [3.11.0 stable release note](docs/releases/2026-08-07-decantr-3-11-0-changed-ui-assurance.md)
 - [3.11 qualification evidence](docs/research/2026-08-07-decantr-3-11-change-assurance-trials.md)
 - [4.0 entry criteria](docs/reference/decantr-4-entry-criteria.md)
