@@ -5,7 +5,7 @@ Release channel: `stable`
 
 Schemas, validation, migration, guard evaluation, and TypeScript types for `decantr.essence.json`.
 
-The current published stable contract remains Essence v4. In Brownfield, an explicitly reviewed and accepted Essence is project law for intended structure beneath production source and runtime configuration; it is not a substitute for live production authority. An Essence route or page is structural intent. Decantr 3.10 ships authority-aware UI change control in which selected-app identity, UI-surface reachability, topology completeness, taskability, styling authority, and runtime evidence are observed independently by `@decantr/verifier`.
+The current published stable contract remains Essence v4. In Brownfield, an explicitly reviewed and accepted Essence is project law for intended structure beneath production source and runtime configuration; it is not a substitute for live production authority. An Essence route or page is structural intent. Decantr 3.11 Changed-UI Assurance and the retained 3.10 authority model observe selected-app identity, UI-surface reachability, topology completeness, taskability, styling authority, and runtime evidence independently through `@decantr/verifier`.
 
 ## Install
 

@@ -1,7 +1,7 @@
 {
   "name": "@decantr/cli",
-  "version": "3.10.0",
-  "description": "Authority-aware UI change control for frontend codebases touched by AI agents",
+  "version": "3.11.0",
+  "description": "Diff-first UI change assurance and authority-aware governance for frontend codebases touched by AI agents",
   "keywords": [
     "decantr",
     "decantr-ai",

@@ -40,6 +40,7 @@
     "qualification:3-9:machine": "node scripts/run-3-9-machine-qualification.mjs --write-packet",
     "qualification:3-9:human:lint": "node scripts/prepare-3-9-human-review.mjs --lint-only",
     "qualification:3-9:human": "node scripts/prepare-3-9-human-review.mjs --validate",
+    "qualification:3-11:changes": "node scripts/run-3-11-change-assurance-trials.mjs",
     "audit:release-readiness": "node scripts/audit-release-readiness.mjs",
     "audit:release-surface": "node scripts/audit-release-surface.mjs",
     "audit:npm-auth": "node scripts/audit-npm-auth.mjs",

@@ -1,4 +1,5 @@
 import type { AdoptionTruthV1 } from './adoption-truth.js';
+import type { ChangeAssuranceReportV1 } from './change-assurance.js';
 import type {
   AuthorityResolution,
   EvidenceTier,
@@ -113,6 +114,7 @@ export interface DecantrCiProjectReportV3 {
   styleBridge: DecantrCiStyleBridgeSummaryV2;
   adoptionTruth: AdoptionTruthV1;
   governanceDelta: GovernanceDeltaV1;
+  changeAssurance?: ChangeAssuranceReportV1;
 }
 
 export interface DecantrCiAggregateProjectGateV3 {
@@ -200,6 +202,7 @@ export function createDecantrCiProjectReportV3(
     styleBridge: input.styleBridge,
     adoptionTruth: input.adoptionTruth,
     governanceDelta: input.governanceDelta,
+    ...(input.changeAssurance ? { changeAssurance: input.changeAssurance } : {}),
   };
 }
 

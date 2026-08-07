@@ -152,6 +152,13 @@ describe('Decantr CI v3 opt-in', () => {
     expect(report.adoptionTruth.project.selectedAppRoot).toBe('apps/alpha');
     expect(report.governanceDelta.changeBase.baseRef).toBe(baseSha);
     expect(report.governanceDelta.changeBase.changedFiles).toContain('src/App.tsx');
+    expect(report.changeAssurance).toMatchObject({
+      $schema: 'https://decantr.ai/schemas/change-assurance-report.v1.json',
+      surfaces: { uiFiles: ['src/App.tsx'] },
+    });
+    expect(report.changeAssurance.changeBase.changedFiles).toEqual(
+      report.governanceDelta.changeBase.changedFiles,
+    );
     expect(report.governanceDelta.gate.result).toBe('not_proven');
     expect(report.governanceDelta.findings.new).toEqual([]);
     expect(result.exitCode).toBe(1);

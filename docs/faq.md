@@ -2,40 +2,47 @@
 
 ## What is Decantr?
 
-Decantr is agent-neutral UI change control. Published 3.10.0 prepares authority-aware route and non-route context and gives people and CI evidence after the change.
+Decantr is agent-neutral UI change control. Published 3.11.0 starts with zero-setup Changed-UI Assurance and retains authority-aware route and non-route context for deeper work.
 
 The product loop is **Observe -> Prepare -> Verify -> Report**, assembled from existing commands. Decantr does not replace the coding agent, router, component library, styling system, Storybook, design files, tests, or human review.
 
 ## What is the current release?
 
-Decantr **3.10.0** is the current published stable release. It is released but is not value-proven against frontier models.
+Decantr **3.11.0** is the current stable release. It is released but is not value-proven against frontier models.
 
-The [3.10.0 release note](releases/2026-08-07-decantr-3-10-0-authority-aware-ui-change-control.md) defines the shipped boundary. The separate [model-lift program](programs/2026-07-22-decantr-3-10-ui-change-control-proof.md) defines research claim gates, and the [3.9.4 Day-0 baseline](benchmarks/2026-07-22-decantr-3-9-4-day-zero.md) records the weaknesses that motivated the new authority model.
+The [3.11.0 release note](releases/2026-08-07-decantr-3-11-0-changed-ui-assurance.md) and [Change Assurance contract](reference/change-assurance.md) define the current boundary. The [3.10.0 release note](releases/2026-08-07-decantr-3-10-0-authority-aware-ui-change-control.md) defines the retained authority foundation. The separate [model-lift program](programs/2026-07-22-decantr-3-10-ui-change-control-proof.md) defines research claim gates.
 
 ## How do I start in an existing app?
 
-Scan first, attach once, then use the daily task and verify loop:
+Start with Changed-UI Assurance; it needs no attachment:
 
 ```bash
-npx @decantr/cli scan
+npx @decantr/cli@3.11.0 verify
+```
+
+For deeper authority and task context, scan, attach once, then use the task and full-health loop:
+
+```bash
+npx @decantr/cli@3.11.0 scan
 npx @decantr/cli adopt --yes
 npx @decantr/cli task /feed "add saved actions"
-npx @decantr/cli verify
+npx @decantr/cli verify --full
 npx @decantr/cli ci init
 ```
 
-`scan` is read-only. `adopt` is the one-time write boundary. `task` prepares bounded route or non-route agent context. `verify` checks the result. `ci init` installs the durable automation gate.
+Bare `verify` and `scan` are read-only. `adopt` is the one-time write boundary. `task` prepares bounded route or non-route agent context. `verify --full` runs broader Project Health. `ci init` installs the durable automation gate.
 
 ## How do I use Decantr in a monorepo?
 
-Install at the workspace root and keep the selected app explicit:
+Install at the workspace root. Bare verify auto-selects one app when the changed files prove that choice; use `--project` when work crosses apps or selection is intentional:
 
 ```bash
 pnpm add -D -w @decantr/cli
+pnpm exec decantr verify
 pnpm exec decantr scan --project apps/web
 pnpm exec decantr adopt --project apps/web --yes
 pnpm exec decantr task /feed "add saved actions" --project apps/web
-pnpm exec decantr verify --project apps/web
+pnpm exec decantr verify --full --project apps/web
 pnpm exec decantr ci init --project apps/web
 ```
 
@@ -204,4 +211,4 @@ Therefore 3.9.4 must not be described as proving human precision/recall, human r
 
 ## Where are older workflows documented?
 
-Historical release notes, audits, programs, benchmarks, research, and specifications remain in their dated directories. Treat them as evidence of what was proposed or shipped at that time. Active guides, references, and the 3.10.0 release note describe current product usage; the research program describes only the experimental claim boundary.
+Historical release notes, audits, programs, benchmarks, research, and specifications remain in their dated directories. Treat them as evidence of what was proposed or shipped at that time. Active guides, references, and the 3.11.0 release note describe current product usage; the research program describes only the experimental claim boundary.

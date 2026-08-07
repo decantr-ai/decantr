@@ -2,14 +2,24 @@
 
 Decantr is an agent-neutral UI change-control layer for Brownfield applications. It observes the app before writing, prepares scoped context for a coding agent, verifies the resulting change, and reports local evidence.
 
-**Current release:** Decantr 3.10.0. It ships authority-aware route and non-route UI task context, but it is not value-proven against frontier models.
+**Current release:** Decantr 3.11.0. Start with zero-write Changed-UI Assurance; adoption is optional and the product is not value-proven against frontier models.
+
+## 0. Verify The Current Change
+
+In any Git worktree:
+
+```bash
+npx @decantr/cli@3.11.0 verify
+```
+
+This inspects staged, unstaged, deleted, renamed, and untracked UI changes. In a monorepo it selects one app only when changed files prove that choice; otherwise it returns `not_proven` and asks for `--project`. It writes nothing and requires no Decantr files. See [Change Assurance](../reference/change-assurance.md).
 
 ## 1. Observe
 
 Start with a read-only scan:
 
 ```bash
-npx @decantr/cli scan
+npx @decantr/cli@3.11.0 scan
 ```
 
 The command reads the selected app in place. It does not create `.decantr`, install dependencies, run package scripts, build the app, upload source, or open a pull request.
@@ -119,22 +129,22 @@ A deployment-conditioned route can therefore appear in the observed surface inve
 
 ## 4. Verify And Report
 
-Run verification after the agent edits:
+Run Changed-UI Assurance after the agent edits:
 
 ```bash
 npx @decantr/cli verify
 ```
 
-For an app with reviewed local law:
+For a full Project Health pass over an app with reviewed local law:
 
 ```bash
-pnpm exec decantr verify --brownfield --local-patterns --project apps/web
+pnpm exec decantr verify --full --brownfield --local-patterns --project apps/web
 ```
 
 When the app is already running, add local browser evidence:
 
 ```bash
-pnpm exec decantr verify --project apps/web \
+pnpm exec decantr verify --full --project apps/web \
   --base-url http://localhost:3000 \
   --evidence
 ```
@@ -149,7 +159,7 @@ Generate CI once:
 pnpm exec decantr ci init --project apps/web
 ```
 
-Make the generated check required in branch protection. The 3.10 compatibility default remains CI v2. Use explicit CI v3 only when the pipeline has the intended Git history and comparison base:
+Make the generated check required in branch protection. The compatibility default remains CI v2. Explicit CI v3 carries the same Changed-UI Assurance report as bare verify when the pipeline has the intended Git history and comparison base:
 
 ```bash
 pnpm exec decantr ci --project apps/web \
@@ -162,7 +172,7 @@ CI must keep missing, stale, incompatible, unsupported, and unresolved evidence 
 
 ## MCP Use
 
-The MCP server preserves eight public tools. For task preparation, call `decantr_context` with `{"action":"task"}`, the route or target, task, and app path. It adapts the same verifier-owned route-capsule or UI-surface context as the CLI.
+The MCP server preserves eight public tools. For post-edit assurance, call `decantr_verify` with `{"action":"changes"}`. For task preparation, call `decantr_context` with `{"action":"task"}`, the route or target, task, and app path. Both adapt verifier-owned contracts used by the CLI.
 
 Do not add a second Decantr MCP server or duplicate project instructions when one project-level configuration already exists. Preserve unrelated MCP servers.
 
@@ -185,7 +195,8 @@ Use those commands when their specific behavior is needed; do not add them to ev
 
 ## Current Limits
 
-- 3.10.0 is not proven to improve frontier-model outcomes.
+- 3.11.0 is not proven to improve frontier-model outcomes or establish finding precision/recall.
+- Primitive-reuse assurance is strongest for JSX/TSX. Angular, Vue, and other template parity remains limited in 3.11.
 - Route discovery remains materially weaker on some frameworks and package-shaped UI repositories.
 - Static component inventory is advisory.
 - Styling authority may be scoped or conflicting rather than one global winner.
@@ -197,6 +208,7 @@ The separate model-lift program may make only the claims that pass its frozen Da
 ## Related Docs
 
 - [AI assistant setup](ai-assistant-setup.md)
+- [Change Assurance](../reference/change-assurance.md)
 - [Monorepos](monorepos.md)
 - [Workflow model](../reference/workflow-model.md)
 - [Command surface](../reference/command-surface.md)

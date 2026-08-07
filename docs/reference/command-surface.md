@@ -1,10 +1,20 @@
 # Decantr Command Surface
 
-Decantr 3.10 narrows the visible product to one existing-app workflow while preserving callable 3.x compatibility. No new top-level command is required for the approved direction.
+Decantr 3.11 makes the current Git change the default product surface while preserving callable 3.x compatibility. No new top-level command is required: bare `verify` now selects Changed-UI Assurance.
 
-**Status:** 3.10.0 is the published stable release. The visibility model below is shipped product behavior, not a frontier-model value claim.
+**Status:** 3.11.0 is the current stable release. The behavior below is shipped product behavior, not a frontier-model value claim.
 
-## 3.10 Default Workflow
+## 3.11 Default Entry Point
+
+```bash
+npx @decantr/cli@3.11.0 verify
+```
+
+Bare `verify` is zero-write and adoption-free. It resolves the Git change, auto-selects one changed UI app when provable, excludes non-production authority, and emits at most three findings under `change-assurance-report.v1`. `--json`, `--markdown`, `--ci`, `--since`, `--project`, and explicit `--output` refine this mode. An explicit output file is the only write in changed-UI mode.
+
+Use `verify --full` or an existing Project Health flag such as `--brownfield`, `--local-patterns`, `--base-url`, `--evidence`, `--since-baseline`, or `--workspace` to select the previous full workflow. See [Change Assurance](change-assurance.md).
+
+## Deeper Workflow
 
 | Command | Stage | Mutates | Role |
 | --- | --- | --- | --- |
@@ -20,7 +30,7 @@ The release uses existing commands:
 decantr scan
 decantr adopt --yes
 decantr task /feed "add saved actions"
-decantr verify
+decantr verify --full
 decantr ci init
 ```
 
@@ -43,14 +53,14 @@ decantr ci init --project apps/web
 - Reads the selected app without writing project artifacts, installing dependencies, building, running package scripts, or uploading source.
 - Reports evidence and limitations; a successful exit is not an authority-correctness result.
 - Must not let confidence, fit, route count, or component count conceal unresolved authority.
-- In 3.10, the primary readiness vocabulary is `ready`, `limited`, `blocked`, or `unsupported` across independent axes.
+- Changed-UI Assurance uses `pass`, `attention`, or `not_proven`. Full authority and task preparation retain `ready`, `limited`, `blocked`, or `unsupported` across independent axes.
 
 ### `adopt`
 
 - Is the one-time user-facing attach path over analysis, contract/context creation, graph/evidence setup, baseline creation, and optional CI.
 - Must explain writes before mutation and preserve the host framework, router, styling, components, tests, and instructions.
 - A force override records an operator decision; it does not upgrade weak evidence to proof.
-- Active 3.10 implementation investment remains focused on observe/prepare/verify. Adoption is the attachment bridge, not a platform-expansion surface.
+- Active 3.11 implementation investment remains focused on change assurance and observe/prepare/verify. Adoption is the attachment bridge, not a platform-expansion surface.
 
 ### `task`
 
@@ -70,7 +80,7 @@ decantr ci init --project apps/web
 
 - Runs the non-interactive project or workspace gate.
 - `ci init` generates integration files and therefore mutates the repository; ordinary `ci` is a gate.
-- 3.10 keeps CI v2 as the compatibility default. Explicit `--report-version v3` preserves governed-change contracts.
+- CI v2 remains the compatibility default. Explicit `--report-version v3` includes the same Changed-UI Assurance report used by bare CLI verify and MCP action `changes`.
 - A missing or incompatible comparison basis remains `not_proven`, not clean.
 
 ## Advanced Commands
@@ -84,10 +94,10 @@ These commands remain callable for diagnosis, direct control, content maintenanc
 | Project-law workflows | `codify`, `audit`, `check` | Advanced Brownfield/Hybrid control. |
 | Lower-level attachment | `init`, `analyze`, `refresh`, `migrate` | Primitives behind or beside the normal workflow. |
 | Contract composition | `add`, `remove`, `theme`, `export`, `validate`, `status` | Advanced 3.x authoring/maintenance. |
-| Greenfield | `new`, `magic` | Available compatibility path; not active 3.10 investment. |
+| Greenfield | `new`, `magic` | Available compatibility path; not active 3.11 investment. |
 | Content/reference | `content`, `search`, `suggest`, `get`, `list`, `sync`, `upgrade` | Supported utilities; broad corpus expansion is frozen. |
 | Drift operations | `sync-drift` | Advanced explicit drift-log handling. |
-| Local/operator views | `studio`, `showcase`, `telemetry` | No active 3.10 product expansion. |
+| Local/operator views | `studio`, `showcase`, `telemetry` | No active 3.11 product expansion. |
 
 Advanced does not mean removed or broken. It means the command is not required to understand Decantr's core value proposition.
 
@@ -110,7 +120,7 @@ Legacy `health init-ci` and `verify init-ci` aliases may continue to map to `ci 
 
 ## Product Surfaces Outside The Default Path
 
-Greenfield blueprints, themes, broad content-corpus operations, `@decantr/css`, the Vite plugin, Studio, showcase, telemetry, and registry publishing/account workflows are advanced, compatibility, experimental, or historical surfaces. They receive no feature expansion in the 3.10 product line.
+Greenfield blueprints, themes, broad content-corpus operations, `@decantr/css`, the Vite plugin, Studio, showcase, telemetry, and registry publishing/account workflows are advanced, compatibility, experimental, or historical surfaces. They receive no feature expansion in the 3.11 product line.
 
 Package consolidation and command removal are deferred to a future major-version compatibility decision. The 3.10 line reduces visibility and duplicated implementation without silently breaking 3.x scripts.
 
@@ -136,4 +146,4 @@ Do not add a ninth content tool or remove `decantr_registry` in 3.x.
 
 Command simplification is not evidence of model lift. The separate research claim requires the frozen 28-repository Day-0 authority gate and 320-run, information-equivalent model A/B experiment. See the [research program](../programs/2026-07-22-decantr-3-10-ui-change-control-proof.md), [3.10.0 release note](../releases/2026-08-07-decantr-3-10-0-authority-aware-ui-change-control.md), and [3.9.4 Day-0 baseline](../benchmarks/2026-07-22-decantr-3-9-4-day-zero.md).
 
-The typed command metadata lives in `packages/cli/src/command-surface.ts`. Published 3.10.0 behavior is the current product floor.
+The typed command metadata lives in `packages/cli/src/command-surface.ts`. Published 3.11.0 behavior is the current product floor; the 3.10 UI authority model remains its foundation.

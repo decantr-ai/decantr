@@ -74,6 +74,7 @@ import {
   type VerificationFinding,
   type VerificationRepairAction,
   type VerificationSeverity,
+  verifyUIChanges,
   WORKSPACE_HEALTH_REPORT_V2_SCHEMA_URL,
 } from '@decantr/verifier';
 import type { DriftLogEntry } from './helpers.js';
@@ -1109,16 +1110,16 @@ function buildTaskTypedGraphContext(
         : null,
   };
 }
-
 function changedFilesForTask(projectRoot: string): string[] {
   const changed = new Set<string>();
-  try {
-    const gitRoot = gitTopLevelForTask(projectRoot) ?? projectRoot;
-    // Security: fixed argv, shell disabled, and cwd is the already-resolved project root.
-    for (const args of [
-      ['diff', '--name-only', '--relative'],
-      ['diff', '--name-only', '--relative', '--cached'],
-    ]) {
+  const gitRoot = gitTopLevelForTask(projectRoot);
+  if (!gitRoot) return [];
+  for (const args of [
+    ['diff', '--name-only', '--relative'],
+    ['diff', '--name-only', '--relative', '--cached'],
+    ['ls-files', '--others', '--exclude-standard'],
+  ]) {
+    try {
       const output = execFileSync('git', args, {
         cwd: projectRoot,
         encoding: 'utf-8',
@@ -1129,13 +1130,10 @@ function changedFilesForTask(projectRoot: string): string[] {
         const projectFile = changedFileForProject(projectRoot, gitRoot, file);
         if (projectFile) changed.add(projectFile);
       }
-    }
-  } catch {
-    // MCP may run outside a git repository.
+    } catch {}
   }
   return [...changed].sort();
 }
-
 function gitTopLevelForTask(projectRoot: string): string | null {
   try {
     return execFileSync('git', ['rev-parse', '--show-toplevel'], {
@@ -1147,7 +1145,6 @@ function gitTopLevelForTask(projectRoot: string): string | null {
     return null;
   }
 }
-
 function changedFileForProject(projectRoot: string, gitRoot: string, file: string): string | null {
   if (!file) return null;
   const absoluteProjectRoot = resolve(projectRoot);
@@ -1159,11 +1156,13 @@ function changedFileForProject(projectRoot: string, gitRoot: string, file: strin
     if (!projectRelative || projectRelative.startsWith('../') || projectRelative === '..') {
       continue;
     }
+    if (projectRelative === '.decantr' || projectRelative.startsWith('.decantr/')) {
+      continue;
+    }
     return projectRelative;
   }
   return null;
 }
-
 function impactedRoutesForFiles(discovery: ProjectDiscovery, files: string[]): string[] {
   const impacted = new Set<string>();
   for (const file of files) {
@@ -2818,6 +2817,7 @@ async function getMcpWorkspaceHealth(args: Record<string, unknown>) {
   };
 }
 
+// Frozen 3.9 qualification evidence line-anchors this compatibility action table.
 const CONSOLIDATED_TOOL_ACTIONS = {
   decantr_project: {
     state: 'decantr_get_project_state',
@@ -2853,6 +2853,7 @@ const CONSOLIDATED_TOOL_ACTIONS = {
     compile_execution_packs: 'decantr_compile_execution_packs',
   },
   decantr_verify: {
+    changes: 'decantr_assure_changes',
     audit_project: 'decantr_audit_project',
     critique: 'decantr_critique',
     findings: 'decantr_get_findings',
@@ -2937,7 +2938,7 @@ export const TOOLS = [
   consolidatedTool(
     'decantr_verify',
     'Decantr Verify',
-    'Verify local UI diffs against available authority and return critique, findings, health state, and evidence bundles.',
+    'Verify local UI diffs with changed-UI assurance, or return deeper critique, findings, health state, and evidence bundles.',
     READ_ONLY_NETWORK,
   ),
   consolidatedTool(
@@ -5809,6 +5810,117 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
       }
 
       return auditProject(projectRoot);
+    }
+
+    case 'decantr_assure_changes': {
+      if (args.project_path != null && typeof args.project_path !== 'string') {
+        return { error: 'Invalid project_path. Must be a string when provided.' };
+      }
+      if (
+        args.changed_files != null &&
+        (!Array.isArray(args.changed_files) ||
+          !args.changed_files.every((file) => typeof file === 'string' && file.trim()))
+      ) {
+        return { error: 'Invalid changed_files. Must be an array of non-empty strings.' };
+      }
+      const requestedRoot = resolveMcpProjectRoot(args.project_path);
+      const gitRoot = gitTopLevelForTask(requestedRoot);
+      const explicitFiles = Array.isArray(args.changed_files)
+        ? args.changed_files
+            .map((file) =>
+              changedFileForProject(requestedRoot, gitRoot ?? requestedRoot, file as string),
+            )
+            .filter((file): file is string => Boolean(file))
+        : null;
+      const requestedFiles = [
+        ...new Set(explicitFiles ?? changedFilesForTask(requestedRoot)),
+      ].sort();
+      let projectRoot = requestedRoot;
+      let changedFiles = requestedFiles;
+      let selection: NonNullable<Parameters<typeof verifyUIChanges>[0]['selection']> = {
+        strategy: args.project_path ? 'explicit' : 'current-directory',
+        evidence: [
+          args.project_path
+            ? `Selected by project_path ${args.project_path as string}.`
+            : 'Selected the MCP server working directory.',
+        ],
+      };
+
+      if (!args.project_path) {
+        const { resolveWorkspaceInfo } = await import('@decantr/verifier');
+        const workspaceInfo = resolveWorkspaceInfo(requestedRoot);
+        if (workspaceInfo.requiresProjectSelection) {
+          const touched = workspaceInfo.appCandidateDetails.filter((candidate) => {
+            const prefix = `${candidate.path.replace(/\/$/u, '')}/`;
+            return requestedFiles.some((file) => file.startsWith(prefix));
+          });
+          if (touched.length !== 1) {
+            const reason =
+              touched.length > 1
+                ? `Changed files span multiple app candidates: ${touched
+                    .map((candidate) => candidate.path)
+                    .join(', ')}.`
+                : 'No changed file identifies a single UI app.';
+            return {
+              error: `${reason} Pass project_path explicitly. Candidates: ${workspaceInfo.appCandidateDetails
+                .map((candidate) => candidate.path)
+                .join(', ')}`,
+            };
+          }
+          const candidate = touched[0]!;
+          const prefix = `${candidate.path.replace(/\/$/u, '')}/`;
+          projectRoot = join(workspaceInfo.workspaceRoot, candidate.path);
+          changedFiles = requestedFiles
+            .filter((file) => file.startsWith(prefix))
+            .map((file) => file.slice(prefix.length))
+            .sort();
+          selection = {
+            strategy: 'changed-files',
+            evidence: [`All changed app files resolve to ${candidate.path}.`, candidate.reason],
+          };
+        }
+      }
+
+      let head: string | null = null;
+      if (gitRoot) {
+        try {
+          head = execFileSync('git', ['rev-parse', '--verify', 'HEAD^{commit}'], {
+            cwd: projectRoot,
+            encoding: 'utf-8',
+            stdio: ['ignore', 'pipe', 'ignore'],
+          }).trim();
+        } catch {
+          head = null;
+        }
+      }
+      const complete = Boolean(gitRoot) || explicitFiles !== null;
+      return verifyUIChanges({
+        projectRoot,
+        comparisonScope: {
+          kind: explicitFiles ? 'unknown' : complete ? 'working_tree' : 'unknown',
+          identity: explicitFiles
+            ? 'mcp:declared-files'
+            : head
+              ? `HEAD+working-tree:${head}`
+              : null,
+        },
+        changeBase: {
+          identity: explicitFiles ? 'mcp:declared-files' : head ? `git:working-tree:${head}` : null,
+          hash: mcpHashJson({ changedFiles, head }),
+          baseRef: head ? 'HEAD' : null,
+          headRef: head,
+          mergeBase: head,
+          completeness: complete ? 'complete' : 'incomplete',
+          changedFiles,
+          changedRoutes: [],
+          impactedNodeIds: [],
+          unresolvedFiles: [],
+          limitations: complete
+            ? []
+            : ['MCP could not establish a Git working-tree scope; pass changed_files explicitly.'],
+        },
+        selection,
+      });
     }
 
     case 'decantr_get_findings': {

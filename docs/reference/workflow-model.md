@@ -1,13 +1,19 @@
 # Decantr Workflow Model
 
-Decantr is an agent-neutral UI change-control layer. Stable 3.10 organizes existing commands into this primary loop:
+Decantr is an agent-neutral UI change-control layer. Stable 3.11 starts with the current Git change and retains the deeper project loop:
 
 1. **Observe** project-owned authority.
 2. **Prepare** compact context for a specific change.
 3. **Verify** the resulting diff against that authority and available runtime evidence.
 4. **Report** typed, reproducible evidence.
 
-**Status:** 3.10.0 is the current published stable release. This reference describes shipped behavior. The product is released but is not value-proven against frontier models.
+**Status:** 3.11.0 is the current stable release. This reference describes shipped behavior. The product is released but is not value-proven against frontier models.
+
+## Verify The Current Change First
+
+`decantr verify` runs zero-write Changed-UI Assurance without requiring adoption. It scopes staged, unstaged, deleted, renamed, untracked, commit-range, and unborn-branch changes; selects one changed app only when provable; and returns at most three source-anchored findings. Multi-app ambiguity and unavailable Git scope return `not_proven`.
+
+Use `decantr verify --full` for the broader Project Health workflow described below. See [Change Assurance](change-assurance.md) for the exact selection, finding, output, and compatibility contract.
 
 ## Default Existing-App Workflow
 
@@ -16,7 +22,8 @@ Decantr is an agent-neutral UI change-control layer. Stable 3.10 organizes exist
 | Observe | `decantr scan` | Read-only | Select the app, inventory evidence, and expose limitations. |
 | Attach once | `decantr adopt --yes` | Writes reviewed Decantr artifacts | Establish project state, contract/context, baseline, and optional CI. |
 | Prepare | `decantr task <target> "<change>"` | Read-only | Rank implementation and authority for one route or non-route UI target. |
-| Verify | `decantr verify` | Read-only except explicit evidence/baseline outputs | Evaluate the change and return remediation/evidence. |
+| Verify changed UI | `decantr verify` | Zero-write except explicit `--output` | Evaluate the current Git change and return concise remediation. |
+| Verify full project | `decantr verify --full` | Read-only except explicit evidence/baseline outputs | Run the previous Project Health workflow. |
 | Report | Project Health, JSON, Evidence Bundle, CI | Artifact-dependent | Make the result inspectable by people, agents, and automation. |
 
 CI setup is one-time:
@@ -53,7 +60,7 @@ Tests, fixtures, stories, mocks, generated files, build output, coverage, and si
 
 ## UI Surfaces
 
-The approved 3.10 authority model uses explicit UI surfaces rather than treating every project as a route map:
+The 3.10 authority model retained beneath 3.11 uses explicit UI surfaces rather than treating every project as a route map:
 
 | Surface | Authority question |
 | --- | --- |
@@ -70,7 +77,7 @@ Routes remain an evidence source. They are not required for every UI repository 
 
 This broader surface model ships in 3.10.0. Attached routes retain compatible graph-backed capsules.
 
-## 3.10 Readiness
+## Authority Readiness
 
 Readiness must not collapse into a single confidence or fit score. Evaluate at least:
 
@@ -186,7 +193,7 @@ The published task path is `decantr_context` with `{"action":"task"}` and a rout
 
 ## Advanced And Compatibility Workflows
 
-The following remain callable where shipped but do not define the 3.10 product lead:
+The following remain callable where shipped but do not define the 3.11 product lead:
 
 - Greenfield `new`, `init`, blueprints, themes, and scaffold adapters;
 - Hybrid `codify`, style bridges, project-local rules, and explicit legacy Decantr CSS adoption;
@@ -212,8 +219,8 @@ Release claims require the declared Day-0 authority gates plus at least +5/100 p
 
 A pass permits the bounded measured claim. Mixed results narrow supported frameworks or tasks. Failure blocks value-proof language, not the stable product release. Unsupported targets, missing evaluators, build failures, and model substitutions remain visible and in the denominator.
 
-See the [model-lift research program](../programs/2026-07-22-decantr-3-10-ui-change-control-proof.md), [3.10.0 release note](../releases/2026-08-07-decantr-3-10-0-authority-aware-ui-change-control.md), and [3.9.4 Day-0 baseline](../benchmarks/2026-07-22-decantr-3-9-4-day-zero.md).
+See the [3.11.0 release note](../releases/2026-08-07-decantr-3-11-0-changed-ui-assurance.md), [qualification evidence](../research/2026-08-07-decantr-3-11-change-assurance-trials.md), [model-lift research program](../programs/2026-07-22-decantr-3-10-ui-change-control-proof.md), and [3.9.4 Day-0 baseline](../benchmarks/2026-07-22-decantr-3-9-4-day-zero.md).
 
 ## Historical Boundary
 
-The [3.9 Governed Change Proof program](../programs/2026-07-16-decantr-3-9-adoption-proof-program.md), earlier workflow matrices, Greenfield certification, proof-field reports, and release notes remain historical evidence. They document prior scope and shipped compatibility but do not override the active 3.10 direction or prove model-outcome value.
+The [3.9 Governed Change Proof program](../programs/2026-07-16-decantr-3-9-adoption-proof-program.md), earlier workflow matrices, Greenfield certification, proof-field reports, and release notes remain historical evidence. They document prior scope and shipped compatibility but do not override the active 3.11 direction or prove model-outcome value.

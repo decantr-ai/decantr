@@ -13,6 +13,7 @@ That reference distinguishes the published npm packages from internal monorepo s
 Key defaults:
 
 - Governance is local-first: scan, audit, critique, verification, context generation, and browser evidence read the selected workspace in place.
+- Bare `decantr verify` runs Changed-UI Assurance with zero writes by default. The CLI invokes local Git commands to resolve staged, unstaged, deleted, renamed, untracked, commit-range, and unborn-branch scope; it may read directly referenced workspace-package source as component authority.
 - The content/reference API provides optional corpus, schema, search, and execution-pack reads. It does not accept project source code or replace local CLI and MCP verification.
 - CLI telemetry is disabled unless a project explicitly opts in, and delivery still requires a caller-configured endpoint. Decantr does not provide a default hosted telemetry sink.
 - Browser evidence and screenshots stay local under `.decantr/evidence/*`.

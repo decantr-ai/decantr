@@ -1,7 +1,7 @@
 {
   "name": "@decantr/verifier",
-  "version": "3.10.0",
-  "description": "UI authority discovery, task context, verification, Project Health, and evidence contracts for Decantr",
+  "version": "3.11.0",
+  "description": "Changed-UI assurance, authority discovery, task context, Project Health, and evidence contracts for Decantr",
   "keywords": [
     "decantr",
     "decantr-ai",
@@ -56,7 +56,8 @@
     "./schema/showcase-shortlist-report.v1.json": "./schema/showcase-shortlist-report.v1.json",
     "./schema/adoption-truth.v1.json": "./schema/adoption-truth.v1.json",
     "./schema/task-capsule.v1.json": "./schema/task-capsule.v1.json",
-    "./schema/governance-delta.v1.json": "./schema/governance-delta.v1.json"
+    "./schema/governance-delta.v1.json": "./schema/governance-delta.v1.json",
+    "./schema/change-assurance-report.v1.json": "./schema/change-assurance-report.v1.json"
   },
   "files": [
     "dist",

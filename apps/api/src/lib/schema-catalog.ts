@@ -75,6 +75,7 @@ const publicSchemaSpecs = {
   'decantr-ci-report.v1.json': '@decantr/verifier/schema/decantr-ci-report.v1.json',
   'decantr-ci-report.v2.json': '@decantr/verifier/schema/decantr-ci-report.v2.json',
   'decantr-ci-report.v3.json': '@decantr/verifier/schema/decantr-ci-report.v3.json',
+  'change-assurance-report.v1.json': '@decantr/verifier/schema/change-assurance-report.v1.json',
   'authority-resolution.v2.json': '@decantr/verifier/schema/authority-resolution.v2.json',
   'evidence-bundle.v1.json': '@decantr/verifier/schema/evidence-bundle.v1.json',
   'evidence-bundle.v2.json': '@decantr/verifier/schema/evidence-bundle.v2.json',

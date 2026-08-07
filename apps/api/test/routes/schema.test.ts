@@ -48,11 +48,12 @@ describe('GET /v1/schema/:name', () => {
   });
 
   it.each([
+    'change-assurance-report.v1.json',
     'adoption-truth.v1.json',
     'task-capsule.v1.json',
     'governance-delta.v1.json',
     'decantr-ci-report.v3.json',
-  ])('serves the Decantr 3.9 governed-change schema %s', async (name) => {
+  ])('serves a current governed-change schema %s', async (name) => {
     const app = createApp();
     const res = await app.request(`/v1/schema/${name}`);
 

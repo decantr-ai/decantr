@@ -7,7 +7,7 @@ Shared local discovery, verification, critique, and report-schema engine used by
 
 ## Release Boundary
 
-Decantr 3.10.0 is the current published stable line. Its independent UI authority axes, route and non-route task context, compatible route-backed task capsules, adoption truth, governance deltas, and report schemas are shipped contracts, but the release is not quantitatively adoption-proven.
+Decantr 3.11.0 is the current stable line. It adds Changed-UI Assurance to the independent UI authority axes, route and non-route task context, compatible route-backed task capsules, adoption truth, governance deltas, and report schemas. The release is not quantitatively adoption-proven.
 
 The verifier models routes, layouts, components, stories, overlays, flows, packages, and runtime states as independent UI surfaces and reports selected-app, surface-authority, topology, taskability, component-inventory, styling-authority, and runtime-evidence axes separately. These shipped APIs do not establish that Decantr improves model outcomes; only a separate controlled A/B program can support that claim.
 
@@ -19,6 +19,8 @@ npm install @decantr/verifier
 
 ## Compatible 3.x Exports
 
+- `verifyUIChanges()` for zero-write, Git-scoped UI assurance with fail-closed app selection and at most three consequential findings by default
+- `resolveChangedUISurfaces()` for mapping staged, unstaged, deleted, renamed, untracked, commit-range, or unborn-branch files to one selected app and its affected UI surfaces
 - `auditProject()` for project-level Decantr audits
 - `auditBuiltDist()` for built-output runtime verification against emitted HTML, assets, and route hints
 - `discoverProject()` for shared read-only Brownfield discovery of workspace/app scope, package manager, framework, language, source-declared routes, taskable routes, component inventory, styling authority, Decantr presence, and inherited assistant-rule files. Formal framework routes outrank generated trees, and Angular discovery begins at the selected production bootstrap/router graph while excluding test and fixture source.
@@ -71,7 +73,16 @@ npm install @decantr/verifier
   - built asset byte budgets for JS, CSS, and total payload
   - auth-topology warnings when the essence declares authentication without clear gateway or entry routes
 
-## Published 3.10 Exports
+## Published 3.11 Exports
+
+- `verifyUIChanges()`, `resolveChangedUISurfaces()`, and `CHANGE_ASSURANCE_V1_SCHEMA_URL`
+- `ChangeAssuranceReportV1` plus typed status, finding, Git scope, selection, surface, and limitation contracts
+- `AUTH001`, `AUTH010`, `COMP001`, `COMP010`, and `TOKEN010` assurance findings with source and repair targets
+- shared consumption by CLI bare verify, explicit CI v3, and MCP `decantr_verify` action `changes`
+
+The default finding limit is three and the maximum explicit limit is twenty. Primitive-reuse checks are strongest for JSX/TSX; template parity for Angular, Vue, and other frameworks remains limited in 3.11.
+
+## Published 3.10 Foundation
 
 - `buildUISurfaceDiscovery()` and `UISurfaceDiscovery` for the `ui-surfaces.v1` model: eight surface kinds, exact `ready` / `limited` / `blocked` / `unsupported` readiness, and independently visible authority axes
 - `resolveUISurfaceTaskContext()` for target resolution by route, exact surface ID, component name, `kind:name`, or `file:<path>`; ambiguous and unknown targets return no read set, and non-route static evidence remains limited unless runtime reachability is proven
@@ -91,10 +102,28 @@ import {
   createEvidenceBundle,
   critiqueFile,
   scanProject,
+  verifyUIChanges,
   type ProjectHealthReport,
 } from '@decantr/verifier';
 
 const scan = await scanProject(process.cwd());
+const changedUI = verifyUIChanges({
+  projectRoot: process.cwd(),
+  comparisonScope: { kind: 'working_tree', identity: 'git:working-tree' },
+  changeBase: {
+    identity: 'git:working-tree:head',
+    hash: 'sha256:<caller-computed>',
+    baseRef: 'HEAD',
+    headRef: '<head-sha>',
+    mergeBase: '<head-sha>',
+    completeness: 'complete',
+    changedFiles: ['src/pages/overview.tsx'],
+    changedRoutes: [],
+    impactedNodeIds: [],
+    unresolvedFiles: [],
+    limitations: [],
+  },
+});
 const audit = await auditProject(process.cwd());
 const assertions = createContractAssertions(process.cwd(), audit);
 const critique = await critiqueFile('./src/pages/overview.tsx', process.cwd());
@@ -107,6 +136,7 @@ function isBlocking(report: ProjectHealthReport) {
 ## Schema Exports
 
 - `@decantr/verifier/schema/adoption-truth.v1.json`
+- `@decantr/verifier/schema/change-assurance-report.v1.json`
 - `@decantr/verifier/schema/task-capsule.v1.json`
 - `@decantr/verifier/schema/governance-delta.v1.json`
 - `@decantr/verifier/schema/verification-report.common.v1.json`
@@ -132,11 +162,11 @@ function isBlocking(report: ProjectHealthReport) {
 
 The adoption-truth, task-capsule, and governance-delta schemas are additive Decantr 3.9 contract primitives consumed by CLI, MCP, opt-in CI v3, and read-only Studio adapters. `decantr-ci-report.v3` is also additive and must be selected explicitly; v2 remains the default throughout 3.9.x and its schema/exit semantics are unchanged. A missing or incompatible baseline produces unclassified findings and `not_proven` rather than a false empty delta. V1 health/evidence/scan schemas remain published for stored-artifact compatibility; audit, file-critique, and showcase reports remain v1 until those wires need to change. See [Report Schemas](https://decantr.ai/reference/report-schemas.md).
 
-These contracts define deterministic evidence shapes; they do not prove product value by themselves. Stable 3.10.0 is product-qualified, not human-qualified or adoption-proven. A separate frozen 40-task, two-model, two-arm, repeated A/B protocol gates only a measured model-improvement claim. Development-corpus results may tune implementation but cannot grant that confirmatory claim; qualification failures, unsupported targets, missing evaluators, build failures, and model substitutions remain visible in its denominator.
+These contracts define deterministic evidence shapes; they do not prove product value by themselves. Stable 3.11.0 is product-qualified, not human-qualified or adoption-proven. A separate frozen 40-task, two-model, two-arm, repeated A/B protocol gates only a measured model-improvement claim. Development-corpus results may tune implementation but cannot grant that confirmatory claim; qualification failures, unsupported targets, missing evaluators, build failures, and model substitutions remain visible in its denominator.
 
 ## Security And Permissions
 
-The verifier is a local library. It reads selected project source, Decantr context, read-only scan files, and built `dist`/`.next` output when callers request project or runtime audits. `scanProject()` returns relative evidence and does not write artifacts, install dependencies, build projects, execute scripts, or open pull requests. `probePublishedSite()` fetches HTML metadata over HTTP(S) only and does not execute JavaScript or capture screenshots. Built-output runtime audit starts a temporary loopback static server and fetches from that local server. The verifier does not write files, spawn processes, emit telemetry, or upload source by itself. See [security permissions](https://decantr.ai/reference/security-permissions.md).
+The verifier is a local library. It reads selected project source, direct workspace-package component authority, Decantr context, read-only scan files, and built `dist`/`.next` output when callers request project or runtime audits. `verifyUIChanges()` accepts caller-provided Git scope and never writes. `scanProject()` returns relative evidence and does not write artifacts, install dependencies, build projects, execute scripts, or open pull requests. `probePublishedSite()` fetches HTML metadata over HTTP(S) only and does not execute JavaScript or capture screenshots. Built-output runtime audit starts a temporary loopback static server and fetches from that local server. The verifier does not write files, spawn processes, emit telemetry, or upload source by itself. See [security permissions](https://decantr.ai/reference/security-permissions.md).
 
 ## Compatibility
 
@@ -146,6 +176,7 @@ The verifier is a local library. It reads selected project source, Decantr conte
 - report-shape changes are versioned through explicit `$schema` URLs
 - hosted, CLI, MCP, and Studio consumers should treat the published schemas as the supported contract surface
 - `ui-surfaces.v1` and `ui-surface-task-context.v1` are stable 3.10 APIs, but their authority state and limitations must not be paraphrased into stronger readiness claims
+- `change-assurance-report.v1` is the stable 3.11 changed-UI wire contract; consumers must preserve `not_proven` and explicit limitations
 
 ## License
 

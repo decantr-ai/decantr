@@ -1,17 +1,17 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.decantr-ai/mcp-server",
-  "description": "Stable eight-tool MCP server for local project state, authority-aware UI task context, verification evidence, and repair prompts.",
+  "description": "Stable eight-tool MCP server for changed-UI assurance, local project authority, authority-aware UI task context, verification evidence, and repair prompts.",
   "repository": {
     "url": "https://github.com/decantr-ai/decantr",
     "source": "github"
   },
-  "version": "3.10.0",
+  "version": "3.11.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@decantr/mcp-server",
-      "version": "3.10.0",
+      "version": "3.11.0",
       "transport": {
         "type": "stdio"
       }

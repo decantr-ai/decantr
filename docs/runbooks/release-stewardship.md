@@ -22,7 +22,25 @@ pnpm release:closeout -- --version X.Y.Z
 
 GitHub Releases are optional maintainer packaging. Git tags are not optional.
 
-## Decantr 3.10 Stable Release Gate
+## Decantr 3.11 Stable Release Gate
+
+Decantr 3.11 publishes directly to `latest`; do not create an RC, `next`, candidate, canary, or alternate package/tag. Its coordinated package wave is exactly:
+
+- `@decantr/verifier`
+- `@decantr/mcp-server`
+- `@decantr/cli`
+
+In addition to the standard deterministic and package gates below, run `pnpm qualification:3-11:changes`. It proves complete Git change handling, fail-closed app selection, non-production exclusions, bounded findings, CLI/explicit-CI-v3/MCP parity, and the unchanged eight-tool MCP surface over disposable repositories. It does not prove finding precision/recall, real adoption value, or model lift.
+
+The 3.11 release is complete only after the `v3.11.0` source tag, retained canonical tarballs, npm `latest` and provenance, public-package verification, GitHub Release, release-note parity, and `release:closeout -- --version 3.11.0` all agree.
+
+Before tagging or publishing, run the standard commands below plus:
+
+```bash
+pnpm qualification:3-11:changes
+```
+
+## Historical Decantr 3.10 Stable Release Gate
 
 Decantr 3.10 publishes directly to `latest`; do not create an RC, `next`, candidate, canary, or alternate package/tag. Product publication is intentionally separate from the optional frontier-model lift experiment. A stable 3.10 release requires deterministic build/test coverage, active-documentation alignment, package surface and permission audits, clean-consumer content/MCP checks, tag-bound retained tarballs, npm provenance, public verification, and final closeout. It does not authorize precision, recall, adoption-proof, or measured model-improvement claims.
 
@@ -189,7 +207,7 @@ A real local protected-lane publish is allowed only from a clean checkout whose 
 
 ## Prerelease Channel
 
-Historical or future preview lines outside the protected stable lanes use npm `next` and an explicit package-surface channel. Decantr 3.9 and 3.10 are explicitly excluded: they have no RC, candidate, or `next` lane. Do not repurpose the stable package lane silently.
+Historical or future preview lines outside the protected stable lanes use npm `next` and an explicit package-surface channel. Decantr 3.9, 3.10, and 3.11 are explicitly excluded: they have no RC, candidate, or `next` lane. Do not repurpose the stable package lane silently.
 
 For a prerelease package line:
 

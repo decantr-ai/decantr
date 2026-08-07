@@ -34,9 +34,9 @@ describe('MCP package metadata', () => {
     const smithery = readFileSync(join(packageRoot, 'smithery.yaml'), 'utf8');
 
     expect(smithery).toContain('type: stdio');
-    expect(smithery).toContain("args: ['-y', '@decantr/mcp-server@3.10.0']");
+    expect(smithery).toContain("args: ['-y', '@decantr/mcp-server@3.11.0']");
     expect(smithery).toContain(
-      'Task preparation uses authority-aware route and non-route UI-surface discovery',
+      'preparation remains authority-aware and fails closed on ambiguous or unsupported targets',
     );
   });
 

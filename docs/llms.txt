@@ -4,20 +4,23 @@
 
 ## Release Status
 
-- Current published stable: Decantr 3.10.0.
-- Active product: authority-aware UI change control through Observe, Prepare, Verify, and Report.
-- 3.10.0 is released but is not value-proven against frontier models.
+- Current stable: Decantr 3.11.0.
+- Default entry point: `decantr verify` performs zero-write Changed-UI Assurance over the current Git change; no adoption is required.
+- Active product: changed-UI assurance plus authority-aware Observe, Prepare, Verify, and Report workflows.
+- 3.11.0 is released but is not value-proven against frontier models.
 - Product release readiness is separate from model-lift research qualification. Do not claim human finding precision/recall, adoption proof, or measured frontier-model improvement.
 
-## Published 3.10.0 Loop
+## Published 3.11.0 Entry Point
 
-1. Observe: `decantr scan` is a read-only selected-app inspection.
-2. Attach once: `decantr adopt --yes` writes Decantr governance artifacts after review.
-3. Prepare: `decantr task <target> "<change>"` prepares compact authority-aware context; attached routes retain compatible graph-backed capsules.
-4. Verify: `decantr verify` checks the diff and available evidence.
-5. Report: Project Health, JSON, Evidence Bundle, and CI artifacts carry the result.
+1. Run `decantr verify` in a Git worktree.
+2. Decantr resolves staged, unstaged, deleted, renamed, untracked, commit-range, or unborn-branch changes.
+3. It auto-selects exactly one changed UI app when provable; multi-app ambiguity returns `not_proven`.
+4. It reports at most three consequential `AUTH001`, `AUTH010`, `COMP001`, `COMP010`, or `TOKEN010` findings with exact source and repair targets.
+5. CLI, explicit CI v3, and MCP `decantr_verify` action `changes` use the same verifier-owned `change-assurance-report.v1` contract.
 
-In monorepos, pass the same `--project <app>` to every app-scoped command. A successful scan means the scanner ran; inspect each authority axis and limitation before treating a target as ready.
+Use `decantr verify --full` for the previous Project Health workflow. Use `scan`, optional `adopt`, and `task` when deeper project context is warranted.
+
+In monorepos, bare verify may select one app from changed files. Pass `--project <app>` when changes cross apps or selection is intentionally explicit. A successful scan means the scanner ran; inspect each authority axis and limitation before treating a target as ready.
 
 ## 3.10 Authority Model
 
@@ -31,7 +34,7 @@ Development repair commit `98e92472` separates Next file-route declaration from 
 
 ## Product Boundary
 
-Active 3.10 investment: `@decantr/verifier`, framework authority adapters, CLI `scan`/`task`/`verify`, the compatible eight-tool MCP server, local evidence, CI integration, and deterministic policy packs.
+Active 3.11 investment: `@decantr/verifier`, Changed-UI Assurance, framework authority adapters, CLI `scan`/`task`/`verify`, the compatible eight-tool MCP server, local evidence, CI integration, and deterministic policy packs.
 
 Advanced, compatibility, or historical: Greenfield blueprints, themes, registry publishing/account commands, `@decantr/css`, `@decantr/vite-plugin`, broad corpus expansion, telemetry product work, Studio/showcase expansion, and hosted cross-repository intelligence.
 
@@ -62,13 +65,17 @@ Pass permits only the bounded measured claim. Mixed results narrow supported cla
 - [Homepage](https://decantr.ai/)
 - [Docs index](https://decantr.ai/README.md)
 - [Existing apps](https://decantr.ai/guides/existing-apps.md)
+- [Change Assurance](https://decantr.ai/reference/change-assurance.md)
 - [AI assistant setup](https://decantr.ai/guides/ai-assistant-setup.md)
 - [Workflow model](https://decantr.ai/reference/workflow-model.md)
 - [Command surface](https://decantr.ai/reference/command-surface.md)
 - [FAQ](https://decantr.ai/faq.md)
 - [Security and permissions](https://decantr.ai/reference/security-permissions.md)
 - [Package support matrix](https://decantr.ai/reference/package-support-matrix.md)
-- [3.10.0 stable release note](https://decantr.ai/releases/2026-08-07-decantr-3-10-0-authority-aware-ui-change-control.md)
+- [3.11.0 stable release note](https://decantr.ai/releases/2026-08-07-decantr-3-11-0-changed-ui-assurance.md)
+- [3.11 qualification evidence](https://decantr.ai/research/2026-08-07-decantr-3-11-change-assurance-trials.md)
+- [4.0 entry criteria](https://decantr.ai/reference/decantr-4-entry-criteria.md)
+- [3.10.0 authority-model release note](https://decantr.ai/releases/2026-08-07-decantr-3-10-0-authority-aware-ui-change-control.md)
 - [Frontier-model lift research program](https://decantr.ai/programs/2026-07-22-decantr-3-10-ui-change-control-proof.md)
 - [3.10 Culinary Platform clean-slate adoption](https://decantr.ai/benchmarks/2026-08-07-culinary-platform-clean-slate-adoption.md)
 - [3.10 exploratory adoption evidence](https://decantr.ai/benchmarks/2026-07-24-decantr-3-10-exploratory-adoption-evidence.md)

@@ -5,7 +5,7 @@ Release channel: `stable`
 
 Legacy optional CSS atoms runtime for Decantr projects that already use or explicitly adopt the Decantr CSS adapter.
 
-Decantr 3 defaults to contract-only governance. The current stable adapter remains at 3.8.1 as a compatibility package, not a public product foundation. Decantr 3.10 assigns it no feature investment. New Greenfield and Brownfield projects should not install `@decantr/css` unless `--adoption=decantr-css` is explicit or an existing project already depends on this runtime. Host components, tokens, CSS, and design-system conventions remain authoritative in normal adoption.
+Decantr 3 defaults to contract-only governance. The current stable adapter remains at 3.8.1 as a compatibility package, not a public product foundation. Decantr 3.11 assigns it no feature investment. New Greenfield and Brownfield projects should not install `@decantr/css` unless `--adoption=decantr-css` is explicit or an existing project already depends on this runtime. Host components, tokens, CSS, and design-system conventions remain authoritative in normal adoption.
 
 ## Installation
 
@@ -121,7 +121,7 @@ Mobile-first breakpoints: `_sm:` (640px), `_md:` (768px), `_lg:` (1024px), `_xl:
 
 ## Integration with Decantr
 
-This section is compatibility guidance for explicit `decantr-css` adoption, not the default Decantr workflow or the Decantr 3.10 product thesis.
+This section is compatibility guidance for explicit `decantr-css` adoption, not the default Decantr workflow or the Decantr 3.11 product thesis.
 
 When you explicitly scaffold a project with `@decantr/cli --adoption=decantr-css`, it generates:
 

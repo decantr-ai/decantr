@@ -667,7 +667,7 @@ describe('operating layer commands', () => {
       force: true,
     });
 
-    const output = runCli(testDir, ['verify', '--project', 'apps/web']);
+    const output = runCli(testDir, ['verify', '--full', '--project', 'apps/web']);
 
     expect(output).toContain('content compile-packs apps/web/decantr.essence.json --write-context');
     expect(output).toContain('decantr ci --project apps/web --fail-on error');

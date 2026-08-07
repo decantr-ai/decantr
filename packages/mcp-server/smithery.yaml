@@ -1,8 +1,8 @@
 # Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
 #
-# This directory entry runs the published Decantr 3.10.0 stdio server with no configuration.
-# Task preparation uses authority-aware route and non-route UI-surface discovery and fails
-# closed when the selected target is ambiguous, unsupported, or not taskable.
+# This directory entry runs the published Decantr 3.11.0 stdio server with no configuration.
+# The existing decantr_verify tool adds changed-UI assurance through action: changes. Task
+# preparation remains authority-aware and fails closed on ambiguous or unsupported targets.
 # Smithery auto-indexes this file when the repo is claimed.
 
 startCommand:
@@ -14,6 +14,6 @@ startCommand:
     |-
     (config) => ({
       command: 'npx',
-      args: ['-y', '@decantr/mcp-server@3.10.0'],
+      args: ['-y', '@decantr/mcp-server@3.11.0'],
       env: {}
     })

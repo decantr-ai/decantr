@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Decantr — AI Frontend Governance for AI-edited codebases</title>
-  <meta name="description" content="Decantr 3.10.0 is the current stable local-first release for authority-aware UI change control in AI-edited codebases.">
+  <meta name="description" content="Decantr 3.11.0 verifies the current UI change against project-owned components, styles, routes, and app boundaries with zero setup and zero writes.">
   <link rel="canonical" href="https://decantr.ai/">
   <meta property="og:title" content="Decantr — AI Frontend Governance">
-  <meta property="og:description" content="Stable 3.10.0 provides authority-aware route and non-route task context, verification, and typed local evidence.">
+  <meta property="og:description" content="Stable 3.11.0 provides zero-setup changed-UI assurance plus authority-aware task context and typed local evidence.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://decantr.ai/">
   <meta property="og:image" content="https://decantr.ai/logo.svg">
@@ -24,7 +24,7 @@
     "@graph": [
       { "@type": "Organization", "@id": "https://decantr.ai/#organization", "name": "Decantr AI", "url": "https://decantr.ai/", "logo": "https://decantr.ai/logo.svg", "sameAs": ["https://github.com/decantr-ai/decantr", "https://www.npmjs.com/org/decantr"] },
       { "@type": "WebSite", "@id": "https://decantr.ai/#website", "name": "Decantr", "alternateName": "Decantr AI", "url": "https://decantr.ai/", "publisher": { "@id": "https://decantr.ai/#organization" } },
-      { "@type": "SoftwareApplication", "@id": "https://decantr.ai/#software", "name": "Decantr", "applicationCategory": "DeveloperApplication", "operatingSystem": "Cross-platform", "url": "https://decantr.ai/", "description": "Decantr 3.10.0 provides local authority-aware UI task context, verification, and typed evidence with explicit limitations.", "sameAs": "https://github.com/decantr-ai/decantr" },
+      { "@type": "SoftwareApplication", "@id": "https://decantr.ai/#software", "name": "Decantr", "applicationCategory": "DeveloperApplication", "operatingSystem": "Cross-platform", "url": "https://decantr.ai/", "description": "Decantr 3.11.0 verifies the current UI change against project authority and reports concise, typed local evidence.", "sameAs": "https://github.com/decantr-ai/decantr" },
       { "@type": "SoftwareSourceCode", "@id": "https://github.com/decantr-ai/decantr#source", "name": "Decantr", "codeRepository": "https://github.com/decantr-ai/decantr", "programmingLanguage": "TypeScript", "license": "https://opensource.org/license/mit", "targetProduct": { "@id": "https://decantr.ai/#software" } }
     ]
   }
@@ -1239,7 +1239,7 @@
       </nav>
       <a class="nav-cta" href="#install" data-cta="install" id="nav-install">
         <i data-lucide="terminal" class="icon" aria-hidden="true"></i>
-        npx scan
+        npx verify
       </a>
     </div>
   </header>
@@ -1253,16 +1253,16 @@
         </div>
         <p class="eyebrow">AI Frontend Governance for production codebases</p>
         <h1 class="hero-h1" id="hero-title">
-          UI change control for <span class="accent">AI-edited</span> codebases.
+          Verify the UI change. <span class="accent">Not the whole repo.</span>
         </h1>
         <p class="hero-lede">
-          Stable 3.10.0 prepares bounded, authority-aware route and non-route context and reports local verification evidence.
-          Unresolved targets fail closed instead of being upgraded by route volume or aggregate confidence.
+          Decantr 3.11 checks the files your agent changed against the app's own components, styles, routes, and boundaries.
+          No adoption, account, generated context, or hosted source upload required.
         </p>
         <span class="hero-credibility">
           <span class="dot" aria-hidden="true"></span>
           <span>
-            <strong>v3.10.0 current stable</strong>
+            <strong>v3.11.0 current stable</strong>
             ·
             <a href="https://github.com/decantr-ai/decantr" target="_blank" rel="noopener" style="color: inherit; border-bottom: 1px dotted var(--soft);">
               <strong data-stat="stars">★ —</strong> on GitHub
@@ -1283,7 +1283,7 @@
             <button data-pm="yarn" role="tab" aria-selected="false">yarn dlx</button>
           </div>
           <div class="command">
-            <code id="install-cmd" tabindex="0" role="button" aria-label="Install command, click to copy">npx @decantr/cli scan</code>
+            <code id="install-cmd" tabindex="0" role="button" aria-label="Verify command, click to copy">npx @decantr/cli@3.11.0 verify</code>
             <button class="copy-btn" type="button" data-copy-target="install-cmd" data-copy-success="Copied">
               <i data-lucide="copy" class="icon" aria-hidden="true"></i>
               <span class="copy-label">Copy</span>
@@ -1304,18 +1304,18 @@
     <!-- ============ SCORE BAND ============ -->
     <section class="section score-band" aria-labelledby="score-title">
       <div class="container">
-        <h2 id="score-title" class="sr-only">Decantr 3.10 readiness transition</h2>
+        <h2 id="score-title" class="sr-only">Decantr 3.11 changed-UI assurance result</h2>
         <div class="score-wrap reveal" data-score>
           <div class="score-col before">
-            <span class="label">Unresolved topology</span>
-            <span class="score-num score-state">Limited</span>
+            <span class="label">Changed UI drifts</span>
+            <span class="score-num score-state">Attention</span>
           </div>
           <span class="score-arrow" aria-hidden="true">
             <i data-lucide="arrow-right" class="icon"></i>
           </span>
           <div class="score-col after">
-            <span class="label">Blocking axes resolved</span>
-            <span class="score-num score-state">Ready</span>
+            <span class="label">Changed UI aligns</span>
+            <span class="score-num score-state">Pass</span>
             <span class="score-delta">
               <i data-lucide="check" class="icon" aria-hidden="true" style="width:0.85rem;height:0.85rem;"></i>
               evidence-dependent
@@ -1323,9 +1323,9 @@
           </div>
         </div>
         <p class="score-caption reveal">
-          <strong>Stable 3.10:</strong> readiness is an axis-by-axis evidence state, not a fit score. A strong framework or route count cannot hide unresolved topology, styling, taskability, or runtime evidence.
-          This transition is illustrative, not a benchmark, qualification result, or model-lift result.
-          <a href="https://github.com/decantr-ai/decantr/blob/main/docs/reference/project-health.md" class="rubric-link" target="_blank" rel="noopener">Project Health reference →</a>
+          <strong>Stable 3.11:</strong> changed-UI assurance returns pass, attention, or not proven. It reports no more than three consequential findings and refuses ambiguous app selection.
+          This transition is illustrative, not a precision, adoption, or model-lift result.
+          <a href="https://github.com/decantr-ai/decantr/blob/main/docs/reference/change-assurance.md" class="rubric-link" target="_blank" rel="noopener">Change Assurance contract →</a>
         </p>
 
         <!-- ============ Works-with ============ -->
@@ -1344,22 +1344,21 @@
     <!-- ============ CLI TRANSCRIPT ============ -->
     <section class="section section-tight" aria-labelledby="cli-title">
       <div class="container">
-        <h2 id="cli-title" class="sr-only">What scan actually does</h2>
+        <h2 id="cli-title" class="sr-only">What changed-UI assurance actually does</h2>
         <div class="transcript reveal">
           <div class="transcript-head">
             <span class="dot-row" aria-hidden="true"><span></span><span></span><span></span></span>
-            <span>~/your-app — illustrative read-only scan</span>
-            <span style="margin-left:auto;">stable v3.10.0</span>
+            <span>~/your-app — illustrative zero-write verification</span>
+            <span style="margin-left:auto;">stable v3.11.0</span>
           </div>
           <div class="transcript-body">
-            <div class="transcript-line"><span class="sym prompt">$</span><span class="body">npx @decantr/cli scan</span></div>
-            <div class="transcript-line"><span class="sym spin">›</span><span class="body"><span class="soft">scanning project structure...</span></span></div>
-            <div class="transcript-line"><span class="sym ok">✓</span><span class="body">Detected <strong>React</strong> + <strong>TypeScript</strong> + <strong>Vite</strong> in the selected app</span></div>
-            <div class="transcript-line"><span class="sym ok">✓</span><span class="body">Observed <strong>source-declared routes</strong>, taskable route candidates, components, and styling evidence</span></div>
-            <div class="transcript-line"><span class="sym spin">›</span><span class="body"><span class="soft">checking route authority, graph readiness, excluded source, and limitations...</span></span></div>
-            <div class="transcript-line"><span class="sym warn">!</span><span class="body">Route authority: <span class="warn-text">partial</span> · review representative implementation sources before adoption</span></div>
-            <div class="transcript-line"><span class="sym ok">✓</span><span class="body">Tests, fixtures, and generated outputs remain excluded from production route authority</span></div>
-            <div class="transcript-line"><span class="sym ok">✓</span><span class="body"><span class="ok-text">Scan complete</span> · zero files modified · limitations reported</span></div>
+            <div class="transcript-line"><span class="sym prompt">$</span><span class="body">npx @decantr/cli@3.11.0 verify</span></div>
+            <div class="transcript-line"><span class="sym spin">›</span><span class="body"><span class="soft">resolving staged, unstaged, renamed, deleted, and untracked UI changes...</span></span></div>
+            <div class="transcript-line"><span class="sym ok">✓</span><span class="body">Selected <strong>apps/web</strong> from the changed files</span></div>
+            <div class="transcript-line"><span class="sym ok">✓</span><span class="body">Excluded tests, fixtures, stories, generated output, and sibling apps from production authority</span></div>
+            <div class="transcript-line"><span class="sym warn">!</span><span class="body"><strong>COMP010</strong> · src/routes/Checkout.tsx:42 uses a raw button where <strong>Button</strong> is project-owned</span></div>
+            <div class="transcript-line"><span class="sym spin">›</span><span class="body"><span class="soft">repair target: packages/ui/src/Button.tsx</span></span></div>
+            <div class="transcript-line"><span class="sym ok">✓</span><span class="body"><span class="ok-text">Attention</span> · 1 consequential finding · zero files modified</span></div>
           </div>
         </div>
       </div>
@@ -1398,26 +1397,42 @@
     <section class="section" id="how" aria-labelledby="how-title">
       <div class="container">
         <div class="section-head reveal">
-          <p class="eyebrow">Stable 3.10 product loop</p>
-          <h2 id="how-title">Observe. Prepare. Verify. Report.</h2>
-          <p>These commands observe project authority, prepare one bounded route or non-route change, verify the diff, and report evidence. Publication does not imply a measured model-outcome claim.</p>
+          <p class="eyebrow">Stable 3.11 product loop</p>
+          <h2 id="how-title">Verify first. Deepen when needed.</h2>
+          <p>Start with the current change. Add broader observation, task context, or full-project evidence only when the work warrants it. Publication does not imply a measured model-outcome claim.</p>
         </div>
 
         <div class="steps">
           <article class="step reveal">
             <div class="step-head">
               <span class="step-num" aria-hidden="true"></span>
-              <h3>Observe</h3>
+              <h3>Verify</h3>
             </div>
-            <p>3.10 reads the selected app and reports independent surface, route, component, styling, runtime, graph, and limitation evidence without writing files.</p>
+            <p>3.11 resolves the Git change, selects one app when provable, and checks only affected UI surfaces against production authority.</p>
             <div class="command">
-              <code tabindex="0" data-copy-text="npx @decantr/cli scan">decantr scan</code>
-              <button class="copy-btn" type="button" data-copy="npx @decantr/cli scan" data-copy-success="Copied" aria-label="Copy observe command" title="Copy command">
+              <code tabindex="0" data-copy-text="npx @decantr/cli@3.11.0 verify">decantr verify</code>
+              <button class="copy-btn" type="button" data-copy="npx @decantr/cli@3.11.0 verify" data-copy-success="Copied" aria-label="Copy verify command" title="Copy command">
                 <i data-lucide="copy" class="icon" aria-hidden="true"></i>
                 <span class="copy-label">Copy</span>
               </button>
             </div>
-            <span class="step-out">prints evidence + limitations with zero writes</span>
+            <span class="step-out">prints up to three findings with zero writes</span>
+          </article>
+
+          <article class="step reveal">
+            <div class="step-head">
+              <span class="step-num" aria-hidden="true"></span>
+              <h3>Observe</h3>
+            </div>
+            <p>Scan the selected app when you need the full authority map across routes, components, styling, runtime, graph, and limitations.</p>
+            <div class="command">
+              <code tabindex="0" data-copy-text="npx @decantr/cli@3.11.0 scan">decantr scan</code>
+              <button class="copy-btn" type="button" data-copy="npx @decantr/cli@3.11.0 scan" data-copy-success="Copied" aria-label="Copy observe command" title="Copy command">
+                <i data-lucide="copy" class="icon" aria-hidden="true"></i>
+                <span class="copy-label">Copy</span>
+              </button>
+            </div>
+            <span class="step-out">reports independent authority axes + limitations</span>
           </article>
 
           <article class="step reveal">
@@ -1425,31 +1440,15 @@
               <span class="step-num" aria-hidden="true"></span>
               <h3>Prepare</h3>
             </div>
-            <p>3.10 resolves attached graph-backed routes and authority-aware component, layout, overlay, story, package, and file targets.</p>
+            <p>Resolve a route or non-route target into bounded, ranked context before a complex edit. Unknown or ambiguous targets fail closed.</p>
             <div class="command">
-              <code tabindex="0" data-copy-text="npx @decantr/cli task /feed &quot;update save action&quot;">decantr task /feed</code>
-              <button class="copy-btn" type="button" data-copy="npx @decantr/cli task /feed &quot;update save action&quot;" data-copy-success="Copied" aria-label="Copy prepare command" title="Copy command">
+              <code tabindex="0" data-copy-text="npx @decantr/cli@3.11.0 task /feed &quot;update save action&quot;">decantr task /feed</code>
+              <button class="copy-btn" type="button" data-copy="npx @decantr/cli@3.11.0 task /feed &quot;update save action&quot;" data-copy-success="Copied" aria-label="Copy prepare command" title="Copy command">
                 <i data-lucide="copy" class="icon" aria-hidden="true"></i>
                 <span class="copy-label">Copy</span>
               </button>
             </div>
-            <span class="step-out">returns bounded <strong>TaskCapsuleV1</strong> context or explicit blocking guidance</span>
-          </article>
-
-          <article class="step reveal">
-            <div class="step-head">
-              <span class="step-num" aria-hidden="true"></span>
-              <h3>Verify</h3>
-            </div>
-            <p>Emits findings with stable codes, repair IDs, and an evidence bundle your agent reads automatically.</p>
-            <div class="command">
-              <code tabindex="0" data-copy-text="npx @decantr/cli verify --evidence">decantr verify</code>
-              <button class="copy-btn" type="button" data-copy="npx @decantr/cli verify --evidence" data-copy-success="Copied" aria-label="Copy verify command" title="Copy command">
-                <i data-lucide="copy" class="icon" aria-hidden="true"></i>
-                <span class="copy-label">Copy</span>
-              </button>
-            </div>
-            <span class="step-out">writes <strong>.decantr/evidence/latest.json</strong></span>
+            <span class="step-out">returns bounded context or explicit blocking guidance</span>
           </article>
 
           <article class="step reveal">
@@ -1459,8 +1458,8 @@
             </div>
             <p>Emits typed, reproducible evidence and keeps missing or incompatible proof visible instead of converting it into a pass.</p>
             <div class="command">
-              <code tabindex="0" data-copy-text="npx @decantr/cli ci --report-version v3 --json">decantr ci --json</code>
-              <button class="copy-btn" type="button" data-copy="npx @decantr/cli ci --report-version v3 --json" data-copy-success="Copied" aria-label="Copy report command" title="Copy command">
+              <code tabindex="0" data-copy-text="npx @decantr/cli@3.11.0 ci --report-version v3 --json">decantr ci --json</code>
+              <button class="copy-btn" type="button" data-copy="npx @decantr/cli@3.11.0 ci --report-version v3 --json" data-copy-success="Copied" aria-label="Copy report command" title="Copy command">
                 <i data-lucide="copy" class="icon" aria-hidden="true"></i>
                 <span class="copy-label">Copy</span>
               </button>
@@ -1484,33 +1483,32 @@
     <section class="section" id="demo" aria-labelledby="demo-title">
       <div class="container">
         <div class="section-head reveal">
-          <p class="eyebrow">Illustrative stable route case · Decantr 3.10.0</p>
-          <h2 id="demo-title">What your AI actually receives.</h2>
-          <p>Decantr emits a finding. Your agent reads bounded task context. The change returns to an explicit verification gate: concrete codes, IDs, anchors, and authority.</p>
+          <p class="eyebrow">Illustrative changed-UI case · Decantr 3.11.0</p>
+          <h2 id="demo-title">One changed file. One actionable finding.</h2>
+          <p>The same verifier-owned finding reaches the terminal, explicit CI v3, and the existing MCP verify tool with a concrete source line and repair target.</p>
         </div>
 
         <div class="demo reveal">
           <div class="demo-step">
             <span class="demo-label">1 · Finding emitted</span>
-            <pre><span class="c">// .decantr/evidence/latest.json</span>
+            <pre><span class="c">// change-assurance-report.v1</span>
 {
-  <span class="k">"code"</span>: <span class="s">"COMP001"</span>,
-  <span class="k">"route"</span>: <span class="s">"/feed"</span>,
-  <span class="k">"file"</span>: <span class="s">"app/feed/SaveBtn.tsx"</span>,
-  <span class="k">"issue"</span>: <span class="s">"Duplicate primitive"</span>,
-  <span class="k">"expected"</span>: <span class="s">"@/ui/Button"</span>,
-  <span class="k">"repair_id"</span>: <span class="s">"r_4a2"</span>
+  <span class="k">"status"</span>: <span class="s">"attention"</span>,
+  <span class="k">"code"</span>: <span class="s">"COMP010"</span>,
+  <span class="k">"file"</span>: <span class="s">"src/routes/Checkout.tsx"</span>,
+  <span class="k">"line"</span>: <span class="s">42</span>,
+  <span class="k">"repairTarget"</span>: <span class="s">"packages/ui/src/Button.tsx"</span>
 }</pre>
           </div>
           <span class="demo-arrow" aria-hidden="true">
             <i data-lucide="arrow-right" class="icon"></i>
           </span>
           <div class="demo-step">
-            <span class="demo-label">2 · Agent reads context</span>
-            <pre><span class="c"># MCP-fetched repair prompt</span>
-route: /feed
-duplicate: app/feed/SaveBtn.tsx
-already-owned: @/ui/Button
+            <span class="demo-label">2 · Agent receives repair target</span>
+            <pre><span class="c"># concise verifier guidance</span>
+changed: src/routes/Checkout.tsx:42
+authority: packages/ui/src/Button.tsx
+canonical: Button
 
 action:
   replace local button
@@ -1523,7 +1521,7 @@ action:
           </span>
           <div class="demo-step">
             <span class="demo-label">3 · Diff lands clean</span>
-            <pre><span class="c">// app/feed/SaveBtn.tsx</span>
+            <pre><span class="c">// src/routes/Checkout.tsx</span>
 <span class="del">- import { motion } from "framer"</span>
 <span class="del">- const SaveBtn = (p) =&gt; (</span>
 <span class="del">-  &lt;motion.button {...p} /&gt; )</span>
@@ -1535,7 +1533,7 @@ action:
         <div style="text-align:center;">
           <span class="demo-foot">
             <i data-lucide="check-circle-2" class="icon"></i>
-            Illustrative repair · verify the actual diff and finding state in your project
+            Illustrative repair · run the zero-write verifier against your actual diff
           </span>
         </div>
       </div>
@@ -1649,7 +1647,7 @@ action:
         <div class="section-head reveal">
           <p class="eyebrow">Agent-ready context · stable route example</p>
           <h2 id="map-title">Give the AI a map before it edits.</h2>
-          <p>Decantr 3.10.0 builds a bounded TaskCapsuleV1 for a resolved attached route and a separate UI-surface context for other targets. Both fail closed when the target or authority is ambiguous.</p>
+          <p>Decantr 3.11.0 can first verify a change with no attachment. For deeper work it builds a bounded TaskCapsuleV1 for a resolved attached route and a separate UI-surface context for other targets. Both fail closed when the target or authority is ambiguous.</p>
         </div>
 
         <div class="map-card reveal">
@@ -1728,9 +1726,9 @@ action:
 
         <div class="roadmap reveal">
           <article class="roadmap-item now">
-            <span class="roadmap-tag"><span class="dot" aria-hidden="true"></span>Current stable · v3.10.0</span>
-            <h3>Authority-Aware UI Change Control</h3>
-            <p>Independent authority axes, route and non-route task context, compatible TaskCapsuleV1, verification evidence, and CI contracts are shipped.</p>
+            <span class="roadmap-tag"><span class="dot" aria-hidden="true"></span>Current stable · v3.11.0</span>
+            <h3>Changed-UI Assurance</h3>
+            <p>Zero-setup Git scope, fail-closed app selection, concise source-anchored findings, and one verifier-owned CLI, CI, and MCP contract are shipped.</p>
           </article>
           <article class="roadmap-item">
             <span class="roadmap-tag">Separate research · incomplete</span>
@@ -1738,14 +1736,14 @@ action:
             <p>A frozen 40-task, two-model A/B protocol may test whether Decantr materially improves outcomes. No measured value claim exists before that research gate passes.</p>
           </article>
           <article class="roadmap-item">
-            <span class="roadmap-tag">3.10 shipped · regression-backed</span>
+            <span class="roadmap-tag">3.10 foundation · retained</span>
             <h3>Surfaces, not route supremacy</h3>
             <p>The release treats routes, layouts, components, stories, overlays, flows, packages, and runtime states as separate evidence. A real Next.js repair replay blocks deployment-conditioned routes and preserves workspace style order, but remains development evidence rather than model-lift proof.</p>
           </article>
           <article class="roadmap-item">
-            <span class="roadmap-tag">Product boundary</span>
-            <h3>Compatibility stays bounded</h3>
-            <p>@decantr/content owns corpus references; registry names and Decantr CSS are compatibility surfaces, Studio remains read-only, and MCP keeps exactly eight tool identities.</p>
+            <span class="roadmap-tag">4.0 · gated, not scheduled</span>
+            <h3>Proof before a major</h3>
+            <p>A 4.0 line requires representative field evidence, acceptable false-positive and authority performance, parity across supported frameworks, and a concrete migration benefit. Otherwise Decantr continues in 3.x.</p>
           </article>
         </div>
       </div>
@@ -1755,9 +1753,9 @@ action:
     <section class="section" aria-labelledby="cta-title">
       <div class="container">
         <div class="final reveal">
-          <p class="eyebrow" style="justify-self: center; margin: 0 auto;">Already scanned?</p>
-          <h2 id="cta-title">Review the scan. Attach deliberately.</h2>
-          <p>Adopt writes reviewable, repo-owned project law beneath Brownfield production source. In 3.10, check every selected-app, surface, topology, taskability, styling, runtime, graph, and limitation axis before accepting it.</p>
+          <p class="eyebrow" style="justify-self: center; margin: 0 auto;">Start with the diff</p>
+          <h2 id="cta-title">Run one command. Keep your architecture.</h2>
+          <p>Changed-UI Assurance is read-only and adoption-free. It reports what matters in the current change and says not proven when app or authority selection cannot be justified.</p>
           <div class="installer" style="margin: 0 auto; max-width: 30rem;">
             <div class="installer-tabs" role="tablist" aria-label="Package manager (final)">
               <button data-pm-final="npx" class="active" role="tab" aria-selected="true">npx</button>
@@ -1766,7 +1764,7 @@ action:
               <button data-pm-final="yarn" role="tab" aria-selected="false">yarn dlx</button>
             </div>
             <div class="command">
-              <code id="adopt-cmd" tabindex="0" role="button" aria-label="Adopt command, click to copy">npx @decantr/cli adopt --yes</code>
+              <code id="adopt-cmd" tabindex="0" role="button" aria-label="Verify command, click to copy">npx @decantr/cli@3.11.0 verify</code>
               <button class="copy-btn" type="button" data-copy-target="adopt-cmd" data-copy-success="Copied">
                 <i data-lucide="copy" class="icon" aria-hidden="true"></i>
                 <span class="copy-label">Copy</span>
@@ -1787,7 +1785,7 @@ action:
         </a>
         <p class="footer-copy">Local-first verifier for production frontends touched by AI agents. Brownfield production source remains first authority; accepted project law records intent beneath it.</p>
         <div class="footer-meta">
-          <span>v3.10.0 current</span>
+          <span>v3.11.0 current</span>
           <span class="footer-meta-sep">·</span>
           <span>MIT licensed</span>
           <span class="footer-meta-sep">·</span>
@@ -1821,9 +1819,9 @@ action:
     <div class="pkg-name">@decantr/css</div><div class="pkg-version">3.8.1 - legacy optional adapter, never the default</div>
     <div class="pkg-name">@decantr/core</div><div class="pkg-version">3.10.0 - current contract and context primitives</div>
     <div class="pkg-name">@decantr/telemetry</div><div class="pkg-version">3.8.1 - optional caller-controlled sinks</div>
-    <div class="pkg-name">@decantr/cli</div><div class="pkg-version">3.10.0 - current local governance CLI</div>
-    <div class="pkg-name">@decantr/mcp-server</div><div class="pkg-version">3.10.0 - current eight-tool MCP server</div>
-    <div class="pkg-name">@decantr/verifier</div><div class="pkg-version">3.10.0 - current Project Health and authority verifier</div>
+    <div class="pkg-name">@decantr/cli</div><div class="pkg-version">3.11.0 - current changed-UI and local governance CLI</div>
+    <div class="pkg-name">@decantr/mcp-server</div><div class="pkg-version">3.11.0 - current eight-tool MCP server</div>
+    <div class="pkg-name">@decantr/verifier</div><div class="pkg-version">3.11.0 - current Change Assurance, Project Health, and authority verifier</div>
   </section>
 
   <script src="/analytics-config.js"></script>
@@ -1897,10 +1895,10 @@ action:
 
       // Multi-package-manager installer
       var pmTemplates = {
-        npx:  { hero: 'npx @decantr/cli scan',       adopt: 'npx @decantr/cli adopt --yes' },
-        pnpm: { hero: 'pnpm dlx @decantr/cli scan',  adopt: 'pnpm dlx @decantr/cli adopt --yes' },
-        bunx: { hero: 'bunx @decantr/cli scan',      adopt: 'bunx @decantr/cli adopt --yes' },
-        yarn: { hero: 'yarn dlx @decantr/cli scan',  adopt: 'yarn dlx @decantr/cli adopt --yes' }
+        npx:  { hero: 'npx @decantr/cli@3.11.0 verify',       adopt: 'npx @decantr/cli@3.11.0 verify' },
+        pnpm: { hero: 'pnpm dlx @decantr/cli@3.11.0 verify',  adopt: 'pnpm dlx @decantr/cli@3.11.0 verify' },
+        bunx: { hero: 'bunx @decantr/cli@3.11.0 verify',      adopt: 'bunx @decantr/cli@3.11.0 verify' },
+        yarn: { hero: 'yarn dlx @decantr/cli@3.11.0 verify',  adopt: 'yarn dlx @decantr/cli@3.11.0 verify' }
       };
       var setActive = function (group, pm) {
         group.querySelectorAll('button').forEach(function (b) {
@@ -1926,7 +1924,7 @@ action:
               var icon = nav.querySelector('svg, i');
               nav.textContent = '';
               if (icon) nav.appendChild(icon);
-              nav.appendChild(document.createTextNode(' ' + pm + ' scan'));
+              nav.appendChild(document.createTextNode(' ' + pm + ' verify'));
             }
           }
         });

@@ -54,6 +54,9 @@ const PRIMITIVE_COMPONENT_NAMES = new Set([
   'Toggle',
   'Tooltip',
 ]);
+const PRIMITIVE_COMPONENT_NAMES_BY_LENGTH = [...PRIMITIVE_COMPONENT_NAMES].sort(
+  (left, right) => right.length - left.length || left.localeCompare(right),
+);
 
 const RAW_CONTROL_COMPONENT_BY_ELEMENT = {
   button: 'Button',
@@ -150,8 +153,13 @@ function normalizePath(path: string): string {
   return path.replace(/\\/g, '/');
 }
 
-function isPrimitiveComponentName(name: string): boolean {
-  return PRIMITIVE_COMPONENT_NAMES.has(name);
+function primitiveComponentName(name: string): string | null {
+  if (PRIMITIVE_COMPONENT_NAMES.has(name)) return name;
+  return (
+    PRIMITIVE_COMPONENT_NAMES_BY_LENGTH.find(
+      (primitive) => name.length > primitive.length && name.endsWith(primitive),
+    ) ?? null
+  );
 }
 
 function isComponentName(name: string): boolean {
@@ -418,6 +426,21 @@ function canonicalSort(a: CodeComponentDeclaration, b: CodeComponentDeclaration)
   return a.file.localeCompare(b.file) || a.line - b.line || a.name.localeCompare(b.name);
 }
 
+function canonicalComponent(
+  candidates: CodeComponentDeclaration[] | undefined,
+  preferredName: string,
+  excludedFile: string,
+): CodeComponentDeclaration | undefined {
+  return candidates
+    ?.filter((entry) => entry.file !== excludedFile)
+    .sort(
+      (left, right) =>
+        Number(right.name === preferredName) - Number(left.name === preferredName) ||
+        left.name.length - right.name.length ||
+        canonicalSort(left, right),
+    )[0];
+}
+
 function isNonProductionComponentAuditFile(file: string): boolean {
   const normalized = normalizePath(file);
   return (
@@ -438,22 +461,25 @@ export function auditComponentReuse(
   const reusableByName = new Map<string, CodeComponentDeclaration[]>();
 
   for (const declaration of declarations) {
-    if (!declaration.reusable || !isPrimitiveComponentName(declaration.name)) continue;
-    const existing = reusableByName.get(declaration.name) ?? [];
+    const primitive = primitiveComponentName(declaration.name);
+    if (!declaration.reusable || !primitive) continue;
+    const existing = reusableByName.get(primitive) ?? [];
     existing.push(declaration);
-    reusableByName.set(declaration.name, existing.sort(canonicalSort));
+    reusableByName.set(primitive, existing.sort(canonicalSort));
   }
 
   const findings: ComponentReuseFinding[] = [];
   const rawControlFindings: RawControlReuseFinding[] = [];
   for (const parsedFile of parsedFiles) {
     for (const declaration of parsedFile.declarations) {
-      if (!isPrimitiveComponentName(declaration.name) || declaration.reusable) continue;
+      const primitive = primitiveComponentName(declaration.name);
+      if (!primitive || declaration.reusable) continue;
       if (parsedFile.imports.has(declaration.name)) continue;
-      const canonical = reusableByName
-        .get(declaration.name)
-        ?.filter((entry) => entry.file !== declaration.file)
-        .sort(canonicalSort)[0];
+      const canonical = canonicalComponent(
+        reusableByName.get(primitive),
+        declaration.name,
+        declaration.file,
+      );
       if (!canonical) continue;
       findings.push({
         id: `${COMPONENT_REUSE_RULE_ID}:${declaration.file}:${declaration.name}`,
@@ -472,11 +498,17 @@ export function auditComponentReuse(
     const seenRawControls = new Set<string>();
     for (const rawControl of parsedFile.rawControls) {
       if (parsedFile.imports.has(rawControl.component)) continue;
-      if (rawControl.containingComponent === rawControl.component) continue;
-      const canonical = reusableByName
-        .get(rawControl.component)
-        ?.filter((entry) => entry.file !== rawControl.file)
-        .sort(canonicalSort)[0];
+      if (
+        rawControl.containingComponent &&
+        primitiveComponentName(rawControl.containingComponent) === rawControl.component
+      ) {
+        continue;
+      }
+      const canonical = canonicalComponent(
+        reusableByName.get(rawControl.component),
+        rawControl.component,
+        rawControl.file,
+      );
       if (!canonical) continue;
 
       const key = `${rawControl.file}:${rawControl.component}`;
@@ -485,7 +517,7 @@ export function auditComponentReuse(
       rawControlFindings.push({
         id: `${RAW_CONTROL_REUSE_RULE_ID}:${rawControl.file}:${rawControl.element}`,
         element: rawControl.element,
-        component: rawControl.component,
+        component: canonical.name,
         file: rawControl.file,
         line: rawControl.line,
         canonicalFile: canonical.file,

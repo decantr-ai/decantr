@@ -2,7 +2,7 @@
 
 Optional telemetry contracts, privacy filters, clients, and sinks for Decantr.
 
-Decantr 3 keeps this package for compatibility and private deployments, not as a public product foundation. The current stable package remains at 3.8.1; Decantr 3.10 did not version-bump it solely for alignment. The 3.10 UI change-control release assigns telemetry no feature investment and does not treat product analytics as qualification evidence. The active hosted product no longer includes registry portal analytics, PostHog dashboards, Supabase rollups, billing funnels, public telemetry ingest, or admin telemetry pages.
+Decantr 3 keeps this package for compatibility and private deployments, not as a public product foundation. The current stable package remains at 3.8.1; Decantr 3.11 did not version-bump it solely for alignment. The current Changed-UI Assurance line assigns telemetry no feature investment and does not treat product analytics as qualification evidence. The active hosted product no longer includes registry portal analytics, PostHog dashboards, Supabase rollups, billing funnels, public telemetry ingest, or admin telemetry pages.
 
 ## Product Stance
 

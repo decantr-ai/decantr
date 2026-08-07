@@ -1,0 +1,285 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/change-assurance-report.v1.json",
+  "title": "Decantr Change Assurance Report v1",
+  "type": "object",
+  "required": [
+    "$schema",
+    "version",
+    "generatedAt",
+    "status",
+    "project",
+    "comparisonScope",
+    "changeBase",
+    "authority",
+    "surfaces",
+    "findings",
+    "limitations",
+    "summary"
+  ],
+  "properties": {
+    "$schema": { "const": "https://decantr.ai/schemas/change-assurance-report.v1.json" },
+    "version": { "const": "1.0.0" },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "status": { "enum": ["pass", "attention", "not_proven"] },
+    "project": {
+      "type": "object",
+      "required": ["projectRoot", "workspaceRoot", "selectedAppRoot", "framework", "selection"],
+      "properties": {
+        "projectRoot": { "type": "string", "minLength": 1 },
+        "workspaceRoot": { "type": "string", "minLength": 1 },
+        "selectedAppRoot": { "$ref": "#/$defs/relativePath" },
+        "framework": { "type": "string", "minLength": 1 },
+        "selection": {
+          "type": "object",
+          "required": ["strategy", "evidence"],
+          "properties": {
+            "strategy": {
+              "enum": ["explicit", "current-directory", "changed-files"]
+            },
+            "evidence": { "$ref": "#/$defs/stringArray" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "comparisonScope": { "$ref": "#/$defs/comparisonScope" },
+    "changeBase": { "$ref": "#/$defs/changeBase" },
+    "authority": {
+      "type": "object",
+      "required": ["readiness", "axes", "routeAuthority", "routeCompleteness", "confidence"],
+      "properties": {
+        "readiness": { "enum": ["ready", "limited", "blocked", "unsupported"] },
+        "axes": { "type": "object" },
+        "routeAuthority": { "enum": ["proven", "inferred", "unresolved"] },
+        "routeCompleteness": { "enum": ["complete", "partial", "unknown"] },
+        "confidence": {
+          "type": "object",
+          "required": ["level", "score", "reasons"],
+          "properties": {
+            "level": { "enum": ["high", "medium", "low"] },
+            "score": { "type": "number", "minimum": 0, "maximum": 100 },
+            "reasons": { "$ref": "#/$defs/stringArray" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "surfaces": {
+      "type": "object",
+      "required": [
+        "changedFiles",
+        "productionFiles",
+        "ignoredFiles",
+        "uiFiles",
+        "unresolvedFiles",
+        "impactedSurfaces",
+        "routeAuthorityFanOut",
+        "stylingAuthorityFanOut"
+      ],
+      "properties": {
+        "changedFiles": { "$ref": "#/$defs/relativePathArray" },
+        "productionFiles": { "$ref": "#/$defs/relativePathArray" },
+        "ignoredFiles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["file", "scope"],
+            "properties": {
+              "file": { "$ref": "#/$defs/relativePath" },
+              "scope": {
+                "enum": [
+                  "production",
+                  "package",
+                  "story",
+                  "example",
+                  "test",
+                  "fixture",
+                  "generated",
+                  "build-output",
+                  "supporting"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "uiFiles": { "$ref": "#/$defs/relativePathArray" },
+        "unresolvedFiles": { "$ref": "#/$defs/relativePathArray" },
+        "impactedSurfaces": { "type": "array", "items": { "type": "object" } },
+        "routeAuthorityFanOut": { "type": "boolean" },
+        "stylingAuthorityFanOut": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "findings": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "required": ["occurrence", "evidence", "suggestedFix", "repair"],
+        "properties": {
+          "occurrence": { "$ref": "#/$defs/occurrence" },
+          "evidence": { "$ref": "#/$defs/stringArray" },
+          "suggestedFix": { "type": "string", "minLength": 1 },
+          "repair": { "type": ["object", "null"] }
+        },
+        "additionalProperties": false
+      }
+    },
+    "limitations": { "$ref": "#/$defs/stringArray" },
+    "summary": {
+      "type": "object",
+      "required": [
+        "changedFileCount",
+        "productionFileCount",
+        "ignoredFileCount",
+        "uiFileCount",
+        "unresolvedFileCount",
+        "impactedSurfaceCount",
+        "totalFindingCount",
+        "shownFindingCount",
+        "truncatedFindingCount"
+      ],
+      "properties": {
+        "changedFileCount": { "$ref": "#/$defs/count" },
+        "productionFileCount": { "$ref": "#/$defs/count" },
+        "ignoredFileCount": { "$ref": "#/$defs/count" },
+        "uiFileCount": { "$ref": "#/$defs/count" },
+        "unresolvedFileCount": { "$ref": "#/$defs/count" },
+        "impactedSurfaceCount": { "$ref": "#/$defs/count" },
+        "totalFindingCount": { "$ref": "#/$defs/count" },
+        "shownFindingCount": { "$ref": "#/$defs/count" },
+        "truncatedFindingCount": { "$ref": "#/$defs/count" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "count": { "type": "integer", "minimum": 0 },
+    "nullableString": { "type": ["string", "null"] },
+    "stringArray": { "type": "array", "items": { "type": "string" } },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?:\\.|(?!/)(?![A-Za-z]:/)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\\\]+)$"
+    },
+    "relativePathArray": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/relativePath" }
+    },
+    "comparisonScope": {
+      "type": "object",
+      "required": ["kind", "identity"],
+      "properties": {
+        "kind": { "enum": ["working_tree", "commit_range", "pull_request", "unknown"] },
+        "identity": { "$ref": "#/$defs/nullableString" }
+      },
+      "additionalProperties": false
+    },
+    "changeBase": {
+      "type": "object",
+      "required": [
+        "identity",
+        "hash",
+        "baseRef",
+        "headRef",
+        "mergeBase",
+        "completeness",
+        "changedFiles",
+        "changedRoutes",
+        "impactedNodeIds",
+        "unresolvedFiles",
+        "limitations"
+      ],
+      "properties": {
+        "identity": { "$ref": "#/$defs/nullableString" },
+        "hash": { "$ref": "#/$defs/nullableString" },
+        "baseRef": { "$ref": "#/$defs/nullableString" },
+        "headRef": { "$ref": "#/$defs/nullableString" },
+        "mergeBase": { "$ref": "#/$defs/nullableString" },
+        "completeness": { "enum": ["complete", "incomplete"] },
+        "changedFiles": { "$ref": "#/$defs/relativePathArray" },
+        "changedRoutes": { "$ref": "#/$defs/stringArray" },
+        "impactedNodeIds": { "$ref": "#/$defs/stringArray" },
+        "unresolvedFiles": { "$ref": "#/$defs/relativePathArray" },
+        "limitations": { "$ref": "#/$defs/stringArray" }
+      },
+      "additionalProperties": false
+    },
+    "location": {
+      "type": "object",
+      "required": ["line"],
+      "properties": {
+        "line": { "type": "integer", "minimum": 1 },
+        "column": { "type": "integer", "minimum": 1 },
+        "endLine": { "type": "integer", "minimum": 1 },
+        "endColumn": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": false
+    },
+    "annotation": {
+      "type": "object",
+      "required": ["path", "startLine", "startColumn", "endLine", "endColumn"],
+      "properties": {
+        "path": { "anyOf": [{ "$ref": "#/$defs/relativePath" }, { "type": "null" }] },
+        "startLine": { "type": ["integer", "null"], "minimum": 1 },
+        "startColumn": { "type": ["integer", "null"], "minimum": 1 },
+        "endLine": { "type": ["integer", "null"], "minimum": 1 },
+        "endColumn": { "type": ["integer", "null"], "minimum": 1 }
+      },
+      "additionalProperties": false
+    },
+    "occurrence": {
+      "type": "object",
+      "required": [
+        "code",
+        "ruleId",
+        "source",
+        "category",
+        "severity",
+        "message",
+        "authorityLane",
+        "graphAnchor",
+        "repairId",
+        "repairTarget",
+        "annotation",
+        "file",
+        "route",
+        "target",
+        "location"
+      ],
+      "properties": {
+        "code": { "type": "string", "minLength": 1 },
+        "ruleId": { "type": "string", "minLength": 1 },
+        "source": { "const": "change-assurance" },
+        "category": { "type": "string", "minLength": 1 },
+        "severity": { "enum": ["error", "warn", "info"] },
+        "message": { "type": "string", "minLength": 1 },
+        "authorityLane": {
+          "enum": [
+            "production-source",
+            "local-law",
+            "style-bridge",
+            "essence-contract",
+            "official-guidance",
+            "unknown"
+          ]
+        },
+        "graphAnchor": { "type": ["object", "null"] },
+        "repairId": { "$ref": "#/$defs/nullableString" },
+        "repairTarget": { "$ref": "#/$defs/nullableString" },
+        "annotation": { "$ref": "#/$defs/annotation" },
+        "file": { "anyOf": [{ "$ref": "#/$defs/relativePath" }, { "type": "null" }] },
+        "route": { "$ref": "#/$defs/nullableString" },
+        "target": { "$ref": "#/$defs/nullableString" },
+        "location": { "anyOf": [{ "$ref": "#/$defs/location" }, { "type": "null" }] }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -60,6 +60,42 @@
           "phases": ["publish", "closeout"]
         }
       ]
+    },
+    "3.11": {
+      "initialVersion": "3.11.0",
+      "stableOnly": true,
+      "defaultDistTag": "latest",
+      "claimPolicy": {
+        "productReleaseRequiresModelLiftQualification": false,
+        "modelLiftClaimRequiresQualification": true,
+        "qualificationProgram": "scripts/benchmark-3-10"
+      },
+      "requiredGates": [
+        {
+          "id": "change-assurance-trials",
+          "label": "Decantr 3.11 changed-UI assurance trial gate",
+          "script": "scripts/run-3-11-change-assurance-trials.mjs",
+          "phases": ["readiness", "publish", "closeout"]
+        },
+        {
+          "id": "docs-marketing",
+          "label": "Decantr 3.11 active documentation release gate",
+          "script": "scripts/audit-docs-marketing.mjs",
+          "phases": ["readiness", "publish", "closeout"]
+        },
+        {
+          "id": "docs-drift",
+          "label": "Decantr 3.11 documentation drift gate",
+          "script": "scripts/audit-docs-drift.mjs",
+          "phases": ["readiness", "publish", "closeout"]
+        },
+        {
+          "id": "packed-mcp-server",
+          "label": "Decantr 3.11 packed MCP clean-consumer gate",
+          "script": "scripts/audit-packed-mcp-server.mjs",
+          "phases": ["publish", "closeout"]
+        }
+      ]
     }
   },
   "packages": [
@@ -174,7 +210,7 @@
       "releaseChannel": "stable",
       "publishOrder": 60,
       "defaultDistTag": "latest",
-      "summary": "Compatibility telemetry contracts, privacy filters, clients, and caller-controlled sinks for private deployments; no hosted default and no active 3.10 product investment.",
+      "summary": "Compatibility telemetry contracts, privacy filters, clients, and caller-controlled sinks for private deployments; no hosted default and no active product investment.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,
@@ -194,7 +230,7 @@
       "releaseChannel": "stable",
       "publishOrder": 20,
       "defaultDistTag": "latest",
-      "summary": "Stable eight-tool MCP surface for local project state, accepted Essence reads, authority-aware route and non-route UI task context, graph and verification evidence, health, and repair prompts.",
+      "summary": "Stable eight-tool MCP surface for changed-UI assurance, local project state, accepted Essence reads, authority-aware task context, graph and verification evidence, health, and repair prompts.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,
@@ -214,7 +250,7 @@
       "releaseChannel": "stable",
       "publishOrder": 10,
       "defaultDistTag": "latest",
-      "summary": "Shared read-only discovery and verification engine for independent UI authority axes, framework-specific production topology, authority-aware task context, bounded route capsules, evidence, project health, and workspace health.",
+      "summary": "Shared read-only engine for changed-UI assurance, independent authority axes, framework-specific production topology, task context, bounded route capsules, evidence, project health, and workspace health.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,
@@ -234,7 +270,7 @@
       "releaseChannel": "stable",
       "publishOrder": 30,
       "defaultDistTag": "latest",
-      "summary": "Local Observe, Prepare, Verify, and Report commands with selected-app authority, route and non-route UI target context, fail-closed taskability, Brownfield adoption, CI, codify, connect, compatibility content operations, and read-only Studio.",
+      "summary": "Diff-first local UI assurance plus Observe, Prepare, Verify, and Report commands with automatic changed-app selection, fail-closed authority, Brownfield adoption, CI, codify, connect, compatibility content operations, and read-only Studio.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,

@@ -291,7 +291,7 @@ describe('MCP tool handlers', () => {
         expect.arrayContaining(['search', 'resolve_pattern', 'compile_execution_packs']),
       );
       expect(actionsByTool.decantr_verify).toEqual(
-        expect.arrayContaining(['audit_project', 'critique', 'evidence_bundle']),
+        expect.arrayContaining(['changes', 'audit_project', 'critique', 'evidence_bundle']),
       );
       expect(actionsByTool.decantr_repair).toEqual(
         expect.arrayContaining(['findings', 'repair_plan', 'repair_prompt']),

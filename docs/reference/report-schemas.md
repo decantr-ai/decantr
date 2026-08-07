@@ -12,6 +12,14 @@ Decantr verifier report schemas are published from `packages/verifier/schema`.
 - Consumers must branch on the payload `$schema` URL instead of guessing by package version.
 - Source inclusion stays explicit. The v2 evidence schemas reserve source payloads out of band and require `sourceIncluded: false` for the local Evidence Bundle/runtime probe contract.
 
+## Decantr 3.11 Changed-UI Assurance
+
+- `change-assurance-report.v1.json`
+
+`ChangeAssuranceReportV1` records complete Git change scope, one fail-closed selected app, affected and ignored files, impacted UI surfaces, independent authority, explicit limitations, and concise `AUTH001`, `AUTH010`, `COMP001`, `COMP010`, or `TOKEN010` findings. Its primary status is `pass`, `attention`, or `not_proven`. The default finding cap is three; consumers must not convert omitted lower-priority findings or unresolved authority into a clean result.
+
+Bare CLI `decantr verify`, MCP `decantr_verify` action `changes`, and explicit CI v3 use the same verifier-owned report. CI v2 and full Project Health report schemas remain compatible and are not silently upgraded.
+
 ## Active v2 Schemas
 
 - `verification-report.common.v2.json`
@@ -38,7 +46,7 @@ Decantr verifier report schemas are published from `packages/verifier/schema`.
 
 `GovernanceDeltaV1` records comparison scope, Git change base, compatible debt baseline, current health/graph/evidence/contract/content/source identities, and findings partitioned as `new`, `inherited`, `resolved`, or `unclassified` by stable `gfo1:` occurrence fingerprints. Inherited debt does not block the delta gate. Missing, stale, incompatible, or unresolved evidence yields `gate.result: "not_proven"` and `gate.status: "incomplete"` rather than an empty/all-new delta.
 
-The CI v3 project shape embeds existing v2 health evidence plus `AdoptionTruthV1` and `GovernanceDeltaV1`. Workspace v3 contains one project report per selected app and a deterministic aggregate gate with pass/fail/not-proven counts. CI v3 reads but never creates or updates a baseline.
+The CI v3 project shape embeds existing v2 health evidence plus `AdoptionTruthV1`, `GovernanceDeltaV1`, and Changed-UI Assurance when Git scope is available. Workspace v3 contains one project report per selected app and a deterministic aggregate gate with pass/fail/not-proven counts. CI v3 reads but never creates or updates a baseline.
 
 ## Historical And Still-Active v1 Schemas
 

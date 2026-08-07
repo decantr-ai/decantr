@@ -12,6 +12,22 @@ import {
   type ComponentReuseAudit,
   RAW_CONTROL_REUSE_RULE_ID,
 } from './component-reuse.js';
+
+export type {
+  ChangeAssuranceFinding,
+  ChangeAssuranceReportV1,
+  ChangeAssuranceSelection,
+  ChangeAssuranceSelectionStrategy,
+  ChangeAssuranceStatus,
+  ChangedUISurfaceResolution,
+  VerifyUIChangesInput,
+} from './change-assurance.js';
+export {
+  CHANGE_ASSURANCE_V1_SCHEMA_URL,
+  resolveChangedUISurfaces,
+  verifyUIChanges,
+} from './change-assurance.js';
+
 import {
   type AuthorityResolution,
   type AuthorityResolutionAction,
@@ -17390,3 +17406,13 @@ export async function critiqueFile(
     adoptionMode,
   });
 }
+
+export {
+  listWorkspaceAppCandidateDetails,
+  listWorkspaceAppCandidates,
+  type ProjectScope,
+  resolveWorkspaceInfo,
+  type WorkspaceAppCandidateCategory,
+  type WorkspaceAppCandidateRank,
+  type WorkspaceInfo,
+} from './workspace.js';

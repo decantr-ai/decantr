@@ -1018,8 +1018,8 @@ test('publish workflow is protected and verifies the tagged origin/main commit',
   assert.match(workflow, /refs\/heads\/main:refs\/remotes\/origin\/main/u);
   assert.match(workflow, /ORIGIN_MAIN_COMMIT/u);
   assert.match(workflow, /REMOTE_MAIN_COMMIT/u);
-  assert.match(workflow, /\^v3\\\.\(9\|10\)\\\./u);
-  assert.match(workflow, /Decantr 3\.9 and 3\.10 are direct-stable/u);
+  assert.match(workflow, /\^v3\\\.\(9\|10\|11\)\\\./u);
+  assert.match(workflow, /Decantr 3\.9, 3\.10, and 3\.11 are direct-stable/u);
   assert.match(workflow, /git merge-base --is-ancestor "\$TAG_COMMIT" origin\/main/u);
   assert.match(workflow, /ref: \$\{\{ github\.event_name == 'workflow_dispatch' && inputs\.release_tag \|\| github\.ref \}\}/u);
   assert.doesNotMatch(workflow, /ARGS=""/u);

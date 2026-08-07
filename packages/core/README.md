@@ -7,7 +7,7 @@ Low-level Decantr compiler and execution-pack foundation.
 
 Most teams should use `@decantr/cli`, `@decantr/content`, or `@decantr/mcp-server` directly. `@decantr/core` is part of the supported Decantr public foundation surface, but it is intentionally lower-level than the usual integration entrypoints. `@decantr/registry` remains only for Decantr 3.x compatibility imports.
 
-Decantr 3.10.0 is the current stable line, centered on **Observe -> Prepare -> Verify -> Report**. Core graph and pack primitives support that work, but a graph, route rank, or larger context pack does not by itself prove production authority or model improvement. Routes are one UI surface among layouts, components, stories, overlays, flows, packages, runtime states, and exact source files.
+Decantr 3.11.0 is the current stable product line; this foundation package remains at 3.10.0. Core graph and pack primitives support Changed-UI Assurance and the deeper **Observe -> Prepare -> Verify -> Report** loop, but a graph, route rank, or larger context pack does not by itself prove production authority or model improvement. Routes are one UI surface among layouts, components, stories, overlays, flows, packages, runtime states, and exact source files.
 
 ## Install
 

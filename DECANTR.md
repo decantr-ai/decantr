@@ -12,6 +12,8 @@
 
 Use the Decantr change-control loop for UI work:
 
+**0. Check the current change:** run bare `decantr verify` at any point for zero-write Changed-UI Assurance. It needs no adoption and reports at most three consequential findings. Treat `not_proven` as a stop condition.
+
 **1. Observe:** run `decantr scan` and inspect selected-app, surface-authority, topology, taskability, component-inventory, styling-authority, and runtime-evidence limitations independently.
 
 **2. Prepare:** run `decantr task <target> "<intent>"`. A target can be a proven route, exact surface ID, component, layout, overlay, story, package, or `file:<path>` selector. Read every ranked source before editing. Stop when the result is `blocked` or `unsupported`; treat `limited` as an explicit review requirement.
@@ -53,7 +55,7 @@ Decantr is a local Contract / Context / Evidence and UI change-control layer tha
 
 **Decantr does NOT generate code.** You generate or edit the code. Decantr keeps the result coherent, consistent, and repairable.
 
-Decantr 3.10.0 is the current stable release. Its independent UI-surface model is shipped product behavior, not proof that Decantr improves frontier models. The separate frozen qualification program must pass before making a measured model-lift claim.
+Decantr 3.11.0 is the current stable release. Bare `decantr verify` checks the current Git-scoped UI change; the 3.10 independent UI-surface model remains its authority foundation. Shipped product behavior is not proof that Decantr improves frontier models. The separate frozen qualification program must pass before making a measured model-lift claim.
 
 ---
 
@@ -176,7 +178,7 @@ For a proven route, use the route source, narrative context, and Contract capsul
 
 ### Validation
 
-Run `decantr verify` for the broader Project Health view before handoff, pull requests, or CI. Preserve failures and missing proof in the report rather than summarizing them away. Use `decantr ci init` to install the default GitHub Actions gate, `decantr health --prompt <finding-id>` to generate a scoped remediation prompt for a specific issue, and `decantr studio` as an advanced read-only view of local findings and evidence.
+Run bare `decantr verify` for zero-write Changed-UI Assurance before handoff or pull requests. Run `decantr verify --full` for the broader Project Health view. Preserve failures and missing proof in the report rather than summarizing them away. Use `decantr ci init` to install the default GitHub Actions gate, `decantr health --prompt <finding-id>` to generate a scoped remediation prompt for a specific issue, and `decantr studio` as an advanced read-only view of local findings and evidence.
 Declared command palettes and hotkeys must be implemented, not merely acknowledged.
 
 ### Quick Commands
@@ -187,7 +189,8 @@ decantr scan                          # Observe UI authority with zero writes
 decantr doctor                        # Explain current state, authority, and next steps
 decantr graph                         # Generate or refresh the typed Contract graph
 decantr task <target> "<intent>"      # Prepare change-scoped context before AI edits
-decantr verify                        # Run the workflow-aware local reliability gate
+decantr verify                        # Check the current Git-scoped UI change with zero writes
+decantr verify --full                 # Run the broader Project Health gate
 decantr ci init                       # Install the pinned CI gate
 decantr ci --report-version v3        # Report explicit governed-change evidence
 ```

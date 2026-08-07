@@ -4,7 +4,15 @@
 
 Decantr observes a project's own UI authority, prepares compact context for a coding agent, verifies the resulting change, and reports reproducible evidence. It does not generate the change or replace the project's router, component library, styling system, tests, or design tools.
 
-> **Release status:** Decantr **3.10.0** is the current published stable product line. It ships authority-aware UI change control, but it is not value-proven against frontier models. The [model-lift research program](docs/programs/2026-07-22-decantr-3-10-ui-change-control-proof.md) remains separate from product release readiness. See the [3.10.0 release note](docs/releases/2026-08-07-decantr-3-10-0-authority-aware-ui-change-control.md), the [Culinary Platform repair replay](docs/benchmarks/2026-08-07-culinary-platform-clean-slate-adoption.md), and the [3.9.4 Day-0 baseline](docs/benchmarks/2026-07-22-decantr-3-9-4-day-zero.md).
+> **Release status:** Decantr **3.11.0** is the current stable product line. Bare `decantr verify` now inspects only the current UI change, writes nothing, selects one changed app when that choice is unambiguous, and returns at most three consequential findings with source and repair targets. It does not claim frontier-model lift. See the [3.11.0 release note](docs/releases/2026-08-07-decantr-3-11-0-changed-ui-assurance.md), [Change Assurance contract](docs/reference/change-assurance.md), and [qualification evidence](docs/research/2026-08-07-decantr-3-11-change-assurance-trials.md).
+
+Run it in any Git worktree; adoption is not required:
+
+```bash
+npx @decantr/cli@3.11.0 verify
+```
+
+The result is `pass`, `attention`, or `not_proven`. Multi-app ambiguity, missing Git scope, and unsupported authority fail closed instead of producing a reassuring score.
 
 ## The Product Loop
 
@@ -13,13 +21,14 @@ Decantr observes a project's own UI authority, prepares compact context for a co
 3. **Verify** the diff against project authority, tests, and available runtime evidence.
 4. **Report** typed evidence that a person, agent, or CI system can inspect.
 
-For an existing app:
+For deeper task preparation and full-project governance:
 
 ```bash
-npx @decantr/cli scan
+npx @decantr/cli@3.11.0 verify
+npx @decantr/cli@3.11.0 scan
 npx @decantr/cli adopt --yes       # one-time attachment
 npx @decantr/cli task /feed "add saved actions"
-npx @decantr/cli verify
+npx @decantr/cli verify --full
 npx @decantr/cli ci init           # one-time CI setup
 ```
 
@@ -30,14 +39,15 @@ pnpm add -D -w @decantr/cli
 pnpm exec decantr scan --project apps/web
 pnpm exec decantr adopt --project apps/web --yes
 pnpm exec decantr task /feed "add saved actions" --project apps/web
+pnpm exec decantr verify            # auto-selects one changed app when provable
 pnpm exec decantr verify --project apps/web
 ```
 
-`scan` is read-only. `adopt` is the one-time write boundary. The daily loop is `task -> edit -> verify`; CI is the durable gate.
+Bare `verify` and `scan` are read-only. `adopt` is the one-time write boundary. Use `verify --full` for the previous Project Health workflow and its explicit evidence or baseline options. The daily loop can start with changed-UI assurance and deepen to `task -> edit -> verify`; CI is the durable gate.
 
 ## UI Authority
 
-Routes are evidence, not the product ontology. The shipped 3.10 authority model covers:
+Routes are evidence, not the product ontology. The 3.10 authority model remains the foundation beneath 3.11 Change Assurance and covers:
 
 | Surface | Examples |
 | --- | --- |
@@ -68,7 +78,7 @@ Source declaration and deployment reachability are separate facts. Decantr keeps
 
 ## Product Boundary
 
-Active 3.10 investment is deliberately narrow:
+Active 3.11 investment is deliberately narrow:
 
 - `@decantr/verifier` and framework authority adapters;
 - `@decantr/cli` around `scan`, `task`, and `verify`;
@@ -125,9 +135,9 @@ The measured-improvement claim remains unavailable unless all predeclared resear
 
 Unsupported targets, missing evaluators, build failures, and model substitutions stay visible and in the denominator. A pass permits the bounded claim. Mixed results narrow the supported framework or task claim. A failure blocks any value-proven claim and requires Decantr to shrink toward verifier, authority-adapter, and CI infrastructure. Nothing is automatically deleted by a failed benchmark.
 
-## Current 3.10.0 Contracts
+## Current 3.11.0 Contracts
 
-The published line provides independent UI authority axes, authority-aware task context, compatible route-backed `TaskCapsuleV1`, `AdoptionTruthV1`, `GovernanceDeltaV1`, Project Health, local evidence, CI v2 by default, and explicit CI v3. These are product contracts, not proof that Decantr materially improves frontier-model outcomes.
+The published line adds `change-assurance-report.v1` and changed-UI assurance to the existing independent UI authority axes, authority-aware task context, compatible route-backed `TaskCapsuleV1`, `AdoptionTruthV1`, `GovernanceDeltaV1`, Project Health, local evidence, CI v2 by default, and explicit CI v3. CLI, explicit CI v3, and MCP `decantr_verify` consume the same verifier-owned report. These are product contracts, not proof that Decantr materially improves frontier-model outcomes.
 
 The MCP server preserves exactly eight public tools:
 
@@ -137,12 +147,12 @@ The MCP server preserves exactly eight public tools:
 
 ## Packages
 
-| Package | 3.10 posture |
+| Package | Current posture |
 | --- | --- |
-| `@decantr/cli` | Primary local workflow surface |
-| `@decantr/verifier` | Primary authority and evidence engine |
-| `@decantr/mcp-server` | Stable agent integration surface |
-| `@decantr/core` | Supported graph and execution foundation |
+| `@decantr/cli` 3.11.0 | Primary changed-UI and local workflow surface |
+| `@decantr/verifier` 3.11.0 | Primary authority and evidence engine |
+| `@decantr/mcp-server` 3.11.0 | Stable eight-tool agent integration surface |
+| `@decantr/core` 3.10.0 | Supported graph and execution foundation |
 | `@decantr/essence-spec` | Supported contract foundation |
 | `@decantr/content` | Supported policy/reference foundation; no broad corpus expansion |
 | `@decantr/registry` | Legacy 3.x compatibility facade |
@@ -160,6 +170,7 @@ Requires Node.js `>=20.19.0` and pnpm `>=9`.
 pnpm install
 pnpm build
 pnpm test
+pnpm qualification:3-11:changes
 pnpm benchmark:3-10:validate
 ```
 
@@ -168,11 +179,15 @@ Paid research execution is not implied by product release validation. The option
 ## Documentation
 
 - [Existing apps](docs/guides/existing-apps.md)
+- [Change Assurance](docs/reference/change-assurance.md)
 - [AI assistant setup](docs/guides/ai-assistant-setup.md)
 - [Workflow model](docs/reference/workflow-model.md)
 - [Command surface](docs/reference/command-surface.md)
 - [FAQ](docs/faq.md)
-- [3.10.0 stable release note](docs/releases/2026-08-07-decantr-3-10-0-authority-aware-ui-change-control.md)
+- [3.11.0 stable release note](docs/releases/2026-08-07-decantr-3-11-0-changed-ui-assurance.md)
+- [3.11 qualification evidence](docs/research/2026-08-07-decantr-3-11-change-assurance-trials.md)
+- [4.0 entry criteria](docs/reference/decantr-4-entry-criteria.md)
+- [3.10.0 authority-model release note](docs/releases/2026-08-07-decantr-3-10-0-authority-aware-ui-change-control.md)
 - [Frontier-model lift research program](docs/programs/2026-07-22-decantr-3-10-ui-change-control-proof.md)
 - [3.10 Culinary Platform clean-slate adoption](docs/benchmarks/2026-08-07-culinary-platform-clean-slate-adoption.md) (oracle-assisted repair evidence, not a model A/B result)
 - [3.10 exploratory adoption evidence](docs/benchmarks/2026-07-24-decantr-3-10-exploratory-adoption-evidence.md) (deterministic development evidence, not model-lift proof)

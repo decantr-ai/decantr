@@ -106,6 +106,7 @@ import {
 } from './command-surface.js';
 import { cmdAddFeature, cmdAddPage, cmdAddSection } from './commands/add.js';
 import { cmdAnalyze } from './commands/analyze.js';
+import { type ChangeAssuranceFailOn, runChangeAssurance } from './commands/change-assurance.js';
 import { cmdCi, cmdCiHelp } from './commands/ci.js';
 import { cmdConnectCursor, cmdConnectHelp } from './commands/connect.js';
 import { cmdCreate } from './commands/create.js';
@@ -125,6 +126,7 @@ import { cmdSyncDrift, resolveDriftEntries } from './commands/sync-drift.js';
 import { cmdTelemetry } from './commands/telemetry.js';
 import { cmdThemeSwitch } from './commands/theme-switch.js';
 import { detectProject, formatDetection } from './detect.js';
+import { resolveChangeAssuranceProject } from './git-change-scope.js';
 import { buildGuardRegistryContext } from './guard-context.js';
 // V4 C5 wiring — scan source for missing interaction implementations.
 import { scanProjectInteractions } from './lib/scan-interactions.js';
@@ -3632,18 +3634,20 @@ function flagBoolean(
 
 function withoutWorkflowOnlyFlags(args: string[]): string[] {
   const stripped: string[] = [];
-  const flagsWithValues = new Set(['--project']);
+  const flagsWithValues = new Set(['--project', '--max-findings']);
   for (let index = 1; index < args.length; index += 1) {
     const arg = args[index];
     if (
       arg === '--brownfield' ||
       arg === '--local-patterns' ||
       arg === '--workspace' ||
-      arg === '--baseline'
+      arg === '--baseline' ||
+      arg === '--diff' ||
+      arg === '--full'
     ) {
       continue;
     }
-    if (arg.startsWith('--project=')) {
+    if (arg.startsWith('--project=') || arg.startsWith('--max-findings=')) {
       continue;
     }
     if (flagsWithValues.has(arg)) {
@@ -4621,8 +4625,11 @@ async function cmdVerifyWorkflow(args: string[]): Promise<void> {
       [
         'project',
         'workspace',
+        'diff',
+        'full',
         'changed',
         'since',
+        'max-findings',
         'json',
         'markdown',
         'format',
@@ -4656,6 +4663,74 @@ async function cmdVerifyWorkflow(args: string[]): Promise<void> {
   if (workspaceMode) {
     const { cmdWorkspace } = await import('./commands/workspace.js');
     await cmdWorkspace(process.cwd(), ['workspace', 'health', ...withoutWorkflowOnlyFlags(args)]);
+    return;
+  }
+
+  const fullMode =
+    flagBoolean(flags, 'full') ||
+    [
+      'brownfield',
+      'local-patterns',
+      'evidence',
+      'browser',
+      'require-browser',
+      'base-url',
+      'design-tokens',
+      'save-baseline',
+      'since-baseline',
+      'baseline',
+      'prompt',
+    ].some((flag) => flags[flag] !== undefined && flags[flag] !== false);
+
+  if (!fullMode) {
+    const format = flagString(flags, 'format');
+    if (format && format !== 'json' && format !== 'markdown' && format !== 'text') {
+      console.error(error('Invalid --format value. Use json, markdown, or text.'));
+      process.exitCode = 1;
+      return;
+    }
+    const failOnValue = flagString(flags, 'fail-on') ?? 'warn';
+    if (!['error', 'warn', 'info', 'none'].includes(failOnValue)) {
+      console.error(error('Invalid --fail-on value. Use error, warn, info, or none.'));
+      process.exitCode = 1;
+      return;
+    }
+    const maxFindingsValue = flagString(flags, 'max-findings');
+    const maxFindings = maxFindingsValue ? Number(maxFindingsValue) : undefined;
+    if (
+      maxFindingsValue &&
+      (!Number.isSafeInteger(maxFindings) ||
+        (maxFindings as number) < 1 ||
+        (maxFindings as number) > 20)
+    ) {
+      console.error(error('Invalid --max-findings value. Use an integer from 1 to 20.'));
+      process.exitCode = 1;
+      return;
+    }
+    try {
+      const resolution = resolveChangeAssuranceProject(
+        process.cwd(),
+        projectArg,
+        flagString(flags, 'since'),
+      );
+      const result = runChangeAssurance({
+        projectRoot: resolution.workspaceInfo.appRoot,
+        git: resolution.git,
+        selection: resolution.selection,
+        options: {
+          json: flagBoolean(flags, 'json') || format === 'json',
+          markdown: flagBoolean(flags, 'markdown') || format === 'markdown',
+          output: flagString(flags, 'output'),
+          ci: flagBoolean(flags, 'ci'),
+          failOn: failOnValue as ChangeAssuranceFailOn,
+          maxFindings,
+        },
+      });
+      if (result.exitCode !== 0) process.exitCode = result.exitCode;
+    } catch (cause) {
+      console.error(error((cause as Error).message));
+      process.exitCode = 1;
+    }
     return;
   }
 
@@ -6950,20 +7025,28 @@ ${BOLD}Examples:${RESET}
 
 function cmdVerifyHelp() {
   console.log(`
-${BOLD}decantr verify${RESET} — One reliability command for local work and LLM agent loops
+${BOLD}decantr verify${RESET} — Read-only assurance for the current UI change
 
 ${BOLD}Usage:${RESET}
-  decantr verify [--project <path>] [--brownfield] [--local-patterns]
+  decantr verify [--project <path>] [--since <ref>] [--fail-on warn]
+  decantr verify --json | --markdown | --ci
+  decantr verify --full [Project Health options]
   decantr verify --base-url <url> --evidence
   decantr verify --since-baseline
   decantr verify --workspace [--changed --since origin/main]
   decantr verify init-ci [legacy alias for decantr ci init]
 
+${BOLD}Behavior:${RESET}
+  By default, selects one changed app, reads the Git diff, excludes test/fixture authority, and
+  returns at most three changed-file findings. It does not require adoption and writes nothing.
+  Evidence, baseline, Brownfield, and local-pattern flags retain the full Project Health workflow.
+
 ${BOLD}Examples:${RESET}
   decantr verify
+  decantr verify --since origin/main --ci
+  decantr verify --project apps/web --json
+  decantr verify --full
   decantr verify --brownfield --local-patterns
-  decantr verify --brownfield --local-patterns --project apps/web
-  decantr verify --brownfield --local-patterns --fail-on warn
   decantr verify --base-url http://localhost:3000 --evidence
   decantr verify --workspace --changed --since origin/main
   decantr ci init --project apps/web

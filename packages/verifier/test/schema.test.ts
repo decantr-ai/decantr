@@ -3,7 +3,7 @@ import { mkdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { auditProject, critiqueSource, scanProject } from '../src/index.js';
+import { auditProject, critiqueSource, scanProject, verifyUIChanges } from '../src/index.js';
 import { assertMatchesVerifierSchema } from './helpers/schema-assert.js';
 
 function createProjectRoot(): string {
@@ -11,6 +11,44 @@ function createProjectRoot(): string {
 }
 
 describe('verifier schema contracts', () => {
+  it('emits change assurance reports matching the published schema', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      writeFileSync(
+        join(projectRoot, 'package.json'),
+        JSON.stringify({ name: 'assurance-schema-app', dependencies: { react: '^19.0.0' } }),
+      );
+      await mkdir(join(projectRoot, 'src', 'pages'), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'src', 'pages', 'Home.tsx'),
+        'export function Home() { return <main />; }\n',
+      );
+      const report = verifyUIChanges({
+        projectRoot,
+        comparisonScope: { kind: 'working_tree', identity: 'test' },
+        changeBase: {
+          identity: 'git:working-tree:test',
+          hash: 'sha256:test',
+          baseRef: 'HEAD',
+          headRef: 'test',
+          mergeBase: 'test',
+          completeness: 'complete',
+          changedFiles: ['src/pages/Home.tsx'],
+          changedRoutes: [],
+          impactedNodeIds: [],
+          unresolvedFiles: [],
+          limitations: [],
+        },
+        generatedAt: '2026-08-07T12:00:00.000Z',
+      });
+
+      assertMatchesVerifierSchema('change-assurance-report.v1.json', report);
+      expect(report.$schema).toBe('https://decantr.ai/schemas/change-assurance-report.v1.json');
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
   it('emits project audit reports matching the published schema', async () => {
     const projectRoot = createProjectRoot();
     try {

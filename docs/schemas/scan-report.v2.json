@@ -272,6 +272,7 @@
         "routeEvidence",
         "componentConfidence",
         "componentEvidence",
+        "uiSurfaces",
         "limitations"
       ],
       "properties": {
@@ -330,6 +331,9 @@
         "componentEvidence": {
           "$ref": "#/$defs/stringArray"
         },
+        "uiSurfaces": {
+          "$ref": "#/$defs/uiSurfaces"
+        },
         "limitations": {
           "$ref": "#/$defs/stringArray"
         }
@@ -351,6 +355,159 @@
   },
   "additionalProperties": false,
   "$defs": {
+    "uiAxis": {
+      "type": "object",
+      "required": ["status", "confidence", "evidence", "limitations", "blocksReady"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["proven", "partial", "unresolved", "not_applicable", "unsupported"]
+        },
+        "confidence": {
+          "$ref": "#/$defs/confidenceLevel"
+        },
+        "evidence": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "limitations": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "blocksReady": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "uiSurfaces": {
+      "type": "object",
+      "required": ["schemaVersion", "status", "primaryMode", "counts", "axes", "evidenceAdapters", "reasons"],
+      "properties": {
+        "schemaVersion": {
+          "const": "ui-surfaces.v1"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["ready", "limited", "blocked", "unsupported"]
+        },
+        "primaryMode": {
+          "type": "string",
+          "enum": ["application", "design-system", "component-library", "unknown"]
+        },
+        "counts": {
+          "type": "object",
+          "required": ["file", "route", "layout", "component", "story", "overlay", "flow", "package", "runtime-state"],
+          "properties": {
+            "file": { "type": "integer", "minimum": 0 },
+            "route": { "type": "integer", "minimum": 0 },
+            "layout": { "type": "integer", "minimum": 0 },
+            "component": { "type": "integer", "minimum": 0 },
+            "story": { "type": "integer", "minimum": 0 },
+            "overlay": { "type": "integer", "minimum": 0 },
+            "flow": { "type": "integer", "minimum": 0 },
+            "package": { "type": "integer", "minimum": 0 },
+            "runtime-state": { "type": "integer", "minimum": 0 }
+          },
+          "additionalProperties": false
+        },
+        "axes": {
+          "type": "object",
+          "required": ["selectedApp", "surfaceAuthority", "topologyCompleteness", "taskability", "componentInventory", "stylingAuthority", "runtimeEvidence"],
+          "properties": {
+            "selectedApp": { "$ref": "#/$defs/uiAxis" },
+            "surfaceAuthority": { "$ref": "#/$defs/uiAxis" },
+            "topologyCompleteness": { "$ref": "#/$defs/uiAxis" },
+            "taskability": { "$ref": "#/$defs/uiAxis" },
+            "componentInventory": { "$ref": "#/$defs/uiAxis" },
+            "stylingAuthority": { "$ref": "#/$defs/uiAxis" },
+            "runtimeEvidence": { "$ref": "#/$defs/uiAxis" }
+          },
+          "additionalProperties": false
+        },
+        "evidenceAdapters": {
+          "$ref": "#/$defs/uiEvidenceAdapters"
+        },
+        "reasons": {
+          "$ref": "#/$defs/stringArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "uiEvidenceFile": {
+      "type": "object",
+      "required": ["file", "role", "scope"],
+      "properties": {
+        "file": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["configuration", "source", "artifact"]
+        },
+        "scope": {
+          "type": "string",
+          "enum": ["production", "package", "story", "example", "test", "fixture", "generated", "build-output", "supporting", "runtime-evidence"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "uiEvidenceAdapter": {
+      "type": "object",
+      "required": ["kind", "status", "confidence", "files", "evidence", "limitations"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["storybook", "figma-code-connect", "design-tokens", "project-tests", "runtime", "visual", "accessibility"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["absent", "configured", "available"]
+        },
+        "confidence": {
+          "$ref": "#/$defs/confidenceLevel"
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/uiEvidenceFile"
+          }
+        },
+        "evidence": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "limitations": {
+          "$ref": "#/$defs/stringArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "uiEvidenceAdapters": {
+      "type": "object",
+      "required": ["storybook", "figmaCodeConnect", "designTokens", "projectTests", "runtime", "visual", "accessibility"],
+      "properties": {
+        "storybook": {
+          "$ref": "#/$defs/uiEvidenceAdapter"
+        },
+        "figmaCodeConnect": {
+          "$ref": "#/$defs/uiEvidenceAdapter"
+        },
+        "designTokens": {
+          "$ref": "#/$defs/uiEvidenceAdapter"
+        },
+        "projectTests": {
+          "$ref": "#/$defs/uiEvidenceAdapter"
+        },
+        "runtime": {
+          "$ref": "#/$defs/uiEvidenceAdapter"
+        },
+        "visual": {
+          "$ref": "#/$defs/uiEvidenceAdapter"
+        },
+        "accessibility": {
+          "$ref": "#/$defs/uiEvidenceAdapter"
+        }
+      },
+      "additionalProperties": false
+    },
     "confidenceLevel": {
       "type": "string",
       "enum": ["high", "medium", "low"]

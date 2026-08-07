@@ -1,4 +1,3 @@
-import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
@@ -31,10 +30,13 @@ import {
   evaluateDiscoveryReadiness,
   fingerprintFindingOccurrenceV1,
   GOVERNANCE_FINDING_FINGERPRINT_VERSION,
+  verifyUIChanges,
 } from '@decantr/verifier';
+import { collectGitChangeScope, scopeGitChangeEvidence } from '../git-change-scope.js';
 import { validateLocalLaw } from '../local-law.js';
 import { createStyleBridgeTaskSummary } from '../style-bridge.js';
 import { resolveWorkspaceInfo } from '../workspace.js';
+import { formatChangeAssuranceGithubAnnotations } from './change-assurance.js';
 import {
   createProjectHealthReport,
   evaluateHealthBaselineGate,
@@ -1123,30 +1125,6 @@ function readGovernanceBaseline(
   };
 }
 
-function gitOutput(root: string, args: string[]): string {
-  return execFileSync('git', args, {
-    cwd: root,
-    encoding: 'utf-8',
-    stdio: ['ignore', 'pipe', 'pipe'],
-  }).trim();
-}
-
-function outputPaths(output: string): string[] {
-  return output
-    .split(/\r?\n/)
-    .map((path) => path.trim().replace(/\\/g, '/').replace(/^\.\//, ''))
-    .filter(Boolean);
-}
-
-function projectScopedPaths(paths: string[], selectedAppRoot: string): string[] {
-  const prefix = selectedAppRoot === '.' ? '' : `${selectedAppRoot.replace(/\/$/, '')}/`;
-  return [...new Set(paths)]
-    .filter((path) => !prefix || path.startsWith(prefix))
-    .map((path) => (prefix ? path.slice(prefix.length) : path))
-    .filter(Boolean)
-    .sort();
-}
-
 interface GitScopeEvidence {
   comparisonScope: GovernanceComparisonScopeV1;
   identity: string | null;
@@ -1164,64 +1142,21 @@ function collectGitScope(
   selectedAppRoot: string,
   since: string | undefined,
 ): GitScopeEvidence {
-  try {
-    const head = gitOutput(workspaceRoot, ['rev-parse', '--verify', 'HEAD^{commit}']);
-    if (since) {
-      const base = gitOutput(workspaceRoot, ['rev-parse', '--verify', `${since}^{commit}`]);
-      const mergeBase = gitOutput(workspaceRoot, ['merge-base', base, head]);
-      const changedFiles = projectScopedPaths(
-        outputPaths(gitOutput(workspaceRoot, ['diff', '--name-only', mergeBase, head, '--'])),
-        selectedAppRoot,
-      );
-      const identity = `${mergeBase}..${head}`;
-      return {
-        comparisonScope: { kind: 'commit_range', identity },
-        identity: `git:commit-range:${identity}`,
-        hash: hashCanonicalJson({ base, changedFiles, head, mergeBase }),
-        baseRef: since,
-        headRef: 'HEAD',
-        mergeBase,
-        completeness: 'complete',
-        changedFiles,
-        limitations: [],
-      };
-    }
-
-    const tracked = outputPaths(gitOutput(workspaceRoot, ['diff', '--name-only', 'HEAD', '--']));
-    const untracked = outputPaths(
-      gitOutput(workspaceRoot, ['ls-files', '--others', '--exclude-standard']),
-    );
-    const changedFiles = projectScopedPaths([...tracked, ...untracked], selectedAppRoot);
-    const fileStates = changedFiles.map((path) => ({
-      path,
-      hash: hashFile(join(workspaceRoot, selectedAppRoot === '.' ? path : selectedAppRoot, path)),
-    }));
-    const identity = `working-tree:${head}`;
-    return {
-      comparisonScope: { kind: 'working_tree', identity },
-      identity: `git:${identity}`,
-      hash: hashCanonicalJson({ changedFiles: fileStates, head }),
-      baseRef: 'HEAD',
-      headRef: 'WORKTREE',
-      mergeBase: head,
-      completeness: 'complete',
-      changedFiles,
-      limitations: [],
-    };
-  } catch (error) {
-    const detail = (error as Error).message.split(/\r?\n/)[0] || 'unknown Git error';
-    return {
-      comparisonScope: { kind: since ? 'commit_range' : 'unknown', identity: null },
-      identity: null,
-      hash: null,
-      baseRef: since ?? null,
-      headRef: 'HEAD',
-      mergeBase: null,
-      completeness: 'incomplete',
-      changedFiles: [],
-      limitations: [`Git change base could not be resolved: ${detail}`],
-    };
-  }
+  const scoped = scopeGitChangeEvidence(
+    collectGitChangeScope(workspaceRoot, since),
+    selectedAppRoot,
+  );
+  return {
+    comparisonScope: scoped.comparisonScope,
+    identity: scoped.changeBase.identity,
+    hash: scoped.changeBase.hash,
+    baseRef: scoped.changeBase.baseRef,
+    headRef: scoped.changeBase.headRef,
+    mergeBase: scoped.changeBase.mergeBase,
+    completeness: scoped.changeBase.completeness,
+    changedFiles: scoped.changeBase.changedFiles,
+    limitations: scoped.changeBase.limitations,
+  };
 }
 
 function readGraphSnapshot(projectRoot: string): GraphSnapshot | null {
@@ -1363,6 +1298,32 @@ async function createProjectCiReportV3(
   const projectIdentity = createStableProjectIdentityV1(projectRoot);
   const selectedAppRoot = adoptionTruth.project.selectedAppRoot;
   const git = collectGitScope(workspaceRoot, selectedAppRoot, options.since);
+  const changeAssurance = verifyUIChanges({
+    projectRoot,
+    comparisonScope: git.comparisonScope,
+    changeBase: {
+      identity: git.identity,
+      hash: git.hash,
+      baseRef: git.baseRef,
+      headRef: git.headRef,
+      mergeBase: git.mergeBase,
+      completeness: git.completeness,
+      changedFiles: git.changedFiles,
+      changedRoutes: [],
+      impactedNodeIds: [],
+      unresolvedFiles: [],
+      limitations: git.limitations,
+    },
+    selection: {
+      strategy: projectPath ? 'explicit' : 'current-directory',
+      evidence: [
+        projectPath
+          ? `CI selected the app ${projectPath}.`
+          : 'CI selected the current project root.',
+      ],
+    },
+    generatedAt,
+  });
   const current = createCurrentGovernanceState(projectRoot, projectIdentity, health);
   const enforceDiscoveryProof = discoveryReadiness.adoptionBaseline !== 'ready';
   if (enforceDiscoveryProof) {
@@ -1410,6 +1371,7 @@ async function createProjectCiReportV3(
     styleBridge,
     adoptionTruth,
     governanceDelta,
+    changeAssurance,
   });
 }
 
@@ -1417,10 +1379,42 @@ function governanceGateFails(report: DecantrCiProjectReportV3, failOn: HealthFai
   return failOn !== 'none' && report.governanceDelta.gate.result !== 'pass';
 }
 
+function changeAssuranceFails(report: DecantrCiProjectReportV3, failOn: HealthFailOn): boolean {
+  if (failOn === 'none' || !report.changeAssurance) return false;
+  if (report.changeAssurance.status === 'not_proven') return true;
+  return report.changeAssurance.findings.some(
+    (finding) =>
+      finding.occurrence.severity === 'error' ||
+      (failOn === 'warn' && finding.occurrence.severity === 'warn'),
+  );
+}
+
+function emitChangeAssuranceAnnotations(report: DecantrCiProjectReportV3): void {
+  if (process.env.GITHUB_ACTIONS !== 'true' || !report.changeAssurance) return;
+  for (const annotation of formatChangeAssuranceGithubAnnotations(report.changeAssurance)) {
+    process.stderr.write(`${annotation}\n`);
+  }
+}
+
 function formatProjectCiV3Markdown(report: DecantrCiProjectReportV3): string {
   const health = report.health as ProjectHealthReport;
   const v2Evidence = formatProjectCiMarkdown({ ...report, health });
-  return `${v2Evidence.trimEnd()}\n\n## Governance Delta\n\n- Result: **${report.governanceDelta.gate.result}**\n- New: **${report.governanceDelta.summary.newCount}**\n- Inherited: **${report.governanceDelta.summary.inheritedCount}**\n- Unclassified: **${report.governanceDelta.summary.unclassifiedCount}**\n`;
+  const assurance = report.changeAssurance;
+  const assuranceLines = assurance
+    ? [
+        '',
+        '## Changed UI Assurance',
+        '',
+        `- Status: **${assurance.status}**`,
+        `- Production UI files: **${assurance.summary.uiFileCount}**`,
+        `- Findings: **${assurance.summary.totalFindingCount}**`,
+        ...assurance.findings.map(
+          (finding) =>
+            `- \`${finding.occurrence.code}\` ${finding.occurrence.file ?? 'project'}: ${finding.occurrence.message}`,
+        ),
+      ]
+    : [];
+  return `${v2Evidence.trimEnd()}\n\n## Governance Delta\n\n- Result: **${report.governanceDelta.gate.result}**\n- New: **${report.governanceDelta.summary.newCount}**\n- Inherited: **${report.governanceDelta.summary.inheritedCount}**\n- Unclassified: **${report.governanceDelta.summary.unclassifiedCount}**\n${assuranceLines.join('\n')}\n`;
 }
 
 function formatWorkspaceCiV3Markdown(report: DecantrCiWorkspaceReportV3): string {
@@ -1507,8 +1501,11 @@ async function runWorkspaceCiV3(root: string, options: CiOptions): Promise<numbe
     }
   }
 
+  for (const project of report.projects) emitChangeAssuranceAnnotations(project);
+
   const governanceFails = failOn !== 'none' && report.gate.result !== 'pass';
-  return shouldFailWorkspaceHealth(workspace, failOn) || governanceFails ? 1 : 0;
+  const assuranceFails = report.projects.some((project) => changeAssuranceFails(project, failOn));
+  return shouldFailWorkspaceHealth(workspace, failOn) || governanceFails || assuranceFails ? 1 : 0;
 }
 
 async function runProjectCi(root: string, options: CiOptions): Promise<number> {
@@ -1614,13 +1611,16 @@ async function runProjectCiV3(root: string, options: CiOptions): Promise<number>
     }
   }
 
+  emitChangeAssuranceAnnotations(report);
+
   const healthFails = report.baselineGate.applied
     ? shouldFailHealthBaselineGate(report.baselineGate, report.failOn)
     : shouldFailHealth(health, report.failOn);
   return healthFails ||
     localLawFails(report.localLaw, report.failOn) ||
     styleBridgeFails(report.styleBridge, report.failOn) ||
-    governanceGateFails(report, report.failOn)
+    governanceGateFails(report, report.failOn) ||
+    changeAssuranceFails(report, report.failOn)
     ? 1
     : 0;
 }

@@ -1,18 +1,24 @@
 # Decantr With AI Coding Assistants
 
-Decantr is agent-neutral. The coding assistant still reads source, edits files, runs tools, and explains the result. Published 3.10.0 adds authority-aware route and non-route task context plus local evidence, organized as:
+Decantr is agent-neutral. The coding assistant still reads source, edits files, runs tools, and explains the result. Published 3.11.0 adds zero-setup Changed-UI Assurance to the authority-aware route and non-route task context introduced in 3.10.
 
 **Observe -> Prepare -> Verify -> Report**
 
-**Release status:** 3.10.0 is published stable. It is not value-proven against frontier models.
+**Release status:** 3.11.0 is current stable. It is not value-proven against frontier models.
 
 ## Minimal CLI Workflow
 
-Attach an existing app once:
+Start with no attachment:
 
 ```bash
-npx @decantr/cli scan
-npx @decantr/cli adopt --yes
+npx @decantr/cli@3.11.0 verify
+```
+
+The assistant receives at most three findings for the current Git change, each anchored to changed source and a repair target. A `not_proven` result is a stop condition, not permission to guess. Scan and attach only when the work needs broader authority or task context:
+
+```bash
+npx @decantr/cli@3.11.0 scan
+npx @decantr/cli@3.11.0 adopt --yes
 ```
 
 For each UI change:
@@ -37,7 +43,7 @@ The current task contract supports routes and non-route UI targets. Confirm that
 Run the published server with any MCP-compatible client:
 
 ```bash
-npx @decantr/mcp-server@3.10.0
+npx @decantr/mcp-server@3.11.0
 ```
 
 Decantr 3.x preserves exactly eight public tools:
@@ -49,11 +55,20 @@ Decantr 3.x preserves exactly eight public tools:
 | `decantr_context` | Scoped context, including route-backed task preparation |
 | `decantr_graph` | Graph metadata, source, route, history, and impact reads |
 | `decantr_registry` | Compatibility content/reference reads backed by `@decantr/content` |
-| `decantr_verify` | Local verification and evidence actions |
+| `decantr_verify` | Changed-UI Assurance plus local verification and evidence actions |
 | `decantr_repair` | Evidence-backed repair prompts |
 | `decantr_contract_write` | Explicit, annotated contract writes |
 
 There is no ninth content tool in 3.x. `decantr_registry` is a stable compatibility identity, not a public marketplace.
+
+After an edit, request the same report as bare CLI verify:
+
+```json
+{
+  "action": "changes",
+  "project_path": "apps/web"
+}
+```
 
 Before a current route change, call `decantr_context` with a task action:
 
@@ -125,7 +140,7 @@ pnpm build
 Use local browser evidence when the app is already running:
 
 ```bash
-pnpm exec decantr verify --project apps/web \
+pnpm exec decantr verify --full --project apps/web \
   --base-url http://localhost:3000 \
   --evidence
 ```
@@ -146,7 +161,7 @@ Local agents can ignore instructions. Make verification a required CI check:
 pnpm exec decantr ci init --project apps/web
 ```
 
-3.10.0 keeps CI v2 as the compatibility default. Explicit CI v3 remains available for governed-change contracts, but missing or incompatible evidence must stay `not_proven` rather than becoming a clean pass.
+CI v2 remains the compatibility default. Explicit CI v3 includes Changed-UI Assurance with the governed-change contracts; missing or incompatible evidence must stay `not_proven` rather than becoming a clean pass.
 
 ## Privacy And Network Behavior
 
@@ -160,10 +175,10 @@ pnpm exec decantr ci init --project apps/web
 
 ## Advanced Compatibility Surfaces
 
-Greenfield blueprints, themes, broad content workflows, Studio, showcase, telemetry, registry-named commands, and explicit `@decantr/css` adoption remain callable where shipped. They are not part of the normal assistant loop or active 3.10 investment.
+Greenfield blueprints, themes, broad content workflows, Studio, showcase, telemetry, registry-named commands, and explicit `@decantr/css` adoption remain callable where shipped. They are not part of the normal assistant loop or active 3.11 investment.
 
 ## Proof Status
 
 Decantr has not yet proven that this workflow materially improves frontier-model UI changes. The separate [model-lift research program](../programs/2026-07-22-decantr-3-10-ui-change-control-proof.md) compares a repository-native control with an information-equivalent Decantr treatment over 320 isolated runs. The [3.9.4 Day-0 baseline](../benchmarks/2026-07-22-decantr-3-9-4-day-zero.md) is diagnostic evidence, not a correctness or value score.
 
-See also: [Existing apps](existing-apps.md), [Workflow model](../reference/workflow-model.md), [Command surface](../reference/command-surface.md), and [Project Health CI](project-health-ci.md).
+See also: [Change Assurance](../reference/change-assurance.md), [Existing apps](existing-apps.md), [Workflow model](../reference/workflow-model.md), [Command surface](../reference/command-surface.md), and [Project Health CI](project-health-ci.md).

@@ -7,7 +7,7 @@ Experimental Vite plugin for local Decantr guard feedback during Vite developmen
 
 This package is useful when you already have a Vite app with `decantr.essence.json` and want faster feedback while editing. It is not part of the main Decantr product nucleus and is excluded from the default release wave unless explicitly requested.
 
-Decantr 3.10 did not version-bump this experimental package solely for alignment. The release assigns it no feature investment; canonical UI-surface authority, adoption truth, task context, verification, and report contracts belong in `@decantr/verifier` and the primary CLI/MCP/CI loop instead. Plugin feedback is not runtime proof and must not be promoted into a clean authority claim.
+Decantr 3.11 did not version-bump this experimental package solely for alignment. The release assigns it no feature investment; canonical Changed-UI Assurance, UI-surface authority, adoption truth, task context, verification, and report contracts belong in `@decantr/verifier` and the primary CLI/MCP/CI loop instead. Plugin feedback is not runtime proof and must not be promoted into a clean authority claim.
 
 ## Install
 

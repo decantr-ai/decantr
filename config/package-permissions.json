@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-09",
+  "updatedAt": "2026-08-07",
   "packages": [
     {
       "name": "@decantr/essence-spec",
@@ -157,7 +157,7 @@
       "runtimeKind": "library",
       "ships": ["dist", "schema", "README.md", "package.json"],
       "filesystem": {
-        "read": ["Selected project source and stylesheet files", "Decantr context files", "accepted .decantr/style-bridge.json when auditProject checks style bridge drift", "read-only scan files for framework, route, styling, static-host, assistant-rule, source inventory, and Decantr presence signals", "Angular workspace/build metadata and production TypeScript import graphs for read-only route-authority resolution", "built dist/.next output when auditBuiltDist or auditProject needs runtime evidence"],
+        "read": ["Selected project source and stylesheet files", "Directly referenced workspace package source when changed-UI assurance resolves shared component authority", "Decantr context files", "accepted .decantr/style-bridge.json when verification checks style bridge drift", "read-only scan files for framework, route, styling, static-host, assistant-rule, source inventory, and Decantr presence signals", "Angular workspace/build metadata and production TypeScript import graphs for read-only route-authority resolution", "built dist/.next output when auditBuiltDist or auditProject needs runtime evidence"],
         "write": [],
         "delete": []
       },
@@ -184,7 +184,7 @@
       "runtimeKind": "mcp-server",
       "ships": ["dist", "server.json", "THIRD_PARTY_NOTICES.md", "README.md", "package.json"],
       "filesystem": {
-        "read": ["Active workspace Decantr files, including .decantr/graph typed graph artifacts", "selected project files for critique/audit/evidence tools", "git changed-file state for task context"],
+        "read": ["Active workspace Decantr files, including .decantr/graph typed graph artifacts", "selected project and directly referenced workspace package files for changed-UI assurance, critique, audit, and evidence tools", "git changed-file state for assurance and task context"],
         "write": ["decantr.essence.json through explicit write tools", ".decantr/drift-log.json through explicit drift deferral"],
         "delete": []
       },
@@ -193,14 +193,15 @@
         "inbound": false
       },
       "process": {
-        "spawn": ["git diff with fixed argv and shell disabled for changed-file/task impact discovery"]
+        "spawn": ["git diff, git ls-files, and git rev-parse with fixed argv and shell disabled for changed-file assurance and task-impact discovery"]
       },
       "telemetry": "none",
-      "hostedUpload": "not-supported in Decantr 3.9; allow_hosted_upload is retained only as a compatibility option and does not activate retired API routes",
+      "hostedUpload": "not-supported; allow_hosted_upload is retained only as a compatibility option and does not activate retired API routes",
       "localArtifacts": ["Read/write tools are contained to the active workspace root"],
       "scannerNotes": [
         "MCP write tools are annotated as write tools and use workspace-root path containment.",
         "Hosted source upload fallbacks are retired in the active API.",
+        "The decantr_verify changes action covers staged, unstaged, deleted, renamed, and untracked paths, or caller-declared changed_files.",
         "The npm package bundles the MCP SDK modules used by stdio and does not install the SDK's unused HTTP dependency tree."
       ]
     },
@@ -210,7 +211,7 @@
       "runtimeKind": "cli",
       "ships": ["dist", "src/templates", "src/bundled", "README.md", "package.json"],
       "filesystem": {
-        "read": ["Selected project/workspace files, including project-local Playwright and axe-core packages when browser evidence is explicitly requested", "bounded workspace file snapshots during explicit decantr init or decantr adopt for authored-source integrity receipts", "package manifests", "routing/style/config files", ".decantr artifacts including .decantr/graph typed graph artifacts", "Decantr cache/config files"],
+        "read": ["Git working-tree state and selected project source for zero-write changed-UI assurance", "Directly referenced workspace package source when resolving shared component authority", "Selected project/workspace files, including project-local Playwright and axe-core packages when browser evidence is explicitly requested", "bounded workspace file snapshots during explicit decantr init or decantr adopt for authored-source integrity receipts", "package manifests", "routing/style/config files", ".decantr artifacts including .decantr/graph typed graph artifacts", "Decantr cache/config files"],
         "write": ["decantr.essence.json", "DECANTR.md", ".decantr artifacts including the adoption receipt stored in .decantr/project.json", ".decantr/drift-log.json through explicit resolve drift-log actions", "generated context packs", ".decantr/graph typed graph artifacts including local snapshot history", "optional CI workflows/snippets", "optional Cursor MCP/rule files through decantr connect cursor", ".prettierignore entries for generated Decantr governance artifacts during greenfield scaffolding only; Brownfield and Hybrid adoption do not mutate formatter configuration", "a deterministic marked `@source not` block in detected Tailwind v4 CSS entry files, with exact path and before/after hashes recorded in the adoption receipt", "optional style/export files", "Decantr config for auth/telemetry when explicitly enabled"],
         "delete": ["Generated Decantr artifacts or explicit command targets such as removed generated context/theme outputs"]
       },
@@ -219,17 +220,18 @@
         "inbound": true
       },
       "process": {
-        "spawn": ["git diff with fixed argv", "package manager/bootstrap commands with argv arrays", "local Studio/browser/dev-server helper flows"]
+        "spawn": ["git diff, git merge-base, git ls-files, and git rev-parse with fixed argv for changed-UI assurance", "package manager/bootstrap commands with argv arrays", "local Studio/browser/dev-server helper flows"]
       },
       "telemetry": "disabled by default; opt-in records a local preference, and delivery occurs only when the caller explicitly configures a private endpoint",
-      "hostedUpload": "not-supported in Decantr 3.9; local verify/audit/scan do not upload source",
+      "hostedUpload": "not-supported; local verify/audit/scan do not upload source",
       "localArtifacts": [".decantr/analysis.json", ".decantr/context/*", ".decantr/graph/*", ".decantr/evidence/*", ".decantr/drift-log.json", ".decantr/local-patterns*.json", ".decantr/rules*.json", ".decantr/style-bridge*.json", ".prettierignore", "detected Tailwind v4 CSS entry files", ".cursor/mcp.json", ".cursor/rules/decantr.mdc"],
       "scannerNotes": [
         "The CLI is intentionally a local project inspector and artifact writer.",
         "Explicit initialization and Brownfield adoption take bounded before/after hashes without following symlinks so the stored receipt can distinguish Decantr-managed writes from authored source changes. Tailwind v4 source-scan isolation is an explicit narrow exception: only a marked `@source not` block in a detected CSS entry is approved, and its path plus exact before/after hashes are stored; any unclassified mutation or hash mismatch is incomplete adoption truth.",
+        "Bare decantr verify is a zero-write changed-UI assurance pass unless the caller explicitly requests an output file. It excludes tests, fixtures, generated files, and build output from production authority and fails closed when Git scope or app selection is ambiguous.",
         "decantr scan is local read-only reconnaissance; it writes no .decantr directory or report files and does not upload source.",
         "Process execution is limited to fixed command/argv paths; shell execution is avoided in shipped workflow code.",
-        "Visual evidence screenshots remain local in Decantr 3.9.",
+        "Visual evidence screenshots remain local.",
         "Optional axe accessibility evidence loads only a project/workspace-local axe-core package and records local probe summaries.",
         "The CLI has no Decantr-hosted telemetry default; event and identity delivery require separate explicit caller-controlled endpoints."
       ]

@@ -2,6 +2,8 @@
 
 Project Health is Decantr's CI-friendly answer to: is this app still aligned with its contract, where did it drift, what loop state is it in, and what should be fixed first?
 
+For the default local workflow in 3.11, bare `decantr verify` runs the smaller zero-write [Changed-UI Assurance](../reference/change-assurance.md) contract. The Project Health workflows below remain the broader gate.
+
 ## Install The Gate
 
 ```bash
@@ -41,11 +43,11 @@ npx @decantr/cli ci --project apps/web
 npx @decantr/cli ci --workspace --changed --since origin/main
 npx @decantr/cli ci --project apps/web --since origin/main --report-version v3 --json
 npx @decantr/cli ci --workspace --since origin/main --report-version v3 --json
-npx @decantr/cli verify --markdown --output decantr-health.md
-npx @decantr/cli verify --json --output decantr-health.json
+npx @decantr/cli verify --full --markdown --output decantr-health.md
+npx @decantr/cli verify --full --json --output decantr-health.json
 ```
 
-Use `verify` for the local human/agent loop and `ci` for mandatory automation. Both commands respect the selected adoption lane: contract-only Brownfield apps keep existing source/style authority, Hybrid local law adds accepted project rules, and style bridges or legacy Decantr CSS are enforced only where explicitly adopted. Workspace runs isolate each attached app.
+Use bare `verify` for the changed-UI human/agent loop, `verify --full` for local Project Health, and `ci` for mandatory automation. These commands respect the selected adoption lane: contract-only Brownfield apps keep existing source/style authority, Hybrid local law adds accepted project rules, and style bridges or legacy Decantr CSS are enforced only where explicitly adopted. Workspace runs isolate each attached app.
 
 Default `ci` emits `decantr-ci-report.v2` with the same loop verdict, evidence tier, and authority resolution as local verification. It includes accepted local-rule findings, statically checkable `behavior_obligations`, and style bridge status. `--fail-on error` keeps warning-level local law visible without blocking, while `--fail-on warn` blocks on those warnings once the team has stabilized them.
 
@@ -53,6 +55,7 @@ Explicit CI v3 embeds that existing v2 health evidence and adds:
 
 - `AdoptionTruthV1`: selected app, source provenance, governance coverage, adoption mutation receipts, limitations, and next action.
 - `GovernanceDeltaV1`: Git comparison scope and findings partitioned as new, inherited, resolved, or unclassified using stable occurrence fingerprints.
+- `change-assurance-report.v1`: the same changed files, app selection, status, and concise findings used by bare verify and MCP action `changes`.
 - A fail-closed gate: incomplete change-base, graph, evidence, or compatible baseline proof yields `not_proven`, not an empty delta.
 - Workspace project reports plus one deterministic aggregate gate.
 

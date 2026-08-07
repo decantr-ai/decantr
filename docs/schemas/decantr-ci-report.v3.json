@@ -43,7 +43,8 @@
         "localLaw": { "$ref": "#/$defs/localLaw" },
         "styleBridge": { "$ref": "#/$defs/styleBridge" },
         "adoptionTruth": { "$ref": "https://decantr.ai/schemas/adoption-truth.v1.json" },
-        "governanceDelta": { "$ref": "https://decantr.ai/schemas/governance-delta.v1.json" }
+        "governanceDelta": { "$ref": "https://decantr.ai/schemas/governance-delta.v1.json" },
+        "changeAssurance": { "$ref": "https://decantr.ai/schemas/change-assurance-report.v1.json" }
       },
       "additionalProperties": false
     },

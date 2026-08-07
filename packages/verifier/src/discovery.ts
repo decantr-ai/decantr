@@ -2035,7 +2035,7 @@ function styleSourceRank(file: string): number {
   return 3;
 }
 
-function findWorkspacePackageRoots(workspaceRoot: string): Map<string, string> {
+export function findWorkspacePackageRoots(workspaceRoot: string): Map<string, string> {
   const packages = new Map<string, string>();
   const queue: Array<{ dir: string; depth: number }> = [{ dir: workspaceRoot, depth: 0 }];
   let visited = 0;
