@@ -109,8 +109,9 @@ export function buildUISurfaceDiscovery(input: BuildUISurfaceDiscoveryInput): UI
       name: signal.path,
       files: [signal.file],
       scope: classifyProjectSourceScope(signal.file),
-      authority:
-        input.routes.authority === 'proven'
+      authority: !signal.taskable
+        ? 'project-reference'
+        : input.routes.authority === 'proven'
           ? 'production-proven'
           : input.routes.authority === 'inferred'
             ? 'inferred'
@@ -304,7 +305,13 @@ function buildAxes(
 
   const surfaceAuthority: UIAuthorityAxis =
     input.routes.authority === 'proven' && input.routes.taskableRouteCount > 0
-      ? axis('proven', input.routes.confidence, input.routes.evidence, [], true)
+      ? axis(
+          'proven',
+          input.routes.confidence,
+          input.routes.evidence,
+          input.routes.limitations,
+          true,
+        )
       : input.components.componentCount > 0
         ? axis(
             'partial',
@@ -318,7 +325,13 @@ function buildAxes(
   const topologyCompleteness: UIAuthorityAxis =
     primaryMode === 'application'
       ? input.routes.completeness === 'complete'
-        ? axis('proven', input.routes.confidence, input.routes.evidence, [], true)
+        ? axis(
+            'proven',
+            input.routes.confidence,
+            input.routes.evidence,
+            input.routes.limitations,
+            true,
+          )
         : axis(
             input.routes.completeness === 'partial' ? 'partial' : 'unresolved',
             input.routes.confidence,
@@ -342,9 +355,9 @@ function buildAxes(
           'proven',
           input.routes.confidence,
           [
-            `${input.routes.taskableRouteCount} production route target(s) resolve to source files.`,
+            `${input.routes.taskableRouteCount} source-backed route target(s) pass known deployment-policy exclusions.`,
           ],
-          [],
+          input.routes.limitations,
           true,
         )
       : input.routes.taskableRouteCount > 0

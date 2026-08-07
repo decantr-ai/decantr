@@ -1438,18 +1438,18 @@ function buildCommands(
   applicability: ScanReportV1['applicability'],
   discovery: ProjectDiscovery,
 ): string[] {
-  const commands = ['npx @decantr/cli scan'];
+  const commands = ['decantr scan'];
   const selectedAppStatus = discovery.surfaces.axes.selectedApp.status;
   const surfaceAuthorityStatus = discovery.surfaces.axes.surfaceAuthority.status;
   const attachable =
     (selectedAppStatus === 'proven' || selectedAppStatus === 'partial') &&
     (surfaceAuthorityStatus === 'proven' || surfaceAuthorityStatus === 'partial');
   if (attachable) {
-    commands.push('npx @decantr/cli adopt --yes');
-    commands.push('npx @decantr/cli doctor');
-    if (applicability.status === 'partial_fit') commands.push('npx @decantr/cli scan --json');
+    commands.push('decantr adopt --yes');
+    commands.push('decantr doctor');
+    if (applicability.status === 'partial_fit') commands.push('decantr scan --json');
   } else if (applicability.status === 'partial_fit') {
-    commands.push('npx @decantr/cli scan --json');
+    commands.push('decantr scan --json');
   }
   return commands;
 }
@@ -1814,7 +1814,7 @@ export function createUnavailableScanReport(input: {
         evidence: input.evidence ?? [],
       },
     ],
-    recommendedCommands: ['npx @decantr/cli scan'],
+    recommendedCommands: ['decantr scan'],
     privacy: {
       sourceUploaded: input.scanInput.kind !== 'local',
       persistedByDecantr: false,

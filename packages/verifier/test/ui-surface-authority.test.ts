@@ -251,6 +251,107 @@ describe('UI surface authority', () => {
       'Production source src/app.tsx imports src/app.css',
     );
   });
+
+  it('preserves ordered Next stylesheet authority across workspace package exports', () => {
+    const appRoot = join(projectRoot, 'apps', 'web');
+    const designSystemRoot = join(projectRoot, 'packages', 'design-system');
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      JSON.stringify({ private: true, workspaces: ['apps/*', 'packages/*'] }),
+    );
+    writeFileSync(
+      join(projectRoot, 'pnpm-workspace.yaml'),
+      'packages:\n  - "apps/*"\n  - "packages/*"\n',
+    );
+    mkdirSync(join(appRoot, 'app'), { recursive: true });
+    mkdirSync(join(designSystemRoot, 'src', 'styles'), { recursive: true });
+    writeFileSync(
+      join(appRoot, 'package.json'),
+      JSON.stringify({
+        dependencies: {
+          next: '^16.0.0',
+          react: '^19.0.0',
+          '@example/design-system': 'workspace:*',
+        },
+      }),
+    );
+    writeFileSync(
+      join(designSystemRoot, 'package.json'),
+      JSON.stringify({
+        name: '@example/design-system',
+        exports: {
+          './styles/foundation.css': './src/styles/foundation.css',
+          './styles/brand.css': './src/styles/brand.css',
+        },
+      }),
+    );
+    writeFileSync(
+      join(appRoot, 'app', 'layout.tsx'),
+      [
+        'import "@example/design-system/styles/foundation.css";',
+        'import "@example/design-system/styles/brand.css";',
+        'import "./globals.css";',
+        'import "./feature-polish.css";',
+        'export default function Layout({ children }) { return <html><body>{children}</body></html>; }',
+        '',
+      ].join('\n'),
+    );
+    writeFileSync(join(appRoot, 'app', 'page.tsx'), 'export default () => <main />;\n');
+    writeFileSync(
+      join(designSystemRoot, 'src', 'styles', 'foundation.css'),
+      ':root { --surface: #fff; }\n',
+    );
+    writeFileSync(
+      join(designSystemRoot, 'src', 'styles', 'brand.css'),
+      ':root { --brand: #123456; }\n',
+    );
+    writeFileSync(join(appRoot, 'app', 'globals.css'), 'body { margin: 0; }\n');
+    writeFileSync(join(appRoot, 'app', 'feature-polish.css'), 'main { display: grid; }\n');
+
+    const discovery = discoverProject(appRoot);
+
+    expect(discovery.styling.authorityFiles.slice(0, 4)).toEqual([
+      '../../packages/design-system/src/styles/foundation.css',
+      '../../packages/design-system/src/styles/brand.css',
+      'app/globals.css',
+      'app/feature-polish.css',
+    ]);
+    expect(discovery.styling.configFile).toBe(
+      '../../packages/design-system/src/styles/foundation.css',
+    );
+    expect(discovery.styling.cssVariableCount).toBeGreaterThanOrEqual(2);
+    expect(discovery.styling.limitations).toEqual([]);
+  });
+
+  it('does not inventory Next server handlers as UI components', () => {
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      JSON.stringify({ dependencies: { next: '^16.0.0', react: '^19.0.0' } }),
+    );
+    mkdirSync(join(projectRoot, 'app', 'api', 'items'), { recursive: true });
+    writeFileSync(
+      join(projectRoot, 'app', 'page.tsx'),
+      'export default function HomePage() { return <main />; }\n',
+    );
+    writeFileSync(
+      join(projectRoot, 'app', 'api', 'items', 'route.ts'),
+      [
+        'export function GET() { return new Response("<main>items</main>"); }',
+        'export function POST() { return new Response("<main>created</main>"); }',
+        '',
+      ].join('\n'),
+    );
+
+    const discovery = discoverProject(projectRoot);
+
+    expect(discovery.components.items.map((component) => component.name)).toContain('HomePage');
+    expect(discovery.components.items.map((component) => component.name)).not.toEqual(
+      expect.arrayContaining(['GET', 'POST']),
+    );
+    expect(discovery.components.items.map((component) => component.file)).not.toContain(
+      'app/api/items/route.ts',
+    );
+  });
 });
 
 describe('project source scopes', () => {

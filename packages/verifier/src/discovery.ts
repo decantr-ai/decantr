@@ -1,5 +1,5 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { dirname, extname, join, relative, resolve } from 'node:path';
+import { dirname, extname, isAbsolute, join, relative, resolve } from 'node:path';
 import * as ts from 'typescript';
 import {
   type AngularApplicationDiscovery,
@@ -10,6 +10,7 @@ import {
   discoverAngularProjectContext,
 } from './angular-discovery.js';
 import { assessFrameworkRouteAuthority } from './framework-adapters/index.js';
+import { applyNextRoutePolicy } from './framework-adapters/next-route-policy.js';
 import { isProductionAuthorityPath } from './source/scope.js';
 import {
   buildUISurfaceDiscovery,
@@ -196,6 +197,7 @@ interface PackageJson {
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
   workspaces?: string[] | { packages?: string[] };
+  exports?: unknown;
 }
 
 const SOURCE_EXTENSIONS = new Set([
@@ -273,6 +275,8 @@ const SKIP_DIRS = new Set([
 
 const EXCLUDED_SOURCE_FILE_RE =
   /(?:^|\/)(?:\.storybook|__tests__|cypress|demos?|docs?|e2e|examples?|mocks?|fixtures?|generated|__generated__|playgrounds?|playwright|samples?|specs?|stories|storybook|support|tests?)(?:\/|$)|(?:\.test|\.spec|\.vitest|\.e2e|\.cy|\.stories|\.story|\.figma|\.mock|\.fixture|\.gen|\.generated|\.d)\.[cm]?[tj]sx?$/i;
+const NEXT_SERVER_HANDLER_RE = /(?:^|\/)(?:src\/)?app\/(?:.+\/)?route\.[cm]?[jt]sx?$/iu;
+const HTTP_HANDLER_EXPORT_RE = /^(?:DELETE|GET|HEAD|OPTIONS|PATCH|POST|PUT)$/u;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -1610,6 +1614,19 @@ function discoverRoutes(
     strategy = 'static-html';
   }
 
+  const nextRoutePolicy =
+    identity.framework === 'nextjs'
+      ? applyNextRoutePolicy(projectRoot, selectedSignals)
+      : {
+          signals: selectedSignals,
+          authorityFiles: [],
+          evidence: [],
+          limitations: [],
+          unresolved: false,
+          conditionedRouteCount: 0,
+        };
+  selectedSignals = nextRoutePolicy.signals;
+
   const taskable = new Map<string, DiscoveryRoute>();
   for (const signal of selectedSignals) {
     if (!signal.taskable) continue;
@@ -1643,16 +1660,22 @@ function discoverRoutes(
     signals: selectedSignals,
     angular: angularDiscovery?.routes ?? null,
   });
-  const authority: AngularRouteAuthority = authorityAssessment.authority;
-  const completeness: AngularRouteCompleteness = authorityAssessment.completeness;
+  const authority: AngularRouteAuthority = nextRoutePolicy.unresolved
+    ? 'inferred'
+    : authorityAssessment.authority;
+  const completeness: AngularRouteCompleteness = nextRoutePolicy.unresolved
+    ? 'partial'
+    : authorityAssessment.completeness;
   const confidence: DiscoveryConfidenceLevel =
     taskableRoutes.length === 0 || authority !== 'proven'
       ? 'low'
       : completeness === 'partial' || fallbackOnly
         ? 'medium'
         : 'high';
-  const authorityFiles = authorityAssessment.authorityFiles.slice(0, 24);
-  const evidence = authorityAssessment.evidence;
+  const authorityFiles = [
+    ...new Set([...nextRoutePolicy.authorityFiles, ...authorityAssessment.authorityFiles]),
+  ].slice(0, 24);
+  const evidence = [...new Set([...authorityAssessment.evidence, ...nextRoutePolicy.evidence])];
   return {
     strategy,
     routeSignals,
@@ -1668,6 +1691,7 @@ function discoverRoutes(
     limitations: [
       ...(angularDiscovery?.routes.limitations ?? []),
       ...authorityAssessment.limitations,
+      ...nextRoutePolicy.limitations,
       ...(taskableRoutes.length === 0
         ? ['No taskable route declarations were discovered from static source evidence.']
         : []),
@@ -1706,6 +1730,7 @@ function discoverComponents(
   for (const file of sourceFiles) {
     if (!/\.(tsx|jsx|vue|svelte|astro)$/.test(file) && !/\.(ts|js)$/.test(file)) continue;
     if (EXCLUDED_SOURCE_FILE_RE.test(file) || !isProductionAuthorityPath(file)) continue;
+    if (identity.framework === 'nextjs' && NEXT_SERVER_HANDLER_RE.test(file)) continue;
     const content = readTextFile(join(projectRoot, file), 256 * 1024) ?? '';
     if (identity.framework === 'angular' && /@Component\s*\(/u.test(content)) continue;
     if (!/[<][A-Za-z][^>]*>/.test(content) && !/\.(vue|svelte|astro)$/.test(file)) continue;
@@ -1736,7 +1761,9 @@ function discoverComponents(
     }
     if (/^[A-Z][A-Za-z0-9_-]*$/.test(nameFromFile) && /\.(tsx|jsx|vue|svelte|astro)$/.test(file))
       names.add(nameFromFile);
-    for (const name of [...names].filter(Boolean)) {
+    for (const name of [...names].filter(
+      (candidate) => candidate && !HTTP_HANDLER_EXPORT_RE.test(candidate),
+    )) {
       const key = `${file}:${name}`;
       const kind: DiscoveryComponent['kind'] =
         /export\s+default\s+function/.test(content) && name === nameFromFile
@@ -1927,8 +1954,186 @@ function extractCssEvidence(content: string): {
   };
 }
 
+interface ProductionStyleImport {
+  sourceFile: string;
+  specifier: string;
+  styleFile: string;
+}
+
+function collectProductionStyleImports(
+  projectRoot: string,
+  workspaceRoot: string,
+  sourceFiles: string[],
+): { imports: ProductionStyleImport[]; limitations: string[] } {
+  const imports: ProductionStyleImport[] = [];
+  const limitations: string[] = [];
+  const packageRoots = findWorkspacePackageRoots(workspaceRoot);
+  const orderedSources = [...sourceFiles].sort(
+    (left, right) => styleSourceRank(left) - styleSourceRank(right) || left.localeCompare(right),
+  );
+  const styleImportRe = /(?:from\s+|import\s*)["']([^"']+\.(?:css|s[ac]ss|less))["']/gu;
+
+  for (const sourceFile of orderedSources.slice(0, 1000)) {
+    const content = readTextFile(join(projectRoot, sourceFile), 256 * 1024) ?? '';
+    for (const match of content.matchAll(styleImportRe)) {
+      const specifier = match[1];
+      if (!specifier) continue;
+      const styleFile =
+        resolveLocalImportFile(projectRoot, sourceFile, specifier) ??
+        resolveWorkspaceStyleImport(projectRoot, workspaceRoot, packageRoots, specifier);
+      if (!styleFile) {
+        if (
+          specifier.startsWith('.') ||
+          specifier.startsWith('@/') ||
+          packageRoots.has(packageName(specifier))
+        ) {
+          limitations.push(
+            `Production stylesheet import could not be resolved: ${sourceFile} -> ${specifier}`,
+          );
+        }
+        continue;
+      }
+      imports.push({ sourceFile, specifier, styleFile });
+    }
+  }
+
+  const queue = [...imports];
+  const visitedStyles = new Set<string>();
+  const cssImportRe = /@import\s+(?:url\(\s*)?["']([^"']+\.(?:css|s[ac]ss|less))["']/gu;
+  while (queue.length > 0 && imports.length < 200) {
+    const current = queue.shift();
+    if (!current || visitedStyles.has(current.styleFile)) continue;
+    visitedStyles.add(current.styleFile);
+    const content = readTextFile(join(projectRoot, current.styleFile), 256 * 1024) ?? '';
+    for (const match of content.matchAll(cssImportRe)) {
+      const specifier = match[1];
+      if (!specifier) continue;
+      const styleFile =
+        resolveLocalImportFile(projectRoot, current.styleFile, specifier) ??
+        resolveWorkspaceStyleImport(projectRoot, workspaceRoot, packageRoots, specifier);
+      if (!styleFile) continue;
+      const nested = { sourceFile: current.styleFile, specifier, styleFile };
+      imports.push(nested);
+      queue.push(nested);
+    }
+  }
+
+  const byStyleFile = new Map<string, ProductionStyleImport>();
+  for (const entry of imports) {
+    if (!byStyleFile.has(entry.styleFile)) byStyleFile.set(entry.styleFile, entry);
+  }
+  return {
+    imports: [...byStyleFile.values()],
+    limitations: [...new Set(limitations)],
+  };
+}
+
+function styleSourceRank(file: string): number {
+  if (/^(?:src\/)?app\/layout\.[cm]?[jt]sx?$/iu.test(file)) return 0;
+  if (/(?:^|\/)layout\.[cm]?[jt]sx?$/iu.test(file)) return 1;
+  if (/(?:^|\/)(?:main|index|app|entry(?:-client|\.client)?)\.[cm]?[jt]sx?$/iu.test(file)) return 2;
+  return 3;
+}
+
+function findWorkspacePackageRoots(workspaceRoot: string): Map<string, string> {
+  const packages = new Map<string, string>();
+  const queue: Array<{ dir: string; depth: number }> = [{ dir: workspaceRoot, depth: 0 }];
+  let visited = 0;
+  while (queue.length > 0 && visited < 2000) {
+    const current = queue.shift();
+    if (!current) continue;
+    visited += 1;
+    const pkg = readPackageJson(current.dir).value;
+    if (pkg?.name) packages.set(pkg.name, current.dir);
+    if (current.depth >= 5) continue;
+    let entries: string[] = [];
+    try {
+      entries = readdirSync(current.dir);
+    } catch {
+      continue;
+    }
+    for (const entry of entries) {
+      if (shouldSkipDir(entry)) continue;
+      const child = join(current.dir, entry);
+      try {
+        if (statSync(child).isDirectory()) queue.push({ dir: child, depth: current.depth + 1 });
+      } catch {
+        // Ignore disappearing workspace paths during a read-only scan.
+      }
+    }
+  }
+  return packages;
+}
+
+function resolveWorkspaceStyleImport(
+  projectRoot: string,
+  workspaceRoot: string,
+  packageRoots: Map<string, string>,
+  specifier: string,
+): string | null {
+  const name = packageName(specifier);
+  const packageRoot = packageRoots.get(name);
+  if (!packageRoot) return null;
+  const pkg = readPackageJson(packageRoot).value;
+  const subpath = specifier.slice(name.length);
+  const exportKey = subpath ? `.${subpath}` : '.';
+  const exportValue = isRecord(pkg?.exports)
+    ? (pkg.exports as Record<string, unknown>)[exportKey]
+    : exportKey === '.'
+      ? pkg?.exports
+      : undefined;
+  const exportTarget = resolvePackageExportTarget(exportValue);
+  const candidates = [
+    ...(exportTarget ? [resolve(packageRoot, exportTarget)] : []),
+    ...(subpath ? [resolve(packageRoot, subpath.slice(1))] : []),
+  ];
+  for (const candidate of candidates) {
+    const relation = relative(workspaceRoot, candidate);
+    if (relation === '..' || relation.startsWith('../') || isAbsolute(relation)) continue;
+    try {
+      if (
+        !statSync(candidate).isFile() ||
+        !STYLE_EXTENSIONS.has(extname(candidate).toLowerCase())
+      ) {
+        continue;
+      }
+    } catch {
+      continue;
+    }
+    return relative(projectRoot, candidate).replace(/\\/gu, '/');
+  }
+  return null;
+}
+
+function packageName(specifier: string): string {
+  const parts = specifier.split('/');
+  return specifier.startsWith('@') ? parts.slice(0, 2).join('/') : (parts[0] ?? specifier);
+}
+
+function resolvePackageExportTarget(value: unknown): string | null {
+  if (typeof value === 'string') return value;
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const target = resolvePackageExportTarget(item);
+      if (target) return target;
+    }
+    return null;
+  }
+  if (!isRecord(value)) return null;
+  for (const key of ['style', 'default', 'import', 'browser', 'require']) {
+    const target = resolvePackageExportTarget(value[key]);
+    if (target) return target;
+  }
+  for (const nested of Object.values(value)) {
+    const target = resolvePackageExportTarget(nested);
+    if (target) return target;
+  }
+  return null;
+}
+
 function discoverStyling(
   projectRoot: string,
+  workspaceRoot: string,
   identity: DiscoveryProjectIdentity,
   angularProject: AngularProjectContext,
 ): DiscoveryStyling {
@@ -1971,13 +2176,23 @@ function discoverStyling(
     angularProject.styleEntries.some((file) => /\.s[ac]ss$/iu.test(file)) ||
     cssFiles.some((file) => /\.s[ac]ss$/iu.test(file));
   const configuredStyleSet = new Set(angularProject.styleFiles);
-  const orderedCssFiles = [
-    ...angularProject.styleFiles,
-    ...cssFiles.filter((file) => !configuredStyleSet.has(file)),
-  ];
   const productionSourceFiles = walkFiles(projectRoot, { extensions: SOURCE_EXTENSIONS }).filter(
     isProductionAuthorityPath,
   );
+  const productionStyleDiscovery = collectProductionStyleImports(
+    projectRoot,
+    workspaceRoot,
+    productionSourceFiles,
+  );
+  limitations.push(...productionStyleDiscovery.limitations);
+  const importedStyleSet = new Set(
+    productionStyleDiscovery.imports.map((entry) => entry.styleFile),
+  );
+  const orderedCssFiles = [
+    ...angularProject.styleFiles,
+    ...productionStyleDiscovery.imports.map((entry) => entry.styleFile),
+    ...cssFiles.filter((file) => !configuredStyleSet.has(file) && !importedStyleSet.has(file)),
+  ];
   const sourceImportEvidence = (pattern: RegExp): { file: string; content: string } | null => {
     for (const file of productionSourceFiles.slice(0, 1000)) {
       const content = readTextFile(join(projectRoot, file), 256 * 1024) ?? '';
@@ -1986,20 +2201,6 @@ function discoverStyling(
     }
     return null;
   };
-  const productionStyleImport = (() => {
-    const styleImportRe = /(?:from\s+|import\s*)["']([^"']+\.(?:css|s[ac]ss|less))["']/gu;
-    for (const file of productionSourceFiles.slice(0, 1000)) {
-      const content = readTextFile(join(projectRoot, file), 256 * 1024) ?? '';
-      for (const match of content.matchAll(styleImportRe)) {
-        const styleFile = resolveLocalImportFile(projectRoot, file, match[1]);
-        if (styleFile && isProductionAuthorityPath(styleFile)) {
-          return { sourceFile: file, styleFile };
-        }
-      }
-    }
-    return null;
-  })();
-
   for (const file of orderedCssFiles.slice(0, 200)) {
     const content = readTextFile(join(projectRoot, file), 256 * 1024);
     if (!content) continue;
@@ -2091,13 +2292,15 @@ function discoverStyling(
       authorityFiles.add(unoRuntime.file);
     }
   }
-  if (productionStyleImport) {
-    evidence.push(
-      `Production source ${productionStyleImport.sourceFile} imports ${productionStyleImport.styleFile}`,
-    );
+  if (productionStyleDiscovery.imports.length > 0) {
     themeSignals.add('production stylesheet import');
-    authorityFiles.add(productionStyleImport.sourceFile);
-    authorityFiles.add(productionStyleImport.styleFile);
+    for (const styleImport of productionStyleDiscovery.imports) {
+      evidence.push(`Production source ${styleImport.sourceFile} imports ${styleImport.styleFile}`);
+      authorityFiles.add(styleImport.styleFile);
+    }
+    for (const styleImport of productionStyleDiscovery.imports) {
+      authorityFiles.add(styleImport.sourceFile);
+    }
   }
   evidence.push(...tailwind.evidence);
   if (identity.dependencies.tailwindcss && !tailwind.found) {
@@ -2176,8 +2379,12 @@ function discoverStyling(
     approach = 'css';
   }
 
-  if (!configFile && productionStyleImport && ['css', 'css-modules', 'scss'].includes(approach)) {
-    configFile = productionStyleImport.styleFile;
+  if (
+    !configFile &&
+    productionStyleDiscovery.imports.length > 0 &&
+    ['css', 'css-modules', 'scss'].includes(approach)
+  ) {
+    configFile = productionStyleDiscovery.imports[0]?.styleFile ?? null;
   }
   if (
     configFile &&
@@ -2190,16 +2397,24 @@ function discoverStyling(
   const confidence: DiscoveryConfidenceLevel =
     approach === 'unknown'
       ? 'low'
-      : angularProject.styleEntries.length > 0 || tailwind.found || themeSignals.size > 0
+      : angularProject.styleEntries.length > 0 ||
+          tailwind.found ||
+          productionStyleDiscovery.imports.length > 0 ||
+          themeSignals.size > 0
         ? 'high'
         : 'medium';
+  const boundedAuthorityFiles = [...authorityFiles].filter(
+    (file) => existsSync(join(projectRoot, file)) && isProductionAuthorityPath(file),
+  );
+  if (boundedAuthorityFiles.length > 16) {
+    limitations.push(
+      `Styling authority output was bounded to 16 files; ${boundedAuthorityFiles.length - 16} additional imported authority file(s) were omitted.`,
+    );
+  }
   return {
     approach,
     configFile,
-    authorityFiles: [...authorityFiles]
-      .filter((file) => existsSync(join(projectRoot, file)) && isProductionAuthorityPath(file))
-      .sort()
-      .slice(0, 16),
+    authorityFiles: boundedAuthorityFiles.slice(0, 16),
     cssVariableCount,
     colorTokenCount,
     darkMode,
@@ -2235,6 +2450,7 @@ function calculateConfidence(input: {
   components: DiscoveryComponents;
   styling: DiscoveryStyling;
   readiness: UIReadinessStatus;
+  axes: UIReadinessAxes;
 }): ProjectDiscovery['confidence'] {
   let score = 20;
   const reasons: string[] = [];
@@ -2266,7 +2482,7 @@ function calculateConfidence(input: {
       `${input.styling.approach} styling signal found with ${input.styling.confidence} confidence`,
     );
   }
-  const confidenceCap =
+  const readinessCap =
     input.readiness === 'unsupported'
       ? 35
       : input.readiness === 'blocked'
@@ -2274,6 +2490,17 @@ function calculateConfidence(input: {
         : input.readiness === 'limited'
           ? 74
           : 98;
+  const unresolvedNonBlockingAxis = Object.values(input.axes).some(
+    (axis) => !axis.blocksReady && ['partial', 'unresolved', 'unsupported'].includes(axis.status),
+  );
+  const limitedProvenAxis = Object.values(input.axes).some(
+    (axis) => axis.status === 'proven' && axis.limitations.length > 0,
+  );
+  const confidenceCap = Math.min(
+    readinessCap,
+    unresolvedNonBlockingAxis ? 89 : 98,
+    limitedProvenAxis ? 94 : 98,
+  );
   const clamped = Math.max(5, Math.min(confidenceCap, score));
   return {
     level: clamped >= 75 ? 'high' : clamped >= 45 ? 'medium' : 'low',
@@ -2294,7 +2521,7 @@ export function discoverProject(projectRoot: string): ProjectDiscovery {
       : null;
   const routes = discoverRoutes(appRoot, project, angularDiscovery);
   const components = discoverComponents(appRoot, routes, project, angularDiscovery);
-  const styling = discoverStyling(appRoot, project, angularProject);
+  const styling = discoverStyling(appRoot, workspaceRoot, project, angularProject);
   const surfaces = buildUISurfaceDiscovery({
     projectRoot: appRoot,
     files: walkFiles(appRoot, { extensions: UI_SURFACE_EXTENSIONS }),
@@ -2310,6 +2537,7 @@ export function discoverProject(projectRoot: string): ProjectDiscovery {
     components,
     styling,
     readiness: surfaces.status,
+    axes: surfaces.axes,
   });
   const limitations = [
     ...new Set([...routes.limitations, ...components.limitations, ...styling.limitations]),

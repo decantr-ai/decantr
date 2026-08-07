@@ -69,13 +69,16 @@ export function resolveUISurfaceTaskContext(
 
   const surface = candidates[0];
   const status = taskStatus(discovery, surface);
+  const read = ['blocked', 'unsupported'].includes(status)
+    ? []
+    : buildReadTargets(discovery, surface);
   return {
     schemaVersion: 'ui-surface-task-context.v1',
     target,
     status,
     surface,
     candidates: [surface],
-    read: buildReadTargets(discovery, surface),
+    read,
     axes: discovery.surfaces.axes,
     reasons: taskReasons(discovery, surface, status),
   };
@@ -245,7 +248,7 @@ function buildReadTargets(
       ? [discovery.styling.configFile]
       : []),
   ];
-  for (const styleFile of [...new Set(styleFiles)].slice(0, 4)) {
+  for (const styleFile of [...new Set(styleFiles)].slice(0, 12)) {
     if (
       targets.some((target) => target.file === styleFile) ||
       !existsSync(join(discovery.workspace.appRoot, styleFile))
@@ -266,9 +269,7 @@ function buildReadTargets(
     const existing = byFile.get(target.file);
     if (!existing || target.rank < existing.rank) byFile.set(target.file, target);
   }
-  return [...byFile.values()].sort(
-    (left, right) => left.rank - right.rank || left.file.localeCompare(right.file),
-  );
+  return [...byFile.values()].sort((left, right) => left.rank - right.rank);
 }
 
 function buildEvidenceReadTargets(

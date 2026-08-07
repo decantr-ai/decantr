@@ -1522,66 +1522,6 @@ function normalizeSourceAuditPath(filePath: string): string {
   return filePath.replace(/\\/g, '/');
 }
 
-function getNextAppLayoutGuardRoot(filePath: string): string | null {
-  const normalized = normalizeSourceAuditPath(filePath);
-  const match = normalized.match(
-    /^(?:src\/)?app\/(?:\([^/]+\)\/)*([^/.()[\]]+)\/layout\.[cm]?[jt]sx?$/i,
-  );
-  return match?.[1] ?? null;
-}
-
-function getNextAppRouteRoot(filePath: string): string | null {
-  const normalized = normalizeSourceAuditPath(filePath);
-  const match = normalized.match(/^(?:src\/)?app\/(?:\([^/]+\)\/)*([^/.()[\]]+)(?:\/|$)/i);
-  return match?.[1] ?? null;
-}
-
-function getRouteRoot(route: string): string | null {
-  const firstSegment = route.replace(/^\/+/, '').split('/')[0];
-  if (!firstSegment || firstSegment.startsWith(':') || firstSegment.startsWith('[')) {
-    return null;
-  }
-  return firstSegment;
-}
-
-function isNextAppPublicChromeFile(filePath: string): boolean {
-  const normalized = normalizeSourceAuditPath(filePath);
-  return /^(?:src\/)?app\/(?:\([^/]+\)\/)*(?:layout|nav|nav-header|navigation|header|footer|sidebar)\.[cm]?[jt]sx?$/i.test(
-    normalized,
-  );
-}
-
-function sourceAuditProtectedSurfacesCoveredByGuardedNextLayouts(
-  protectedSurfaces: SourceAuditBucket,
-  authGuards: SourceAuditBucket,
-  topology: TopologySummary,
-): boolean {
-  const guardedRoots = new Set<string>();
-  for (const file of authGuards.files) {
-    const root = getNextAppLayoutGuardRoot(file);
-    if (root) {
-      guardedRoots.add(root);
-    }
-  }
-
-  if (guardedRoots.size === 0 || protectedSurfaces.files.length === 0) {
-    return false;
-  }
-
-  const guardedPrimaryRouteRoots = topology.primaryRoutes
-    .map(getRouteRoot)
-    .filter((root): root is string => Boolean(root))
-    .filter((root) => guardedRoots.has(root));
-
-  return protectedSurfaces.files.every((file) => {
-    const appRoot = getNextAppRouteRoot(file);
-    if (appRoot && guardedRoots.has(appRoot)) {
-      return true;
-    }
-    return isNextAppPublicChromeFile(file) && guardedPrimaryRouteRoots.length > 0;
-  });
-}
-
 function isAuditableSourceFile(filePath: string): boolean {
   if (/\.d\.ts$/i.test(filePath)) return false;
   return /\.(?:[cm]?[jt]sx?)$/i.test(filePath);
@@ -1594,26 +1534,6 @@ function isNonProductionSourceAuditFile(filePath: string): boolean {
       normalized,
     ) || /\.(?:test|spec|stories|story|fixture|mock|gen)\.[cm]?[jt]sx?$/i.test(normalized)
   );
-}
-
-function sourceAuditUsesExplicitRouterGuard(
-  projectRoot: string,
-  authGuards: SourceAuditBucket,
-): boolean {
-  for (const file of authGuards.files) {
-    try {
-      const code = readFileSync(sourceAuditFilePath(projectRoot, file), 'utf-8');
-      if (
-        /<\s*(?:ProtectedRoute|AuthGuard|RequireAuth)\b/.test(code) ||
-        /\b(?:beforeEnter|beforeLoad)\s*:/.test(code)
-      ) {
-        return true;
-      }
-    } catch {
-      // Source collection is best-effort; unreadable files cannot prove coverage.
-    }
-  }
-  return false;
 }
 
 export function collectProjectSourceFiles(projectRoot: string): string[] {
@@ -1931,6 +1851,7 @@ function auditProjectSourceTree(
     localCssRuntimeSignals: createSourceAuditBucket(),
     securityRiskPatterns: createSourceAuditBucket(),
     localhostEndpointSignals: createSourceAuditBucket(),
+    clientLocalhostEndpointSignals: createSourceAuditBucket(),
     placeholderRoutes: createSourceAuditBucket(),
     commandPaletteSignals: createSourceAuditBucket(),
     keyboardShortcutSignals: createSourceAuditBucket(),
@@ -1944,6 +1865,7 @@ function auditProjectSourceTree(
     authProviderNonceSignals: createSourceAuditBucket(),
     skipNavSignals: createSourceAuditBucket(),
     skipNavTargetIds: [],
+    elementIds: [],
     mainLandmarkSignals: createSourceAuditBucket(),
     mainLandmarkIds: [],
     authEntrySignals: createSourceAuditBucket(),
@@ -2018,7 +1940,6 @@ function auditProjectSourceTree(
       signals.dynamicEvalCount +
       signals.hardcodedSecretSignalCount +
       signals.clientSecretEnvReferenceCount +
-      signals.localhostEndpointCount +
       signals.wildcardPostMessageCount +
       signals.windowOpenWithoutNoopenerCount +
       signals.externalIframeWithoutSandboxCount +
@@ -2060,6 +1981,13 @@ function auditProjectSourceTree(
       relativePath,
       signals.localhostEndpointCount,
     );
+    if (clientReachableFiles.has(relativePath)) {
+      recordSourceAudit(
+        summary.clientLocalhostEndpointSignals,
+        relativePath,
+        signals.localhostEndpointCount,
+      );
+    }
     recordSourceAudit(
       summary.placeholderRoutes,
       relativePath,
@@ -2112,6 +2040,11 @@ function auditProjectSourceTree(
     for (const targetId of signals.skipNavTargetIds) {
       if (!summary.skipNavTargetIds.includes(targetId)) {
         summary.skipNavTargetIds.push(targetId);
+      }
+    }
+    for (const elementId of signals.elementIds) {
+      if (!summary.elementIds.includes(elementId)) {
+        summary.elementIds.push(elementId);
       }
     }
     for (const landmarkId of signals.mainLandmarkIds) {
@@ -2437,6 +2370,7 @@ interface SourceAuditSummary {
   localCssRuntimeSignals: SourceAuditBucket;
   securityRiskPatterns: SourceAuditBucket;
   localhostEndpointSignals: SourceAuditBucket;
+  clientLocalhostEndpointSignals: SourceAuditBucket;
   placeholderRoutes: SourceAuditBucket;
   commandPaletteSignals: SourceAuditBucket;
   keyboardShortcutSignals: SourceAuditBucket;
@@ -2450,6 +2384,7 @@ interface SourceAuditSummary {
   authProviderNonceSignals: SourceAuditBucket;
   skipNavSignals: SourceAuditBucket;
   skipNavTargetIds: string[];
+  elementIds: string[];
   mainLandmarkSignals: SourceAuditBucket;
   mainLandmarkIds: string[];
   authEntrySignals: SourceAuditBucket;
@@ -2789,24 +2724,6 @@ function appendTopologyFindings(
         evidence: [`Primary routes: ${topology.primaryRoutes.join(', ')}`],
         suggestedFix:
           'Keep login and registration routes in the gateway section, and add at least one primary app route such as `/dashboard`, `/workspace`, `/app`, `/browse`, or `/listings`.',
-      }),
-    );
-  }
-
-  if (
-    topology.primaryRoutes.length > 0 &&
-    topology.primaryRoutes.every((route) => !isProtectedLikeRoute(route))
-  ) {
-    findings.push(
-      makeFinding({
-        id: 'auth-primary-routes-not-app-like',
-        category: 'Route Topology',
-        severity: 'warn',
-        message:
-          'Primary routes do not appear to include a clear post-auth application destination.',
-        evidence: [`Primary routes: ${topology.primaryRoutes.join(', ')}`],
-        suggestedFix:
-          'Use at least one primary route like `/dashboard`, `/workspace`, `/settings`, `/app`, `/browse`, or `/listings` so the authenticated surface is explicit.',
       }),
     );
   }
@@ -3202,18 +3119,14 @@ function appendRuntimeAuditFindings(
 
   const hasSourceCorroboration = (sourceAudit?.filesChecked ?? 0) > 0;
   const sourceSecurityCorroborates = (sourceAudit?.securityRiskPatterns.count ?? 0) > 0;
-  const sourceLocalhostCorroborates = (sourceAudit?.localhostEndpointSignals.count ?? 0) > 0;
+  const sourceClientLocalhostCorroborates =
+    (sourceAudit?.clientLocalhostEndpointSignals.count ?? 0) > 0;
   const htmlInjectionShouldWarn =
     runtimeAudit.jsHtmlInjectionSignalCount > 0 &&
-    (!hasSourceCorroboration ||
-      sourceSecurityCorroborates ||
-      runtimeAudit.jsHtmlInjectionSignalCount >= 25);
+    (!hasSourceCorroboration || sourceSecurityCorroborates);
   const insecureTransportShouldWarn =
     runtimeAudit.jsInsecureTransportSignalCount > 0 &&
-    (!hasSourceCorroboration ||
-      sourceSecurityCorroborates ||
-      sourceLocalhostCorroborates ||
-      runtimeAudit.jsInsecureTransportSignalCount >= 25);
+    (!hasSourceCorroboration || sourceSecurityCorroborates || sourceClientLocalhostCorroborates);
 
   if (htmlInjectionShouldWarn) {
     findings.push(
@@ -4020,7 +3933,6 @@ function appendBehaviorObligationFindings(
 
 function appendSourceAuditFindings(
   findings: VerificationFinding[],
-  projectRoot: string,
   sourceAudit: SourceAuditSummary,
   essence: EssenceFile | null,
   reviewPack: ReviewExecutionPack | null,
@@ -4037,7 +3949,7 @@ function appendSourceAuditFindings(
       makeFinding({
         id: 'source-inline-styles-present',
         category: 'Source Audit',
-        severity: 'warn',
+        severity: isProjectOwnedStyling ? 'info' : 'warn',
         message: isProjectOwnedStyling
           ? 'Source files contain inline style attributes; project-owned styling projects should route static visual decisions through local law or the style bridge.'
           : 'Source files still contain disallowed inline style attributes, which undermines the compiled treatment contract.',
@@ -4113,20 +4025,27 @@ function appendSourceAuditFindings(
   }
 
   if (sourceAudit.localhostEndpointSignals.count > 0) {
+    const clientReachable = sourceAudit.clientLocalhostEndpointSignals.count > 0;
     findings.push(
       makeFinding({
         id: 'source-localhost-endpoints-present',
         category: 'Source Audit',
-        severity: 'warn',
-        message:
-          'Source files still reference localhost-style endpoints that will not survive a real production deployment.',
+        severity: clientReachable ? 'warn' : 'info',
+        message: clientReachable
+          ? 'Client-reachable source still references localhost-style endpoints that will not survive a real production deployment.'
+          : 'Server-only source includes localhost-style endpoints; confirm they are development fallbacks behind production configuration.',
         evidence: buildSourceAuditEvidence(
           sourceAudit,
-          sourceAudit.localhostEndpointSignals,
-          'Localhost endpoint signals',
+          clientReachable
+            ? sourceAudit.clientLocalhostEndpointSignals
+            : sourceAudit.localhostEndpointSignals,
+          clientReachable
+            ? 'Client-reachable localhost endpoint signals'
+            : 'Server-only localhost endpoint signals',
         ),
-        suggestedFix:
-          'Replace localhost, 127.0.0.1, or 0.0.0.0 client endpoints with reviewed environment-backed URLs or route them behind a trusted server boundary before shipping.',
+        suggestedFix: clientReachable
+          ? 'Replace localhost, 127.0.0.1, or 0.0.0.0 client endpoints with reviewed environment-backed URLs or route them behind a trusted server boundary before shipping.'
+          : 'Keep the fallback server-only, require a reviewed production environment URL, and fail closed when production configuration is missing.',
       }),
     );
   }
@@ -4451,43 +4370,6 @@ function appendSourceAuditFindings(
         ],
         suggestedFix:
           'Add explicit protected-route wrappers, middleware, session checks, or redirects to login/register before authenticated surfaces render.',
-      }),
-    );
-  }
-
-  if (
-    topology.hasAuthFeature &&
-    topology.primaryRoutes.length > 0 &&
-    sourceAudit.protectedSurfaceSignals.count > 0 &&
-    sourceAudit.authGuardSignals.count > 0 &&
-    !sourceAuditBucketsOverlap(sourceAudit.protectedSurfaceSignals, sourceAudit.authGuardSignals) &&
-    !sourceAuditBucketsOverlap(
-      sourceAudit.protectedSurfaceSignals,
-      sourceAudit.authSessionSignals,
-    ) &&
-    !sourceAuditProtectedSurfacesCoveredByGuardedNextLayouts(
-      sourceAudit.protectedSurfaceSignals,
-      sourceAudit.authGuardSignals,
-      topology,
-    ) &&
-    !sourceAuditUsesExplicitRouterGuard(projectRoot, sourceAudit.authGuardSignals)
-  ) {
-    findings.push(
-      makeFinding({
-        id: 'source-protected-surface-auth-checks-missing',
-        category: 'Source Audit',
-        severity: 'warn',
-        message:
-          'Files that expose protected app surfaces do not appear to co-locate session checks or guard behavior.',
-        evidence: [
-          `Source files checked: ${sourceAudit.filesChecked}`,
-          `Protected surface files: ${sourceAudit.protectedSurfaceSignals.files.join(', ') || 'none'}`,
-          `Auth guard files: ${sourceAudit.authGuardSignals.files.join(', ') || 'none'}`,
-          `Auth session files: ${sourceAudit.authSessionSignals.files.join(', ') || 'none'}`,
-          `Primary routes: ${topology.primaryRoutes.join(', ') || 'none'}`,
-        ],
-        suggestedFix:
-          'Keep protected-route components, layouts, or loaders close to the session check or guard that protects them so authenticated surfaces do not look accidentally public.',
       }),
     );
   }
@@ -5406,9 +5288,10 @@ function appendSourceAuditFindings(
       makeFinding({
         id: 'source-accessibility-issues-present',
         category: 'Source Audit',
-        severity: 'warn',
-        message:
-          'Source files contain unlabeled or non-semantic interactive patterns that should be fixed before runtime verification.',
+        severity: isProjectOwnedStyling ? 'info' : 'warn',
+        message: isProjectOwnedStyling
+          ? 'Static source heuristics found potential accessibility labeling or semantics issues for runtime review.'
+          : 'Source files contain unlabeled or non-semantic interactive patterns that should be fixed before runtime verification.',
         evidence: buildSourceAuditEvidence(
           sourceAudit,
           sourceAudit.accessibilityIssues,
@@ -5461,7 +5344,7 @@ function appendSourceAuditFindings(
   if (
     essenceRequiresSkipNav(essence) &&
     sourceAudit.skipNavTargetIds.length > 0 &&
-    !sourceAudit.skipNavTargetIds.some((targetId) => sourceAudit.mainLandmarkIds.includes(targetId))
+    !sourceAudit.skipNavTargetIds.some((targetId) => sourceAudit.elementIds.includes(targetId))
   ) {
     findings.push(
       makeFinding({
@@ -5469,14 +5352,14 @@ function appendSourceAuditFindings(
         category: 'Source Audit',
         severity: 'warn',
         message:
-          'Skip-link targets do not line up with any detected main landmark id in the source tree.',
+          'Skip-link targets do not line up with any detected element id in the source tree.',
         evidence: [
           `Source files checked: ${sourceAudit.filesChecked}`,
           `Skip-nav targets: ${sourceAudit.skipNavTargetIds.join(', ')}`,
-          `Main landmark ids: ${sourceAudit.mainLandmarkIds.join(', ') || 'none'}`,
+          'No matching target element id was found.',
         ],
         suggestedFix:
-          'Point skip-link href values at the id of the primary `<main>` landmark, or add a matching id to the existing main region.',
+          'Point each skip-link href at a stable element id near the primary content region; use a main landmark or focusable target when possible.',
       }),
     );
   }
@@ -5848,7 +5731,7 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
     summarizeTopology(essence, reviewPack),
     sourceAudit,
   );
-  appendSourceAuditFindings(findings, projectRoot, sourceAudit, essence, reviewPack, adoptionMode);
+  appendSourceAuditFindings(findings, sourceAudit, essence, reviewPack, adoptionMode);
   appendBehaviorObligationFindings(findings, projectRoot, projectSourceFiles);
   appendComponentReuseFindings(findings, componentReuseAudit);
   appendStyleBridgeDriftFindings(findings, styleBridgeDriftAudit);
@@ -6070,6 +5953,7 @@ interface AstCritiqueSignals {
   protectedSurfaceSignalCount: number;
   skipNavSignalCount: number;
   skipNavTargetIds: string[];
+  elementIds: string[];
   mainLandmarkCount: number;
   mainLandmarkIds: string[];
   emailAutocompleteMissingCount: number;
@@ -6434,7 +6318,10 @@ function isSafeJsonLdDangerouslySetInnerHtml(attribute: ts.JsxAttribute): boolea
   if (typeValue !== 'application/ld+json') return false;
 
   const sourceText = attribute.getText();
-  return /\bJSON\.stringify\s*\(/.test(sourceText) && /\\u003c/i.test(sourceText);
+  return (
+    (/\bJSON\.stringify\s*\(/.test(sourceText) && /\\u003c/i.test(sourceText)) ||
+    /\b(?:stringify|serialize|safe)[A-Za-z0-9_]*JsonLd\s*\(/i.test(sourceText)
+  );
 }
 
 function hasInsecureFormAction(attributes: ts.JsxAttributes): boolean {
@@ -6593,7 +6480,18 @@ function hasInsecureAuthFormMethod(node: ts.JsxElement): boolean {
   const methodValue = getJsxAttributeLiteralValue(
     getJsxAttribute(node.openingElement.attributes, 'method'),
   );
-  if (!methodValue) return true;
+  if (!methodValue) {
+    const action = getJsxAttribute(node.openingElement.attributes, 'action');
+    if (
+      action?.initializer &&
+      ts.isJsxExpression(action.initializer) &&
+      action.initializer.expression &&
+      getExpressionLiteralValue(action.initializer.expression) === null
+    ) {
+      return false;
+    }
+    return true;
+  }
   return methodValue.trim().toLowerCase() === 'get';
 }
 
@@ -7671,11 +7569,27 @@ function getMainLandmarkId(attributes: ts.JsxAttributes, tagName: string | null)
   return idValue?.trim() ? idValue.trim() : null;
 }
 
-function getSkipNavTargetId(attributes: ts.JsxAttributes, tagName: string | null): string | null {
+function getSkipNavTargetId(
+  attributes: ts.JsxAttributes,
+  tagName: string | null,
+  textContent = '',
+): string | null {
   if (tagName !== 'a') return null;
 
   const hrefValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'href', 'to'));
   if (!hrefValue?.startsWith('#')) return null;
+
+  const descriptor = [
+    textContent,
+    getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'class', 'className')),
+    getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'aria-label')),
+    getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'title')),
+  ]
+    .filter((value): value is string => Boolean(value))
+    .join(' ');
+  if (!/\bskip(?:[-_\s]+)(?:link|nav|navigation)\b|\bskip\s+to\b/i.test(descriptor)) {
+    return null;
+  }
 
   const targetId = hrefValue.slice(1).trim();
   return targetId.length > 0 ? targetId : null;
@@ -7761,7 +7675,8 @@ function countAuthGuardSignals(code: string): number {
 function countSkipNavSignals(code: string): number {
   const patterns = [
     /\bskip(?:-| )?nav(?:igation)?\b/i,
-    /\bskip to (?:content|main|navigation)\b/i,
+    /\bskip(?:-| )?link\b/i,
+    /\bskip to [^<\r\n]{0,80}\b(?:content|main|navigation|options|workbench|flow)\b/i,
     /href\s*=\s*["']#(?:main|content|main-content|app-main)["']/i,
   ];
 
@@ -14306,6 +14221,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     protectedSurfaceSignalCount: countProtectedSurfaceSignals(code),
     skipNavSignalCount: countSkipNavSignals(code),
     skipNavTargetIds: [],
+    elementIds: [],
     mainLandmarkCount: 0,
     mainLandmarkIds: [],
     emailAutocompleteMissingCount: 0,
@@ -14351,6 +14267,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
   const namedPropertyAliases = collectNamedPropertyAliases(sourceFile);
   const labelForIds = collectLabelForIds(sourceFile);
   const elementIds = collectElementIds(sourceFile);
+  signals.elementIds = [...elementIds];
   let navigationLandmarkCount = 0;
   let unlabeledNavigationLandmarkCount = 0;
 
@@ -14990,7 +14907,11 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       if (mainLandmarkId && !signals.mainLandmarkIds.includes(mainLandmarkId)) {
         signals.mainLandmarkIds.push(mainLandmarkId);
       }
-      const skipNavTargetId = getSkipNavTargetId(node.openingElement.attributes, tagName);
+      const skipNavTargetId = getSkipNavTargetId(
+        node.openingElement.attributes,
+        tagName,
+        textContent,
+      );
       if (skipNavTargetId && !signals.skipNavTargetIds.includes(skipNavTargetId)) {
         signals.skipNavTargetIds.push(skipNavTargetId);
       }
@@ -15139,6 +15060,10 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
   };
 
   walk(sourceFile);
+  signals.skipNavSignalCount = Math.max(
+    signals.skipNavSignalCount,
+    signals.skipNavTargetIds.length,
+  );
   signals.unlabeledNavigationLandmarkCount =
     navigationLandmarkCount > 1 ? unlabeledNavigationLandmarkCount : 0;
   signals.multipleMainLandmarkCount = Math.max(0, signals.mainLandmarkCount - 1);

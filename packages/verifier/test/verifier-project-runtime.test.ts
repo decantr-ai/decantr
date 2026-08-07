@@ -119,6 +119,7 @@ describe('verifier project and runtime evidence', () => {
     try {
       mkdirSync(join(projectRoot, '.next', 'server', 'app'), { recursive: true });
       mkdirSync(join(projectRoot, '.next', 'static', 'chunks'), { recursive: true });
+      mkdirSync(join(projectRoot, 'src'), { recursive: true });
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify(
@@ -164,7 +165,11 @@ describe('verifier project and runtime evidence', () => {
       );
       writeFileSync(
         join(projectRoot, '.next', 'static', 'chunks', 'app.js'),
-        'console.log("next");\n',
+        `${'element.innerHTML = markup; const schema = "http://www.w3.org";\n'.repeat(30)}console.log("next");\n`,
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'App.tsx'),
+        'export function App() { return <main>Next app</main>; }\n',
       );
 
       const report = await auditProject(projectRoot);
@@ -172,8 +177,16 @@ describe('verifier project and runtime evidence', () => {
       expect(report.runtimeAudit.distPresent).toBe(true);
       expect(report.runtimeAudit.indexPresent).toBe(true);
       expect(report.runtimeAudit.assetCount).toBe(1);
+      expect(report.runtimeAudit.jsHtmlInjectionSignalCount).toBeGreaterThan(25);
+      expect(report.runtimeAudit.jsInsecureTransportSignalCount).toBeGreaterThan(25);
       expect(report.findings.some((finding) => finding.id === 'runtime-dist-missing')).toBe(false);
       expect(report.findings.some((finding) => finding.id === 'runtime-index-missing')).toBe(false);
+      expect(
+        report.findings.some((finding) => finding.id === 'runtime-js-html-injection-signals'),
+      ).toBe(false);
+      expect(
+        report.findings.some((finding) => finding.id === 'runtime-js-insecure-transport-signals'),
+      ).toBe(false);
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }
@@ -1537,14 +1550,24 @@ describe('verifier project and runtime evidence', () => {
       writeFileSync(
         join(projectRoot, 'src', 'components', 'JsonLd.tsx'),
         `
+          function stringifyJsonLd(data: unknown) {
+            return JSON.stringify(data).replace(/</g, '\\\\u003c');
+          }
+
           export function JsonLd({ data }: { data: unknown }) {
             return (
-              <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{
-                  __html: JSON.stringify(data).replace(/</g, '\\\\u003c'),
-                }}
-              />
+              <>
+                <script
+                  type="application/ld+json"
+                  dangerouslySetInnerHTML={{
+                    __html: JSON.stringify(data).replace(/</g, '\\\\u003c'),
+                  }}
+                />
+                <script
+                  type="application/ld+json"
+                  dangerouslySetInnerHTML={{ __html: stringifyJsonLd(data) }}
+                />
+              </>
             );
           }
         `,
@@ -2024,6 +2047,38 @@ describe('verifier project and runtime evidence', () => {
     }
   });
 
+  it('accepts React server-action auth forms without an explicit method', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'src', 'pages'), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'decantr.essence.json'),
+        JSON.stringify(validV4Essence(), null, 2),
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'pages', 'Login.tsx'),
+        `
+          export function Login({ authenticate }: { authenticate: (data: FormData) => void }) {
+            return (
+              <form action={authenticate}>
+                <input type="email" name="email" autoComplete="email" />
+                <input type="password" name="password" autoComplete="current-password" />
+                <button type="submit">Sign in</button>
+              </form>
+            );
+          }
+        `,
+      );
+
+      const report = await auditProject(projectRoot);
+      expect(
+        report.findings.some((finding) => finding.id === 'source-security-risk-patterns-present'),
+      ).toBe(false);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
   it('flags missing skip navigation signals when the essence contract requires skip nav', async () => {
     const projectRoot = createProjectRoot();
     try {
@@ -2075,7 +2130,7 @@ describe('verifier project and runtime evidence', () => {
         join(projectRoot, 'src', 'pages', 'Home.tsx'),
         `
           export function Home() {
-            return <main id="main-content">Hello</main>;
+            return <><a href="#details">Details</a><main id="main-content">Hello</main></>;
           }
         `,
       );
@@ -2434,6 +2489,42 @@ describe('verifier project and runtime evidence', () => {
       );
 
       const report = await auditProject(projectRoot);
+      expect(
+        report.findings.some((finding) => finding.id === 'source-skip-nav-target-mismatch'),
+      ).toBe(false);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('accepts a skip-link target implemented as a separate focus target', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'src', 'pages'), { recursive: true });
+      const essence = validV4Essence() as {
+        dna: { accessibility: { skip_nav: boolean } };
+      };
+      essence.dna.accessibility.skip_nav = true;
+      writeFileSync(join(projectRoot, 'decantr.essence.json'), JSON.stringify(essence));
+      writeFileSync(
+        join(projectRoot, 'src', 'pages', 'Home.tsx'),
+        `
+          export function Home() {
+            return (
+              <>
+                <a href="#route-content" className="platform-skip-link">Skip to product content</a>
+                <span id="route-content" tabIndex={-1} />
+                <main>Hello</main>
+              </>
+            );
+          }
+        `,
+      );
+
+      const report = await auditProject(projectRoot);
+      expect(
+        report.findings.some((finding) => finding.id === 'source-skip-nav-signals-missing'),
+      ).toBe(false);
       expect(
         report.findings.some((finding) => finding.id === 'source-skip-nav-target-mismatch'),
       ).toBe(false);
@@ -2881,7 +2972,7 @@ describe('verifier project and runtime evidence', () => {
       ).toBe(true);
       expect(
         report.findings.some((finding) => finding.id === 'auth-primary-routes-not-app-like'),
-      ).toBe(true);
+      ).toBe(false);
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }
@@ -10448,7 +10539,7 @@ describe('verifier project and runtime evidence', () => {
     }
   });
 
-  it('flags protected surfaces that are not colocated with auth checks', async () => {
+  it('does not require route-local auth checks when middleware owns the boundary', async () => {
     const projectRoot = createProjectRoot();
     try {
       mkdirSync(join(projectRoot, 'src', 'routes'), { recursive: true });
@@ -10542,7 +10633,7 @@ describe('verifier project and runtime evidence', () => {
         report.findings.some(
           (finding) => finding.id === 'source-protected-surface-auth-checks-missing',
         ),
-      ).toBe(true);
+      ).toBe(false);
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }

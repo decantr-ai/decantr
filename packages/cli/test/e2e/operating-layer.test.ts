@@ -1201,6 +1201,105 @@ describe('operating layer commands', () => {
     expect(repeated.taskCapsuleDigest).toBe(task.taskCapsuleDigest);
   }, 15_000);
 
+  it('keeps required task context when a large dirty worktree produces advisory graph impact', () => {
+    const appRoot = join(testDir, 'apps', 'web');
+    writeTaskRouteSources(appRoot);
+    mkdirSync(join(appRoot, 'legacy'), { recursive: true });
+    mkdirSync(join(appRoot, '.decantr', 'retired-context'), { recursive: true });
+    for (let index = 0; index < 180; index += 1) {
+      writeFileSync(
+        join(appRoot, 'legacy', `generated-context-${String(index).padStart(3, '0')}.md`),
+        `legacy context ${index}\n`,
+      );
+    }
+    for (let index = 0; index < 20; index += 1) {
+      writeFileSync(
+        join(appRoot, '.decantr', 'retired-context', `page-${String(index).padStart(2, '0')}.md`),
+        `retired generated context ${index}\n`,
+      );
+    }
+    execFileSync('git', ['init'], { cwd: appRoot, stdio: 'ignore' });
+    execFileSync('git', ['config', 'user.email', 'test@example.com'], {
+      cwd: appRoot,
+      stdio: 'ignore',
+    });
+    execFileSync('git', ['config', 'user.name', 'Decantr Test'], {
+      cwd: appRoot,
+      stdio: 'ignore',
+    });
+    execFileSync('git', ['add', '.'], { cwd: appRoot, stdio: 'ignore' });
+    execFileSync('git', ['commit', '-m', 'baseline'], { cwd: appRoot, stdio: 'ignore' });
+    runCli(testDir, ['graph', '--project', 'apps/web']);
+    rmSync(join(appRoot, 'legacy'), { recursive: true, force: true });
+    rmSync(join(appRoot, '.decantr', 'retired-context'), { recursive: true, force: true });
+
+    let output = '';
+    try {
+      output = runCli(testDir, [
+        'task',
+        '/',
+        'tighten the home surface',
+        '--project',
+        'apps/web',
+        '--json',
+      ]);
+    } catch (error) {
+      output = (error as { stdout?: Buffer }).stdout?.toString() ?? '';
+    }
+    const task = JSON.parse(output) as {
+      task: string;
+      read: string[];
+      changedFiles: string[];
+      graph: { changedFileContext: { changedFiles?: string[] } | null };
+    };
+
+    expect(task.task).toBe('tighten the home surface');
+    expect(task.read[0]).toBe('apps/web/src/Home.tsx');
+    expect(task.changedFiles.every((file) => !file.startsWith('.decantr/'))).toBe(true);
+    expect(
+      task.graph.changedFileContext?.changedFiles?.every((file) => !file.startsWith('.decantr/')) ??
+        true,
+    ).toBe(true);
+    expect(Buffer.byteLength(JSON.stringify(task), 'utf8')).toBeLessThanOrEqual(12_000);
+  }, 20_000);
+
+  it('keeps ordered project and workspace styling authority in attached task capsules', () => {
+    const appRoot = join(testDir, 'apps', 'web');
+    const designSystemRoot = join(testDir, 'packages', 'design-system');
+    writeTaskRouteSources(appRoot);
+    writeJson(join(appRoot, 'package.json'), {
+      name: 'web',
+      dependencies: {
+        '@workspace/design-system': 'workspace:*',
+        react: '^19.0.0',
+        'react-router-dom': '^7.0.0',
+      },
+    });
+    writeJson(join(designSystemRoot, 'package.json'), {
+      name: '@workspace/design-system',
+      exports: { './styles.css': './src/styles.css' },
+    });
+    mkdirSync(join(designSystemRoot, 'src'), { recursive: true });
+    writeFileSync(join(designSystemRoot, 'src', 'styles.css'), ':root { --brand: #123456; }\n');
+    writeFileSync(join(appRoot, 'src', 'theme.css'), 'body { color: var(--brand); }\n');
+    writeFileSync(
+      join(appRoot, 'src', 'main.tsx'),
+      "import '@workspace/design-system/styles.css';\nimport './theme.css';\nimport './App';\n",
+    );
+    runCli(testDir, ['graph', '--project', 'apps/web']);
+
+    const task = JSON.parse(
+      runCli(testDir, ['task', '/', 'tighten the home surface', '--project', 'apps/web', '--json']),
+    ) as { read: string[] };
+
+    expect(task.read[0]).toBe('apps/web/src/Home.tsx');
+    expect(task.read).toContain('packages/design-system/src/styles.css');
+    expect(task.read).toContain('apps/web/src/theme.css');
+    expect(task.read.indexOf('packages/design-system/src/styles.css')).toBeLessThan(
+      task.read.indexOf('apps/web/src/theme.css'),
+    );
+  });
+
   it('ignores dead or escaped pack manifest targets and falls back to narrative context', () => {
     const appRoot = join(testDir, 'apps', 'web');
     const contextDir = join(appRoot, '.decantr', 'context');

@@ -4214,7 +4214,7 @@ function printScanReport(
       'This scan was read-only: no Decantr files, dependencies, scripts, uploads, or reports were created.',
     ),
   );
-  if (report.recommendedCommands.includes('npx @decantr/cli adopt --yes')) {
+  if (report.recommendedCommands.includes('decantr adopt --yes')) {
     console.log(
       `To attach Decantr without promoting unresolved topology, run ${cyan(withProject('decantr adopt --yes', projectArg))}.`,
     );
@@ -5195,6 +5195,15 @@ function taskWorkspacePath(workspaceRoot: string, appRoot: string, projectPath: 
     : join(selectedAppRoot, projectPath).replace(/\\/g, '/');
 }
 
+function isTaskImpactFile(projectPath: string): boolean {
+  const normalized = projectPath.replace(/\\/g, '/').replace(/^\.\//, '');
+  return (
+    normalized !== 'DECANTR.md' &&
+    normalized !== 'decantr.essence.json' &&
+    !normalized.startsWith('.decantr/')
+  );
+}
+
 function existingTaskContextFile(
   contextDir: string,
   reference: string | null | undefined,
@@ -5304,7 +5313,9 @@ function trimTaskCompatibilityPayload(payload: Record<string, unknown>): number 
         checker?: { instructions?: unknown[] };
       }
     | undefined;
-  const removable = [
+  const changedFiles = Array.isArray(payload.changedFiles) ? payload.changedFiles : [];
+  const changedRoutes = Array.isArray(payload.changedRoutes) ? payload.changedRoutes : [];
+  const primaryRemovable = [
     graph?.routeContext?.nodes,
     graph?.routeContext?.edges,
     graph?.routeContext?.ranked,
@@ -5318,7 +5329,22 @@ function trimTaskCompatibilityPayload(payload: Record<string, unknown>): number 
     loop?.maker?.instructions,
     loop?.checker?.instructions,
   ].filter((value): value is unknown[] => Array.isArray(value));
+  trimTaskCompatibilityLists(payload, primaryRemovable);
+  trimTaskCompatibilityLists(payload, [
+    ...collectNestedArrays(graph?.changedFileContext),
+    changedFiles,
+    changedRoutes,
+  ]);
+  if (canonicalUtf8Bytes(payload) > TASK_PAYLOAD_MAX_CANONICAL_BYTES && graph?.changedFileContext) {
+    graph.changedFileContext = null;
+  }
+  return canonicalUtf8Bytes(payload);
+}
 
+function trimTaskCompatibilityLists(
+  payload: Record<string, unknown>,
+  removable: unknown[][],
+): void {
   let madeProgress = true;
   while (canonicalUtf8Bytes(payload) > TASK_PAYLOAD_MAX_CANONICAL_BYTES && madeProgress) {
     madeProgress = false;
@@ -5329,7 +5355,23 @@ function trimTaskCompatibilityPayload(payload: Record<string, unknown>): number 
       if (canonicalUtf8Bytes(payload) <= TASK_PAYLOAD_MAX_CANONICAL_BYTES) break;
     }
   }
-  return canonicalUtf8Bytes(payload);
+}
+
+function collectNestedArrays(value: unknown): unknown[][] {
+  const arrays: unknown[][] = [];
+  const visited = new Set<object>();
+  const visit = (current: unknown): void => {
+    if (!current || typeof current !== 'object' || visited.has(current)) return;
+    visited.add(current);
+    if (Array.isArray(current)) {
+      arrays.push(current);
+      for (const item of current) visit(item);
+      return;
+    }
+    for (const nested of Object.values(current as Record<string, unknown>)) visit(nested);
+  };
+  visit(value);
+  return arrays;
 }
 
 function emitDiscoverySurfaceTaskContext(input: {
@@ -5568,7 +5610,9 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
     behaviorObligations: rankedBehaviorObligations,
   };
   const changedSince = flagString(flags, 'since');
-  const currentChangedFiles = collectChangedFiles(workspaceInfo.appRoot, changedSince);
+  const currentChangedFiles = collectChangedFiles(workspaceInfo.appRoot, changedSince).filter(
+    isTaskImpactFile,
+  );
   const changedRoutes = routeImpacts(workspaceInfo.appRoot, currentChangedFiles);
   const changedFileGraphImpact = buildChangedFileGraphImpact(graphSnapshot, currentChangedFiles, {
     task: taskSummary,
@@ -5609,6 +5653,11 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
     required: boolean;
   }> = [
     { path: routeImplementationPath, kind: 'route-implementation', required: true },
+    ...surfaceTask.read.map((target) => ({
+      path: taskWorkspacePath(workspaceInfo.workspaceRoot, workspaceInfo.appRoot, target.file),
+      kind: target.role === 'evidence' ? ('evidence' as const) : ('other' as const),
+      required: false,
+    })),
     {
       path: pagePackMarkdownPath
         ? taskWorkspacePath(

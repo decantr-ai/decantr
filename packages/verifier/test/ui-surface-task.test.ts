@@ -40,6 +40,94 @@ describe('resolveUISurfaceTaskContext', () => {
     });
   });
 
+  it('blocks deployment-conditioned Next routes while keeping public routes ready', () => {
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      JSON.stringify({ dependencies: { next: '^16.0.0', react: '^19.0.0' } }),
+    );
+    mkdirSync(join(projectRoot, 'app', 'recipes'), { recursive: true });
+    mkdirSync(join(projectRoot, 'app', 'prototype', '[id]'), { recursive: true });
+    writeFileSync(
+      join(projectRoot, 'app', 'recipes', 'page.tsx'),
+      'export default () => <main />;\n',
+    );
+    writeFileSync(
+      join(projectRoot, 'app', 'prototype', '[id]', 'page.tsx'),
+      'export default () => <main />;\n',
+    );
+    writeFileSync(join(projectRoot, 'app', 'globals.css'), ':root { --surface: #fff; }\n');
+    writeFileSync(
+      join(projectRoot, 'app', 'layout.tsx'),
+      'import "./globals.css"; export default ({ children }) => <html><body>{children}</body></html>;\n',
+    );
+    writeFileSync(
+      join(projectRoot, 'middleware.ts'),
+      [
+        'import { NextResponse } from "next/server";',
+        'export function middleware(request: { nextUrl: { pathname: string } }) {',
+        '  return request.nextUrl.pathname.startsWith("/prototype/")',
+        '    ? new NextResponse("Not Found", { status: 404 })',
+        '    : NextResponse.next();',
+        '}',
+        '',
+      ].join('\n'),
+    );
+
+    const discovery = discoverProject(projectRoot);
+    const publicContext = resolveUISurfaceTaskContext(discovery, '/recipes');
+    const internalContext = resolveUISurfaceTaskContext(discovery, '/prototype/:id');
+
+    expect(publicContext.status).toBe('ready');
+    expect(internalContext.status).toBe('blocked');
+    expect(internalContext.surface).toMatchObject({
+      name: '/prototype/:id',
+      authority: 'project-reference',
+      taskability: 'blocked',
+    });
+    expect(internalContext.read).toEqual([]);
+  });
+
+  it('keeps imported styles in cascade order in the task read set', () => {
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      JSON.stringify({ dependencies: { next: '^16.0.0', react: '^19.0.0' } }),
+    );
+    mkdirSync(join(projectRoot, 'app', 'settings'), { recursive: true });
+    writeFileSync(
+      join(projectRoot, 'app', 'settings', 'page.tsx'),
+      'export default () => <main />;\n',
+    );
+    writeFileSync(
+      join(projectRoot, 'app', 'layout.tsx'),
+      [
+        'import "./foundation.css";',
+        'import "./brand.css";',
+        'import "./globals.css";',
+        'import "./polish.css";',
+        'export default ({ children }) => <html><body>{children}</body></html>;',
+        '',
+      ].join('\n'),
+    );
+    for (const file of ['foundation.css', 'brand.css', 'globals.css', 'polish.css']) {
+      writeFileSync(
+        join(projectRoot, 'app', file),
+        `.${file.replace('.css', '')} { color: #123456; }\n`,
+      );
+    }
+
+    const context = resolveUISurfaceTaskContext(discoverProject(projectRoot), '/settings');
+
+    expect(
+      context.read.filter((target) => target.role === 'style').map((target) => target.file),
+    ).toEqual([
+      'app/foundation.css',
+      'app/brand.css',
+      'app/globals.css',
+      'app/polish.css',
+      'app/layout.tsx',
+    ]);
+  });
+
   it('limits route context when production authority is proven but topology is incomplete', () => {
     writeFileSync(
       join(projectRoot, 'package.json'),

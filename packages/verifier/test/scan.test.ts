@@ -72,8 +72,8 @@ describe('scanProject', () => {
     expect(report.staticHosting.githubPagesLikely).toBe(true);
     expect(report.staticHosting.hashRouting).toBe(true);
     expect(report.styling.cssVariableCount).toBeGreaterThanOrEqual(2);
-    expect(report.recommendedCommands).toContain('npx @decantr/cli adopt --yes');
-    expect(report.recommendedCommands).toContain('npx @decantr/cli scan --json');
+    expect(report.recommendedCommands).toContain('decantr adopt --yes');
+    expect(report.recommendedCommands).toContain('decantr scan --json');
     expect(JSON.stringify(report)).not.toContain(projectRoot);
   });
 
@@ -579,7 +579,7 @@ describe('scanProject', () => {
     );
     expect(report.applicability.status).toBe('partial_fit');
     expect(report.confidence.score).toBeLessThanOrEqual(44);
-    expect(report.recommendedCommands).not.toContain('npx @decantr/cli adopt --yes');
+    expect(report.recommendedCommands).not.toContain('decantr adopt --yes');
     expect(report.findings.some((finding) => finding.id === 'route-authority-not-proven')).toBe(
       true,
     );
@@ -654,7 +654,7 @@ describe('scanProject', () => {
       'Angular lazy component could not be resolved',
     );
     expect(report.confidence.score).toBeLessThanOrEqual(74);
-    expect(report.recommendedCommands).not.toContain('npx @decantr/cli adopt --yes');
+    expect(report.recommendedCommands).not.toContain('decantr adopt --yes');
   });
 
   it('resolves a 100-route Angular table and preserves PrimeNG/SCSS style authority', async () => {

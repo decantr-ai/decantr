@@ -69,6 +69,120 @@ describe('framework route authority adapters', () => {
     );
   });
 
+  it('keeps deployment-conditioned Next routes discoverable but not taskable', () => {
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      JSON.stringify({ dependencies: { next: '^16.0.0', react: '^19.0.0' } }),
+    );
+    mkdirSync(join(projectRoot, 'app', 'recipes'), { recursive: true });
+    mkdirSync(join(projectRoot, 'app', 'journey'), { recursive: true });
+    mkdirSync(join(projectRoot, 'app', 'prototype', '[id]'), { recursive: true });
+    for (let index = 0; index < 25; index += 1) {
+      mkdirSync(join(projectRoot, 'app', `public-${index}`), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'app', `public-${index}`, 'page.tsx'),
+        'export default () => <main />;\n',
+      );
+    }
+    writeFileSync(join(projectRoot, 'app', 'page.tsx'), 'export default () => <main />;\n');
+    writeFileSync(
+      join(projectRoot, 'app', 'recipes', 'page.tsx'),
+      'export default () => <main />;\n',
+    );
+    writeFileSync(
+      join(projectRoot, 'app', 'journey', 'page.tsx'),
+      'export default () => <main />;\n',
+    );
+    writeFileSync(
+      join(projectRoot, 'app', 'prototype', '[id]', 'page.tsx'),
+      'export default () => <main />;\n',
+    );
+    writeFileSync(
+      join(projectRoot, 'app', 'internal-route-policy.ts'),
+      [
+        'export function isInternalRoute(pathname: string) {',
+        '  return pathname === "/journey" || pathname === "/prototype" || pathname.startsWith("/prototype/");',
+        '}',
+        '',
+      ].join('\n'),
+    );
+    writeFileSync(
+      join(projectRoot, 'middleware.ts'),
+      [
+        'import { NextResponse } from "next/server";',
+        'import { isInternalRoute } from "./app/internal-route-policy";',
+        'export function middleware(request: { nextUrl: { pathname: string } }) {',
+        '  return isInternalRoute(request.nextUrl.pathname)',
+        '    ? new NextResponse("Not Found", { status: 404 })',
+        '    : NextResponse.next();',
+        '}',
+        '',
+      ].join('\n'),
+    );
+
+    const discovery = discoverProject(projectRoot);
+    const routes = discovery.routes;
+
+    expect(routes.routeSignalCount).toBe(29);
+    expect(routes.taskableRouteCount).toBe(27);
+    expect(routes.authority).toBe('proven');
+    expect(routes.completeness).toBe('complete');
+    expect(routes.authorityFiles).toEqual(
+      expect.arrayContaining(['middleware.ts', 'app/internal-route-policy.ts']),
+    );
+    expect(routes.routeSignals).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ path: '/journey', taskable: false }),
+        expect.objectContaining({ path: '/prototype/:id', taskable: false }),
+        expect.objectContaining({ path: '/recipes', taskable: true }),
+      ]),
+    );
+    expect(routes.limitations.join('\n')).toContain(
+      'deployment-conditioned route signal(s) remain discoverable but are blocked for task context',
+    );
+    expect(discovery.surfaces.items.find((surface) => surface.name === '/journey')).toMatchObject({
+      authority: 'project-reference',
+      taskability: 'blocked',
+    });
+    expect(discovery.confidence.score).toBeLessThanOrEqual(94);
+  });
+
+  it('degrades Next route authority when deployment policy cannot be resolved statically', () => {
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      JSON.stringify({ dependencies: { next: '^16.0.0', react: '^19.0.0' } }),
+    );
+    mkdirSync(join(projectRoot, 'app', 'settings'), { recursive: true });
+    writeFileSync(join(projectRoot, 'app', 'page.tsx'), 'export default () => <main />;\n');
+    writeFileSync(
+      join(projectRoot, 'app', 'settings', 'page.tsx'),
+      'export default () => <main />;\n',
+    );
+    writeFileSync(
+      join(projectRoot, 'middleware.ts'),
+      [
+        'import { NextResponse } from "next/server";',
+        'const INTERNAL_ROUTE = new RegExp(process.env.INTERNAL_ROUTE_PATTERN ?? "^$");',
+        'export function middleware(request: { nextUrl: { pathname: string } }) {',
+        '  return INTERNAL_ROUTE.test(request.nextUrl.pathname)',
+        '    ? new NextResponse("Not Found", { status: 404 })',
+        '    : NextResponse.next();',
+        '}',
+        '',
+      ].join('\n'),
+    );
+
+    const discovery = discoverProject(projectRoot);
+
+    expect(discovery.routes.authority).toBe('inferred');
+    expect(discovery.routes.completeness).toBe('partial');
+    expect(discovery.routes.limitations).toContain(
+      'Next deployment middleware controls route reachability, but the affected route set could not be resolved statically.',
+    );
+    expect(discovery.surfaces.status).toBe('blocked');
+    expect(discovery.confidence.score).toBeLessThanOrEqual(44);
+  });
+
   it('uses TanStack route files as authority only inside the selected route root', () => {
     writeFileSync(
       join(projectRoot, 'package.json'),

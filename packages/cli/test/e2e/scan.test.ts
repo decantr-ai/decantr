@@ -48,7 +48,6 @@ describe('scan command', () => {
     expect(output).toContain('not attached');
     expect(output).toContain('partial fit');
     expect(output).toContain('Production route authority is not proven');
-    expect(output).toContain('npx @decantr/cli adopt --yes');
     expect(output).toContain('This scan was read-only');
     expect(output).toContain('without promoting unresolved topology');
     expect(output).toContain('decantr adopt --yes');
