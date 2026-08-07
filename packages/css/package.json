@@ -50,9 +50,9 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "jsdom": "^29.1.1",
+    "jsdom": "^30.0.1",
     "tsup": "^8.0.0",
-    "typescript": "^6.0.3",
-    "vitest": "^4.1.7"
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
   }
 }
