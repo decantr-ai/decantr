@@ -4,7 +4,7 @@
 
 Decantr observes a project's own UI authority, prepares compact context for a coding agent, verifies the resulting change, and reports reproducible evidence. It does not generate the change or replace the project's router, component library, styling system, tests, or design tools.
 
-> **Release status:** Decantr **3.9.4** is the current published stable release. **3.10 is an active proof program**, not a released or value-proven product line. See the [3.10 program](docs/programs/2026-07-22-decantr-3-10-ui-change-control-proof.md) and the [3.9.4 Day-0 baseline](docs/benchmarks/2026-07-22-decantr-3-9-4-day-zero.md).
+> **Release status:** Decantr **3.9.4** is the current published stable release. **3.10 is an active proof program**, not a released or value-proven product line. See the [3.10 program](docs/programs/2026-07-22-decantr-3-10-ui-change-control-proof.md), the [Culinary Platform repair replay](docs/benchmarks/2026-08-07-culinary-platform-clean-slate-adoption.md), and the [3.9.4 Day-0 baseline](docs/benchmarks/2026-07-22-decantr-3-9-4-day-zero.md).
 
 ## The Product Loop
 
@@ -63,6 +63,8 @@ Readiness is evaluated on independent axes:
 - runtime evidence.
 
 The 3.10 primary result is `ready`, `limited`, `blocked`, or `unsupported`. No numeric confidence or aggregate fit score may hide an unresolved axis. The [Day-0 baseline](docs/benchmarks/2026-07-22-decantr-3-9-4-day-zero.md) shows why this change is necessary: 3.9.4 can run successfully while still selecting incomplete routes, weak styling evidence, or the wrong ontology for design-system packages.
+
+Source declaration and deployment reachability are separate facts. The 3.10 candidate keeps a file-backed route visible when Next middleware or proxy policy can hide it, but excludes that route from taskable production context. If the affected path set cannot be resolved statically, route authority degrades and task preparation fails closed. Styling authority follows ordered production imports, including workspace package exports; Next server handlers do not count as UI components.
 
 ## Product Boundary
 
@@ -171,6 +173,7 @@ Paid benchmark execution is not implied by local validation. The 320-run experim
 - [Command surface](docs/reference/command-surface.md)
 - [FAQ](docs/faq.md)
 - [3.10 UI Change Control Proof program](docs/programs/2026-07-22-decantr-3-10-ui-change-control-proof.md)
+- [3.10 Culinary Platform clean-slate adoption](docs/benchmarks/2026-08-07-culinary-platform-clean-slate-adoption.md) (oracle-assisted repair evidence, not a model A/B result)
 - [3.10 exploratory adoption evidence](docs/benchmarks/2026-07-24-decantr-3-10-exploratory-adoption-evidence.md) (deterministic development evidence, not model-lift proof)
 - [3.9.4 Day-0 authority baseline](docs/benchmarks/2026-07-22-decantr-3-9-4-day-zero.md)
 - [3.9 Governed Change Proof program](docs/programs/2026-07-16-decantr-3-9-adoption-proof-program.md) (historical current-release evidence)

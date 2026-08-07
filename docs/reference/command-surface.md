@@ -57,6 +57,7 @@ decantr ci init --project apps/web
 - Prepares compact, ranked, change-specific context for any coding agent.
 - Published 3.9.4 behavior is route-backed through `TaskCapsuleV1` and requires current graph evidence.
 - Missing, stale, conflicting, blocked, or unsupported authority must return non-success guidance rather than guessed sources.
+- In the 3.10 candidate, deployment-conditioned, unknown, ambiguous, inferred, or unresolved targets return no edit read set. Attached route capsules lead with the implementation and preserve ordered workspace/app styling evidence within the compact budget.
 - The 3.10 UI-surface model covers routes, layouts, components, stories, overlays, flows, packages, and runtime states. Do not mislabel a non-route surface as a route to fit the old capsule.
 
 ### `verify`

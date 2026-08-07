@@ -27,6 +27,8 @@ Readiness axes are independent: selected-app authority, production-surface autho
 
 Decantr 3.9.4 task context remains primarily route-backed. Do not claim that non-route UI-surface task context has shipped until a 3.10 release does so.
 
+Development repair commit `98e92472` separates Next file-route declaration from statically resolvable middleware/proxy 4xx policy, preserves workspace CSS import order, excludes App Router server handlers from UI component inventory, and keeps blocked task read sets empty. The Culinary Platform replay is oracle-assisted regression evidence only; it is not a control/treatment run or frontier-model result.
+
 ## Product Boundary
 
 Active 3.10 investment: `@decantr/verifier`, framework authority adapters, CLI `scan`/`task`/`verify`, the compatible eight-tool MCP server, local evidence, CI integration, and deterministic policy packs.
@@ -67,6 +69,7 @@ Pass permits only the bounded measured claim. Mixed results narrow supported cla
 - [Security and permissions](https://decantr.ai/reference/security-permissions.md)
 - [Package support matrix](https://decantr.ai/reference/package-support-matrix.md)
 - [3.10 active proof program](https://decantr.ai/programs/2026-07-22-decantr-3-10-ui-change-control-proof.md)
+- [3.10 Culinary Platform clean-slate adoption](https://decantr.ai/benchmarks/2026-08-07-culinary-platform-clean-slate-adoption.md)
 - [3.10 exploratory adoption evidence](https://decantr.ai/benchmarks/2026-07-24-decantr-3-10-exploratory-adoption-evidence.md)
 - [3.9.4 Day-0 baseline](https://decantr.ai/benchmarks/2026-07-22-decantr-3-9-4-day-zero.md)
 - [3.9 historical proof program](https://decantr.ai/programs/2026-07-16-decantr-3-9-adoption-proof-program.md)

@@ -155,7 +155,7 @@ Official provider pricing was reviewed and locked on 2026-07-22 in [`scripts/ben
 
 ## Current Evidence State
 
-As of 2026-08-05, the no-cost harness tests pass, but the frozen experiment is not runnable and no value result exists:
+As of 2026-08-07, the no-cost harness tests pass, but the frozen experiment is not runnable and no value result exists:
 
 - all 28 corpus repositories and the 24/16 task partition are frozen;
 - all 40 evaluator specs and all 40 task environment specs have explicit sole-maintainer approval; this is not independent blinded outcome review;
@@ -165,6 +165,7 @@ As of 2026-08-05, the no-cost harness tests pass, but the frozen experiment is n
 - exact-model OpenAI and Anthropic adapters and a credential-owning audited proxy exist, but no candidate tarball set, budget approval, configured benchmark credential, provider run, blinded review, power pilot, or qualification statistic exists;
 - the GitHub-hosted split-stage agent/evaluator workflow, dual provenance subjects, v3 run records, and release re-verification are implemented and pass no-cost local tests, but no hosted signed model run exists;
 - public and repository-gated private evaluator-input production share one committed, data-free controller; sealed private candidates and oracles remain only in the private repository. The hosted run-materialization packet producer, disjoint split artifacts, and one-shot per-run hosted reservation exist and pass no-cost contract tests, but no path has yet been exercised end to end from a complete materialized task set. Campaign handoff artifacts use one-day fallback retention and are archived, verified, and deleted task by task to bound GitHub Actions storage.
+- a clean-slate RecipeFork diagnostic against candidate base `cbb8aa96` failed before adoption on production route reachability, stylesheet authority, component inventory, and confidence calibration. Repair commit `98e92472` passes the same source oracle, blocks seven middleware-conditioned routes, prepares a bounded 13-read public task, rejects conditioned and missing controls with no read set, and closes one bounded change through native build/tests and responsive browser verification. This oracle-assisted replay is development regression evidence only and invalidates the failed base candidate; it does not freeze candidate tarballs or satisfy any model-outcome gate.
 
 These are blockers, not administrative TODOs. A test-green harness proves only harness mechanics.
 

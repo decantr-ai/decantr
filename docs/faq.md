@@ -167,6 +167,8 @@ They remain available where shipped, but they are advanced, compatibility, or hi
 
 No. That is the purpose of the 3.10 program.
 
+The [Culinary Platform clean-slate replay](benchmarks/2026-08-07-culinary-platform-clean-slate-adoption.md) did prove that one real Next.js failure could be reproduced and repaired: seven middleware-conditioned routes now fail closed, six ordered stylesheet layers reach task context, API handlers no longer inflate UI components, and one bounded route change passed native and responsive verification. It does not prove model lift because the oracle was known, no control arm ran, and the implementation was not blinded.
+
 The frozen experiment is 40 tasks across 28 pinned repositories, two requested models, control and Decantr treatment arms, and two repetitions: 320 isolated runs. It includes one repository-authentic task per target and 12 adversarial tasks. The corpus acquisition labels are 18 development and 10 qualification; independently, the task partition is 24 development and 16 sealed qualification. Repository identities were seen during Day-0, so this is not a repository-blind holdout; sealed solutions/oracles and a future independent external holdout limit the claim honestly.
 
 Both arms receive the same information entitlement. Decantr may rank, compress, cite, and verify that information; it may not receive extra human facts. Candidate package bytes are frozen before paid execution, and an implementation change invalidates that result.

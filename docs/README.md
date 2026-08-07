@@ -4,7 +4,7 @@ Decantr is an **agent-neutral UI change-control layer**. It observes project-own
 
 **Decantr 3.9.4 is the current published stable release. Decantr 3.10 is an active proof program and is neither released nor value-proven.**
 
-The 3.10 no-cost harness and dual-signed split-stage design are testable, but the frozen experiment is not yet runnable. All 40 evaluator specs, all 40 environment specs, and the 28-repository Day-0 oracle have explicit sole-maintainer approval. All 26 dual-image runtime profiles passed GitHub-hosted run `30577939983` with exact retained-evidence retries from source commit `cfcb849454d68f2e9b8ff91fdf6b22751eb016cd`; their v3 attestations are independently reverified in locked matrix `ce55618610740db332d19c6314f78d0141f440bc5ca04ec79698b3359d6c93bc`. The hosted run-materialization workflow exists, but no complete current-head 40-task evaluator receipt set, runnable task set, hosted split-stage run, frozen candidate tarball set, paid model result, or independent blinded outcome review exists. See the active program for the full evidence ledger.
+The 3.10 no-cost harness and dual-signed split-stage design are testable, but the frozen experiment is not yet runnable. All 40 evaluator specs, all 40 environment specs, and the 28-repository Day-0 oracle have explicit sole-maintainer approval. All 26 dual-image runtime profiles passed GitHub-hosted run `30577939983` with exact retained-evidence retries from source commit `cfcb849454d68f2e9b8ff91fdf6b22751eb016cd`; their v3 attestations are independently reverified in locked matrix `ce55618610740db332d19c6314f78d0141f440bc5ca04ec79698b3359d6c93bc`. Repair commit `98e92472` closes one oracle-assisted Next.js adoption failure but is not a control/treatment result. The hosted run-materialization workflow exists, but no complete current-head 40-task evaluator receipt set, runnable task set, hosted split-stage run, frozen candidate tarball set, paid model result, or independent blinded outcome review exists. See the active program for the full evidence ledger.
 
 The unreleased 3.10 candidate loop is:
 
@@ -28,6 +28,7 @@ The approved 3.10 model treats routes, layouts, components, stories, overlays, f
 ## Current Program And Evidence
 
 - [Decantr 3.10 UI Change Control Proof](programs/2026-07-22-decantr-3-10-ui-change-control-proof.md): active implementation and falsification boundary.
+- [Decantr 3.10 Culinary Platform clean-slate adoption](benchmarks/2026-08-07-culinary-platform-clean-slate-adoption.md): the failed Next.js authority gate, repair commit, negative controls, bounded task, native verification, and responsive browser replay. This is oracle-assisted development evidence, not model-lift proof.
 - [Decantr 3.10 exploratory adoption evidence](benchmarks/2026-07-24-decantr-3-10-exploratory-adoption-evidence.md): five external Brownfield targets, one generated Greenfield control, the 28-repository scanner rerun, and hosted runtime-profile evidence. This is deterministic development evidence, not model-lift proof.
 - [Decantr 3.9.4 Day-0 Authority Baseline](benchmarks/2026-07-22-decantr-3-9-4-day-zero.md): 28-repository scanner baseline. A parseable scan is explicitly not a correctness result.
 - [Decantr 3.9 Governed Change Proof program](programs/2026-07-16-decantr-3-9-adoption-proof-program.md): historical program for the current published line.

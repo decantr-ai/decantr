@@ -66,6 +66,8 @@ Project Health treats `pack-manifest.json` as a manifest, not proof by itself. I
 
 Source audit ignores test, spec, story, fixture, and mock files for production drift warnings such as localhost endpoints or unsafe rendering patterns. Interaction guard evidence also ignores tests, stories, fixtures, mocks, API route handlers, and server-only `route.ts` files, so UI behavior is proven by production UI source rather than incidental strings in tests or handlers. Those files can still exist in the project, but first-adoption health should focus users on production source paths.
 
+Static heuristics are not runtime proof. In contract-only or style-bridge Brownfield projects, broad inline-style and accessibility aggregates are advisory `info` findings; accepted behavior obligations, browser/axe results, and host tests remain stronger evidence. Server-only localhost fallbacks are also advisory, while client-reachable localhost endpoints remain warnings. Minified framework bundles require source corroboration before generic HTML or insecure-transport marker counts become warnings; standalone artifacts without source stay fail-closed.
+
 ## What The Report Contains
 
 The report composes existing Decantr evidence instead of inventing a parallel checker:

@@ -163,6 +163,8 @@ Local scaffold, page, and section paths selected by `pack-manifest.json` are rea
 
 The source-tree candidate extends `decantr_context` task input with `target`: a route path, exact surface ID, component name, `kind:name`, or `file:path`. It resolves every target from live verifier discovery and does not promote saved analysis, graph guesses, tests, fixtures, stories, or generated output to production-route authority. Unknown, ambiguous, inferred, unresolved, or non-taskable targets return an error with no edit read set.
 
+Next file routes that are hidden by statically resolved middleware/proxy non-success policy are valid discovery surfaces but non-taskable MCP targets. If that policy is path-dependent and cannot be resolved, the candidate returns blocked authority instead of selecting a route by convention alone. Ranked style reads retain production CSS import order, including workspace package exports. Attached route compatibility responses include the same verifier-ranked read set as CLI, exclude generated governance churn from changed-source impact, and shed compatibility-only detail before exceeding the task-capsule budget.
+
 Candidate authoritative non-route and unadopted targets return the separate `ui-surface-task-context.v1` discovery envelope with bounded reads and explicit limitations. A standalone component or story remains project-reference evidence rather than proof of runtime reachability. An adopted route continues to use the shipped `TaskCapsuleV1` contract. These additions are unreleased and must not be inferred from the 3.9.4 npm package or stable server metadata.
 
 ## Product Boundary

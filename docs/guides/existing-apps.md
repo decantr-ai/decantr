@@ -45,6 +45,12 @@ For Angular, verify that authority starts from the selected production target in
 
 In 3.9.4, Angular adoption blocks unresolved or partial production-route authority unless `--force` is explicit. A force override records an operator decision; it does not make the evidence proven, and task/CI consumers should continue to fail closed.
 
+### Next.js Check
+
+For the 3.10 candidate, inspect both the App/Pages Router files and deployment reachability policy. A `page.tsx` proves a source declaration; it does not by itself prove that the route is available in the target deployment. Root or `src/` `middleware.*` and Next 16 `proxy.*` files, plus reachable local policy helpers, can condition a route with a 4xx response. Statically resolved routes remain visible as source signals but are non-taskable. A path-dependent non-success policy whose affected routes cannot be resolved lowers route authority to inferred/partial and blocks route task context.
+
+Also verify that styling evidence follows the complete ordered imports from production layouts or entrypoints. Workspace package exports may own foundation and brand CSS ahead of app-local global and override files. API `route.ts` exports such as `GET` and `POST` are server handlers, not UI components.
+
 ## 2. Adopt Once
 
 After reviewing the scan:
@@ -108,6 +114,8 @@ The active 3.10 program broadens task authority beyond routes to:
 That work is not a claim that 3.9.4 already prepares all eight target kinds. Until 3.10 ships and qualifies them, use route-backed task context only where the implementation source is correct, and use repository-native component, Storybook, design-system, and runtime evidence directly for other work.
 
 Readiness must keep selected-app authority, surface authority, completeness, taskability, component inventory, styling authority, and runtime evidence independent. The intended primary result is `ready`, `limited`, `blocked`, or `unsupported`; no score may upgrade an unresolved axis.
+
+A deployment-conditioned route can therefore appear in the observed surface inventory while remaining blocked for task context. This is intentional: discovery records that the source exists without granting an agent production-edit authority that the deployment does not establish.
 
 ## 4. Verify And Report
 

@@ -91,6 +91,8 @@ The 3.10 primary state is `ready`, `limited`, `blocked`, or `unsupported`.
 
 A component count cannot upgrade missing taskability. Route success cannot upgrade unresolved styling. Runtime evidence cannot repair the wrong selected app. An operator override records a decision but does not convert weak evidence into proof.
 
+Route declaration also cannot upgrade deployment reachability. A framework file convention may prove that source exists while middleware, proxy, feature gating, or another production policy conditions whether the route can be reached. Exact policy exclusions should remain observable and non-taskable; unresolved path policy must lower authority. Styling preparation follows the selected production import graph in cascade order, including workspace-owned CSS exports, rather than choosing the first stylesheet found.
+
 ## Prepare
 
 Task preparation should be compact, source-ranked, and model-neutral. It should include only what the change needs:

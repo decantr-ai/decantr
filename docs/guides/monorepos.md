@@ -18,6 +18,8 @@ Decantr 3.7 introduced the read-only discovery substrate that Decantr 3.9 now pr
 
 In a mixed Angular/React workspace, scan and attach each app independently. An Angular result must show `proven` authority and `complete` extraction before adoption. If it does not, inspect `routes.authorityFiles`, `routes.evidence`, `routes.signals`, and `routes.excludedSourceCount`; do not baseline the workspace on inferred routes. Angular `adopt` and existing-app `init` refuse unproven discovery unless `--force` is explicit, and CI v3 reports `not_proven` rather than gating on a fictional route map.
 
+For Next.js workspace apps in the 3.10 candidate, file routes and deployment reachability are separate. Root or `src/` middleware/proxy files and reachable local policy helpers can leave a page discoverable but make it non-taskable. If path-dependent 4xx policy cannot be resolved statically, route authority becomes inferred/partial and task preparation blocks. Styling authority follows production import order across workspace package exports and app-local overrides; a dependency or the first CSS file found is not enough.
+
 ## Root vs App
 
 The repository root is for dependency installation, workspace scripts, CI workflows, and aggregate workspace health.
@@ -35,7 +37,7 @@ pnpm exec decantr ci --project apps/web
 
 The same rule applies to advanced primitives. `health`, `status`, `upgrade`, `add`, `remove`, `theme`, `export`, `suggest`, `magic`, `rules`, and `telemetry` honor `--project <path>` instead of falling back to the workspace root. Task context, local-law summaries, and refresh change summaries print paths you can open from the workspace root. Absolute `--project` paths are resolved from the target app's workspace, not from whichever monorepo you happen to be standing in. If a path does not exist, Decantr fails immediately. If a path points at a component package that is not a deployable app candidate, Brownfield adoption refuses it unless you explicitly opt into that unusual package attach with `--force-package`.
 
-`task` also requires the selected app's typed graph to be current. Its first route read target is the implementation source resolved by shared discovery, while graph/context artifacts follow it. Regenerate with the app-scoped graph command when task reports missing or stale artifacts.
+`task` also requires the selected app's typed graph to be current. Its first route read target is the implementation source resolved by shared discovery, followed by ordered route authority, workspace/app styling, advisory evidence, and graph/context artifacts. Generated `.decantr` changes do not count as source impact. Regenerate with the app-scoped graph command when task reports missing or stale artifacts.
 
 In 3.9, CLI and MCP task compatibility fields come from one `TaskCapsuleV1`. Its project identity is clone-independent, every exposed path is workspace-relative, the implementation source is the required rank-one target, and changed-file graph impact is scoped back to the selected app. The compact canonical capsule has a 12,000-byte / 4,000 deterministic-token ceiling.
 

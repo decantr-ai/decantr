@@ -49,6 +49,7 @@ npm install @decantr/verifier
 - Next.js static/document outputs are treated as framework-rendered documents instead of requiring a Vite-style `id="root"` mount element
 - generic static apps can satisfy runtime root proof through semantic app roots such as `main`, `role="main"`, `section.todoapp`, or `#todoapp`, while framework targets still require framework mount/document evidence
 - project source audits ignore test, spec, story, fixture, and mock files for production drift warnings such as localhost endpoints and unsafe rendering patterns
+- broad project-owned Brownfield inline-style/accessibility signals and server-only localhost fallbacks remain advisory; client-reachable localhost, accepted obligations, host/browser tests, and source-corroborated security evidence retain stronger severity. Generic minified framework-bundle marker volume is not proof by itself.
 - project audits emit `COMP001` / `import-existing-component` findings when a production source file locally redeclares a primitive such as `Button`, `Card`, or `Dialog` while an exported reusable primitive already exists under common component paths
 - project audits emit `COMP010` / `replace-raw-control-with-local-component` findings when production JSX renders generic raw controls such as `<button>` or text-like `<input>` while a project-owned primitive already exists; specialized inputs such as file, hidden, checkbox, radio, color, range, and Dropzone `getInputProps()` controls are not treated as generic `Input` drift
 - project audits emit behavior-obligation findings when accepted `.decantr/local-patterns.json` patterns declare `behavior_obligations` and production source strongly violates statically checkable dialog/form obligations:
@@ -76,6 +77,8 @@ npm install @decantr/verifier
 - `resolveUISurfaceTaskContext()` for candidate target resolution by route, exact surface ID, component name, `kind:name`, or `file:<path>`; ambiguous and unknown targets return no read set, and non-route static evidence remains limited unless runtime reachability is proven
 - `discoverUIEvidenceAdapters()` for candidate selected-app Storybook, Figma Code Connect, design-token, project-test, runtime, visual, and accessibility evidence; configured or collected evidence does not prove freshness, pass state, task coverage, runtime behavior, or publication success
 - `classifyProjectSourceScope()` for candidate separation of production, test, story, fixture, mock, generated, build-output, package, and runtime evidence
+- Next App/Pages Router discovery evaluates root or `src/` middleware/proxy policy and reachable local helpers separately from file-route declaration. Statically identified 4xx-conditioned routes remain observable but non-taskable; unresolved path-dependent policy degrades authority and fails closed.
+- Candidate styling discovery follows ordered production stylesheet imports through local files and workspace package exports. Task read sets preserve that cascade order, and Next API route handlers are excluded from the UI component inventory.
 
 These source-tree APIs are under the 3.10 falsification program. They are not published 3.9.4 capability or stable schema claims.
 
