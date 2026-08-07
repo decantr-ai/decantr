@@ -18,7 +18,7 @@ Decantr 3.7 introduced the read-only discovery substrate that Decantr 3.9 now pr
 
 In a mixed Angular/React workspace, scan and attach each app independently. An Angular result must show `proven` authority and `complete` extraction before adoption. If it does not, inspect `routes.authorityFiles`, `routes.evidence`, `routes.signals`, and `routes.excludedSourceCount`; do not baseline the workspace on inferred routes. Angular `adopt` and existing-app `init` refuse unproven discovery unless `--force` is explicit, and CI v3 reports `not_proven` rather than gating on a fictional route map.
 
-For Next.js workspace apps in the 3.10 candidate, file routes and deployment reachability are separate. Root or `src/` middleware/proxy files and reachable local policy helpers can leave a page discoverable but make it non-taskable. If path-dependent 4xx policy cannot be resolved statically, route authority becomes inferred/partial and task preparation blocks. Styling authority follows production import order across workspace package exports and app-local overrides; a dependency or the first CSS file found is not enough.
+For Next.js workspace apps in 3.10, file routes and deployment reachability are separate. Root or `src/` middleware/proxy files and reachable local policy helpers can leave a page discoverable but make it non-taskable. If path-dependent 4xx policy cannot be resolved statically, route authority becomes inferred/partial and task preparation blocks. Styling authority follows production import order across workspace package exports and app-local overrides; a dependency or the first CSS file found is not enough.
 
 ## Root vs App
 

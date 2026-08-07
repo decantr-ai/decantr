@@ -53,7 +53,7 @@ Decantr is a local Contract / Context / Evidence and UI change-control layer tha
 
 **Decantr does NOT generate code.** You generate or edit the code. Decantr keeps the result coherent, consistent, and repairable.
 
-Decantr 3.9.4 is the current stable release. Decantr 3.10 is an unreleased falsification program. Its independent UI-surface model and benchmark are candidate work, not proof that Decantr improves frontier models. Do not make that claim unless the frozen 3.10 qualification gate passes.
+Decantr 3.10.0 is the current stable release. Its independent UI-surface model is shipped product behavior, not proof that Decantr improves frontier models. The separate frozen qualification program must pass before making a measured model-lift claim.
 
 ---
 

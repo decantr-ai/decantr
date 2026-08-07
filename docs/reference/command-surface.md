@@ -2,19 +2,19 @@
 
 Decantr 3.10 narrows the visible product to one existing-app workflow while preserving callable 3.x compatibility. No new top-level command is required for the approved direction.
 
-**Status:** 3.9.4 is the published stable release. The visibility model below is the active 3.10 direction and must not be described as a released 3.10 surface until it ships.
+**Status:** 3.10.0 is the published stable release. The visibility model below is shipped product behavior, not a frontier-model value claim.
 
-## 3.10 Candidate Default Workflow
+## 3.10 Default Workflow
 
 | Command | Stage | Mutates | Role |
 | --- | --- | --- | --- |
-| `scan` | Observe | No | Read-only selected-app and route/style reconnaissance in 3.9.4; broader UI-authority axes are candidate-only. |
+| `scan` | Observe | No | Read-only selected-app reconnaissance with independent UI-authority axes. |
 | `adopt` | Attach once | Yes | Reviewed Brownfield attachment over existing lower-level primitives. |
-| `task` | Prepare | No | Compact agent context for one change; 3.9.4 remains primarily route-backed. |
+| `task` | Prepare | No | Compact authority-aware agent context for one route or non-route UI change. |
 | `verify` | Verify/Report | No by default | Local reliability gate over the diff and available evidence. |
 | `ci` / `ci init` | Report/Enforce | Gate: no; init: yes | Run the automation gate or install it once. |
 
-The candidate uses only existing commands; the published 3.9.4 invocation remains route-backed:
+The release uses existing commands:
 
 ```bash
 decantr scan
@@ -55,9 +55,9 @@ decantr ci init --project apps/web
 ### `task`
 
 - Prepares compact, ranked, change-specific context for any coding agent.
-- Published 3.9.4 behavior is route-backed through `TaskCapsuleV1` and requires current graph evidence.
+- Attached route behavior remains compatible through `TaskCapsuleV1` and requires current graph evidence.
 - Missing, stale, conflicting, blocked, or unsupported authority must return non-success guidance rather than guessed sources.
-- In the 3.10 candidate, deployment-conditioned, unknown, ambiguous, inferred, or unresolved targets return no edit read set. Attached route capsules lead with the implementation and preserve ordered workspace/app styling evidence within the compact budget.
+- Deployment-conditioned, unknown, ambiguous, inferred, or unresolved targets return no edit read set. Attached route capsules lead with the implementation and preserve ordered workspace/app styling evidence within the compact budget.
 - The 3.10 UI-surface model covers routes, layouts, components, stories, overlays, flows, packages, and runtime states. Do not mislabel a non-route surface as a route to fit the old capsule.
 
 ### `verify`
@@ -70,7 +70,7 @@ decantr ci init --project apps/web
 
 - Runs the non-interactive project or workspace gate.
 - `ci init` generates integration files and therefore mutates the repository; ordinary `ci` is a gate.
-- 3.9.4 keeps CI v2 as the default. Explicit `--report-version v3` preserves current compatibility contracts.
+- 3.10 keeps CI v2 as the compatibility default. Explicit `--report-version v3` preserves governed-change contracts.
 - A missing or incompatible comparison basis remains `not_proven`, not clean.
 
 ## Advanced Commands
@@ -110,9 +110,9 @@ Legacy `health init-ci` and `verify init-ci` aliases may continue to map to `ci 
 
 ## Product Surfaces Outside The Default Path
 
-Greenfield blueprints, themes, broad content-corpus operations, `@decantr/css`, the Vite plugin, Studio, showcase, telemetry, and registry publishing/account workflows are advanced, compatibility, experimental, or historical surfaces. They receive no feature expansion in the 3.10 proof program.
+Greenfield blueprints, themes, broad content-corpus operations, `@decantr/css`, the Vite plugin, Studio, showcase, telemetry, and registry publishing/account workflows are advanced, compatibility, experimental, or historical surfaces. They receive no feature expansion in the 3.10 product line.
 
-Package consolidation and command removal are deferred to 4.0 after the benchmark result. The 3.10 work should reduce visibility and duplicated implementation, not silently break 3.x scripts.
+Package consolidation and command removal are deferred to a future major-version compatibility decision. The 3.10 line reduces visibility and duplicated implementation without silently breaking 3.x scripts.
 
 ## MCP Boundary
 
@@ -132,8 +132,8 @@ Do not add a ninth content tool or remove `decantr_registry` in 3.x.
 - Mutation commands must identify their write boundary before changing files.
 - No command may convert an unsupported or unresolved authority state into a clean result through scoring.
 
-## Proof Boundary
+## Research Boundary
 
-Command simplification is not the 3.10 success criterion. The release must also pass the frozen 28-repository Day-0 authority gate and the 320-run, information-equivalent model A/B experiment. See the [3.10 program](../programs/2026-07-22-decantr-3-10-ui-change-control-proof.md) and [3.9.4 Day-0 baseline](../benchmarks/2026-07-22-decantr-3-9-4-day-zero.md).
+Command simplification is not evidence of model lift. The separate research claim requires the frozen 28-repository Day-0 authority gate and 320-run, information-equivalent model A/B experiment. See the [research program](../programs/2026-07-22-decantr-3-10-ui-change-control-proof.md), [3.10.0 release note](../releases/2026-08-07-decantr-3-10-0-authority-aware-ui-change-control.md), and [3.9.4 Day-0 baseline](../benchmarks/2026-07-22-decantr-3-9-4-day-zero.md).
 
-The typed command metadata lives in `packages/cli/src/command-surface.ts`. Published 3.9.4 behavior remains the compatibility floor until a qualified 3.10 release replaces it.
+The typed command metadata lives in `packages/cli/src/command-surface.ts`. Published 3.10.0 behavior is the current product floor.

@@ -1,6 +1,6 @@
 {
   "name": "@decantr/registry",
-  "version": "3.9.4",
+  "version": "3.10.0",
   "description": "Legacy compatibility package for Decantr content contracts, schemas, and API client utilities",
   "keywords": [
     "decantr",

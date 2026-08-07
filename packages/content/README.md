@@ -5,9 +5,9 @@ Release channel: `stable`
 
 Official Decantr content corpus for `@official` patterns, themes, shells, archetypes, and blueprints. This package is the source of truth for content-corpus search, schema validation, resolution, content health, and the Fly-hosted content API.
 
-In current stable Decantr 3.9.4, first-party resolver, client, ranking, wiring, content-type, and provenance implementations live here. `@decantr/registry` delegates to this package and exists only to preserve Decantr 3.x import and naming compatibility.
+In current stable Decantr 3.10.0, first-party resolver, client, ranking, wiring, content-type, and provenance implementations live here. `@decantr/registry` delegates to this package and exists only to preserve Decantr 3.x import and naming compatibility.
 
-Decantr 3.10 is an unreleased UI change-control proof program, not a corpus-expansion release. This package may supply versioned reference records or the same approved policy guidance available to both benchmark arms, but content volume is not proof of product value and must not give the treatment arm extra information. No public marketplace, community publishing, registry revival, or Decantr CSS coupling belongs in the 3.10 product claim.
+Decantr 3.10 is an authority-aware UI change-control release, not a corpus-expansion release. This package may supply versioned reference records or the same approved policy guidance available to both research arms, but content volume is not proof of product value and must not give a treatment arm extra information. No public marketplace, community publishing, registry revival, or Decantr CSS coupling belongs in the product claim.
 
 ## Install
 
@@ -96,7 +96,7 @@ pnpm --filter @decantr/content test
 pnpm audit:packed-content-facade
 ```
 
-The packed facade audit builds tarballs, installs them into a clean npm consumer with no workspace links, checks content/registry runtime identity and schema parity, compiles the public 3.8.1 registry client type surface, verifies browser-safe construction and the `REGISTRY_URL` compatibility alias, and rejects retired-host or local-path leakage. It is package-boundary evidence, not human finding qualification. Stable 3.9.4 publication may separately use the explicit sole-maintainer release gate, which preserves these machine checks while prohibiting precision, recall, qualification, and adoption-proof claims.
+The packed facade audit builds tarballs, installs them into a clean npm consumer with no workspace links, checks content/registry runtime identity and schema parity, compiles the public 3.8.1 registry client type surface, verifies browser-safe construction and the `REGISTRY_URL` compatibility alias, and rejects retired-host or local-path leakage. It is package-boundary evidence, not human finding qualification. Stable 3.10 publication preserves these machine checks while keeping precision, recall, qualification, adoption-proof, and model-lift claims outside the product release gate.
 
 `decantr content check` is the preferred content-author workflow. `decantr content-health` remains as a backward-compatible primitive.
 

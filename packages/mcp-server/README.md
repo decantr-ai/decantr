@@ -8,11 +8,11 @@
 Support status: `core-supported`  
 Release channel: `stable`
 
-Stable Decantr 3.9.4 MCP integration for local project state, attached route-backed task context, graph and evidence reads, verification, and repair prompts.
+Stable Decantr 3.10.0 MCP integration for local project state, authority-aware route and non-route task context, graph and evidence reads, verification, and repair prompts.
 
 ## Release Boundary
 
-The published npm package is 3.9.4. Its eight tool IDs, route-backed `TaskCapsuleV1` path, verification actions, and compatibility envelopes are stable. Decantr 3.10 is an unreleased proof program. Candidate target-based discovery for components, layouts, stories, overlays, packages, runtime states, exact files, and unadopted projects is described separately below and is not available from the pinned stable setup.
+The published npm package is 3.10.0. Its eight tool IDs, route-backed `TaskCapsuleV1` path, authority-aware target discovery, verification actions, and compatibility envelopes are stable. Components, layouts, stories, overlays, packages, runtime states, exact files, and unadopted projects use the same verifier-owned evidence model as the CLI.
 
 ![Decantr MCP demo](https://raw.githubusercontent.com/decantr-ai/decantr/main/packages/mcp-server/assets/decantr-demo.gif)
 
@@ -34,7 +34,7 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
   "mcpServers": {
     "decantr": {
       "command": "npx",
-      "args": ["@decantr/mcp-server@3.9.4"]
+      "args": ["@decantr/mcp-server@3.10.0"]
     }
   }
 }
@@ -47,7 +47,7 @@ Restart Claude Desktop. The Decantr tools will appear automatically.
 Preferred setup:
 
 ```bash
-npx @decantr/cli@3.9.4 connect cursor
+npx @decantr/cli@3.10.0 connect cursor
 ```
 
 From a monorepo root:
@@ -63,7 +63,7 @@ The connector preserves existing MCP servers and writes the project rule that te
   "mcpServers": {
     "decantr": {
       "command": "npx",
-      "args": ["-y", "@decantr/mcp-server@3.9.4"]
+      "args": ["-y", "@decantr/mcp-server@3.10.0"]
     }
   }
 }
@@ -80,7 +80,7 @@ Add to your Windsurf MCP config (`~/.windsurf/mcp.json`):
   "mcpServers": {
     "decantr": {
       "command": "npx",
-      "args": ["@decantr/mcp-server@3.9.4"]
+      "args": ["@decantr/mcp-server@3.10.0"]
     }
   }
 }
@@ -95,7 +95,7 @@ Create `.vscode/mcp.json` in your workspace (or add to your user profile `mcp.js
   "servers": {
     "decantr": {
       "command": "npx",
-      "args": ["-y", "@decantr/mcp-server@3.9.4"]
+      "args": ["-y", "@decantr/mcp-server@3.10.0"]
     }
   }
 }
@@ -112,7 +112,7 @@ Add to your Zed `settings.json`:
   "context_servers": {
     "decantr": {
       "command": "npx",
-      "args": ["-y", "@decantr/mcp-server@3.9.4"],
+      "args": ["-y", "@decantr/mcp-server@3.10.0"],
       "env": {}
     }
   }
@@ -133,7 +133,7 @@ mcpServers:
     command: npx
     args:
       - "-y"
-      - "@decantr/mcp-server@3.9.4"
+      - "@decantr/mcp-server@3.10.0"
 ```
 
 MCP tools are only available in Continue.dev agent mode.
@@ -153,19 +153,19 @@ The server exposes a hard 8-tool MCP surface. Pass an `action` to select the rou
 | `decantr_repair` | Turn typed findings into scoped repair plans, prompts, and v2 health-loop guidance | `{ "action": "health_loop", "project_path": "apps/web" }` |
 | `decantr_contract_write` | Explicit workspace-contained write surface for accepting drift or updating Essence v4 | `{ "action": "update_essence", "operation": "add_feature", "payload": { "feature": "billing" } }` |
 
-In published 3.9.4, pass `route` or the compatible `page_id` to the `task` action. Compact mode projects the verifier-owned `TaskCapsuleV1` into the existing response fields and remains within 12,000 canonical UTF-8 bytes / 4,000 estimated tokens. Missing or stale graph evidence reports `blocked_missing_graph`; incomplete Angular production-route authority reports `DISCOVERY_NOT_PROVEN`. Neither condition selects an implementation source by guess.
+For an attached route, pass `route` or the compatible `page_id` to the `task` action. Compact mode projects the verifier-owned `TaskCapsuleV1` into the existing response fields and remains within 12,000 canonical UTF-8 bytes / 4,000 estimated tokens. Missing or stale graph evidence reports `blocked_missing_graph`; incomplete Angular production-route authority reports `DISCOVERY_NOT_PROVEN`. Neither condition selects an implementation source by guess.
 
 Local scaffold, page, and section paths selected by `pack-manifest.json` are read or emitted as task read targets only when they resolve to real files contained under the selected project's `.decantr/context` directory. Missing, escaped, directory, and symlink-escaped references are ignored; existing `scaffold.md` and `section-<id>.md` narrative context remains the local fallback. In Greenfield `style-bridge` adoption, the accepted bridge maps onto the host project's tokens, classes, and styling runtime; it does not activate `@decantr/css`.
 
 `decantr_project` state includes verifier-built `AdoptionTruthV1`. Official corpus actions under the compatibility-named `decantr_registry` tool use `@decantr/content` implementations; there is no ninth `decantr_content` tool.
 
-## Unreleased 3.10 Candidate Discovery
+## 3.10 Authority-Aware Discovery
 
-The source-tree candidate extends `decantr_context` task input with `target`: a route path, exact surface ID, component name, `kind:name`, or `file:path`. It resolves every target from live verifier discovery and does not promote saved analysis, graph guesses, tests, fixtures, stories, or generated output to production-route authority. Unknown, ambiguous, inferred, unresolved, or non-taskable targets return an error with no edit read set.
+The `decantr_context` task input accepts `target`: a route path, exact surface ID, component name, `kind:name`, or `file:path`. It resolves every target from live verifier discovery and does not promote saved analysis, graph guesses, tests, fixtures, stories, or generated output to production-route authority. Unknown, ambiguous, inferred, unresolved, or non-taskable targets return an error with no edit read set.
 
-Next file routes that are hidden by statically resolved middleware/proxy non-success policy are valid discovery surfaces but non-taskable MCP targets. If that policy is path-dependent and cannot be resolved, the candidate returns blocked authority instead of selecting a route by convention alone. Ranked style reads retain production CSS import order, including workspace package exports. Attached route compatibility responses include the same verifier-ranked read set as CLI, exclude generated governance churn from changed-source impact, and shed compatibility-only detail before exceeding the task-capsule budget.
+Next file routes that are hidden by statically resolved middleware/proxy non-success policy are valid discovery surfaces but non-taskable MCP targets. If that policy is path-dependent and cannot be resolved, task preparation returns blocked authority instead of selecting a route by convention alone. Ranked style reads retain production CSS import order, including workspace package exports. Attached route compatibility responses include the same verifier-ranked read set as CLI, exclude generated governance churn from changed-source impact, and shed compatibility-only detail before exceeding the task-capsule budget.
 
-Candidate authoritative non-route and unadopted targets return the separate `ui-surface-task-context.v1` discovery envelope with bounded reads and explicit limitations. A standalone component or story remains project-reference evidence rather than proof of runtime reachability. An adopted route continues to use the shipped `TaskCapsuleV1` contract. These additions are unreleased and must not be inferred from the 3.9.4 npm package or stable server metadata.
+Authoritative non-route and unadopted targets return the separate `ui-surface-task-context.v1` discovery envelope with bounded reads and explicit limitations. A standalone component or story remains project-reference evidence rather than proof of runtime reachability. An adopted route continues to use the compatible `TaskCapsuleV1` contract.
 
 ## Product Boundary
 
@@ -204,7 +204,7 @@ The npm tarball includes `server.json` so MCP directories can read the same stab
 
 ## How It Works
 
-Published 3.9.4 reads project-owned evidence: application source and framework configuration, accepted local rules, `decantr.essence.json` when present, graph artifacts, baselines, and verification findings. In Brownfield, production source remains first authority and accepted Essence is project law beneath it. MCP clients request a route-backed task capsule before an edit and inspect verification evidence after the edit. Decantr reports evidence and limitations; the coding agent remains responsible for the code change.
+Published 3.10.0 reads project-owned evidence: application source and framework configuration, accepted local rules, `decantr.essence.json` when present, graph artifacts, baselines, and verification findings. In Brownfield, production source remains first authority and accepted Essence is project law beneath it. MCP clients request bounded task context before an edit and inspect verification evidence after the edit. Decantr reports evidence and limitations; the coding agent remains responsible for the code change.
 
 ## Example Workflow
 

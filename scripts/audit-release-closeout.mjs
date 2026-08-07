@@ -190,8 +190,8 @@ if (!skipNpm && selected.length > 0) {
         'pass',
         `${stagingManifestPath} binds ${stagingManifest.packages.length} package tarballs to ${releaseTag}`,
       );
-    } else if (releaseVersion?.startsWith('3.9.')) {
-      throw new Error('A retained 3.9 release staging manifest is required for final closeout.');
+    } else if (surface && releaseVersion && findReleaseLane(surface, releaseVersion)?.[1].stableOnly === true) {
+      throw new Error(`A retained ${releaseVersion} stable release staging manifest is required for final closeout.`);
     }
   } catch (cause) {
     addCheck('artifact', 'retained release staging manifest', 'fail', cause.message);
@@ -501,8 +501,9 @@ function loadStagingManifest(path) {
   ) {
     throw new Error('Retained release staging manifest is not bound to the requested tag and commit.');
   }
-  if (releaseVersion.startsWith('3.9.') && manifest.sourceVerification?.status !== 'verified') {
-    throw new Error('The retained 3.9 staging manifest was not produced from a verified publish source.');
+  const releaseLane = findReleaseLane(surface, releaseVersion)?.[1];
+  if (releaseLane?.stableOnly === true && manifest.sourceVerification?.status !== 'verified') {
+    throw new Error('The retained stable staging manifest was not produced from a verified publish source.');
   }
 
   const expectedNames = selected.map((entry) => entry.name);
@@ -519,7 +520,7 @@ function loadStagingManifest(path) {
     || manifest.qualification?.qualificationClaim !== releaseEvidence.qualificationClaim
     || manifest.qualification?.waiver !== releaseEvidence.waiverPath
   ) {
-    throw new Error('Retained release-evidence mode differs from the tagged 3.9 policy.');
+    throw new Error('Retained release-evidence mode differs from the tagged release policy.');
   }
   for (const packageArtifact of manifest.packages) {
     const selectedEntry = selected.find((entry) => entry.name === packageArtifact.name);

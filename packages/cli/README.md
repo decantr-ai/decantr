@@ -7,9 +7,9 @@ Decantr's main local operator surface for observing project-owned UI authority, 
 
 ## Release Boundary
 
-The current published stable version is Decantr 3.9.4. It supports route-backed `TaskCapsuleV1`, adoption truth, explicit CI v3, and governance deltas, but it is not quantitatively adoption-proven.
+The current published stable version is Decantr 3.10.0. It supports independent UI authority axes, route and non-route target preparation, compatible route-backed `TaskCapsuleV1`, adoption truth, explicit CI v3, and governance deltas, but it is not quantitatively adoption-proven.
 
-Decantr 3.10 is an unreleased falsification program. Its candidate CLI loop is **Observe -> Prepare -> Verify -> Report** through `scan`, `task <target>`, `verify`, and `ci`. Routes are one UI surface among layouts, components, stories, overlays, flows, packages, runtime states, and exact files. New 3.10 behavior described below must not be presented as released or as evidence that Decantr improves frontier models until the frozen qualification gate passes.
+The primary CLI loop is **Observe -> Prepare -> Verify -> Report** through `scan`, `task <target>`, `verify`, and `ci`. Routes are one UI surface among layouts, components, stories, overlays, flows, packages, runtime states, and exact files. Shipped 3.10 behavior must not be presented as evidence that Decantr improves frontier models; that remains a separate research question.
 
 ## Install
 
@@ -24,14 +24,14 @@ npx @decantr/cli scan
 npx @decantr/cli new my-app --blueprint=esports-hq
 ```
 
-Use `decantr scan` with zero writes. Published 3.9.4 reports selected app/workspace scope, framework and route evidence, taskable routes, component/style evidence, graph readiness, and limitations through `ScanReportV2`. The unreleased 3.10 candidate adds independent UI-surface, topology, taskability, component-inventory, styling-authority, and runtime-evidence axes and stricter source-scope classification.
-Use `decantr task <route> "<intent>"` to **Prepare** one published 3.9.4 change with attached, graph-backed route context. The unreleased 3.10 candidate broadens the argument to a target and also accepts an exact surface ID, component, layout, overlay, story, package, or `file:<path>` selector, including read-only discovery context before adoption. Candidate unknown, ambiguous, unresolved, or non-taskable targets fail closed; static non-route evidence is normally `limited` unless runtime reachability proves more.
+Use `decantr scan` with zero writes. Published 3.10.0 reports selected app/workspace scope plus independent UI-surface authority, topology, taskability, component-inventory, styling-authority, runtime-evidence, source-scope, graph-readiness, and limitation evidence through `ScanReportV2`.
+Use `decantr task <target> "<intent>"` to **Prepare** one bounded change. Attached graph-backed routes retain `TaskCapsuleV1`; an exact surface ID, component, layout, overlay, story, package, or `file:<path>` selector can return read-only discovery context before adoption. Unknown, ambiguous, unresolved, or non-taskable targets fail closed; static non-route evidence is normally `limited` unless runtime reachability proves more.
 Use `decantr verify` to **Verify** the edit against the available project evidence. Use `decantr ci` to **Report** typed evidence; CI v3 remains explicit through `--report-version v3`, and missing or incompatible proof remains `not_proven`.
 Use `decantr setup` when you are unsure which attach or compatibility path applies. It detects whether the repo is empty, already attached, or a Brownfield app and recommends the right entry path.
 Use `decantr new` for a greenfield workspace in a fresh directory. With a blueprint or archetype it creates a contract-only Decantr workspace by default; runnable legacy Decantr CSS adapters require explicit `--adoption=decantr-css`.
 Use `decantr adopt` when you already have an app and want Decantr governance without adopting a blueprint. Brownfield attach is proposal-driven: Decantr inventories the app, writes an observed essence proposal, prepares compact local context, and only applies the contract when you explicitly accept or merge it. Bulk content API execution packs require `decantr adopt --packs`.
 Use `decantr studio` as an advanced read-only Control Room for findings, evidence, authority, and next actions. Use `decantr connect cursor` when the opened workspace should get Cursor Agent MCP and project-rule activation; in monorepos use `decantr connect cursor --project apps/web` so the rule keeps the app scope. Use `decantr doctor` when attach state is unclear and `decantr resolve` when source and contract disagree. If runtime source and Decantr context disagree, report the drift instead of guessing; in Brownfield the existing production source is first authority, accepted local law/style bridges apply within their scope, accepted Essence V4 is project law beneath production source, and content packs stay advisory until mapped into local law. Use `decantr graph` for attached typed graph snapshots, diffs, history, route context, and source-file impact. Graph ranking is supporting evidence, not a substitute for live target authority. Use `decantr codify --from-audit --style-bridge` when reviewed project-owned UI patterns, behavior obligations, rules, and token/class mappings should become local law.
-In monorepos, app-scoped commands accept `--project <app-path>`. `setup` shows attach guidance before adoption and the day-two loop after adoption. Unreleased 3.10 candidate discovery ranks product UI apps ahead of docs, Storybook, API, MCP helper, workbench, and package surfaces; its `decantr workspace list --json` metadata explains the rank. Once an app path is selected, shipped scan/setup/adopt/doctor/route-task/verify/ci/connect behavior preserves that app scope and inherits package-manager evidence from the workspace root. Bulk content packs are opt-in with `decantr adopt --packs`; task-scoped context remains the default. Content pack hydration also follows the essence path: `decantr content compile-packs apps/web/decantr.essence.json --write-context` writes into `apps/web/.decantr/context`. In contract-only/offline Brownfield, deferred packs are optional context unless a present manifest references missing files.
+In monorepos, app-scoped commands accept `--project <app-path>`. `setup` shows attach guidance before adoption and the day-two loop after adoption. Discovery ranks product UI apps ahead of docs, Storybook, API, MCP helper, workbench, and package surfaces; `decantr workspace list --json` metadata explains the rank. Once an app path is selected, scan/setup/adopt/doctor/task/verify/ci/connect behavior preserves that app scope and inherits package-manager evidence from the workspace root. Bulk content packs are opt-in with `decantr adopt --packs`; task-scoped context remains the default. Content pack hydration also follows the essence path: `decantr content compile-packs apps/web/decantr.essence.json --write-context` writes into `apps/web/.decantr/context`. In contract-only/offline Brownfield, deferred packs are optional context unless a present manifest references missing files.
 Use `decantr init`, `decantr analyze`, `decantr check`, and `decantr health` as advanced primitives when you need direct control over one step. Direct `init` and Brownfield `adopt` retain bounded write receipts in `.decantr/project.json`; `AdoptionTruthV1` reports governance writes, explicitly requested assistant-rule/CI support artifacts, and authored-source integrity independently. Brownfield and Hybrid adoption do not create or edit formatter ignore files. Tailwind v4 projects are one explicit bounded exception: Decantr adds a marked `@source not` block to detected Tailwind CSS entry files so generated governance text cannot become utility candidates. The receipt records each approved stylesheet path and exact before/after hash; any other authored-source mutation, or a later hash mismatch, fails the integrity claim.
 
 App-scoped primitives now share the same `--project` posture as the primary workflow commands. From a workspace root, `health`, `status`, `upgrade`, `add`, `remove`, `theme`, `export`, `suggest`, `magic`, `rules`, and `telemetry` target the selected app instead of the root. Task/read paths, local-law summaries, and refresh change summaries are printed as openable workspace paths. Nonexistent project paths fail immediately, and Brownfield adoption refuses component packages unless you intentionally pass `--force-package`.
@@ -83,7 +83,7 @@ decantr rules preview
 decantr rules apply
 ```
 
-Unreleased 3.10 candidate selectors, shown for source-tree evaluation only:
+Additional 3.10 selectors:
 
 ```bash
 decantr task component:SaveButton "preserve loading behavior"
@@ -109,15 +109,15 @@ pnpm exec decantr codify --map-pattern hero --project apps/web
 pnpm exec decantr ci init --project apps/web
 ```
 
-Assistant rule integration is preview-first: `--assistant-bridge=preview` writes `.decantr/context/assistant-bridge.md`, `decantr rules preview` prints the bridge, and `--assistant-bridge=apply` or `decantr rules apply` mutates supported rule files with updatable marked blocks. Normal `decantr refresh` keeps a configured or existing assistant preview current, and accepting a reviewed style bridge immediately refreshes both that preview and `DECANTR.md`. Cursor has a direct connector: `decantr connect cursor` writes `.cursor/mcp.json` and `.cursor/rules/decantr.mdc`, preserving existing MCP servers; use `--preview` to inspect first and `--project <app>` from a monorepo root. Stable route-backed task capsules require a current typed graph and start with the proven route implementation rather than a generated route tree. The candidate capsule then adds verifier-ranked authority, ordered style, and advisory evidence reads; generated `.decantr`, `DECANTR.md`, and Essence churn is excluded from source impact, and compatibility-only fields are trimmed before the 12,000-byte ceiling is exceeded. The 3.10 candidate uses live verifier discovery for every target and never treats saved `.decantr/analysis.json` as authority. Discovery-backed non-route or pre-adoption task context is a separate read-only `ui-surface-task-context.v1` result and does not pretend to be `TaskCapsuleV1`. Blocked targets exit nonzero with structured reasons and no edit read set.
+Assistant rule integration is preview-first: `--assistant-bridge=preview` writes `.decantr/context/assistant-bridge.md`, `decantr rules preview` prints the bridge, and `--assistant-bridge=apply` or `decantr rules apply` mutates supported rule files with updatable marked blocks. Normal `decantr refresh` keeps a configured or existing assistant preview current, and accepting a reviewed style bridge immediately refreshes both that preview and `DECANTR.md`. Cursor has a direct connector: `decantr connect cursor` writes `.cursor/mcp.json` and `.cursor/rules/decantr.mdc`, preserving existing MCP servers; use `--preview` to inspect first and `--project <app>` from a monorepo root. Stable route-backed task capsules require a current typed graph and start with the proven route implementation rather than a generated route tree. The capsule adds verifier-ranked authority, ordered style, and advisory evidence reads; generated `.decantr`, `DECANTR.md`, and Essence churn is excluded from source impact, and compatibility-only fields are trimmed before the 12,000-byte ceiling is exceeded. Decantr uses live verifier discovery for every target and never treats saved `.decantr/analysis.json` as authority. Discovery-backed non-route or pre-adoption task context is a separate read-only `ui-surface-task-context.v1` result and does not pretend to be `TaskCapsuleV1`. Blocked targets exit nonzero with structured reasons and no edit read set.
 
-Published 3.9.4 `decantr scan` is look-don't-touch reconnaissance for selected-app scope, framework and route evidence, taskable routes, components, styling, typed graph readiness, and limitations. Formal framework route sources outrank generated route trees; Angular scans begin at the selected production bootstrap and router graph; inferred or unresolved route evidence is withheld from governed route maps. Attached Essence V4 apps may derive graph previews in memory while scan still writes nothing.
+Published 3.10.0 `decantr scan` is look-don't-touch reconnaissance for selected-app scope, independent authority axes, taskable routes and surfaces, components, styling, typed graph readiness, and limitations. Formal framework route sources outrank generated route trees; Angular scans begin at the selected production bootstrap and router graph; inferred or unresolved route evidence is withheld from governed route maps. Attached Essence V4 apps may derive graph previews in memory while scan still writes nothing.
 
-The unreleased 3.10 candidate extends scan to independent UI-surface authority, topology, taskability, component-inventory, styling-authority, runtime-evidence, and source-scope axes. It separates tests, stories, fixtures, mocks, generated files, build output, packages, and sibling apps from production authority. None of those candidate behaviors should be inferred from the 3.9.4 npm package.
+Scan separates UI-surface authority, topology, taskability, component-inventory, styling-authority, runtime-evidence, and source-scope axes. It keeps tests, stories, fixtures, mocks, generated files, build output, packages, and sibling apps separate from production authority.
 
-For Next applications, candidate scan treats file-route declaration and deployment reachability as distinct evidence. Routes denied by statically resolved middleware/proxy 4xx policy remain visible but are not taskable; unresolved path policy lowers authority and blocks task context. Styling reads follow production import order across workspace package CSS and app-local overrides. Server-handler exports from App Router `route.ts` files are not component candidates.
+For Next applications, scan treats file-route declaration and deployment reachability as distinct evidence. Routes denied by statically resolved middleware/proxy 4xx policy remain visible but are not taskable; unresolved path policy lowers authority and blocks task context. Styling reads follow production import order across workspace package CSS and app-local overrides. Server-handler exports from App Router `route.ts` files are not component candidates.
 
-## Published 3.9.4 Surface
+## Compatible 3.x Surface
 
 - writes Decantr contract/context projects from blueprints, archetypes, or prompts
 - previews existing apps with read-only Brownfield scan reports
@@ -138,13 +138,13 @@ For Next applications, candidate scan treats file-route declaration and deployme
 - syncs hosted content API vocabulary into a full slug-keyed local cache for offline guards and context generation
 - validates, refreshes, and maintains `decantr.essence.json`
 
-## Unreleased 3.10 Candidate Additions
+## Shipped 3.10 Additions
 
 - independent UI-surface readiness and evidence-adapter data in source-tree scan reports
 - target-based non-route and pre-adoption discovery context through `ui-surface-task-context.v1`
 - stricter selected-app ranking and production/supporting/generated source classification
 
-These additions are under the 3.10 falsification program. They are not part of the published 3.9.4 capability claim.
+These additions ship in 3.10.0. Their deterministic behavior is covered by tests and regression replays; they do not establish a frontier-model improvement claim.
 
 ## Security And Permissions
 
@@ -328,7 +328,7 @@ The report validates local `patterns/`, `themes/`, `blueprints/`, `archetypes/`,
 
 ## Greenfield Certification
 
-This is a compatibility harness for retained scaffolding behavior. It is not the Decantr 3.10 model-improvement benchmark or release proof.
+This is a compatibility harness for retained scaffolding behavior. It is not the Decantr model-improvement benchmark or product release evidence by itself.
 
 Use the built-in certification harness before releases when you want to prove that representative blueprints still scaffold into runnable starter projects:
 
@@ -402,7 +402,7 @@ Recommended read order for AI-assisted scaffolding:
 2. `.decantr/context/scaffold-pack.md` as the primary compiled shell, theme, feature, and route contract
 3. `.decantr/context/scaffold.md` as the broader app overview and topology guide
 4. matching `section-*-pack.md` and `section-*.md` files before section work
-5. matching `page-*-pack.md` files before proven route work. For non-route work on 3.9.4, use repository-native component, Storybook, package, and runtime evidence directly; target-based ranked reads remain a 3.10 candidate.
+5. matching `page-*-pack.md` files before proven route work. For non-route work, use 3.10 target-based ranked reads together with repository-native component, Storybook, package, and runtime evidence.
 
 For scaffolded Greenfield work before production source exists, treat accepted compiled execution packs as implementation law and narrative docs as secondary explanation. In Brownfield, production source remains first authority and execution packs are advisory unless explicitly accepted into project law. Run `decantr check` plus `decantr audit` after implementation.
 

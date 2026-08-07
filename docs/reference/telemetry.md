@@ -1,6 +1,6 @@
 # Telemetry
 
-Decantr 3.9.4 keeps `@decantr/telemetry` 3.8.1 as an optional compatibility contract and sink package. It is not part of the active product nucleus, and hosted product analytics are retired.
+Decantr 3.10.0 keeps `@decantr/telemetry` 3.8.1 as an optional compatibility contract and sink package. It is not part of the active product nucleus, and hosted product analytics are retired.
 
 The active direction is local UI change control. Telemetry remains a caller-controlled compatibility capability:
 
@@ -12,7 +12,7 @@ The active direction is local UI change control. Telemetry remains a caller-cont
 
 ## Package Role
 
-`@decantr/telemetry` defines typed event vocabulary, redaction helpers, privacy filters, and optional sinks. It should be treated as a compatibility library for private deployments, not as a public foundation or proof that Decantr runs a hosted analytics dashboard today. The unreleased 3.10 proof program assigns it no feature investment and does not use product analytics as qualification evidence.
+`@decantr/telemetry` defines typed event vocabulary, redaction helpers, privacy filters, and optional sinks. It should be treated as a compatibility library for private deployments, not as a public foundation or proof that Decantr runs a hosted analytics dashboard today. The 3.10 release assigns it no feature investment and does not use product analytics as qualification evidence.
 
 Allowed signals are product-level aggregates such as command names, package versions, workflow modes, duration, success/failure, Project Health status/counts, content types, and optional campaign labels.
 

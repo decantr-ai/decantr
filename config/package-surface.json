@@ -24,6 +24,42 @@
           "phases": ["readiness", "publish", "closeout"]
         }
       ]
+    },
+    "3.10": {
+      "initialVersion": "3.10.0",
+      "stableOnly": true,
+      "defaultDistTag": "latest",
+      "claimPolicy": {
+        "productReleaseRequiresModelLiftQualification": false,
+        "modelLiftClaimRequiresQualification": true,
+        "qualificationProgram": "scripts/benchmark-3-10"
+      },
+      "requiredGates": [
+        {
+          "id": "docs-marketing",
+          "label": "Decantr 3.10 active documentation release gate",
+          "script": "scripts/audit-docs-marketing.mjs",
+          "phases": ["readiness", "publish", "closeout"]
+        },
+        {
+          "id": "docs-drift",
+          "label": "Decantr 3.10 documentation drift gate",
+          "script": "scripts/audit-docs-drift.mjs",
+          "phases": ["readiness", "publish", "closeout"]
+        },
+        {
+          "id": "packed-content-facade",
+          "label": "Decantr 3.10 packed content-facade gate",
+          "script": "scripts/audit-packed-content-facade.mjs",
+          "phases": ["publish", "closeout"]
+        },
+        {
+          "id": "packed-mcp-server",
+          "label": "Decantr 3.10 packed MCP clean-consumer gate",
+          "script": "scripts/audit-packed-mcp-server.mjs",
+          "phases": ["publish", "closeout"]
+        }
+      ]
     }
   },
   "packages": [
@@ -158,7 +194,7 @@
       "releaseChannel": "stable",
       "publishOrder": 20,
       "defaultDistTag": "latest",
-      "summary": "Stable eight-tool MCP surface for local project state, accepted Essence reads, route-backed TaskCapsuleV1 context, graph and verification evidence, health, and repair prompts; non-route target discovery remains unreleased.",
+      "summary": "Stable eight-tool MCP surface for local project state, accepted Essence reads, authority-aware route and non-route UI task context, graph and verification evidence, health, and repair prompts.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,
@@ -178,7 +214,7 @@
       "releaseChannel": "stable",
       "publishOrder": 10,
       "defaultDistTag": "latest",
-      "summary": "Shared read-only discovery and verification engine for scan report v2, framework-specific route authority, Adoption Truth v1, bounded Task Capsule v1, Governance Delta v1, default CI report v2, opt-in CI report v3, evidence, project health, and workspace health.",
+      "summary": "Shared read-only discovery and verification engine for independent UI authority axes, framework-specific production topology, authority-aware task context, bounded route capsules, evidence, project health, and workspace health.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,
@@ -198,7 +234,7 @@
       "releaseChannel": "stable",
       "publishOrder": 30,
       "defaultDistTag": "latest",
-      "summary": "Workflow commands for local Brownfield scan/adopt, route-backed task context, verification, CI, codify, connect, and compatibility content operations, including Adoption Truth with exact Tailwind v4 source-isolation approvals, bounded Task Capsules, Governance Deltas, default CI v2, opt-in CI v3, monorepo targeting, health baselines, and read-only report-isolated Studio.",
+      "summary": "Local Observe, Prepare, Verify, and Report commands with selected-app authority, route and non-route UI target context, fail-closed taskability, Brownfield adoption, CI, codify, connect, compatibility content operations, and read-only Studio.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,

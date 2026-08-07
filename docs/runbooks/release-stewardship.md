@@ -1,6 +1,6 @@
 # Release Stewardship
 
-Date: 2026-07-16
+Date: 2026-08-07
 Status: Active
 
 Release work in Decantr is owned by a boring, procedural Release Steward lane. Publishing is not complete when npm accepts a package. It is complete only when source, npm, git tags, and release notes all agree.
@@ -22,7 +22,43 @@ pnpm release:closeout -- --version X.Y.Z
 
 GitHub Releases are optional maintainer packaging. Git tags are not optional.
 
-## Decantr 3.9 Stable Release Gate
+## Decantr 3.10 Stable Release Gate
+
+Decantr 3.10 publishes directly to `latest`; do not create an RC, `next`, candidate, canary, or alternate package/tag. Product publication is intentionally separate from the optional frontier-model lift experiment. A stable 3.10 release requires deterministic build/test coverage, active-documentation alignment, package surface and permission audits, clean-consumer content/MCP checks, tag-bound retained tarballs, npm provenance, public verification, and final closeout. It does not authorize precision, recall, adoption-proof, or measured model-improvement claims.
+
+Before tagging or publishing, run:
+
+```bash
+pnpm install --frozen-lockfile
+pnpm build
+pnpm test
+pnpm biome:check
+pnpm audit:docs-marketing
+pnpm audit:docs-drift
+pnpm audit:public-links
+pnpm audit:package-surface
+pnpm audit:package-permissions
+pnpm audit:packed-content-facade
+pnpm audit:packed-mcp-server
+pnpm audit:release-readiness
+pnpm audit:content-package
+pnpm audit:public-api -- --core-only --fail-on-error
+pnpm release:preflight
+pnpm release:commands
+```
+
+The coordinated 3.10.0 package wave is:
+
+- `@decantr/content`
+- `@decantr/registry`
+- `@decantr/core`
+- `@decantr/verifier`
+- `@decantr/mcp-server`
+- `@decantr/cli`
+
+`@decantr/essence-spec`, `@decantr/css`, `@decantr/telemetry`, and `@decantr/vite-plugin` are not version-bumped solely for alignment. The separate frozen A/B harness may support a future bounded model-lift claim; its incomplete state does not block an honestly described product release.
+
+## Historical Decantr 3.9 Stable Release Gate
 
 Decantr 3.9.0 publishes straight to the stable channel. Do not create an RC, `next`, `candidate`, canary, or alternate 3.9.0 package/tag. Implementation completeness is not release qualification. Decantr currently has one human maintainer, so stable 3.9.0 publication may use the version-bound sole-maintainer waiver without representing an agent, alias, or duplicate identity as an independent reviewer.
 
@@ -44,7 +80,7 @@ pnpm audit:3-9-release-gate
 
 Use `node scripts/prepare-3-9-human-review.mjs --help` if Decantr later obtains two independent human reviewers and wants to make quantitative qualification claims. Its blank workbooks remain non-evidence; `qualification:3-9:human:lint` checks their structure, while `qualification:3-9:human` fails until both signed human reviews, all 200 adjudications, and both finding replays are complete and hash-bound.
 
-`pnpm audit:release-readiness` detects public packages on the 3.9 line and runs the release-evidence gate. Readiness fails unless either full qualification or the exact version-bound sole-maintainer waiver is valid.
+For a 3.9 tag, `pnpm audit:release-readiness` detects public packages on that line and runs the historical release-evidence gate. Readiness fails unless either full qualification or the exact version-bound sole-maintainer waiver is valid.
 
 The intended 3.9.0 package wave is:
 
@@ -75,7 +111,7 @@ pnpm release:preflight
 pnpm release:commands
 ```
 
-Publish through the wrapper command produced by `pnpm release:commands`; do not publish public Decantr packages with a bare `npm publish`. Direct `pnpm publish` remains compatible with historical 3.8 patch manifests, but every 3.9 package `prepublishOnly` requires the wrapper sentinel. The wrapper is the sole normal 3.9 publish entry point, permits only stable 3.9 semver on `latest`, and reruns the packed-facade plus release-evidence gates for real and publish-dry-run attempts. It creates one canonical publish tarball from each pnpm package snapshot using the same shared deterministic archive helper as qualification and enterprise evidence: sorted paths and manifest keys, fixed timestamps, portable ownership/modes, and deterministic gzip. It audits the manifest, verifies machine-wave overlaps against the packet SHA-256 values, records whether the release is `human-qualified` or `sole-maintainer-unqualified`, moves the `.tgz` into a content-addressed retained set outside the worktree, rechecks SHA-256/SHA-512 immediately before each attempt, and gives that exact tarball path to `pnpm publish`. OIDC failure and token fallback reuse the same bytes. Selection-only `--dry-run` remains available for planning and does not imply release readiness.
+Publish through the wrapper command produced by `pnpm release:commands`; do not publish public Decantr packages with a bare `npm publish`. Direct `pnpm publish` remains compatible with historical unprotected patch manifests, but every configured protected release lane requires the wrapper sentinel. The wrapper is the normal stable publish entry point and reruns every lane-specific gate for real and publish-dry-run attempts. It creates one canonical publish tarball from each pnpm package snapshot using the same shared deterministic archive helper as enterprise evidence: sorted paths and manifest keys, fixed timestamps, portable ownership/modes, and deterministic gzip. It audits the manifest, records applicable historical qualification policy, moves the `.tgz` into a content-addressed retained set outside the worktree, rechecks SHA-256/SHA-512 immediately before each attempt, and gives that exact tarball path to `pnpm publish`. OIDC failure and token fallback reuse the same bytes. Selection-only `--dry-run` remains available for planning and does not imply release readiness.
 
 The default retained root is the platform temporary directory under `decantr-release-staging`. Use `--staging-dir=/absolute/path` or `DECANTR_RELEASE_STAGING_DIR` to choose another location outside the repository. Preflight and real publish commands emitted together by `release:commands` share that location. Never delete the selected manifest/tarballs until closeout evidence has been retained.
 
@@ -147,11 +183,11 @@ pnpm release:verify -- --only=@decantr/telemetry
 pnpm release:closeout -- --only=@decantr/telemetry --version X.Y.Z
 ```
 
-A real local 3.9 publish is allowed only from a clean checkout whose `HEAD` is the version-derived stable tag (for example `v3.9.0`). The local tag and remote tag must resolve to `HEAD`; the tag must be reachable from `origin/main`; fetched `origin/main` must equal the live remote main ref. The wrapper refreshes and verifies those refs before the release gates, after the gates, and after tarball staging. `--publish-dry-run` remains nonpublishing and selection-only `--dry-run` remains available for planning, but neither is authorization to bypass the real-publish source check.
+A real local protected-lane publish is allowed only from a clean checkout whose `HEAD` is the version-derived stable tag. The local tag and remote tag must resolve to `HEAD`; the tag must be reachable from `origin/main`; fetched `origin/main` must equal the live remote main ref. The wrapper refreshes and verifies those refs before the release gates, after the gates, and after tarball staging. `--publish-dry-run` remains nonpublishing and selection-only `--dry-run` remains available for planning, but neither is authorization to bypass the real-publish source check.
 
 ## Prerelease Channel
 
-Historical or future preview lines other than 3.9 use npm `next` and an explicit package-surface channel. Decantr 3.9 is explicitly excluded: it has no RC, candidate, or `next` lane. Do not repurpose the stable package lane silently.
+Historical or future preview lines outside the protected stable lanes use npm `next` and an explicit package-surface channel. Decantr 3.9 and 3.10 are explicitly excluded: they have no RC, candidate, or `next` lane. Do not repurpose the stable package lane silently.
 
 For a prerelease package line:
 

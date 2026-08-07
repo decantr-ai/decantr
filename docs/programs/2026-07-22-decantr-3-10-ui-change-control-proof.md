@@ -1,17 +1,17 @@
-# Decantr 3.10 UI Change Control Proof
+# Decantr Frontier-Model Lift Research Program
 
-**Status:** active implementation program; Decantr 3.10 is unreleased
+**Status:** active research program; Decantr 3.10.0 product is released, model lift is unproven
 **Frozen:** 2026-07-22
-**Current stable baseline:** Decantr 3.9.4
-**Release lane:** direct stable only; no RC or `next` lane
+**Historical control baseline:** Decantr 3.9.4 Day-0
+**Product release lane:** direct stable only; independent of this research claim gate
 
 ## Decision
 
-Decantr 3.10 must prove one narrow claim:
+This research program must prove one narrow claim before Decantr can use measured model-improvement language:
 
 > Decantr gives AI coding agents more accurate project authority before a UI change and produces measurably better, safer UI outcomes afterward.
 
-This replaces the broader assumption that more corpus content, generated governance files, route inventory, or product surface automatically makes an agent more effective. Frontier models already read repositories, use tools, inspect screenshots, and follow local instructions well. Decantr earns a place only when an external authority and evidence layer materially improves those outcomes without excessive context, cost, or workflow burden.
+This replaces the broader assumption that more corpus content, generated governance files, route inventory, or product surface automatically makes an agent more effective. Frontier models already read repositories, use tools, inspect screenshots, and follow local instructions well. The stable product can be useful as deterministic authority and verification infrastructure without this causal result. A stronger claim that it materially improves model outcomes requires the experiment below.
 
 The primary product loop is:
 
@@ -24,7 +24,7 @@ Routes remain evidence, but they are not the product ontology. The governed UI s
 
 ## Product Boundary
 
-Active investment in 3.10 is limited to:
+The shipped 3.10 product boundary is limited to:
 
 - `@decantr/verifier` and framework authority adapters;
 - `@decantr/cli` for `scan`, `task`, and `verify`;
@@ -42,7 +42,7 @@ The following surfaces remain compatible but receive no feature investment in 3.
 - Studio and showcase expansion;
 - hosted cross-repository intelligence.
 
-Normal CLI help must stop presenting those legacy surfaces as the product. Existing 3.x scripts continue to resolve silently. Package consolidation or removal is a 4.0 decision after the proof result.
+Normal CLI help must not present those legacy surfaces as the product. Existing 3.x scripts continue to resolve silently. Package consolidation or removal is a future major-version compatibility decision, not an automatic research outcome.
 
 ## Frozen Corpus
 
@@ -92,7 +92,7 @@ Preparation runs before benchmark timing in a credential-free container whose ne
 
 An authored evaluator cannot become a runnable task merely because it parses or passes on a maintainer workstation. The authoring step emits only a content-bound prequalification seal. An optional host probe may help diagnose the evaluator, but its result is explicitly non-materializable.
 
-Materializable qualification requires an external GitHub-hosted Linux run at the exact committed controller revision. The run must verify an immutable sealed input closure, hydrate base and expected workspaces from content-addressed Git object packs into a disjoint workspace root, prepare both roles in the locked profile, execute the evaluator with no evaluation network or writable source overlay, retain exact result and isolation evidence, and create a GitHub OIDC provenance attestation for the execution record. Finalization verifies that provenance offline against the exact repository, workflow, source commit, source ref, predicate type, and GitHub-hosted-runner policy. The receipt binds the canonical request and manifest file/self digests, execution attestation, controller closure, evaluator-source closure, runner commit, and provenance bundle through materialization, run planning, every run record, and the release audit.
+Materializable qualification requires an external GitHub-hosted Linux run at the exact committed controller revision. The run must verify an immutable sealed input closure, hydrate base and expected workspaces from content-addressed Git object packs into a disjoint workspace root, prepare both roles in the locked profile, execute the evaluator with no evaluation network or writable source overlay, retain exact result and isolation evidence, and create a GitHub OIDC provenance attestation for the execution record. Finalization verifies that provenance offline against the exact repository, workflow, source commit, source ref, predicate type, and GitHub-hosted-runner policy. The receipt binds the canonical request and manifest file/self digests, execution attestation, controller closure, evaluator-source closure, runner commit, and provenance bundle through materialization, run planning, every run record, and the model-lift claim audit.
 
 Qualification source and oracle bytes must never enter either model arm or the public repository. The public development producer and private qualification producer use pinned, one-day fallback GitHub Actions artifacts and are accepted only when the consumer run matches the repository, workflow, dispatch event, successful `main` commit, and exact source SHA. Maintainer automation must archive and verify every input, qualification, and prepared-workspace artifact locally, then delete the GitHub copy before dispatching the next task. Split-run staging verifies one paired content binding and emits physically separate agent-safe and evaluator-only artifacts. The evaluator artifact is downloaded only after the signed agent subject is verified. Private execution must remain inside `decantr-ai/decantr-qualification-private`; this mechanism still requires a hosted end-to-end exercise after current runtime images and tasks materialize.
 
@@ -107,9 +107,9 @@ Before model A/B runs, Decantr must pass an automatic authority audit against hu
 - use only `ready`, `limited`, `blocked`, or `unsupported` as primary readiness language;
 - never let a numeric score or aggregate fit label conceal an unresolved axis.
 
-The original Angular failure is a release-blocking regression target: test navigation metadata must not outrank the production `routes.ts` graph, and a Tailwind dependency must not outrank PrimeNG, Angular builder styles, or SCSS authority.
+The original Angular failure is a product-critical regression target: test navigation metadata must not outrank the production `routes.ts` graph, and a Tailwind dependency must not outrank PrimeNG, Angular builder styles, or SCSS authority.
 
-The current candidate Day-0 rerun reports 17 `ready`, 11 `limited`, and zero `blocked` or `unsupported` targets. That is a scanner/discovery diagnostic on the pinned corpus. It is not the human-oracle Day-0 gate, a task-outcome result, or evidence that Decantr improves model performance.
+The current development Day-0 rerun reports 17 `ready`, 11 `limited`, and zero `blocked` or `unsupported` targets. That is a scanner/discovery diagnostic on the pinned corpus. It is not the human-oracle Day-0 gate, a task-outcome result, or evidence that Decantr improves model performance.
 
 ## A/B Design
 
@@ -124,7 +124,7 @@ The frozen model lock is [`scripts/benchmark-3-10/models.json`](../../scripts/be
 
 The provider-returned model identifier is recorded for every run. A fallback, routed substitute, or identifier mismatch is a visible failure and is not pooled with the requested model.
 
-The full design is 40 tasks x 2 models x 2 arms x 2 repetitions = 320 runs. Repetitions are averaged within each task and are not counted as independent samples. Only sealed qualification tasks contribute to confirmatory release-gate estimates; development tasks are tuning and power-pilot evidence. At least 16 qualification tasks are required, and the paid qualification run cannot start until a frozen development pilot demonstrates at least 80% power to detect the predeclared five-point effect. Every run starts from a fresh copy of the attested workspace in the task's locked non-root Linux profile, with an empty home directory, no host secrets, no personal skills, no personal MCP configuration, no model memory, and no network except an audited model proxy. Dependencies and browser binaries are installed and attested before timing begins. Release evidence must execute the agent and hidden evaluator in externally attested, separate stages. The agent stage must use a dedicated minimal immutable image with no evaluator code or contracts, expected revisions or patches, qualification controllers, oracle sources, private task manifests, or hidden-review material. Its workspace and trajectory are content-addressed before the separately attested evaluator stage receives sealed inputs. The current host runner and benchmark image are test-only and cannot satisfy this requirement.
+The full design is 40 tasks x 2 models x 2 arms x 2 repetitions = 320 runs. Repetitions are averaged within each task and are not counted as independent samples. Only sealed qualification tasks contribute to confirmatory claim estimates; development tasks are tuning and power-pilot evidence. At least 16 qualification tasks are required, and the paid qualification run cannot start until a frozen development pilot demonstrates at least 80% power to detect the predeclared five-point effect. Every run starts from a fresh copy of the attested workspace in the task's locked non-root Linux profile, with an empty home directory, no host secrets, no personal skills, no personal MCP configuration, no model memory, and no network except an audited model proxy. Dependencies and browser binaries are installed and attested before timing begins. Qualification evidence must execute the agent and hidden evaluator in externally attested, separate stages. The agent stage must use a dedicated minimal immutable image with no evaluator code or contracts, expected revisions or patches, qualification controllers, oracle sources, private task manifests, or hidden-review material. Its workspace and trajectory are content-addressed before the separately attested evaluator stage receives sealed inputs. The current host runner and benchmark image are test-only and cannot satisfy this requirement.
 
 The benchmark agent must not receive the Decantr engineering or release-engineering skills in either arm.
 
@@ -145,7 +145,7 @@ Hidden evaluation combines:
 
 Two independent frontend reviewers score each result while blinded to model and arm. Disagreements are adjudicated before labels are revealed. Missing evaluators, build failures, unsupported targets, and model substitutions stay in the denominator.
 
-The predeclared statistical and release gates live in [`scripts/benchmark-3-10/protocol.json`](../../scripts/benchmark-3-10/protocol.json). The primary gate requires at least a five-point paired treatment lift on a 100-point rubric with the 95% confidence interval above zero separately for each model. Governance violations must fall by at least 25%, and functional success must be non-inferior within five percentage points overall for each model. Blinded preference is aggregated by strict repetition majority into 32 qualification task/model units; at least 26 must be decisive, treatment must win at least 60% of decisive units, and the two-sided 95% Wilson lower bound must exceed 50%. Median treatment token/cost overhead must remain at or below 15%. Framework strata are reported but cannot become independent release claims unless their sample sizes are separately powered.
+The predeclared statistical and model-lift claim gates live in [`scripts/benchmark-3-10/protocol.json`](../../scripts/benchmark-3-10/protocol.json). The primary gate requires at least a five-point paired treatment lift on a 100-point rubric with the 95% confidence interval above zero separately for each model. Governance violations must fall by at least 25%, and functional success must be non-inferior within five percentage points overall for each model. Blinded preference is aggregated by strict repetition majority into 32 qualification task/model units; at least 26 must be decisive, treatment must win at least 60% of decisive units, and the two-sided 95% Wilson lower bound must exceed 50%. Median treatment token/cost overhead must remain at or below 15%. Framework strata are reported but cannot become independent measured claims unless their sample sizes are separately powered.
 
 ## Cost And Authorization
 
@@ -161,26 +161,26 @@ As of 2026-08-07, the no-cost harness tests pass, but the frozen experiment is n
 - all 40 evaluator specs and all 40 task environment specs have explicit sole-maintainer approval; this is not independent blinded outcome review;
 - all 26 dual-image runtime profiles passed GitHub-hosted run `30577939983`, with exact retained-evidence retries `30581534061` and `30581539933` from source commit `cfcb849454d68f2e9b8ff91fdf6b22751eb016cd`; retained v3 attestations bind both image roles and the independently reverified locked matrix has digest `ce55618610740db332d19c6314f78d0141f440bc5ca04ec79698b3359d6c93bc`;
 - no complete current-head set of 40 external container-qualified evaluator receipts and prepared workspaces has been retained; superseded partial campaigns remain failure evidence only;
-- the candidate Day-0 scanner report is 17 `ready` and 11 `limited`, and the sole maintainer approved the 28-repository authority oracle; the final frozen candidate must still pass that audit;
-- exact-model OpenAI and Anthropic adapters and a credential-owning audited proxy exist, but no candidate tarball set, budget approval, configured benchmark credential, provider run, blinded review, power pilot, or qualification statistic exists;
+- the development Day-0 scanner report is 17 `ready` and 11 `limited`, and the sole maintainer approved the 28-repository authority oracle; a frozen treatment must still pass that audit;
+- exact-model OpenAI and Anthropic adapters and a credential-owning audited proxy exist, but no frozen treatment tarball set, budget approval, configured benchmark credential, provider run, blinded review, power pilot, or qualification statistic exists;
 - the GitHub-hosted split-stage agent/evaluator workflow, dual provenance subjects, v3 run records, and release re-verification are implemented and pass no-cost local tests, but no hosted signed model run exists;
 - public and repository-gated private evaluator-input production share one committed, data-free controller; sealed private candidates and oracles remain only in the private repository. The hosted run-materialization packet producer, disjoint split artifacts, and one-shot per-run hosted reservation exist and pass no-cost contract tests, but no path has yet been exercised end to end from a complete materialized task set. Campaign handoff artifacts use one-day fallback retention and are archived, verified, and deleted task by task to bound GitHub Actions storage.
-- a clean-slate RecipeFork diagnostic against candidate base `cbb8aa96` failed before adoption on production route reachability, stylesheet authority, component inventory, and confidence calibration. Repair commit `98e92472` passes the same source oracle, blocks seven middleware-conditioned routes, prepares a bounded 13-read public task, rejects conditioned and missing controls with no read set, and closes one bounded change through native build/tests and responsive browser verification. This oracle-assisted replay is development regression evidence only and invalidates the failed base candidate; it does not freeze candidate tarballs or satisfy any model-outcome gate.
+- a clean-slate RecipeFork diagnostic against development base `cbb8aa96` failed before adoption on production route reachability, stylesheet authority, component inventory, and confidence calibration. Repair commit `98e92472` passes the same source oracle, blocks seven middleware-conditioned routes, prepares a bounded 13-read public task, rejects conditioned and missing controls with no read set, and closes one bounded change through native build/tests and responsive browser verification. This oracle-assisted replay is development regression evidence only; it does not freeze treatment tarballs or satisfy any model-outcome gate.
 
-These are blockers, not administrative TODOs. A test-green harness proves only harness mechanics.
+These are blockers to a measured model-lift claim, not product publication blockers. A test-green harness proves only harness mechanics.
 
-## Release Rule
+## Claim Rule
 
-3.10 is a direct stable release only. Candidate packages are built once, content-addressed, and frozen before the 320-run experiment. No implementation change is allowed after the candidate experiment begins.
+Decantr 3.10.0 is a direct stable product release. For this experiment, treatment packages are built once, content-addressed, and frozen before paid execution. No implementation change is allowed after that experiment begins without invalidating only that treatment result.
 
-- **Pass:** publish 3.10 with the measured, bounded claim.
-- **Mixed:** publish only narrower framework/task claims whose predeclared gates pass, and narrow the product accordingly.
-- **Fail:** do not claim value proof. Reduce Decantr to the verifier, authority-adapter, and CI layer, or stop broad expansion.
+- **Pass:** permit the measured, bounded model-lift claim.
+- **Mixed:** permit only narrower framework/task claims whose predeclared gates pass.
+- **Fail:** do not claim value proof. Reassess product scope and stop unsupported expansion.
 
 This is falsification, not sabotage. No repository, package, service, release, or historical evidence is automatically deleted by a failed benchmark.
 
 ## Documentation Reset
 
-Before release, the root and package READMEs, CLI help, MCP metadata, docs homepage, docs navigation, `docs/llms.txt`, active reference and security documentation, `CLAUDE.md`, `DECANTR.md`, repository harness skill, personal Decantr engineering skill, and release skill must describe the same narrow product and proof boundary.
+At product release, the root and package READMEs, CLI help, MCP metadata, docs homepage, docs navigation, `docs/llms.txt`, active reference and security documentation, `CLAUDE.md`, `DECANTR.md`, repository harness skill, personal Decantr engineering skill, and release skill must distinguish shipped product behavior from the unproven research claim.
 
 The docs deployment must publish from one release manifest and verify the deployed content hash. A successful Pages workflow that serves stale release copy is a failed deployment.

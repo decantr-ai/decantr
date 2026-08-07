@@ -25,7 +25,7 @@ describe('MCP package metadata', () => {
 
     expect(serverJson.name).toBe('io.github.decantr-ai/mcp-server');
     expect(serverJson.description).toContain('Stable eight-tool MCP server');
-    expect(serverJson.description).toContain('route-backed TaskCapsuleV1 context');
+    expect(serverJson.description).toContain('authority-aware UI task context');
     expect(advertisedPackage.identifier).toBe('@decantr/mcp-server');
     expect(advertisedPackage.transport).toEqual({ type: 'stdio' });
   });
@@ -34,8 +34,10 @@ describe('MCP package metadata', () => {
     const smithery = readFileSync(join(packageRoot, 'smithery.yaml'), 'utf8');
 
     expect(smithery).toContain('type: stdio');
-    expect(smithery).toContain("args: ['-y', '@decantr/mcp-server@3.9.4']");
-    expect(smithery).toContain('Stable task preparation is attached-route-backed');
+    expect(smithery).toContain("args: ['-y', '@decantr/mcp-server@3.10.0']");
+    expect(smithery).toContain(
+      'Task preparation uses authority-aware route and non-route UI-surface discovery',
+    );
   });
 
   it('keeps the stdio server version aligned with the package version', () => {

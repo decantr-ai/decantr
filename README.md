@@ -4,7 +4,7 @@
 
 Decantr observes a project's own UI authority, prepares compact context for a coding agent, verifies the resulting change, and reports reproducible evidence. It does not generate the change or replace the project's router, component library, styling system, tests, or design tools.
 
-> **Release status:** Decantr **3.9.4** is the current published stable release. **3.10 is an active proof program**, not a released or value-proven product line. See the [3.10 program](docs/programs/2026-07-22-decantr-3-10-ui-change-control-proof.md), the [Culinary Platform repair replay](docs/benchmarks/2026-08-07-culinary-platform-clean-slate-adoption.md), and the [3.9.4 Day-0 baseline](docs/benchmarks/2026-07-22-decantr-3-9-4-day-zero.md).
+> **Release status:** Decantr **3.10.0** is the current published stable product line. It ships authority-aware UI change control, but it is not value-proven against frontier models. The [model-lift research program](docs/programs/2026-07-22-decantr-3-10-ui-change-control-proof.md) remains separate from product release readiness. See the [3.10.0 release note](docs/releases/2026-08-07-decantr-3-10-0-authority-aware-ui-change-control.md), the [Culinary Platform repair replay](docs/benchmarks/2026-08-07-culinary-platform-clean-slate-adoption.md), and the [3.9.4 Day-0 baseline](docs/benchmarks/2026-07-22-decantr-3-9-4-day-zero.md).
 
 ## The Product Loop
 
@@ -37,7 +37,7 @@ pnpm exec decantr verify --project apps/web
 
 ## UI Authority
 
-Routes are evidence, not the product ontology. The approved 3.10 authority model covers:
+Routes are evidence, not the product ontology. The shipped 3.10 authority model covers:
 
 | Surface | Examples |
 | --- | --- |
@@ -50,7 +50,7 @@ Routes are evidence, not the product ontology. The approved 3.10 authority model
 | Package | UI library or design-system package without an app router |
 | Runtime state | Loading, empty, error, permission, responsive, or interactive state |
 
-Decantr 3.9.4 task context is still primarily route-backed. The 3.10 program must broaden this model without pretending that a component count, package dependency, or URL literal proves a production target.
+Decantr 3.10.0 can prepare route and non-route UI targets without pretending that a component count, package dependency, or URL literal proves production reachability.
 
 Readiness is evaluated on independent axes:
 
@@ -62,9 +62,9 @@ Readiness is evaluated on independent axes:
 - styling authority;
 - runtime evidence.
 
-The 3.10 primary result is `ready`, `limited`, `blocked`, or `unsupported`. No numeric confidence or aggregate fit score may hide an unresolved axis. The [Day-0 baseline](docs/benchmarks/2026-07-22-decantr-3-9-4-day-zero.md) shows why this change is necessary: 3.9.4 can run successfully while still selecting incomplete routes, weak styling evidence, or the wrong ontology for design-system packages.
+The primary 3.10 result is `ready`, `limited`, `blocked`, or `unsupported`. No numeric confidence or aggregate fit score may hide an unresolved axis. The [Day-0 baseline](docs/benchmarks/2026-07-22-decantr-3-9-4-day-zero.md) shows why this changed: 3.9.4 could run successfully while still selecting incomplete routes, weak styling evidence, or the wrong ontology for design-system packages.
 
-Source declaration and deployment reachability are separate facts. The 3.10 candidate keeps a file-backed route visible when Next middleware or proxy policy can hide it, but excludes that route from taskable production context. If the affected path set cannot be resolved statically, route authority degrades and task preparation fails closed. Styling authority follows ordered production imports, including workspace package exports; Next server handlers do not count as UI components.
+Source declaration and deployment reachability are separate facts. Decantr keeps a file-backed route visible when Next middleware or proxy policy can hide it, but excludes that route from taskable production context. If the affected path set cannot be resolved statically, route authority degrades and task preparation fails closed. Styling authority follows ordered production imports, including workspace package exports; Next server handlers do not count as UI components.
 
 ## Product Boundary
 
@@ -85,7 +85,7 @@ These remain available where already shipped, but are advanced, compatibility, o
 - Studio and showcase expansion;
 - hosted cross-repository intelligence.
 
-Existing 3.x scripts remain callable. Package removal or consolidation is a 4.0 decision after the proof result.
+Existing 3.x scripts remain callable. Package removal or consolidation is a 4.0 compatibility decision, independent of the model-lift research result.
 
 ## Agent-Neutral And Local-First
 
@@ -100,9 +100,9 @@ Decantr works through CLI output, project files, JSON contracts, CI artifacts, a
 
 Production source is the first authority. Reviewed project-local law or style mappings may refine it. Essence and official content can provide contract or advisory guidance, but they do not silently override the app's runtime, styling, component, or test systems.
 
-## The 3.10 Proof Boundary
+## The Model-Lift Research Boundary
 
-3.10 must prove one claim:
+The shipped product does not make this causal claim. The separate research program tests whether it can eventually support it:
 
 > Decantr gives AI coding agents more accurate project authority before a UI change and produces measurably better, safer UI outcomes afterward.
 
@@ -112,7 +112,7 @@ The control receives the model, repository-native instructions, existing tests/d
 
 The requested model identities are OpenAI `gpt-5.6-sol` and Anthropic `claude-fable-5`. Substitutions remain visible and are not pooled with the requested model.
 
-The release claim fails unless all predeclared gates hold, including:
+The measured-improvement claim remains unavailable unless all predeclared research gates hold, including:
 
 - correct app selection or honest `unsupported` on all 28 repositories;
 - no test, fixture, story, generated, build-output, or sibling-app source promoted to production authority;
@@ -125,9 +125,9 @@ The release claim fails unless all predeclared gates hold, including:
 
 Unsupported targets, missing evaluators, build failures, and model substitutions stay visible and in the denominator. A pass permits the bounded claim. Mixed results narrow the supported framework or task claim. A failure blocks any value-proven claim and requires Decantr to shrink toward verifier, authority-adapter, and CI infrastructure. Nothing is automatically deleted by a failed benchmark.
 
-## Current 3.9.4 Contracts
+## Current 3.10.0 Contracts
 
-The published line provides `AdoptionTruthV1`, route-backed `TaskCapsuleV1`, `GovernanceDeltaV1`, Project Health, local evidence, CI v2 by default, and explicit CI v3. These are current compatibility contracts, not proof that Decantr materially improves frontier-model outcomes.
+The published line provides independent UI authority axes, authority-aware task context, compatible route-backed `TaskCapsuleV1`, `AdoptionTruthV1`, `GovernanceDeltaV1`, Project Health, local evidence, CI v2 by default, and explicit CI v3. These are product contracts, not proof that Decantr materially improves frontier-model outcomes.
 
 The MCP server preserves exactly eight public tools:
 
@@ -150,7 +150,7 @@ The MCP server preserves exactly eight public tools:
 | `@decantr/telemetry` | Optional compatibility package; no active product investment |
 | `@decantr/vite-plugin` | Experimental; outside the primary reliability layer |
 
-See the current [package support matrix](docs/reference/package-support-matrix.md) for published support details. It remains a 3.9.4-era reference until the 3.10 implementation and release gates are complete.
+See the current [package support matrix](docs/reference/package-support-matrix.md) for published support details.
 
 ## Development
 
@@ -163,7 +163,7 @@ pnpm test
 pnpm benchmark:3-10:validate
 ```
 
-Paid benchmark execution is not implied by local validation. The 320-run experiment requires explicit budget approval, configured provider credentials, frozen candidate tarballs, sealed evaluators, and independent review.
+Paid research execution is not implied by product release validation. The optional 320-run experiment requires explicit budget approval, configured provider credentials, frozen treatment tarballs, sealed evaluators, and independent review.
 
 ## Documentation
 
@@ -172,14 +172,15 @@ Paid benchmark execution is not implied by local validation. The 320-run experim
 - [Workflow model](docs/reference/workflow-model.md)
 - [Command surface](docs/reference/command-surface.md)
 - [FAQ](docs/faq.md)
-- [3.10 UI Change Control Proof program](docs/programs/2026-07-22-decantr-3-10-ui-change-control-proof.md)
+- [3.10.0 stable release note](docs/releases/2026-08-07-decantr-3-10-0-authority-aware-ui-change-control.md)
+- [Frontier-model lift research program](docs/programs/2026-07-22-decantr-3-10-ui-change-control-proof.md)
 - [3.10 Culinary Platform clean-slate adoption](docs/benchmarks/2026-08-07-culinary-platform-clean-slate-adoption.md) (oracle-assisted repair evidence, not a model A/B result)
 - [3.10 exploratory adoption evidence](docs/benchmarks/2026-07-24-decantr-3-10-exploratory-adoption-evidence.md) (deterministic development evidence, not model-lift proof)
 - [3.9.4 Day-0 authority baseline](docs/benchmarks/2026-07-22-decantr-3-9-4-day-zero.md)
 - [3.9 Governed Change Proof program](docs/programs/2026-07-16-decantr-3-9-adoption-proof-program.md) (historical current-release evidence)
 - [3.9.4 release note](docs/releases/2026-07-21-decantr-3-9-4-tailwind-source-isolation.md) (published stable history)
 
-Historical programs, audits, benchmarks, and release notes are retained as evidence of what was proposed or shipped at that time. They do not override active references or promote 3.10 to a released status.
+Historical programs, audits, benchmarks, and release notes are retained as evidence of what was proposed or shipped at that time. They do not override active references or convert regression evidence into a model-lift result.
 
 ## License
 

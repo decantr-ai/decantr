@@ -22,6 +22,6 @@ if (releaseLane && process.env.DECANTR_PUBLISH_WRAPPER !== 'scripts/publish-pack
   console.error(
     `${packageJson.name}@${packageJson.version} must be published through scripts/publish-packages.mjs.`,
   );
-  console.error('Direct pnpm publish is not an authorized entry point for the Decantr 3.9 release lane.');
+  console.error('Direct pnpm publish is not an authorized entry point for a protected Decantr release lane.');
   process.exit(1);
 }

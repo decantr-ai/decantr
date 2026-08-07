@@ -2,7 +2,7 @@
 
 Decantr is an agent-neutral UI change-control layer for Brownfield applications. It observes the app before writing, prepares scoped context for a coding agent, verifies the resulting change, and reports local evidence.
 
-**Current release:** Decantr 3.9.4. **3.10 is an active proof program, not a released or value-proven line.** Current task context remains primarily route-backed; the broader UI-surface model below is the 3.10 target.
+**Current release:** Decantr 3.10.0. It ships authority-aware route and non-route UI task context, but it is not value-proven against frontier models.
 
 ## 1. Observe
 
@@ -25,29 +25,29 @@ Keep the same `--project` value for adoption, task context, verification, and CI
 
 ## Read The Result Conservatively
 
-A parseable 3.9.4 scan proves that the scanner ran. It does not prove that Decantr found the canonical production sources or enough of the UI to govern a change.
+A parseable scan proves that the scanner ran. It does not prove that Decantr found the canonical production sources or enough of the UI to govern a change.
 
 Before adoption, check:
 
 - the selected app root is the intended application, not docs, Storybook, an API, a demo, or a sibling app;
 - representative production URLs resolve to the real implementation source;
 - tests, fixtures, stories, mocks, generated files, coverage, build output, and sibling apps are not production authority;
-- route completeness matches the real application closely enough for a 3.9.4 task; broader surface completeness is a separate 3.10 candidate axis;
+- route and surface completeness match the real application closely enough for the intended task;
 - component evidence distinguishes production, package, route-local, and story-only candidates;
 - styling evidence names the actual project authority, not merely an installed dependency;
 - limitations are explicit and consistent with the reported result.
 
-Do not treat `strong_fit`, a numeric confidence score, route count, or component count as a readiness decision. The [3.9.4 Day-0 baseline](../benchmarks/2026-07-22-decantr-3-9-4-day-zero.md) records current cases where aggregate language conceals unresolved styling, missing components, incomplete routes, or an inapplicable route ontology.
+Do not treat `strong_fit`, a numeric confidence score, route count, or component count as a readiness decision. The [3.9.4 Day-0 baseline](../benchmarks/2026-07-22-decantr-3-9-4-day-zero.md) records historical cases where aggregate language concealed unresolved styling, missing components, incomplete routes, or an inapplicable route ontology.
 
 ### Angular Check
 
 For Angular, verify that authority starts from the selected production target in `angular.json` or `project.json`, follows the configured bootstrap and router providers, and reaches the canonical route graph and rendered components. A `Routes` array in a test or fixture is not authority. A Tailwind package is not styling authority when Angular builder styles, PrimeNG, Bootstrap, Sass, or project configuration provide stronger evidence.
 
-In 3.9.4, Angular adoption blocks unresolved or partial production-route authority unless `--force` is explicit. A force override records an operator decision; it does not make the evidence proven, and task/CI consumers should continue to fail closed.
+Angular adoption blocks unresolved or partial production-route authority unless `--force` is explicit. A force override records an operator decision; it does not make the evidence proven, and task/CI consumers continue to fail closed.
 
 ### Next.js Check
 
-For the 3.10 candidate, inspect both the App/Pages Router files and deployment reachability policy. A `page.tsx` proves a source declaration; it does not by itself prove that the route is available in the target deployment. Root or `src/` `middleware.*` and Next 16 `proxy.*` files, plus reachable local policy helpers, can condition a route with a 4xx response. Statically resolved routes remain visible as source signals but are non-taskable. A path-dependent non-success policy whose affected routes cannot be resolved lowers route authority to inferred/partial and blocks route task context.
+For Next.js, inspect both the App/Pages Router files and deployment reachability policy. A `page.tsx` proves a source declaration; it does not by itself prove that the route is available in the target deployment. Root or `src/` `middleware.*` and Next 16 `proxy.*` files, plus reachable local policy helpers, can condition a route with a 4xx response. Statically resolved routes remain visible as source signals but are non-taskable. A path-dependent non-success policy whose affected routes cannot be resolved lowers route authority to inferred/partial and blocks route task context.
 
 Also verify that styling evidence follows the complete ordered imports from production layouts or entrypoints. Workspace package exports may own foundation and brand CSS ahead of app-local global and override files. API `route.ts` exports such as `GET` and `POST` are server handlers, not UI components.
 
@@ -82,7 +82,7 @@ Hosted source upload is retired. Browser evidence remains local unless the user 
 
 ## 3. Prepare A Change
 
-For the published 3.9.4 route-backed path:
+For an attached route using the compatible graph-backed path:
 
 ```bash
 npx @decantr/cli task /feed "add saved recipe actions"
@@ -98,9 +98,9 @@ Give the output to the coding agent or let an MCP client request the same task c
 
 If task context reports missing or stale graph data, unresolved authority, or an unsupported target, stop. Regenerate or resolve the evidence rather than allowing the agent to infer a target from weak filenames or old analysis.
 
-### 3.10 UI-Surface Direction
+### 3.10 UI-Surface Context
 
-The active 3.10 program broadens task authority beyond routes to:
+Stable 3.10 task authority also covers:
 
 - routes;
 - layouts;
@@ -111,9 +111,9 @@ The active 3.10 program broadens task authority beyond routes to:
 - packages;
 - runtime states.
 
-That work is not a claim that 3.9.4 already prepares all eight target kinds. Until 3.10 ships and qualifies them, use route-backed task context only where the implementation source is correct, and use repository-native component, Storybook, design-system, and runtime evidence directly for other work.
+Use authority-aware context only where the implementation source is correct. Continue to combine it with repository-native component, Storybook, design-system, test, and runtime evidence.
 
-Readiness must keep selected-app authority, surface authority, completeness, taskability, component inventory, styling authority, and runtime evidence independent. The intended primary result is `ready`, `limited`, `blocked`, or `unsupported`; no score may upgrade an unresolved axis.
+Readiness keeps selected-app authority, surface authority, completeness, taskability, component inventory, styling authority, and runtime evidence independent. The primary result is `ready`, `limited`, `blocked`, or `unsupported`; no score may upgrade an unresolved axis.
 
 A deployment-conditioned route can therefore appear in the observed surface inventory while remaining blocked for task context. This is intentional: discovery records that the source exists without granting an agent production-edit authority that the deployment does not establish.
 
@@ -149,7 +149,7 @@ Generate CI once:
 pnpm exec decantr ci init --project apps/web
 ```
 
-Make the generated check required in branch protection. The 3.9.4 default remains CI v2. Use explicit CI v3 only when the pipeline has the intended Git history and comparison base:
+Make the generated check required in branch protection. The 3.10 compatibility default remains CI v2. Use explicit CI v3 only when the pipeline has the intended Git history and comparison base:
 
 ```bash
 pnpm exec decantr ci --project apps/web \
@@ -162,7 +162,7 @@ CI must keep missing, stale, incompatible, unsupported, and unresolved evidence 
 
 ## MCP Use
 
-The MCP server preserves eight public tools. For current task preparation, call `decantr_context` with `{"action":"task"}`, the route, task, and app path. It adapts the same 3.9.4 route-backed compatibility contract as the CLI.
+The MCP server preserves eight public tools. For task preparation, call `decantr_context` with `{"action":"task"}`, the route or target, task, and app path. It adapts the same verifier-owned route-capsule or UI-surface context as the CLI.
 
 Do not add a second Decantr MCP server or duplicate project instructions when one project-level configuration already exists. Preserve unrelated MCP servers.
 
@@ -185,14 +185,14 @@ Use those commands when their specific behavior is needed; do not add them to ev
 
 ## Current Limits
 
-- 3.9.4 is not proven to improve frontier-model outcomes.
+- 3.10.0 is not proven to improve frontier-model outcomes.
 - Route discovery remains materially weaker on some frameworks and package-shaped UI repositories.
 - Static component inventory is advisory.
 - Styling authority may be scoped or conflicting rather than one global winner.
 - Runtime, visual, and accessibility evidence can be incomplete.
 - The 3.9 human finding-qualification lane remains incomplete.
 
-The 3.10 release may make only the claims that pass its frozen Day-0 and 320-run A/B gates. See the [3.10 proof program](../programs/2026-07-22-decantr-3-10-ui-change-control-proof.md).
+The separate model-lift program may make only the claims that pass its frozen Day-0 and 320-run A/B gates. Those gates do not define product publication readiness. See the [research program](../programs/2026-07-22-decantr-3-10-ui-change-control-proof.md).
 
 ## Related Docs
 

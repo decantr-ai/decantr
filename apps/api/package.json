@@ -1,6 +1,6 @@
 {
   "name": "decantr-api",
-  "version": "3.9.4",
+  "version": "3.10.0",
   "private": true,
   "type": "module",
   "scripts": {

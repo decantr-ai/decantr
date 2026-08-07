@@ -241,19 +241,42 @@ function stable39Versions(entries) {
   )];
 }
 
-function verifyReal39ReleaseSource(entries) {
-  if (dryRun || publishDryRun) return null;
-  const versions = stable39Versions(entries);
-  if (versions.length === 0) return null;
-  if (versions.length !== 1) {
-    throw new Error(`A real Decantr 3.9 publish must target one stable version; found ${versions.join(', ')}.`);
-  }
+function stableReleaseVersions(entries) {
+  return [...new Set(
+    entries
+      .map((entry) => readPackageJson(entry).version)
+      .filter((version) => {
+        const laneMatch = findReleaseLane(version);
+        if (!laneMatch || laneMatch[1].stableOnly !== true) return false;
+        const stablePattern = new RegExp(`^${laneMatch[0].replaceAll('.', '\\.')}\\.\\d+$`);
+        return stablePattern.test(version);
+      }),
+  )];
+}
 
-  const version = versions[0];
+function resolveStableReleaseVersion(entries) {
+  const versions = stableReleaseVersions(entries);
+  const configuredVersion = process.env.DECANTR_RELEASE_VERSION?.trim();
+  if (configuredVersion) {
+    return versions.includes(configuredVersion) ? configuredVersion : null;
+  }
+  if (versions.length > 1) {
+    throw new Error(
+      `A real stable publish must target one release version; found ${versions.join(', ')}. Set DECANTR_RELEASE_VERSION explicitly.`,
+    );
+  }
+  return versions[0] ?? null;
+}
+
+function verifyRealStableReleaseSource(entries) {
+  if (dryRun || publishDryRun) return null;
+  const version = resolveStableReleaseVersion(entries);
+  if (!version) return null;
+
   const tag = `v${version}`;
   const status = runGit(['status', '--porcelain=v1', '--untracked-files=normal']);
   if (status) {
-    throw new Error(`A real Decantr 3.9 publish requires a clean worktree at ${tag}.`);
+    throw new Error(`A real stable publish requires a clean worktree at ${tag}.`);
   }
 
   const head = runGit(['rev-parse', 'HEAD^{commit}']);
@@ -298,7 +321,7 @@ function verifyReal39ReleaseSource(entries) {
 function assertSameVerifiedReleaseSource(expected, observed, activity) {
   const fields = ['status', 'version', 'tag', 'commit', 'originMain', 'remoteMain', 'remoteTag'];
   if (fields.some((field) => expected?.[field] !== observed?.[field])) {
-    throw new Error(`The verified 3.9 release source changed while ${activity}.`);
+    throw new Error(`The verified stable release source changed while ${activity}.`);
   }
 }
 
@@ -314,7 +337,7 @@ function runRequiredGate(script, label) {
   if (result.stdout) process.stdout.write(result.stdout);
   if (result.stderr) process.stderr.write(result.stderr);
   if (result.status !== 0) {
-    throw new Error(`${label} failed; no Decantr 3.9 package was published.`);
+    throw new Error(`${label} failed; no Decantr package was published.`);
   }
 }
 
@@ -464,7 +487,7 @@ function resolveStagingContext(entries, sourceVerification) {
   const configuredVersion = process.env.DECANTR_RELEASE_VERSION?.trim();
   const releaseVersion = configuredVersion
     || sourceVerification?.version
-    || stable39Versions(entries)[0]
+    || resolveStableReleaseVersion(entries)
     || [...new Set(packageVersions)].at(-1);
   if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/u.test(releaseVersion ?? '')) {
     throw new Error(`Cannot derive a stable release staging version from ${releaseVersion ?? 'the selection'}.`);
@@ -699,7 +722,9 @@ function stageReleaseTarballs(entries, sourceVerification, releaseEvidence) {
     },
     sourceVerification: sourceVerification ?? { status: 'nonpublishing' },
     qualification: {
-      packet: 'fixtures/qualification/3.9/qualification-packet.json',
+      packet: stable39Versions(entries).length > 0
+        ? 'fixtures/qualification/3.9/qualification-packet.json'
+        : null,
       mode: releaseEvidence.mode,
       qualificationClaim: releaseEvidence.qualificationClaim,
       waiver: releaseEvidence.waiverPath,
@@ -897,10 +922,10 @@ if (expandedDependencies.length > 0) {
 let sourceVerification = null;
 let staging = null;
 try {
-  sourceVerification = verifyReal39ReleaseSource(selected);
+  sourceVerification = verifyRealStableReleaseSource(selected);
   runRequiredReleaseGates(selected);
   if (sourceVerification) {
-    const verifiedAfterGates = verifyReal39ReleaseSource(selected);
+    const verifiedAfterGates = verifyRealStableReleaseSource(selected);
     assertSameVerifiedReleaseSource(sourceVerification, verifiedAfterGates, 'publish gates were running');
     sourceVerification = verifiedAfterGates;
   }
@@ -908,7 +933,7 @@ try {
     const releaseEvidence = readReleaseEvidence(selected);
     staging = stageReleaseTarballs(selected, sourceVerification, releaseEvidence);
     if (sourceVerification) {
-      const verifiedAfterStaging = verifyReal39ReleaseSource(selected);
+      const verifiedAfterStaging = verifyRealStableReleaseSource(selected);
       assertSameVerifiedReleaseSource(sourceVerification, verifiedAfterStaging, 'tarballs were staged');
       sourceVerification = verifiedAfterStaging;
       staging.manifest.sourceVerification = verifiedAfterStaging;
@@ -963,7 +988,7 @@ for (const entry of selected) {
     throw new Error(`Retained release staging is missing ${entry.name}.`);
   }
   if (sourceVerification) {
-    const verifiedBeforePublish = verifyReal39ReleaseSource(selected);
+    const verifiedBeforePublish = verifyRealStableReleaseSource(selected);
     assertSameVerifiedReleaseSource(
       sourceVerification,
       verifiedBeforePublish,

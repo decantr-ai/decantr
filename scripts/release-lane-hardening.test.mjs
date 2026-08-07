@@ -787,7 +787,7 @@ test('closeout binds public npm bytes and OIDC provenance to retained release-ev
   )));
 });
 
-test('3.9 prepublish requires the wrapper while 3.8 pnpm patches remain allowed', (t) => {
+test('protected stable lanes require the wrapper while 3.8 pnpm patches remain allowed', (t) => {
   const pnpmEnv = {
     ...process.env,
     npm_config_user_agent: 'pnpm/10.0.0 npm/? node/v24.0.0',
@@ -795,18 +795,31 @@ test('3.9 prepublish requires the wrapper while 3.8 pnpm patches remain allowed'
   };
   delete pnpmEnv.DECANTR_PUBLISH_WRAPPER;
 
-  const direct39 = runNode('guard-pnpm-publish.mjs', [], {
+  const direct310 = runNode('guard-pnpm-publish.mjs', [], {
     cwd: join(root, 'packages/cli'),
+    env: pnpmEnv,
+  });
+  assert.equal(direct310.status, 1);
+  assert.match(outputOf(direct310), /must be published through scripts\/publish-packages\.mjs/u);
+
+  const wrapped310 = runNode('guard-pnpm-publish.mjs', [], {
+    cwd: join(root, 'packages/cli'),
+    env: { ...pnpmEnv, DECANTR_PUBLISH_WRAPPER: 'scripts/publish-packages.mjs' },
+  });
+  assert.equal(wrapped310.status, 0, outputOf(wrapped310));
+
+  const historicalPackage = mkdtempSync(join(tmpdir(), 'decantr-3-9-publish-test-'));
+  t.after(() => rmSync(historicalPackage, { recursive: true, force: true }));
+  writeJson(join(historicalPackage, 'package.json'), {
+    name: '@decantr/cli',
+    version: '3.9.4',
+  });
+  const direct39 = runNode('guard-pnpm-publish.mjs', [], {
+    cwd: historicalPackage,
     env: pnpmEnv,
   });
   assert.equal(direct39.status, 1);
   assert.match(outputOf(direct39), /must be published through scripts\/publish-packages\.mjs/u);
-
-  const wrapped39 = runNode('guard-pnpm-publish.mjs', [], {
-    cwd: join(root, 'packages/cli'),
-    env: { ...pnpmEnv, DECANTR_PUBLISH_WRAPPER: 'scripts/publish-packages.mjs' },
-  });
-  assert.equal(wrapped39.status, 0, outputOf(wrapped39));
 
   const patchPackage = mkdtempSync(join(tmpdir(), 'decantr-3-8-publish-test-'));
   t.after(() => rmSync(patchPackage, { recursive: true, force: true }));
@@ -1005,6 +1018,8 @@ test('publish workflow is protected and verifies the tagged origin/main commit',
   assert.match(workflow, /refs\/heads\/main:refs\/remotes\/origin\/main/u);
   assert.match(workflow, /ORIGIN_MAIN_COMMIT/u);
   assert.match(workflow, /REMOTE_MAIN_COMMIT/u);
+  assert.match(workflow, /\^v3\\\.\(9\|10\)\\\./u);
+  assert.match(workflow, /Decantr 3\.9 and 3\.10 are direct-stable/u);
   assert.match(workflow, /git merge-base --is-ancestor "\$TAG_COMMIT" origin\/main/u);
   assert.match(workflow, /ref: \$\{\{ github\.event_name == 'workflow_dispatch' && inputs\.release_tag \|\| github\.ref \}\}/u);
   assert.doesNotMatch(workflow, /ARGS=""/u);

@@ -1,8 +1,8 @@
 # Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
 #
-# This directory entry runs the published Decantr 3.9.4 stdio server with no configuration.
-# Stable task preparation is attached-route-backed; target-based non-route discovery remains
-# an unreleased 3.10 candidate and is not claimed by this entry.
+# This directory entry runs the published Decantr 3.10.0 stdio server with no configuration.
+# Task preparation uses authority-aware route and non-route UI-surface discovery and fails
+# closed when the selected target is ambiguous, unsupported, or not taskable.
 # Smithery auto-indexes this file when the repo is claimed.
 
 startCommand:
@@ -14,6 +14,6 @@ startCommand:
     |-
     (config) => ({
       command: 'npx',
-      args: ['-y', '@decantr/mcp-server@3.9.4'],
+      args: ['-y', '@decantr/mcp-server@3.10.0'],
       env: {}
     })

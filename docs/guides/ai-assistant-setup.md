@@ -1,10 +1,10 @@
 # Decantr With AI Coding Assistants
 
-Decantr is agent-neutral. The coding assistant still reads source, edits files, runs tools, and explains the result. Published 3.9.4 adds route-backed task context and local evidence. The unreleased 3.10 candidate organizes that work as:
+Decantr is agent-neutral. The coding assistant still reads source, edits files, runs tools, and explains the result. Published 3.10.0 adds authority-aware route and non-route task context plus local evidence, organized as:
 
 **Observe -> Prepare -> Verify -> Report**
 
-**Release status:** 3.9.4 is published stable. 3.10 is an active proof program and is not released or value-proven.
+**Release status:** 3.10.0 is published stable. It is not value-proven against frontier models.
 
 ## Minimal CLI Workflow
 
@@ -30,14 +30,14 @@ pnpm exec decantr task /feed "improve loading and saved-item behavior" --project
 pnpm exec decantr verify --project apps/web
 ```
 
-The current 3.9.4 task contract is primarily route-backed. Confirm that its first implementation source is the real production target before the assistant edits. If Decantr reports stale, missing, conflicting, or unsupported authority, stop and resolve the evidence rather than asking the model to guess.
+The current task contract supports routes and non-route UI targets. Confirm that its first implementation source is the real production target before the assistant edits. If Decantr reports stale, missing, conflicting, or unsupported authority, stop and resolve the evidence rather than asking the model to guess.
 
 ## MCP Server
 
 Run the published server with any MCP-compatible client:
 
 ```bash
-npx @decantr/mcp-server@3.9.4
+npx @decantr/mcp-server@3.10.0
 ```
 
 Decantr 3.x preserves exactly eight public tools:
@@ -104,13 +104,13 @@ The assistant should use this order unless the project deliberately records anot
 
 An installed package is not authority by itself. A test URL is not a production route. A story can be valid component-state evidence without becoming an application route. In Brownfield, Essence expresses accepted intent but does not override contradictory production behavior silently. When evidence conflicts, report the conflict instead of choosing the most convenient file.
 
-## 3.10 UI-Surface Direction
+## 3.10 UI-Surface Authority
 
-The active 3.10 program expands the authority model from route-first context to routes, layouts, components, stories, overlays, flows, packages, and runtime states.
+Stable 3.10 expands the authority model from route-first context to routes, layouts, components, stories, overlays, flows, packages, and runtime states.
 
-Readiness is evaluated independently across selected-app authority, surface authority, topology completeness, taskability, component inventory, styling authority, and runtime evidence. The intended primary states are `ready`, `limited`, `blocked`, and `unsupported`.
+Readiness is evaluated independently across selected-app authority, surface authority, topology completeness, taskability, component inventory, styling authority, and runtime evidence. The primary states are `ready`, `limited`, `blocked`, and `unsupported`.
 
-This is intended 3.10 behavior. Until a qualified release ships, do not tell an assistant that 3.9.4 can prepare every non-route surface or that an aggregate confidence score proves taskability.
+This behavior ships in 3.10.0. Do not tell an assistant that every non-route surface is taskable or that an aggregate confidence score proves taskability; static evidence can remain limited and unresolved authority fails closed.
 
 ## Verify With The Project's Tools
 
@@ -146,7 +146,7 @@ Local agents can ignore instructions. Make verification a required CI check:
 pnpm exec decantr ci init --project apps/web
 ```
 
-3.9.4 keeps CI v2 as the default. Explicit CI v3 remains available for existing proof contracts, but missing or incompatible evidence must stay `not_proven` rather than becoming a clean pass.
+3.10.0 keeps CI v2 as the compatibility default. Explicit CI v3 remains available for governed-change contracts, but missing or incompatible evidence must stay `not_proven` rather than becoming a clean pass.
 
 ## Privacy And Network Behavior
 
@@ -164,6 +164,6 @@ Greenfield blueprints, themes, broad content workflows, Studio, showcase, teleme
 
 ## Proof Status
 
-Decantr has not yet proven that this workflow materially improves frontier-model UI changes. The active [3.10 program](../programs/2026-07-22-decantr-3-10-ui-change-control-proof.md) compares a repository-native control with an information-equivalent Decantr treatment over 320 isolated runs. The [3.9.4 Day-0 baseline](../benchmarks/2026-07-22-decantr-3-9-4-day-zero.md) is diagnostic evidence, not a correctness or value score.
+Decantr has not yet proven that this workflow materially improves frontier-model UI changes. The separate [model-lift research program](../programs/2026-07-22-decantr-3-10-ui-change-control-proof.md) compares a repository-native control with an information-equivalent Decantr treatment over 320 isolated runs. The [3.9.4 Day-0 baseline](../benchmarks/2026-07-22-decantr-3-9-4-day-zero.md) is diagnostic evidence, not a correctness or value score.
 
 See also: [Existing apps](existing-apps.md), [Workflow model](../reference/workflow-model.md), [Command surface](../reference/command-surface.md), and [Project Health CI](project-health-ci.md).

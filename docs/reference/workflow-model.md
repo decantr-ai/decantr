@@ -1,13 +1,13 @@
 # Decantr Workflow Model
 
-Decantr is an agent-neutral UI change-control layer. The unreleased 3.10 candidate organizes existing commands into this primary loop:
+Decantr is an agent-neutral UI change-control layer. Stable 3.10 organizes existing commands into this primary loop:
 
 1. **Observe** project-owned authority.
 2. **Prepare** compact context for a specific change.
 3. **Verify** the resulting diff against that authority and available runtime evidence.
 4. **Report** typed, reproducible evidence.
 
-**Status:** 3.9.4 is the current published stable release. 3.10 is an active proof program. This reference distinguishes current compatibility behavior from intended 3.10 behavior; it does not call 3.10 released or value-proven.
+**Status:** 3.10.0 is the current published stable release. This reference describes shipped behavior. The product is released but is not value-proven against frontier models.
 
 ## Default Existing-App Workflow
 
@@ -15,7 +15,7 @@ Decantr is an agent-neutral UI change-control layer. The unreleased 3.10 candida
 | --- | --- | --- | --- |
 | Observe | `decantr scan` | Read-only | Select the app, inventory evidence, and expose limitations. |
 | Attach once | `decantr adopt --yes` | Writes reviewed Decantr artifacts | Establish project state, contract/context, baseline, and optional CI. |
-| Prepare | `decantr task <route> "<change>"` | Read-only | Rank implementation and authority for one current 3.9.4 route-backed task. |
+| Prepare | `decantr task <target> "<change>"` | Read-only | Rank implementation and authority for one route or non-route UI target. |
 | Verify | `decantr verify` | Read-only except explicit evidence/baseline outputs | Evaluate the change and return remediation/evidence. |
 | Report | Project Health, JSON, Evidence Bundle, CI | Artifact-dependent | Make the result inspectable by people, agents, and automation. |
 
@@ -29,16 +29,16 @@ The daily developer/agent loop is `task -> edit -> verify`. CI is the durable me
 
 ## Observe
 
-Across the shipped scanner and the candidate authority model, `scan` must answer two different questions separately:
+The shipped scanner must answer two different questions separately:
 
 1. What project evidence was observed?
 2. Is that evidence sufficient for the requested governance task?
 
-A successful scanner exit answers neither question by itself. It only confirms that a report was produced. The 3.9.4 Day-0 baseline shows reports with incomplete routes, unresolved styling, missing components, and route-centric misclassification despite strong aggregate language.
+A successful scanner exit answers neither question by itself. It only confirms that a report was produced. The 3.9.4 Day-0 baseline showed reports with incomplete routes, unresolved styling, missing components, and route-centric misclassification despite strong aggregate language.
 
-Published 3.9.4 observation reports selected-app/workspace scope, framework and build evidence, source-declared routes, taskable routes, component/style evidence, graph readiness, and limitations. It does not emit the complete independent UI-surface readiness model below.
+Published 3.10 observation reports selected-app/workspace scope, framework and build evidence, source-declared and taskable routes, UI surfaces, component/style evidence, graph readiness, independent authority axes, and limitations.
 
-The unreleased 3.10 candidate extends observation to identify:
+Observation identifies:
 
 - selected application and workspace boundary;
 - framework/build entry and production reachability;
@@ -68,9 +68,9 @@ The approved 3.10 authority model uses explicit UI surfaces rather than treating
 
 Routes remain an evidence source. They are not required for every UI repository and are not sufficient for every UI task.
 
-This broader surface model is the 3.10 target. Published 3.9.4 task context remains primarily route-backed.
+This broader surface model ships in 3.10.0. Attached routes retain compatible graph-backed capsules.
 
-## 3.10 Candidate Readiness
+## 3.10 Readiness
 
 Readiness must not collapse into a single confidence or fit score. Evaluate at least:
 
@@ -105,7 +105,7 @@ Task preparation should be compact, source-ranked, and model-neutral. It should 
 - conflicts, limitations, and stop conditions;
 - one exact verification command.
 
-For 3.9.4, `TaskCapsuleV1` remains a route-backed compatibility contract with a current graph requirement and bounded canonical payload. CLI and MCP must not use stale analysis or guessed root files as authority when current discovery is blocked.
+`TaskCapsuleV1` remains a route-backed compatibility contract with a current graph requirement and bounded canonical payload. CLI and MCP must not use stale analysis or guessed root files as authority when current discovery is blocked.
 
 For 3.10, non-route targets require a UI-surface context contract or compatible projection. A component, story, overlay, package, or runtime state must not be mislabeled as a route implementation merely to fit the old schema.
 
@@ -130,7 +130,7 @@ Decantr complements the host stack. It does not replace Storybook, Playwright, v
 
 Reports should preserve provenance and uncertainty. Missing, stale, incompatible, unsupported, and unresolved evidence must remain visible.
 
-Published 3.9.4 behavior includes:
+Published behavior includes:
 
 - Project Health and Evidence Bundle outputs;
 - v2 report compatibility by default;
@@ -174,7 +174,7 @@ pnpm exec decantr verify --project apps/web
 pnpm exec decantr ci init --project apps/web
 ```
 
-The package manager can be workspace-owned. In 3.9.4, framework and route authority remain app-owned. The broader 3.10 candidate surface, component, styling, and runtime axes are also app-scoped. A sibling app must never satisfy the selected app's authority gaps.
+The package manager can be workspace-owned. Framework, route, surface, component, styling, and runtime authority remain app-scoped. A sibling app must never satisfy the selected app's authority gaps.
 
 ## MCP Compatibility
 
@@ -182,7 +182,7 @@ The eight public Decantr 3.x tool names remain stable:
 
 `decantr_project`, `decantr_contract`, `decantr_context`, `decantr_graph`, `decantr_registry`, `decantr_verify`, `decantr_repair`, and `decantr_contract_write`.
 
-The published 3.9.4 task path is `decantr_context` with `{"action":"task"}` and a route. Candidate target-based non-route discovery is unreleased. `decantr_registry` is a compatibility content/reference name. No ninth tool is added in 3.x.
+The published task path is `decantr_context` with `{"action":"task"}` and a route or target. Attached routes retain `TaskCapsuleV1`; other targets use `ui-surface-task-context.v1`. `decantr_registry` is a compatibility content/reference name. No ninth tool is added in 3.x.
 
 ## Advanced And Compatibility Workflows
 
@@ -196,11 +196,11 @@ The following remain callable where shipped but do not define the 3.10 product l
 - registry-named publishing/account compatibility commands;
 - Vite plugin experimentation.
 
-Use these for explicit advanced needs. Do not add them to every assistant prompt or normal day-to-day loop. Package consolidation or removal is deferred to 4.0 after the proof result.
+Use these for explicit advanced needs. Do not add them to every assistant prompt or normal day-to-day loop. Package consolidation or removal is deferred to a future major-version compatibility decision.
 
-## 3.10 Falsification Boundary
+## Model-Lift Research Boundary
 
-3.10 must prove that Decantr improves UI outcomes over a strong repository-native baseline, not merely that its commands run.
+The separate research program must prove that Decantr improves UI outcomes over a strong repository-native baseline before any measured model-lift claim, not before product publication.
 
 The frozen design is 40 tasks across 28 pinned repositories, two requested models, control and Decantr treatment arms, and two repetitions: 320 isolated runs. It uses one repository-authentic task per target plus 12 adversarial tasks. The corpus acquisition labels are 18 development and 10 qualification; independently, the task partition is 24 development and 16 sealed qualification. Repository identities were observed during Day-0, so the set is not repository-blind; qualification solutions and evaluator oracles remain sealed, and a future independent external holdout is required for a general industry claim.
 
@@ -210,9 +210,9 @@ The requested models are `gpt-5.6-sol` and `claude-fable-5`. Provider substituti
 
 Release claims require the declared Day-0 authority gates plus at least +5/100 paired rubric lift with a 95% confidence interval above zero for each model, 25% fewer governance violations, functional non-inferiority within five percentage points overall for each model, at least 26 decisive blinded-preference units out of 32 qualification task/model units, at least 60% treatment preference among decisive units, a two-sided 95% Wilson lower bound above 50%, median token/cost overhead at or below 15%, and P95 overhead at or below 25%. Framework functional estimates remain exploratory unless separately powered.
 
-A pass permits the bounded measured claim. Mixed results narrow supported frameworks or tasks. Failure blocks value-proof language and requires product contraction. Unsupported targets, missing evaluators, build failures, and model substitutions remain visible and in the denominator.
+A pass permits the bounded measured claim. Mixed results narrow supported frameworks or tasks. Failure blocks value-proof language, not the stable product release. Unsupported targets, missing evaluators, build failures, and model substitutions remain visible and in the denominator.
 
-See the [active 3.10 program](../programs/2026-07-22-decantr-3-10-ui-change-control-proof.md) and [3.9.4 Day-0 baseline](../benchmarks/2026-07-22-decantr-3-9-4-day-zero.md).
+See the [model-lift research program](../programs/2026-07-22-decantr-3-10-ui-change-control-proof.md), [3.10.0 release note](../releases/2026-08-07-decantr-3-10-0-authority-aware-ui-change-control.md), and [3.9.4 Day-0 baseline](../benchmarks/2026-07-22-decantr-3-9-4-day-zero.md).
 
 ## Historical Boundary
 

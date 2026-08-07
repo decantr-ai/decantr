@@ -82,8 +82,8 @@ jobs:
             echo "Release tag must be a semantic version tag; received $RELEASE_TAG." >&2
             exit 1
           fi
-          if [[ "$RELEASE_TAG" =~ ^v3\.9\. ]] && [[ "$RELEASE_TAG" == *-* ]]; then
-            echo "Decantr 3.9 is direct-stable; prerelease tags are not allowed." >&2
+          if [[ "$RELEASE_TAG" =~ ^v3\.(9|10)\. ]] && [[ "$RELEASE_TAG" == *-* ]]; then
+            echo "Decantr 3.9 and 3.10 are direct-stable; prerelease tags are not allowed." >&2
             exit 1
           fi
 

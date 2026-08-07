@@ -7,7 +7,7 @@ Legacy Decantr 3.x compatibility facade for content contracts, schemas, API clie
 
 Prefer `@decantr/content` for new official corpus integrations. Keep `@decantr/registry` when existing scripts or MCP/directory-compatible code still use registry naming.
 
-The public registry portal and marketplace are retired. This is a stable 3.x compatibility package, not an active product foundation. Decantr 3.10 is an unreleased UI change-control proof program and assigns this package no feature investment. Do not use registry search volume, compatibility aliases, or corpus size as evidence that Decantr improves an AI coding agent. Removal or consolidation is a future major-version decision; Decantr 3.x compatibility remains intact.
+The public registry portal and marketplace are retired. This is a stable 3.x compatibility package, not an active product foundation. Decantr 3.10 assigns this package no feature investment beyond coordinated compatibility. Do not use registry search volume, compatibility aliases, or corpus size as evidence that Decantr improves an AI coding agent. Removal or consolidation is a future major-version decision; Decantr 3.x compatibility remains intact.
 
 ## Install
 

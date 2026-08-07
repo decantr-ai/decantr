@@ -2,15 +2,15 @@
 
 ## What is Decantr?
 
-Decantr is agent-neutral UI change control. Published 3.9.4 prepares route-backed context for an attached project and gives people and CI evidence after the change. The unreleased 3.10 candidate broadens that model to non-route UI surfaces.
+Decantr is agent-neutral UI change control. Published 3.10.0 prepares authority-aware route and non-route context and gives people and CI evidence after the change.
 
-The 3.10 candidate loop is **Observe -> Prepare -> Verify -> Report**, assembled from existing commands. Decantr does not replace the coding agent, router, component library, styling system, Storybook, design files, tests, or human review.
+The product loop is **Observe -> Prepare -> Verify -> Report**, assembled from existing commands. Decantr does not replace the coding agent, router, component library, styling system, Storybook, design files, tests, or human review.
 
 ## What is the current release?
 
-Decantr **3.9.4** is the current published stable release. Decantr **3.10 is an active proof program**, not a released or value-proven line.
+Decantr **3.10.0** is the current published stable release. It is released but is not value-proven against frontier models.
 
-The [3.10 program](programs/2026-07-22-decantr-3-10-ui-change-control-proof.md) defines intended behavior and release gates. The [3.9.4 Day-0 baseline](benchmarks/2026-07-22-decantr-3-9-4-day-zero.md) documents current discovery weaknesses. Neither document turns planned behavior into shipped behavior.
+The [3.10.0 release note](releases/2026-08-07-decantr-3-10-0-authority-aware-ui-change-control.md) defines the shipped boundary. The separate [model-lift program](programs/2026-07-22-decantr-3-10-ui-change-control-proof.md) defines research claim gates, and the [3.9.4 Day-0 baseline](benchmarks/2026-07-22-decantr-3-9-4-day-zero.md) records the weaknesses that motivated the new authority model.
 
 ## How do I start in an existing app?
 
@@ -24,7 +24,7 @@ npx @decantr/cli verify
 npx @decantr/cli ci init
 ```
 
-`scan` is read-only. `adopt` is the one-time write boundary. `task` prepares agent context; in 3.9.4 it is primarily route-backed. `verify` checks the result. `ci init` installs the durable automation gate.
+`scan` is read-only. `adopt` is the one-time write boundary. `task` prepares bounded route or non-route agent context. `verify` checks the result. `ci init` installs the durable automation gate.
 
 ## How do I use Decantr in a monorepo?
 
@@ -39,13 +39,13 @@ pnpm exec decantr verify --project apps/web
 pnpm exec decantr ci init --project apps/web
 ```
 
-Package-manager evidence may come from the workspace root. In 3.9.4, framework and route authority must come from the selected app, not a sibling. The same selected-app rule applies to the broader 3.10 candidate surface, component, styling, and runtime axes.
+Package-manager evidence may come from the workspace root. Framework, route, surface, component, styling, and runtime authority must come from the selected app, not a sibling.
 
 ## Does a successful scan mean Decantr understood the app?
 
 No. A successful process exit means the scanner produced a report. It does not prove that the selected app, route graph, component inventory, style authority, or rank-one implementation source is correct.
 
-Before adopting with 3.9.4, inspect representative production targets and limitations. In particular, confirm that tests, fixtures, stories, generated files, build output, and sibling apps were not promoted to production authority. The Day-0 baseline contains examples where high fit/confidence language concealed incomplete or inapplicable evidence.
+Before adopting, inspect representative production targets and limitations. In particular, confirm that tests, fixtures, stories, generated files, build output, and sibling apps were not promoted to production authority. The Day-0 baseline contains examples where high fit/confidence language concealed incomplete or inapplicable evidence.
 
 ## What is a UI surface?
 
@@ -64,7 +64,7 @@ Routes remain useful evidence, but they are not the universal unit of UI work. A
 
 ## How does Decantr decide whether a task is ready?
 
-The 3.10 direction keeps these axes independent:
+Decantr 3.10 keeps these axes independent:
 
 - selected-app authority;
 - production-surface authority;
@@ -74,9 +74,9 @@ The 3.10 direction keeps these axes independent:
 - styling authority;
 - runtime evidence.
 
-The primary result is intended to be `ready`, `limited`, `blocked`, or `unsupported`. A route can be proven while styling remains unresolved. A large component inventory cannot compensate for a missing implementation target. Numeric confidence must not override an unresolved axis.
+The primary result is `ready`, `limited`, `blocked`, or `unsupported`. A route can be proven while styling remains unresolved. A large component inventory cannot compensate for a missing implementation target. Numeric confidence must not override an unresolved axis.
 
-This readiness model is a 3.10 target. Do not infer that every 3.9.4 report already enforces it.
+This readiness model ships in 3.10.0. Consumers must still inspect the individual axes rather than paraphrasing them into a stronger result.
 
 ## What should an agent do before editing?
 
@@ -102,7 +102,7 @@ Decantr 3.x preserves exactly eight tool identities:
 
 `decantr_project`, `decantr_contract`, `decantr_context`, `decantr_graph`, `decantr_registry`, `decantr_verify`, `decantr_repair`, and `decantr_contract_write`.
 
-For task preparation, use `decantr_context` with `{"action":"task"}`. In 3.9.4 this remains route-backed. `decantr_registry` is a compatibility name over `@decantr/content`; it is not a hosted public marketplace and there is no ninth content tool in 3.x.
+For task preparation, use `decantr_context` with `{"action":"task"}` and a route or target. Attached routes retain compatible `TaskCapsuleV1`; other targets use the authority-aware discovery envelope. `decantr_registry` is a compatibility name over `@decantr/content`; it is not a hosted public marketplace and there is no ninth content tool in 3.x.
 
 ## Is Decantr local-first?
 
@@ -129,7 +129,7 @@ Generate the current default workflow once:
 npx @decantr/cli ci init
 ```
 
-Then make the generated check required in branch protection. Existing CI v2 behavior remains the 3.9.4 default. Explicit CI v3 remains available for the published `AdoptionTruthV1` and `GovernanceDeltaV1` compatibility contracts:
+Then make the generated check required in branch protection. Existing CI v2 behavior remains the 3.10 compatibility default. Explicit CI v3 remains available for the published `AdoptionTruthV1` and `GovernanceDeltaV1` contracts:
 
 ```bash
 npx @decantr/cli ci --since origin/main --report-version v3 --json
@@ -139,7 +139,7 @@ Missing, stale, or incompatible evidence must remain visible. CI should not inte
 
 ## Does Decantr replace project tests or accessibility tools?
 
-No. Keep ESLint/Biome, TypeScript, host tests, Storybook, Playwright, visual regression, axe, manual accessibility review, and design-system checks. Published 3.9.4 ranks route-backed task context; the 3.10 candidate attempts broader surface authority. In both cases Decantr combines available evidence rather than recreating every specialist tool.
+No. Keep ESLint/Biome, TypeScript, host tests, Storybook, Playwright, visual regression, axe, manual accessibility review, and design-system checks. Published 3.10 ranks route and non-route context from available authority rather than recreating every specialist tool.
 
 ## Is Decantr a code generator?
 
@@ -161,11 +161,11 @@ The public registry portal and community marketplace direction are retired. `@de
 
 ## What about Studio, showcase, telemetry, and themes?
 
-They remain available where shipped, but they are advanced, compatibility, or historical surfaces. The 3.10 proof does not invest in Studio/showcase expansion, telemetry product work, themes, or hosted cross-repository intelligence.
+They remain available where shipped, but they are advanced, compatibility, or historical surfaces. The 3.10 release does not invest in Studio/showcase expansion, telemetry product work, themes, or hosted cross-repository intelligence.
 
 ## Has Decantr proven that it improves frontier models?
 
-No. That is the purpose of the 3.10 program.
+No. The separate model-lift research program exists to test that claim; it is not the product release gate.
 
 The [Culinary Platform clean-slate replay](benchmarks/2026-08-07-culinary-platform-clean-slate-adoption.md) did prove that one real Next.js failure could be reproduced and repaired: seven middleware-conditioned routes now fail closed, six ordered stylesheet layers reach task context, API handlers no longer inflate UI components, and one bounded route change passed native and responsive verification. It does not prove model lift because the oracle was known, no control arm ran, and the implementation was not blinded.
 
@@ -175,7 +175,7 @@ Both arms receive the same information entitlement. Decantr may rank, compress, 
 
 The requested models are OpenAI `gpt-5.6-sol` and Anthropic `claude-fable-5`. Any substitution is reported and excluded from the requested-model result.
 
-## What would count as 3.10 proof?
+## What would count as model-lift proof?
 
 The full predeclared boundary is in the [3.10 program](programs/2026-07-22-decantr-3-10-ui-change-control-proof.md). Core gates include:
 
@@ -204,4 +204,4 @@ Therefore 3.9.4 must not be described as proving human precision/recall, human r
 
 ## Where are older workflows documented?
 
-Historical release notes, audits, programs, benchmarks, research, and specifications remain in their dated directories. Treat them as evidence of what was proposed or shipped at that time. Active guides and references describe current usage; the active 3.10 program describes intended behavior until a release ships it.
+Historical release notes, audits, programs, benchmarks, research, and specifications remain in their dated directories. Treat them as evidence of what was proposed or shipped at that time. Active guides, references, and the 3.10.0 release note describe current product usage; the research program describes only the experimental claim boundary.

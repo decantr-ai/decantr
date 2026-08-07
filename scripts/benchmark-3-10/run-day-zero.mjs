@@ -164,7 +164,7 @@ const report = {
       runnerSha256: sha256(readFileSync(new URL(import.meta.url))),
       nodeVersion: process.version,
       platform: `${process.platform}-${process.arch}`,
-    note: 'Unreleased 3.10 source candidate diagnostic. The package version remains 3.9.4; this report is not release or model-value evidence.',
+    note: 'Decantr 3.10 authority diagnostic. This report is not product closeout or model-value evidence.',
   },
   manifests: manifestDigests(options),
   corpusRoot: options.corpusRoot,
