@@ -1,7 +1,7 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.decantr-ai/mcp-server",
-  "description": "Stable eight-tool MCP server for changed-UI assurance, local project authority, authority-aware UI task context, verification evidence, and repair prompts.",
+  "description": "Stable eight-tool MCP server for changed-UI assurance, authority-aware UI task context, and repair.",
   "repository": {
     "url": "https://github.com/decantr-ai/decantr",
     "source": "github"

@@ -26,6 +26,7 @@ describe('MCP package metadata', () => {
     expect(serverJson.name).toBe('io.github.decantr-ai/mcp-server');
     expect(serverJson.description).toContain('Stable eight-tool MCP server');
     expect(serverJson.description).toContain('authority-aware UI task context');
+    expect((serverJson.description as string).length).toBeLessThanOrEqual(100);
     expect(advertisedPackage.identifier).toBe('@decantr/mcp-server');
     expect(advertisedPackage.transport).toEqual({ type: 'stdio' });
   });
