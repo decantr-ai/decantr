@@ -2,14 +2,14 @@
 
 Decantr is an agent-neutral UI change-control layer for Brownfield applications. It observes the app before writing, prepares scoped context for a coding agent, verifies the resulting change, and reports local evidence.
 
-**Current release:** Decantr 3.11.2. Start with zero-write Changed-UI Assurance; adoption is optional and the product is not value-proven against frontier models.
+**Current release:** Decantr 3.11.3. Start with zero-write Changed-UI Assurance; adoption is optional and the product is not value-proven against frontier models.
 
 ## 0. Verify The Current Change
 
 In any Git worktree:
 
 ```bash
-npx @decantr/cli@3.11.2 verify
+npx @decantr/cli@3.11.3 verify
 ```
 
 This inspects staged, unstaged, deleted, renamed, and untracked UI changes. In a monorepo it selects one app only when changed files prove that choice; otherwise it returns `not_proven` and asks for `--project`. It writes nothing and requires no Decantr files. See [Change Assurance](../reference/change-assurance.md).
@@ -19,7 +19,7 @@ This inspects staged, unstaged, deleted, renamed, and untracked UI changes. In a
 Start with a read-only scan:
 
 ```bash
-npx @decantr/cli@3.11.2 scan
+npx @decantr/cli@3.11.3 scan
 ```
 
 The command reads the selected app in place. It does not create `.decantr`, install dependencies, run package scripts, build the app, upload source, or open a pull request.
@@ -55,11 +55,13 @@ For Angular, verify that authority starts from the selected production target in
 
 Angular adoption blocks unresolved or partial production-route authority unless `--force` is explicit. A force override records an operator decision; it does not make the evidence proven, and task/CI consumers continue to fail closed.
 
-### TanStack And Astro Check
+### TanStack, Astro, And SvelteKit Check
 
 For TanStack Router, compare public paths rather than treating `createFileRoute()` identifiers as URLs. Parenthesized groups and underscore-prefixed pathless layouts do not add public segments. The authored route file remains the implementation target; `routeTree.gen.ts` can corroborate public paths but must not replace authored source as production edit authority. If convention-sensitive identifiers cannot be corroborated, completeness remains partial.
 
 For Astro, `.astro`, `.md`, `.mdx`, and `.html` files under `src/pages` are UI pages. TypeScript and JavaScript files in that tree are response endpoints; keep them visible for topology without granting UI task authority.
+
+For SvelteKit, `+page.svelte` is the taskable UI implementation. Colocated `+page.ts`, `+page.js`, `+page.server.ts`, and `+page.server.js` files are page-data authority and should appear only as supporting reads. A directory with page-data modules but no `+page.svelte` must not become a taskable UI route.
 
 ### Next.js Check
 
@@ -201,7 +203,7 @@ Use those commands when their specific behavior is needed; do not add them to ev
 
 ## Current Limits
 
-- 3.11.2 is not proven to improve frontier-model outcomes or establish finding precision/recall.
+- 3.11.3 is not proven to improve frontier-model outcomes or establish finding precision/recall.
 - Primitive-reuse assurance is strongest for JSX/TSX. Angular, Vue, and other template parity remains limited in 3.11.
 - Route discovery remains materially weaker on some frameworks and package-shaped UI repositories.
 - Static component inventory is advisory.

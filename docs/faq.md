@@ -2,28 +2,28 @@
 
 ## What is Decantr?
 
-Decantr is agent-neutral UI change control. Published 3.11.2 starts with zero-setup Changed-UI Assurance and retains authority-aware route and non-route context for deeper work.
+Decantr is agent-neutral UI change control. Published 3.11.3 starts with zero-setup Changed-UI Assurance and retains authority-aware route and non-route context for deeper work.
 
 The product loop is **Observe -> Prepare -> Verify -> Report**, assembled from existing commands. Decantr does not replace the coding agent, router, component library, styling system, Storybook, design files, tests, or human review.
 
 ## What is the current release?
 
-Decantr **3.11.2** is the current stable release. It is released but is not value-proven against frontier models.
+Decantr **3.11.3** is the current stable release. It is released but is not value-proven against frontier models.
 
-The [3.11.2 release note](releases/2026-08-08-decantr-3-11-2-route-authority-hardening.md) and [Change Assurance contract](reference/change-assurance.md) define the current boundary. The [3.10.0 release note](releases/2026-08-07-decantr-3-10-0-authority-aware-ui-change-control.md) defines the retained authority foundation. The separate [model-lift program](programs/2026-07-22-decantr-3-10-ui-change-control-proof.md) defines research claim gates.
+The [3.11.3 release note](releases/2026-08-08-decantr-3-11-3-sveltekit-task-authority.md) and [Change Assurance contract](reference/change-assurance.md) define the current boundary. The [3.10.0 release note](releases/2026-08-07-decantr-3-10-0-authority-aware-ui-change-control.md) defines the retained authority foundation. The separate [model-lift program](programs/2026-07-22-decantr-3-10-ui-change-control-proof.md) defines research claim gates.
 
 ## How do I start in an existing app?
 
 Start with Changed-UI Assurance; it needs no attachment:
 
 ```bash
-npx @decantr/cli@3.11.2 verify
+npx @decantr/cli@3.11.3 verify
 ```
 
 For deeper authority and task context, scan, attach once, then use the task and full-health loop:
 
 ```bash
-npx @decantr/cli@3.11.2 scan
+npx @decantr/cli@3.11.3 scan
 npx @decantr/cli adopt --yes
 npx @decantr/cli task /feed "add saved actions"
 npx @decantr/cli verify --full
@@ -211,4 +211,4 @@ Therefore 3.9.4 must not be described as proving human precision/recall, human r
 
 ## Where are older workflows documented?
 
-Historical release notes, audits, programs, benchmarks, research, and specifications remain in their dated directories. Treat them as evidence of what was proposed or shipped at that time. Active guides, references, and the 3.11.2 release note describe current product usage; the research program describes only the experimental claim boundary.
+Historical release notes, audits, programs, benchmarks, research, and specifications remain in their dated directories. Treat them as evidence of what was proposed or shipped at that time. Active guides, references, and the 3.11.3 release note describe current product usage; the research program describes only the experimental claim boundary.

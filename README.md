@@ -4,12 +4,12 @@
 
 Decantr observes a project's own UI authority, prepares compact context for a coding agent, verifies the resulting change, and reports reproducible evidence. It does not generate the change or replace the project's router, component library, styling system, tests, or design tools.
 
-> **Release status:** Decantr **3.11.2** is the current stable product line. Bare `decantr verify` inspects only the current UI change, writes nothing, selects one changed app when that choice is unambiguous, and returns at most three consequential findings with source and repair targets. This patch hardens TanStack, Astro, and Angular route/task authority without changing report schemas. It does not claim frontier-model lift. See the [3.11.2 release note](docs/releases/2026-08-08-decantr-3-11-2-route-authority-hardening.md), [Change Assurance contract](docs/reference/change-assurance.md), and [qualification evidence](docs/research/2026-08-07-decantr-3-11-change-assurance-trials.md).
+> **Release status:** Decantr **3.11.3** is the current stable product line. Bare `decantr verify` inspects only the current UI change, writes nothing, selects one changed app when that choice is unambiguous, and returns at most three consequential findings with source and repair targets. This patch fixes SvelteKit task ambiguity by keeping `+page.svelte` as the UI implementation and colocated page-data modules as supporting authority. It does not claim frontier-model lift. See the [3.11.3 release note](docs/releases/2026-08-08-decantr-3-11-3-sveltekit-task-authority.md), [Change Assurance contract](docs/reference/change-assurance.md), and [qualification evidence](docs/research/2026-08-07-decantr-3-11-change-assurance-trials.md).
 
 Run it in any Git worktree; adoption is not required:
 
 ```bash
-npx @decantr/cli@3.11.2 verify
+npx @decantr/cli@3.11.3 verify
 ```
 
 The result is `pass`, `attention`, or `not_proven`. Multi-app ambiguity, missing Git scope, and unsupported authority fail closed instead of producing a reassuring score.
@@ -24,8 +24,8 @@ The result is `pass`, `attention`, or `not_proven`. Multi-app ambiguity, missing
 For deeper task preparation and full-project governance:
 
 ```bash
-npx @decantr/cli@3.11.2 verify
-npx @decantr/cli@3.11.2 scan
+npx @decantr/cli@3.11.3 verify
+npx @decantr/cli@3.11.3 scan
 npx @decantr/cli adopt --yes       # one-time attachment
 npx @decantr/cli task /feed "add saved actions"
 npx @decantr/cli verify --full
@@ -74,7 +74,7 @@ Readiness is evaluated on independent axes:
 
 The primary 3.10 result is `ready`, `limited`, `blocked`, or `unsupported`. No numeric confidence or aggregate fit score may hide an unresolved axis. The [Day-0 baseline](docs/benchmarks/2026-07-22-decantr-3-9-4-day-zero.md) shows why this changed: 3.9.4 could run successfully while still selecting incomplete routes, weak styling evidence, or the wrong ontology for design-system packages.
 
-Source declaration and deployment reachability are separate facts. Decantr keeps a file-backed route visible when Next middleware or proxy policy can hide it, but excludes that route from taskable production context. If the affected path set cannot be resolved statically, route authority degrades and task preparation fails closed. Framework semantics remain explicit: authored TanStack route files are implementation authority while generated route metadata only corroborates public paths; Astro Markdown/MDX files are pages while TypeScript/JavaScript response handlers are non-UI endpoints; Angular wildcard fallbacks do not create child URLs, and resolved external templates/styles travel with the route task. Styling authority follows ordered production imports, including workspace package exports; Next server handlers do not count as UI components.
+Source declaration and deployment reachability are separate facts. Decantr keeps a file-backed route visible when Next middleware or proxy policy can hide it, but excludes that route from taskable production context. If the affected path set cannot be resolved statically, route authority degrades and task preparation fails closed. Framework semantics remain explicit: authored TanStack route files are implementation authority while generated route metadata only corroborates public paths; Astro Markdown/MDX files are pages while TypeScript/JavaScript response handlers are non-UI endpoints; SvelteKit `+page.svelte` is the UI implementation while colocated page-data modules remain supporting authority; Angular wildcard fallbacks do not create child URLs, and resolved external templates/styles travel with the route task. Styling authority follows ordered production imports, including workspace package exports; Next server handlers do not count as UI components.
 
 ## Product Boundary
 
@@ -135,7 +135,7 @@ The measured-improvement claim remains unavailable unless all predeclared resear
 
 Unsupported targets, missing evaluators, build failures, and model substitutions stay visible and in the denominator. A pass permits the bounded claim. Mixed results narrow the supported framework or task claim. A failure blocks any value-proven claim and requires Decantr to shrink toward verifier, authority-adapter, and CI infrastructure. Nothing is automatically deleted by a failed benchmark.
 
-## Current 3.11.2 Contracts
+## Current 3.11.3 Contracts
 
 The published line adds `change-assurance-report.v1` and changed-UI assurance to the existing independent UI authority axes, authority-aware task context, compatible route-backed `TaskCapsuleV1`, `AdoptionTruthV1`, `GovernanceDeltaV1`, Project Health, local evidence, CI v2 by default, and explicit CI v3. CLI, explicit CI v3, and MCP `decantr_verify` consume the same verifier-owned report. These are product contracts, not proof that Decantr materially improves frontier-model outcomes.
 
@@ -149,9 +149,9 @@ The MCP server preserves exactly eight public tools:
 
 | Package | Current posture |
 | --- | --- |
-| `@decantr/cli` 3.11.2 | Primary changed-UI and local workflow surface |
-| `@decantr/verifier` 3.11.2 | Primary authority and evidence engine |
-| `@decantr/mcp-server` 3.11.2 | Stable eight-tool agent integration surface |
+| `@decantr/cli` 3.11.3 | Primary changed-UI and local workflow surface |
+| `@decantr/verifier` 3.11.3 | Primary authority and evidence engine |
+| `@decantr/mcp-server` 3.11.3 | Stable eight-tool agent integration surface |
 | `@decantr/core` 3.10.0 | Supported graph and execution foundation |
 | `@decantr/essence-spec` | Supported contract foundation |
 | `@decantr/content` | Supported policy/reference foundation; no broad corpus expansion |
@@ -184,7 +184,7 @@ Paid research execution is not implied by product release validation. The option
 - [Workflow model](docs/reference/workflow-model.md)
 - [Command surface](docs/reference/command-surface.md)
 - [FAQ](docs/faq.md)
-- [3.11.2 route-authority hardening](docs/releases/2026-08-08-decantr-3-11-2-route-authority-hardening.md)
+- [3.11.3 SvelteKit task-authority patch](docs/releases/2026-08-08-decantr-3-11-3-sveltekit-task-authority.md)
 - [3.11.1 MCP metadata patch](docs/releases/2026-08-07-decantr-3-11-1-mcp-metadata-compatibility.md)
 - [3.11.0 Changed-UI Assurance release](docs/releases/2026-08-07-decantr-3-11-0-changed-ui-assurance.md)
 - [3.11 qualification evidence](docs/research/2026-08-07-decantr-3-11-change-assurance-trials.md)

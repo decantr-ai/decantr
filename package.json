@@ -15,7 +15,7 @@
     "build:apps": "pnpm --filter './apps/api' run build",
     "build": "pnpm run build:packages && pnpm run build:apps",
     "test": "vitest run --maxWorkers=1 && pnpm test:release-tooling",
-    "test:release-tooling": "node --test --test-concurrency=1 scripts/release-lane-hardening.test.mjs scripts/release-vulnerability-audit-lib.test.mjs",
+    "test:release-tooling": "node --test --test-concurrency=1 scripts/release-lane-hardening.test.mjs scripts/release-vulnerability-audit-lib.test.mjs scripts/realworld-corpus.test.mjs",
     "test:watch": "vitest",
     "lint": "pnpm --filter './apps/api' typecheck",
     "biome:check": "biome check packages/",

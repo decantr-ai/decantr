@@ -55,7 +55,7 @@ Decantr is a local Contract / Context / Evidence and UI change-control layer tha
 
 **Decantr does NOT generate code.** You generate or edit the code. Decantr keeps the result coherent, consistent, and repairable.
 
-Decantr 3.11.2 is the current stable release. Bare `decantr verify` checks the current Git-scoped UI change; the 3.10 independent UI-surface model remains its authority foundation. Shipped product behavior is not proof that Decantr improves frontier models. The separate frozen qualification program must pass before making a measured model-lift claim.
+Decantr 3.11.3 is the current stable release. Bare `decantr verify` checks the current Git-scoped UI change; the 3.10 independent UI-surface model remains its authority foundation. For SvelteKit route tasks, `+page.svelte` is the taskable implementation and colocated page-data modules are supporting authority only. Shipped product behavior is not proof that Decantr improves frontier models. The separate frozen qualification program must pass before making a measured model-lift claim.
 
 ---
 

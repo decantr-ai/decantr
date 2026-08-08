@@ -1,24 +1,24 @@
 # Decantr With AI Coding Assistants
 
-Decantr is agent-neutral. The coding assistant still reads source, edits files, runs tools, and explains the result. Published 3.11.2 adds zero-setup Changed-UI Assurance to the authority-aware route and non-route task context introduced in 3.10.
+Decantr is agent-neutral. The coding assistant still reads source, edits files, runs tools, and explains the result. Published 3.11.3 adds zero-setup Changed-UI Assurance to the authority-aware route and non-route task context introduced in 3.10.
 
 **Observe -> Prepare -> Verify -> Report**
 
-**Release status:** 3.11.2 is current stable. It is not value-proven against frontier models.
+**Release status:** 3.11.3 is current stable. It is not value-proven against frontier models.
 
 ## Minimal CLI Workflow
 
 Start with no attachment:
 
 ```bash
-npx @decantr/cli@3.11.2 verify
+npx @decantr/cli@3.11.3 verify
 ```
 
 The assistant receives at most three findings for the current Git change, each anchored to changed source and a repair target. A `not_proven` result is a stop condition, not permission to guess. Scan and attach only when the work needs broader authority or task context:
 
 ```bash
-npx @decantr/cli@3.11.2 scan
-npx @decantr/cli@3.11.2 adopt --yes
+npx @decantr/cli@3.11.3 scan
+npx @decantr/cli@3.11.3 adopt --yes
 ```
 
 For each UI change:
@@ -43,7 +43,7 @@ The current task contract supports routes and non-route UI targets. Confirm that
 Run the published server with any MCP-compatible client:
 
 ```bash
-npx @decantr/mcp-server@3.11.2
+npx @decantr/mcp-server@3.11.3
 ```
 
 Decantr 3.x preserves exactly eight public tools:

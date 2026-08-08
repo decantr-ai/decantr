@@ -32,7 +32,7 @@ Decantr 3.11 publishes directly to `latest`; do not create an RC, `next`, candid
 
 In addition to the standard deterministic and package gates below, run `pnpm qualification:3-11:changes`. It proves complete Git change handling, fail-closed app selection, non-production exclusions, bounded findings, CLI/explicit-CI-v3/MCP parity, and the unchanged eight-tool MCP surface over disposable repositories. It does not prove finding precision/recall, real adoption value, or model lift.
 
-The 3.11 release is complete only after the `v3.11.2` source tag, retained canonical tarballs, npm `latest` and provenance, public-package verification, GitHub Release, release-note parity, and `release:closeout -- --version 3.11.2` all agree.
+The 3.11 release is complete only after the `v3.11.3` source tag, retained canonical tarballs, npm `latest` and provenance, public-package verification, GitHub Release, release-note parity, and `release:closeout -- --version 3.11.3` all agree.
 
 Before tagging or publishing, run the standard commands below plus:
 

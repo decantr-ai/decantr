@@ -84,6 +84,22 @@ if (command === 'graph' && has('--json')) {
   process.exit(0);
 }
 if (command === 'verify' && has('--json')) {
+  if (!has('--full')) {
+    console.log(JSON.stringify({
+      $schema: 'https://decantr.ai/schemas/change-assurance-report.v1.json',
+      version: '1.0.0',
+      status: 'pass',
+      project: {},
+      comparisonScope: {},
+      changeBase: {},
+      authority: {},
+      surfaces: {},
+      findings: [],
+      limitations: [],
+      summary: { changedFileCount: 0, impactedSurfaceCount: 0 },
+    }));
+    process.exit(0);
+  }
   console.log(JSON.stringify({
     $schema: 'https://schemas.decantr.ai/project-health-report.v2.json',
     status: 'healthy',
@@ -300,6 +316,22 @@ if (command === 'task' && has('--json')) {
   process.exit(0);
 }
 if (command === 'verify' && has('--json')) {
+  if (!has('--full')) {
+    console.log(JSON.stringify({
+      $schema: 'https://decantr.ai/schemas/change-assurance-report.v1.json',
+      version: '1.0.0',
+      status: 'pass',
+      project: {},
+      comparisonScope: {},
+      changeBase: {},
+      authority: {},
+      surfaces: {},
+      findings: [],
+      limitations: [],
+      summary: { changedFileCount: 0, impactedSurfaceCount: 0 },
+    }));
+    process.exit(0);
+  }
   console.log(JSON.stringify({
     $schema: 'https://schemas.decantr.ai/project-health-report.v2.json',
     status: 'healthy',
@@ -498,6 +530,22 @@ if (command === 'task' && has('--json')) {
   process.exit(7);
 }
 if (command === 'verify' && has('--json')) {
+  if (!has('--full')) {
+    console.log(JSON.stringify({
+      $schema: 'https://decantr.ai/schemas/change-assurance-report.v1.json',
+      version: '1.0.0',
+      status: 'pass',
+      project: {},
+      comparisonScope: {},
+      changeBase: {},
+      authority: {},
+      surfaces: {},
+      findings: [],
+      limitations: [],
+      summary: { changedFileCount: 0, impactedSurfaceCount: 0 },
+    }));
+    process.exit(0);
+  }
   console.log(JSON.stringify({
     $schema: 'https://schemas.decantr.ai/project-health-report.v2.json',
     status: 'healthy',
@@ -664,6 +712,22 @@ if (command === 'graph' && has('--json')) {
   process.exit(0);
 }
 if (command === 'verify' && has('--json')) {
+  if (!has('--full')) {
+    console.log(JSON.stringify({
+      $schema: 'https://decantr.ai/schemas/change-assurance-report.v1.json',
+      version: '1.0.0',
+      status: 'pass',
+      project: {},
+      comparisonScope: {},
+      changeBase: {},
+      authority: {},
+      surfaces: {},
+      findings: [],
+      limitations: [],
+      summary: { changedFileCount: 0, impactedSurfaceCount: 0 },
+    }));
+    process.exit(0);
+  }
   console.log(JSON.stringify({
     $schema: 'https://schemas.decantr.ai/project-health-report.v2.json',
     status: 'healthy',

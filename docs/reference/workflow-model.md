@@ -7,7 +7,7 @@ Decantr is an agent-neutral UI change-control layer. Stable 3.11 starts with the
 3. **Verify** the resulting diff against that authority and available runtime evidence.
 4. **Report** typed, reproducible evidence.
 
-**Status:** 3.11.2 is the current stable release. This reference describes shipped behavior. The product is released but is not value-proven against frontier models.
+**Status:** 3.11.3 is the current stable release. This reference describes shipped behavior. The product is released but is not value-proven against frontier models.
 
 ## Verify The Current Change First
 
@@ -219,7 +219,7 @@ Release claims require the declared Day-0 authority gates plus at least +5/100 p
 
 A pass permits the bounded measured claim. Mixed results narrow supported frameworks or tasks. Failure blocks value-proof language, not the stable product release. Unsupported targets, missing evaluators, build failures, and model substitutions remain visible and in the denominator.
 
-See the [3.11.2 release note](../releases/2026-08-08-decantr-3-11-2-route-authority-hardening.md), [qualification evidence](../research/2026-08-07-decantr-3-11-change-assurance-trials.md), [model-lift research program](../programs/2026-07-22-decantr-3-10-ui-change-control-proof.md), and [3.9.4 Day-0 baseline](../benchmarks/2026-07-22-decantr-3-9-4-day-zero.md).
+See the [3.11.3 release note](../releases/2026-08-08-decantr-3-11-3-sveltekit-task-authority.md), [qualification evidence](../research/2026-08-07-decantr-3-11-change-assurance-trials.md), [model-lift research program](../programs/2026-07-22-decantr-3-10-ui-change-control-proof.md), and [3.9.4 Day-0 baseline](../benchmarks/2026-07-22-decantr-3-9-4-day-zero.md).
 
 ## Historical Boundary
 

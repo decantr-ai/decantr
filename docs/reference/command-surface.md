@@ -2,12 +2,12 @@
 
 Decantr 3.11 makes the current Git change the default product surface while preserving callable 3.x compatibility. No new top-level command is required: bare `verify` now selects Changed-UI Assurance.
 
-**Status:** 3.11.2 is the current stable release. The behavior below is shipped product behavior, not a frontier-model value claim.
+**Status:** 3.11.3 is the current stable release. The behavior below is shipped product behavior, not a frontier-model value claim.
 
 ## 3.11 Default Entry Point
 
 ```bash
-npx @decantr/cli@3.11.2 verify
+npx @decantr/cli@3.11.3 verify
 ```
 
 Bare `verify` is zero-write and adoption-free. It resolves the Git change, auto-selects one changed UI app when provable, excludes non-production authority, and emits at most three findings under `change-assurance-report.v1`. `--json`, `--markdown`, `--ci`, `--since`, `--project`, and explicit `--output` refine this mode. An explicit output file is the only write in changed-UI mode.
@@ -146,4 +146,4 @@ Do not add a ninth content tool or remove `decantr_registry` in 3.x.
 
 Command simplification is not evidence of model lift. The separate research claim requires the frozen 28-repository Day-0 authority gate and 320-run, information-equivalent model A/B experiment. See the [research program](../programs/2026-07-22-decantr-3-10-ui-change-control-proof.md), [3.10.0 release note](../releases/2026-08-07-decantr-3-10-0-authority-aware-ui-change-control.md), and [3.9.4 Day-0 baseline](../benchmarks/2026-07-22-decantr-3-9-4-day-zero.md).
 
-The typed command metadata lives in `packages/cli/src/command-surface.ts`. Published 3.11.2 behavior is the current product floor; the 3.10 UI authority model remains its foundation.
+The typed command metadata lives in `packages/cli/src/command-surface.ts`. Published 3.11.3 behavior is the current product floor; the 3.10 UI authority model remains its foundation.

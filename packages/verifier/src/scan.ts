@@ -660,8 +660,8 @@ function walkSvelteKitRoutes(dir: string, projectRoot: string, segments: string[
   }
 
   const routes: ScanRouteV1[] = [];
-  const pageFile = entries.find((entry) => /^\+page\.(svelte|ts|js)$/.test(entry));
-  const hasLayout = entries.some((entry) => /^\+layout\.(svelte|ts|js)$/.test(entry));
+  const pageFile = entries.find((entry) => /^\+page\.svelte$/.test(entry));
+  const hasLayout = entries.some((entry) => /^\+layout\.svelte$/.test(entry));
   if (pageFile) {
     routes.push({
       path: `/${segments.filter(Boolean).join('/')}` || '/',

@@ -659,7 +659,7 @@ function addRouteSignal(
 function fileRouteFromPath(file: string, baseDir: string): string {
   let withoutExt = file.slice(0, -extname(file).length);
   if (withoutExt.endsWith('/index')) withoutExt = withoutExt.slice(0, -'/index'.length);
-  withoutExt = withoutExt.replace(/\/(?:page|\+page)$/u, '');
+  withoutExt = withoutExt.replace(/\/(?:page|\+page(?:\.server)?)$/u, '');
   withoutExt = withoutExt.replace(
     new RegExp(`^${baseDir.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`),
     '',
@@ -1730,12 +1730,19 @@ function discoverRoutes(
     fileRouteSignals.push(...nextAppSignals, ...pagesSignals);
   } else if (identity.framework === 'svelte') {
     fileRouteSignals.push(
+      ...scanFileRoutes(projectRoot, 'src/routes', new Set(['.svelte']), new Set(['+page'])).map(
+        (signal) => ({ ...signal, evidence: `SvelteKit UI page ${signal.file}` }),
+      ),
       ...scanFileRoutes(
         projectRoot,
         'src/routes',
-        new Set(['.svelte', '.ts', '.js']),
-        new Set(['+page']),
-      ),
+        new Set(['.ts', '.js']),
+        new Set(['+page', '+page.server']),
+      ).map((signal) => ({
+        ...signal,
+        taskable: false,
+        evidence: `SvelteKit page data ${signal.file}`,
+      })),
     );
   } else if (identity.framework === 'nuxt') {
     fileRouteSignals.push(...scanFileRoutes(projectRoot, 'pages', new Set(['.vue'])));

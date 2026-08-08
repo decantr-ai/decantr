@@ -7,7 +7,7 @@ Decantr's main local operator surface for observing project-owned UI authority, 
 
 ## Release Boundary
 
-The current stable version is Decantr 3.11.2. Bare `decantr verify` is now zero-write Changed-UI Assurance: it scopes the current Git change, auto-selects one changed UI app when provable, and reports at most three source-anchored findings. It is not quantitatively adoption-proven.
+The current stable version is Decantr 3.11.3. Bare `decantr verify` is zero-write Changed-UI Assurance: it scopes the current Git change, auto-selects one changed UI app when provable, and reports at most three source-anchored findings. SvelteKit task context keeps `+page.svelte` as the implementation and page-data modules as supporting authority. The release is not quantitatively adoption-proven.
 
 The zero-setup entry point is `verify`. The deeper CLI loop remains **Observe -> Prepare -> Verify -> Report** through `scan`, `task <target>`, `verify --full`, and `ci`. Routes are one UI surface among layouts, components, stories, overlays, flows, packages, runtime states, and exact files. Shipped behavior must not be presented as evidence that Decantr improves frontier models; that remains a separate research question.
 
@@ -20,8 +20,8 @@ npm install -D @decantr/cli
 Or run it without installing:
 
 ```bash
-npx @decantr/cli@3.11.2 verify
-npx @decantr/cli@3.11.2 scan
+npx @decantr/cli@3.11.3 verify
+npx @decantr/cli@3.11.3 scan
 npx @decantr/cli new my-app --blueprint=esports-hq
 ```
 
@@ -114,7 +114,7 @@ pnpm exec decantr ci init --project apps/web
 
 Assistant rule integration is preview-first: `--assistant-bridge=preview` writes `.decantr/context/assistant-bridge.md`, `decantr rules preview` prints the bridge, and `--assistant-bridge=apply` or `decantr rules apply` mutates supported rule files with updatable marked blocks. Normal `decantr refresh` keeps a configured or existing assistant preview current, and accepting a reviewed style bridge immediately refreshes both that preview and `DECANTR.md`. Cursor has a direct connector: `decantr connect cursor` writes `.cursor/mcp.json` and `.cursor/rules/decantr.mdc`, preserving existing MCP servers; use `--preview` to inspect first and `--project <app>` from a monorepo root. Stable route-backed task capsules require a current typed graph and start with the proven route implementation rather than a generated route tree. The capsule adds verifier-ranked authority, ordered style, and advisory evidence reads; generated `.decantr`, `DECANTR.md`, and Essence churn is excluded from source impact, and compatibility-only fields are trimmed before the 12,000-byte ceiling is exceeded. Decantr uses live verifier discovery for every target and never treats saved `.decantr/analysis.json` as authority. Discovery-backed non-route or pre-adoption task context is a separate read-only `ui-surface-task-context.v1` result and does not pretend to be `TaskCapsuleV1`. Blocked targets exit nonzero with structured reasons and no edit read set.
 
-Published 3.10.0 `decantr scan` is look-don't-touch reconnaissance for selected-app scope, independent authority axes, taskable routes and surfaces, components, styling, typed graph readiness, and limitations. Authored framework route sources remain the implementation authority. TanStack generated metadata may corroborate public paths without becoming an edit target; Astro content pages are separated from response endpoints; Angular scans begin at the selected production bootstrap/router graph and carry resolved external component resources into task context. Inferred or unresolved route evidence is withheld from governed route maps. Attached Essence V4 apps may derive graph previews in memory while scan still writes nothing.
+Published 3.10.0 `decantr scan` is look-don't-touch reconnaissance for selected-app scope, independent authority axes, taskable routes and surfaces, components, styling, typed graph readiness, and limitations. Authored framework route sources remain the implementation authority. TanStack generated metadata may corroborate public paths without becoming an edit target; Astro content pages are separated from response endpoints; SvelteKit `+page.svelte` files remain taskable while colocated page-data modules are supporting authority; Angular scans begin at the selected production bootstrap/router graph and carry resolved external component resources into task context. Inferred or unresolved route evidence is withheld from governed route maps. Attached Essence V4 apps may derive graph previews in memory while scan still writes nothing.
 
 Scan separates UI-surface authority, topology, taskability, component-inventory, styling-authority, runtime-evidence, and source-scope axes. It keeps tests, stories, fixtures, mocks, generated files, build output, packages, and sibling apps separate from production authority.
 

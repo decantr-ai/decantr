@@ -287,6 +287,14 @@ describe('scanProject', () => {
     writeFileSync(join(projectRoot, 'src', 'routes', '+layout.svelte'), '<slot />\n');
     writeFileSync(join(projectRoot, 'src', 'routes', '+page.svelte'), '<main>Home</main>\n');
     writeFileSync(
+      join(projectRoot, 'src', 'routes', '+page.ts'),
+      'export const load = () => ({});\n',
+    );
+    writeFileSync(
+      join(projectRoot, 'src', 'routes', '+page.server.ts'),
+      'export const load = () => ({});\n',
+    );
+    writeFileSync(
       join(projectRoot, 'src', 'routes', 'login', '+page.svelte'),
       '<main>Login</main>\n',
     );
@@ -299,6 +307,11 @@ describe('scanProject', () => {
       join(projectRoot, 'src', 'routes', 'article', '[slug]', 'Comment.svelte'),
       '<p />\n',
     );
+    mkdirSync(join(projectRoot, 'src', 'routes', 'data-only'), { recursive: true });
+    writeFileSync(
+      join(projectRoot, 'src', 'routes', 'data-only', '+page.ts'),
+      'export const load = () => ({});\n',
+    );
 
     const report = await scanProject(projectRoot);
     const paths = report.routes.items.map((route) => route.path);
@@ -306,8 +319,11 @@ describe('scanProject', () => {
     expect(report.project.framework).toBe('svelte');
     expect(report.routes.strategy).toBe('sveltekit-router');
     expect(paths).toEqual(expect.arrayContaining(['/', '/login', '/article/:slug']));
+    expect(report.routes.items.find((route) => route.path === '/')?.file).toBe(
+      'src/routes/+page.svelte',
+    );
     expect(paths).not.toEqual(
-      expect.arrayContaining(['/+layout', '/Nav', '/article/:slug/Comment']),
+      expect.arrayContaining(['/+layout', '/Nav', '/article/:slug/Comment', '/data-only']),
     );
   });
 

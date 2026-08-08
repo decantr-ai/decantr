@@ -146,6 +146,58 @@ describe('3.11 external field-trial regressions', () => {
     });
   });
 
+  it('keeps SvelteKit page data as supporting authority instead of a second UI route', () => {
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      JSON.stringify({ dependencies: { '@sveltejs/kit': '^2.0.0', svelte: '^5.0.0' } }),
+    );
+    writeFileSync(join(projectRoot, 'svelte.config.js'), 'export default {};\n');
+    mkdirSync(join(projectRoot, 'src', 'routes', '(marketing)'), { recursive: true });
+    writeFileSync(
+      join(projectRoot, 'src', 'routes', '(marketing)', '+page.svelte'),
+      '<main>Home</main>\n',
+    );
+    writeFileSync(
+      join(projectRoot, 'src', 'routes', '(marketing)', '+page.ts'),
+      'export const load = () => ({ plan: "free" });\n',
+    );
+    writeFileSync(
+      join(projectRoot, 'src', 'routes', '(marketing)', '+page.server.ts'),
+      'export const load = () => ({ account: null });\n',
+    );
+    writeFileSync(join(projectRoot, 'src', 'app.css'), ':root { --surface: #fff; }\n');
+
+    const discovery = discoverProject(projectRoot);
+    const context = resolveUISurfaceTaskContext(discovery, '/');
+
+    expect(discovery.routes.taskableRoutes).toEqual([
+      expect.objectContaining({ path: '/', file: 'src/routes/(marketing)/+page.svelte' }),
+    ]);
+    expect(
+      discovery.routes.routeSignals
+        .filter((signal) => signal.path === '/')
+        .map((signal) => ({ file: signal.file, taskable: signal.taskable })),
+    ).toEqual([
+      { file: 'src/routes/(marketing)/+page.svelte', taskable: true },
+      { file: 'src/routes/(marketing)/+page.server.ts', taskable: false },
+      { file: 'src/routes/(marketing)/+page.ts', taskable: false },
+    ]);
+    expect(context.surface?.files).toEqual(['src/routes/(marketing)/+page.svelte']);
+    expect(context.candidates).toHaveLength(1);
+    expect(context.read.map((target) => target.file)).toEqual(
+      expect.arrayContaining([
+        'src/routes/(marketing)/+page.svelte',
+        'src/routes/(marketing)/+page.ts',
+        'src/routes/(marketing)/+page.server.ts',
+      ]),
+    );
+    expect(context.read[0]).toMatchObject({
+      file: 'src/routes/(marketing)/+page.svelte',
+      rank: 1,
+      role: 'implementation',
+    });
+  });
+
   it('does not invent public routes beneath an Angular wildcard fallback', () => {
     writeAngularShell(projectRoot);
     writeFileSync(

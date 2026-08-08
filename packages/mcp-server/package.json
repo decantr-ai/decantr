@@ -1,6 +1,6 @@
 {
   "name": "@decantr/mcp-server",
-  "version": "3.11.2",
+  "version": "3.11.3",
   "mcpName": "io.github.decantr-ai/mcp-server",
   "description": "Eight-tool Decantr MCP server for changed-UI assurance, authority-aware context, and verification evidence",
   "keywords": [

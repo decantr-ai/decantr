@@ -1,5 +1,5 @@
 import { existsSync, lstatSync, realpathSync } from 'node:fs';
-import { isAbsolute, join, relative, resolve } from 'node:path';
+import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import type { ProjectDiscovery } from './discovery.js';
 import { classifyProjectSourceScope } from './source/scope.js';
 import type { UIEvidenceAdapter } from './ui-evidence-adapters.js';
@@ -240,6 +240,27 @@ function buildReadTargets(
         authority: 'production-proven',
         reason: 'Production route declaration authority for the selected route',
       });
+    }
+    if (discovery.project.framework === 'svelte') {
+      const implementationDirs = new Set(surface.files.map((file) => dirname(file)));
+      const pageDataFiles = discovery.routes.routeSignals
+        .filter(
+          (signal) =>
+            signal.path === surface.name &&
+            !signal.taskable &&
+            implementationDirs.has(dirname(signal.file)) &&
+            /(?:^|\/)\+page(?:\.server)?\.[jt]s$/u.test(signal.file),
+        )
+        .map((signal) => signal.file);
+      for (const file of [...new Set(pageDataFiles)].slice(0, 4)) {
+        targets.push({
+          rank: 2,
+          file,
+          role: 'authority',
+          authority: 'production-proven',
+          reason: 'SvelteKit page data authority for the selected route',
+        });
+      }
     }
     const corroborationFiles = matchingSignals
       .map((signal) => signal.corroborationFile)

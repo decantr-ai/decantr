@@ -11,6 +11,7 @@ Use this runbook after an npm release and before describing that release as adop
 - Keep generated reports in `/tmp` or CI artifacts. Commit only the human-reviewed audit.
 - Treat host formatter failures as Decantr failures only when adoption changed the failing host files or changed the result relative to a pristine control.
 - Run v2 and explicit v3 CI separately. V2 remains the default; never infer v3 from the package version.
+- Run bare `verify --json` and `verify --full --json` separately. Bare verify emits `change-assurance-report.v1`; full verify emits Project Health.
 - A v3 `not_proven` result is not a pass. Record missing, stale, or incompatible baseline/change evidence instead of converting unclassified findings into new findings.
 - Preserve raw per-run timings and reproducibility manifests. A percentile claim requires 30 independently initialized runs per target/command.
 - Reuse the frozen route corpus. Run the finding replay only after two independent humans complete the frozen finding corpus; do not generate labels from Decantr output or substitute agents for reviewers.
@@ -20,7 +21,7 @@ Use this runbook after an npm release and before describing that release as adop
 From the Decantr monorepo:
 
 ```bash
-VERSION=3.11.2
+VERSION=3.11.3
 OUT="/tmp/decantr-post-publish-$VERSION"
 pnpm benchmark:post-publish-adoption -- \
   --cli-package "@decantr/cli@$VERSION" \
@@ -41,7 +42,7 @@ The harness gate passes only when every isolated target run has taskable routes,
 Generate a current TanStack Start control with an exact generator version:
 
 ```bash
-VERSION=3.11.2
+VERSION=3.11.3
 OUT="/tmp/decantr-post-publish-$VERSION"
 npx --yes @tanstack/cli@0.69.6 create greenfield-tanstack \
   --framework React \
@@ -124,6 +125,7 @@ Record these facts in the release audit:
 - route count and first task read target
 - inherited versus new CI findings
 - v2-default and explicit-v3 report schema IDs, adoption identity agreement, delta classification, and gate result
+- bare Change Assurance and explicit full Project Health schema IDs, statuses, and limitations
 - task capsule byte count, token estimate, truncation state, first read target, stop conditions, and verification command
 - Studio mode exercised and exhaustive before/after filesystem hashes
 - source files changed by Decantr versus by host tooling

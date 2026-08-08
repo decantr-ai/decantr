@@ -3,7 +3,7 @@
 Decantr 3.11 makes bare `decantr verify` a zero-setup, zero-write assurance pass for the current UI change. It does not require Decantr adoption, an Essence file, generated graph artifacts, an account, or the content API.
 
 ```bash
-npx @decantr/cli@3.11.2 verify
+npx @decantr/cli@3.11.3 verify
 ```
 
 The command reads Git state, selects one app, resolves changed production UI files to project-owned surfaces, and returns at most three consequential findings with exact source locations and repair targets.

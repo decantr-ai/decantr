@@ -7,7 +7,7 @@ Shared local discovery, verification, critique, and report-schema engine used by
 
 ## Release Boundary
 
-Decantr 3.11.2 is the current stable line. It adds Changed-UI Assurance to the independent UI authority axes, route and non-route task context, compatible route-backed task capsules, adoption truth, governance deltas, and report schemas. The release is not quantitatively adoption-proven.
+Decantr 3.11.3 is the current stable line. It keeps SvelteKit page components taskable without promoting colocated page-data modules into competing UI routes, while retaining Changed-UI Assurance, independent UI authority axes, route and non-route task context, compatible route-backed task capsules, adoption truth, governance deltas, and report schemas. The release is not quantitatively adoption-proven.
 
 The verifier models routes, layouts, components, stories, overlays, flows, packages, and runtime states as independent UI surfaces and reports selected-app, surface-authority, topology, taskability, component-inventory, styling-authority, and runtime-evidence axes separately. These shipped APIs do not establish that Decantr improves model outcomes; only a separate controlled A/B program can support that claim.
 
@@ -23,7 +23,7 @@ npm install @decantr/verifier
 - `resolveChangedUISurfaces()` for mapping staged, unstaged, deleted, renamed, untracked, commit-range, or unborn-branch files to one selected app and its affected UI surfaces
 - `auditProject()` for project-level Decantr audits
 - `auditBuiltDist()` for built-output runtime verification against emitted HTML, assets, and route hints
-- `discoverProject()` for shared read-only Brownfield discovery of workspace/app scope, package manager, framework, language, source-declared routes, taskable routes, component inventory, styling authority, Decantr presence, and inherited assistant-rule files. Authored framework routes remain implementation authority; TanStack generated route metadata may corroborate public paths without becoming the edit target. Angular discovery begins at the selected production bootstrap/router graph while excluding test and fixture source.
+- `discoverProject()` for shared read-only Brownfield discovery of workspace/app scope, package manager, framework, language, source-declared routes, taskable routes, component inventory, styling authority, Decantr presence, and inherited assistant-rule files. Authored framework routes remain implementation authority; TanStack generated route metadata may corroborate public paths without becoming the edit target. SvelteKit page-data modules remain supporting authority rather than competing UI routes. Angular discovery begins at the selected production bootstrap/router graph while excluding test and fixture source.
 - `scanProject()` for read-only Brownfield reconnaissance that emits `scan-report.v2` by default using the shared discovery substrate
 - `auditComponentReuse()` for the first AST-derived component reuse drift slice, focused on AI reimplementing common UI primitives instead of importing project-owned components, plus local import references that the typed graph can turn into source-to-source impact edges
 - `auditStyleBridgeDrift()` for accepted style bridge drift, focused on production `className`, common class-helper values, stylesheet declarations, and hardcoded inline color styles that bypass project-owned token/class authority
@@ -91,6 +91,7 @@ The default finding limit is three and the maximum explicit limit is twenty. Pri
 - Next App/Pages Router discovery evaluates root or `src/` middleware/proxy policy and reachable local helpers separately from file-route declaration. Statically identified 4xx-conditioned routes remain observable but non-taskable; unresolved path-dependent policy degrades authority and fails closed.
 - TanStack file-route discovery maps route groups, pathless layouts, and parameter identifiers to generated public-path metadata when available. Root and pathless layouts remain non-taskable; convention-sensitive paths without generated corroboration cap completeness at `partial`.
 - Astro discovery treats `.astro`, `.md`, `.mdx`, and `.html` files under `pages` as UI pages. TypeScript and JavaScript files in that tree remain observable response endpoints but are not taskable UI surfaces.
+- SvelteKit discovery keeps `+page.svelte` as the taskable implementation. Same-directory `+page.ts`/`+page.js` and `+page.server.ts`/`+page.server.js` modules are non-taskable page-data signals included as bounded supporting task reads.
 - Angular discovery treats wildcard routes as terminal fallbacks, resolves `ng-packagr` workspace secondary entries to their exported component source, and includes static `templateUrl`, `styleUrl`/`styleUrls`, and adjacent Pug authoring sources in task reads.
 - Candidate styling discovery follows ordered production stylesheet imports through local files and workspace package exports. Task read sets preserve that cascade order, and Next API route handlers are excluded from the UI component inventory.
 
@@ -165,7 +166,7 @@ function isBlocking(report: ProjectHealthReport) {
 
 The adoption-truth, task-capsule, and governance-delta schemas are additive Decantr 3.9 contract primitives consumed by CLI, MCP, opt-in CI v3, and read-only Studio adapters. `decantr-ci-report.v3` is also additive and must be selected explicitly; v2 remains the default throughout 3.9.x and its schema/exit semantics are unchanged. A missing or incompatible baseline produces unclassified findings and `not_proven` rather than a false empty delta. V1 health/evidence/scan schemas remain published for stored-artifact compatibility; audit, file-critique, and showcase reports remain v1 until those wires need to change. See [Report Schemas](https://decantr.ai/reference/report-schemas.md).
 
-These contracts define deterministic evidence shapes; they do not prove product value by themselves. Stable 3.11.2 is product-qualified, not human-qualified or adoption-proven. A separate frozen 40-task, two-model, two-arm, repeated A/B protocol gates only a measured model-improvement claim. Development-corpus results may tune implementation but cannot grant that confirmatory claim; qualification failures, unsupported targets, missing evaluators, build failures, and model substitutions remain visible in its denominator.
+These contracts define deterministic evidence shapes; they do not prove product value by themselves. Stable 3.11.3 is product-qualified, not human-qualified or adoption-proven. A separate frozen 40-task, two-model, two-arm, repeated A/B protocol gates only a measured model-improvement claim. Development-corpus results may tune implementation but cannot grant that confirmatory claim; qualification failures, unsupported targets, missing evaluators, build failures, and model substitutions remain visible in its denominator.
 
 ## Security And Permissions
 

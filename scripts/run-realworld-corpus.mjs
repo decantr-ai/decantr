@@ -61,6 +61,7 @@ const DEFAULT_PERFORMANCE_BUDGETS_MS = {
   'graph-route-json': 45_000,
   'task-json': 30_000,
   'verify-json': 45_000,
+  'verify-full-json': 45_000,
   'ci-json': 45_000,
   resolve: 45_000,
   'refresh-check': 20_000,
@@ -349,7 +350,8 @@ const JSON_SCHEMA_EXPECTATIONS = {
   'graph-json': 'graph summary',
   'graph-route-json': 'route graph summary',
   'task-json': 'task context',
-  'verify-json': 'Project Health report',
+  'verify-json': 'Change Assurance report',
+  'verify-full-json': 'Project Health report',
   'ci-json': 'CI report',
 };
 
@@ -440,6 +442,24 @@ function validateJsonSchema(id, value) {
       errors.push('loop.state must be a string');
     }
   } else if (id === 'verify-json') {
+    requireString('$schema');
+    requireString('version');
+    requireString('status');
+    requireRecord('project');
+    requireRecord('comparisonScope');
+    requireRecord('changeBase');
+    requireRecord('authority');
+    requireRecord('surfaces');
+    requireArray('findings');
+    requireArray('limitations');
+    requireRecord('summary');
+    if (value.$schema !== 'https://decantr.ai/schemas/change-assurance-report.v1.json') {
+      errors.push('$schema must identify change-assurance-report.v1.json');
+    }
+    if (!['pass', 'attention', 'not_proven'].includes(value.status)) {
+      errors.push('status must equal pass, attention, or not_proven');
+    }
+  } else if (id === 'verify-full-json') {
     requireString('$schema');
     requireString('status');
     if (typeof value.score !== 'number' || !Number.isFinite(value.score)) {
@@ -543,16 +563,23 @@ function crashSignatures(output) {
 function summarizeVerify(parsed) {
   const health = isRecord(parsed?.health) ? parsed.health : parsed;
   const findings = Array.isArray(health?.findings) ? health.findings : [];
+  const changeAssurance =
+    parsed?.$schema === 'https://decantr.ai/schemas/change-assurance-report.v1.json';
   const ruleCounts = new Map();
   for (const finding of findings) {
-    const key = String(finding.rule ?? finding.code ?? finding.id ?? 'unknown');
+    const key = String(
+      finding.rule ?? finding.code ?? finding.id ?? finding.occurrence?.code ?? 'unknown',
+    );
     ruleCounts.set(key, (ruleCounts.get(key) ?? 0) + 1);
   }
   return {
+    schema: parsed?.$schema ?? null,
     status: parsed?.status ?? null,
-    score: health?.score ?? null,
+    score: changeAssurance ? null : (health?.score ?? null),
     loopState: parsed?.loop?.state ?? health?.loop?.state ?? null,
     graphReady: health?.graph?.ready ?? health?.graph?.current ?? null,
+    changedFileCount: changeAssurance ? (parsed?.summary?.changedFileCount ?? null) : null,
+    impactedSurfaceCount: changeAssurance ? (parsed?.summary?.impactedSurfaceCount ?? null) : null,
     findingCount: findings.length,
     ruleCounts: [...ruleCounts.entries()]
       .sort((a, b) => a[0].localeCompare(b[0]))
@@ -697,6 +724,7 @@ function runProject(candidate, options, roots, runNumber = 1) {
     scanRouteCount: 0,
     commands: [],
     verify: null,
+    fullVerify: null,
     ci: null,
     unexpectedFailures: [],
     functionalFailures: [],
@@ -787,6 +815,12 @@ function runProject(candidate, options, roots, runNumber = 1) {
       'app-scoped',
     ],
     ['verify-json', withProject(candidate, ['verify', '--json']), false, 'app-scoped'],
+    [
+      'verify-full-json',
+      withProject(candidate, ['verify', '--full', '--json']),
+      false,
+      'app-scoped',
+    ],
     ['ci-json', withProject(candidate, ['ci', '--json']), false, 'app-scoped'],
     ['resolve', withProject(candidate, ['resolve']), false, 'app-scoped'],
     ['refresh-check', withProject(candidate, ['refresh', '--check']), false, 'app-scoped'],
@@ -810,6 +844,9 @@ function runProject(candidate, options, roots, runNumber = 1) {
     project.commands.push(command);
     writeCommandLog(projectLogDir, command);
     if (id === 'verify-json') project.verify = summarizeVerify(parseJsonFromOutput(command.stdout));
+    if (id === 'verify-full-json') {
+      project.fullVerify = summarizeVerify(parseJsonFromOutput(command.stdout));
+    }
     if (id === 'ci-json') project.ci = summarizeVerify(parseJsonFromOutput(command.stdout));
   }
 
@@ -1342,9 +1379,13 @@ function main() {
   if (summary.batchStatus === 'failed') process.exitCode = 1;
 }
 
-try {
-  main();
-} catch (error) {
-  console.error((error && error.stack) || error);
-  process.exit(1);
+if (process.argv[1] && resolve(process.argv[1]) === harnessPath) {
+  try {
+    main();
+  } catch (error) {
+    console.error((error && error.stack) || error);
+    process.exit(1);
+  }
 }
+
+export { summarizeVerify, validateJsonSchema };
