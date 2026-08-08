@@ -29,7 +29,9 @@ import {
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const scripts = join(root, 'scripts');
 const RELEASE_WORKFLOW_ENV_KEYS = [
+  'DECANTR_EFFECTIVE_PACKAGES',
   'DECANTR_ONLY_PACKAGES',
+  'DECANTR_RELEASE_WAVE',
   'DECANTR_RELEASE_COMMIT',
   'DECANTR_RELEASE_TAG',
   'DECANTR_RELEASE_VERSION',
@@ -535,6 +537,27 @@ test('publish selection expands internal dependencies and enforces 3.9 latest', 
     '@decantr/cli',
   ]);
   assert.ok(selection.expandedDependencies.includes('@decantr/core'));
+  assert.deepEqual(selection.replayFilter, {
+    wave: null,
+    only: selection.effectiveOnly,
+  });
+
+  const deliveryWave = runNode('publish-packages.mjs', [
+    '--dry-run',
+    '--selection-json',
+    '--wave=delivery',
+  ]);
+  assert.equal(deliveryWave.status, 0, outputOf(deliveryWave));
+  const deliverySelection = JSON.parse(deliveryWave.stdout);
+  assert.deepEqual(deliverySelection.effectiveOnly, [
+    '@decantr/verifier',
+    '@decantr/mcp-server',
+    '@decantr/cli',
+  ]);
+  assert.deepEqual(deliverySelection.replayFilter, {
+    wave: 'delivery',
+    only: [],
+  });
 
   const next = runNode('publish-packages.mjs', [
     '--dry-run',
@@ -1017,7 +1040,7 @@ test('announcement payload is tag-bound and has no HEAD fallback', (t) => {
   assert.match(outputOf(implicit), /announcements cannot fall back to HEAD/u);
 });
 
-test('publish workflow is protected and verifies the tagged origin/main commit', () => {
+test('publish workflow is protected and verifies the tagged origin/main commit', (t) => {
   const workflow = readFileSync(join(root, '.github/workflows/publish.yml'), 'utf8');
   assert.match(workflow, /release_tag:/u);
   assert.match(workflow, /environment: npm-production/u);
@@ -1032,6 +1055,83 @@ test('publish workflow is protected and verifies the tagged origin/main commit',
   assert.doesNotMatch(workflow, /ARGS=""/u);
   assert.match(workflow, /release-evidence-publish-tarballs/u);
   assert.match(workflow, /DECANTR_RELEASE_STAGING_DIR/u);
+  assert.match(workflow, /DECANTR_EFFECTIVE_PACKAGES/u);
+  assert.match(workflow, /selection\.replayFilter \?\?/u);
+  assert.match(workflow, /requestedOnly\.length === 0 \? \(selection\.wave \?\? null\) : null/u);
+  assert.doesNotMatch(workflow, /echo "DECANTR_ONLY_PACKAGES=\$EFFECTIVE_ONLY"/u);
+  assert.doesNotMatch(workflow, /ARGS=\("--only=\$DECANTR_ONLY_PACKAGES"\)/u);
+  assert.equal(
+    workflow.match(/if \[\[ -n "\$DECANTR_RELEASE_WAVE" \]\]/gu)?.length,
+    5,
+    'every post-selection release stage must replay the wave filter',
+  );
+  assert.equal(
+    workflow.match(/if \[\[ -n "\$DECANTR_ONLY_PACKAGES" \]\]/gu)?.length,
+    5,
+    'every post-selection release stage must replay the explicit package closure',
+  );
+
+  const replayScript = workflow.match(
+    /node -e '\n([\s\S]*?)\n\s+' "\$SELECTION_JSON" "\$GITHUB_ENV"/u,
+  )?.[1];
+  assert.ok(replayScript, 'workflow replay script must be extractable for compatibility testing');
+  const replayRoot = mkdtempSync(join(tmpdir(), 'decantr-workflow-replay-test-'));
+  t.after(() => rmSync(replayRoot, { recursive: true, force: true }));
+
+  function replayLegacySelection(selection, name) {
+    const envPath = join(replayRoot, `${name}.env`);
+    writeFileSync(envPath, '', 'utf8');
+    const result = spawnSync(process.execPath, ['-e', replayScript, JSON.stringify(selection), envPath], {
+      encoding: 'utf8',
+    });
+    assert.equal(result.status, 0, outputOf(result));
+    return Object.fromEntries(
+      readFileSync(envPath, 'utf8')
+        .trim()
+        .split('\n')
+        .map((line) => {
+          const separator = line.indexOf('=');
+          return [line.slice(0, separator), line.slice(separator + 1)];
+        }),
+    );
+  }
+
+  const deliveryPackages = '@decantr/verifier,@decantr/mcp-server,@decantr/cli';
+  assert.deepEqual(
+    replayLegacySelection({
+      requestedOnly: [],
+      effectiveOnly: deliveryPackages.split(','),
+      expandedDependencies: [],
+      wave: 'delivery',
+    }, 'legacy-wave'),
+    {
+      DECANTR_EFFECTIVE_PACKAGES: deliveryPackages,
+      DECANTR_RELEASE_WAVE: 'delivery',
+      DECANTR_ONLY_PACKAGES: '',
+    },
+  );
+
+  const cliClosure = [
+    '@decantr/essence-spec',
+    '@decantr/content',
+    '@decantr/core',
+    '@decantr/telemetry',
+    '@decantr/verifier',
+    '@decantr/cli',
+  ];
+  assert.deepEqual(
+    replayLegacySelection({
+      requestedOnly: ['@decantr/cli'],
+      effectiveOnly: cliClosure,
+      expandedDependencies: cliClosure.slice(0, -1),
+      wave: null,
+    }, 'legacy-only'),
+    {
+      DECANTR_EFFECTIVE_PACKAGES: cliClosure.join(','),
+      DECANTR_RELEASE_WAVE: '',
+      DECANTR_ONLY_PACKAGES: cliClosure.join(','),
+    },
+  );
   assert.match(workflow, /Run tag-bound release closeout/u);
   assert.match(workflow, /set -o pipefail[\s\S]*audit-release-closeout\.mjs/u);
   assert.ok(

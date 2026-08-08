@@ -899,12 +899,17 @@ const expandedDependencies = selected
   .filter((name) => onlyNames.size > 0 && !onlyNames.has(name));
 
 if (selectionJson) {
+  const effectiveOnly = selected.map((entry) => entry.name);
   console.log(
     JSON.stringify({
       requestedOnly: [...onlyNames],
-      effectiveOnly: selected.map((entry) => entry.name),
+      effectiveOnly,
       expandedDependencies,
       wave: onlyWave,
+      replayFilter: {
+        wave: onlyNames.size === 0 ? (onlyWave ?? null) : null,
+        only: onlyNames.size > 0 ? effectiveOnly : [],
+      },
     }),
   );
   process.exit(0);

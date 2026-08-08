@@ -153,12 +153,26 @@ jobs:
           fi
 
           SELECTION_JSON="$(node scripts/publish-packages.mjs "${ARGS[@]}")"
-          EFFECTIVE_ONLY="$(node -e '
+          node -e '
+            const { appendFileSync } = require("node:fs");
             const selection = JSON.parse(process.argv[1]);
             if (!Array.isArray(selection.effectiveOnly) || selection.effectiveOnly.length === 0) process.exit(1);
-            process.stdout.write(selection.effectiveOnly.join(","));
-          ' "$SELECTION_JSON")"
-          echo "DECANTR_ONLY_PACKAGES=$EFFECTIVE_ONLY" >> "$GITHUB_ENV"
+            const requestedOnly = Array.isArray(selection.requestedOnly) ? selection.requestedOnly : [];
+            const replayFilter = selection.replayFilter ?? {
+              wave: requestedOnly.length === 0 ? (selection.wave ?? null) : null,
+              only: requestedOnly.length > 0 ? selection.effectiveOnly : [],
+            };
+            if (!Array.isArray(replayFilter.only)) process.exit(1);
+            const values = {
+              DECANTR_EFFECTIVE_PACKAGES: selection.effectiveOnly.join(","),
+              DECANTR_RELEASE_WAVE: replayFilter.wave ?? "",
+              DECANTR_ONLY_PACKAGES: replayFilter.only.join(","),
+            };
+            for (const [key, value] of Object.entries(values)) {
+              if (/[\r\n]/u.test(value)) process.exit(1);
+              appendFileSync(process.argv[2], `${key}=${value}\n`, "utf8");
+            }
+          ' "$SELECTION_JSON" "$GITHUB_ENV"
           printf '%s\n' "$SELECTION_JSON" >> "$GITHUB_STEP_SUMMARY"
       - run: pnpm build
       - run: pnpm test
@@ -170,15 +184,26 @@ jobs:
       - run: pnpm audit:public-api -- --core-only --fail-on-error
       - name: Generate release plan summary
         run: |
-          node scripts/release-plan.mjs \
-            "--only=$DECANTR_ONLY_PACKAGES" \
-            --summary-markdown="$RUNNER_TEMP/package-release-plan.md"
+          ARGS=("--summary-markdown=$RUNNER_TEMP/package-release-plan.md")
+          if [[ -n "$DECANTR_RELEASE_WAVE" ]]; then
+            ARGS+=("--wave=$DECANTR_RELEASE_WAVE")
+          fi
+          if [[ -n "$DECANTR_ONLY_PACKAGES" ]]; then
+            ARGS+=("--only=$DECANTR_ONLY_PACKAGES")
+          fi
+          node scripts/release-plan.mjs "${ARGS[@]}"
           cat "$RUNNER_TEMP/package-release-plan.md" >> "$GITHUB_STEP_SUMMARY"
       - name: Generate enterprise release evidence
         env:
           INCLUDE_EXPERIMENTAL: ${{ github.event.inputs.include_experimental || 'false' }}
         run: |
-          ARGS=("--only=$DECANTR_ONLY_PACKAGES")
+          ARGS=()
+          if [[ -n "$DECANTR_RELEASE_WAVE" ]]; then
+            ARGS+=("--wave=$DECANTR_RELEASE_WAVE")
+          fi
+          if [[ -n "$DECANTR_ONLY_PACKAGES" ]]; then
+            ARGS+=("--only=$DECANTR_ONLY_PACKAGES")
+          fi
           if [[ "$INCLUDE_EXPERIMENTAL" == "true" ]]; then
             ARGS+=(--include-experimental)
           fi
@@ -201,7 +226,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          ARGS=("--only=$DECANTR_ONLY_PACKAGES")
+          ARGS=()
+          if [[ -n "$DECANTR_RELEASE_WAVE" ]]; then
+            ARGS+=("--wave=$DECANTR_RELEASE_WAVE")
+          fi
+          if [[ -n "$DECANTR_ONLY_PACKAGES" ]]; then
+            ARGS+=("--only=$DECANTR_ONLY_PACKAGES")
+          fi
           if [[ -n "$DIST_TAG_OVERRIDE" ]]; then
             ARGS+=("--tag-override=$DIST_TAG_OVERRIDE")
           fi
@@ -227,7 +258,13 @@ jobs:
           INCLUDE_EXPERIMENTAL: ${{ github.event.inputs.include_experimental || 'false' }}
           RELEASE_VERIFICATION_WEBHOOK_URL: ${{ secrets.RELEASE_VERIFICATION_WEBHOOK_URL }}
         run: |
-          ARGS=("--only=$DECANTR_ONLY_PACKAGES")
+          ARGS=()
+          if [[ -n "$DECANTR_RELEASE_WAVE" ]]; then
+            ARGS+=("--wave=$DECANTR_RELEASE_WAVE")
+          fi
+          if [[ -n "$DECANTR_ONLY_PACKAGES" ]]; then
+            ARGS+=("--only=$DECANTR_ONLY_PACKAGES")
+          fi
           if [[ -n "$DIST_TAG_OVERRIDE" ]]; then
             ARGS+=("--tag-override=$DIST_TAG_OVERRIDE")
           fi
@@ -248,7 +285,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -o pipefail
-          ARGS=("--version=$DECANTR_RELEASE_VERSION" "--only=$DECANTR_ONLY_PACKAGES" --json)
+          ARGS=("--version=$DECANTR_RELEASE_VERSION" --json)
+          if [[ -n "$DECANTR_RELEASE_WAVE" ]]; then
+            ARGS+=("--wave=$DECANTR_RELEASE_WAVE")
+          fi
+          if [[ -n "$DECANTR_ONLY_PACKAGES" ]]; then
+            ARGS+=("--only=$DECANTR_ONLY_PACKAGES")
+          fi
           if [[ -n "$DIST_TAG_OVERRIDE" ]]; then
             ARGS+=("--tag-override=$DIST_TAG_OVERRIDE")
           fi

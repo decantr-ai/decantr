@@ -139,6 +139,8 @@ When `--only` is present, the wrapper expands it through transitive internal `de
 
 The GitHub `Publish` workflow defaults to `publish_auth_strategy=auto`: it tries npm trusted publishing through GitHub OIDC first, then retries the current package once with `NPM_TOKEN` when that secret is available. Manual dispatch must run the workflow definition from `refs/heads/main` and provide an existing `release_tag`. The job checks out that tag, requires the checked-out commit and local/remote tag to match, verifies fetched `origin/main` against the live remote main ref, rejects tags not reachable from `origin/main`, uploads the retained qualified tarball set, and runs under the `npm-production` GitHub environment. Configure required reviewers and deployment-branch protection on that environment; repository secrets alone do not provide an approval boundary. Use `publish_auth_strategy=oidc` to require trusted publishing only, or `publish_auth_strategy=token` for an explicit token-only recovery run.
 
+The workflow resolves its package selection once and replays the same filter through release planning, evidence, publishing, public verification, and closeout. A wave-only request remains `--wave=<wave>`; its package names are summary data and must not be reinterpreted as `--only`, because that would expand internal dependency closure and retain unrelated package tarballs. An explicit `--only` request is expanded once and downstream stages receive that effective closure. The retained staging manifest must therefore match the selected wave or explicit closure exactly.
+
 For npm trusted publishing, every published package must have a matching trusted publisher in npm package settings:
 
 - Publisher: GitHub Actions

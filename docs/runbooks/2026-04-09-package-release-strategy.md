@@ -349,3 +349,5 @@ For GitHub Actions rehearsals, trigger `.github/workflows/publish.yml` with:
 - `release_wave=foundation` to publish or rehearse the dependency base first
 - `release_wave=delivery` for CLI/MCP delivery surfaces after the foundation wave is green
 - `dry_run_only=true` to exercise the selection logic and summary output without touching npm
+
+The workflow preserves a wave-only request as a wave through plan, evidence, publish, verify, and closeout. It does not convert the wave's package-name summary into `--only`, which would incorrectly pull transitive internal dependencies from other waves into retained release artifacts. Explicit `only_packages` requests still expand once to their required internal dependency closure.
