@@ -4,13 +4,13 @@
 
 ## Release Status
 
-- Current stable: Decantr 3.11.0.
+- Current stable: Decantr 3.11.2.
 - Default entry point: `decantr verify` performs zero-write Changed-UI Assurance over the current Git change; no adoption is required.
 - Active product: changed-UI assurance plus authority-aware Observe, Prepare, Verify, and Report workflows.
-- 3.11.0 is released but is not value-proven against frontier models.
+- 3.11.2 is released but is not value-proven against frontier models.
 - Product release readiness is separate from model-lift research qualification. Do not claim human finding precision/recall, adoption proof, or measured frontier-model improvement.
 
-## Published 3.11.0 Entry Point
+## Published 3.11.2 Entry Point
 
 1. Run `decantr verify` in a Git worktree.
 2. Decantr resolves staged, unstaged, deleted, renamed, untracked, commit-range, or unborn-branch changes.
@@ -72,8 +72,9 @@ Pass permits only the bounded measured claim. Mixed results narrow supported cla
 - [FAQ](https://decantr.ai/faq.md)
 - [Security and permissions](https://decantr.ai/reference/security-permissions.md)
 - [Package support matrix](https://decantr.ai/reference/package-support-matrix.md)
+- [3.11.2 route-authority hardening](https://decantr.ai/releases/2026-08-08-decantr-3-11-2-route-authority-hardening.md)
 - [3.11.1 MCP metadata patch](https://decantr.ai/releases/2026-08-07-decantr-3-11-1-mcp-metadata-compatibility.md)
-- [3.11.0 stable release note](https://decantr.ai/releases/2026-08-07-decantr-3-11-0-changed-ui-assurance.md)
+- [3.11.0 Changed-UI Assurance release](https://decantr.ai/releases/2026-08-07-decantr-3-11-0-changed-ui-assurance.md)
 - [3.11 qualification evidence](https://decantr.ai/research/2026-08-07-decantr-3-11-change-assurance-trials.md)
 - [4.0 entry criteria](https://decantr.ai/reference/decantr-4-entry-criteria.md)
 - [3.10.0 authority-model release note](https://decantr.ai/releases/2026-08-07-decantr-3-10-0-authority-aware-ui-change-control.md)

@@ -2,7 +2,7 @@
 
 Decantr is an **agent-neutral UI change-control layer**. It observes project-owned authority, prepares change-scoped context, verifies an agent's diff, and reports typed evidence.
 
-**Decantr 3.11.0 is the current stable release. Its default entry point is zero-setup Changed-UI Assurance: run `decantr verify` in a Git worktree to inspect only the current UI change with zero writes.**
+**Decantr 3.11.2 is the current stable release. Its default entry point is zero-setup Changed-UI Assurance: run `decantr verify` in a Git worktree to inspect only the current UI change with zero writes.**
 
 The default report returns `pass`, `attention`, or `not_proven`, with at most three consequential findings tied to exact changed source and repair targets. It selects one changed app only when that choice is provable. Adoption, generated context, an account, and the hosted content API are not prerequisites. [Read the contract](reference/change-assurance.md).
 
@@ -30,8 +30,9 @@ The 3.10 authority model remains the foundation beneath 3.11: routes, layouts, c
 
 ## Current Program And Evidence
 
+- [Decantr 3.11.2 route-authority hardening](releases/2026-08-08-decantr-3-11-2-route-authority-hardening.md): current stable delivery patch for TanStack, Astro, and Angular authority/task resolution.
 - [Decantr 3.11.1 MCP metadata patch](releases/2026-08-07-decantr-3-11-1-mcp-metadata-compatibility.md): corrected directory metadata packaged with `@decantr/mcp-server`.
-- [Decantr 3.11.0 stable release](releases/2026-08-07-decantr-3-11-0-changed-ui-assurance.md): current changed-UI assurance release.
+- [Decantr 3.11.0 Changed-UI Assurance release](releases/2026-08-07-decantr-3-11-0-changed-ui-assurance.md): original 3.11 delivery release.
 - [Decantr 3.11 qualification evidence](research/2026-08-07-decantr-3-11-change-assurance-trials.md): nine disposable repositories plus one real Brownfield replay, with explicit evidence limits.
 - [Decantr 4.0 entry criteria](reference/decantr-4-entry-criteria.md): proof and migration gates; 4.0 is not scheduled.
 - [Decantr 3.10.0 authority-model release](releases/2026-08-07-decantr-3-10-0-authority-aware-ui-change-control.md): foundation retained in 3.11.
@@ -65,9 +66,9 @@ Pre-reset material under `archive/` is reference-only. Registry portal deploymen
 
 When documentation conflicts, use this order:
 
-1. shipped package behavior and published schemas for 3.11.0;
+1. shipped package behavior and published schemas for 3.11.2;
 2. active files under `guides/` and `reference/` for current usage;
 3. the active model-lift research program for experimental protocol and claim boundaries;
 4. dated release, benchmark, audit, program, research, and specification files as historical evidence.
 
-Describe 3.11.0 as released only after package closeout passes. Do not describe it as value-proven until the separate frozen A/B research gates pass.
+Describe 3.11.2 as released only after package closeout passes. Do not describe it as value-proven until the separate frozen A/B research gates pass.

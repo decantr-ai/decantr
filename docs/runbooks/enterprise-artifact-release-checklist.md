@@ -21,12 +21,12 @@ Use this checklist with [Release Stewardship](release-stewardship.md). Decantr 3
 - `pnpm release:preflight`
 - `pnpm release:commands`
 - Commit and push the verified source and evidence to `main`.
-- Create and push the exact stable `v3.11.0` tag only after every gate passes.
-- Create the GitHub Release from `docs/releases/2026-08-07-decantr-3-11-0-changed-ui-assurance.md`.
-- Let the tag trigger `.github/workflows/publish.yml`, or dispatch it from `main` with `release_tag=v3.11.0`; use the wrapper, never bare `npm publish`.
+- Create and push the exact stable `v3.11.2` tag only after every gate passes.
+- Create the GitHub Release from `docs/releases/2026-08-08-decantr-3-11-2-route-authority-hardening.md`.
+- Let the tag trigger `.github/workflows/publish.yml`, or dispatch it from `main` with `release_tag=v3.11.2`; use the wrapper, never bare `npm publish`.
 - `pnpm release:verify`
-- `pnpm release:closeout -- --version 3.11.0 --staging-manifest=<downloaded-publish-manifest>`
-- `pnpm release:announce -- --version 3.11.0 --send` only after closeout passes.
+- `pnpm release:closeout -- --version 3.11.2 --staging-manifest=<downloaded-publish-manifest>`
+- `pnpm release:announce -- --version 3.11.2 --send` only after closeout passes.
 
 The frozen 3.9 qualification packet remains historical evidence for the 3.9 line. Do not rerun or rewrite it as 3.11 publication authorization. Likewise, do not claim finding precision, adoption value, or measured model improvement from deterministic 3.11 trials or product closeout.
 

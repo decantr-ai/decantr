@@ -1,6 +1,6 @@
 # Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
 #
-# This directory entry runs the published Decantr 3.11.1 stdio server with no configuration.
+# This directory entry runs the published Decantr 3.11.2 stdio server with no configuration.
 # The existing decantr_verify tool adds changed-UI assurance through action: changes. Task
 # preparation remains authority-aware and fails closed on ambiguous or unsupported targets.
 # Smithery auto-indexes this file when the repo is claimed.
@@ -14,6 +14,6 @@ startCommand:
     |-
     (config) => ({
       command: 'npx',
-      args: ['-y', '@decantr/mcp-server@3.11.1'],
+      args: ['-y', '@decantr/mcp-server@3.11.2'],
       env: {}
     })

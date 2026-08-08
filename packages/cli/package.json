@@ -1,6 +1,6 @@
 {
   "name": "@decantr/cli",
-  "version": "3.11.0",
+  "version": "3.11.2",
   "description": "Diff-first UI change assurance and authority-aware governance for frontend codebases touched by AI agents",
   "keywords": [
     "decantr",

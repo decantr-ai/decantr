@@ -241,6 +241,19 @@ function buildReadTargets(
         reason: 'Production route declaration authority for the selected route',
       });
     }
+    const corroborationFiles = matchingSignals
+      .map((signal) => signal.corroborationFile)
+      .filter((file): file is string => Boolean(file));
+    for (const file of [...new Set(corroborationFiles)].slice(0, 2)) {
+      if (surface.files.includes(file)) continue;
+      targets.push({
+        rank: 4,
+        file,
+        role: 'evidence',
+        authority: 'project-reference',
+        reason: 'Generated framework metadata corroborating the authored public route path',
+      });
+    }
   }
   const styleFiles = [
     ...discovery.styling.authorityFiles,

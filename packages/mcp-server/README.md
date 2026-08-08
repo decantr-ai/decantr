@@ -8,11 +8,11 @@
 Support status: `core-supported`  
 Release channel: `stable`
 
-Stable Decantr 3.11.1 MCP integration for Changed-UI Assurance, local project state, authority-aware route and non-route task context, graph and evidence reads, and repair prompts.
+Stable Decantr 3.11.2 MCP integration for Changed-UI Assurance, local project state, authority-aware route and non-route task context, graph and evidence reads, and repair prompts.
 
 ## Release Boundary
 
-The published npm package is 3.11.1. Its eight tool IDs, route-backed `TaskCapsuleV1` path, authority-aware target discovery, verification actions, and compatibility envelopes are stable. The existing `decantr_verify` tool adds action `changes`, which returns the same `change-assurance-report.v1` used by bare CLI verify and explicit CI v3. No ninth tool is added.
+The published npm package is 3.11.2. Its eight tool IDs, route-backed `TaskCapsuleV1` path, authority-aware target discovery, verification actions, and compatibility envelopes are stable. The existing `decantr_verify` tool adds action `changes`, which returns the same `change-assurance-report.v1` used by bare CLI verify and explicit CI v3. No ninth tool is added.
 
 ![Decantr MCP demo](https://raw.githubusercontent.com/decantr-ai/decantr/main/packages/mcp-server/assets/decantr-demo.gif)
 
@@ -34,7 +34,7 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
   "mcpServers": {
     "decantr": {
       "command": "npx",
-      "args": ["@decantr/mcp-server@3.11.1"]
+      "args": ["@decantr/mcp-server@3.11.2"]
     }
   }
 }
@@ -47,7 +47,7 @@ Restart Claude Desktop. The Decantr tools will appear automatically.
 Preferred setup:
 
 ```bash
-npx @decantr/cli@3.11.0 connect cursor
+npx @decantr/cli@3.11.2 connect cursor
 ```
 
 From a monorepo root:
@@ -63,7 +63,7 @@ The connector preserves existing MCP servers and writes the project rule that te
   "mcpServers": {
     "decantr": {
       "command": "npx",
-      "args": ["-y", "@decantr/mcp-server@3.11.1"]
+      "args": ["-y", "@decantr/mcp-server@3.11.2"]
     }
   }
 }
@@ -80,7 +80,7 @@ Add to your Windsurf MCP config (`~/.windsurf/mcp.json`):
   "mcpServers": {
     "decantr": {
       "command": "npx",
-      "args": ["@decantr/mcp-server@3.11.1"]
+      "args": ["@decantr/mcp-server@3.11.2"]
     }
   }
 }
@@ -95,7 +95,7 @@ Create `.vscode/mcp.json` in your workspace (or add to your user profile `mcp.js
   "servers": {
     "decantr": {
       "command": "npx",
-      "args": ["-y", "@decantr/mcp-server@3.11.1"]
+      "args": ["-y", "@decantr/mcp-server@3.11.2"]
     }
   }
 }
@@ -112,7 +112,7 @@ Add to your Zed `settings.json`:
   "context_servers": {
     "decantr": {
       "command": "npx",
-      "args": ["-y", "@decantr/mcp-server@3.11.1"],
+      "args": ["-y", "@decantr/mcp-server@3.11.2"],
       "env": {}
     }
   }
@@ -133,7 +133,7 @@ mcpServers:
     command: npx
     args:
       - "-y"
-      - "@decantr/mcp-server@3.11.1"
+      - "@decantr/mcp-server@3.11.2"
 ```
 
 MCP tools are only available in Continue.dev agent mode.
@@ -165,7 +165,7 @@ Local scaffold, page, and section paths selected by `pack-manifest.json` are rea
 
 The `decantr_context` task input accepts `target`: a route path, exact surface ID, component name, `kind:name`, or `file:path`. It resolves every target from live verifier discovery and does not promote saved analysis, graph guesses, tests, fixtures, stories, or generated output to production-route authority. Unknown, ambiguous, inferred, unresolved, or non-taskable targets return an error with no edit read set.
 
-Next file routes that are hidden by statically resolved middleware/proxy non-success policy are valid discovery surfaces but non-taskable MCP targets. If that policy is path-dependent and cannot be resolved, task preparation returns blocked authority instead of selecting a route by convention alone. Ranked style reads retain production CSS import order, including workspace package exports. Attached route compatibility responses include the same verifier-ranked read set as CLI, exclude generated governance churn from changed-source impact, and shed compatibility-only detail before exceeding the task-capsule budget.
+Next file routes that are hidden by statically resolved middleware/proxy non-success policy are valid discovery surfaces but non-taskable MCP targets. If that policy is path-dependent and cannot be resolved, task preparation returns blocked authority instead of selecting a route by convention alone. TanStack generated metadata may corroborate an authored route's public path but is advisory evidence, never the implementation target. Astro response endpoints and TanStack/Angular layouts or fallbacks remain non-taskable. Angular task reads include statically resolved external templates, component styles, and workspace secondary-entry source. Ranked style reads retain production CSS import order, including workspace package exports. Attached route compatibility responses include the same verifier-ranked read set as CLI, exclude generated governance churn from changed-source impact, and shed compatibility-only detail before exceeding the task-capsule budget.
 
 Authoritative non-route and unadopted targets return the separate `ui-surface-task-context.v1` discovery envelope with bounded reads and explicit limitations. A standalone component or story remains project-reference evidence rather than proof of runtime reachability. An adopted route continues to use the compatible `TaskCapsuleV1` contract.
 
@@ -206,7 +206,7 @@ The npm tarball includes `server.json` so MCP directories can read the same stab
 
 ## How It Works
 
-Published 3.11.1 reads project-owned evidence: the Git change, application source and framework configuration, directly referenced workspace components, accepted local rules, `decantr.essence.json` when present, graph artifacts, baselines, and verification findings. In Brownfield, production source remains first authority and accepted Essence is project law beneath it. MCP clients can request Changed-UI Assurance with no adoption, request bounded task context before an edit, and inspect verification evidence after the edit. Decantr reports evidence and limitations; the coding agent remains responsible for the code change.
+Published 3.11.2 reads project-owned evidence: the Git change, application source and framework configuration, directly referenced workspace components, accepted local rules, `decantr.essence.json` when present, graph artifacts, baselines, and verification findings. In Brownfield, production source remains first authority and accepted Essence is project law beneath it. MCP clients can request Changed-UI Assurance with no adoption, request bounded task context before an edit, and inspect verification evidence after the edit. Decantr reports evidence and limitations; the coding agent remains responsible for the code change.
 
 ## Example Workflow
 

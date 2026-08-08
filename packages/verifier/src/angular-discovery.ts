@@ -541,10 +541,32 @@ function dynamicImportTarget(
     return null;
   const specifier = (unwrapExpression(argument as ts.Expression) as ts.StringLiteralLike).text;
   const resolved = resolveSourceImport(state.context, expression.getSourceFile(), specifier);
-  const sourceFile = resolved.relativePath
+  let sourceFile = resolved.relativePath
     ? getProjectSourceFile(state.context, resolved.relativePath)
     : undefined;
+  if (sourceFile && exportName) {
+    sourceFile = exportedSymbolSourceFile(state, sourceFile, exportName) ?? sourceFile;
+  }
   return sourceFile ? { sourceFile, exportName } : null;
+}
+
+function exportedSymbolSourceFile(
+  state: RouteParseState,
+  sourceFile: ts.SourceFile,
+  exportName: string,
+): ts.SourceFile | null {
+  const moduleSymbol = state.checker.getSymbolAtLocation(sourceFile);
+  if (!moduleSymbol) return null;
+  const exported = state.checker
+    .getExportsOfModule(moduleSymbol)
+    .find((symbol) => symbol.getName() === exportName);
+  if (!exported) return null;
+  const resolved =
+    exported.flags & ts.SymbolFlags.Alias ? state.checker.getAliasedSymbol(exported) : exported;
+  const declaration = (resolved.declarations ?? exported.declarations ?? []).find((candidate) =>
+    isPathInsideProject(state.context.projectRoot, candidate.getSourceFile().fileName),
+  );
+  return declaration?.getSourceFile() ?? null;
 }
 
 function exportedRouteExpression(
@@ -684,6 +706,7 @@ function parseRouteObject(
     );
   }
   const fullPath = path === null ? parentPath : joinRoute(parentPath, path);
+  if (path === '**') return;
   const component = propertyExpression(object, 'component');
   const loadComponent = propertyExpression(object, 'loadComponent');
   const loadChildren = propertyExpression(object, 'loadChildren');

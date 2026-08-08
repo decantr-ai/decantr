@@ -4,6 +4,8 @@ export type FrameworkRouteCompleteness = 'complete' | 'partial' | 'unknown';
 export interface FrameworkRouteSignalInput {
   file: string;
   declarationFile?: string;
+  corroborationFile?: string;
+  evidence?: string;
   kind: string;
   taskable: boolean;
 }

@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://decantr.ai/</loc>
-    <lastmod>2026-08-07T12:32:58-04:00</lastmod>
+    <lastmod>2026-08-07T13:05:43-04:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -56,7 +56,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/guides/ai-assistant-setup.md</loc>
-    <lastmod>2026-08-07T12:32:58-04:00</lastmod>
+    <lastmod>2026-08-07T13:05:43-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -584,7 +584,13 @@
   </url>
   <url>
     <loc>https://decantr.ai/releases/2026-08-07-decantr-3-11-1-mcp-metadata-compatibility.md</loc>
-    <lastmod>2026-08-07T17:00:24.495Z</lastmod>
+    <lastmod>2026-08-07T13:13:14-04:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/releases/2026-08-08-decantr-3-11-2-route-authority-hardening.md</loc>
+    <lastmod>2026-08-08T14:22:25.885Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>

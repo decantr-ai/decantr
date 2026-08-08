@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, lstatSync, readFileSync, realpathSync, statSync } from 'node:fs';
 import { dirname, extname, isAbsolute, join, relative, resolve } from 'node:path';
 import * as ts from 'typescript';
 import { type SourceLocation, sourceLocationForNode } from './ast.js';
@@ -87,6 +87,10 @@ const RESOLUTION_EXTENSIONS = ['.ts', '.tsx', '.mts', '.cts', '.js', '.jsx', '.m
 
 const inventoryPathIndexes = new WeakMap<SourceInventory, Map<string, ProjectSourceFile>>();
 const programSourceFileIndexes = new WeakMap<ts.Program, Map<string, ts.SourceFile>>();
+const workspacePackageEntryIndexes = new WeakMap<
+  ProjectSourceProgram,
+  Map<string, ProjectSourceFile>
+>();
 
 const DEFAULT_COMPILER_OPTIONS: ts.CompilerOptions = {
   allowImportingTsExtensions: true,
@@ -309,6 +313,98 @@ function manualResolutionCandidates(
   return candidates;
 }
 
+function readJsonObject(path: string, projectRoot: string): Record<string, unknown> | null {
+  try {
+    const stat = lstatSync(path);
+    if (stat.isSymbolicLink() || !stat.isFile()) return null;
+    if (!isPathInsideProject(projectRoot, realpathSync(path))) return null;
+    const parsed = JSON.parse(readFileSync(path, 'utf8')) as unknown;
+    return typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)
+      ? (parsed as Record<string, unknown>)
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+function workspacePackageEntries(context: ProjectSourceProgram): Map<string, ProjectSourceFile> {
+  const cached = workspacePackageEntryIndexes.get(context);
+  if (cached) return cached;
+
+  const inventoryByPath = inventoryFileByAbsolutePath(context.inventory);
+  const directories = new Set<string>();
+  for (const file of context.inventory.files) {
+    let directory = dirname(file.absolutePath);
+    while (isPathInsideProject(context.projectRoot, directory)) {
+      directories.add(directory);
+      if (resolve(directory) === resolve(context.projectRoot)) break;
+      directory = dirname(directory);
+    }
+  }
+
+  const packageRoots = [...directories].flatMap((directory) => {
+    const manifest = readJsonObject(join(directory, 'package.json'), context.projectRoot);
+    return manifest && typeof manifest.name === 'string'
+      ? [{ directory: resolve(directory), name: manifest.name, manifest }]
+      : [];
+  });
+  const entries = new Map<string, ProjectSourceFile>();
+
+  const addEntry = (specifier: string, absolutePath: string): void => {
+    const source = inventoryByPath.get(normalizeSourcePath(resolve(absolutePath)));
+    if (source && !entries.has(specifier)) entries.set(specifier, source);
+  };
+
+  for (const pkg of packageRoots) {
+    const source = typeof pkg.manifest.source === 'string' ? pkg.manifest.source : null;
+    if (source) addEntry(pkg.name, resolve(pkg.directory, source));
+    for (const candidate of ['index.ts', 'src/index.ts', 'public-api.ts', 'src/public-api.ts']) {
+      addEntry(pkg.name, resolve(pkg.directory, candidate));
+    }
+  }
+
+  const sortedRoots = [...packageRoots].sort(
+    (left, right) => right.directory.length - left.directory.length,
+  );
+  for (const directory of directories) {
+    const ngPackage = readJsonObject(join(directory, 'ng-package.json'), context.projectRoot);
+    const lib = ngPackage?.lib;
+    if (!lib || typeof lib !== 'object' || Array.isArray(lib)) continue;
+    const entryFile = (lib as Record<string, unknown>).entryFile;
+    if (typeof entryFile !== 'string') continue;
+    const owner = sortedRoots.find((candidate) =>
+      isPathInsideProject(candidate.directory, directory),
+    );
+    if (!owner) continue;
+    const subpath = normalizeSourcePath(relative(owner.directory, directory));
+    const specifier = subpath && subpath !== '.' ? `${owner.name}/${subpath}` : owner.name;
+    addEntry(specifier, resolve(directory, entryFile));
+  }
+
+  workspacePackageEntryIndexes.set(context, entries);
+  return entries;
+}
+
+function resolveWorkspacePackageImport(
+  context: ProjectSourceProgram,
+  source: string,
+  importerPath: string,
+): SourceImportResolution | null {
+  const workspaceEntry = workspacePackageEntries(context).get(source);
+  if (!workspaceEntry) return null;
+  return {
+    source,
+    importer: normalizeSourcePath(relative(context.projectRoot, importerPath) || importerPath),
+    kind: 'project-local',
+    resolvedFileName: workspaceEntry.absolutePath,
+    relativePath: workspaceEntry.relativePath,
+    extension: workspaceEntry.extension,
+    isProjectLocal: true,
+    isExternal: false,
+    failed: false,
+  };
+}
+
 function resolveFromInventory(
   context: ProjectSourceProgram,
   source: string,
@@ -355,6 +451,10 @@ export function resolveSourceImport(
     relative(context.projectRoot, importerPath) || importerPath,
   );
   const inventoryByPath = inventoryFileByAbsolutePath(context.inventory);
+  const workspaceResolution = hasExternalPackageShape(source)
+    ? resolveWorkspacePackageImport(context, source, importerPath)
+    : null;
+  if (workspaceResolution) return workspaceResolution;
 
   const resolved = ts.resolveModuleName(
     source,

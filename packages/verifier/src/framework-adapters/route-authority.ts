@@ -94,13 +94,27 @@ export function assessFrameworkRouteAuthority(
     hasTanstack &&
     authorityFiles.every((file) => /(?:^|\/)src\/routes\//u.test(file))
   ) {
+    const hasUncorroboratedConventions = input.signals.some(
+      (signal) =>
+        signal.evidence ===
+        'TanStack internal route id normalized without generated public-path corroboration',
+    );
     return {
       adapter: 'tanstack-file-router',
       authority: 'proven',
-      completeness: 'complete',
+      completeness: hasUncorroboratedConventions ? 'partial' : 'complete',
       authorityFiles,
-      evidence: ['TanStack file-route declarations are inside the selected app route root.'],
-      limitations: [],
+      evidence: [
+        'TanStack file-route declarations are inside the selected app route root.',
+        ...(input.signals.some((signal) => signal.corroborationFile)
+          ? ['TanStack generated route metadata corroborates authored public paths.']
+          : []),
+      ],
+      limitations: hasUncorroboratedConventions
+        ? [
+            'TanStack pathless or route-group identifiers were normalized by convention because generated public-path metadata was unavailable.',
+          ]
+        : [],
     };
   }
 

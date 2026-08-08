@@ -1,6 +1,6 @@
 {
   "name": "@decantr/verifier",
-  "version": "3.11.0",
+  "version": "3.11.2",
   "description": "Changed-UI assurance, authority discovery, task context, Project Health, and evidence contracts for Decantr",
   "keywords": [
     "decantr",

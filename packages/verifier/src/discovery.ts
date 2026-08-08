@@ -77,6 +77,7 @@ export interface DiscoveryRouteSignal {
   taskable: boolean;
   evidence: string;
   declarationFile?: string;
+  corroborationFile?: string;
 }
 
 export interface DiscoveryRoute {
@@ -222,6 +223,8 @@ const PAGE_EXTENSIONS = new Set([
   '.astro',
   '.html',
 ]);
+const ASTRO_PAGE_EXTENSIONS = new Set(['.astro', '.md', '.mdx', '.html']);
+const ASTRO_ENDPOINT_EXTENSIONS = new Set(['.ts', '.js']);
 const UI_SURFACE_EXTENSIONS = new Set([
   ...SOURCE_EXTENSIONS,
   ...STYLE_EXTENSIONS,
@@ -701,6 +704,22 @@ function scanFileRoutes(
 function isAstroPublicPageSignal(signal: DiscoveryRouteSignal): boolean {
   const pageRelativePath = signal.file.replace(/^(?:src\/)?pages\//u, '');
   return !pageRelativePath.split('/').some((segment) => segment.startsWith('_'));
+}
+
+function scanAstroRouteSignals(projectRoot: string): DiscoveryRouteSignal[] {
+  return ['src/pages', 'pages'].flatMap((baseDir) => {
+    const pages = scanFileRoutes(projectRoot, baseDir, ASTRO_PAGE_EXTENSIONS)
+      .filter(isAstroPublicPageSignal)
+      .map((signal) => ({ ...signal, evidence: `Astro UI page ${signal.file}` }));
+    const endpoints = scanFileRoutes(projectRoot, baseDir, ASTRO_ENDPOINT_EXTENSIONS)
+      .filter(isAstroPublicPageSignal)
+      .map((signal) => ({
+        ...signal,
+        taskable: false,
+        evidence: `Astro response endpoint ${signal.file}`,
+      }));
+    return [...pages, ...endpoints];
+  });
 }
 
 function reactRouterFileRouteFromPath(file: string, baseDir: string): string {
@@ -1326,6 +1345,176 @@ function isTanstackServerOnlyRouteFile(sourceFile: ts.SourceFile): boolean {
   return declarationCount > 0 && declarationCount === serverOnlyCount;
 }
 
+interface ParsedRouteSource {
+  content: string;
+  file: string;
+  sourceFile: ts.SourceFile;
+}
+
+interface TanstackGeneratedRouteEntry {
+  fullPath: string;
+  manifestFile: string;
+  routePath: string;
+}
+
+function typeLiteralStringProperty(type: ts.TypeLiteralNode, propertyName: string): string | null {
+  const property = type.members.find(
+    (member): member is ts.PropertySignature =>
+      ts.isPropertySignature(member) && propertyNameText(member.name) === propertyName,
+  );
+  if (!property?.type || !ts.isLiteralTypeNode(property.type)) return null;
+  const literal = property.type.literal;
+  return ts.isStringLiteralLike(literal) ? literal.text : null;
+}
+
+function typeLiteralTypeQueryName(type: ts.TypeLiteralNode, propertyName: string): string | null {
+  const property = type.members.find(
+    (member): member is ts.PropertySignature =>
+      ts.isPropertySignature(member) && propertyNameText(member.name) === propertyName,
+  );
+  return property?.type &&
+    ts.isTypeQueryNode(property.type) &&
+    ts.isIdentifier(property.type.exprName)
+    ? property.type.exprName.text
+    : null;
+}
+
+function collectTanstackGeneratedRoutes(
+  projectRoot: string,
+  parsedFiles: ParsedRouteSource[],
+): Map<string, TanstackGeneratedRouteEntry> {
+  const routes = new Map<string, TanstackGeneratedRouteEntry>();
+  const manifests = parsedFiles.filter(
+    ({ content, file }) =>
+      /(?:^|\/)routeTree\.gen\.[cm]?[jt]sx?$/iu.test(file) &&
+      content.includes('FileRoutesByPath') &&
+      content.includes('preLoaderRoute'),
+  );
+
+  for (const manifest of manifests) {
+    const imports = new Map<string, string>();
+    for (const statement of manifest.sourceFile.statements) {
+      if (
+        !ts.isImportDeclaration(statement) ||
+        !ts.isStringLiteralLike(statement.moduleSpecifier) ||
+        !statement.importClause?.namedBindings ||
+        !ts.isNamedImports(statement.importClause.namedBindings)
+      ) {
+        continue;
+      }
+      const resolved = resolveLocalImportFile(
+        projectRoot,
+        manifest.file,
+        statement.moduleSpecifier.text,
+      );
+      if (!resolved) continue;
+      for (const element of statement.importClause.namedBindings.elements) {
+        imports.set(element.name.text, resolved);
+      }
+    }
+
+    const visit = (node: ts.Node): void => {
+      if (ts.isInterfaceDeclaration(node) && node.name.text === 'FileRoutesByPath') {
+        for (const member of node.members) {
+          if (
+            !ts.isPropertySignature(member) ||
+            !member.type ||
+            !ts.isTypeLiteralNode(member.type)
+          ) {
+            continue;
+          }
+          const importName = typeLiteralTypeQueryName(member.type, 'preLoaderRoute');
+          const fullPath = typeLiteralStringProperty(member.type, 'fullPath');
+          const routePath = typeLiteralStringProperty(member.type, 'path');
+          const sourceFile = importName ? imports.get(importName) : null;
+          if (!sourceFile || fullPath === null || routePath === null) continue;
+          const normalized = normalizeRouteLiteral(fullPath)[0];
+          if (!normalized) continue;
+          routes.set(sourceFile, {
+            fullPath: tanstackPublicPathFromIdentifier(normalized),
+            manifestFile: manifest.file,
+            routePath,
+          });
+        }
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(manifest.sourceFile);
+  }
+
+  return routes;
+}
+
+function tanstackPublicPathFromIdentifier(path: string): string {
+  const segments = path
+    .split('/')
+    .filter(Boolean)
+    .flatMap((segment) => {
+      if (/^\(.+\)$/u.test(segment) || segment.startsWith('_')) return [];
+      const unnested = segment.endsWith('_') ? segment.slice(0, -1) : segment;
+      if (unnested === '$') return [':splat*'];
+      if (unnested.startsWith('$')) return [`:${unnested.slice(1)}`];
+      return [unnested];
+    });
+  return `/${segments.join('/')}` || '/';
+}
+
+function hasTanstackPathConventions(path: string): boolean {
+  return path
+    .split('/')
+    .filter(Boolean)
+    .some(
+      (segment) =>
+        /^\(.+\)$/u.test(segment) ||
+        segment.startsWith('_') ||
+        segment.startsWith('$') ||
+        segment.endsWith('_'),
+    );
+}
+
+function reconcileTanstackRouteSignals(
+  projectRoot: string,
+  signals: DiscoveryRouteSignal[],
+  parsedFiles: ParsedRouteSource[],
+): DiscoveryRouteSignal[] {
+  const generatedRoutes = collectTanstackGeneratedRoutes(projectRoot, parsedFiles);
+  const sourceByFile = new Map(parsedFiles.map((entry) => [entry.file, entry]));
+
+  return signals.map((signal) => {
+    if (signal.kind !== 'tanstack-router') return signal;
+    if (signal.evidence === 'TanStack root route') {
+      return { ...signal, taskable: false, evidence: 'TanStack root layout declaration' };
+    }
+    const source = sourceByFile.get(signal.file);
+    if (
+      !source?.content.includes('createFileRoute') &&
+      !source?.content.includes('createLazyFileRoute')
+    ) {
+      return signal;
+    }
+    const generated = generatedRoutes.get(signal.file);
+    if (generated) {
+      return {
+        ...signal,
+        path: generated.fullPath,
+        taskable: signal.taskable && generated.routePath !== '',
+        confidence: 'high',
+        corroborationFile: generated.manifestFile,
+        evidence: `TanStack authored route mapped by ${generated.manifestFile}`,
+      };
+    }
+    if (!hasTanstackPathConventions(signal.path)) return signal;
+    const publicPath = tanstackPublicPathFromIdentifier(signal.path);
+    return {
+      ...signal,
+      path: publicPath,
+      taskable: signal.taskable && publicPath !== '/',
+      confidence: 'medium',
+      evidence: 'TanStack internal route id normalized without generated public-path corroboration',
+    };
+  });
+}
+
 function detectSourceRouteSignals(
   projectRoot: string,
   identity: DiscoveryProjectIdentity,
@@ -1464,7 +1653,8 @@ function detectSourceRouteSignals(
     }
   }
 
-  return formalSignals.length > 0 ? formalSignals : fallbackSignals;
+  const selected = formalSignals.length > 0 ? formalSignals : fallbackSignals;
+  return hasTanstack ? reconcileTanstackRouteSignals(projectRoot, selected, parsedFiles) : selected;
 }
 
 function htmlRouteFromFile(file: string): string {
@@ -1534,8 +1724,8 @@ function discoverRoutes(
     scanFileRoutes(projectRoot, dir, PAGE_EXTENSIONS, new Set(['page'])),
   );
   const pagesSignals = ['src/pages', 'pages'].flatMap((dir) => scanFileRoutes(projectRoot, dir));
-  const frameworkPageSignals =
-    identity.framework === 'astro' ? pagesSignals.filter(isAstroPublicPageSignal) : pagesSignals;
+  const astroSignals = identity.framework === 'astro' ? scanAstroRouteSignals(projectRoot) : [];
+  const frameworkPageSignals = identity.framework === 'astro' ? astroSignals : pagesSignals;
   if (identity.framework === 'nextjs') {
     fileRouteSignals.push(...nextAppSignals, ...pagesSignals);
   } else if (identity.framework === 'svelte') {
@@ -1728,11 +1918,11 @@ function discoverComponents(
     });
   }
   for (const file of sourceFiles) {
+    if (identity.framework === 'angular') continue;
     if (!/\.(tsx|jsx|vue|svelte|astro)$/.test(file) && !/\.(ts|js)$/.test(file)) continue;
     if (EXCLUDED_SOURCE_FILE_RE.test(file) || !isProductionAuthorityPath(file)) continue;
     if (identity.framework === 'nextjs' && NEXT_SERVER_HANDLER_RE.test(file)) continue;
     const content = readTextFile(join(projectRoot, file), 256 * 1024) ?? '';
-    if (identity.framework === 'angular' && /@Component\s*\(/u.test(content)) continue;
     if (!/[<][A-Za-z][^>]*>/.test(content) && !/\.(vue|svelte|astro)$/.test(file)) continue;
     const base = file.split('/').pop() ?? file;
     const nameFromFile = base.slice(0, -extname(base).length);

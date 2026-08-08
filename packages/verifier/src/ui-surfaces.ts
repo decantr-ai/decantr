@@ -1,4 +1,6 @@
-import { basename } from 'node:path';
+import { lstatSync, readFileSync, realpathSync } from 'node:fs';
+import { basename, dirname, extname, isAbsolute, join, relative, resolve } from 'node:path';
+import * as ts from 'typescript';
 import type {
   DiscoveryComponents,
   DiscoveryConfidenceLevel,
@@ -93,8 +95,109 @@ const LAYOUT_FILE_RE =
 const OVERLAY_NAME_RE =
   /(?:Dialog|Modal|Drawer|Sheet|Popover|Tooltip|Overlay|Menu|Toast|CommandPalette)$/u;
 
+function propertyNameText(name: ts.PropertyName | undefined): string | null {
+  if (!name) return null;
+  return ts.isIdentifier(name) || ts.isStringLiteralLike(name) ? name.text : null;
+}
+
+function staticResourceValues(expression: ts.Expression): string[] {
+  if (ts.isStringLiteralLike(expression)) return [expression.text];
+  if (ts.isArrayLiteralExpression(expression)) {
+    return expression.elements.flatMap((element) =>
+      ts.isExpression(element) ? staticResourceValues(element) : [],
+    );
+  }
+  return [];
+}
+
+function isContainedRegularFile(projectRoot: string, absolute: string): boolean {
+  const lexicalRelation = relative(projectRoot, absolute);
+  if (
+    lexicalRelation === '..' ||
+    lexicalRelation.startsWith('../') ||
+    isAbsolute(lexicalRelation)
+  ) {
+    return false;
+  }
+  try {
+    const stat = lstatSync(absolute);
+    if (stat.isSymbolicLink() || !stat.isFile()) return false;
+    const realRelation = relative(realpathSync(projectRoot), realpathSync(absolute));
+    return realRelation !== '..' && !realRelation.startsWith('../') && !isAbsolute(realRelation);
+  } catch {
+    return false;
+  }
+}
+
+function angularComponentResourceFiles(projectRoot: string, componentFile: string): string[] {
+  if (!/\.[cm]?[jt]s$/iu.test(componentFile)) return [componentFile];
+  const absoluteComponent = join(projectRoot, componentFile);
+  let content = '';
+  try {
+    content = readFileSync(absoluteComponent, 'utf8');
+  } catch {
+    return [componentFile];
+  }
+  if (!content.includes('@Component')) return [componentFile];
+
+  const source = ts.createSourceFile(
+    componentFile,
+    content,
+    ts.ScriptTarget.Latest,
+    true,
+    componentFile.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+  );
+  const resources = new Set<string>([componentFile]);
+  const addResource = (value: string): void => {
+    const absolute = resolve(dirname(absoluteComponent), value);
+    const relation = relative(projectRoot, absolute).replace(/\\/gu, '/');
+    if (!relation || !isContainedRegularFile(projectRoot, absolute)) return;
+    resources.add(relation);
+    if (extname(absolute).toLowerCase() === '.html') {
+      const authoredView = absolute.slice(0, -extname(absolute).length) + '.pug';
+      if (isContainedRegularFile(projectRoot, authoredView)) {
+        resources.add(relative(projectRoot, authoredView).replace(/\\/gu, '/'));
+      }
+    }
+  };
+
+  const visit = (node: ts.Node): void => {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      node.expression.text === 'Component' &&
+      node.arguments[0] &&
+      ts.isObjectLiteralExpression(node.arguments[0])
+    ) {
+      for (const property of node.arguments[0].properties) {
+        if (!ts.isPropertyAssignment(property)) continue;
+        const name = propertyNameText(property.name);
+        if (!name || !['templateUrl', 'styleUrl', 'styleUrls'].includes(name)) continue;
+        for (const value of staticResourceValues(property.initializer)) addResource(value);
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  return [...resources];
+}
+
+function surfaceImplementationFiles(
+  input: BuildUISurfaceDiscoveryInput,
+  file: string,
+  cache: Map<string, string[]>,
+): string[] {
+  if (input.project.framework !== 'angular') return [file];
+  const cached = cache.get(file);
+  if (cached) return cached;
+  const files = angularComponentResourceFiles(input.projectRoot, file);
+  cache.set(file, files);
+  return files;
+}
+
 export function buildUISurfaceDiscovery(input: BuildUISurfaceDiscoveryInput): UISurfaceDiscovery {
   const items = new Map<string, UISurfaceItem>();
+  const implementationFileCache = new Map<string, string[]>();
   const evidenceAdapters = discoverUIEvidenceAdapters({
     projectRoot: input.projectRoot,
     files: input.files,
@@ -103,11 +206,12 @@ export function buildUISurfaceDiscovery(input: BuildUISurfaceDiscoveryInput): UI
 
   for (const signal of input.routes.routeSignals) {
     const id = `route:${signal.path}:${signal.file}`;
+    const files = surfaceImplementationFiles(input, signal.file, implementationFileCache);
     items.set(id, {
       id,
       kind: 'route',
       name: signal.path,
-      files: [signal.file],
+      files,
       scope: classifyProjectSourceScope(signal.file),
       authority: !signal.taskable
         ? 'project-reference'
@@ -122,22 +226,33 @@ export function buildUISurfaceDiscovery(input: BuildUISurfaceDiscoveryInput): UI
           : 'limited'
         : 'blocked',
       confidence: signal.confidence,
-      evidence: [signal.evidence],
+      evidence: [
+        signal.evidence,
+        ...(files.length > 1
+          ? [`${files.length - 1} external Angular component resource(s) resolved`]
+          : []),
+      ],
     });
   }
 
   for (const component of input.components.items) {
     const id = `component:${component.file}:${component.name}`;
+    const files = surfaceImplementationFiles(input, component.file, implementationFileCache);
     items.set(id, {
       id,
       kind: 'component',
       name: component.name,
-      files: [component.file],
+      files,
       scope: classifyProjectSourceScope(component.file),
       authority: 'project-reference',
       taskability: 'limited',
       confidence: component.confidence,
-      evidence: [`Static component declaration in ${component.file}`],
+      evidence: [
+        `Static component declaration in ${component.file}`,
+        ...(files.length > 1
+          ? [`${files.length - 1} external Angular component resource(s) resolved`]
+          : []),
+      ],
     });
     if (OVERLAY_NAME_RE.test(component.name)) {
       const overlayId = `overlay:${component.file}:${component.name}`;
@@ -145,7 +260,7 @@ export function buildUISurfaceDiscovery(input: BuildUISurfaceDiscoveryInput): UI
         id: overlayId,
         kind: 'overlay',
         name: component.name,
-        files: [component.file],
+        files,
         scope: classifyProjectSourceScope(component.file),
         authority: 'project-reference',
         taskability: 'limited',

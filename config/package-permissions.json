@@ -157,7 +157,7 @@
       "runtimeKind": "library",
       "ships": ["dist", "schema", "README.md", "package.json"],
       "filesystem": {
-        "read": ["Selected project source and stylesheet files", "Directly referenced workspace package source when changed-UI assurance resolves shared component authority", "Decantr context files", "accepted .decantr/style-bridge.json when verification checks style bridge drift", "read-only scan files for framework, route, styling, static-host, assistant-rule, source inventory, and Decantr presence signals", "Angular workspace/build metadata and production TypeScript import graphs for read-only route-authority resolution", "built dist/.next output when auditBuiltDist or auditProject needs runtime evidence"],
+        "read": ["Selected project source and stylesheet files", "Directly referenced workspace package source when changed-UI assurance resolves shared component authority", "Decantr context files", "accepted .decantr/style-bridge.json when verification checks style bridge drift", "read-only scan files for framework, route, styling, static-host, assistant-rule, source inventory, and Decantr presence signals", "Framework route metadata, including TanStack generated route manifests used only to corroborate authored public paths and Astro Markdown/MDX page files", "Angular workspace/build and ng-packagr metadata, production TypeScript import graphs, and statically referenced component templates/styles/authored Pug files for read-only route and task-context resolution", "built dist/.next output when auditBuiltDist or auditProject needs runtime evidence"],
         "write": [],
         "delete": []
       },
@@ -173,7 +173,7 @@
       "localArtifacts": ["Evidence Bundle objects returned to callers; file writes are owned by the CLI/MCP caller"],
       "scannerNotes": [
         "scanProject is read-only and returns relative evidence; it does not write artifacts, install dependencies, build projects, execute scripts, or open pull requests.",
-        "Angular route discovery excludes test, fixture, mock, E2E, and generated source before resolving bootstrap-reachable router authority.",
+        "Angular route discovery excludes test, fixture, mock, E2E, and generated source before resolving bootstrap-reachable router authority; generated TanStack route manifests are read only as public-path corroboration and never as implementation authority.",
         "probePublishedSite fetches HTML metadata and asset hints over HTTP(S) only; it does not execute JavaScript or capture browser screenshots.",
         "Runtime audit starts a local loopback server for already-built assets; it does not contact external hosts."
       ]

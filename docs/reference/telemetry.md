@@ -1,6 +1,6 @@
 # Telemetry
 
-Decantr 3.11.0 keeps `@decantr/telemetry` 3.8.1 as an optional compatibility contract and sink package. It is not part of the active product nucleus, and hosted product analytics are retired.
+Decantr 3.11.2 keeps `@decantr/telemetry` 3.8.1 as an optional compatibility contract and sink package. It is not part of the active product nucleus, and hosted product analytics are retired.
 
 The active direction is local UI change control. Telemetry remains a caller-controlled compatibility capability:
 
