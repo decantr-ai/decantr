@@ -146,6 +146,7 @@ const missingPublicVersionPolicies = difference(
 
 const toolSource = readFileSync(TOOL_SOURCE_PATH, 'utf8');
 const docsIndex = readFileSync(DOCS_INDEX_PATH, 'utf8');
+const homepageSource = readFileSync('apps/homepage/src/page.tsx', 'utf8');
 const docsAnalytics = readFileSync(DOCS_ANALYTICS_PATH, 'utf8');
 const agentBrief = readFileSync('DECANTR.md', 'utf8');
 const securityPolicy = readFileSync(SECURITY_PATH, 'utf8');
@@ -192,8 +193,11 @@ if (/3\.11[^\n]{0,240}\b(?:remains )?unreleased\b/i.test(docsIndex)) {
   failures.push('Docs homepage still describes the current 3.11 line as unreleased.');
 }
 
-if (!/<span[^>]*class="badge"[^>]*>\s*3\.10\s*<\/span>/i.test(docsIndex)) {
-  failures.push('Docs homepage must badge the task-capsule surface as 3.10.');
+if (!/Your AI is building[\s\S]*a second design system/i.test(homepageSource)) {
+  failures.push('Docs homepage source is missing the approved AI frontend governance positioning.');
+}
+if (!/npx @decantr\/cli verify/i.test(homepageSource)) {
+  failures.push('Docs homepage source is missing the zero-setup verify command.');
 }
 
 const securityRequirements = [
@@ -273,74 +277,6 @@ if (registryShowcase?.goldenCandidate) {
   failures.push('registry-platform must not remain a golden showcase candidate.');
 }
 
-if (!toolHeadingMatch) {
-  failures.push('docs/index.html is missing the MCP tool count heading.');
-} else {
-  const declaredToolCount = Number(toolHeadingMatch[1]);
-  if (declaredToolCount !== toolNames.length) {
-    failures.push(`Docs homepage declares ${declaredToolCount} MCP tools, but tools.ts defines ${toolNames.length}.`);
-  }
-}
-
-const missingTools = difference(toolNames, docsToolNames);
-const extraTools = difference(docsToolNames, toolNames);
-
-if (missingTools.length > 0) {
-  failures.push(`Docs homepage is missing MCP tools: ${missingTools.join(', ')}`);
-}
-
-if (extraTools.length > 0) {
-  failures.push(`Docs homepage lists unknown MCP tools: ${extraTools.join(', ')}`);
-}
-
-const missingPackages = difference(EXPECTED_PACKAGES, docsPackageNames);
-const extraPackages = difference(docsPackageNames, EXPECTED_PACKAGES);
-
-if (!packageHeadingMatch) {
-  failures.push('docs/index.html is missing the package heading.');
-} else if (packageHeadingMatch[1]) {
-  const numberWords = new Map([
-    ['one', 1],
-    ['two', 2],
-    ['three', 3],
-    ['four', 4],
-    ['five', 5],
-    ['six', 6],
-    ['seven', 7],
-    ['eight', 8],
-    ['nine', 9],
-    ['ten', 10],
-  ]);
-  const declaredPackageCount = numberWords.get(packageHeadingMatch[1].toLowerCase());
-  if (declaredPackageCount !== EXPECTED_PACKAGES.length) {
-    failures.push(`Docs homepage declares ${packageHeadingMatch[1]} packages, but the expected core set contains ${EXPECTED_PACKAGES.length}.`);
-  }
-}
-
-if (missingPackages.length > 0) {
-  failures.push(`Docs homepage is missing core packages: ${missingPackages.join(', ')}`);
-}
-
-if (extraPackages.length > 0) {
-  failures.push(`Docs homepage lists unexpected package names: ${extraPackages.join(', ')}`);
-}
-
-for (const [pkg, packageJsonPath] of Object.entries(EXPECTED_PACKAGE_PATHS)) {
-  const developmentVersion = JSON.parse(readFileSync(packageJsonPath, 'utf8')).version;
-  const currentPublicVersion = CURRENT_PUBLIC_PACKAGE_VERSIONS[pkg];
-  const docsVersion = docsPackageVersions[pkg];
-  if (!docsVersion) {
-    failures.push(`Docs homepage is missing a displayed version for ${pkg}.`);
-    continue;
-  }
-  if (docsVersion !== currentPublicVersion) {
-    const source = docsVersion === developmentVersion
-      ? `the unreleased development manifest version v${developmentVersion}`
-      : `v${docsVersion}`;
-    failures.push(`Docs homepage shows ${pkg} as ${source}, but the current public version is v${currentPublicVersion}.`);
-  }
-}
-
 if (failures.length > 0) {
   console.error('Docs marketing audit failed:\n');
   for (const failure of failures) {
@@ -349,4 +285,4 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log(`Docs marketing audit passed: v${CURRENT_PUBLIC_RELEASE} is current, security/codemeta posture is aligned, and ${toolNames.length} MCP tools plus ${EXPECTED_PACKAGES.length} public package versions match.`);
+console.log(`Docs marketing audit passed: v${CURRENT_PUBLIC_RELEASE} is current, homepage positioning is aligned, and security/codemeta posture is current.`);

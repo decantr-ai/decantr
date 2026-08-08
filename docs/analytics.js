@@ -22,7 +22,7 @@
         return;
       }
 
-      var command = closestElement(event.target, '.showcase-code, .qs-code-block');
+      var command = closestElement(event.target, '.showcase-code, .qs-code-block, .command, .try-command, .closing-command');
       if (command) {
         captureXPixelEvent('marketing_web.command_clicked');
         return;

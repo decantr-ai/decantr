@@ -13,6 +13,7 @@
   "scripts": {
     "build:packages": "pnpm --filter @decantr/essence-spec --filter @decantr/content --filter @decantr/registry --filter @decantr/css --filter @decantr/telemetry run build && pnpm --filter @decantr/core --filter @decantr/verifier --filter @decantr/mcp-server --filter @decantr/cli --filter @decantr/vite-plugin run build",
     "build:apps": "pnpm --filter './apps/api' run build",
+    "build:homepage": "pnpm --filter @decantr/homepage run build",
     "build": "pnpm run build:packages && pnpm run build:apps",
     "test": "vitest run --maxWorkers=1 && pnpm test:release-tooling",
     "test:release-tooling": "node --test --test-concurrency=1 scripts/release-lane-hardening.test.mjs scripts/release-vulnerability-audit-lib.test.mjs scripts/realworld-corpus.test.mjs",
