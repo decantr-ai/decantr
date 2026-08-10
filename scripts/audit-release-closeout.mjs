@@ -39,6 +39,12 @@ const onlyWave = readArgValue(rawArgs, 'wave');
 const tagOverride = readArgValue(rawArgs, 'tag-override') ?? readArgValue(rawArgs, 'tag');
 const stagingManifestOverride = readArgValue(rawArgs, 'staging-manifest');
 const stagingDirOverride = readArgValue(rawArgs, 'staging-dir');
+const repoRootOverride = readArgValue(rawArgs, 'repo-root');
+const publishRunId = normalizePublishRunId(
+  readArgValue(rawArgs, 'publish-run-id')
+    ?? process.env.DECANTR_PUBLISH_RUN_ID
+    ?? process.env.GITHUB_RUN_ID,
+);
 const onlyNames = new Set(
   readArgValue(rawArgs, 'only')
     ? readArgValue(rawArgs, 'only')
@@ -48,9 +54,11 @@ const onlyNames = new Set(
     : [],
 );
 const explicitVersion = readArgValue(rawArgs, 'version');
-const root = process.env.NODE_ENV === 'test' && process.env.DECANTR_RELEASE_TEST_ROOT
-  ? resolve(process.env.DECANTR_RELEASE_TEST_ROOT)
-  : getRepoRoot();
+const root = repoRootOverride
+  ? resolve(repoRootOverride)
+  : process.env.NODE_ENV === 'test' && process.env.DECANTR_RELEASE_TEST_ROOT
+    ? resolve(process.env.DECANTR_RELEASE_TEST_ROOT)
+    : getRepoRoot();
 const releaseVersion = normalizeVersion(explicitVersion);
 const releaseTag = releaseVersion ? `v${releaseVersion}` : null;
 const generatedAt = new Date().toISOString();
@@ -252,6 +260,7 @@ const output = {
     skipNpm,
     tagOverride,
     wave: onlyWave,
+    publishRunId,
   },
   summary: {
     failed: failures.length,
@@ -273,6 +282,12 @@ function normalizeVersion(value) {
   if (typeof value !== 'string') return null;
   const trimmed = value.trim().replace(/^v/, '');
   return /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(trimmed) ? trimmed : null;
+}
+
+function normalizePublishRunId(value) {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return /^[1-9][0-9]*$/u.test(trimmed) ? trimmed : null;
 }
 
 function runGit(gitArgs, options = {}) {
@@ -505,6 +520,17 @@ function loadStagingManifest(path) {
   if (releaseLane?.stableOnly === true && manifest.sourceVerification?.status !== 'verified') {
     throw new Error('The retained stable staging manifest was not produced from a verified publish source.');
   }
+  if (
+    manifest.sourceVerification?.status === 'verified'
+    && (
+      manifest.sourceVerification.version !== releaseVersion
+      || manifest.sourceVerification.tag !== releaseTag
+      || manifest.sourceVerification.commit !== tagCommit
+      || manifest.sourceVerification.remoteTag !== tagCommit
+    )
+  ) {
+    throw new Error('Retained release source verification differs from the requested tag identity.');
+  }
 
   const expectedNames = selected.map((entry) => entry.name);
   const observedNames = Array.isArray(manifest.packages)
@@ -668,13 +694,59 @@ async function verifyNpmProvenance(packageArtifact, dist, sha512Hex) {
   ) {
     throw new Error('npm SLSA provenance does not identify the protected Decantr publish workflow.');
   }
-  const sourceCommit = statement.predicate?.buildDefinition?.resolvedDependencies?.find(
-    (entry) => entry.digest?.gitCommit === tagCommit,
+  const workflowDependency = statement.predicate?.buildDefinition?.resolvedDependencies?.find(
+    (entry) => entry.uri === `git+https://github.com/decantr-ai/decantr@${workflow.ref}`,
   );
-  if (!sourceCommit) {
+  if (workflowDependency?.digest?.gitCommit === tagCommit) {
+    return `SLSA subject SHA-512 and publish workflow source resolve to ${releaseTag} at ${tagCommit}`;
+  }
+
+  if (workflow.ref !== 'refs/heads/main') {
     throw new Error(`npm SLSA provenance does not resolve to release commit ${tagCommit}.`);
   }
-  return `SLSA subject SHA-512 and publish workflow source resolve to ${releaseTag} at ${tagCommit}`;
+
+  const sourceVerification = stagingManifest.sourceVerification;
+  const expectedWorkflowCommit = sourceVerification?.remoteMain;
+  if (
+    !/^[a-f0-9]{40}$/u.test(expectedWorkflowCommit ?? '')
+    || sourceVerification?.originMain !== expectedWorkflowCommit
+  ) {
+    throw new Error('Retained release staging does not bind the verified manual-dispatch main commit.');
+  }
+  if (workflowDependency?.digest?.gitCommit !== expectedWorkflowCommit) {
+    throw new Error('npm SLSA provenance main commit differs from retained release source verification.');
+  }
+  if (
+    runGit(['merge-base', '--is-ancestor', tagCommit, expectedWorkflowCommit], { allowFailure: true }) === null
+  ) {
+    throw new Error('npm SLSA provenance main commit does not contain the release tag commit.');
+  }
+
+  const tagWorkflowBlob = runGit(
+    ['rev-parse', '--verify', `${tagCommit}:${workflow.path}`],
+    { allowFailure: true },
+  )?.trim();
+  const dispatchWorkflowBlob = runGit(
+    ['rev-parse', '--verify', `${expectedWorkflowCommit}:${workflow.path}`],
+    { allowFailure: true },
+  )?.trim();
+  if (!tagWorkflowBlob || dispatchWorkflowBlob !== tagWorkflowBlob) {
+    throw new Error('The attested manual-dispatch publish workflow differs from the tagged release workflow.');
+  }
+
+  if (!publishRunId) {
+    throw new Error('Manual-dispatch provenance requires --publish-run-id or GITHUB_RUN_ID.');
+  }
+  const invocationId = statement.predicate?.runDetails?.metadata?.invocationId;
+  const invocationPrefix = `https://github.com/decantr-ai/decantr/actions/runs/${publishRunId}/attempts/`;
+  const attempt = typeof invocationId === 'string' && invocationId.startsWith(invocationPrefix)
+    ? invocationId.slice(invocationPrefix.length)
+    : null;
+  if (!/^[1-9][0-9]*$/u.test(attempt ?? '')) {
+    throw new Error(`npm SLSA provenance does not identify publish run ${publishRunId}.`);
+  }
+
+  return `SLSA subject SHA-512 binds ${releaseTag} bytes; manual publish run ${publishRunId} used unchanged workflow commit ${expectedWorkflowCommit}`;
 }
 
 async function verifyPublishedArtifact(entry, version) {

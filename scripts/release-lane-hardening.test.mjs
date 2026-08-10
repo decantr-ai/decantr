@@ -395,6 +395,12 @@ function createPublishIntegrityFixture(t) {
     name: '@decantr/cli',
     version: '3.9.0',
   });
+  mkdirSync(join(directory, '.github/workflows'), { recursive: true });
+  writeFileSync(
+    join(directory, '.github/workflows/publish.yml'),
+    'name: Publish\non: workflow_dispatch\n',
+    'utf8',
+  );
   writeJson(join(directory, 'fixtures/qualification/3.9/qualification-packet.json'), {
     packetStatus: 'complete',
     qualificationClaim: true,
@@ -711,6 +717,21 @@ test('OIDC token fallback reuses the retained qualified tarball', (t) => {
 
 test('closeout binds public npm bytes and OIDC provenance to retained release-evidence hashes', (t) => {
   const fixture = createPublishIntegrityFixture(t);
+  const releaseTree = git(fixture.directory, ['rev-parse', `${fixture.tagCommit}^{tree}`]);
+  const dispatchCommit = git(fixture.directory, [
+    'commit-tree',
+    releaseTree,
+    '-p',
+    fixture.tagCommit,
+    '-m',
+    'manual dispatch source',
+  ]);
+  git(fixture.directory, [
+    'push',
+    '--force',
+    'origin',
+    `${dispatchCommit}:refs/heads/main`,
+  ]);
   const published = runNode('publish-packages.mjs', [
     '--only=@decantr/cli',
     '--auth-strategy=oidc',
@@ -804,6 +825,63 @@ test('closeout binds public npm bytes and OIDC provenance to retained release-ev
   assert.ok(report.checks.some((check) => (
     check.name === 'registry signature and provenance verification'
     && check.status === 'pass'
+  )));
+
+  statement.predicate.buildDefinition.externalParameters.workflow.ref = 'refs/heads/main';
+  statement.predicate.buildDefinition.resolvedDependencies = [
+    {
+      uri: 'git+https://github.com/decantr-ai/decantr@refs/heads/main',
+      digest: { gitCommit: dispatchCommit },
+    },
+  ];
+  statement.predicate.runDetails = {
+    metadata: {
+      invocationId: 'https://github.com/decantr-ai/decantr/actions/runs/123456/attempts/1',
+    },
+  };
+  attestations.attestations[0].bundle.dsseEnvelope.payload = Buffer.from(
+    JSON.stringify(statement),
+  ).toString('base64');
+  const dispatchAttestationUrl = `data:application/json;base64,${Buffer.from(JSON.stringify(attestations)).toString('base64')}`;
+  writeJson(fixture.npmMetadata, {
+    version: '3.9.0',
+    dist: {
+      integrity: `sha512-${hash(publicBytes, 'sha512', 'base64')}`,
+      shasum: hash(publicBytes, 'sha1'),
+      tarball: `data:application/octet-stream;base64,${publicBytes.toString('base64')}`,
+      attestations: {
+        url: dispatchAttestationUrl,
+        provenance: { predicateType: 'https://slsa.dev/provenance/v1' },
+      },
+    },
+  });
+
+  const dispatchCloseout = runNode('audit-release-closeout.mjs', [
+    '--json',
+    '--no-fetch',
+    '--version=3.9.0',
+    '--only=@decantr/cli',
+    '--publish-run-id=123456',
+  ], { env: closeoutEnv });
+  assert.equal(dispatchCloseout.status, 0, outputOf(dispatchCloseout));
+  assert.ok(JSON.parse(dispatchCloseout.stdout).checks.some((check) => (
+    check.name === '@decantr/cli@3.9.0 provenance'
+    && check.status === 'pass'
+    && check.detail.includes(`unchanged workflow commit ${dispatchCommit}`)
+  )));
+
+  const wrongRun = runNode('audit-release-closeout.mjs', [
+    '--json',
+    '--no-fetch',
+    '--version=3.9.0',
+    '--only=@decantr/cli',
+    '--publish-run-id=654321',
+  ], { env: closeoutEnv });
+  assert.equal(wrongRun.status, 1);
+  assert.ok(JSON.parse(wrongRun.stdout).checks.some((check) => (
+    check.name === '@decantr/cli@3.9.0 provenance'
+    && check.status === 'fail'
+    && check.detail.includes('does not identify publish run 654321')
   )));
 
   chmodSync(retainedPath, 0o644);
