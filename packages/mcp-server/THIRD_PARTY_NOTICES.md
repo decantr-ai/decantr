@@ -3,13 +3,13 @@
 `@decantr/mcp-server` bundles the portions of these packages required by its
 stdio MCP transport:
 
-- `@modelcontextprotocol/sdk` 1.29.0, MIT
-- `zod` 4.4.3, MIT
+- `@modelcontextprotocol/sdk` 1.32.2, MIT
+- `zod` 4.6.7, MIT
 - `zod-to-json-schema` 3.25.1, ISC
 - `ajv` 8.20.0, MIT
 - `ajv-formats` 3.0.1, MIT
 - `fast-deep-equal` 3.1.3, MIT
-- `fast-uri` 3.1.3, BSD-3-Clause
+- `fast-uri` 3.1.9, BSD-3-Clause
 - `json-schema-traverse` 1.0.0, MIT
 
 ## MIT-Licensed Components
