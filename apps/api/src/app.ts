@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { bodyLimit } from 'hono/body-limit';
 import type { Env } from './types.js';
 import { healthRoutes } from './routes/health.js';
 import { contentRoutes } from './routes/content.js';
@@ -41,19 +42,10 @@ export function createApp(): Hono<Env> {
     c.header('Access-Control-Allow-Origin', getAllowedOrigin(c.req.header('origin')));
   });
 
-  app.use('*', async (c, next) => {
-    const method = c.req.method;
-    if (method === 'GET' || method === 'HEAD' || method === 'OPTIONS') {
-      return next();
-    }
-
-    const contentLength = c.req.header('content-length');
-    if (contentLength && parseInt(contentLength, 10) > MAX_BODY_SIZE) {
-      return c.json({ error: 'Request body too large' }, 413);
-    }
-
-    await next();
-  });
+  app.use('*', bodyLimit({
+    maxSize: MAX_BODY_SIZE,
+    onError: (c) => c.json({ error: 'Request body too large' }, 413),
+  }));
 
   app.options('*', (c) => {
     const origin = getAllowedOrigin(c.req.header('origin'));
