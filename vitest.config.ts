@@ -11,6 +11,7 @@ export default defineConfig({
       'packages/essence-spec/vitest.config.ts',
       'packages/mcp-server/vitest.config.ts',
       'packages/registry/vitest.config.ts',
+      'packages/verifier/vitest.config.ts',
       'packages/vite-plugin/vitest.config.ts',
     ],
   },
