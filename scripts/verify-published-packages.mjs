@@ -4,15 +4,21 @@ import {
   appendFileSync,
   existsSync,
   mkdtempSync,
+  mkdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { readArgValue } from './cli-arg-lib.mjs';
 import { getRepoRoot, loadPackageSurface, sortReleaseEntries } from './package-surface-lib.mjs';
-import { readNpmDistTags, readNpmVersions } from './npm-surface-lib.mjs';
+import {
+  publicRegistryOptions,
+  readPublicRegistryChecks,
+  retryVerification,
+  verificationStatus,
+} from './release-verification-lib.mjs';
 
 const rawArgs = process.argv.slice(2);
 const args = new Set(rawArgs);
@@ -20,11 +26,15 @@ const dryRun = args.has('--dry-run');
 const includeExperimental = args.has('--include-experimental');
 const jsonOutput = args.has('--json');
 const noWebhook = args.has('--no-webhook');
-const sendWebhook = args.has('--send-webhook') || process.env.RELEASE_VERIFICATION_WEBHOOK_ALWAYS === 'true';
+const sendWebhook =
+  args.has('--send-webhook') || process.env.RELEASE_VERIFICATION_WEBHOOK_ALWAYS === 'true';
 const onlyWave = readArgValue(rawArgs, 'wave');
 const tagOverride = readArgValue(rawArgs, 'tag-override') ?? readArgValue(rawArgs, 'tag');
-const retries = readPositiveInteger(readArgValue(rawArgs, 'retries'), 3);
-const retryDelayMs = readPositiveInteger(readArgValue(rawArgs, 'retry-delay'), 5_000);
+const retries = readPositiveInteger(readArgValue(rawArgs, 'retries'), 3, 241);
+const retryDelayMs = readPositiveInteger(readArgValue(rawArgs, 'retry-delay'), 5_000, 60_000);
+const maxWaitMs = readPositiveInteger(readArgValue(rawArgs, 'max-wait'), 120_000, 1_800_000);
+const reportJson = readArgValue(rawArgs, 'report-json');
+let deadline = Date.now() + maxWaitMs;
 const onlyNames = new Set(
   readArgValue(rawArgs, 'only')
     ? readArgValue(rawArgs, 'only')
@@ -66,7 +76,9 @@ for (const entry of selected) {
 }
 
 const failures = results.filter((result) => result.status === 'fail');
+const pending = results.filter((result) => result.status === 'pending');
 const output = {
+  status: failures.length ? 'fail' : pending.length ? 'pending' : 'pass',
   generatedAt,
   dryRun,
   filters: {
@@ -76,13 +88,26 @@ const output = {
     wave: onlyWave,
   },
   results,
+  registryPolling: { maxWaitMs, attemptsPerPackage: retries, retryDelayMs },
+  recovery: {
+    publishRunId: process.env.GITHUB_RUN_ID ?? null,
+    releaseTag: process.env.DECANTR_RELEASE_TAG ?? null,
+    instruction:
+      'Resume verification and exact retained-artifact closeout with the original publish-run identity. Do not republish or move dist-tags to hide incomplete verification.',
+  },
   summary: {
     failed: failures.length,
     packageCount: results.length,
-    passed: results.length - failures.length,
+    passed: results.length - failures.length - pending.length,
+    pending: pending.length,
   },
 };
 const markdown = renderMarkdown(output);
+if (reportJson) {
+  const path = resolve(reportJson);
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, `${JSON.stringify(output, null, 2)}\n`);
+}
 
 if (jsonOutput) {
   console.log(JSON.stringify(output, null, 2));
@@ -100,22 +125,35 @@ if (sendWebhook && !noWebhook && webhookUrl) {
   console.log('Release verification webhook was requested, but no webhook URL is configured.');
 }
 
-if (failures.length) {
-  process.exitCode = 1;
-}
+if (failures.length) process.exitCode = 1;
+else if (pending.length) process.exitCode = 2;
 
 async function verifyWithRetry(entry) {
-  let latestResult = null;
-  for (let attempt = 1; attempt <= retries; attempt += 1) {
-    latestResult = dryRun ? verifyPackageDryRun(entry) : verifyPackage(entry);
-    latestResult.attempts = attempt;
-    if (latestResult.status === 'pass' || attempt === retries) break;
-    await sleep(retryDelayMs);
+  const result = await retryVerification(
+    (remainingMs) => (dryRun ? verifyPackageDryRun(entry) : verifyPackage(entry, remainingMs)),
+    {
+      attempts: retries,
+      delayMs: retryDelayMs,
+      deadline,
+      onPending: (result) =>
+        console.error(
+          `${entry.name}@${result.version}: registry verification pending (attempt ${result.attempts}/${retries}); retrying read-only checks.`,
+        ),
+    },
+  );
+  if (!dryRun && entry.name === '@decantr/cli' && result.status === 'pass') {
+    const smokeStart = Date.now();
+    try {
+      result.checks.push(...runCliSmokeChecks(result.version, result.distTag));
+    } finally {
+      deadline += Math.max(0, Date.now() - smokeStart);
+    }
+    result.status = verificationStatus(result.checks);
   }
-  return latestResult;
+  return result;
 }
 
-function verifyPackage(entry) {
+function verifyPackage(entry, remainingMs) {
   const packageJson = readLocalPackageJson(entry);
   const expectedVersion = packageJson.version;
   const distTag = tagOverride || entry.defaultDistTag || 'latest';
@@ -123,38 +161,15 @@ function verifyPackage(entry) {
 
   addCheck(checks, 'local manifest', () => {
     assert(packageJson.name === entry.name, `expected ${entry.name}, found ${packageJson.name}`);
-    assert(typeof expectedVersion === 'string' && expectedVersion.length > 0, 'missing local version');
+    assert(
+      typeof expectedVersion === 'string' && expectedVersion.length > 0,
+      'missing local version',
+    );
     return expectedVersion;
   });
 
-  addCheck(checks, 'npm version exists', () => {
-    const npmVersions = readNpmVersions(entry.name);
-    assert(npmVersions.published, npmVersions.error || 'package is not published');
-    assert(
-      Array.isArray(npmVersions.versions) && npmVersions.versions.includes(expectedVersion),
-      `${expectedVersion} is not present in npm versions`,
-    );
-    return `${entry.name}@${expectedVersion}`;
-  });
-
-  addCheck(checks, 'npm dist-tag', () => {
-    const npmTags = readNpmDistTags(entry.name);
-    assert(npmTags.published, npmTags.error || 'dist-tags are unavailable');
-    const actual = npmTags.tags?.[distTag];
-    assert(actual === expectedVersion, `${distTag} points to ${actual ?? 'none'}, expected ${expectedVersion}`);
-    return `${distTag} -> ${actual}`;
-  });
-
-  const manifestCheck = addCheck(checks, 'published manifest', () => {
-    const published = readPublishedManifest(entry.name, expectedVersion);
-    assert(published.name === entry.name, `expected ${entry.name}, found ${published.name}`);
-    assert(published.version === expectedVersion, `expected ${expectedVersion}, found ${published.version}`);
-    assertNoWorkspaceProtocolDependencies(published);
-    return manifestSummary(published);
-  });
-
-  if (entry.name === '@decantr/cli') {
-    checks.push(...runCliSmokeChecks(expectedVersion, distTag));
+  if (verificationStatus(checks) === 'pass') {
+    checks.push(...readPublicRegistryChecks(entry.name, expectedVersion, distTag, { remainingMs }));
   }
 
   return {
@@ -162,7 +177,7 @@ function verifyPackage(entry) {
     distTag,
     name: entry.name,
     path: entry.path,
-    status: checks.every((check) => check.status === 'pass') && manifestCheck.status === 'pass' ? 'pass' : 'fail',
+    status: verificationStatus(checks),
     version: expectedVersion,
   };
 }
@@ -214,84 +229,93 @@ function verifyPackageDryRun(entry) {
 function runCliSmokeChecks(version, distTag) {
   const checks = [];
   const packageSpec = `@decantr/cli@${version}`;
-
-  addCheck(checks, 'CLI --version smoke', () => {
-    const output = runNpx(packageSpec, ['--version']).trim();
-    assert(output === version, `expected ${version}, found ${output}`);
-    return output;
-  });
-
-  if (distTag === 'latest') {
-    addCheck(checks, 'CLI latest smoke', () => {
-      const output = runNpx('@decantr/cli@latest', ['--version']).trim();
-      assert(output === version, `latest expected ${version}, found ${output}`);
+  const cache = mkdtempSync(join(tmpdir(), 'decantr-public-cli-smoke-'));
+  const runSmoke = (spec, args, options = {}) => runNpx(spec, args, { ...options, cache });
+  try {
+    addCheck(checks, 'CLI --version smoke', () => {
+      const output = runSmoke(packageSpec, ['--version']).trim();
+      assert(output === version, `expected ${version}, found ${output}`);
       return output;
     });
-  }
 
-  addCheck(checks, 'health help smoke', () => {
-    const output = runNpx(packageSpec, ['health', '--help']);
-    assert(output.includes('decantr health'), 'missing health help title');
-    assert(!output.includes('No decantr.essence.json'), 'health help executed a project report');
-    return 'help rendered without running health';
-  });
-
-  addCheck(checks, 'content-health help smoke', () => {
-    const output = runNpx(packageSpec, ['content-health', '--help']);
-    assert(output.includes('decantr content-health'), 'missing content-health help title');
-    assert(
-      !output.includes('Run this command from a content corpus repository'),
-      'content-health help executed repository detection',
-    );
-    return 'help rendered without repository detection';
-  });
-
-  addCheck(checks, 'studio help smoke', () => {
-    const output = runNpx(packageSpec, ['studio', '--help']);
-    assert(output.includes('GET  /api/health'), 'missing Studio API help');
-    assert(!output.includes('Decantr Studio is running'), 'Studio help started the server');
-    return 'help rendered without starting Studio';
-  });
-
-  addCheck(checks, 'health JSON smoke', () => {
-    const tempDir = mkdtempSync(join(tmpdir(), 'decantr-release-health-'));
-    try {
-      writeFileSync(
-        join(tempDir, 'decantr.essence.json'),
-        `${JSON.stringify(sampleEssence(), null, 2)}\n`,
-      );
-      const output = runNpx(packageSpec, ['health', '--json'], { cwd: tempDir });
-      const report = JSON.parse(output);
-      assert(
-        report?.$schema === 'https://decantr.ai/schemas/project-health-report.v2.json',
-        'missing Project Health v2 schema',
-      );
-      assert(typeof report.status === 'string', 'missing health status');
-      assert(Array.isArray(report.findings), 'missing findings array');
-      assert(report.loop?.schemaVersion === 2, 'missing loop readiness v2 block');
-      assert(report.evidenceTier?.schemaVersion === 2, 'missing evidence tier v2 block');
-      assert(report.authority?.schemaVersion === 2, 'missing authority resolution v2 block');
-      return `${report.status} report with ${report.findings.length} findings`;
-    } finally {
-      rmSync(tempDir, { recursive: true, force: true });
+    if (distTag === 'latest') {
+      addCheck(checks, 'CLI latest smoke', () => {
+        const output = runSmoke('@decantr/cli@latest', ['--version']).trim();
+        assert(output === version, `latest expected ${version}, found ${output}`);
+        return output;
+      });
     }
-  });
 
-  return checks;
+    addCheck(checks, 'health help smoke', () => {
+      const output = runSmoke(packageSpec, ['health', '--help']);
+      assert(output.includes('decantr health'), 'missing health help title');
+      assert(!output.includes('No decantr.essence.json'), 'health help executed a project report');
+      return 'help rendered without running health';
+    });
+
+    addCheck(checks, 'content-health help smoke', () => {
+      const output = runSmoke(packageSpec, ['content-health', '--help']);
+      assert(output.includes('decantr content-health'), 'missing content-health help title');
+      assert(
+        !output.includes('Run this command from a content corpus repository'),
+        'content-health help executed repository detection',
+      );
+      return 'help rendered without repository detection';
+    });
+
+    addCheck(checks, 'studio help smoke', () => {
+      const output = runSmoke(packageSpec, ['studio', '--help']);
+      assert(output.includes('GET  /api/health'), 'missing Studio API help');
+      assert(!output.includes('Decantr Studio is running'), 'Studio help started the server');
+      return 'help rendered without starting Studio';
+    });
+
+    addCheck(checks, 'health JSON smoke', () => {
+      const tempDir = mkdtempSync(join(tmpdir(), 'decantr-release-health-'));
+      try {
+        writeFileSync(
+          join(tempDir, 'decantr.essence.json'),
+          `${JSON.stringify(sampleEssence(), null, 2)}\n`,
+        );
+        const output = runSmoke(packageSpec, ['health', '--json'], { cwd: tempDir });
+        const report = JSON.parse(output);
+        assert(
+          report?.$schema === 'https://decantr.ai/schemas/project-health-report.v2.json',
+          'missing Project Health v2 schema',
+        );
+        assert(typeof report.status === 'string', 'missing health status');
+        assert(Array.isArray(report.findings), 'missing findings array');
+        assert(report.loop?.schemaVersion === 2, 'missing loop readiness v2 block');
+        assert(report.evidenceTier?.schemaVersion === 2, 'missing evidence tier v2 block');
+        assert(report.authority?.schemaVersion === 2, 'missing authority resolution v2 block');
+        return `${report.status} report with ${report.findings.length} findings`;
+      } finally {
+        rmSync(tempDir, { recursive: true, force: true });
+      }
+    });
+
+    return checks;
+  } finally {
+    rmSync(cache, { recursive: true, force: true });
+  }
 }
 
 function runNpx(packageSpec, cliArgs, options = {}) {
-  return execFileSync('npx', ['--yes', packageSpec, ...cliArgs], {
-    cwd: options.cwd || root,
-    encoding: 'utf8',
-    env: {
-      ...process.env,
-      DECANTR_OFFLINE: 'true',
-      npm_config_loglevel: 'error',
+  return execFileSync(
+    'npx',
+    [...publicRegistryOptions('@decantr/cli', options.cache), '--yes', packageSpec, ...cliArgs],
+    {
+      cwd: options.cwd || root,
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        DECANTR_OFFLINE: 'true',
+        npm_config_loglevel: 'error',
+      },
+      stdio: ['ignore', 'pipe', 'pipe'],
+      timeout: 30_000,
     },
-    stdio: ['ignore', 'pipe', 'pipe'],
-    timeout: 30_000,
-  });
+  );
 }
 
 function addCheck(checks, name, fn) {
@@ -319,47 +343,14 @@ function readLocalPackageJson(entry) {
   return JSON.parse(readFileSync(join(root, entry.path, 'package.json'), 'utf8'));
 }
 
-function readPublishedManifest(name, version) {
-  const stdout = execFileSync('npm', ['view', `${name}@${version}`, '--json'], {
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
-    timeout: 30_000,
-  });
-  return JSON.parse(stdout);
-}
-
-function assertNoWorkspaceProtocolDependencies(manifest) {
-  const leaks = [];
-  for (const field of ['dependencies', 'peerDependencies', 'optionalDependencies']) {
-    const dependencies = manifest[field];
-    if (!dependencies || typeof dependencies !== 'object' || Array.isArray(dependencies)) continue;
-    for (const [dependencyName, dependencyVersion] of Object.entries(dependencies)) {
-      if (typeof dependencyVersion === 'string' && dependencyVersion.startsWith('workspace:')) {
-        leaks.push(`${field}.${dependencyName}=${dependencyVersion}`);
-      }
-    }
-  }
-  assert(leaks.length === 0, `workspace protocol leaked: ${leaks.join(', ')}`);
-}
-
-function manifestSummary(manifest) {
-  const dependencyCount = countObject(manifest.dependencies) + countObject(manifest.peerDependencies);
-  const binNames = manifest.bin && typeof manifest.bin === 'object' ? Object.keys(manifest.bin) : [];
-  return `${dependencyCount} dependencies checked${binNames.length ? `; bins: ${binNames.join(', ')}` : ''}`;
-}
-
-function countObject(value) {
-  return value && typeof value === 'object' && !Array.isArray(value) ? Object.keys(value).length : 0;
-}
-
 function renderMarkdown(output) {
   const lines = [
     '# Published Package Verification',
     '',
     output.dryRun ? 'Mode: dry run' : 'Mode: live npm verification',
     `Generated: ${output.generatedAt}`,
-    `Overall: ${output.summary.failed ? 'failed' : 'passed'}`,
-    `Packages: ${formatNumber(output.summary.passed)} passed / ${formatNumber(output.summary.failed)} failed`,
+    `Overall: ${output.summary.failed ? 'failed' : output.summary.pending ? 'pending verification' : 'passed'}`,
+    `Packages: ${formatNumber(output.summary.passed)} passed / ${formatNumber(output.summary.failed)} failed / ${formatNumber(output.summary.pending)} pending`,
     '',
     '| Package | Version | Tag | Status | Checks |',
     '| --- | --- | --- | --- | --- |',
@@ -367,7 +358,7 @@ function renderMarkdown(output) {
 
   for (const result of output.results) {
     const checkSummary = result.checks
-      .map((check) => `${check.status === 'pass' ? 'pass' : 'fail'} ${check.name}: ${check.detail}`)
+      .map((check) => `${check.status} ${check.name}: ${check.detail}`)
       .join('<br>');
     lines.push(
       `| \`${escapeCell(result.name)}\` | \`${escapeCell(result.version)}\` | \`${escapeCell(result.distTag)}\` | ${result.status} | ${escapeCell(checkSummary)} |`,
@@ -379,24 +370,33 @@ function renderMarkdown(output) {
       '',
       '## Action Required',
       '',
-      'At least one published package did not match the local release manifest or failed its public install smoke checks. Wait for npm propagation, then rerun the verifier. If the failure persists, repair the npm dist-tag or publish the missing version.',
+      'At least one published package did not match the local release manifest or failed its public install smoke checks. Inspect the failed checks before any publication or registry mutation. This verifier does not establish publish authorization.',
     );
   }
 
+  if (output.summary.pending)
+    lines.push(
+      '',
+      '## Verification Pending',
+      '',
+      'The bounded public-registry wait ended without consistent visibility. The cause is unconfirmed; staging, propagation, or registry availability must be checked separately. Release completion remains blocked. Resume verification, then close out using the original retained tarballs and publish-run identity. Do not republish merely because these reads are pending.',
+    );
   return lines.join('\n');
 }
 
 async function postWebhook(context) {
   const response = await fetch(webhookUrl, {
     method: 'POST',
-    headers: { 'Connection': 'close', 'Content-Type': 'application/json' },
+    headers: { Connection: 'close', 'Content-Type': 'application/json' },
     body: JSON.stringify(webhookPayload(context)),
     signal: AbortSignal.timeout(10_000),
   });
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(`Release verification webhook failed ${response.status} ${response.statusText}: ${text.slice(0, 600)}`);
+    throw new Error(
+      `Release verification webhook failed ${response.status} ${response.statusText}: ${text.slice(0, 600)}`,
+    );
   }
   await response.arrayBuffer();
 }
@@ -410,32 +410,38 @@ function webhookPayload({ markdown, output }) {
 
 function discordWebhookPayload(output) {
   const failed = output.summary.failed > 0;
+  const pending = !failed && output.summary.pending > 0;
   const fields = output.results.map((result) => ({
     inline: false,
     name: `${result.name}@${result.version}`,
-    value: limitDiscordText([
-      `Status: **${result.status}**`,
-      `Tag: \`${result.distTag}\``,
-      ...result.checks.map((check) => `- ${check.status}: ${check.name} - ${check.detail}`),
-    ].join('\n'), 1_024),
+    value: limitDiscordText(
+      [
+        `Status: **${result.status}**`,
+        `Tag: \`${result.distTag}\``,
+        ...result.checks.map((check) => `- ${check.status}: ${check.name} - ${check.detail}`),
+      ].join('\n'),
+      1_024,
+    ),
   }));
 
   return {
     username: 'Decantr Release',
-    content: `Decantr published package verification ${failed ? 'failed' : 'passed'}.`,
+    content: `Decantr published package verification ${failed ? 'failed' : pending ? 'pending' : 'passed'}.`,
     embeds: [
       {
-        color: failed ? 0xe5484d : 0x2fb344,
+        color: failed ? 0xe5484d : pending ? 0xd99a00 : 0x2fb344,
         description: [
           output.dryRun ? 'Mode: `dry run`' : 'Mode: `live npm verification`',
           `Generated: \`${output.generatedAt}\``,
-          `Packages: **${formatNumber(output.summary.passed)} passed / ${formatNumber(output.summary.failed)} failed**`,
+          `Packages: **${formatNumber(output.summary.passed)} passed / ${formatNumber(output.summary.failed)} failed / ${formatNumber(output.summary.pending)} pending**`,
         ].join('\n'),
         fields,
         footer: {
           text: failed
             ? 'Release action needed: npm version, dist-tag, manifest, or public install smoke failed.'
-            : 'Public npm install surface is verified.',
+            : pending
+              ? 'Registry visibility remains unverified. Resume verification; do not republish.'
+              : 'Public npm install surface is verified.',
         },
         timestamp: output.generatedAt,
         title: 'Published Package Verification',
@@ -513,19 +519,18 @@ function formatNumber(value) {
   return new Intl.NumberFormat('en-US').format(value);
 }
 
-function readPositiveInteger(value, fallback) {
+function readPositiveInteger(value, fallback, maximum) {
+  if (value == null) return fallback;
   const parsed = Number(value);
-  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+  if (!Number.isInteger(parsed) || parsed <= 0 || parsed > maximum)
+    throw new Error(`Expected an integer between 1 and ${maximum}, received ${value}.`);
+  return parsed;
 }
 
 function assert(condition, message) {
   if (!condition) {
     throw new Error(message);
   }
-}
-
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function loadOptionalEnvFiles() {

@@ -7,6 +7,8 @@ Release work in Decantr is owned by a boring, procedural Release Steward lane. P
 
 This runbook is the source of truth for Git + npm release closeout in `decantr-monorepo`, including the `@decantr/content` package. The historical `decantr-content` repository is no longer an active release lane.
 
+See [npm registry visibility and verification recovery](../reference/npm-release-verification.md) for bounded polling, pending results, and artifact-preserving closeout after a registry delay.
+
 ## Core Rule
 
 No release is done until the final closeout audit passes:
