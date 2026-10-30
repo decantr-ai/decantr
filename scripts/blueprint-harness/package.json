@@ -8,11 +8,12 @@
     "blueprint-harness": "./harness.mjs"
   },
   "dependencies": {
-    "puppeteer-core": "^24.0.0"
+    "puppeteer-core": "^25.16.0"
   },
-  "overrides": {
-    "basic-ftp": "5.3.1",
-    "ip-address": "10.4.0",
-    "ws": "8.21.0"
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
   }
 }

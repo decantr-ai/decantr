@@ -23,7 +23,7 @@ export async function runMobileSmoke({
 
   const browser = await puppeteer.launch({
     executablePath: CHROME_BINARY,
-    headless: 'new',
+    headless: true,
     args: ['--no-sandbox', '--disable-gpu', '--hide-scrollbars'],
   });
 
