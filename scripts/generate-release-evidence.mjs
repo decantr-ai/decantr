@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import { basename, isAbsolute, join, relative } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { readArgValue } from './cli-arg-lib.mjs';
+import { addBundledComponents, readBundledDependencyInventory, verifyPackedBundleOutputs } from './bundled-dependencies-lib.mjs';
 import { canonicalizePackedTarball } from './canonical-package-tarball.mjs';
 import {
   getRepoRoot,
@@ -34,6 +35,7 @@ const onlyNames = new Set(
 );
 
 const root = getRepoRoot();
+const bundleInventories = JSON.parse(readFileSync(join(root, 'config/bundled-dependency-inventories.json'), 'utf8'));
 const outDir = isAbsolute(outArg) ? outArg : join(root, outArg);
 const surface = loadPackageSurface(root);
 const publicPackages = listPublicPackages(root);
@@ -125,7 +127,7 @@ function makeSbom(entry, pkgJson, dependencies) {
     const version = String(dep.resolvedVersion || dep.spec || 'unknown');
     return {
       type: 'library',
-      bomRef: `pkg:${dep.name}@${version}`,
+      'bom-ref': `pkg:${dep.name}@${version}`,
       name: dep.name,
       version,
       scope: dep.group === 'dependencies' ? 'required' : 'optional',
@@ -155,7 +157,7 @@ function makeSbom(entry, pkgJson, dependencies) {
       },
       component: {
         type: 'library',
-        bomRef: packageRef,
+        'bom-ref': packageRef,
         name: pkgJson.name,
         version: pkgJson.version,
         purl: packagePurl(pkgJson.name, pkgJson.version),
@@ -166,7 +168,7 @@ function makeSbom(entry, pkgJson, dependencies) {
     dependencies: [
       {
         ref: packageRef,
-        dependsOn: components.map((component) => component.bomRef),
+        dependsOn: components.map((component) => component['bom-ref']),
       },
     ],
     properties: [
@@ -545,12 +547,14 @@ async function main() {
     await rm(rawTarballDir, { recursive: true, force: true });
     await rm(canonicalWorkDir, { recursive: true, force: true });
 
-    if (noTarballs) {
-      await rm(tarballPath, { force: true });
-    }
-
     const dependencies = collectDependencies(pkgJson, pkgDir);
-    const sbom = makeSbom(entry, pkgJson, dependencies);
+    const bundledInventory = readBundledDependencyInventory(root, entry, bundleInventories);
+    verifyPackedBundleOutputs(tarballPath, bundledInventory);
+    if (noTarballs) await rm(tarballPath, { force: true });
+    const sbom = addBundledComponents(makeSbom(entry, pkgJson, dependencies), bundledInventory, packagePurl);
+    if (bundledInventory) {
+      writeFileSync(join(evidenceDir, 'bundled-dependencies.json'), `${JSON.stringify(bundledInventory, null, 2)}\n`, 'utf8');
+    }
     const packFiles = {
       generatedAt,
       package: {
