@@ -2,6 +2,7 @@
 
 import { ArrowRight, ArrowUpRight, BadgeCheck, Bot, Braces, Check, ChevronLeft, ChevronRight, Code2, Component, Copy, Eye, FileCheck2, FolderLock, GitBranch, GitCompareArrows, GitFork, Layers3, LockKeyhole, MousePointerClick, OctagonAlert, Palette, Pause, Play, ScanSearch, ShoppingBag, Star, Terminal, TriangleAlert } from "lucide-react";
 import { useEffect, useState } from "react";
+import FluxFeature from "./FluxFeature";
 
 const command = "npx @decantr/cli verify";
 
@@ -81,6 +82,7 @@ export default function Home() {
         </nav>
 
         <nav className="header-utilities" aria-label="Decantr links">
+          <a className="flux-nav-link" href="#flux"><span>New</span>Flux</a>
           <a className="source-link" href="https://github.com/decantr-ai/decantr" target="_blank" rel="noreferrer" aria-label="Star Decantr on GitHub">
             <GitHubMark />
             <span>GitHub</span>
@@ -576,6 +578,8 @@ export default function Home() {
         <p className="scope-note"><LockKeyhole aria-hidden="true" size={15} /> Decantr reports only what available project evidence supports.</p>
       </section>
 
+      <FluxFeature />
+
       <section className="closing-section" id="start" aria-labelledby="closing-title">
         <div className="closing-copy">
           <span className="section-kicker">Your next UI change</span>
@@ -604,6 +608,7 @@ export default function Home() {
         <a href="#drift">Why Decantr</a>
         <a href="#try">Try it</a>
         <a href="#scope">What it checks</a>
+        <a href="#flux">Flux</a>
         <a href="https://github.com/decantr-ai/decantr">GitHub <ArrowUpRight aria-hidden="true" size={13} /></a>
       </nav>
     </footer>
