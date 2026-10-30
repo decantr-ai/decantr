@@ -43,10 +43,15 @@ Artifacts produced:
 
 ## Prereqs
 
-- Node >= 20
+- Node >= 22.12 (this standalone browser harness only; the Decantr packages retain their existing Node support)
 - Local decantr CLI built at `packages/cli/dist/bin.js` (run `pnpm build` in the monorepo root if missing)
 - `/Applications/Google Chrome.app` installed (puppeteer uses it via `puppeteer-core`)
-- From `scripts/blueprint-harness/`, run `npm install` once to pull `puppeteer-core`
+- From `scripts/blueprint-harness/`, run `npm ci --ignore-scripts` to install the separate locked dependency tree. Root pnpm installation does not install this standalone harness.
+
+Run `npm test` in that directory to exercise local Chrome launch, auth seeding,
+and mobile/desktop screenshots. The browser test explicitly skips when the
+configured Chrome binary is unavailable; a skip does not validate browser
+compatibility. This harness is separate from frozen qualification evidence.
 
 ## Methodology notes
 
