@@ -153,7 +153,7 @@ export function addBundledComponents(sbom, inventory, purl) {
   if (!inventory) return sbom;
   for (const component of inventory.components) {
     const ref = `pkg:${component.name}@${component.version}`;
-    const existing = sbom.components.find((c) => c.bomRef === ref);
+    const existing = sbom.components.find((c) => c['bom-ref'] === ref);
     const properties = [
       { name: 'decantr:bundled', value: 'true' },
       { name: 'decantr:bundledInputCount', value: String(component.inputFiles.length) },
@@ -162,7 +162,7 @@ export function addBundledComponents(sbom, inventory, purl) {
     else
       sbom.components.push({
         type: 'library',
-        bomRef: ref,
+        'bom-ref': ref,
         name: component.name,
         version: component.version,
         scope: 'required',
@@ -176,6 +176,18 @@ export function addBundledComponents(sbom, inventory, purl) {
 
 export function verifyPackedBundleOutputs(tarball, inventory) {
   if (!inventory) return;
+  const packedFiles = execFileSync('tar', ['-tzf', tarball], {
+    encoding: 'utf8',
+    maxBuffer: 32 * 1024 * 1024,
+  })
+    .trim()
+    .split('\n')
+    .filter(runtimeFile)
+    .sort();
+  const expectedFiles = inventory.outputs.map((output) => `package/${output.file}`).sort();
+  if (JSON.stringify(packedFiles) !== JSON.stringify(expectedFiles)) {
+    throw new Error('Packed JavaScript output set differs from its build inventory.');
+  }
   for (const output of inventory.outputs) {
     if (!/^dist\//u.test(output.file) || output.file.split('/').includes('..'))
       throw new Error('Invalid packed bundle path.');

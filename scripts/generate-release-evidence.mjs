@@ -127,7 +127,7 @@ function makeSbom(entry, pkgJson, dependencies) {
     const version = String(dep.resolvedVersion || dep.spec || 'unknown');
     return {
       type: 'library',
-      bomRef: `pkg:${dep.name}@${version}`,
+      'bom-ref': `pkg:${dep.name}@${version}`,
       name: dep.name,
       version,
       scope: dep.group === 'dependencies' ? 'required' : 'optional',
@@ -157,7 +157,7 @@ function makeSbom(entry, pkgJson, dependencies) {
       },
       component: {
         type: 'library',
-        bomRef: packageRef,
+        'bom-ref': packageRef,
         name: pkgJson.name,
         version: pkgJson.version,
         purl: packagePurl(pkgJson.name, pkgJson.version),
@@ -168,7 +168,7 @@ function makeSbom(entry, pkgJson, dependencies) {
     dependencies: [
       {
         ref: packageRef,
-        dependsOn: components.map((component) => component.bomRef),
+        dependsOn: components.map((component) => component['bom-ref']),
       },
     ],
     properties: [

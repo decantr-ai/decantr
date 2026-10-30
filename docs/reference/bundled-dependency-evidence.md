@@ -22,6 +22,9 @@ no bundled dependencies.
 For configured packages, evidence includes `bundled-dependencies.json` alongside
 the CycloneDX report. Bundled components are added to the SBOM with a
 `decantr:bundled=true` property and deduplicated with matching declared components.
+Component identities use CycloneDX's standard `bom-ref` field; this also corrects
+the former nonstandard `bomRef` field on declared components. Packed verification
+rejects extra or duplicate JavaScript members, including files outside `dist`.
 The inventory lives outside the package's published `dist` directory and is
 excluded from npm contents. It changes release reporting, not the installed MCP
 runtime or its public tool inventory.

@@ -89,7 +89,7 @@ test('configured inventories fail closed when missing, but unconfigured packages
 test('deduplicates a declared and bundled dependency while keeping the bundled evidence', () => {
   const sbom = {
     components: [
-      { name: '@test/sdk', version: '2.0.0', bomRef: 'pkg:@test/sdk@2.0.0', properties: [] },
+      { name: '@test/sdk', version: '2.0.0', 'bom-ref': 'pkg:@test/sdk@2.0.0', properties: [] },
     ],
     dependencies: [{ ref: 'root', dependsOn: ['pkg:@test/sdk@2.0.0'] }],
     properties: [],
@@ -106,10 +106,42 @@ test('deduplicates a declared and bundled dependency while keeping the bundled e
   );
   assert.equal(sbom.components.length, 2);
   assert.equal(sbom.dependencies[0].dependsOn.length, 2);
+  assert.ok(sbom.components.every((c) => typeof c['bom-ref'] === 'string' && !('bomRef' in c)));
+  assert.ok(
+    sbom.dependencies[0].dependsOn.every((ref) =>
+      sbom.components.some((c) => c['bom-ref'] === ref),
+    ),
+  );
   assert.ok(
     sbom.components[0].properties.some((p) => p.name === 'decantr:bundled' && p.value === 'true'),
   );
 });
+
+test('rejects extra packed JavaScript even when all inventoried bytes still match', () =>
+  fixture(({ root, create, put }) => {
+    const inventory = create();
+    put('package/dist/index.js', 'bundled code');
+    put('package/runtime.cjs', 'unreported runtime');
+    const tarball = join(root, 'bundle.tgz');
+    execFileSync('tar', ['-czf', tarball, '-C', root, 'package']);
+    assert.throws(() => verifyPackedBundleOutputs(tarball, inventory), /output set differs/u);
+  }));
+
+test('rejects duplicate packed JavaScript members', () =>
+  fixture(({ root, create, put }) => {
+    const inventory = create();
+    put('package/dist/index.js', 'bundled code');
+    const tarball = join(root, 'duplicate.tgz');
+    execFileSync('tar', [
+      '-czf',
+      tarball,
+      '-C',
+      root,
+      'package/dist/index.js',
+      'package/dist/index.js',
+    ]);
+    assert.throws(() => verifyPackedBundleOutputs(tarball, inventory), /output set differs/u);
+  }));
 
 test('verifies the actual packed JavaScript and rejects bytes changed after build', () =>
   fixture(({ root, create, put }) => {
