@@ -20,6 +20,8 @@ pnpm release:closeout -- --version X.Y.Z
 
 `audit:package-surface` includes the installed permission-surface check. Use `pnpm audit:package-permissions` directly when a change touches package `files` allowlists, filesystem access, network access, process execution, telemetry, hosted upload, MCP write tools, or scanner/audit documentation.
 
+For code embedded by a bundler, inspect the [bundled-dependency evidence](../reference/bundled-dependency-evidence.md) alongside declared dependencies. Release evidence validates configured build inventories against the actual packed JavaScript before adding bundled components to the SBOM.
+
 GitHub Releases are optional maintainer packaging. Git tags are not optional.
 
 ## Decantr 3.11 Stable Release Gate

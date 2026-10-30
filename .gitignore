@@ -1,4 +1,5 @@
 node_modules/
+.decantr-build/
 dist/
 *.tsbuildinfo
 .DS_Store
