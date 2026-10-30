@@ -252,6 +252,7 @@ jobs:
           path: ${{ runner.temp }}/decantr-release-staging/**
           if-no-files-found: warn
       - name: Verify published npm packages
+        id: verify-published
         if: ${{ github.event.inputs.dry_run_only != 'true' }}
         env:
           DIST_TAG_OVERRIDE: ${{ github.event.inputs.dist_tag || '' }}
@@ -274,7 +275,14 @@ jobs:
           if [[ -n "$RELEASE_VERIFICATION_WEBHOOK_URL" ]]; then
             ARGS+=(--send-webhook)
           fi
-          node scripts/verify-published-packages.mjs "${ARGS[@]}" --retries=6 --retry-delay=10000
+          node scripts/verify-published-packages.mjs "${ARGS[@]}" --retries=61 --retry-delay=15000 --max-wait=900000 --report-json="$RUNNER_TEMP/release-verification.json"
+      - name: Retain npm verification report
+        if: ${{ always() && steps.verify-published.outcome != 'skipped' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: release-verification-${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
+          path: ${{ runner.temp }}/release-verification.json
+          if-no-files-found: warn
       - name: Run tag-bound release closeout
         id: closeout
         if: ${{ github.event.inputs.dry_run_only != 'true' }}
