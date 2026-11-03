@@ -7,7 +7,7 @@ Decantr's main local operator surface for observing project-owned UI authority, 
 
 ## Release Boundary
 
-The current stable version is Decantr 3.11.3. Bare `decantr verify` is zero-write Changed-UI Assurance: it scopes the current Git change, auto-selects one changed UI app when provable, and reports at most three source-anchored findings. SvelteKit task context keeps `+page.svelte` as the implementation and page-data modules as supporting authority. The release is not quantitatively adoption-proven.
+The current stable version is Decantr 3.11.4. Bare `decantr verify` is zero-write Changed-UI Assurance: it scopes the current Git change, auto-selects one changed UI app when provable, and reports at most three source-anchored findings. SvelteKit task context keeps `+page.svelte` as the implementation and page-data modules as supporting authority. The release is not quantitatively adoption-proven.
 
 The zero-setup entry point is `verify`. The deeper CLI loop remains **Observe -> Prepare -> Verify -> Report** through `scan`, `task <target>`, `verify --full`, and `ci`. Routes are one UI surface among layouts, components, stories, overlays, flows, packages, runtime states, and exact files. Shipped behavior must not be presented as evidence that Decantr improves frontier models; that remains a separate research question.
 
@@ -20,8 +20,8 @@ npm install -D @decantr/cli
 Or run it without installing:
 
 ```bash
-npx @decantr/cli@3.11.3 verify
-npx @decantr/cli@3.11.3 scan
+npx @decantr/cli@3.11.4 verify
+npx @decantr/cli@3.11.4 scan
 npx @decantr/cli new my-app --blueprint=esports-hq
 ```
 

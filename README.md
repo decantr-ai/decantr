@@ -30,7 +30,7 @@ Decantr checks the UI change an AI coding agent actually made against the compon
 No account, setup, or adoption step is required:
 
 ```bash
-npx @decantr/cli@3.11.3 verify
+npx @decantr/cli@3.11.4 verify
 ```
 
 ```text
@@ -58,7 +58,7 @@ Changed-UI Assurance is the zero-setup entry point. Teams can deepen it into an 
 4. **Report** typed, reproducible evidence for people, agents, and CI.
 
 ```bash
-npx @decantr/cli@3.11.3 scan
+npx @decantr/cli@3.11.4 scan
 npx @decantr/cli adopt --yes       # one-time attachment
 npx @decantr/cli task /feed "add saved actions"
 npx @decantr/cli verify --full
@@ -105,9 +105,9 @@ Decantr does not replace your router, component library, styling system, tests, 
 
 ## Current release
 
-Decantr **3.11.3** is the current stable Changed-UI Assurance line. It adds SvelteKit task-authority hardening while preserving the existing report schemas and eight-tool MCP surface.
+CLI and verifier **3.11.4**, with MCP server **3.11.5**, correct component-reuse import advice while preserving the existing report schemas and eight-tool MCP surface. A feature-specific wrapper is no longer treated as an exact shared export merely because its name ends in the same primitive name.
 
-- [3.11.3 release note](./docs/releases/2026-08-08-decantr-3-11-3-sveltekit-task-authority.md)
+- [Component-reuse patch release note](./docs/releases/2026-11-03-decantr-3-11-5-component-reuse.md)
 - [Change Assurance contract](./docs/reference/change-assurance.md)
 - [3.11 qualification evidence](./docs/research/2026-08-07-decantr-3-11-change-assurance-trials.md)
 - [Package support matrix](./docs/reference/package-support-matrix.md)
@@ -116,9 +116,9 @@ Decantr **3.11.3** is the current stable Changed-UI Assurance line. It adds Svel
 
 | Package | Current posture |
 | --- | --- |
-| `@decantr/cli` 3.11.3 | Primary changed-UI and local workflow surface |
-| `@decantr/verifier` 3.11.3 | Primary authority and evidence engine |
-| `@decantr/mcp-server` 3.11.3 | Stable eight-tool agent integration surface |
+| `@decantr/cli` 3.11.4 | Primary changed-UI and local workflow surface |
+| `@decantr/verifier` 3.11.4 | Primary authority and evidence engine |
+| `@decantr/mcp-server` 3.11.5 | Stable eight-tool agent integration surface |
 | `@decantr/core` 3.10.0 | Supported graph and execution foundation |
 | `@decantr/essence-spec` | Supported contract foundation |
 | `@decantr/content` | Supported policy and reference foundation |
