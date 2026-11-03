@@ -146,6 +146,7 @@ const missingPublicVersionPolicies = difference(
 
 const toolSource = readFileSync(TOOL_SOURCE_PATH, 'utf8');
 const docsIndex = readFileSync(DOCS_INDEX_PATH, 'utf8');
+const homepageHtmlSource = readFileSync('apps/homepage/index.html', 'utf8');
 const homepageSource = readFileSync('apps/homepage/src/page.tsx', 'utf8');
 const docsAnalytics = readFileSync(DOCS_ANALYTICS_PATH, 'utf8');
 const agentBrief = readFileSync('DECANTR.md', 'utf8');
@@ -183,6 +184,9 @@ if (missingPublicVersionPolicies.length > 0) {
 
 if (!new RegExp(`Current stable\\s*·\\s*v${CURRENT_PUBLIC_RELEASE.replaceAll('.', '\\.')}`, 'i').test(docsIndex)) {
   failures.push(`Docs homepage must identify v${CURRENT_PUBLIC_RELEASE} as the current stable release.`);
+}
+if (!new RegExp(`Current stable\\s*·\\s*v${CURRENT_PUBLIC_RELEASE.replaceAll('.', '\\.')}`, 'i').test(homepageHtmlSource)) {
+  failures.push(`Homepage HTML source must identify v${CURRENT_PUBLIC_RELEASE}; the Pages build regenerates docs/index.html from this file.`);
 }
 
 if (/Development preview\s*·\s*v3\.11\b/i.test(docsIndex)) {
