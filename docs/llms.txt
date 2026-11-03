@@ -4,13 +4,15 @@
 
 ## Release Status
 
-- Current stable: Decantr 3.11.3.
+- Current stable: CLI/verifier 3.11.4; MCP server 3.11.5.
 - Default entry point: `decantr verify` performs zero-write Changed-UI Assurance over the current Git change; no adoption is required.
 - Active product: changed-UI assurance plus authority-aware Observe, Prepare, Verify, and Report workflows.
-- 3.11.3 is released but is not value-proven against frontier models.
+- These product patches do not establish value against frontier models.
 - Product release readiness is separate from model-lift research qualification. Do not claim human finding precision/recall, adoption proof, or measured frontier-model improvement.
 
-## Published 3.11.3 Entry Point
+## Published 3.11 Entry Point
+
+- [Component-reuse patch: CLI/verifier 3.11.4 and MCP 3.11.5](https://decantr.ai/releases/2026-11-03-decantr-3-11-5-component-reuse.md)
 
 1. Run `decantr verify` in a Git worktree.
 2. Decantr resolves staged, unstaged, deleted, renamed, untracked, commit-range, or unborn-branch changes.

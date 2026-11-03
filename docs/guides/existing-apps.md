@@ -2,14 +2,14 @@
 
 Decantr is an agent-neutral UI change-control layer for Brownfield applications. It observes the app before writing, prepares scoped context for a coding agent, verifies the resulting change, and reports local evidence.
 
-**Current release:** Decantr 3.11.3. Start with zero-write Changed-UI Assurance; adoption is optional and the product is not value-proven against frontier models.
+**Current release:** CLI/verifier 3.11.4 and MCP server 3.11.5. Start with zero-write Changed-UI Assurance; adoption is optional and the product is not value-proven against frontier models.
 
 ## 0. Verify The Current Change
 
 In any Git worktree:
 
 ```bash
-npx @decantr/cli@3.11.3 verify
+npx @decantr/cli@3.11.4 verify
 ```
 
 This inspects staged, unstaged, deleted, renamed, and untracked UI changes. In a monorepo it selects one app only when changed files prove that choice; otherwise it returns `not_proven` and asks for `--project`. It writes nothing and requires no Decantr files. See [Change Assurance](../reference/change-assurance.md).
@@ -19,7 +19,7 @@ This inspects staged, unstaged, deleted, renamed, and untracked UI changes. In a
 Start with a read-only scan:
 
 ```bash
-npx @decantr/cli@3.11.3 scan
+npx @decantr/cli@3.11.4 scan
 ```
 
 The command reads the selected app in place. It does not create `.decantr`, install dependencies, run package scripts, build the app, upload source, or open a pull request.
