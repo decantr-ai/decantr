@@ -476,7 +476,10 @@ export function auditComponentReuse(
       if (!primitive || declaration.reusable) continue;
       if (parsedFile.imports.has(declaration.name)) continue;
       const canonical = canonicalComponent(
-        reusableByName.get(primitive),
+        // COMP001 offers an exact import repair. A shared primitive with the
+        // same suffix does not establish that a feature-specific wrapper is
+        // exported or interchangeable (for example, SaveButton vs Button).
+        reusableByName.get(primitive)?.filter((entry) => entry.name === declaration.name),
         declaration.name,
         declaration.file,
       );

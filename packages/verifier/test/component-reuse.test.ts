@@ -89,6 +89,32 @@ describe('component reuse drift audit', () => {
     }
   });
 
+  it('does not invent an export for a feature wrapper sharing a primitive suffix', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      const canonical = writeFile(
+        projectRoot,
+        'src/components/ui/Button.tsx',
+        'export function Button() { return <button />; }\n',
+      );
+      const local = writeFile(
+        projectRoot,
+        'src/app/editor/page.tsx',
+        'function AuthoringDraftReconcileButton() { return <button onClick={reconcile}>Recover draft</button>; }\nexport function EditorPage() { return <AuthoringDraftReconcileButton />; }\n',
+      );
+      const audit = auditComponentReuse(projectRoot, [canonical, local]);
+      expect(audit.findings).toEqual([]);
+      // Exact redeclarations remain covered above; this wrapper has its own
+      // behavior and cannot be replaced by importing a nonexistent export.
+      expect(audit.declarations).toEqual(expect.arrayContaining([
+        expect.objectContaining({ name: 'AuthoringDraftReconcileButton', exported: false }),
+        expect.objectContaining({ name: 'Button', exported: true }),
+      ]));
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
   it('does not flag source files that import the reusable primitive instead', async () => {
     const projectRoot = createProjectRoot();
     try {
