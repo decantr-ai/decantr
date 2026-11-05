@@ -55,6 +55,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://decantr.ai/flux/</loc>
+    <lastmod>2026-11-05T14:21:50.374Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://decantr.ai/guides/ai-assistant-setup.md</loc>
     <lastmod>2026-08-08T10:28:27-04:00</lastmod>
     <changefreq>monthly</changefreq>

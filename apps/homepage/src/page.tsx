@@ -82,7 +82,7 @@ export default function Home() {
         </nav>
 
         <nav className="header-utilities" aria-label="Decantr links">
-          <a className="flux-nav-link" href="#flux"><span>New</span>Flux</a>
+          <a className="flux-nav-link" href="/flux/"><span>New</span>Flux</a>
           <a className="source-link" href="https://github.com/decantr-ai/decantr" target="_blank" rel="noreferrer" aria-label="Star Decantr on GitHub">
             <GitHubMark />
             <span>GitHub</span>
@@ -608,7 +608,7 @@ export default function Home() {
         <a href="#drift">Why Decantr</a>
         <a href="#try">Try it</a>
         <a href="#scope">What it checks</a>
-        <a href="#flux">Flux</a>
+        <a href="/flux/">Flux</a>
         <a href="https://github.com/decantr-ai/decantr">GitHub <ArrowUpRight aria-hidden="true" size={13} /></a>
       </nav>
     </footer>

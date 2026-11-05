@@ -5,6 +5,7 @@ const repoRoot = new URL('..', import.meta.url);
 const files = [
   'README.md',
   'docs/index.html',
+  'docs/flux/index.html',
   'docs/llms.txt',
   'docs/README.md',
   'packages/cli/README.md',
